@@ -1,0 +1,62 @@
+#!/bin/sh
+
+echo "Running pre-commit security checks..."
+
+# Check for potential secrets in staged files
+echo "Checking for hardcoded secrets..."
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|json|env|yaml|yml)$' || true)
+
+if [ -n "$STAGED_FILES" ]; then
+  # Check for common secret patterns
+  SECRETS_FOUND=0
+
+  # Check for API keys
+  if git diff --cached | grep -iE '(api[_-]?key|apikey)\s*[:=]\s*["\047][a-zA-Z0-9]{20,}' > /dev/null 2>&1; then
+    echo "ERROR: Possible API key found in staged changes"
+    SECRETS_FOUND=1
+  fi
+
+  # Check for AWS keys
+  if git diff --cached | grep -E 'AKIA[0-9A-Z]{16}' > /dev/null 2>&1; then
+    echo "ERROR: Possible AWS access key found in staged changes"
+    SECRETS_FOUND=1
+  fi
+
+  # Check for private keys
+  if git diff --cached | grep -E '-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----' > /dev/null 2>&1; then
+    echo "ERROR: Private key found in staged changes"
+    SECRETS_FOUND=1
+  fi
+
+  # Check for password assignments
+  if git diff --cached | grep -iE '(password|passwd|pwd)\s*[:=]\s*["\047][^"\047]{8,}' > /dev/null 2>&1; then
+    echo "WARNING: Possible hardcoded password found in staged changes"
+    # Not blocking, just warning
+  fi
+
+  # Check for database connection strings with credentials
+  if git diff --cached | grep -iE '(mysql|postgres|mongodb|redis)://[^:]+:[^@]+@' > /dev/null 2>&1; then
+    echo "ERROR: Database connection string with credentials found in staged changes"
+    SECRETS_FOUND=1
+  fi
+
+  # Check for .env files being committed
+  if echo "$STAGED_FILES" | grep -E '^\.env$|^\.env\.local$|^\.env\.production$' > /dev/null 2>&1; then
+    echo "ERROR: Attempting to commit .env file"
+    SECRETS_FOUND=1
+  fi
+
+  if [ $SECRETS_FOUND -eq 1 ]; then
+    echo ""
+    echo "Pre-commit check failed: Potential secrets detected"
+    echo "Please remove sensitive data before committing"
+    exit 1
+  fi
+fi
+
+echo "Security checks passed"
+
+# Run lint-staged for code quality
+npx lint-staged

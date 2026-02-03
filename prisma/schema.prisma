@@ -1,0 +1,1160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth Required Tables
+
+model User {
+  id                     String                  @id @default(cuid())
+  name                   String?
+  email                  String?                 @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?                 // hashed password, null for OAuth-only users
+  organization           String?
+  operatorType           String?                 // from assessment: SCO, LO, TCO, etc.
+  establishmentCountry   String?                 // ISO country code
+  isThirdCountry         Boolean                 @default(false)
+  role                   String                  @default("user") // user, admin, auditor
+  isActive               Boolean                 @default(true)
+  accounts               Account[]
+  sessions               Session[]
+  articleStatuses        ArticleStatus[]
+  checklistStatuses      ChecklistStatus[]
+  authorizationWorkflows AuthorizationWorkflow[]
+  auditLogs              AuditLog[]
+  debrisAssessments      DebrisAssessment[]
+  cybersecurityAssessments CybersecurityAssessment[]
+  insuranceAssessments   InsuranceAssessment[]
+  environmentalAssessments EnvironmentalAssessment[]
+  supervisionConfig      SupervisionConfig?
+  deadlines              Deadline[]
+  missionPhases          MissionPhase[]
+  documents              Document[]
+  documentTemplates      DocumentTemplate[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Compliance Tracker ───
+
+model ArticleStatus {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String   // matches Article.id from data (e.g., "art-6")
+  status    String   @default("not_started") // not_started | in_progress | under_review | compliant | not_applicable
+  notes     String?  @db.Text
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@index([userId])
+}
+
+model ChecklistStatus {
+  id          String   @id @default(cuid())
+  userId      String
+  checklistId String   // matches ChecklistItem.id from data
+  completed   Boolean  @default(false)
+  notes       String?  @db.Text
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, checklistId])
+  @@index([userId])
+}
+
+// ─── Authorization Workflow ───
+
+model AuthorizationWorkflow {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // NCA Information
+  primaryNCA       String   // NCA ID (e.g., "de" for Germany)
+  primaryNCAName   String   // Full name for display
+  secondaryNCAs    String?  // JSON array of secondary NCA IDs
+  pathway          String   // 'national_authorization' | 'euspa_registration' | 'commission_decision'
+
+  // Operator context
+  operatorType     String?  // SCO, LO, LSO, etc.
+  launchCountry    String?  // For launch operators
+
+  // Status
+  status           String   @default("not_started") // not_started | in_progress | submitted | under_review | approved | rejected
+
+  // Timeline
+  targetSubmission DateTime?
+  startedAt        DateTime?
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  rejectedAt       DateTime?
+  rejectionReason  String?  @db.Text
+
+  // Relations
+  documents        AuthorizationDocument[]
+
+  // Notes
+  notes            String?  @db.Text
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AuthorizationDocument {
+  id           String                @id @default(cuid())
+  workflowId   String
+  workflow     AuthorizationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Document info
+  documentType String   // 'mission_description', 'debris_plan', 'insurance_proof', etc.
+  name         String   // Display name
+  description  String?  @db.Text
+  articleRef   String?  // e.g., "Art. 7(2)(a)"
+  required     Boolean  @default(true)
+
+  // Status
+  status       String   @default("not_started") // not_started | in_progress | ready | submitted | approved | rejected
+
+  // Timeline
+  dueDate      DateTime?
+  completedAt  DateTime?
+  submittedAt  DateTime?
+
+  // File reference (for future file uploads)
+  fileUrl      String?
+  fileName     String?
+  fileSize     Int?
+
+  // Notes
+  notes        String?  @db.Text
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([workflowId])
+  @@index([status])
+}
+
+// ─── Audit Trail ───
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // What happened
+  action        String   // 'article_status_changed', 'document_uploaded', 'checklist_completed', etc.
+  entityType    String   // 'article', 'checklist', 'document', 'authorization', 'workflow'
+  entityId      String   // ID of the affected object
+
+  // Change details
+  previousValue String?  @db.Text // JSON string of previous state
+  newValue      String?  @db.Text // JSON string of new state
+  description   String?  // Human-readable description of the change
+
+  // Context
+  ipAddress     String?
+  userAgent     String?
+
+  // Timestamp (critical for audits)
+  timestamp     DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@index([action])
+}
+
+// ─── Debris Assessment ───
+
+model DebrisAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Mission Profile
+  missionName          String?
+  orbitType            String   // LEO, MEO, GEO, HEO, cislunar
+  altitudeKm           Int?
+  satelliteCount       Int      @default(1)
+  constellationTier    String   // single, small, medium, large, mega
+  hasManeuverability   String   // full, limited, none
+  hasPropulsion        Boolean  @default(false)
+  hasPassivationCap    Boolean  @default(false)
+  plannedDurationYears Int      @default(5)
+  launchDate           DateTime?
+  deorbitStrategy      String   // active_deorbit, passive_decay, graveyard_orbit, adr_contracted
+  deorbitTimelineYears Int?
+
+  // CA Service
+  caServiceProvider    String?
+
+  // Status
+  complianceScore      Int?     // 0-100
+  planGenerated        Boolean  @default(false)
+  planGeneratedAt      DateTime?
+
+  // Relations
+  requirements         DebrisRequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model DebrisRequirementStatus {
+  id            String           @id @default(cuid())
+  assessmentId  String
+  assessment    DebrisAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches DebrisRequirement.id from data
+  status        String   @default("not_assessed") // compliant, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+}
+
+// ─── Cybersecurity Assessment ───
+
+model CybersecurityAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Organization Profile
+  assessmentName       String?
+  organizationSize     String   // micro, small, medium, large
+  employeeCount        Int?
+  annualRevenue        Float?   // EUR
+
+  // Space Operations
+  spaceSegmentComplexity String  // single_satellite, small_constellation, large_constellation, ground_only
+  satelliteCount       Int?
+  hasGroundSegment     Boolean  @default(true)
+  groundStationCount   Int?
+
+  // Data & Sensitivity
+  dataSensitivityLevel String   // public, internal, confidential, restricted
+  processesPersonalData Boolean @default(false)
+  handlesGovData       Boolean  @default(false)
+
+  // Existing Security
+  existingCertifications String? // JSON array: ['iso27001', 'soc2']
+  hasSecurityTeam      Boolean  @default(false)
+  securityTeamSize     Int?
+  hasIncidentResponsePlan Boolean @default(false)
+  hasBCP               Boolean  @default(false)
+
+  // Supply Chain
+  criticalSupplierCount Int?
+  supplierSecurityAssessed Boolean @default(false)
+
+  // Calculated
+  isSimplifiedRegime   Boolean  @default(false)
+  maturityScore        Int?     // 0-100
+  frameworkGenerated   Boolean  @default(false)
+  frameworkGeneratedAt DateTime?
+
+  // Relations
+  requirements         CybersecurityRequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model CybersecurityRequirementStatus {
+  id            String                   @id @default(cuid())
+  assessmentId  String
+  assessment    CybersecurityAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches CybersecurityRequirement.id
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+}
+
+// ─── Insurance Assessment ───
+
+model InsuranceAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+
+  // Risk Profile
+  primaryJurisdiction  String   // FR, DE, IT, etc.
+  operatorType         String   // spacecraft, launch, launch_site
+  companySize          String   // micro, small, medium, large
+
+  // Operations Profile
+  orbitRegime          String   // LEO, MEO, GEO, HEO, cislunar, deep_space
+  satelliteCount       Int      @default(1)
+  satelliteValueEur    Float?
+  totalMissionValueEur Float?
+  isConstellationOperator Boolean @default(false)
+  hasManeuverability   Boolean  @default(false)
+  missionDurationYears Int      @default(5)
+  hasFlightHeritage    Boolean  @default(false)
+  launchVehicle        String?  // Name of launch vehicle
+  launchProvider       String?  // Name of launch provider
+  launchDate           DateTime?
+
+  // Risk Factors
+  hasADR               Boolean  @default(false) // Active debris removal
+  hasPropulsion        Boolean  @default(false)
+  hasHazardousMaterials Boolean @default(false) // Nuclear, etc.
+  crossBorderOps       Boolean  @default(false)
+
+  // Financial
+  annualRevenueEur     Float?
+  turnoversShareSpace  Float?   // Percentage of revenue from space ops
+
+  // Calculated Results
+  calculatedTPL        Float?   // Third Party Liability requirement in EUR
+  riskLevel            String?  // low, medium, high, very_high
+  complianceScore      Int?     // 0-100
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Relations
+  policies             InsurancePolicy[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model InsurancePolicy {
+  id            String              @id @default(cuid())
+  assessmentId  String
+  assessment    InsuranceAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  // Policy Type
+  insuranceType String   // pre_launch, launch, in_orbit, third_party_liability, contingent_liability, loss_of_revenue, launch_plus_life
+
+  // Status tracking
+  status        String   @default("not_started") // not_started, quote_requested, quote_received, under_review, bound, active, expiring_soon, expired, not_required
+  isRequired    Boolean  @default(true)
+
+  // Policy details
+  policyNumber  String?
+  insurer       String?
+  broker        String?
+  coverageAmount Float?  // In EUR
+  premium       Float?   // Annual premium in EUR
+  deductible    Float?
+
+  // Timeline
+  effectiveDate DateTime?
+  expirationDate DateTime?
+  renewalDate   DateTime?
+
+  // Documents
+  documentUrl   String?
+  documentName  String?
+
+  // Notes
+  notes         String?  @db.Text
+  quoteNotes    String?  @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, insuranceType])
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── Environmental Assessment ───
+
+model EnvironmentalAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, data_collection, calculation, review, submitted, approved
+
+  // Mission Profile
+  missionName          String?
+  operatorType         String   // spacecraft, launch, launch_site
+  missionType          String   // commercial, research, government, educational
+
+  // Spacecraft Details
+  spacecraftMassKg     Float
+  spacecraftCount      Int      @default(1)
+  orbitType            String   // LEO, MEO, GEO, HEO, cislunar, deep_space
+  altitudeKm           Int?
+  missionDurationYears Int      @default(5)
+
+  // Launch
+  launchVehicle        String   // ariane_6, vega_c, falcon_9, etc.
+  launchSharePercent   Float    @default(100)
+  launchSiteCountry    String?
+
+  // Propulsion
+  spacecraftPropellant String?  // hydrazine, green_propellant, xenon, etc.
+  propellantMassKg     Float?
+
+  // Operations
+  groundStationCount   Int      @default(1)
+  dailyContactHours    Float    @default(2)
+
+  // End of Life
+  deorbitStrategy      String   // controlled_deorbit, passive_decay, graveyard_orbit, retrieval
+
+  // Simplified Regime Flags
+  isSmallEnterprise    Boolean  @default(false)
+  isResearchEducation  Boolean  @default(false)
+
+  // Calculated Results
+  totalGWP             Float?   // Total kg CO2eq
+  totalODP             Float?   // Total kg CFC-11 eq
+  carbonIntensity      Float?   // kg CO2eq per kg payload
+  efdGrade             String?  // A, B, C, D, E
+  complianceScore      Int?     // 0-100
+  isSimplifiedAssessment Boolean @default(false)
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Relations
+  impactResults        EnvironmentalImpactResult[]
+  supplierRequests     SupplierDataRequest[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model EnvironmentalImpactResult {
+  id            String                   @id @default(cuid())
+  assessmentId  String
+  assessment    EnvironmentalAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  // Lifecycle Phase
+  phase         String   // raw_material_extraction, manufacturing, transport_to_launch, launch, operations, end_of_life
+
+  // Impact Values
+  gwpKgCO2eq    Float    // Climate change impact
+  odpKgCFC11eq  Float    // Ozone depletion impact
+  percentOfTotal Float   // Percentage contribution to total GWP
+
+  // Additional impact categories (optional - for full LCA)
+  acidificationMolHEq   Float?
+  eutrophicationFwKgPEq Float?
+  waterUseM3            Float?
+  particulatesMatter    Float?
+  resourceUseMinerals   Float?
+  resourceUseFossils    Float?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, phase])
+  @@index([assessmentId])
+}
+
+model SupplierDataRequest {
+  id            String                   @id @default(cuid())
+  assessmentId  String
+  assessment    EnvironmentalAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  // Supplier Info
+  supplierName  String
+  supplierEmail String?
+  componentType String   // Spacecraft Structure, Solar Arrays, Electronics, Propulsion, etc.
+
+  // Request Details
+  dataRequired  String   @db.Text // JSON array of required data points
+  notes         String?  @db.Text
+
+  // Status
+  status        String   @default("pending") // pending, sent, received, overdue, not_applicable
+  sentAt        DateTime?
+  receivedAt    DateTime?
+  deadline      DateTime?
+
+  // Response Data
+  responseData  String?  @db.Text // JSON object with supplier response
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── Security Models ───
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean  @default(false)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  type        String   // SUSPICIOUS_ACTIVITY, RATE_LIMIT, FAILED_AUTH, BRUTE_FORCE, etc.
+  severity    String   // LOW, MEDIUM, HIGH, CRITICAL
+  description String   @db.Text
+  metadata    String?  @db.Text // JSON
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([resolved])
+}
+
+// ─── Supervision & Reporting ───
+
+model SupervisionConfig {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // NCA Configuration
+  primaryCountry         String
+  additionalCountries    String[] @default([])
+  designatedContactName  String?
+  designatedContactEmail String?
+  designatedContactPhone String?
+  designatedContactRole  String?
+  communicationLanguage  String   @default("en")
+  notificationMethod     String   @default("email") // email, portal, both
+
+  // Reporting Preferences
+  enableAutoReminders    Boolean  @default(true)
+  reminderDaysAdvance    Int      @default(14)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  incidents              Incident[]
+  reports                SupervisionReport[]
+  calendarEvents         SupervisionCalendarEvent[]
+}
+
+model Incident {
+  id                String            @id @default(cuid())
+  supervisionId     String
+  supervision       SupervisionConfig @relation(fields: [supervisionId], references: [id], onDelete: Cascade)
+
+  incidentNumber    String            @unique // INC-2026-001
+  category          String            // spacecraft_anomaly, loss_of_contact, conjunction_event, debris_generation, cyber_incident, regulatory_breach
+  severity          String            // critical, high, medium, low
+  status            String            @default("detected") // detected, investigating, contained, resolved, reported
+
+  // Detection
+  detectedAt        DateTime
+  detectedBy        String
+  detectionMethod   String            // automated, manual, external_report
+
+  // Description
+  title             String
+  description       String            @db.Text
+  rootCause         String?           @db.Text
+  impactAssessment  String?           @db.Text
+
+  // Response
+  immediateActions  String[]          @default([])
+  containmentMeasures String[]        @default([])
+  resolutionSteps   String[]          @default([])
+  lessonsLearned    String?           @db.Text
+
+  // NCA Reporting
+  reportedToNCA     Boolean           @default(false)
+  ncaReportDate     DateTime?
+  ncaReferenceNumber String?
+  reportedToEUSPA   Boolean           @default(false)
+  euspaReportDate   DateTime?
+
+  // Timeline
+  containedAt       DateTime?
+  resolvedAt        DateTime?
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  affectedAssets    IncidentAsset[]
+  attachments       IncidentAttachment[]
+
+  @@index([supervisionId])
+  @@index([category])
+  @@index([severity])
+  @@index([status])
+  @@index([detectedAt])
+}
+
+model IncidentAsset {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  cosparId   String?
+  noradId    String?
+  assetName  String
+
+  @@index([incidentId])
+}
+
+model IncidentAttachment {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  filename   String
+  fileType   String
+  fileSize   Int
+  filePath   String
+  uploadedAt DateTime @default(now())
+
+  @@index([incidentId])
+}
+
+model SupervisionReport {
+  id             String            @id @default(cuid())
+  supervisionId  String
+  supervision    SupervisionConfig @relation(fields: [supervisionId], references: [id], onDelete: Cascade)
+
+  reportType     String            // annual_compliance, significant_change, incident, cybersecurity, debris_event, conjunction, anomaly, eol_update, insurance, ownership_transfer
+  reportPeriod   String?           // e.g., "2025", "Q1 2026"
+  status         String            @default("draft") // draft, ready, submitted, acknowledged, rejected
+  dueDate        DateTime
+  submittedAt    DateTime?
+  acknowledgedAt DateTime?
+  rejectedAt     DateTime?
+  rejectionReason String?          @db.Text
+
+  // Content
+  title          String?
+  content        String?           @db.Text // JSON structured report content
+  ncaReference   String?
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([supervisionId])
+  @@index([reportType])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model SupervisionCalendarEvent {
+  id             String            @id @default(cuid())
+  supervisionId  String
+  supervision    SupervisionConfig @relation(fields: [supervisionId], references: [id], onDelete: Cascade)
+
+  eventType      String            // report_due, inspection_scheduled, audit_scheduled, authorization_renewal, insurance_renewal, certification_expiry, regulatory_deadline, internal_review
+  title          String
+  description    String?           @db.Text
+  dueDate        DateTime
+  reminderDays   Int[]             @default([14, 7, 1])
+  assignee       String?
+  status         String            @default("upcoming") // upcoming, in_progress, completed, overdue, cancelled
+
+  linkedReportId String?
+  linkedAssetIds String[]          @default([])
+  notes          String?           @db.Text
+
+  completedAt    DateTime?
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([supervisionId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([eventType])
+}
+
+// ============================================
+// TIMELINE & DEADLINES MODULE
+// ============================================
+
+model Deadline {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?          @db.Text
+  dueDate         DateTime
+  category        DeadlineCategory
+  priority        Priority
+  status          DeadlineStatus   @default(UPCOMING)
+
+  // Source tracking
+  moduleSource    ModuleType?      // Which module created this deadline
+  relatedEntityId String?          // e.g., Mission ID, License ID
+
+  // Reminders
+  reminderDays    Int[]            @default([30, 14, 7, 3, 1])
+  remindersSent   DateTime[]
+
+  // Recurring
+  isRecurring     Boolean          @default(false)
+  recurrenceRule  String?          // RRULE format (iCal)
+  parentId        String?
+  parent          Deadline?        @relation("RecurringDeadlines", fields: [parentId], references: [id])
+  children        Deadline[]       @relation("RecurringDeadlines")
+
+  // Responsibility
+  assignedTo      String?
+  assignedTeam    String?
+
+  // Compliance
+  regulatoryRef   String?          // e.g., "EU Space Act Art. 45"
+  penaltyInfo     String?          @db.Text // Consequences if missed
+
+  // Meta
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  completedAt     DateTime?
+  completedBy     String?
+  completionNotes String?          @db.Text
+
+  // Extension tracking
+  originalDueDate DateTime?
+  extensionReason String?          @db.Text
+  extensionApprovedBy String?
+
+  @@index([userId, dueDate])
+  @@index([status, dueDate])
+  @@index([category])
+  @@index([moduleSource])
+}
+
+model MissionPhase {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  missionId       String
+  missionName     String?
+  name            String
+  description     String?      @db.Text
+  startDate       DateTime
+  endDate         DateTime
+  status          PhaseStatus  @default(PLANNED)
+  progress        Int          @default(0) // 0-100
+
+  // Dependencies (IDs of predecessor phases)
+  dependsOn       String[]     @default([])
+
+  // Color for Gantt chart
+  color           String?
+
+  // Milestones
+  milestones      Milestone[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId, missionId])
+  @@index([status])
+}
+
+model Milestone {
+  id              String          @id @default(cuid())
+  phaseId         String
+  phase           MissionPhase    @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?         @db.Text
+  targetDate      DateTime
+  completedDate   DateTime?
+  status          MilestoneStatus @default(PENDING)
+
+  isCritical      Boolean         @default(false)
+  isRegulatory    Boolean         @default(false)
+  regulatoryRef   String?
+  icon            String?         // e.g., "rocket", "check", "flag"
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([phaseId, targetDate])
+  @@index([status])
+}
+
+enum DeadlineCategory {
+  REGULATORY      // Government/authority deadlines
+  LICENSE         // License/permit deadlines
+  REPORTING       // Report submission deadlines
+  INSURANCE       // Insurance deadlines
+  CERTIFICATION   // Certification deadlines
+  MISSION         // Mission-related deadlines
+  INTERNAL        // Internal deadlines
+  CONTRACTUAL     // Contractual deadlines
+}
+
+enum Priority {
+  CRITICAL        // Must be met, severe consequences otherwise
+  HIGH            // Important, address promptly
+  MEDIUM          // Standard priority
+  LOW             // Nice-to-have
+}
+
+enum DeadlineStatus {
+  UPCOMING        // Still time remaining
+  DUE_SOON        // Due soon (< 7 days)
+  OVERDUE         // Past due date
+  COMPLETED       // Done
+  CANCELLED       // Cancelled
+  EXTENDED        // Extended with new due date
+}
+
+enum PhaseStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+  ON_HOLD
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  MISSED
+  RESCHEDULED
+}
+
+enum ModuleType {
+  AUTHORIZATION
+  DEBRIS
+  INSURANCE
+  CYBERSECURITY
+  ENVIRONMENTAL
+  SUPERVISION
+  REGISTRATION
+  TIMELINE
+  DOCUMENTS
+}
+
+// ============================================
+// DOCUMENT VAULT MODULE
+// ============================================
+
+model Document {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic Information
+  name              String
+  description       String?           @db.Text
+  fileName          String
+  fileSize          Int               // in bytes
+  mimeType          String
+
+  // Categorization
+  category          DocumentCategory
+  subcategory       String?
+  tags              String[]          @default([])
+
+  // Storage
+  storagePath       String            // Path in secure storage
+  checksum          String            // SHA-256 for integrity
+
+  // Versioning
+  version           Int               @default(1)
+  isLatest          Boolean           @default(true)
+  parentId          String?
+  parent            Document?         @relation("DocumentVersions", fields: [parentId], references: [id])
+  versions          Document[]        @relation("DocumentVersions")
+
+  // Expiry & Validity
+  issueDate         DateTime?
+  expiryDate        DateTime?
+  isExpired         Boolean           @default(false)
+  expiryAlertDays   Int[]             @default([90, 30, 14, 7])
+
+  // Compliance Linking
+  moduleType        ModuleType?
+  relatedEntityId   String?           // e.g., Mission ID, License ID
+  regulatoryRef     String?           // e.g., "EU Space Act Art. 7"
+
+  // Access Control
+  accessLevel       AccessLevel       @default(INTERNAL)
+  allowedUserIds    String[]          @default([])
+  allowedRoles      String[]          @default([])
+
+  // Status
+  status            DocumentStatus    @default(DRAFT)
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  approvedBy        String?
+  approvedAt        DateTime?
+
+  // Meta
+  uploadedBy        String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  accessLogs        DocumentAccessLog[]
+  comments          DocumentComment[]
+  shares            DocumentShare[]
+
+  @@index([userId, category])
+  @@index([expiryDate])
+  @@index([status])
+  @@index([moduleType])
+}
+
+model DocumentAccessLog {
+  id           String         @id @default(cuid())
+  documentId   String
+  document     Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId       String
+  action       AccessAction
+  ipAddress    String?
+  userAgent    String?
+  details      String?        @db.Text // JSON details
+
+  createdAt    DateTime       @default(now())
+
+  @@index([documentId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model DocumentComment {
+  id           String    @id @default(cuid())
+  documentId   String
+  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId       String
+  userName     String?
+  content      String    @db.Text
+
+  // Replies
+  parentId     String?
+  parent       DocumentComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies      DocumentComment[] @relation("CommentReplies")
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([documentId, createdAt])
+}
+
+model DocumentShare {
+  id           String    @id @default(cuid())
+  documentId   String
+  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Share Settings
+  sharedWith   String?   // Email or User ID
+  shareToken   String    @unique
+  accessType   ShareAccessType
+
+  // Restrictions
+  expiresAt    DateTime?
+  maxDownloads Int?
+  downloadCount Int      @default(0)
+  password     String?   // Optional password protection (hashed)
+
+  // Tracking
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  lastAccessed DateTime?
+
+  @@index([shareToken])
+  @@index([documentId])
+}
+
+model DocumentTemplate {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?           @db.Text
+  category        DocumentCategory
+
+  // Template file
+  templatePath    String
+  templateContent String?           @db.Text // For text-based templates
+
+  // Placeholders (JSON)
+  placeholders    String            @db.Text // JSON: { "COMPANY_NAME": { type: "string", required: true } }
+
+  // Compliance
+  regulatoryRef   String?
+  requiredFields  String[]          @default([])
+
+  isSystem        Boolean           @default(false) // System-provided template
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId, category])
+}
+
+enum DocumentCategory {
+  // Licenses & Permits
+  LICENSE
+  PERMIT
+  AUTHORIZATION
+
+  // Certificates
+  CERTIFICATE
+  ISO_CERTIFICATE
+  SECURITY_CERT
+
+  // Insurance
+  INSURANCE_POLICY
+  INSURANCE_CERT
+
+  // Reports
+  COMPLIANCE_REPORT
+  AUDIT_REPORT
+  INCIDENT_REPORT
+  ANNUAL_REPORT
+
+  // Technical Documents
+  TECHNICAL_SPEC
+  DESIGN_DOC
+  TEST_REPORT
+  SAFETY_ANALYSIS
+
+  // Contracts
+  CONTRACT
+  NDA
+  SLA
+
+  // Regulatory Communications
+  REGULATORY_FILING
+  CORRESPONDENCE
+  NOTIFICATION
+
+  // Internal Documents
+  POLICY
+  PROCEDURE
+  TRAINING
+
+  // Other
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT
+  PENDING_REVIEW
+  UNDER_REVIEW
+  PENDING_APPROVAL
+  APPROVED
+  ACTIVE
+  EXPIRED
+  SUPERSEDED
+  ARCHIVED
+  REJECTED
+}
+
+enum AccessLevel {
+  PUBLIC
+  INTERNAL
+  CONFIDENTIAL
+  RESTRICTED
+  TOP_SECRET
+}
+
+enum AccessAction {
+  VIEW
+  DOWNLOAD
+  PRINT
+  SHARE
+  EDIT
+  DELETE
+  RESTORE
+  VERSION_CREATED
+  PERMISSION_CHANGED
+  COMMENT_ADDED
+}
+
+enum ShareAccessType {
+  VIEW_ONLY
+  DOWNLOAD
+  COMMENT
+  EDIT
+}

@@ -1,0 +1,1649 @@
+{
+  "metadata": {
+    "regulation": "EU Space Act",
+    "reference": "COM(2025) 335 final",
+    "proposal_date": "2025-06-25",
+    "expected_application_date": "2030-01-01",
+    "total_articles": 119,
+    "total_annexes": 10,
+    "total_recitals": 140,
+    "legal_basis": "Article 114 TFEU (Internal Market)",
+    "version": "1.0",
+    "last_updated": "2026-02-03",
+    "note": "Based on original Commission proposal. Danish Council Presidency released updated text on 2025-12-05. Updates may modify specific provisions.",
+    "enforcement": {
+      "max_fine_percentage_turnover": 2.0,
+      "alternative_fine_basis": "Twice the profit gained or losses avoided from non-compliance",
+      "enforcement_bodies": [
+        "National Competent Authorities (NCAs)",
+        "European Commission",
+        "EUSPA"
+      ],
+      "powers": [
+        "On-site inspections",
+        "Suspension/withdrawal of authorization",
+        "Administrative fines",
+        "Periodic penalty payments",
+        "Interim measures"
+      ],
+      "appeal": "Board of Appeal within EUSPA, then Court of Justice of the EU"
+    }
+  },
+
+  "operator_types": {
+    "spacecraft_operator": {
+      "id": "SCO",
+      "definition": "Entity that operates or controls a spacecraft in orbit",
+      "examples": [
+        "Satellite operators",
+        "Constellation operators",
+        "Space station operators"
+      ],
+      "eu_space_act_ref": "Art. 5(8)"
+    },
+    "launch_operator": {
+      "id": "LO",
+      "definition": "Entity that operates launch vehicles for the purpose of launching space objects",
+      "examples": ["Arianespace", "RFA", "Isar Aerospace", "PLD Space"],
+      "eu_space_act_ref": "Art. 5(9)"
+    },
+    "launch_site_operator": {
+      "id": "LSO",
+      "definition": "Entity that operates or manages a launch facility",
+      "examples": ["CSG (Kourou)", "Esrange", "SaxaVord"],
+      "eu_space_act_ref": "Art. 5(10)"
+    },
+    "isos_provider": {
+      "id": "ISOS",
+      "definition": "Provider of in-space operations and services (debris removal, on-orbit servicing, etc.)",
+      "examples": ["ClearSpace", "Astroscale", "D-Orbit"],
+      "eu_space_act_ref": "Art. 5(11)"
+    },
+    "collision_avoidance_provider": {
+      "id": "CAP",
+      "definition": "Provider of collision avoidance services to space operators",
+      "examples": ["EUSST", "LeoLabs", "ExoAnalytic"],
+      "eu_space_act_ref": "Art. 5(12)"
+    },
+    "primary_data_provider": {
+      "id": "PDP",
+      "definition": "Entity that is the primary provider of space-based data used in the EU",
+      "examples": [
+        "Ground station operators channeling satellite data to EU users"
+      ],
+      "eu_space_act_ref": "Art. 5(13)"
+    },
+    "third_country_operator": {
+      "id": "TCO",
+      "definition": "Space operator established outside the EU providing space services or space-based data in the EU",
+      "examples": [
+        "SpaceX/Starlink",
+        "Planet Labs",
+        "OneWeb (if non-EU)",
+        "Amazon/Kuiper"
+      ],
+      "eu_space_act_ref": "Art. 5(18)"
+    }
+  },
+
+  "size_categories": {
+    "small_enterprise": {
+      "definition": "As defined in Commission Recommendation 2003/361/EC: <50 employees and <€10M turnover",
+      "special_provisions": [
+        "Light regime for resilience (Art. 10)",
+        "EFD exemption until 2031",
+        "Proportionate fees",
+        "Supporting measures (Art. 109-111)"
+      ]
+    },
+    "research_education": {
+      "definition": "Research and educational institutions operating space objects",
+      "special_provisions": [
+        "Light regime eligibility (Art. 10)",
+        "Possible EFD exemption"
+      ]
+    },
+    "medium_enterprise": {
+      "definition": "50-249 employees, €10-50M turnover",
+      "special_provisions": [
+        "Some proportionality provisions but NOT eligible for light regime",
+        "Supporting measures"
+      ]
+    },
+    "large_enterprise": {
+      "definition": ">250 employees or >€50M turnover",
+      "special_provisions": ["Full compliance required"]
+    }
+  },
+
+  "constellation_tiers": {
+    "single_satellite": {
+      "count": "1",
+      "special_provisions": [
+        "Standard authorization",
+        "No constellation-specific obligations"
+      ]
+    },
+    "small_constellation": {
+      "count": "2-9",
+      "special_provisions": [
+        "Standard authorization per satellite or simplified if identical design"
+      ]
+    },
+    "medium_constellation": {
+      "count": "10-99",
+      "special_provisions": [
+        "Additional debris mitigation requirements",
+        "Constellation-level authorization possible"
+      ]
+    },
+    "large_constellation": {
+      "count": "100-999",
+      "special_provisions": [
+        "Enhanced debris mitigation",
+        "Light/radio pollution mitigation plan mandatory",
+        "Additional safety standards"
+      ]
+    },
+    "mega_constellation": {
+      "count": "1000+",
+      "special_provisions": [
+        "Full enhanced requirements",
+        "Comprehensive pollution mitigation",
+        "Special orbital traffic management obligations"
+      ]
+    }
+  },
+
+  "titles": [
+    {
+      "number": "I",
+      "name": "General Provisions",
+      "articles": "1-5",
+      "caelex_module": "compliance_assessment",
+      "summary": "Subject matter, scope, free movement clause, national security preservation, and key definitions",
+      "articles_detail": [
+        {
+          "number": 1,
+          "title": "Subject Matter",
+          "summary": "Establishes rules for internal market of space-based data and space services. Covers: authorization/registration/supervision, orbit traffic management, governance/enforcement, Union Space Label.",
+          "applies_to": ["ALL"],
+          "compliance_type": "informational",
+          "operator_action": "none",
+          "decision_logic": {
+            "always_applicable": true
+          }
+        },
+        {
+          "number": 2,
+          "title": "Scope",
+          "summary": "Applies to: space operators, collision avoidance providers, primary data providers, international organizations. Excludes: defense/national security objects, objects launched before 2030-01-01, radio spectrum management. Title IV Chapters I and V do not apply beyond GEO.",
+          "applies_to": ["ALL"],
+          "compliance_type": "scope_determination",
+          "operator_action": "Determine if your activities fall within scope",
+          "decision_logic": {
+            "questions": [
+              {
+                "id": "scope_q1",
+                "question": "Do you operate, launch, or provide space-based services or data?",
+                "if_yes": "In scope (proceed to further questions)",
+                "if_no": "Out of scope"
+              },
+              {
+                "id": "scope_q2",
+                "question": "Are your space objects used exclusively for defense or national security?",
+                "if_yes": "Excluded from scope (Art. 2(3)(a))",
+                "if_no": "Proceed"
+              },
+              {
+                "id": "scope_q3",
+                "question": "Were your assets launched before January 1, 2030?",
+                "if_yes": "Pre-existing assets excluded (Art. 2(3)(d))",
+                "if_no": "Fully in scope"
+              },
+              {
+                "id": "scope_q4",
+                "question": "Do you provide space services or space-based data to users in the EU?",
+                "if_yes": "In scope even if established outside EU (extraterritorial application)",
+                "if_no": "Only in scope if EU-established"
+              }
+            ]
+          }
+        },
+        {
+          "number": 3,
+          "title": "Free Movement",
+          "summary": "Member States cannot restrict provision of space-based data and space services by imposing stricter standards on safety, resilience, sustainability, except in objectively necessary cases.",
+          "applies_to": ["ALL"],
+          "compliance_type": "informational",
+          "operator_action": "none",
+          "decision_logic": { "always_applicable": true }
+        },
+        {
+          "number": 4,
+          "title": "National Security",
+          "summary": "Preserves Member States' competence regarding national security matters.",
+          "applies_to": ["ALL"],
+          "compliance_type": "informational",
+          "operator_action": "none",
+          "decision_logic": { "always_applicable": true }
+        },
+        {
+          "number": 5,
+          "title": "Definitions",
+          "summary": "Key definitions: space operator, spacecraft, launch vehicle, constellation, space services, space activities, space-based data, Union space operator, third country operator, etc. Note: Greenberg Traurig analysis found definitions 'largely circular'.",
+          "applies_to": ["ALL"],
+          "compliance_type": "reference",
+          "operator_action": "Determine your classification under the definitions",
+          "key_definitions": {
+            "space_services": "Umbrella term including space activities plus ground-based operations like launch infrastructure, collision avoidance, ISOS",
+            "space_activities": "Operations carried out in outer space",
+            "union_space_operator": "Space operator established in EU or controlled by EU-established entity",
+            "third_country_operator": "Space operator established outside EU providing space services/data in EU",
+            "constellation": "Coordinated group of spacecraft operating as a system",
+            "primary_provider_space_based_data": "Intermediary channeling space-based data to EU users"
+          },
+          "decision_logic": {
+            "questions": [
+              {
+                "id": "def_q1",
+                "question": "Is your entity established in the EU?",
+                "if_yes": "Classified as Union space operator",
+                "if_no": "Classified as third country operator (if providing services in EU)"
+              },
+              {
+                "id": "def_q2",
+                "question": "What type of space services do you provide?",
+                "options": [
+                  "Spacecraft operation → spacecraft_operator",
+                  "Launch services → launch_operator",
+                  "Launch site management → launch_site_operator",
+                  "In-space servicing/debris removal → isos_provider",
+                  "Collision avoidance services → collision_avoidance_provider",
+                  "Space-based data distribution → primary_data_provider"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "number": "II",
+      "name": "Authorization and Registration for Space Activities",
+      "articles": "6-27",
+      "caelex_module": "authorization_workflow",
+      "summary": "Authorization of EU operators (Ch. I), EU-owned assets (Ch. II), third country registration (Ch. III), URSO and e-certificate (Ch. IV)",
+      "chapters": [
+        {
+          "number": "I",
+          "name": "Authorization of Union Space Operators",
+          "articles": "6-10",
+          "articles_detail": [
+            {
+              "number": 6,
+              "title": "Authorization Requirement",
+              "summary": "Union space operators may ONLY provide space services in the EU if authorized in one Member State. Authorization demonstrates compliance with Title IV requirements. Single authorization valid across all Member States (mutual recognition).",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "excludes": ["TCO", "CAP", "PDP"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Obtain authorization from NCA before commencing space activities",
+              "estimated_cost": "~€100,000 per satellite platform (Commission estimate)",
+              "timeline": "NCA must decide within 12 months of complete application",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "auth_q1",
+                    "question": "Are you established in the EU (or controlled by an EU entity)?",
+                    "if_yes": "Must obtain authorization under Chapter I (Art. 6-10)",
+                    "if_no": "Subject to registration under Chapter III (Art. 14-23)"
+                  },
+                  {
+                    "id": "auth_q2",
+                    "question": "In which Member State is your primary establishment?",
+                    "note": "This determines your primary NCA for authorization"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 7,
+              "title": "Authorization Application Procedure",
+              "summary": "Application must include: technical file demonstrating compliance with Title IV Ch. I-V, identification of QTBs to be used, mission profile details. Application transmitted to NCA. NCA may seek technical assessment from EUSPA if no national QTBs available.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Prepare and submit authorization application with complete technical file",
+              "required_documents": [
+                "Technical file demonstrating Title IV compliance",
+                "Identification of chosen Qualified Technical Bodies (QTBs)",
+                "Mission profile description",
+                "Debris mitigation plan",
+                "Cybersecurity risk assessment",
+                "Environmental Footprint Declaration (EFD)",
+                "Business continuity plan"
+              ],
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "app_q1",
+                    "question": "Does your Member State have designated QTBs for space activities?",
+                    "if_yes": "Use national QTBs for technical assessment",
+                    "if_no": "EUSPA Compliance Board provides technical assessment"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 8,
+              "title": "Authorization Decision",
+              "summary": "NCA grants or refuses authorization. If granted, operator registered in URSO. Authorization may include conditions. NCA informs EUSPA of all authorized operators.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "milestone",
+              "operator_action": "Receive authorization decision, comply with any conditions",
+              "decision_logic": { "follows_from": "Art. 7 application" }
+            },
+            {
+              "number": 9,
+              "title": "Constellation Authorization (Simplified)",
+              "summary": "Simplified single-authorization procedure for satellite constellations of identical design. One authorization covers entire constellation based on assessment of single satellite. Authorities retain right to inspect others.",
+              "applies_to": ["SCO"],
+              "compliance_type": "optional_simplification",
+              "operator_action": "Apply for constellation authorization if operating uniform constellation",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "const_q1",
+                    "question": "Do you operate a constellation of satellites?",
+                    "if_yes": "Proceed to constellation assessment",
+                    "if_no": "Standard single-satellite authorization applies"
+                  },
+                  {
+                    "id": "const_q2",
+                    "question": "Are all satellites in your constellation of identical design?",
+                    "if_yes": "Eligible for simplified constellation authorization (Art. 9)",
+                    "if_no": "Each satellite variant may need separate authorization"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 10,
+              "title": "Light Regimes and Exemptions",
+              "summary": "Three light regimes for eligible operators. Adjusted authorization conditions for safety, resilience, sustainability. Eligibility based on: (1) small-sized enterprise, (2) research/educational institution, (3) missions posing low risk. Proportionality: considers mission type, orbit, constellation size, entity size, risk exposure.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "conditional_exemption",
+              "operator_action": "Assess eligibility for light regime and apply if qualifying",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "light_q1",
+                    "question": "Is your entity a small-sized enterprise (<50 employees, <€10M turnover)?",
+                    "if_yes": "Eligible for light regime on resilience and sustainability (NOT safety)",
+                    "if_no": "Proceed to next question"
+                  },
+                  {
+                    "id": "light_q2",
+                    "question": "Is your entity a research or educational institution?",
+                    "if_yes": "Eligible for light regime on resilience and sustainability",
+                    "if_no": "Proceed to next question"
+                  },
+                  {
+                    "id": "light_q3",
+                    "question": "Does your mission pose a low overall risk (considering orbit, size, services)?",
+                    "if_yes": "May qualify for adjusted conditions",
+                    "if_no": "Full compliance required"
+                  }
+                ],
+                "important_note": "Light regime does NOT exempt from safety obligations. Only resilience and sustainability requirements may be simplified."
+              }
+            }
+          ]
+        },
+        {
+          "number": "II",
+          "name": "Authorization for Union-Owned Assets",
+          "articles": "11-13",
+          "articles_detail": [
+            {
+              "number": 11,
+              "title": "Authorization of Union-Owned Asset Operators",
+              "summary": "Operators intending to operate or launch EU-owned assets (e.g., Galileo, Copernicus, IRIS2 constellation) require authorization from the Commission (not Member State NCA). EUSPA provides technical assessment.",
+              "applies_to": ["SCO", "LO"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "If operating EU-owned assets, apply to Commission for authorization",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "union_q1",
+                    "question": "Are you operating or launching assets owned by the European Union (EU Space Programme assets)?",
+                    "if_yes": "Authorization from European Commission required (Art. 11-13)",
+                    "if_no": "Standard NCA authorization (Art. 6-10)"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 12,
+              "title": "Supervision of Union-Owned Assets",
+              "summary": "Commission carries out ongoing supervision of operators of Union-owned assets.",
+              "applies_to": ["SCO", "LO"],
+              "compliance_type": "ongoing",
+              "operator_action": "Maintain continuous compliance, cooperate with Commission supervision"
+            },
+            {
+              "number": 13,
+              "title": "Suspension/Withdrawal of Authorization (Union-Owned Assets)",
+              "summary": "Commission may suspend or withdraw authorization in specified circumstances.",
+              "applies_to": ["SCO", "LO"],
+              "compliance_type": "enforcement",
+              "operator_action": "Ensure compliance to avoid suspension/withdrawal"
+            }
+          ]
+        },
+        {
+          "number": "III",
+          "name": "Registration of Third Country Operators",
+          "articles": "14-23",
+          "articles_detail": [
+            {
+              "number": 14,
+              "title": "Registration Requirement for Third Country Operators",
+              "summary": "Third country operators providing space services or space-based data in the EU must register in URSO. Must demonstrate compliance with technical requirements of Title IV.",
+              "applies_to": ["TCO"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Register with EUSPA/URSO before providing space services in EU",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "tco_q1",
+                    "question": "Are you a non-EU space operator providing services or data to EU customers?",
+                    "if_yes": "Must register in URSO (Art. 14)",
+                    "if_no": "Not applicable"
+                  },
+                  {
+                    "id": "tco_q2",
+                    "question": "Has the Commission adopted an equivalence decision for your country?",
+                    "if_yes": "Presumed compliant with technical requirements (Art. 105)",
+                    "if_no": "Must independently demonstrate compliance"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 15,
+              "title": "Registration Application Procedure (Third Country)",
+              "summary": "Application for registration submitted to EUSPA. Must include demonstration of compliance with technical requirements.",
+              "applies_to": ["TCO"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Submit registration application to EUSPA"
+            },
+            {
+              "number": 16,
+              "title": "EU Legal Representative Requirement",
+              "summary": "Third country operators must designate a legal representative in the EU to ensure effective cooperation with competent authorities, Commission, and EUSPA.",
+              "applies_to": ["TCO"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Designate EU-based legal representative",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "rep_q1",
+                    "question": "Do you already have a legal entity established in the EU?",
+                    "if_yes": "This entity may serve as representative",
+                    "if_no": "Must designate a legal representative in an EU Member State"
+                  }
+                ]
+              }
+            },
+            {
+              "number": "17-19",
+              "title": "Derogations for Launch Services, Government Entities, Emergency",
+              "summary": "Specific derogations for: third country launch services (Art. 17), third country governmental entities (Art. 18), single market emergency clause (Art. 19). These provide adjusted requirements for specific scenarios.",
+              "applies_to": ["TCO"],
+              "compliance_type": "conditional_exemption",
+              "operator_action": "Assess if any derogation applies to your situation"
+            },
+            {
+              "number": "20-23",
+              "title": "Commission Decisions on Third Country Registration",
+              "summary": "Commission decides on registration of third country operators (Art. 20), with EUSPA support (Art. 21). Supervision provisions (Art. 22) and suspension/withdrawal (Art. 23).",
+              "applies_to": ["TCO"],
+              "compliance_type": "enforcement",
+              "operator_action": "Cooperate with Commission/EUSPA supervision"
+            }
+          ]
+        },
+        {
+          "number": "IV",
+          "name": "URSO, e-Certificate, and Provision of Space Services",
+          "articles": "24-27",
+          "articles_detail": [
+            {
+              "number": 24,
+              "title": "Union Register of Space Objects (URSO)",
+              "summary": "EUSPA establishes and manages URSO. All authorized/registered operators entered into URSO. Publicly accessible register.",
+              "applies_to": ["ALL"],
+              "compliance_type": "automatic_post_authorization",
+              "operator_action": "Ensure accurate information in URSO"
+            },
+            {
+              "number": 25,
+              "title": "e-Certificate",
+              "summary": "EUSPA issues e-certificates attesting conformity of space-based data/services with Regulation requirements. Required for contracts providing space-based data/services in EU.",
+              "applies_to": ["TCO", "PDP"],
+              "compliance_type": "mandatory",
+              "operator_action": "Obtain e-certificate from EUSPA"
+            },
+            {
+              "number": 26,
+              "title": "Provision of Space-Based Data and Services",
+              "summary": "Contracts for space-based data/services in EU must be accompanied by e-certificate.",
+              "applies_to": ["ALL"],
+              "compliance_type": "ongoing_commercial",
+              "operator_action": "Ensure all contracts include valid e-certificate"
+            },
+            {
+              "number": 27,
+              "title": "Primary Data Provider Notifications",
+              "summary": "Primary providers of space-based data must notify EUSPA of any suspected irregularities in compliance.",
+              "applies_to": ["PDP"],
+              "compliance_type": "ongoing",
+              "operator_action": "Monitor and report irregularities to EUSPA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "III",
+      "name": "Governance Aspects",
+      "articles": "28-57",
+      "caelex_module": "compliance_dashboard",
+      "summary": "National governance (Ch. I: NCAs, QTBs) and Union governance (Ch. II: EUSPA roles, Commission powers, enforcement)",
+      "chapters": [
+        {
+          "number": "I",
+          "name": "National Level Governance",
+          "articles": "28-39",
+          "sections": [
+            {
+              "number": 1,
+              "name": "Member State Governance",
+              "articles": "28-31",
+              "articles_detail": [
+                {
+                  "number": 28,
+                  "title": "National Competent Authorities (NCAs)",
+                  "summary": "Each Member State designates/establishes NCA with sufficient resources and powers for oversight. NCAs have supervisory, investigatory, corrective, and sanctioning powers.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "informational",
+                  "operator_action": "Identify your relevant NCA(s)"
+                },
+                {
+                  "number": 29,
+                  "title": "NCA Powers and Functions",
+                  "summary": "NCAs monitor compliance, conduct investigations, cooperate with other Member States' NCAs.",
+                  "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+                  "compliance_type": "ongoing",
+                  "operator_action": "Cooperate with NCA oversight activities"
+                },
+                {
+                  "number": 30,
+                  "title": "NCA Sanctioning Powers",
+                  "summary": "NCAs have power to impose sanctions including fines for violations. Fines up to 2% of global annual turnover or twice profit/losses avoided.",
+                  "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+                  "compliance_type": "enforcement",
+                  "operator_action": "Maintain compliance to avoid sanctions"
+                },
+                {
+                  "number": 31,
+                  "title": "NCA Cooperation",
+                  "summary": "NCAs cooperate with authorities of other Member States and with EUSPA/Commission.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "informational",
+                  "operator_action": "none"
+                }
+              ]
+            },
+            {
+              "number": 2,
+              "name": "Qualified Technical Bodies (QTBs)",
+              "articles": "32-36",
+              "articles_detail": [
+                {
+                  "number": "32-36",
+                  "title": "QTB Designation and Requirements",
+                  "summary": "Member States may designate QTBs for technical assessment of space activities. QTBs must be independent, impartial, technically competent. National accreditation bodies assess QTBs. QTB decisions can be appealed.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "informational",
+                  "operator_action": "Identify available QTBs in your Member State for technical assessment during authorization"
+                }
+              ]
+            },
+            {
+              "number": 3,
+              "name": "QTB Application Procedure",
+              "articles": "37-39",
+              "articles_detail": [
+                {
+                  "number": "37-39",
+                  "title": "Becoming a QTB",
+                  "summary": "Procedures for entities wishing to become QTBs. Not directly relevant for space operators.",
+                  "applies_to": [],
+                  "compliance_type": "informational",
+                  "operator_action": "none"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "II",
+          "name": "Union Level Governance",
+          "articles": "40-57",
+          "sections": [
+            {
+              "number": 1,
+              "name": "EUSPA and Commission Roles",
+              "articles": "40-47",
+              "articles_detail": [
+                {
+                  "number": "40-43",
+                  "title": "EUSPA New Tasks",
+                  "summary": "EUSPA manages URSO, issues e-certificates, supports Commission in authorization/registration, establishes Compliance Board and Board of Appeal, maintains contact list database for high-interest event alerts.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "informational",
+                  "operator_action": "Understand EUSPA as primary interface for registration, certification, and technical assessment"
+                },
+                {
+                  "number": "44-47",
+                  "title": "EUSPA Internal Structures",
+                  "summary": "Compliance Board supports technical assessments. Board of Appeal safeguards defense rights. Registration fees finance new tasks.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "informational",
+                  "operator_action": "Budget for registration fees"
+                }
+              ]
+            },
+            {
+              "number": 2,
+              "name": "Commission/EUSPA Powers over Third Country Operators",
+              "articles": "48-57",
+              "articles_detail": [
+                {
+                  "number": 48,
+                  "title": "Commission Supervision of Third Country Operators",
+                  "summary": "Commission monitors compliance of registered third country operators, supported by EUSPA.",
+                  "applies_to": ["TCO"],
+                  "compliance_type": "ongoing",
+                  "operator_action": "Cooperate with Commission supervision"
+                },
+                {
+                  "number": "49-52",
+                  "title": "Investigation Powers",
+                  "summary": "Commission and EUSPA share wide investigative powers including on-site inspections of both EU and third country operators.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "enforcement",
+                  "operator_action": "Be prepared for potential on-site inspections. Maintain audit trail."
+                },
+                {
+                  "number": "53-55",
+                  "title": "Findings and Corrective Measures",
+                  "summary": "Commission may find infringement and impose corrective measures including suspension/withdrawal of authorization.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "enforcement",
+                  "operator_action": "Maintain compliance to avoid corrective measures"
+                },
+                {
+                  "number": "56-57",
+                  "title": "Fines and Periodic Penalty Payments",
+                  "summary": "Commission may impose administrative fines (up to 2% global turnover or twice profit/losses) and periodic penalty payments. Right to be heard. Court of Justice has unlimited jurisdiction on appeal.",
+                  "applies_to": ["ALL"],
+                  "compliance_type": "enforcement",
+                  "operator_action": "Maintain compliance. Budget for compliance costs significantly lower than potential fines."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "IV",
+      "name": "Technical Requirements",
+      "articles": "58-104",
+      "caelex_module": "multiple_modules",
+      "summary": "Core technical obligations: safety/sustainability (Ch. I), resilience (Ch. II), environmental sustainability (Ch. III), ISOS (Ch. IV), orbital traffic (Ch. V), standards (Ch. VI)",
+      "chapters": [
+        {
+          "number": "I",
+          "name": "Safety and Sustainability in Space",
+          "articles": "58-73",
+          "caelex_module": "debris_mitigation_planner",
+          "sections": [
+            {
+              "number": 1,
+              "name": "Launchers",
+              "articles": "58-62",
+              "articles_detail": [
+                {
+                  "number": 58,
+                  "title": "Launch Safety Plan",
+                  "summary": "Launch operators must submit Launch Safety Plan to NCA. Coordinate with air traffic and maritime authorities. Mitigate collision risk during launch and re-entry.",
+                  "applies_to": ["LO"],
+                  "compliance_type": "mandatory_pre_activity",
+                  "operator_action": "Prepare and submit Launch Safety Plan",
+                  "required_documents": [
+                    "Launch Safety Plan",
+                    "Air/maritime coordination plan",
+                    "Collision risk assessment for launch/re-entry"
+                  ]
+                },
+                {
+                  "number": 59,
+                  "title": "Flight Safety Systems",
+                  "summary": "Launch operators required to install flight safety systems on launch vehicles.",
+                  "applies_to": ["LO"],
+                  "compliance_type": "design_requirement",
+                  "operator_action": "Install required flight safety systems"
+                },
+                {
+                  "number": "60-61",
+                  "title": "Launch Debris Control",
+                  "summary": "Implement space debris control measures during launch. Collision avoidance windows and casualty risk thresholds per Commission implementing acts.",
+                  "applies_to": ["LO"],
+                  "compliance_type": "design_and_operational",
+                  "operator_action": "Implement debris control measures, calculate collision avoidance windows"
+                },
+                {
+                  "number": 62,
+                  "title": "Re-entry Safety",
+                  "summary": "Ensure safe re-entry of launch vehicle stages. Coordinate re-entry with authorities.",
+                  "applies_to": ["LO"],
+                  "compliance_type": "operational",
+                  "operator_action": "Plan and coordinate safe re-entry"
+                }
+              ]
+            },
+            {
+              "number": 2,
+              "name": "Spacecraft",
+              "articles": "63-73",
+              "articles_detail": [
+                {
+                  "number": 63,
+                  "title": "Trackability",
+                  "summary": "Spacecraft operators must ensure all spacecraft are trackable (detectable by ground-based or space-based sensors).",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "design_requirement",
+                  "operator_action": "Ensure spacecraft design meets trackability requirements"
+                },
+                {
+                  "number": 64,
+                  "title": "Collision Avoidance Service Subscription",
+                  "summary": "Spacecraft operators must subscribe to collision avoidance services for the duration of their mission.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "mandatory_operational",
+                  "operator_action": "Subscribe to collision avoidance service (EUSST or commercial provider)",
+                  "ongoing_cost": true
+                },
+                {
+                  "number": 65,
+                  "title": "Re-entry Coordination (Spacecraft)",
+                  "summary": "Coordinate spacecraft re-entry with relevant authorities.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "operational",
+                  "operator_action": "Plan and coordinate end-of-life re-entry"
+                },
+                {
+                  "number": 66,
+                  "title": "Manoeuvrability Requirements",
+                  "summary": "Maintain minimum level of manoeuvrability for collision avoidance.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "design_and_operational",
+                  "operator_action": "Ensure spacecraft has required maneuvering capability"
+                },
+                {
+                  "number": 67,
+                  "title": "Space Debris Mitigation Plan",
+                  "summary": "Draw up comprehensive space debris mitigation plan covering collision avoidance, end-of-life disposal, fragmentation avoidance, passivation. Submit as part of authorization.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "mandatory_pre_activity",
+                  "operator_action": "Prepare and submit debris mitigation plan",
+                  "required_documents": ["Debris Mitigation Plan"],
+                  "plan_must_cover": [
+                    "Collision avoidance strategy",
+                    "End-of-life disposal plan (controlled re-entry or graveyard orbit)",
+                    "Fragmentation avoidance measures",
+                    "Passivation procedures",
+                    "25-year deorbit compliance verification"
+                  ]
+                },
+                {
+                  "number": 68,
+                  "title": "Light and Radio Pollution Mitigation",
+                  "summary": "Operators must develop pollution mitigation plan for night sky visibility and radio astronomy protection. Visual magnitude must remain at or above 7 throughout operational lifetime.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "design_and_operational",
+                  "operator_action": "Develop light/radio pollution mitigation plan",
+                  "note": "Enhanced obligations for large constellations (100+ satellites)"
+                },
+                {
+                  "number": "69-70",
+                  "title": "Large Constellation Additional Requirements",
+                  "summary": "Additional safety and debris mitigation standards for large constellations. Enhanced collision avoidance, comprehensive debris management.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "conditional_mandatory",
+                  "operator_action": "Additional compliance requirements if operating large constellation",
+                  "decision_logic": {
+                    "questions": [
+                      {
+                        "id": "lc_q1",
+                        "question": "How many satellites are in your constellation?",
+                        "if_100_plus": "Subject to additional large constellation requirements (Art. 69-70)",
+                        "if_under_100": "Standard spacecraft requirements apply"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "number": 71,
+                  "title": "Mission Extension",
+                  "summary": "Operators may request mission extensions if continuing to satisfy end-of-life and debris requirements.",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "optional",
+                  "operator_action": "Apply for mission extension if needed"
+                },
+                {
+                  "number": 72,
+                  "title": "End-of-Life Requirements",
+                  "summary": "Detailed disposal requirements: controlled re-entry or transfer to graveyard orbit. Deorbit within 25 years (or 5 years for LEO under emerging standards).",
+                  "applies_to": ["SCO"],
+                  "compliance_type": "mandatory_operational",
+                  "operator_action": "Plan and execute compliant end-of-life disposal"
+                },
+                {
+                  "number": 73,
+                  "title": "Supply Chain Design/Manufacturing Compliance",
+                  "summary": "Operators must ensure that suppliers and manufacturers comply with design and manufacturing requirements of this chapter.",
+                  "applies_to": ["SCO", "LO"],
+                  "compliance_type": "supply_chain",
+                  "operator_action": "Implement supply chain compliance verification process"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": "II",
+          "name": "Resilience of Space Infrastructure",
+          "articles": "74-95",
+          "caelex_module": "cybersecurity_compliance",
+          "articles_detail": [
+            {
+              "number": "74-75",
+              "title": "General Principles and NIS2 Relationship",
+              "summary": "Comprehensive risk management for all space infrastructure. EU Space Act is lex specialis over NIS2 for space operators classified as essential/important entities. Avoids duplication.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "framework",
+              "operator_action": "Understand relationship between EU Space Act resilience requirements and NIS2",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "nis2_q1",
+                    "question": "Are you already classified as an essential or important entity under NIS2?",
+                    "if_yes": "EU Space Act Ch. II requirements replace NIS2 Art. 21 requirements (lex specialis)",
+                    "if_no": "EU Space Act Ch. II requirements apply independently"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 76,
+              "title": "Risk Management Obligation",
+              "summary": "All-hazard risk management throughout entire space mission lifecycle (design, manufacturing, launch, operation, disposal). Covers digital and physical threats. Proportionate to operator size and risk profile.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Implement comprehensive risk management framework"
+            },
+            {
+              "number": "77-78",
+              "title": "Risk Assessment Requirements",
+              "summary": "Identify vulnerabilities, implement remediation measures, adapt risk scenarios to each mission. Assess risks to critical assets and functions.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Conduct regular risk assessments",
+              "required_documents": ["Risk Assessment Report"]
+            },
+            {
+              "number": "79-82",
+              "title": "Information Security and Access Control",
+              "summary": "Establish information security management policies. Strict access control rights. Physical protection of space assets. Cryptography implementation.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Implement information security policies, access control, cryptography"
+            },
+            {
+              "number": "83-85",
+              "title": "Detection, Monitoring, and Incident Response",
+              "summary": "Incident detection and monitoring capabilities. Backup protocols. Comprehensive business continuity policies and response/recovery plans.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Implement incident detection, backup, and business continuity",
+              "required_documents": [
+                "Business Continuity Plan",
+                "Incident Response Plan"
+              ]
+            },
+            {
+              "number": "86-88",
+              "title": "Simplified Risk Management Regime",
+              "summary": "Lighter measures for operators subject to simplified regime (small enterprises, research institutions). Must still ensure resilience of critical assets/functions. Annex VII point 9 specifies simplified requirements.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "conditional_simplification",
+              "operator_action": "If eligible for light regime, apply simplified risk management per Annex VII",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "srm_q1",
+                    "question": "Are you eligible for a light regime under Art. 10?",
+                    "if_yes": "Apply simplified risk management (Annex VII point 9). Focus on: (1) loss of control over propulsion-equipped assets, (2) loss of control over interference-capable assets",
+                    "if_no": "Full risk management framework required"
+                  }
+                ]
+              }
+            },
+            {
+              "number": "89-92",
+              "title": "Incident Reporting",
+              "summary": "Union space operators must report significant incidents to NCA/EUSPA. Strict timelines for reporting. Operators of Union-owned assets report to EUSPA directly.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Establish incident reporting procedures, ensure deadline compliance",
+              "deadlines": "Reporting within strict timelines (specific timelines to be set in implementing acts)"
+            },
+            {
+              "number": "93-95",
+              "title": "Union Space Resilience Network (EUSRN)",
+              "summary": "EUSRN facilitates cooperation between Commission, EUSPA, and NCAs. Monitors/handles significant cyber incidents. Aligns with broader EU cybersecurity frameworks.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "participation",
+              "operator_action": "Participate in EUSRN as required, share information on incidents"
+            }
+          ]
+        },
+        {
+          "number": "III",
+          "name": "Environmental Sustainability",
+          "articles": "96-100",
+          "caelex_module": "environmental_footprint_calculator",
+          "articles_detail": [
+            {
+              "number": 96,
+              "title": "Environmental Footprint (EF) Calculation Obligation",
+              "summary": "Space operators must calculate environmental footprint throughout space mission lifecycle: design, manufacturing, operations, end-of-life. Unless meeting conditions for exemption.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Calculate environmental footprint using LCA methodology",
+              "estimated_cost": "€4,000-8,000 (Commission estimate for product environmental footprint rules)",
+              "decision_logic": {
+                "questions": [
+                  {
+                    "id": "ef_q1",
+                    "question": "Are you a small-sized enterprise or research institution?",
+                    "if_yes": "EFD obligation delayed until January 1, 2032 (2-year additional transition)",
+                    "if_no": "EFD required from January 1, 2030"
+                  },
+                  {
+                    "id": "ef_q2",
+                    "question": "Does your mission meet the conditions for EF exemption?",
+                    "if_yes": "Exemption applies (specific conditions TBD via delegated acts)",
+                    "if_no": "Full EFD required"
+                  }
+                ]
+              }
+            },
+            {
+              "number": 97,
+              "title": "Environmental Footprint Declaration (EFD)",
+              "summary": "Submit EFD as part of authorization application. Must include supporting EF studies and data. Verified through EF certificate issued by QTB.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_pre_activity",
+              "operator_action": "Prepare EFD, obtain EF certificate from QTB, submit with authorization application",
+              "required_documents": [
+                "Environmental Footprint Declaration",
+                "EF studies/data",
+                "EF certificate from QTB"
+              ],
+              "lca_scope": [
+                "Design phase: material selection, component sourcing",
+                "Manufacturing: production processes, emissions, waste",
+                "Launch: propellant type, launch vehicle emissions, ground operations",
+                "Operations: station-keeping, power consumption, ground segment energy",
+                "End-of-life: de-orbiting fuel, re-entry emissions, debris potential"
+              ]
+            },
+            {
+              "number": 98,
+              "title": "LCA Methodology",
+              "summary": "Commission will develop space-specific LCA methodology (building on Product Environmental Footprint approach). Currently underdeveloped. Delegated acts to specify.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "methodology_reference",
+              "operator_action": "Monitor development of space-specific LCA methodology",
+              "note": "CRITICAL FOR CAELEX: Early implementation of LCA methodology in software creates strong competitive advantage. Commission acknowledges methodologies are 'underdeveloped'."
+            },
+            {
+              "number": 99,
+              "title": "Supplier Data Requirements",
+              "summary": "Operators must obtain all relevant environmental data from their suppliers for EF calculation.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "supply_chain",
+              "operator_action": "Require environmental data from all suppliers in supply chain"
+            },
+            {
+              "number": 100,
+              "title": "EF Database Submission",
+              "summary": "Operators send aggregated and disaggregated EF datasets to Commission for inclusion in EU environmental footprint database. Must keep data up to date.",
+              "applies_to": ["SCO", "LO", "LSO", "ISOS"],
+              "compliance_type": "mandatory_ongoing",
+              "operator_action": "Submit EF data to Commission database, maintain current data"
+            }
+          ]
+        },
+        {
+          "number": "IV",
+          "name": "In-Space Operations and Services (ISOS)",
+          "articles": "101",
+          "caelex_module": "compliance_dashboard",
+          "articles_detail": [
+            {
+              "number": 101,
+              "title": "ISOS Requirements",
+              "summary": "Spacecraft shall be equipped to receive in-space servicing via dedicated interfaces. Commission will detail design principles. May set debris-removal conditions for threatening objects.",
+              "applies_to": ["SCO", "ISOS"],
+              "compliance_type": "design_requirement",
+              "operator_action": "Design spacecraft with servicing interfaces per Commission specifications",
+              "note": "Requirement details to come via implementing acts. Important for future-proofing spacecraft design."
+            }
+          ]
+        },
+        {
+          "number": "V",
+          "name": "Orbital Traffic Rules",
+          "articles": "102-103",
+          "caelex_module": "compliance_dashboard",
+          "articles_detail": [
+            {
+              "number": 102,
+              "title": "Collision Avoidance Manoeuvre Rules",
+              "summary": "Rules for how collision avoidance maneuvers should be carried out under high-interest event alerts.",
+              "applies_to": ["SCO"],
+              "compliance_type": "mandatory_operational",
+              "operator_action": "Implement collision avoidance procedures per orbital traffic rules"
+            },
+            {
+              "number": 103,
+              "title": "Right of Way Rules",
+              "summary": "Introduces right-of-way approach for resolving collisions between multiple maneuverable spacecraft. Designed to prevent ambiguity in collision scenarios.",
+              "applies_to": ["SCO"],
+              "compliance_type": "mandatory_operational",
+              "operator_action": "Understand and follow right-of-way rules in conjunction events"
+            }
+          ]
+        },
+        {
+          "number": "VI",
+          "name": "Standards and Common Specifications",
+          "articles": "104",
+          "caelex_module": "regulatory_intelligence",
+          "articles_detail": [
+            {
+              "number": 104,
+              "title": "Technical Standards",
+              "summary": "Commission may request European standardization organizations to draft standards. Commission may adopt implementing acts for common specifications where standards are insufficient.",
+              "applies_to": ["ALL"],
+              "compliance_type": "ongoing_monitoring",
+              "operator_action": "Monitor and implement new technical standards as they are published",
+              "note": "CRITICAL FOR CAELEX: Standards will evolve continuously. Regulatory intelligence feed must track all new standards, implementing acts, and delegated acts."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "V",
+      "name": "Equivalence, International Agreements, International Organizations",
+      "articles": "105-108",
+      "caelex_module": "authorization_workflow",
+      "summary": "Equivalence decisions for third country operators and rules for international organizations",
+      "articles_detail": [
+        {
+          "number": 105,
+          "title": "Equivalence Decisions",
+          "summary": "Commission may adopt equivalence decisions recognizing that a third country's regulatory framework provides equivalent level of protection. Third country operators with equivalence benefit are presumed compliant.",
+          "applies_to": ["TCO"],
+          "compliance_type": "conditional_simplification",
+          "operator_action": "Check if equivalence decision exists for your country",
+          "decision_logic": {
+            "questions": [
+              {
+                "id": "eq_q1",
+                "question": "Has the Commission adopted an equivalence decision for your country of establishment?",
+                "if_yes": "Presumed compliant with technical requirements. Simplified registration.",
+                "if_no": "Must independently demonstrate compliance with all technical requirements."
+              }
+            ]
+          }
+        },
+        {
+          "number": "106-108",
+          "title": "International Agreements and Organizations",
+          "summary": "Framework for agreements with international organizations operating Union-owned assets. Rules for international organization compliance.",
+          "applies_to": ["TCO"],
+          "compliance_type": "informational",
+          "operator_action": "If international organization: check specific provisions"
+        }
+      ]
+    },
+    {
+      "number": "VI",
+      "name": "Supporting Measures",
+      "articles": "109-113",
+      "caelex_module": "compliance_dashboard",
+      "summary": "Support for compliance implementation (Ch. I) and voluntary Union Space Label (Ch. II)",
+      "chapters": [
+        {
+          "number": "I",
+          "name": "Supporting Measures",
+          "articles": "109-111",
+          "articles_detail": [
+            {
+              "number": 109,
+              "title": "Capacity Building",
+              "summary": "Commission supports capacity building: guidance materials, information portals, vouchers for expert assistance.",
+              "applies_to": ["ALL"],
+              "compliance_type": "support_available",
+              "operator_action": "Take advantage of Commission capacity-building resources"
+            },
+            {
+              "number": 110,
+              "title": "Technical Assistance",
+              "summary": "Pool of independent experts to support space operators in compiling technical dossiers. Especially valuable for startups and SMEs.",
+              "applies_to": ["ALL"],
+              "compliance_type": "support_available",
+              "operator_action": "Request technical assistance from expert pool if needed"
+            },
+            {
+              "number": 111,
+              "title": "Digital Solution / Information Portal",
+              "summary": "Commission funds one-stop information portal for compliance guidance.",
+              "applies_to": ["ALL"],
+              "compliance_type": "support_available",
+              "operator_action": "Use information portal for compliance guidance",
+              "note": "CAELEX OPPORTUNITY: Position as complement to (not replacement for) official portal. Caelex provides actionable workflow; portal provides official guidance."
+            }
+          ]
+        },
+        {
+          "number": "II",
+          "name": "Union Space Label",
+          "articles": "112-113",
+          "articles_detail": [
+            {
+              "number": "112-113",
+              "title": "Union Space Label Framework",
+              "summary": "Voluntary label for operators meeting HIGHER requirements on safety, resilience, sustainability beyond mandatory minimums. Enhances market reputation.",
+              "applies_to": ["ALL"],
+              "compliance_type": "voluntary",
+              "operator_action": "Consider applying for Union Space Label to demonstrate excellence",
+              "note": "CAELEX FUTURE FEATURE: Help operators achieve Union Space Label as premium service"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VII",
+      "name": "Final Provisions",
+      "articles": "114-119",
+      "caelex_module": "regulatory_intelligence",
+      "summary": "Delegated/implementing acts, professional secrecy, application dates",
+      "articles_detail": [
+        {
+          "number": "114-116",
+          "title": "Delegated and Implementing Acts",
+          "summary": "Commission empowered to adopt delegated acts (specifying technical details) and implementing acts (common specifications, procedures) throughout implementation.",
+          "applies_to": ["ALL"],
+          "compliance_type": "ongoing_monitoring",
+          "operator_action": "Monitor all delegated and implementing acts for changes to requirements",
+          "note": "CRITICAL FOR CAELEX: Continuous stream of regulatory updates = continuous product updates = subscription retention"
+        },
+        {
+          "number": 117,
+          "title": "Professional Secrecy",
+          "summary": "Confidentiality obligations for authorities and bodies processing information under the Regulation.",
+          "applies_to": ["ALL"],
+          "compliance_type": "informational",
+          "operator_action": "Understand confidentiality protections for submitted data"
+        },
+        {
+          "number": 118,
+          "title": "Review",
+          "summary": "Comprehensive evaluation 5 years after entry into force.",
+          "applies_to": ["ALL"],
+          "compliance_type": "informational",
+          "operator_action": "none"
+        },
+        {
+          "number": 119,
+          "title": "Entry into Force and Application",
+          "summary": "Regulation applies from January 1, 2030. Two-year transitional period for substantive obligations. Small enterprises: additional 2-year transition for EFD (until 2032).",
+          "applies_to": ["ALL"],
+          "compliance_type": "timeline",
+          "key_dates": {
+            "application_date": "2030-01-01",
+            "transitional_period_end": "2031-12-31",
+            "sme_efd_deadline": "2031-12-31",
+            "five_year_review": "2035-01-01"
+          }
+        }
+      ]
+    }
+  ],
+
+  "decision_tree": {
+    "step_1_scope": {
+      "question": "Do you operate spacecraft, launch vehicles, launch sites, provide in-space services, collision avoidance services, or space-based data?",
+      "if_no": "EU Space Act does not apply to you.",
+      "if_yes": "Proceed to Step 2"
+    },
+    "step_2_defense_exclusion": {
+      "question": "Are your space objects used EXCLUSIVELY for defense or national security?",
+      "if_yes": "Excluded from scope (Art. 2(3)(a)). However, dual-use assets may still be covered.",
+      "if_no": "Proceed to Step 3"
+    },
+    "step_3_pre2030_assets": {
+      "question": "Were all your assets launched before January 1, 2030?",
+      "if_yes": "Pre-existing assets excluded (Art. 2(3)(d)). New assets launched after 2030 ARE in scope.",
+      "if_no": "Proceed to Step 4"
+    },
+    "step_4_operator_type": {
+      "question": "What is your primary operator type?",
+      "options": {
+        "spacecraft_operator": "Proceed to Step 5a",
+        "launch_operator": "Proceed to Step 5b",
+        "launch_site_operator": "Proceed to Step 5c",
+        "isos_provider": "Proceed to Step 5d",
+        "collision_avoidance_provider": "Proceed to Step 5e",
+        "primary_data_provider": "Proceed to Step 5f"
+      }
+    },
+    "step_5_eu_or_third_country": {
+      "question": "Are you established in the EU (or controlled by an EU-established entity)?",
+      "if_yes": "Union space operator: Authorization required (Title II, Ch. I)",
+      "if_no": "Third country operator: Registration required (Title II, Ch. III). Must designate EU legal representative."
+    },
+    "step_6_size_assessment": {
+      "question": "What is your entity size?",
+      "options": {
+        "small_enterprise": "Eligible for light regime (Art. 10): simplified resilience + EFD delayed to 2032. Safety obligations remain FULL.",
+        "research_education": "Eligible for light regime (Art. 10): similar to small enterprise.",
+        "medium_enterprise": "Some proportionality provisions but NOT eligible for light regime.",
+        "large_enterprise": "Full compliance required across all pillars."
+      }
+    },
+    "step_7_constellation": {
+      "question": "Do you operate a satellite constellation?",
+      "if_no": "Standard single-satellite requirements apply.",
+      "if_yes": {
+        "question": "How many satellites?",
+        "options": {
+          "2-9": "Standard requirements, simplified authorization if identical design",
+          "10-99": "Additional debris mitigation requirements",
+          "100-999": "Large constellation: enhanced debris + pollution mitigation mandatory",
+          "1000+": "Mega constellation: full enhanced requirements"
+        }
+      }
+    },
+    "step_8_orbit": {
+      "question": "What orbit do your assets operate in?",
+      "options": {
+        "LEO": "Full Title IV applies (all chapters)",
+        "MEO": "Full Title IV applies",
+        "GEO": "Full Title IV applies",
+        "Beyond_GEO": "Title IV Ch. I and V do NOT apply (Art. 2(2)). Ch. II (resilience) and Ch. III (environmental) still apply."
+      }
+    }
+  },
+
+  "compliance_checklist_by_operator_type": {
+    "spacecraft_operator_eu": {
+      "pre_authorization": [
+        {
+          "requirement": "Determine applicable NCA",
+          "articles": "28-29",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Prepare technical file",
+          "articles": "7",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Prepare debris mitigation plan",
+          "articles": "67",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Prepare environmental footprint declaration (EFD)",
+          "articles": "96-97",
+          "module": "efd_calculator"
+        },
+        {
+          "requirement": "Conduct cybersecurity risk assessment",
+          "articles": "76-78",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Prepare business continuity plan",
+          "articles": "83-85",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Ensure spacecraft trackability design",
+          "articles": "63",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Ensure manoeuvrability requirements met",
+          "articles": "66",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Prepare light/radio pollution plan (if constellation 100+)",
+          "articles": "68",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Ensure ISOS interface design",
+          "articles": "101",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Obtain EF certificate from QTB",
+          "articles": "97",
+          "module": "efd_calculator"
+        },
+        {
+          "requirement": "Submit authorization application",
+          "articles": "7",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Subscribe to collision avoidance service",
+          "articles": "64",
+          "module": "compliance_dashboard"
+        }
+      ],
+      "ongoing": [
+        {
+          "requirement": "Maintain risk management framework",
+          "articles": "76",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Regular risk assessments",
+          "articles": "77-78",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Incident reporting within deadlines",
+          "articles": "89-92",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Follow collision avoidance procedures",
+          "articles": "102-103",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Follow right-of-way rules",
+          "articles": "103",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Keep URSO data current",
+          "articles": "24",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Keep EF data current in database",
+          "articles": "100",
+          "module": "efd_calculator"
+        },
+        {
+          "requirement": "Monitor delegated/implementing acts",
+          "articles": "114-116",
+          "module": "regulatory_intelligence"
+        },
+        {
+          "requirement": "Supply chain compliance verification",
+          "articles": "73, 99",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Cooperate with NCA supervision/inspections",
+          "articles": "29, 49-52",
+          "module": "compliance_dashboard"
+        }
+      ],
+      "end_of_life": [
+        {
+          "requirement": "Execute disposal per debris mitigation plan",
+          "articles": "72",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Coordinate re-entry with authorities",
+          "articles": "65",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Passivation procedures",
+          "articles": "67",
+          "module": "debris_mitigation_planner"
+        }
+      ]
+    },
+    "launch_operator_eu": {
+      "pre_authorization": [
+        {
+          "requirement": "Submit Launch Safety Plan",
+          "articles": "58",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Install flight safety systems",
+          "articles": "59",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Implement debris control measures",
+          "articles": "60-61",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Prepare EFD",
+          "articles": "96-97",
+          "module": "efd_calculator"
+        },
+        {
+          "requirement": "Cybersecurity risk assessment",
+          "articles": "76-78",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Business continuity plan",
+          "articles": "83-85",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Obtain authorization from NCA",
+          "articles": "6-8",
+          "module": "authorization_workflow"
+        }
+      ],
+      "operational": [
+        {
+          "requirement": "Coordinate with air traffic/maritime for each launch",
+          "articles": "58",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Maintain risk management",
+          "articles": "76",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Incident reporting",
+          "articles": "89-92",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Safe re-entry of stages",
+          "articles": "62",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Monitor regulatory updates",
+          "articles": "114-116",
+          "module": "regulatory_intelligence"
+        }
+      ]
+    },
+    "third_country_operator": {
+      "pre_registration": [
+        {
+          "requirement": "Designate EU legal representative",
+          "articles": "16",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Check for equivalence decision",
+          "articles": "105",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Demonstrate compliance with Title IV technical requirements",
+          "articles": "14-15",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Prepare EFD",
+          "articles": "96-97",
+          "module": "efd_calculator"
+        },
+        {
+          "requirement": "Cybersecurity risk assessment",
+          "articles": "76-78",
+          "module": "cybersecurity_compliance"
+        },
+        {
+          "requirement": "Debris mitigation plan",
+          "articles": "67",
+          "module": "debris_mitigation_planner"
+        },
+        {
+          "requirement": "Apply for URSO registration",
+          "articles": "14-15",
+          "module": "authorization_workflow"
+        },
+        {
+          "requirement": "Obtain e-certificate from EUSPA",
+          "articles": "25",
+          "module": "authorization_workflow"
+        }
+      ],
+      "ongoing": [
+        {
+          "requirement": "Include e-certificate in all EU service contracts",
+          "articles": "26",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Cooperate with Commission supervision",
+          "articles": "48",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Be prepared for on-site inspections",
+          "articles": "49-52",
+          "module": "compliance_dashboard"
+        },
+        {
+          "requirement": "Maintain all technical compliance",
+          "articles": "Title IV",
+          "module": "all"
+        },
+        {
+          "requirement": "Monitor regulatory updates",
+          "articles": "114-116",
+          "module": "regulatory_intelligence"
+        }
+      ]
+    }
+  },
+
+  "annexes": [
+    {
+      "number": "I",
+      "title": "Information for Authorization Application",
+      "relevant_modules": ["authorization_workflow"]
+    },
+    {
+      "number": "II",
+      "title": "Technical Requirements for Launch Safety",
+      "relevant_modules": ["debris_mitigation_planner"]
+    },
+    {
+      "number": "III",
+      "title": "Technical Requirements for Spacecraft",
+      "relevant_modules": ["debris_mitigation_planner"]
+    },
+    {
+      "number": "IV",
+      "title": "Debris Mitigation Standards",
+      "relevant_modules": ["debris_mitigation_planner"]
+    },
+    {
+      "number": "V",
+      "title": "Environmental Footprint Methodology",
+      "relevant_modules": ["efd_calculator"]
+    },
+    {
+      "number": "VI",
+      "title": "Cybersecurity Risk Assessment Framework",
+      "relevant_modules": ["cybersecurity_compliance"]
+    },
+    {
+      "number": "VII",
+      "title": "Simplified Risk Management Requirements",
+      "relevant_modules": ["cybersecurity_compliance"]
+    },
+    {
+      "number": "VIII",
+      "title": "QTB Requirements",
+      "relevant_modules": ["authorization_workflow"]
+    },
+    {
+      "number": "IX",
+      "title": "Union Space Label Criteria",
+      "relevant_modules": ["compliance_dashboard"]
+    },
+    {
+      "number": "X",
+      "title": "Constellation Categories and Thresholds",
+      "relevant_modules": ["debris_mitigation_planner"]
+    }
+  ]
+}
