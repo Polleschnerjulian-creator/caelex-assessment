@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement } from "react";
+import { jsPDF } from "jspdf";
 import {
   ComplianceResult,
   ModuleStatus,
@@ -8,16 +8,13 @@ import {
   KeyDate,
 } from "./types";
 
-// Lazy-load @react-pdf/renderer to avoid SSR/bundling issues
-// The library is only needed when the user actually clicks "Download PDF"
-let pdfModule: typeof import("@react-pdf/renderer") | null = null;
-
-async function getPdfModule() {
-  if (!pdfModule) {
-    pdfModule = await import("@react-pdf/renderer");
-  }
-  return pdfModule;
-}
+// Colors
+const BLUE = "#3B82F6";
+const DARK = "#0F172A";
+const GRAY = "#64748B";
+const LIGHT_GRAY = "#94A3B8";
+const BG_LIGHT = "#F8FAFC";
+const WHITE = "#ffffff";
 
 // Status colors for module badges
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -27,518 +24,422 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   not_applicable: { bg: "#F1F5F9", text: "#64748B" },
 };
 
+// Helper to convert hex to RGB
+function hexToRgb(hex: string): [number, number, number] {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16),
+      ]
+    : [0, 0, 0];
+}
+
+// Helper to set text color from hex
+function setColor(doc: jsPDF, hex: string) {
+  const [r, g, b] = hexToRgb(hex);
+  doc.setTextColor(r, g, b);
+}
+
+// Helper to set fill color from hex
+function setFill(doc: jsPDF, hex: string) {
+  const [r, g, b] = hexToRgb(hex);
+  doc.setFillColor(r, g, b);
+}
+
+// Helper to set draw color from hex
+function setDraw(doc: jsPDF, hex: string) {
+  const [r, g, b] = hexToRgb(hex);
+  doc.setDrawColor(r, g, b);
+}
+
+// Draw a rounded rectangle
+function roundedRect(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  fillHex: string,
+) {
+  setFill(doc, fillHex);
+  doc.roundedRect(x, y, w, h, r, r, "F");
+}
+
+// Page dimensions (A4)
+const PAGE_W = 210;
+const PAGE_H = 297;
+const MARGIN = 25;
+const CONTENT_W = PAGE_W - 2 * MARGIN;
+
 // Function to generate and download PDF
 export async function generatePDF(result: ComplianceResult): Promise<void> {
   try {
-    const { Document, Page, Text, View, StyleSheet, pdf } =
-      await getPdfModule();
-
-    // PDF Styles — using only properties supported by @react-pdf/renderer
-    // No CSS shorthand strings (border, padding multi-value) — use explicit properties
-    const styles = StyleSheet.create({
-      page: {
-        padding: 40,
-        backgroundColor: "#ffffff",
-        fontFamily: "Helvetica",
-      },
-      header: {
-        marginBottom: 30,
-        borderBottomWidth: 2,
-        borderBottomColor: "#3B82F6",
-        paddingBottom: 20,
-      },
-      logo: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#0F172A",
-        marginBottom: 4,
-      },
-      tagline: {
-        fontSize: 10,
-        color: "#64748B",
-      },
-      date: {
-        fontSize: 10,
-        color: "#64748B",
-        marginTop: 8,
-      },
-      title: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#0F172A",
-        marginBottom: 20,
-      },
-      section: {
-        marginBottom: 24,
-      },
-      sectionTitle: {
-        fontSize: 14,
-        fontWeight: "bold",
-        color: "#0F172A",
-        marginBottom: 12,
-        paddingBottom: 6,
-        borderBottomWidth: 1,
-        borderBottomColor: "#E2E8F0",
-      },
-      profileGrid: {
-        flexDirection: "row" as const,
-        flexWrap: "wrap" as const,
-        gap: 12,
-      },
-      profileItem: {
-        width: "48%",
-        backgroundColor: "#F8FAFC",
-        padding: 12,
-        borderRadius: 4,
-        marginBottom: 8,
-      },
-      profileLabel: {
-        fontSize: 9,
-        color: "#64748B",
-        marginBottom: 4,
-        textTransform: "uppercase" as const,
-      },
-      profileValue: {
-        fontSize: 11,
-        color: "#0F172A",
-        fontWeight: "bold",
-      },
-      statsRow: {
-        flexDirection: "row" as const,
-        justifyContent: "space-between" as const,
-        backgroundColor: "#F8FAFC",
-        padding: 16,
-        borderRadius: 4,
-        marginBottom: 16,
-      },
-      statItem: {
-        alignItems: "center" as const,
-      },
-      statValue: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#3B82F6",
-      },
-      statLabel: {
-        fontSize: 9,
-        color: "#64748B",
-        marginTop: 4,
-      },
-      moduleGrid: {
-        flexDirection: "row" as const,
-        flexWrap: "wrap" as const,
-        gap: 8,
-      },
-      moduleItem: {
-        width: "48%",
-        padding: 10,
-        borderRadius: 4,
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-      },
-      moduleName: {
-        fontSize: 10,
-        fontWeight: "bold",
-        color: "#0F172A",
-        marginBottom: 4,
-      },
-      moduleStatus: {
-        fontSize: 8,
-        paddingVertical: 2,
-        paddingHorizontal: 6,
-        borderRadius: 2,
-        marginBottom: 4,
-      },
-      moduleArticles: {
-        fontSize: 8,
-        color: "#64748B",
-      },
-      moduleSummary: {
-        fontSize: 8,
-        color: "#64748B",
-        marginTop: 4,
-      },
-      checklistItem: {
-        flexDirection: "row" as const,
-        marginBottom: 8,
-        paddingBottom: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "#F1F5F9",
-      },
-      checklistNumber: {
-        width: 20,
-        fontSize: 10,
-        color: "#3B82F6",
-        fontWeight: "bold",
-      },
-      checklistContent: {
-        flex: 1,
-      },
-      checklistText: {
-        fontSize: 10,
-        color: "#0F172A",
-        marginBottom: 2,
-      },
-      checklistMeta: {
-        fontSize: 8,
-        color: "#64748B",
-      },
-      dateRow: {
-        flexDirection: "row" as const,
-        marginBottom: 8,
-        paddingLeft: 12,
-      },
-      dateValue: {
-        width: 100,
-        fontSize: 10,
-        fontWeight: "bold",
-        color: "#0F172A",
-      },
-      dateDescription: {
-        flex: 1,
-        fontSize: 10,
-        color: "#64748B",
-      },
-      disclaimer: {
-        marginTop: 30,
-        padding: 12,
-        backgroundColor: "#FEF3C7",
-        borderRadius: 4,
-      },
-      disclaimerText: {
-        fontSize: 8,
-        color: "#92400E",
-        lineHeight: 1.5,
-      },
-      footer: {
-        position: "absolute" as const,
-        bottom: 30,
-        left: 40,
-        right: 40,
-        textAlign: "center" as const,
-      },
-      footerText: {
-        fontSize: 8,
-        color: "#94A3B8",
-      },
-    });
-
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
     const today = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
 
-    // Build the PDF document using createElement
-    const doc = createElement(
-      Document,
-      null,
-      // Page 1: Profile and Stats
-      createElement(
-        Page,
-        { size: "A4", style: styles.page },
-        // Header
-        createElement(
-          View,
-          { style: styles.header },
-          createElement(Text, { style: styles.logo }, "Caelex"),
-          createElement(
-            Text,
-            { style: styles.tagline },
-            "Space Compliance, Simplified",
-          ),
-          createElement(
-            Text,
-            { style: styles.date },
-            `Assessment Date: ${today}`,
-          ),
-        ),
+    let y = MARGIN;
 
-        // Title
-        createElement(
-          Text,
-          { style: styles.title },
-          "EU Space Act Compliance Report",
-        ),
+    // ========================================
+    // PAGE 1: Profile and Stats
+    // ========================================
 
-        // Profile Section
-        createElement(
-          View,
-          { style: styles.section },
-          createElement(
-            Text,
-            { style: styles.sectionTitle },
-            "Compliance Profile",
-          ),
-          createElement(
-            View,
-            { style: styles.profileGrid },
-            ...[
-              { label: "Operator Type", value: result.operatorTypeLabel },
-              { label: "Regulatory Regime", value: result.regimeLabel },
-              { label: "Entity Size", value: result.entitySizeLabel },
-              {
-                label: "Constellation",
-                value: result.constellationTierLabel || "N/A",
-              },
-              { label: "Primary Orbit", value: result.orbitLabel },
-              {
-                label: "EU Market Services",
-                value: result.offersEUServices ? "Yes" : "No",
-              },
-            ].map((item, i) =>
-              createElement(
-                View,
-                { key: `profile-${i}`, style: styles.profileItem },
-                createElement(Text, { style: styles.profileLabel }, item.label),
-                createElement(Text, { style: styles.profileValue }, item.value),
-              ),
-            ),
-          ),
-        ),
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    setColor(doc, DARK);
+    doc.text("Caelex", MARGIN, y);
 
-        // Stats
-        createElement(
-          View,
-          { style: styles.statsRow },
-          createElement(
-            View,
-            { style: styles.statItem },
-            createElement(
-              Text,
-              { style: styles.statValue },
-              String(result.applicableCount),
-            ),
-            createElement(
-              Text,
-              { style: styles.statLabel },
-              "Applicable Articles",
-            ),
-          ),
-          createElement(
-            View,
-            { style: styles.statItem },
-            createElement(
-              Text,
-              { style: styles.statValue },
-              `${result.applicablePercentage}%`,
-            ),
-            createElement(
-              Text,
-              { style: styles.statLabel },
-              "of Total Regulation",
-            ),
-          ),
-          createElement(
-            View,
-            { style: styles.statItem },
-            createElement(
-              Text,
-              { style: styles.statValue },
-              String(result.checklist.length),
-            ),
-            createElement(Text, { style: styles.statLabel }, "Action Items"),
-          ),
-        ),
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    setColor(doc, GRAY);
+    doc.text("Space Compliance, Simplified", MARGIN, y + 7);
 
-        // Authorization Info
-        createElement(
-          View,
-          { style: styles.section },
-          createElement(
-            Text,
-            { style: styles.sectionTitle },
-            "Authorization Information",
-          ),
-          createElement(
-            View,
-            { style: styles.profileGrid },
-            createElement(
-              View,
-              { style: styles.profileItem },
-              createElement(
-                Text,
-                { style: styles.profileLabel },
-                "Authorization Path",
-              ),
-              createElement(
-                Text,
-                { style: styles.profileValue },
-                result.authorizationPath,
-              ),
-            ),
-            createElement(
-              View,
-              { style: styles.profileItem },
-              createElement(
-                Text,
-                { style: styles.profileLabel },
-                "Estimated Cost",
-              ),
-              createElement(
-                Text,
-                { style: styles.profileValue },
-                result.estimatedAuthorizationCost,
-              ),
-            ),
-          ),
-        ),
+    doc.setFontSize(9);
+    doc.text(`Assessment Date: ${today}`, MARGIN, y + 13);
 
-        // Key Dates
-        createElement(
-          View,
-          { style: styles.section },
-          createElement(Text, { style: styles.sectionTitle }, "Key Dates"),
-          ...(result.keyDates || []).map((date: KeyDate, i: number) =>
-            createElement(
-              View,
-              { key: `date-${i}`, style: styles.dateRow },
-              createElement(Text, { style: styles.dateValue }, date.date),
-              createElement(
-                Text,
-                { style: styles.dateDescription },
-                date.description,
-              ),
-            ),
-          ),
-        ),
+    // Blue line under header
+    setDraw(doc, BLUE);
+    doc.setLineWidth(0.5);
+    doc.line(MARGIN, y + 17, PAGE_W - MARGIN, y + 17);
 
-        // Footer
-        createElement(
-          View,
-          { style: styles.footer },
-          createElement(
-            Text,
-            { style: styles.footerText },
-            "Generated by Caelex | caelex.eu",
-          ),
-        ),
-      ),
+    y += 28;
 
-      // Page 2: Modules
-      createElement(
-        Page,
-        { size: "A4", style: styles.page },
-        createElement(Text, { style: styles.title }, "Compliance Modules"),
-        createElement(
-          View,
-          { style: styles.moduleGrid },
-          ...(result.moduleStatuses || []).map(
-            (mod: ModuleStatus, i: number) => {
-              const colors =
-                statusColors[mod.status] || statusColors.not_applicable;
-              return createElement(
-                View,
-                { key: `mod-${i}`, style: styles.moduleItem },
-                createElement(Text, { style: styles.moduleName }, mod.name),
-                createElement(
-                  Text,
-                  {
-                    style: [
-                      styles.moduleStatus,
-                      { backgroundColor: colors.bg, color: colors.text },
-                    ],
-                  },
-                  mod.status.replace("_", " ").toUpperCase(),
-                ),
-                createElement(
-                  Text,
-                  { style: styles.moduleArticles },
-                  `${mod.articleCount} relevant articles`,
-                ),
-                createElement(
-                  Text,
-                  { style: styles.moduleSummary },
-                  mod.summary || "",
-                ),
-              );
-            },
-          ),
-        ),
-        createElement(
-          View,
-          { style: styles.footer },
-          createElement(
-            Text,
-            { style: styles.footerText },
-            "Generated by Caelex | caelex.eu",
-          ),
-        ),
-      ),
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    setColor(doc, DARK);
+    doc.text("EU Space Act Compliance Report", MARGIN, y);
+    y += 14;
 
-      // Page 3: Checklist
-      createElement(
-        Page,
-        { size: "A4", style: styles.page },
-        createElement(Text, { style: styles.title }, "Compliance Checklist"),
-        ...(result.checklist || [])
-          .slice(0, 15)
-          .map((item: ChecklistItem, i: number) =>
-            createElement(
-              View,
-              { key: `check-${i}`, style: styles.checklistItem },
-              createElement(
-                Text,
-                { style: styles.checklistNumber },
-                `${i + 1}.`,
-              ),
-              createElement(
-                View,
-                { style: styles.checklistContent },
-                createElement(
-                  Text,
-                  { style: styles.checklistText },
-                  item.requirement || "",
-                ),
-                createElement(
-                  Text,
-                  { style: styles.checklistMeta },
-                  `Art. ${item.articles || "N/A"} | ${(item.module || "").replace(/_/g, " ")}`,
-                ),
-              ),
-            ),
-          ),
+    // Section: Compliance Profile
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(doc, DARK);
+    doc.text("Compliance Profile", MARGIN, y);
+    y += 2;
+    setDraw(doc, "#E2E8F0");
+    doc.setLineWidth(0.3);
+    doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 6;
 
-        // Disclaimer
-        createElement(
-          View,
-          { style: styles.disclaimer },
-          createElement(
-            Text,
-            { style: styles.disclaimerText },
-            "DISCLAIMER: This assessment is based on the EU Space Act proposal (COM(2025) 335). The regulation is subject to amendments during the legislative process. This does not constitute legal advice. For specific compliance questions, consult a qualified space law professional.",
-          ),
-        ),
+    // Profile grid (2 columns)
+    const profileItems = [
+      { label: "OPERATOR TYPE", value: result.operatorTypeLabel },
+      { label: "REGULATORY REGIME", value: result.regimeLabel },
+      { label: "ENTITY SIZE", value: result.entitySizeLabel },
+      {
+        label: "CONSTELLATION",
+        value: result.constellationTierLabel || "N/A",
+      },
+      { label: "PRIMARY ORBIT", value: result.orbitLabel },
+      {
+        label: "EU MARKET SERVICES",
+        value: result.offersEUServices ? "Yes" : "No",
+      },
+    ];
 
-        createElement(
-          View,
-          { style: styles.footer },
-          createElement(
-            Text,
-            { style: styles.footerText },
-            "Generated by Caelex | caelex.eu",
-          ),
-        ),
-      ),
+    const colW = (CONTENT_W - 4) / 2;
+    for (let i = 0; i < profileItems.length; i += 2) {
+      const left = profileItems[i];
+      const right = profileItems[i + 1];
+
+      // Left card
+      roundedRect(doc, MARGIN, y, colW, 16, 2, BG_LIGHT);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setColor(doc, GRAY);
+      doc.text(left.label, MARGIN + 4, y + 5);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      setColor(doc, DARK);
+      doc.text(left.value, MARGIN + 4, y + 11);
+
+      // Right card
+      if (right) {
+        const rx = MARGIN + colW + 4;
+        roundedRect(doc, rx, y, colW, 16, 2, BG_LIGHT);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        setColor(doc, GRAY);
+        doc.text(right.label, rx + 4, y + 5);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        setColor(doc, DARK);
+        doc.text(right.value, rx + 4, y + 11);
+      }
+
+      y += 20;
+    }
+
+    y += 4;
+
+    // Stats row
+    roundedRect(doc, MARGIN, y, CONTENT_W, 20, 2, BG_LIGHT);
+    const statsData = [
+      { value: String(result.applicableCount), label: "Applicable Articles" },
+      {
+        value: `${result.applicablePercentage}%`,
+        label: "of Total Regulation",
+      },
+      { value: String(result.checklist.length), label: "Action Items" },
+    ];
+
+    const statW = CONTENT_W / 3;
+    statsData.forEach((stat, i) => {
+      const sx = MARGIN + i * statW + statW / 2;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      setColor(doc, BLUE);
+      doc.text(stat.value, sx, y + 10, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setColor(doc, GRAY);
+      doc.text(stat.label, sx, y + 16, { align: "center" });
+    });
+
+    y += 28;
+
+    // Authorization Info
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(doc, DARK);
+    doc.text("Authorization Information", MARGIN, y);
+    y += 2;
+    setDraw(doc, "#E2E8F0");
+    doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 6;
+
+    // Auth grid
+    roundedRect(doc, MARGIN, y, colW, 16, 2, BG_LIGHT);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, GRAY);
+    doc.text("AUTHORIZATION PATH", MARGIN + 4, y + 5);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    setColor(doc, DARK);
+    doc.text(result.authorizationPath, MARGIN + 4, y + 11);
+
+    const rx = MARGIN + colW + 4;
+    roundedRect(doc, rx, y, colW, 16, 2, BG_LIGHT);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, GRAY);
+    doc.text("ESTIMATED COST", rx + 4, y + 5);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    setColor(doc, DARK);
+    doc.text(result.estimatedAuthorizationCost, rx + 4, y + 11);
+
+    y += 24;
+
+    // Key Dates
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    setColor(doc, DARK);
+    doc.text("Key Dates", MARGIN, y);
+    y += 2;
+    setDraw(doc, "#E2E8F0");
+    doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+    y += 6;
+
+    (result.keyDates || []).forEach((date: KeyDate) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      setColor(doc, DARK);
+      doc.text(date.date, MARGIN + 4, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      setColor(doc, GRAY);
+      doc.text(date.description, MARGIN + 40, y);
+      y += 6;
+    });
+
+    // Footer
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, LIGHT_GRAY);
+    doc.text("Generated by Caelex | caelex.eu", PAGE_W / 2, PAGE_H - 15, {
+      align: "center",
+    });
+
+    // ========================================
+    // PAGE 2: Modules
+    // ========================================
+    doc.addPage();
+    y = MARGIN;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    setColor(doc, DARK);
+    doc.text("Compliance Modules", MARGIN, y);
+    y += 12;
+
+    const modules = result.moduleStatuses || [];
+    for (let i = 0; i < modules.length; i += 2) {
+      const leftMod = modules[i];
+      const rightMod = modules[i + 1];
+
+      // Check page break
+      if (y + 35 > PAGE_H - 25) {
+        doc.addPage();
+        y = MARGIN;
+      }
+
+      // Left module card
+      drawModuleCard(doc, MARGIN, y, colW, leftMod);
+
+      // Right module card
+      if (rightMod) {
+        drawModuleCard(doc, MARGIN + colW + 4, y, colW, rightMod);
+      }
+
+      y += 35;
+    }
+
+    // Footer
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, LIGHT_GRAY);
+    doc.text("Generated by Caelex | caelex.eu", PAGE_W / 2, PAGE_H - 15, {
+      align: "center",
+    });
+
+    // ========================================
+    // PAGE 3: Checklist
+    // ========================================
+    doc.addPage();
+    y = MARGIN;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    setColor(doc, DARK);
+    doc.text("Compliance Checklist", MARGIN, y);
+    y += 12;
+
+    const checklistItems = (result.checklist || []).slice(0, 15);
+    checklistItems.forEach((item: ChecklistItem, i: number) => {
+      // Check page break
+      if (y + 14 > PAGE_H - 45) {
+        doc.addPage();
+        y = MARGIN;
+      }
+
+      // Number
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      setColor(doc, BLUE);
+      doc.text(`${i + 1}.`, MARGIN, y);
+
+      // Requirement text (with wrapping)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      setColor(doc, DARK);
+      const lines = doc.splitTextToSize(item.requirement || "", CONTENT_W - 12);
+      doc.text(lines, MARGIN + 10, y);
+
+      y += lines.length * 4 + 1;
+
+      // Meta
+      doc.setFontSize(7);
+      setColor(doc, GRAY);
+      doc.text(
+        `Art. ${item.articles || "N/A"} | ${(item.module || "").replace(/_/g, " ")}`,
+        MARGIN + 10,
+        y,
+      );
+
+      y += 4;
+
+      // Separator line
+      setDraw(doc, "#F1F5F9");
+      doc.setLineWidth(0.2);
+      doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+      y += 4;
+    });
+
+    // Disclaimer
+    y += 6;
+    if (y + 20 > PAGE_H - 25) {
+      doc.addPage();
+      y = MARGIN;
+    }
+
+    roundedRect(doc, MARGIN, y, CONTENT_W, 22, 2, "#FEF3C7");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, "#92400E");
+    const disclaimerText = doc.splitTextToSize(
+      "DISCLAIMER: This assessment is based on the EU Space Act proposal (COM(2025) 335). The regulation is subject to amendments during the legislative process. This does not constitute legal advice. For specific compliance questions, consult a qualified space law professional.",
+      CONTENT_W - 8,
     );
+    doc.text(disclaimerText, MARGIN + 4, y + 5);
 
-    // Generate the PDF blob
-    const blob = await pdf(doc as Parameters<typeof pdf>[0]).toBlob();
+    // Footer
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    setColor(doc, LIGHT_GRAY);
+    doc.text("Generated by Caelex | caelex.eu", PAGE_W / 2, PAGE_H - 15, {
+      align: "center",
+    });
 
-    // Create download link and trigger download
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `caelex-eu-space-act-assessment-${new Date().toISOString().split("T")[0]}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // ========================================
+    // Download
+    // ========================================
+    const filename = `caelex-eu-space-act-assessment-${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(filename);
   } catch (error) {
     console.error("PDF generation error:", error);
     throw new Error(
       `PDF generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
+}
+
+// Draw a single module card
+function drawModuleCard(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  w: number,
+  mod: ModuleStatus,
+) {
+  // Card border
+  setDraw(doc, "#E2E8F0");
+  doc.setLineWidth(0.3);
+  doc.roundedRect(x, y, w, 30, 2, 2, "S");
+
+  // Module name
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  setColor(doc, DARK);
+  doc.text(mod.name, x + 4, y + 6);
+
+  // Status badge
+  const colors = statusColors[mod.status] || statusColors.not_applicable;
+  const statusText = mod.status.replace("_", " ").toUpperCase();
+  const badgeW = doc.getTextWidth(statusText) + 4;
+  roundedRect(doc, x + 4, y + 9, badgeW + 2, 5, 1, colors.bg);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6);
+  setColor(doc, colors.text);
+  doc.text(statusText, x + 6, y + 12.5);
+
+  // Article count
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setColor(doc, GRAY);
+  doc.text(`${mod.articleCount} relevant articles`, x + 4, y + 20);
+
+  // Summary (with wrapping)
+  doc.setFontSize(7);
+  const summaryLines = doc.splitTextToSize(mod.summary || "", w - 8);
+  doc.text(summaryLines.slice(0, 2), x + 4, y + 25);
 }
