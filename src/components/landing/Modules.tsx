@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import Link from "next/link";
 import {
   FileCheck,
   Database,
@@ -16,6 +17,7 @@ import {
 const MODULES = [
   {
     id: "01",
+    slug: "authorization",
     name: "Authorization & Licensing",
     description:
       "Multi-jurisdictional authorization workflow from national to EU-level approval. NCA determination, document checklists, and application tracking.",
@@ -30,6 +32,7 @@ const MODULES = [
   },
   {
     id: "02",
+    slug: "registration",
     name: "Registration & Registry",
     description:
       "URSO registration and Union Register of Space Objects compliance. Automated data validation and submission preparation.",
@@ -44,6 +47,7 @@ const MODULES = [
   },
   {
     id: "03",
+    slug: "environmental",
     name: "Environmental Footprint",
     description:
       "Environmental Footprint Declaration per Annex III methodology. Lifecycle assessment tools and impact calculation.",
@@ -58,6 +62,7 @@ const MODULES = [
   },
   {
     id: "04",
+    slug: "cybersecurity",
     name: "Cybersecurity & Resilience",
     description:
       "NIS2-aligned security framework with risk analysis, maturity scoring, and incident reporting workflows.",
@@ -72,6 +77,7 @@ const MODULES = [
   },
   {
     id: "05",
+    slug: "debris",
     name: "Debris Mitigation & Safety",
     description:
       "Space debris mitigation planning, collision avoidance procedures, and end-of-life disposal compliance.",
@@ -86,6 +92,7 @@ const MODULES = [
   },
   {
     id: "06",
+    slug: "insurance",
     name: "Insurance & Liability",
     description:
       "Third-party liability coverage management and state-backed insurance requirement tracking.",
@@ -100,6 +107,7 @@ const MODULES = [
   },
   {
     id: "07",
+    slug: "supervision",
     name: "Supervision & Reporting",
     description:
       "Ongoing supervisory obligations, incident reporting, and regulatory communication management.",
@@ -114,6 +122,7 @@ const MODULES = [
   },
   {
     id: "08",
+    slug: "regulatory-intelligence",
     name: "Regulatory Intelligence",
     description:
       "Real-time monitoring of delegated acts, implementing decisions, and evolving compliance requirements.",
@@ -149,7 +158,7 @@ export default function Modules() {
           >
             <div>
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4">
-                03 / 05 — Platform
+                07 / 11 — Platform
               </span>
               <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-light tracking-[-0.02em] text-white">
                 Eight modules.
@@ -180,7 +189,10 @@ export default function Modules() {
                   transition={{ duration: 0.5, delay: 0.2 + index * 0.05 }}
                   className="group"
                 >
-                  <div className="h-full bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500">
+                  <Link
+                    href={`/modules/${module.slug}`}
+                    className="block h-full bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
+                  >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-5">
                       <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors">
@@ -228,7 +240,7 @@ export default function Modules() {
                         <span>→</span>
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               );
             })}

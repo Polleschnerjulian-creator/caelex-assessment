@@ -11,6 +11,7 @@ import type {
   NotificationSeverity,
   Prisma,
 } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // ─── Types ───
 
@@ -577,7 +578,7 @@ async function sendNotificationEmail(
     },
   });
 
-  console.log(`[Notification Email] Would send to ${user.email}: ${subject}`);
+  logger.info(`[Notification Email] Would send to ${user.email}: ${subject}`);
 }
 
 // ─── Convenience Functions ───

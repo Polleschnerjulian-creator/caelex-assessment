@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
               className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
-              <span>Zurück</span>
+              <span>Back</span>
             </Link>
           </div>
         </div>
@@ -149,9 +149,11 @@ export default function PrivacyPage() {
                 Website ist:
                 <br />
                 <br />
-                Caelex GmbH
+                Julian Polleschner
                 <br />
-                [Adresse]
+                Am Maselakepark 37
+                <br />
+                13587 Berlin
                 <br />
                 E-Mail: cs@caelex.eu
               </p>

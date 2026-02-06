@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Calendar,
   Clock,
@@ -24,9 +25,11 @@ import {
   Filter,
   Download,
   X,
+  Diamond,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/dashboard/EmptyState";
 import {
   deadlineColors,
   categoryMetadata,
@@ -91,7 +94,464 @@ const categoryIcons: Record<string, React.ReactNode> = {
   CONTRACTUAL: <FileSignature size={16} />,
 };
 
-export default function TimelinePage() {
+// ─── Mission Phase Types ───
+
+interface MissionMilestone {
+  label: string;
+  date: string; // ISO date string
+}
+
+interface MissionPhase {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: "completed" | "active" | "future";
+  color: string;
+  milestones?: MissionMilestone[];
+}
+
+const DEFAULT_MISSION_PHASES: MissionPhase[] = [
+  {
+    id: "design",
+    name: "Design & Development",
+    startDate: "2024-01-01",
+    endDate: "2029-12-31",
+    status: "active",
+    color: "blue",
+    milestones: [
+      { label: "PDR", date: "2025-06-01" },
+      { label: "CDR", date: "2027-01-01" },
+      { label: "FM Delivery", date: "2029-06-01" },
+    ],
+  },
+  {
+    id: "authorization",
+    name: "Authorization",
+    startDate: "2028-01-01",
+    endDate: "2030-06-30",
+    status: "future",
+    color: "amber",
+    milestones: [
+      { label: "Application Submit", date: "2028-06-01" },
+      { label: "Authorization Granted", date: "2030-01-01" },
+    ],
+  },
+  {
+    id: "launch",
+    name: "Launch Campaign",
+    startDate: "2030-01-01",
+    endDate: "2030-12-31",
+    status: "future",
+    color: "purple",
+    milestones: [
+      { label: "Launch Readiness Review", date: "2030-03-01" },
+      { label: "Launch", date: "2030-06-15" },
+    ],
+  },
+  {
+    id: "operations",
+    name: "Operations",
+    startDate: "2030-06-15",
+    endDate: "2045-12-31",
+    status: "future",
+    color: "emerald",
+    milestones: [
+      { label: "IOD Complete", date: "2031-01-01" },
+      { label: "Mid-Life Review", date: "2037-06-01" },
+    ],
+  },
+  {
+    id: "eol",
+    name: "End of Life",
+    startDate: "2045-01-01",
+    endDate: "2050-12-31",
+    status: "future",
+    color: "slate",
+    milestones: [
+      { label: "Deorbit Start", date: "2046-01-01" },
+      { label: "Disposal Complete", date: "2050-06-01" },
+    ],
+  },
+];
+
+// ─── Gantt Component ───
+
+function MissionTimelineGantt() {
+  const [phases] = useState<MissionPhase[]>(DEFAULT_MISSION_PHASES);
+  const [hoveredPhase, setHoveredPhase] = useState<string | null>(null);
+  const [hoveredMilestone, setHoveredMilestone] = useState<string | null>(null);
+
+  // Calculate global time range from all phases
+  const timeRange = useMemo(() => {
+    const starts = phases.map((p) => new Date(p.startDate).getTime());
+    const ends = phases.map((p) => new Date(p.endDate).getTime());
+    const minTime = Math.min(...starts);
+    const maxTime = Math.max(...ends);
+    return { min: minTime, max: maxTime, span: maxTime - minTime };
+  }, [phases]);
+
+  // Generate year labels for the time axis
+  const yearLabels = useMemo(() => {
+    const startYear = new Date(timeRange.min).getFullYear();
+    const endYear = new Date(timeRange.max).getFullYear();
+    const labels: { year: number; offset: number }[] = [];
+    for (let y = startYear; y <= endYear; y++) {
+      const ts = new Date(y, 0, 1).getTime();
+      const offset = ((ts - timeRange.min) / timeRange.span) * 100;
+      labels.push({ year: y, offset: Math.max(0, Math.min(100, offset)) });
+    }
+    return labels;
+  }, [timeRange]);
+
+  // Helper: calculate bar position and width as percentages
+  const getBarStyle = (startDate: string, endDate: string) => {
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    const left = ((start - timeRange.min) / timeRange.span) * 100;
+    const width = ((end - start) / timeRange.span) * 100;
+    return { left: `${left}%`, width: `${Math.max(width, 0.5)}%` };
+  };
+
+  // Helper: calculate milestone position
+  const getMilestoneOffset = (date: string) => {
+    const ts = new Date(date).getTime();
+    return ((ts - timeRange.min) / timeRange.span) * 100;
+  };
+
+  // Color mapping for phases
+  const phaseColors: Record<
+    string,
+    { bar: string; bg: string; text: string; border: string }
+  > = {
+    blue: {
+      bar: "bg-blue-500",
+      bg: "bg-blue-500/10",
+      text: "text-blue-400",
+      border: "border-blue-500/30",
+    },
+    amber: {
+      bar: "bg-amber-500",
+      bg: "bg-amber-500/10",
+      text: "text-amber-400",
+      border: "border-amber-500/30",
+    },
+    purple: {
+      bar: "bg-purple-500",
+      bg: "bg-purple-500/10",
+      text: "text-purple-400",
+      border: "border-purple-500/30",
+    },
+    emerald: {
+      bar: "bg-emerald-500",
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-400",
+      border: "border-emerald-500/30",
+    },
+    slate: {
+      bar: "bg-slate-500",
+      bg: "bg-slate-500/10",
+      text: "text-slate-400",
+      border: "border-slate-500/30",
+    },
+  };
+
+  const statusLabel = (status: MissionPhase["status"]) => {
+    switch (status) {
+      case "completed":
+        return { text: "Completed", cls: "bg-emerald-500/20 text-emerald-400" };
+      case "active":
+        return { text: "Active", cls: "bg-blue-500/20 text-blue-400" };
+      case "future":
+        return { text: "Upcoming", cls: "bg-slate-500/20 text-slate-400" };
+    }
+  };
+
+  // "Today" marker position
+  const todayOffset = useMemo(() => {
+    const now = Date.now();
+    if (now < timeRange.min || now > timeRange.max) return null;
+    return ((now - timeRange.min) / timeRange.span) * 100;
+  }, [timeRange]);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <GanttChartSquare size={20} />
+          Mission Timeline
+        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm">
+            <Download size={14} className="mr-1" />
+            Export
+          </Button>
+          <Button size="sm">
+            <Plus size={14} className="mr-1" />
+            Add Phase
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-slate-500 dark:text-white/50">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-blue-500" />
+            Active
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-emerald-500" />
+            Completed
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-slate-500" />
+            Upcoming
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Diamond size={10} className="text-white/80" />
+            Milestone
+          </div>
+          {todayOffset !== null && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-0.5 h-3 bg-red-500 rounded-full" />
+              Today
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Gantt view */}
+        <div className="hidden md:block">
+          {/* Time axis */}
+          <div className="relative h-8 mb-2 ml-48 border-b border-slate-200 dark:border-white/10">
+            {yearLabels.map(({ year, offset }) => (
+              <div
+                key={year}
+                className="absolute top-0 flex flex-col items-center"
+                style={{ left: `${offset}%` }}
+              >
+                <div className="h-3 w-px bg-slate-300 dark:bg-white/20" />
+                <span className="text-[10px] font-mono text-slate-500 dark:text-white/40 mt-0.5 -translate-x-1/2">
+                  {year}
+                </span>
+              </div>
+            ))}
+            {/* Today marker on axis */}
+            {todayOffset !== null && (
+              <div
+                className="absolute top-0 bottom-0 w-px bg-red-500 z-10"
+                style={{ left: `${todayOffset}%` }}
+              />
+            )}
+          </div>
+
+          {/* Phase rows */}
+          <div className="space-y-2">
+            {phases.map((phase) => {
+              const colors = phaseColors[phase.color] || phaseColors.slate;
+              const bar = getBarStyle(phase.startDate, phase.endDate);
+              const sl = statusLabel(phase.status);
+
+              return (
+                <div
+                  key={phase.id}
+                  className="flex items-center group"
+                  onMouseEnter={() => setHoveredPhase(phase.id)}
+                  onMouseLeave={() => setHoveredPhase(null)}
+                >
+                  {/* Phase label */}
+                  <div className="w-48 flex-shrink-0 pr-4">
+                    <p
+                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-slate-700 dark:text-white/80"}`}
+                    >
+                      {phase.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className={`px-1.5 py-0.5 text-[10px] rounded-full ${sl.cls}`}
+                      >
+                        {sl.text}
+                      </span>
+                      <span className="text-[10px] text-slate-400 dark:text-white/40 font-mono">
+                        {new Date(phase.startDate).getFullYear()}&ndash;
+                        {new Date(phase.endDate).getFullYear()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Gantt bar area */}
+                  <div className="flex-1 relative h-10 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/5">
+                    {/* Year grid lines */}
+                    {yearLabels.map(({ year, offset }) => (
+                      <div
+                        key={year}
+                        className="absolute top-0 bottom-0 w-px bg-slate-100 dark:bg-white/5"
+                        style={{ left: `${offset}%` }}
+                      />
+                    ))}
+
+                    {/* Today marker */}
+                    {todayOffset !== null && (
+                      <div
+                        className="absolute top-0 bottom-0 w-px bg-red-500/60 z-10"
+                        style={{ left: `${todayOffset}%` }}
+                      />
+                    )}
+
+                    {/* Phase bar */}
+                    <div
+                      className={`absolute top-1.5 bottom-1.5 rounded-md ${colors.bar} ${
+                        hoveredPhase === phase.id
+                          ? "opacity-100 shadow-lg"
+                          : "opacity-80"
+                      } transition-all duration-150`}
+                      style={bar}
+                    />
+
+                    {/* Milestones */}
+                    {phase.milestones?.map((ms) => {
+                      const offset = getMilestoneOffset(ms.date);
+                      const msKey = `${phase.id}-${ms.date}`;
+                      return (
+                        <div
+                          key={msKey}
+                          className="absolute top-1/2 -translate-y-1/2 z-20 group/ms"
+                          style={{ left: `${offset}%` }}
+                          onMouseEnter={() => setHoveredMilestone(msKey)}
+                          onMouseLeave={() => setHoveredMilestone(null)}
+                        >
+                          <Diamond
+                            size={12}
+                            className={`-translate-x-1/2 ${
+                              hoveredMilestone === msKey
+                                ? "text-white fill-white"
+                                : "text-white/90 fill-white/90"
+                            } drop-shadow-md transition-all`}
+                          />
+                          {/* Milestone tooltip */}
+                          {hoveredMilestone === msKey && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-900 border border-white/10 rounded-lg shadow-xl text-xs whitespace-nowrap z-30 pointer-events-none">
+                              <p className="font-medium text-white">
+                                {ms.label}
+                              </p>
+                              <p className="text-white/50 font-mono text-[10px] mt-0.5">
+                                {new Date(ms.date).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mobile stacked view */}
+        <div className="md:hidden space-y-3">
+          {phases.map((phase) => {
+            const colors = phaseColors[phase.color] || phaseColors.slate;
+            const sl = statusLabel(phase.status);
+
+            return (
+              <div
+                key={phase.id}
+                className={`rounded-lg border p-3 ${colors.border} ${colors.bg}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {phase.name}
+                  </p>
+                  <span
+                    className={`px-2 py-0.5 text-[10px] rounded-full ${sl.cls}`}
+                  >
+                    {sl.text}
+                  </span>
+                </div>
+
+                {/* Date range */}
+                <p className="text-xs font-mono text-slate-500 dark:text-white/50 mb-2">
+                  {new Date(phase.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  &ndash;{" "}
+                  {new Date(phase.endDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </p>
+
+                {/* Mini progress bar */}
+                <div className="relative h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                  {(() => {
+                    const now = Date.now();
+                    const start = new Date(phase.startDate).getTime();
+                    const end = new Date(phase.endDate).getTime();
+                    const progress = Math.max(
+                      0,
+                      Math.min(100, ((now - start) / (end - start)) * 100),
+                    );
+                    return (
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded-full ${colors.bar}`}
+                        style={{
+                          width: `${phase.status === "future" ? 0 : progress}%`,
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+
+                {/* Milestones list */}
+                {phase.milestones && phase.milestones.length > 0 && (
+                  <div className="space-y-1">
+                    {phase.milestones.map((ms) => (
+                      <div
+                        key={ms.date}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        <Diamond size={8} className={colors.text} />
+                        <span className="text-slate-700 dark:text-white/70">
+                          {ms.label}
+                        </span>
+                        <span className="ml-auto font-mono text-slate-400 dark:text-white/40">
+                          {new Date(ms.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Summary footer */}
+        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-white/40">
+          <span>
+            {phases.length} phases &middot;{" "}
+            {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
+            milestones
+          </span>
+          <span className="font-mono">
+            {new Date(timeRange.min).getFullYear()} &ndash;{" "}
+            {new Date(timeRange.max).getFullYear()}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TimelinePageContent() {
   const [activeStep, setActiveStep] = useState<Step>("overview");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -120,6 +580,7 @@ export default function TimelinePage() {
     if (activeStep === "calendar") {
       fetchCalendarData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStep, currentMonth]);
 
   const fetchData = async () => {
@@ -547,18 +1008,13 @@ export default function TimelinePage() {
                   </CardHeader>
                   <CardContent>
                     {deadlines.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Calendar
-                          size={48}
-                          className="mx-auto text-slate-300 dark:text-white/20 mb-4"
-                        />
-                        <p className="text-slate-500 dark:text-white/60">
-                          No upcoming deadlines
-                        </p>
-                        <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
-                          Click &quot;Add Deadline&quot; to create one
-                        </p>
-                      </div>
+                      <EmptyState
+                        icon={<Calendar size={28} />}
+                        title="No deadlines set"
+                        description="Create your first deadline to start tracking your compliance timeline."
+                        actionLabel="Add Deadline"
+                        onAction={() => setShowDeadlineForm(true)}
+                      />
                     ) : (
                       <div className="space-y-3">
                         {deadlines.map((deadline) => (
@@ -717,44 +1173,7 @@ export default function TimelinePage() {
           )}
 
           {/* Mission Timeline (Gantt) */}
-          {activeStep === "mission-timeline" && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <GanttChartSquare size={20} />
-                  Mission Timeline
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant="secondary" size="sm">
-                    <Download size={14} className="mr-1" />
-                    Export
-                  </Button>
-                  <Button size="sm">
-                    <Plus size={14} className="mr-1" />
-                    Add Phase
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <GanttChartSquare
-                    size={64}
-                    className="mx-auto text-slate-300 dark:text-white/20 mb-4"
-                  />
-                  <p className="text-slate-500 dark:text-white/60">
-                    No mission phases configured
-                  </p>
-                  <p className="text-sm text-slate-400 dark:text-white/40 mt-1 mb-4">
-                    Create mission phases to visualize your timeline
-                  </p>
-                  <Button>
-                    <Plus size={16} className="mr-1" />
-                    Create Mission Phase
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {activeStep === "mission-timeline" && <MissionTimelineGantt />}
 
           {/* Reminders */}
           {activeStep === "reminders" && (
@@ -1006,5 +1425,13 @@ export default function TimelinePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function TimelinePage() {
+  return (
+    <FeatureGate module="timeline">
+      <TimelinePageContent />
+    </FeatureGate>
   );
 }

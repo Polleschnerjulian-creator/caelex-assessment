@@ -97,7 +97,7 @@ function ApplicationFormContent() {
 
   if (submitStatus === "success") {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <main className="dark-section min-h-screen bg-black text-white flex items-center justify-center px-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -127,7 +127,7 @@ function ApplicationFormContent() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -498,7 +498,7 @@ export default function ApplicationPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <main className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
         </main>
       }

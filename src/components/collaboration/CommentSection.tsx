@@ -255,6 +255,7 @@ function CommentInput({
                   className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 text-left"
                 >
                   {user.image ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={user.image}
                       alt=""
@@ -351,6 +352,7 @@ function CommentItem({
       <div className="flex gap-3">
         {/* Avatar */}
         {comment.author.image ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={comment.author.image}
             alt=""

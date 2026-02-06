@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Home, Check } from "lucide-react";
 import Link from "next/link";
-import { AssessmentState, AssessmentAnswers, SpaceActData } from "@/lib/types";
+import {
+  AssessmentState,
+  AssessmentAnswers,
+  SpaceActData,
+  ComplianceResult,
+} from "@/lib/types";
 import {
   QUESTIONS,
   getCurrentQuestion,
@@ -50,6 +55,40 @@ export default function AssessmentWizard() {
 
   const currentQuestion = getCurrentQuestion(state.answers, state.currentStep);
   const totalSteps = getTotalQuestions(state.answers);
+
+  // Compute compliance result when assessment is complete
+  const complianceResult: ComplianceResult | null = useMemo(() => {
+    if (state.isComplete && spaceActData) {
+      return calculateCompliance(state.answers, spaceActData);
+    }
+    return null;
+  }, [state.isComplete, state.answers, spaceActData]);
+
+  // Store assessment results in localStorage for dashboard import
+  useEffect(() => {
+    if (!complianceResult) return;
+    try {
+      localStorage.setItem(
+        "caelex-pending-assessment",
+        JSON.stringify({
+          operatorType: complianceResult.operatorType,
+          regime: complianceResult.regime,
+          entitySize: complianceResult.entitySize,
+          constellationTier: complianceResult.constellationTier,
+          orbit: complianceResult.orbit,
+          isEU: complianceResult.isEU,
+          isThirdCountry: complianceResult.isThirdCountry,
+          applicableArticles: complianceResult.applicableArticles.map(
+            (a) => a.number,
+          ),
+          moduleStatuses: complianceResult.moduleStatuses,
+          completedAt: new Date().toISOString(),
+        }),
+      );
+    } catch {
+      // localStorage may be unavailable
+    }
+  }, [complianceResult]);
 
   const handleSelect = useCallback(
     (value: string | boolean | number) => {
@@ -126,7 +165,7 @@ export default function AssessmentWizard() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4" />
           <p className="font-mono text-[12px] text-white/70">Loading...</p>
@@ -136,11 +175,10 @@ export default function AssessmentWizard() {
   }
 
   // Results view
-  if (state.isComplete && spaceActData) {
-    const result = calculateCompliance(state.answers, spaceActData);
+  if (complianceResult) {
     return (
-      <div className="min-h-screen bg-black">
-        <ResultsDashboard result={result} onRestart={handleRestart} />
+      <div className="dark-section min-h-screen bg-black text-white">
+        <ResultsDashboard result={complianceResult} onRestart={handleRestart} />
       </div>
     );
   }
@@ -148,7 +186,7 @@ export default function AssessmentWizard() {
   // Out of scope view
   if (state.isOutOfScope && currentQuestion) {
     return (
-      <div className="min-h-screen bg-black py-12 px-6">
+      <div className="dark-section min-h-screen bg-black text-white py-12 px-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-12">
@@ -176,7 +214,7 @@ export default function AssessmentWizard() {
 
   // Assessment wizard view
   return (
-    <div className="min-h-screen bg-black py-12 px-6">
+    <div className="dark-section min-h-screen bg-black text-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">

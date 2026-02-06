@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Building2,
   FileText,
@@ -76,7 +77,7 @@ const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export default function SupervisionPage() {
+function SupervisionPageContent() {
   const [activeStep, setActiveStep] = useState<Step>("nca");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1098,5 +1099,13 @@ export default function SupervisionPage() {
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function SupervisionPage() {
+  return (
+    <FeatureGate module="supervision">
+      <SupervisionPageContent />
+    </FeatureGate>
   );
 }

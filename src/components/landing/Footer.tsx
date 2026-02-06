@@ -79,20 +79,30 @@ export default function Footer() {
     // Simulate subscription (no backend yet — will connect to mailing list API later)
     // Stores: email, consent timestamp, consent text for GDPR audit trail
     setTimeout(() => {
-      console.log("Newsletter signup:", {
-        email,
-        consentGiven: true,
-        consentTimestamp: new Date().toISOString(),
-        consentText:
-          "I agree to receive regulatory updates from Caelex. Privacy Policy applies.",
-      });
+      // Store signup locally for future mailing list integration
+      try {
+        const signups = JSON.parse(
+          localStorage.getItem("caelex-newsletter-signups") || "[]",
+        );
+        signups.push({
+          email,
+          consentGiven: true,
+          consentTimestamp: new Date().toISOString(),
+        });
+        localStorage.setItem(
+          "caelex-newsletter-signups",
+          JSON.stringify(signups),
+        );
+      } catch {
+        // localStorage may be unavailable
+      }
       setSubscribed(true);
       setSubscribing(false);
     }, 800);
   };
 
   return (
-    <footer className="bg-black border-t border-white/[0.06]">
+    <footer className="dark-section bg-black text-white border-t border-white/[0.06]">
       {/* Newsletter Section */}
       <div className="border-b border-white/[0.04]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-14">
@@ -298,6 +308,16 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new Event("show-cookie-consent"))
+                  }
+                  className="text-[13px] text-white/50 hover:text-white transition-colors"
+                >
+                  Cookie Settings
+                </button>
+              </li>
             </ul>
           </div>
         </div>
@@ -310,7 +330,7 @@ export default function Footer() {
             {/* Copyright */}
             <div className="flex items-center gap-4">
               <span className="text-[12px] text-white/30">
-                © {new Date().getFullYear()} Caelex GmbH. All rights reserved.
+                © {new Date().getFullYear()} Caelex. All rights reserved.
               </span>
             </div>
 

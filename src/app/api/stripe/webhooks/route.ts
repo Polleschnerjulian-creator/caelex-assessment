@@ -16,10 +16,11 @@ import {
   handleSubscriptionCanceled,
 } from "@/lib/services/subscription-service";
 import type Stripe from "stripe";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   if (!stripe) {
-    console.error("Stripe is not configured");
+    logger.error("Stripe is not configured");
     return NextResponse.json(
       { error: "Stripe is not configured" },
       { status: 500 },
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
   const signature = headersList.get("stripe-signature");
 
   if (!signature) {
-    console.error("No stripe-signature header");
+    logger.error("No stripe-signature header");
     return NextResponse.json(
       { error: "No stripe-signature header" },
       { status: 400 },
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error(`Webhook signature verification failed: ${message}`);
+    logger.error(`Webhook signature verification failed: ${message}`);
     return NextResponse.json(
       { error: "Webhook signature verification failed" },
       { status: 400 },
@@ -98,10 +99,10 @@ export async function POST(request: NextRequest) {
 
       default:
         // Ignore other events
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info(`Unhandled event type: ${event.type}`);
     }
   } catch (error) {
-    console.error(`Error handling webhook event ${event.type}:`, error);
+    logger.error(`Error handling webhook event ${event.type}:`, error);
     // Return 200 to acknowledge receipt (prevent retries for non-critical errors)
     return NextResponse.json({ received: true, error: "Handler error" });
   }

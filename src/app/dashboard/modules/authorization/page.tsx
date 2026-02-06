@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Building2,
   FileCheck,
@@ -23,6 +24,7 @@ import {
   BookOpen,
   type LucideIcon,
 } from "lucide-react";
+import EmptyState from "@/components/dashboard/EmptyState";
 import { ncas, determineNCA, type NCADetermination } from "@/data/ncas";
 import {
   authorizationDocuments,
@@ -96,7 +98,7 @@ const documentCategoryIcons: Record<string, LucideIcon> = {
   safety: Shield,
 };
 
-export default function AuthorizationPage() {
+function AuthorizationPageContent() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -416,8 +418,19 @@ export default function AuthorizationPage() {
               </div>
             )}
 
+            {/* Empty state when no workflows exist */}
+            {workflows.length === 0 && !showNewWorkflowForm && (
+              <EmptyState
+                icon={<Shield size={28} />}
+                title="Start your authorization journey"
+                description="Begin the NCA authorization process for your space operations."
+                actionLabel="Start Authorization"
+                onAction={() => setShowNewWorkflowForm(true)}
+              />
+            )}
+
             {/* New workflow form */}
-            {(workflows.length === 0 || showNewWorkflowForm) && (
+            {showNewWorkflowForm && (
               <div className="space-y-6">
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
                   <h2 className="text-[16px] font-medium text-white mb-4">
@@ -1132,5 +1145,13 @@ export default function AuthorizationPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function AuthorizationPage() {
+  return (
+    <FeatureGate module="authorization">
+      <AuthorizationPageContent />
+    </FeatureGate>
   );
 }

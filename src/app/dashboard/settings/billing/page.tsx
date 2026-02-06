@@ -7,9 +7,7 @@ import PricingTable from "@/components/billing/PricingTable";
 import SubscriptionCard from "@/components/billing/SubscriptionCard";
 import UsageMetrics from "@/components/billing/UsageMetrics";
 import { PlanType } from "@/lib/stripe/pricing";
-
-// Mock organization ID - in real app, get from context
-const MOCK_ORG_ID = "demo-org";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 
 interface SubscriptionData {
   subscription: {
@@ -44,6 +42,8 @@ interface SubscriptionData {
 
 function BillingContent() {
   const searchParams = useSearchParams();
+  const { organization } = useOrganization();
+  const orgId = organization?.id || "";
   const [subscriptionData, setSubscriptionData] =
     useState<SubscriptionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +79,7 @@ function BillingContent() {
   const fetchSubscription = async () => {
     try {
       const response = await fetch(
-        `/api/stripe/subscription?organizationId=${MOCK_ORG_ID}`,
+        `/api/stripe/subscription?organizationId=${orgId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -106,7 +106,7 @@ function BillingContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           priceId,
-          organizationId: MOCK_ORG_ID,
+          organizationId: orgId,
         }),
       });
 
@@ -138,7 +138,7 @@ function BillingContent() {
       const response = await fetch("/api/stripe/create-portal-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organizationId: MOCK_ORG_ID }),
+        body: JSON.stringify({ organizationId: orgId }),
       });
 
       const data = await response.json();
@@ -174,7 +174,7 @@ function BillingContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: MOCK_ORG_ID,
+          organizationId: orgId,
           action: "cancel",
         }),
       });
@@ -204,7 +204,7 @@ function BillingContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          organizationId: MOCK_ORG_ID,
+          organizationId: orgId,
           action: "reactivate",
         }),
       });
@@ -228,8 +228,8 @@ function BillingContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
       </div>
     );
   }
@@ -238,26 +238,32 @@ function BillingContent() {
     "FREE") as PlanType;
 
   return (
-    <div className="min-h-screen bg-navy-950 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <CreditCard className="w-7 h-7 text-blue-400" />
-            Billing & Subscription
-          </h1>
-          <p className="text-slate-400 mt-1">
-            Manage your subscription plan and billing information
-          </p>
+    <div className="p-6 lg:p-8">
+      <div className="max-w-[1200px]">
+        {/* Page Header */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-slate-600 dark:text-white/70" />
+            </div>
+            <div>
+              <h1 className="text-[24px] font-medium text-slate-900 dark:text-white">
+                Billing & Subscription
+              </h1>
+              <p className="text-[14px] text-slate-600 dark:text-white/70">
+                Manage your subscription plan and billing information
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Message Banner */}
         {message && (
           <div
-            className={`p-4 rounded-lg flex items-center gap-3 ${
+            className={`p-4 rounded-xl flex items-center gap-3 mb-8 ${
               message.type === "success"
-                ? "bg-green-500/10 border border-green-500/20 text-green-400"
-                : "bg-red-500/10 border border-red-500/20 text-red-400"
+                ? "bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400"
+                : "bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400"
             }`}
           >
             {message.type === "success" ? (
@@ -265,7 +271,7 @@ function BillingContent() {
             ) : (
               <XCircle className="w-5 h-5 flex-shrink-0" />
             )}
-            <p>{message.text}</p>
+            <p className="text-[14px]">{message.text}</p>
             <button
               onClick={() => setMessage(null)}
               className="ml-auto text-current hover:opacity-70"
@@ -276,7 +282,7 @@ function BillingContent() {
         )}
 
         {/* Current Subscription & Usage */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
           <SubscriptionCard
             subscription={subscriptionData?.subscription || null}
             onManageBilling={handleManageBilling}
@@ -294,10 +300,10 @@ function BillingContent() {
         </div>
 
         {/* Pricing Table */}
-        <div className="pt-4">
-          <h2 className="text-xl font-semibold text-white mb-6">
-            Available Plans
-          </h2>
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+            AVAILABLE PLANS
+          </p>
           <PricingTable
             currentPlan={currentPlan}
             onSelectPlan={handleSelectPlan}
@@ -305,40 +311,42 @@ function BillingContent() {
           />
         </div>
 
-        {/* FAQ or Additional Info */}
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Frequently Asked Questions
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-medium text-white">
-                What happens when I upgrade?
-              </p>
-              <p className="text-sm text-slate-400 mt-1">
-                You&apos;ll be charged the prorated amount for the remainder of
-                your current billing period. Your new plan features will be
-                available immediately.
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                Can I cancel anytime?
-              </p>
-              <p className="text-sm text-slate-400 mt-1">
-                Yes, you can cancel your subscription at any time. You&apos;ll
-                retain access to your current plan until the end of your billing
-                period.
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">
-                What payment methods do you accept?
-              </p>
-              <p className="text-sm text-slate-400 mt-1">
-                We accept all major credit cards (Visa, Mastercard, American
-                Express) and SEPA Direct Debit for EU customers.
-              </p>
+        {/* FAQ */}
+        <div className="mt-12">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+            FREQUENTLY ASKED QUESTIONS
+          </p>
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="space-y-6">
+              <div>
+                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                  What happens when I upgrade?
+                </p>
+                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                  You&apos;ll be charged the prorated amount for the remainder
+                  of your current billing period. Your new plan features will be
+                  available immediately.
+                </p>
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                  Can I cancel anytime?
+                </p>
+                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                  Yes, you can cancel your subscription at any time. You&apos;ll
+                  retain access to your current plan until the end of your
+                  billing period.
+                </p>
+              </div>
+              <div>
+                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                  What payment methods do you accept?
+                </p>
+                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                  We accept all major credit cards (Visa, Mastercard, American
+                  Express) and SEPA Direct Debit for EU customers.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -349,8 +357,8 @@ function BillingContent() {
 
 function BillingFallback() {
   return (
-    <div className="min-h-screen bg-navy-950 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
+      <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
     </div>
   );
 }

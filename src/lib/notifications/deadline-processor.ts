@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendDeadlineReminder } from "@/lib/email";
 import { getDaysBetween, wasReminderSent, startOfDay } from "./index";
 import type { Deadline, User, SupervisionConfig } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export interface DeadlineProcessingResult {
   processed: number;
@@ -61,7 +62,7 @@ export async function processDeadlineReminders(): Promise<DeadlineProcessingResu
       },
     });
 
-    console.log(`Processing ${deadlines.length} deadlines for reminders`);
+    logger.info(`Processing ${deadlines.length} deadlines for reminders`);
 
     for (const deadline of deadlines) {
       result.processed++;
@@ -75,13 +76,13 @@ export async function processDeadlineReminders(): Promise<DeadlineProcessingResu
         const errorMsg =
           error instanceof Error ? error.message : "Unknown error";
         result.errors.push(`Deadline ${deadline.id}: ${errorMsg}`);
-        console.error(`Error processing deadline ${deadline.id}:`, error);
+        logger.error(`Error processing deadline ${deadline.id}:`, error);
       }
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     result.errors.push(`Global error: ${errorMsg}`);
-    console.error("Deadline processing failed:", error);
+    logger.error("Deadline processing failed:", error);
   }
 
   result.completedAt = new Date();

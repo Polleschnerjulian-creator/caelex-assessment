@@ -123,6 +123,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
   useEffect(() => {
     fetchLogs();
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filter, userId, organizationId]);
 
   async function fetchLogs() {

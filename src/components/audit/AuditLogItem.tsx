@@ -238,6 +238,7 @@ export default function AuditLogItem({
         {/* User info */}
         <div className="flex items-center gap-2 mt-3">
           {entry.user.avatar ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={entry.user.avatar}
               alt={entry.user.name}

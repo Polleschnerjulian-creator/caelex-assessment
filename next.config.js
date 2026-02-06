@@ -64,16 +64,16 @@ const securityHeaders = [
     value: [
       // Default: only allow same origin
       "default-src 'self'",
-      // Scripts: self, inline (for Next.js), eval (for dev), Google OAuth, Sentry, Vercel
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://*.sentry.io https://va.vercel-scripts.com",
+      // Scripts: self, inline (for Next.js), eval (for dev), Google OAuth, Sentry, Vercel, blob: for @react-pdf/renderer workers
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://accounts.google.com https://apis.google.com https://*.sentry.io https://va.vercel-scripts.com",
       // Styles: self, inline (for CSS-in-JS), Google Fonts
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Fonts: self, Google Fonts
       "font-src 'self' https://fonts.gstatic.com data:",
       // Images: self, data URIs, HTTPS, blob (for file previews)
       "img-src 'self' data: https: blob:",
-      // Connections: self, auth providers, database, analytics, Sentry, Stripe
-      "connect-src 'self' https://accounts.google.com https://*.neon.tech wss://*.neon.tech https://*.upstash.io https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com https://vitals.vercel-insights.com",
+      // Connections: self, auth providers, database, analytics, Sentry, Stripe, blob: for @react-pdf/renderer
+      "connect-src 'self' blob: https://accounts.google.com https://*.neon.tech wss://*.neon.tech https://*.upstash.io https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com https://vitals.vercel-insights.com",
       // Frames: Google OAuth popup, Stripe
       "frame-src 'self' https://accounts.google.com https://js.stripe.com https://hooks.stripe.com",
       // Form submissions: only to self
@@ -156,16 +156,30 @@ const nextConfig = {
   },
 
   // Webpack configuration
-  webpack: (config, { isServer }) => {
-    // Ignore node-specific modules on client
+  webpack: (config, { isServer, webpack }) => {
+    // Client-side polyfills for @react-pdf/renderer
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        crypto: false,
+        // @react-pdf/renderer needs these browser polyfills
+        stream: require.resolve("stream-browserify"),
+        zlib: false,
+        util: false,
       };
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        canvas: false,
+      };
+      // Provide Buffer and process globals for @react-pdf/renderer
+      config.plugins.push(
+        new webpack.ProvidePlugin({
+          Buffer: ["buffer", "Buffer"],
+          process: "process/browser",
+        }),
+      );
     }
     return config;
   },

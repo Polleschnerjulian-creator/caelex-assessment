@@ -30,7 +30,7 @@ export default function ApiDocsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0B10]">
+    <div className="dark-section min-h-screen bg-[#0A0B10] text-white">
       {/* Header */}
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-6">

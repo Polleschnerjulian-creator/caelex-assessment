@@ -29,7 +29,7 @@ export default function Hero() {
         transition={{ duration: 1, delay: 0.5 }}
         className="absolute top-24 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">01 / 05</span>
+        <span className="font-mono text-[11px] text-white/30">01 / 11</span>
       </motion.div>
 
       {/* Entity - Centered, larger */}
@@ -51,9 +51,9 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="text-[clamp(2rem,5vw,4.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-white mb-6"
         >
-          Navigate the regulatory
+          The compliance platform
           <br />
-          <span className="text-white/60">frontier of space.</span>
+          <span className="text-white/60">for the EU Space Act.</span>
         </motion.h1>
 
         {/* Subtext */}
@@ -61,29 +61,42 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.0 }}
-          className="text-[14px] md:text-[15px] text-white/50 mb-10 max-w-[420px] mx-auto"
+          className="text-[14px] md:text-[16px] text-white/50 mb-10 max-w-[560px] mx-auto leading-[1.6]"
         >
-          119 articles. 10 annexes. Penalties up to 2% of global turnover.
+          From initial assessment to ongoing compliance. Caelex automates
+          authorization workflows, document management, and regulatory tracking
+          across all 119 articles.
         </motion.p>
 
-        {/* CTA Button */}
+        {/* Dual CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.2 }}
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-5"
         >
-          <Link
-            href="/assessment"
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-[15px] font-medium rounded-full transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
-          >
-            <span>Start your assessment</span>
-            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              href="/assessment"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-[15px] font-medium rounded-full transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+            >
+              <span>Start Free Assessment</span>
+              <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+            <Link
+              href="/contact"
+              className="group inline-flex items-center gap-3 px-8 py-4 text-white/80 text-[15px] font-medium rounded-full border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+            >
+              <span>Request a Demo</span>
+              <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
           <span className="text-[11px] text-white/30">
-            3 min · No signup · Client-side only
+            No credit card required · Free compliance assessment
           </span>
         </motion.div>
       </div>

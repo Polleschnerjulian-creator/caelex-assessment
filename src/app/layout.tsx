@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
+import CookieConsent from "@/components/CookieConsent";
+import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -65,6 +65,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
+        <meta
+          name="format-detection"
+          content="telephone=no, date=no, email=no, address=no"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
@@ -73,8 +77,8 @@ export default function RootLayout({
         <Providers>
           <PublicLayout>{children}</PublicLayout>
         </Providers>
-        <Analytics />
-        <SpeedInsights />
+        <ConditionalAnalytics />
+        <CookieConsent />
       </body>
     </html>
   );

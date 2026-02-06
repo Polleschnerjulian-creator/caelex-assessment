@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   FileText,
   Upload,
@@ -29,6 +30,7 @@ import dynamic from "next/dynamic";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import FileUploader from "@/components/documents/FileUploader";
+import EmptyState from "@/components/dashboard/EmptyState";
 
 // Dynamically import DocumentViewer to avoid SSR issues with react-pdf
 const DocumentViewer = dynamic(
@@ -123,7 +125,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   OTHER: <FileText size={16} />,
 };
 
-export default function DocumentsPage() {
+function DocumentsPageContent() {
   const [activeStep, setActiveStep] = useState<Step>("overview");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -463,21 +465,14 @@ export default function DocumentsPage() {
               {/* Documents by Category */}
               {Object.keys(documentsByCategory).length === 0 ? (
                 <Card>
-                  <CardContent className="p-8 text-center">
-                    <Folder
-                      size={48}
-                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                  <CardContent className="p-0">
+                    <EmptyState
+                      icon={<FileText size={28} />}
+                      title="No documents yet"
+                      description="Upload your first compliance document to get started with document management."
+                      actionLabel="Upload Document"
+                      onAction={() => setShowUploadModal(true)}
                     />
-                    <p className="text-slate-500 dark:text-white/60">
-                      No documents found
-                    </p>
-                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1 mb-4">
-                      Upload your first document to get started
-                    </p>
-                    <Button onClick={() => setShowUploadModal(true)}>
-                      <Upload size={16} className="mr-1" />
-                      Upload Document
-                    </Button>
                   </CardContent>
                 </Card>
               ) : (
@@ -1199,5 +1194,13 @@ export default function DocumentsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function DocumentsPage() {
+  return (
+    <FeatureGate module="documents">
+      <DocumentsPageContent />
+    </FeatureGate>
   );
 }

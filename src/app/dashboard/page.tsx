@@ -5,7 +5,14 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, PlayCircle, CheckCircle, X } from "lucide-react";
+import {
+  ChevronRight,
+  PlayCircle,
+  CheckCircle,
+  X,
+  ClipboardList,
+  Loader2,
+} from "lucide-react";
 import { articles } from "@/data/articles";
 import { modules } from "@/data/modules";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
@@ -70,6 +77,53 @@ function DashboardContent() {
       }
     };
     fetchData();
+  }, []);
+
+  const [documentCount, setDocumentCount] = useState<number>(0);
+  const [pendingAssessment, setPendingAssessment] = useState<{
+    operatorType: string;
+    regime: string;
+    entitySize: string;
+    constellationTier: string | null;
+    orbit: string;
+    isEU: boolean;
+    isThirdCountry: boolean;
+    applicableArticles: (string | number)[];
+    moduleStatuses: {
+      id: string;
+      name: string;
+      status: string;
+      articleCount: number;
+    }[];
+    completedAt: string;
+  } | null>(null);
+
+  // Fetch document count
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const res = await fetch("/api/documents/dashboard");
+        if (res.ok) {
+          const data = await res.json();
+          setDocumentCount(data.stats?.total ?? 0);
+        }
+      } catch (error) {
+        console.error("Error fetching document count:", error);
+      }
+    };
+    fetchDocuments();
+  }, []);
+
+  // Check for pending assessment in localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("caelex-pending-assessment");
+      if (stored) {
+        setPendingAssessment(JSON.parse(stored));
+      }
+    } catch {
+      // localStorage may be unavailable
+    }
   }, []);
 
   const stats = { total: 0, compliant: 0, applicable: 0, documents: 0 };
@@ -146,6 +200,51 @@ function DashboardContent() {
     }
   };
 
+  const handleDismissPendingAssessment = () => {
+    try {
+      localStorage.removeItem("caelex-pending-assessment");
+    } catch {
+      // localStorage may be unavailable
+    }
+    setPendingAssessment(null);
+  };
+
+  const handleImportFromLocalStorage = async () => {
+    if (!pendingAssessment) return;
+    setImporting(true);
+    try {
+      const res = await fetch("/api/tracker/import-assessment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ operatorType: pendingAssessment.operatorType }),
+      });
+      if (res.ok) {
+        // Remove from localStorage
+        try {
+          localStorage.removeItem("caelex-pending-assessment");
+        } catch {
+          // localStorage may be unavailable
+        }
+        setPendingAssessment(null);
+
+        // Refetch article statuses
+        const articlesRes = await fetch("/api/tracker/articles");
+        if (articlesRes.ok) {
+          const data = await articlesRes.json();
+          setArticleStatuses(data);
+          setHasData(true);
+        }
+
+        setShowSuccessToast(true);
+        const timer = setTimeout(() => setShowSuccessToast(false), 5000);
+      }
+    } catch (error) {
+      console.error("Error importing assessment from localStorage:", error);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 lg:p-8">
@@ -186,6 +285,49 @@ function DashboardContent() {
       )}
 
       <div className="max-w-[1200px]">
+        {/* Pending Assessment Import Banner */}
+        {pendingAssessment && (
+          <div className="mb-6 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5">
+            <div className="flex items-start gap-4">
+              <ClipboardList className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[14px] font-medium text-emerald-900 dark:text-white mb-1">
+                  Assessment results available
+                </h3>
+                <p className="text-[13px] text-emerald-700 dark:text-white/70">
+                  Import your compliance assessment to populate your dashboard
+                  automatically. Completed{" "}
+                  {new Date(pendingAssessment.completedAt).toLocaleDateString()}
+                  .
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={handleImportFromLocalStorage}
+                  disabled={importing}
+                  className="inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-500 text-white text-[12px] font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all disabled:opacity-50"
+                >
+                  {importing ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    "Import Assessment"
+                  )}
+                </button>
+                <button
+                  onClick={handleDismissPendingAssessment}
+                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 p-1 rounded transition-colors"
+                  title="Dismiss"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Welcome */}
         <div className="mb-10">
           <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
@@ -292,10 +434,10 @@ function DashboardContent() {
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-[36px] font-mono font-semibold text-slate-900 dark:text-white">
-              0
+              {documentCount}
             </p>
             <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
-              uploaded
+              {documentCount === 1 ? "document" : "documents"} uploaded
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">

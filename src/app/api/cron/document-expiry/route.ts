@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { processDocumentExpiry } from "@/lib/notifications";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60 seconds for Vercel Hobby, 300 for Pro
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
 
   // In production, CRON_SECRET must be set
   if (!isDev && !cronSecret) {
-    console.error("CRON_SECRET not configured in production");
+    logger.error("CRON_SECRET not configured in production");
     return NextResponse.json(
       { error: "Server configuration error" },
       { status: 500 },
@@ -31,22 +32,22 @@ export async function GET(req: Request) {
 
   // Verify authorization in non-development environments
   if (!isDev && authHeader !== `Bearer ${cronSecret}`) {
-    console.warn("Unauthorized cron request attempt");
+    logger.warn("Unauthorized cron request attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (isDev && !cronSecret) {
-    console.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
+    logger.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
   }
 
   try {
-    console.log("Starting document expiry processing...");
+    logger.info("Starting document expiry processing...");
 
     const result = await processDocumentExpiry();
 
     const duration = Date.now() - startTime;
 
-    console.log("Document expiry processing complete:", {
+    logger.info("Document expiry processing complete:", {
       processed: result.processed,
       sent: result.sent,
       skipped: result.skipped,
@@ -66,7 +67,7 @@ export async function GET(req: Request) {
       processedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Cron job failed:", error);
+    logger.error("Cron job failed:", error);
 
     return NextResponse.json(
       {

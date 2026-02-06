@@ -2,7 +2,7 @@
 
 export default function LogoConcepts() {
   return (
-    <div className="min-h-screen bg-black py-16 px-8">
+    <div className="dark-section min-h-screen bg-black text-white py-16 px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">

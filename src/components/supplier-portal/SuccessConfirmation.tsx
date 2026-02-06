@@ -35,7 +35,7 @@ export default function SuccessConfirmation({
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center p-4">
+    <div className="dark-section min-h-screen bg-[#0A0F1E] text-white flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Success Card */}
         <div className="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">

@@ -18,5 +18,9 @@ const AssessmentWizard = dynamic(
 );
 
 export default function AssessmentPage() {
-  return <AssessmentWizard />;
+  return (
+    <div className="dark-section text-white">
+      <AssessmentWizard />
+    </div>
+  );
 }

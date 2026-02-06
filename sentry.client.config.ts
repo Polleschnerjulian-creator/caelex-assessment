@@ -4,8 +4,24 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-// Skip initialization if DSN is not configured
-if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
+// Check cookie consent before initializing Sentry (granular preferences)
+function hasErrorTrackingConsent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem("caelex-cookie-consent");
+    if (!raw) return false;
+    // Legacy support
+    if (raw === "all") return true;
+    if (raw === "necessary") return false;
+    const prefs = JSON.parse(raw);
+    return prefs?.errorTracking === true;
+  } catch {
+    return false;
+  }
+}
+
+// Skip initialization if DSN is not configured or user hasn't consented
+if (!process.env.NEXT_PUBLIC_SENTRY_DSN || !hasErrorTrackingConsent()) {
   // Sentry SDK is a no-op without init, which is fine
 } else {
   Sentry.init({

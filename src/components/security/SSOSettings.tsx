@@ -73,6 +73,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
 
   useEffect(() => {
     fetchSSOConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
   async function fetchSSOConfig() {

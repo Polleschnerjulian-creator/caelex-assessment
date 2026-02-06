@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { ChevronRight, ChevronDown, Search, Check } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Search,
+  Check,
+  Download,
+} from "lucide-react";
 import {
   articles,
   Article,
@@ -261,6 +267,35 @@ export default function TrackerPage() {
     });
   };
 
+  const handleExport = () => {
+    const csvHeaders = [
+      "Article Number",
+      "Title",
+      "Status",
+      "Module",
+      "Compliance Type",
+    ];
+    const csvRows = filteredArticles.map((article) => {
+      const status = articleStatuses[article.id]?.status || "not_started";
+      return [
+        `Art. ${article.number}`,
+        `"${article.title.replace(/"/g, '""')}"`,
+        status.replace(/_/g, " "),
+        article.moduleLabel,
+        article.complianceType.replace(/_/g, " "),
+      ].join(",");
+    });
+
+    const csvContent = [csvHeaders.join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `compliance-tracker-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="p-8">
@@ -296,7 +331,11 @@ export default function TrackerPage() {
               Track compliance across all 119 articles and 7 modules
             </p>
           </div>
-          <button className="border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 font-mono text-[11px] px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 font-mono text-[11px] px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all"
+          >
+            <Download size={13} />
             Export
           </button>
         </div>

@@ -37,6 +37,7 @@ export function NotificationList() {
 
   useEffect(() => {
     fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, offset]);
 
   async function fetchNotifications() {

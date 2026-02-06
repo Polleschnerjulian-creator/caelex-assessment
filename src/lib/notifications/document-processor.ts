@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendDocumentExpiryAlert } from "@/lib/email";
 import { getDaysBetween, startOfDay } from "./index";
 import type { Document, User, SupervisionConfig } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export interface DocumentExpiryResult {
   processed: number;
@@ -72,7 +73,7 @@ export async function processDocumentExpiry(): Promise<DocumentExpiryResult> {
       },
     });
 
-    console.log(`Processing ${documents.length} documents for expiry alerts`);
+    logger.info(`Processing ${documents.length} documents for expiry alerts`);
 
     // Check for documents that have already been alerted today
     const todayAlerts = await getTodayAlerts();
@@ -95,13 +96,13 @@ export async function processDocumentExpiry(): Promise<DocumentExpiryResult> {
         const errorMsg =
           error instanceof Error ? error.message : "Unknown error";
         result.errors.push(`Document ${document.id}: ${errorMsg}`);
-        console.error(`Error processing document ${document.id}:`, error);
+        logger.error(`Error processing document ${document.id}:`, error);
       }
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     result.errors.push(`Global error: ${errorMsg}`);
-    console.error("Document expiry processing failed:", error);
+    logger.error("Document expiry processing failed:", error);
   }
 
   result.completedAt = new Date();

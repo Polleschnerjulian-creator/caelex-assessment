@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Shield,
   CheckCircle2,
@@ -183,7 +184,7 @@ const categoryIcons: Record<RequirementCategory, React.ReactNode> = {
   eusrn: <Network size={18} />,
 };
 
-export default function CybersecurityPage() {
+function CybersecurityPageContent() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [selectedAssessment, setSelectedAssessment] =
     useState<Assessment | null>(null);
@@ -1726,5 +1727,13 @@ export default function CybersecurityPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function CybersecurityPage() {
+  return (
+    <FeatureGate module="cybersecurity">
+      <CybersecurityPageContent />
+    </FeatureGate>
   );
 }

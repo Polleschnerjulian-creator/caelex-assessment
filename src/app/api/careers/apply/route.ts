@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
+function escapeHtml(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
@@ -40,7 +50,7 @@ export async function POST(request: NextRequest) {
       from: "Caelex Careers <careers@caelex.eu>",
       to: ["careers@caelex.eu"],
       replyTo: email,
-      subject: `New Application: ${position} - ${firstName} ${lastName}`,
+      subject: `New Application: ${escapeHtml(position)} - ${escapeHtml(firstName)} ${escapeHtml(lastName)}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="font-size: 24px; font-weight: 500; color: #111; margin-bottom: 24px;">
@@ -52,7 +62,7 @@ export async function POST(request: NextRequest) {
               Position
             </h2>
             <p style="font-size: 18px; color: #111; margin: 0;">
-              ${position}
+              ${escapeHtml(position)}
             </p>
           </div>
 
@@ -63,12 +73,12 @@ export async function POST(request: NextRequest) {
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666; width: 140px;">Name</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${firstName} ${lastName}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(firstName)} ${escapeHtml(lastName)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Email</td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">
-                  <a href="mailto:${email}" style="color: #111;">${email}</a>
+                  <a href="mailto:${escapeHtml(email)}" style="color: #111;">${escapeHtml(email)}</a>
                 </td>
               </tr>
               ${
@@ -76,7 +86,7 @@ export async function POST(request: NextRequest) {
                   ? `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Phone</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${phone}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(phone)}</td>
               </tr>
               `
                   : ""
@@ -87,7 +97,7 @@ export async function POST(request: NextRequest) {
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">LinkedIn</td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">
-                  <a href="${linkedin}" style="color: #111;">${linkedin}</a>
+                  <a href="${escapeHtml(linkedin)}" style="color: #111;">${escapeHtml(linkedin)}</a>
                 </td>
               </tr>
               `
@@ -95,11 +105,11 @@ export async function POST(request: NextRequest) {
               }
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Location</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${location}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(location)}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Experience</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${experience} years</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(experience)} years</td>
               </tr>
             </table>
           </div>
@@ -109,7 +119,7 @@ export async function POST(request: NextRequest) {
               Motivation
             </h2>
             <div style="background: #f9fafb; border-radius: 8px; padding: 16px; color: #333; line-height: 1.6; white-space: pre-wrap;">
-${motivation}
+${escapeHtml(motivation)}
             </div>
           </div>
 
@@ -120,14 +130,14 @@ ${motivation}
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666; width: 140px;">Start Date</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${availability}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(availability)}</td>
               </tr>
               ${
                 salary
                   ? `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Salary</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${salary}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(salary)}</td>
               </tr>
               `
                   : ""
@@ -137,7 +147,7 @@ ${motivation}
                   ? `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Referral Source</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${referral}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #111;">${escapeHtml(referral)}</td>
               </tr>
               `
                   : ""
@@ -152,7 +162,7 @@ ${motivation}
             <h2 style="font-size: 14px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0;">
               Attachment
             </h2>
-            <p style="color: #666;">Resume attached: ${resumeFile.name}</p>
+            <p style="color: #666;">Resume attached: ${escapeHtml(resumeFile.name)}</p>
           </div>
           `
               : ""
@@ -162,7 +172,7 @@ ${motivation}
             <p style="font-size: 12px; color: #999; margin: 0;">
               This application was submitted via the Caelex careers page.
               <br />
-              Position: ${position} (${positionId})
+              Position: ${escapeHtml(position)} (${escapeHtml(positionId)})
             </p>
           </div>
         </div>
@@ -174,7 +184,7 @@ ${motivation}
     await resend.emails.send({
       from: "Caelex Careers <careers@caelex.eu>",
       to: [email],
-      subject: `Application Received - ${position}`,
+      subject: `Application Received - ${escapeHtml(position)}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="font-size: 24px; font-weight: 500; color: #111; margin-bottom: 24px;">
@@ -182,11 +192,11 @@ ${motivation}
           </h1>
 
           <p style="font-size: 16px; color: #333; line-height: 1.6; margin-bottom: 16px;">
-            Dear ${firstName},
+            Dear ${escapeHtml(firstName)},
           </p>
 
           <p style="font-size: 16px; color: #333; line-height: 1.6; margin-bottom: 16px;">
-            Thank you for your interest in joining Caelex as <strong>${position}</strong>.
+            Thank you for your interest in joining Caelex as <strong>${escapeHtml(position)}</strong>.
             We have received your application and will review it carefully.
           </p>
 

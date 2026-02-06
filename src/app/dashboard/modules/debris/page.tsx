@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Rocket,
   CheckCircle2,
@@ -91,7 +92,7 @@ const STEPS = [
   },
 ];
 
-export default function DebrisPage() {
+function DebrisPageContent() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [selectedAssessment, setSelectedAssessment] =
     useState<Assessment | null>(null);
@@ -125,6 +126,7 @@ export default function DebrisPage() {
 
   useEffect(() => {
     fetchAssessments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAssessments = async () => {
@@ -1275,5 +1277,13 @@ export default function DebrisPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function DebrisPage() {
+  return (
+    <FeatureGate module="debris">
+      <DebrisPageContent />
+    </FeatureGate>
   );
 }

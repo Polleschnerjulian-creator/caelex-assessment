@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Shield,
   ChevronRight,
@@ -166,7 +167,7 @@ const STEPS = [
   { id: 4, name: "Compliance Report", icon: Shield },
 ];
 
-export default function InsurancePage() {
+function InsurancePageContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [selectedAssessment, setSelectedAssessment] =
@@ -1573,5 +1574,13 @@ export default function InsurancePage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function InsurancePage() {
+  return (
+    <FeatureGate module="insurance">
+      <InsurancePageContent />
+    </FeatureGate>
   );
 }

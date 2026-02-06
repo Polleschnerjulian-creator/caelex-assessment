@@ -17,30 +17,31 @@ export default function ContactPage() {
     message: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormState("sending");
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const subject = encodeURIComponent(
+        `Caelex Contact: ${formData.company || formData.name}`,
+      );
+      const body = encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\nCompany: ${formData.company || "N/A"}\n\nMessage:\n${formData.message}`,
+      );
+      window.location.href = `mailto:cs@caelex.eu?subject=${subject}&body=${body}`;
 
-      if (response.ok) {
+      // Show success after brief delay (email client will open)
+      setTimeout(() => {
         setFormState("sent");
         setFormData({ name: "", email: "", company: "", message: "" });
-      } else {
-        setFormState("error");
-      }
+      }, 500);
     } catch {
       setFormState("error");
     }
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">

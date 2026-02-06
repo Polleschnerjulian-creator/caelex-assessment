@@ -18,10 +18,10 @@ export default function PricingTable({
   const [isYearly, setIsYearly] = useState(false);
 
   const planIcons: Record<PlanType, React.ReactNode> = {
-    FREE: <Zap className="w-6 h-6" />,
-    STARTER: <Rocket className="w-6 h-6" />,
-    PROFESSIONAL: <Building2 className="w-6 h-6" />,
-    ENTERPRISE: <Building2 className="w-6 h-6" />,
+    FREE: <Zap className="w-5 h-5" />,
+    STARTER: <Rocket className="w-5 h-5" />,
+    PROFESSIONAL: <Building2 className="w-5 h-5" />,
+    ENTERPRISE: <Building2 className="w-5 h-5" />,
   };
 
   const formatFeatureValue = (value: number | string | "unlimited") => {
@@ -35,27 +35,29 @@ export default function PricingTable({
       {/* Billing Toggle */}
       <div className="flex items-center justify-center gap-4">
         <span
-          className={`text-sm ${!isYearly ? "text-white font-medium" : "text-slate-400"}`}
+          className={`text-[13px] ${!isYearly ? "text-slate-900 dark:text-white font-medium" : "text-slate-400 dark:text-white/40"}`}
         >
           Monthly
         </span>
         <button
           onClick={() => setIsYearly(!isYearly)}
-          className={`relative w-14 h-7 rounded-full transition-colors ${
-            isYearly ? "bg-blue-600" : "bg-navy-700"
+          className={`relative w-12 h-6 rounded-full transition-colors ${
+            isYearly ? "bg-emerald-500" : "bg-slate-200 dark:bg-white/[0.1]"
           }`}
         >
           <span
-            className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform ${
-              isYearly ? "left-8" : "left-1"
+            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+              isYearly ? "left-7" : "left-1"
             }`}
           />
         </button>
         <span
-          className={`text-sm ${isYearly ? "text-white font-medium" : "text-slate-400"}`}
+          className={`text-[13px] ${isYearly ? "text-slate-900 dark:text-white font-medium" : "text-slate-400 dark:text-white/40"}`}
         >
           Yearly
-          <span className="ml-1 text-green-400 text-xs">(Save 17%)</span>
+          <span className="ml-1.5 text-emerald-600 dark:text-emerald-400 text-[11px] font-medium">
+            Save 17%
+          </span>
         </span>
       </div>
 
@@ -75,14 +77,14 @@ export default function PricingTable({
           return (
             <div
               key={plan}
-              className={`relative bg-navy-800 border rounded-xl p-6 ${
+              className={`relative bg-white dark:bg-white/[0.04] border rounded-xl p-6 transition-all ${
                 isPopular
-                  ? "border-blue-500 ring-2 ring-blue-500/20"
-                  : "border-navy-700"
-              } ${isCurrent ? "bg-navy-700/50" : ""}`}
+                  ? "border-emerald-500 dark:border-emerald-500/50 ring-1 ring-emerald-500/20"
+                  : "border-slate-200 dark:border-white/10"
+              } ${isCurrent ? "bg-slate-50 dark:bg-white/[0.06]" : ""}`}
             >
               {isPopular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-600 text-white text-[10px] font-medium uppercase tracking-wider rounded-full">
                   Most Popular
                 </span>
               )}
@@ -92,32 +94,42 @@ export default function PricingTable({
                 <div
                   className={`p-2 rounded-lg ${
                     isPopular
-                      ? "bg-blue-500/10 text-blue-400"
-                      : "bg-navy-700 text-slate-400"
+                      ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50"
                   }`}
                 >
                   {planIcons[plan]}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">{config.name}</h3>
-                  <p className="text-xs text-slate-400">{config.description}</p>
+                  <h3 className="text-[15px] font-medium text-slate-900 dark:text-white">
+                    {config.name}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-white/40">
+                    {config.description}
+                  </p>
                 </div>
               </div>
 
               {/* Price */}
               <div className="mb-6">
                 {price === null ? (
-                  <div className="text-2xl font-bold text-white">Custom</div>
+                  <div className="text-[24px] font-semibold text-slate-900 dark:text-white">
+                    Custom
+                  </div>
                 ) : price === 0 ? (
-                  <div className="text-2xl font-bold text-white">Free</div>
+                  <div className="text-[24px] font-semibold text-slate-900 dark:text-white">
+                    Free
+                  </div>
                 ) : (
                   <div>
-                    <span className="text-3xl font-bold text-white">
+                    <span className="text-[28px] font-semibold text-slate-900 dark:text-white">
                       €{isYearly ? Math.round(price / 12) : price}
                     </span>
-                    <span className="text-slate-400 text-sm">/month</span>
+                    <span className="text-slate-400 dark:text-white/40 text-[13px]">
+                      /month
+                    </span>
                     {isYearly && (
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-[11px] text-slate-400 dark:text-white/30 mt-1">
                         €{price} billed annually
                       </p>
                     )}
@@ -126,22 +138,22 @@ export default function PricingTable({
               </div>
 
               {/* Features */}
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-2 text-sm text-slate-300">
-                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <ul className="space-y-2.5 mb-6">
+                <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                   <span>
                     {formatFeatureValue(config.features.users)}{" "}
                     {config.features.users === 1 ? "user" : "users"}
                   </span>
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-300">
-                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                   <span>
                     {formatFeatureValue(config.features.spacecraft)} spacecraft
                   </span>
                 </li>
-                <li className="flex items-center gap-2 text-sm text-slate-300">
-                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                   <span>
                     {config.features.modules === "all"
                       ? "All modules"
@@ -150,8 +162,8 @@ export default function PricingTable({
                 </li>
                 {(config.features.storage === "unlimited" ||
                   config.features.storage > 0) && (
-                  <li className="flex items-center gap-2 text-sm text-slate-300">
-                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                     <span>
                       {formatFeatureValue(config.features.storage)}{" "}
                       {config.features.storage !== "unlimited" && "GB"} storage
@@ -159,19 +171,19 @@ export default function PricingTable({
                   </li>
                 )}
                 {config.features.api && (
-                  <li className="flex items-center gap-2 text-sm text-slate-300">
-                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                     <span>API access</span>
                   </li>
                 )}
                 {config.features.sso && (
-                  <li className="flex items-center gap-2 text-sm text-slate-300">
-                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                     <span>SSO integration</span>
                   </li>
                 )}
-                <li className="flex items-center gap-2 text-sm text-slate-300">
-                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
+                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                   <span className="capitalize">
                     {config.features.support} support
                   </span>
@@ -182,14 +194,14 @@ export default function PricingTable({
               {isCurrent ? (
                 <button
                   disabled
-                  className="w-full py-2 px-4 bg-navy-600 text-slate-400 rounded-lg text-sm font-medium"
+                  className="w-full py-2.5 px-4 bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 rounded-lg text-[13px] font-medium cursor-not-allowed"
                 >
                   Current Plan
                 </button>
               ) : plan === "ENTERPRISE" ? (
                 <a
                   href="mailto:sales@caelex.eu?subject=Enterprise%20Plan%20Inquiry"
-                  className="block w-full py-2 px-4 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm font-medium text-center transition-colors"
+                  className="block w-full py-2.5 px-4 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-white/60 rounded-lg text-[13px] font-medium text-center hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all"
                 >
                   Contact Sales
                 </a>
@@ -199,10 +211,10 @@ export default function PricingTable({
                     priceId && onSelectPlan(plan, priceId, isYearly)
                   }
                   disabled={isLoading || !priceId}
-                  className={`w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-full py-2.5 px-4 rounded-lg text-[13px] font-medium transition-all ${
                     isPopular
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : "bg-navy-700 hover:bg-navy-600 text-white"
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isLoading ? "Loading..." : "Upgrade"}

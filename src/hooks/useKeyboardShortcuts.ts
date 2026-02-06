@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export interface KeyboardShortcut {
@@ -191,65 +191,71 @@ export function useKeyboardShortcuts(
   const router = useRouter();
 
   // Create default navigation shortcuts
-  const defaultNavigationActions: KeyboardShortcut[] = [
-    {
-      key: "g",
-      modifiers: ["ctrl"],
-      description: "Go to Dashboard",
-      category: "Navigation",
-      action: () => router.push("/dashboard"),
-    },
-    {
-      key: "h",
-      modifiers: ["ctrl"],
-      description: "Go to Home",
-      category: "Navigation",
-      action: () => router.push("/"),
-    },
-    {
-      key: "s",
-      modifiers: ["ctrl", "shift"],
-      description: "Go to Settings",
-      category: "Navigation",
-      action: () => router.push("/settings"),
-    },
-    {
-      key: "a",
-      modifiers: ["ctrl", "shift"],
-      description: "Go to Assessment",
-      category: "Navigation",
-      action: () => router.push("/assessment"),
-    },
-    {
-      key: "?",
-      modifiers: ["shift"],
-      description: "Show Keyboard Shortcuts",
-      category: "Help",
-      action: () => setIsHelpOpen(true),
-    },
-    {
-      key: "Escape",
-      description: "Close Modal / Cancel",
-      category: "Actions",
-      action: () => setIsHelpOpen(false),
-    },
-    {
-      key: "/",
-      description: "Focus Search",
-      category: "Help",
-      action: () => {
-        const searchInput = document.querySelector<HTMLInputElement>(
-          '[data-search-input], input[type="search"], input[placeholder*="Search"]',
-        );
-        if (searchInput) {
-          searchInput.focus();
-        }
+  const defaultNavigationActions: KeyboardShortcut[] = useMemo(
+    () => [
+      {
+        key: "g",
+        modifiers: ["ctrl"],
+        description: "Go to Dashboard",
+        category: "Navigation",
+        action: () => router.push("/dashboard"),
       },
-    },
-  ];
+      {
+        key: "h",
+        modifiers: ["ctrl"],
+        description: "Go to Home",
+        category: "Navigation",
+        action: () => router.push("/"),
+      },
+      {
+        key: "s",
+        modifiers: ["ctrl", "shift"],
+        description: "Go to Settings",
+        category: "Navigation",
+        action: () => router.push("/settings"),
+      },
+      {
+        key: "a",
+        modifiers: ["ctrl", "shift"],
+        description: "Go to Assessment",
+        category: "Navigation",
+        action: () => router.push("/assessment"),
+      },
+      {
+        key: "?",
+        modifiers: ["shift"],
+        description: "Show Keyboard Shortcuts",
+        category: "Help",
+        action: () => setIsHelpOpen(true),
+      },
+      {
+        key: "Escape",
+        description: "Close Modal / Cancel",
+        category: "Actions",
+        action: () => setIsHelpOpen(false),
+      },
+      {
+        key: "/",
+        description: "Focus Search",
+        category: "Help",
+        action: () => {
+          const searchInput = document.querySelector<HTMLInputElement>(
+            '[data-search-input], input[type="search"], input[placeholder*="Search"]',
+          );
+          if (searchInput) {
+            searchInput.focus();
+          }
+        },
+      },
+    ],
+    [router],
+  );
 
   // Merge default and custom shortcuts
-  const allShortcuts = [...defaultNavigationActions, ...shortcuts];
+  const allShortcuts = useMemo(
+    () => [...defaultNavigationActions, ...shortcuts],
+    [defaultNavigationActions, shortcuts],
+  );
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {

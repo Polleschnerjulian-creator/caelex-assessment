@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Leaf,
   ChevronRight,
@@ -149,7 +150,7 @@ const phaseIcons: Record<string, any> = {
   end_of_life: Trash2,
 };
 
-export default function EnvironmentalPage() {
+function EnvironmentalPageContent() {
   const [currentStep, setCurrentStep] = useState<WizardStep>("mission_profile");
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [selectedAssessment, setSelectedAssessment] =
@@ -188,6 +189,7 @@ export default function EnvironmentalPage() {
 
   useEffect(() => {
     fetchAssessments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchAssessments() {
@@ -1886,5 +1888,13 @@ function ReportStep({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EnvironmentalPage() {
+  return (
+    <FeatureGate module="environmental">
+      <EnvironmentalPageContent />
+    </FeatureGate>
   );
 }

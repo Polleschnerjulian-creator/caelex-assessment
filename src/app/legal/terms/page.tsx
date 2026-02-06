@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -22,7 +22,7 @@ export default function TermsPage() {
               className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
-              <span>Zurück</span>
+              <span>Back</span>
             </Link>
           </div>
         </div>
@@ -42,7 +42,7 @@ export default function TermsPage() {
               </h2>
               <p className="text-[14px] text-white/60 leading-relaxed">
                 (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend "AGB")
-                gelten für alle Verträge zwischen der Caelex GmbH (nachfolgend
+                gelten für alle Verträge zwischen Caelex (nachfolgend
                 "Anbieter") und dem Nutzer (nachfolgend "Kunde") über die
                 Nutzung der Caelex-Plattform und der damit verbundenen
                 Dienstleistungen.

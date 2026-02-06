@@ -91,6 +91,7 @@ export default function FileUploader({
     if (droppedFile) {
       handleFileSelect(droppedFile);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

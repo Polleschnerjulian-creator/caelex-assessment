@@ -37,7 +37,22 @@ export default function ResultsDashboard({
       role?: string,
       subscribe?: boolean,
     ) => {
-      console.log("Email submission:", { email, company, role, subscribe });
+      // Store lead locally for future CRM integration
+      try {
+        const leads = JSON.parse(
+          localStorage.getItem("caelex-assessment-leads") || "[]",
+        );
+        leads.push({
+          email,
+          company,
+          role,
+          subscribe,
+          timestamp: new Date().toISOString(),
+        });
+        localStorage.setItem("caelex-assessment-leads", JSON.stringify(leads));
+      } catch {
+        // localStorage may be unavailable
+      }
       setIsEmailGateOpen(false);
       setIsGeneratingPDF(true);
       setPdfError(null);
@@ -54,7 +69,7 @@ export default function ResultsDashboard({
   );
 
   return (
-    <div className="min-h-screen bg-black py-12 px-6">
+    <div className="dark-section min-h-screen bg-black text-white py-12 px-6">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div

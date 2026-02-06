@@ -25,7 +25,7 @@
     --border-default: rgba(255, 255, 255, 0.1);
   }
 
-  /* Force proper text colors */
+  /* Force proper color scheme */
   .light,
   :root:not(.dark) {
     color-scheme: light;
@@ -34,12 +34,24 @@
   .dark {
     color-scheme: dark;
   }
+
+  /* Prevent iOS Safari from tinting white text blue */
+  * {
+    -webkit-text-fill-color: inherit;
+  }
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+}
+
+/* Reset link colors — prevents iOS Safari default blue on <a> tags */
+a {
+  color: inherit;
+  text-decoration: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -151,6 +163,48 @@ html:not(.dark) h6 {
 .light p,
 html:not(.dark) p {
   color: #1e293b;
+}
+
+/* ===== ALWAYS-DARK SECTIONS ===== */
+/* .landing-page and .dark-section are always rendered on bg-black.
+   Override the light-mode heading/paragraph rules so the elements
+   inherit white text from their parent's Tailwind text-white class.
+   Only h1-h6 and p are listed — spans, links etc. are left untouched
+   so Tailwind opacity utilities (text-white/60) still take effect. */
+html:not(.dark) .landing-page h1,
+html:not(.dark) .landing-page h2,
+html:not(.dark) .landing-page h3,
+html:not(.dark) .landing-page h4,
+html:not(.dark) .landing-page h5,
+html:not(.dark) .landing-page h6,
+html:not(.dark) .landing-page p,
+html:not(.dark) .dark-section h1,
+html:not(.dark) .dark-section h2,
+html:not(.dark) .dark-section h3,
+html:not(.dark) .dark-section h4,
+html:not(.dark) .dark-section h5,
+html:not(.dark) .dark-section h6,
+html:not(.dark) .dark-section p,
+.light .landing-page h1,
+.light .landing-page h2,
+.light .landing-page h3,
+.light .landing-page h4,
+.light .landing-page h5,
+.light .landing-page h6,
+.light .landing-page p,
+.light .dark-section h1,
+.light .dark-section h2,
+.light .dark-section h3,
+.light .dark-section h4,
+.light .dark-section h5,
+.light .dark-section h6,
+.light .dark-section p {
+  color: inherit;
+}
+
+.landing-page,
+.dark-section {
+  color-scheme: dark;
 }
 
 .light input,

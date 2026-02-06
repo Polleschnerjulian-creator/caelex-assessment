@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function ImpressumPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -22,7 +22,7 @@ export default function ImpressumPage() {
               className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
-              <span>Zurück</span>
+              <span>Back</span>
             </Link>
           </div>
         </div>
@@ -41,20 +41,11 @@ export default function ImpressumPage() {
                 Angaben gemäß § 5 TMG
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
-                <p>Caelex GmbH</p>
-                <p>[Straße und Hausnummer]</p>
-                <p>[PLZ] [Stadt]</p>
+                <p>Julian Polleschner</p>
+                <p>Am Maselakepark 37</p>
+                <p>13587 Berlin</p>
                 <p>Deutschland</p>
               </div>
-            </section>
-
-            <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
-                Vertreten durch
-              </h2>
-              <p className="text-[14px] text-white/60">
-                Geschäftsführer: [Name des Geschäftsführers]
-              </p>
             </section>
 
             <section>
@@ -63,31 +54,7 @@ export default function ImpressumPage() {
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
                 <p>E-Mail: cs@caelex.eu</p>
-                <p>Telefon: [Telefonnummer]</p>
               </div>
-            </section>
-
-            <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
-                Registereintrag
-              </h2>
-              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
-                <p>Eintragung im Handelsregister</p>
-                <p>Registergericht: [Amtsgericht]</p>
-                <p>Registernummer: HRB [Nummer]</p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
-                Umsatzsteuer-ID
-              </h2>
-              <p className="text-[14px] text-white/60">
-                Umsatzsteuer-Identifikationsnummer gemäß § 27 a
-                Umsatzsteuergesetz:
-                <br />
-                DE [Nummer]
-              </p>
             </section>
 
             <section>
@@ -95,8 +62,9 @@ export default function ImpressumPage() {
                 Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
-                <p>[Name]</p>
-                <p>[Adresse]</p>
+                <p>Julian Polleschner</p>
+                <p>Am Maselakepark 37</p>
+                <p>13587 Berlin</p>
               </div>
             </section>
 

@@ -29,6 +29,7 @@ import type {
   ScheduledReportType,
   ReportFormat,
 } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // ─── Configuration ───
 
@@ -51,6 +52,12 @@ interface ScheduledReportWithUser extends ScheduledReport {
   };
 }
 
+// ─── GET: Vercel Cron entry point (delegates to POST logic) ───
+
+export async function GET(request: NextRequest) {
+  return POST(request);
+}
+
 // ─── POST: Generate Scheduled Reports ───
 
 export async function POST(request: NextRequest) {
@@ -60,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // In production, CRON_SECRET must be set
     if (process.env.NODE_ENV === "production" && !CRON_SECRET) {
-      console.error("CRON_SECRET not configured in production");
+      logger.error("CRON_SECRET not configured in production");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 },
@@ -70,14 +77,12 @@ export async function POST(request: NextRequest) {
     // In development, allow bypass for testing but log warning
     const isDev = process.env.NODE_ENV === "development";
     if (!isDev && authHeader !== `Bearer ${CRON_SECRET}`) {
-      console.warn("Unauthorized cron job attempt");
+      logger.warn("Unauthorized cron job attempt");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (isDev && !CRON_SECRET) {
-      console.warn(
-        "[DEV] CRON_SECRET not set - bypassing auth for development",
-      );
+      logger.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
     }
 
     const startTime = Date.now();
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     // Get all due reports
     const dueReports = (await getDueReports()) as ScheduledReportWithUser[];
-    console.log(`Found ${dueReports.length} due scheduled reports`);
+    logger.info(`Found ${dueReports.length} due scheduled reports`);
 
     // Process each report
     for (const scheduledReport of dueReports) {
@@ -174,7 +179,7 @@ export async function POST(request: NextRequest) {
       details: results.details,
     });
   } catch (error) {
-    console.error("Cron job failed:", error);
+    logger.error("Cron job failed:", error);
     return NextResponse.json(
       { error: "Failed to process scheduled reports" },
       { status: 500 },
@@ -322,7 +327,7 @@ async function generateReportContent(
     const buffer = formatReport(data, reportType, format);
     return { success: true, buffer };
   } catch (error) {
-    console.error(`Failed to generate ${reportType} report:`, error);
+    logger.error(`Failed to generate ${reportType} report:`, error);
     return {
       success: false,
       error: getSafeErrorMessage(error, "Report generation failed"),
@@ -499,7 +504,7 @@ async function sendReportNotifications(
         entityId: archiveId,
       });
     } catch (error) {
-      console.error(
+      logger.error(
         `Failed to send report notification to ${recipient}:`,
         error,
       );

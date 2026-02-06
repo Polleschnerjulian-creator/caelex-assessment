@@ -33,6 +33,7 @@ export function OrganizationSwitcher({
 
   useEffect(() => {
     fetchOrganizations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export function OrganizationSwitcher({
           }}
         >
           {selectedOrg?.logoUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={selectedOrg.logoUrl}
               alt={selectedOrg.name}
@@ -185,6 +187,7 @@ export function OrganizationSwitcher({
                   style={{ backgroundColor: org.primaryColor || "#3B82F6" }}
                 >
                   {org.logoUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={org.logoUrl}
                       alt={org.name}

@@ -19,7 +19,7 @@ export default function ProblemStatement() {
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">02 / 05</span>
+        <span className="font-mono text-[11px] text-white/30">02 / 11</span>
       </motion.div>
 
       <div className="max-w-[1000px] mx-auto">

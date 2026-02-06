@@ -18,8 +18,24 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters");
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain at least one lowercase letter");
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter");
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain at least one number");
+      return;
+    }
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      setError("Password must contain at least one special character");
       return;
     }
 
@@ -35,7 +51,12 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong");
+        // Show detailed validation errors if available
+        if (data.details && Array.isArray(data.details)) {
+          setError(data.details.join(". "));
+        } else {
+          setError(data.error || "Something went wrong");
+        }
         setLoading(false);
         return;
       }
@@ -133,7 +154,8 @@ export default function SignupPage() {
               required
             />
             <p className="font-mono text-[11px] text-slate-500 dark:text-white/30 mt-1">
-              Minimum 8 characters
+              Min. 12 characters, uppercase, lowercase, number, special
+              character
             </p>
           </div>
 

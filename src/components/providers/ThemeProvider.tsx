@@ -33,13 +33,16 @@ function ThemeProviderWithSession({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   // Load theme from user session or localStorage on mount
+  const userTheme = (session?.user as Record<string, unknown>)?.theme as
+    | string
+    | undefined;
   useEffect(() => {
     setMounted(true);
-    const userTheme = (session?.user as any)?.theme;
     const savedTheme =
       userTheme || localStorage.getItem("caelex-theme") || "system";
     setThemeState(savedTheme as Theme);
-  }, [(session?.user as any)?.theme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userTheme]);
 
   // Apply theme to document
   useEffect(() => {

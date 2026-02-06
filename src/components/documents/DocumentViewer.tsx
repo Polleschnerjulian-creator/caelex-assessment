@@ -173,6 +173,7 @@ export default function DocumentViewer({
     if (isImage) {
       return (
         <div className="flex items-center justify-center h-full p-4 overflow-auto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={fileUrl}
             alt={fileName}

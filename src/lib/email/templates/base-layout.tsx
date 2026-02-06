@@ -76,8 +76,7 @@ export function BaseLayout({ children, previewText }: BaseLayoutProps) {
               </Link>
             </Text>
             <Text style={copyrightStyle}>
-              &copy; {new Date().getFullYear()} Caelex GmbH. All rights
-              reserved.
+              &copy; {new Date().getFullYear()} Caelex. All rights reserved.
             </Text>
           </Section>
         </Container>

@@ -42,7 +42,7 @@ export default function Navigation() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
+        className={`dark-section fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           scrolled || mobileOpen
             ? "bg-black/50 backdrop-blur-xl"
             : "bg-transparent"
@@ -62,35 +62,39 @@ export default function Navigation() {
             <div className="flex items-center gap-6">
               {/* Links */}
               <Link
+                href="/#platform"
+                className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+              >
+                Platform
+              </Link>
+              <Link
                 href="/resources"
                 className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
               >
                 Resources
               </Link>
 
-              {/* Auth */}
+              {/* Auth + CTAs */}
               <div className="hidden md:flex items-center gap-4">
                 <Link
                   href="/login"
-                  className="text-[13px] text-white/60 hover:text-white transition-colors duration-300"
+                  className="text-[13px] text-white/50 hover:text-white transition-colors duration-300"
                 >
                   Log in
                 </Link>
                 <Link
-                  href="/signup"
-                  className="text-[13px] text-white/80 hover:text-white transition-colors duration-300 px-4 py-2 border border-white/20 rounded-full hover:border-white/40"
+                  href="/contact"
+                  className="text-[13px] font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
                 >
-                  Sign up
+                  Request Demo
+                </Link>
+                <Link
+                  href="/assessment"
+                  className="text-[13px] font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
+                >
+                  Start Assessment
                 </Link>
               </div>
-
-              {/* CTA */}
-              <Link
-                href="/assessment"
-                className="hidden md:inline-flex text-[13px] font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
-              >
-                Start Assessment
-              </Link>
 
               {/* Mobile Menu Button */}
               <button
@@ -131,6 +135,7 @@ export default function Navigation() {
               className="relative mt-20 mx-6 p-6 rounded-2xl bg-[#111] border border-white/[0.08]"
             >
               <div className="flex flex-col gap-1">
+                {/* Primary CTAs */}
                 <Link
                   href="/assessment"
                   onClick={() => setMobileOpen(false)}
@@ -138,7 +143,21 @@ export default function Navigation() {
                 >
                   Start Assessment
                 </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/80 text-[14px] font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
+                >
+                  Request Demo
+                </Link>
                 <div className="h-px bg-white/[0.06] my-3" />
+                <Link
+                  href="/#platform"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                >
+                  Platform
+                </Link>
                 <Link
                   href="/resources"
                   onClick={() => setMobileOpen(false)}

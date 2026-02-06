@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Satellite,
   Plus,
@@ -102,7 +103,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export default function RegistrationPage() {
+function RegistrationPageContent() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [spacecraft, setSpacecraft] = useState<Spacecraft[]>([]);
   const [loading, setLoading] = useState(true);
@@ -388,6 +389,14 @@ export default function RegistrationPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function RegistrationPage() {
+  return (
+    <FeatureGate module="registration">
+      <RegistrationPageContent />
+    </FeatureGate>
   );
 }
 

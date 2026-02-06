@@ -16,6 +16,7 @@
 
 import type { WorkflowDefinition, AuthorizationContext } from "../types";
 import { createTransition, createAutoTransition } from "../engine";
+import { logger } from "@/lib/logger";
 
 /**
  * Authorization Workflow Definition
@@ -197,7 +198,7 @@ export const authorizationWorkflowDefinition: WorkflowDefinition<AuthorizationCo
 
     hooks: {
       beforeTransition: async (ctx) => {
-        console.log(
+        logger.debug(
           `[Authorization ${ctx.workflowId}] Transition: ${ctx.from} → ${ctx.to}`,
         );
       },
@@ -205,10 +206,7 @@ export const authorizationWorkflowDefinition: WorkflowDefinition<AuthorizationCo
         // Could trigger notifications, audit logs, etc.
       },
       onError: async (error, ctx) => {
-        console.error(
-          `[Authorization ${ctx.workflowId}] Error:`,
-          error.message,
-        );
+        logger.error(`[Authorization ${ctx.workflowId}] Error:`, error.message);
       },
     },
   };

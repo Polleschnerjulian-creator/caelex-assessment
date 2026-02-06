@@ -16,70 +16,66 @@ import {
 const plans = [
   {
     name: "Starter",
-    description: "Für kleine Teams und erste Compliance-Schritte",
+    description: "For small teams taking their first compliance steps",
     icon: Zap,
     monthlyPrice: 0,
     yearlyPrice: 0,
-    priceLabel: "Kostenlos",
+    priceLabel: "Free",
     highlighted: false,
-    cta: "Jetzt starten",
-    ctaHref: "/register",
+    cta: "Get Started",
+    ctaHref: "/assessment",
     features: [
       "Compliance Assessment",
-      "Basis-Dashboard",
+      "Basic Dashboard",
       "1 Spacecraft",
-      "EU Space Act Ressourcen",
+      "EU Space Act Resources",
       "Community Support",
     ],
-    limits: [
-      "Kein Dokumentenmanagement",
-      "Keine API-Zugang",
-      "Keine Team-Funktionen",
-    ],
+    limits: ["No document management", "No API access", "No team features"],
   },
   {
     name: "Professional",
-    description: "Für wachsende Space-Unternehmen",
+    description: "For growing space companies",
     icon: Rocket,
     monthlyPrice: 299,
     yearlyPrice: 249,
     priceLabel: null,
     highlighted: true,
-    cta: "14 Tage kostenlos testen",
-    ctaHref: "/register?plan=professional",
+    cta: "Start 14-Day Free Trial",
+    ctaHref: "/contact?subject=professional",
     features: [
-      "Alles aus Starter",
-      "Unbegrenzte Spacecraft",
-      "Vollständiges Compliance-Dashboard",
-      "Dokumentenmanagement",
-      "Audit-Trail & Berichte",
-      "NCA-Submission Workflow",
-      "Team-Zugang (bis 10 User)",
-      "E-Mail Support",
-      "API-Zugang",
+      "Everything in Starter",
+      "Unlimited Spacecraft",
+      "Full Compliance Dashboard",
+      "Document Management",
+      "Audit Trail & Reports",
+      "NCA Submission Workflow",
+      "Team Access (up to 10 users)",
+      "Email Support",
+      "API Access",
     ],
     limits: [],
   },
   {
     name: "Enterprise",
-    description: "Für Konzerne und komplexe Anforderungen",
+    description: "For large organizations with complex requirements",
     icon: Building2,
     monthlyPrice: null,
     yearlyPrice: null,
-    priceLabel: "Auf Anfrage",
+    priceLabel: "Custom",
     highlighted: false,
-    cta: "Kontakt aufnehmen",
+    cta: "Contact Sales",
     ctaHref: "/contact?subject=enterprise",
     features: [
-      "Alles aus Professional",
-      "Unbegrenzte User",
-      "Multi-Organisation Support",
+      "Everything in Professional",
+      "Unlimited Users",
+      "Multi-Organization Support",
       "SSO / SAML Integration",
-      "Dedizierter Account Manager",
-      "Custom Integrationen",
-      "SLA-Garantie (99.9%)",
+      "Dedicated Account Manager",
+      "Custom Integrations",
+      "SLA Guarantee (99.9%)",
       "On-Premise Option",
-      "Schulungen & Onboarding",
+      "Training & Onboarding",
       "Priority Support",
     ],
     limits: [],
@@ -88,34 +84,34 @@ const plans = [
 
 const faqs = [
   {
-    question: "Kann ich den Plan jederzeit wechseln?",
+    question: "Can I switch plans at any time?",
     answer:
-      "Ja, Sie können jederzeit upgraden oder downgraden. Bei einem Upgrade wird der Differenzbetrag anteilig berechnet. Bei einem Downgrade wird das Guthaben auf die nächste Rechnung angerechnet.",
+      "Yes, you can upgrade or downgrade at any time. When upgrading, the price difference is prorated. When downgrading, remaining credit is applied to your next invoice.",
   },
   {
-    question: "Was passiert nach der kostenlosen Testphase?",
+    question: "What happens after the free trial?",
     answer:
-      "Nach 14 Tagen werden Sie automatisch auf den gewählten Plan umgestellt. Sie können jederzeit vorher kündigen. Es werden keine Kreditkartendaten für die Testphase benötigt.",
+      "After 14 days, you'll be automatically moved to your chosen plan. You can cancel anytime before that. No credit card is required for the trial period.",
   },
   {
-    question: "Gibt es Rabatte für Startups?",
+    question: "Are there discounts for startups?",
     answer:
-      "Ja! Wir bieten ein Startup-Programm mit 50% Rabatt im ersten Jahr für qualifizierte Space-Startups. Kontaktieren Sie uns für Details.",
+      "Yes! We offer a startup program with 50% off in the first year for qualifying space startups. Contact us for details.",
   },
   {
-    question: "Wie funktioniert die Abrechnung?",
+    question: "How does billing work?",
     answer:
-      "Die Abrechnung erfolgt monatlich oder jährlich im Voraus per Kreditkarte oder SEPA-Lastschrift. Enterprise-Kunden können auch per Rechnung zahlen.",
+      "Billing is monthly or annually in advance via credit card or SEPA direct debit. Enterprise customers can also pay by invoice.",
   },
   {
-    question: "Was zählt als 'Spacecraft'?",
+    question: "What counts as a 'Spacecraft'?",
     answer:
-      "Ein Spacecraft ist jedes Raumfahrzeug, das Sie in der Plattform verwalten — unabhängig davon, ob es sich um einen Satelliten, eine Konstellation oder ein Servicemodul handelt. Konstellationen mit identischen Einheiten können als ein Eintrag verwaltet werden.",
+      "A spacecraft is any space object you manage on the platform — whether it's a satellite, a constellation, or a service module. Constellations with identical units can be managed as a single entry.",
   },
   {
-    question: "Bieten Sie Schulungen an?",
+    question: "Do you offer training?",
     answer:
-      "Professional-Kunden erhalten Zugang zu unserer Wissensdatenbank und Webinaren. Enterprise-Kunden bekommen dedizierte Schulungen und Onboarding-Sessions.",
+      "Professional customers get access to our knowledge base and webinars. Enterprise customers receive dedicated training and onboarding sessions.",
   },
 ];
 
@@ -129,38 +125,38 @@ const comparisonFeatures = [
   {
     name: "Spacecraft Management",
     starter: "1",
-    professional: "Unbegrenzt",
-    enterprise: "Unbegrenzt",
+    professional: "Unlimited",
+    enterprise: "Unlimited",
   },
   {
-    name: "Team-Mitglieder",
+    name: "Team Members",
     starter: "1",
     professional: "10",
-    enterprise: "Unbegrenzt",
+    enterprise: "Unlimited",
   },
   {
-    name: "Dokumentenmanagement",
+    name: "Document Management",
     starter: false,
     professional: true,
     enterprise: true,
   },
-  { name: "Audit-Trail", starter: false, professional: true, enterprise: true },
+  { name: "Audit Trail", starter: false, professional: true, enterprise: true },
   {
-    name: "NCA-Submission Workflow",
+    name: "NCA Submission Workflow",
     starter: false,
     professional: true,
     enterprise: true,
   },
-  { name: "API-Zugang", starter: false, professional: true, enterprise: true },
+  { name: "API Access", starter: false, professional: true, enterprise: true },
   { name: "SSO / SAML", starter: false, professional: false, enterprise: true },
   {
-    name: "Custom Integrationen",
+    name: "Custom Integrations",
     starter: false,
     professional: false,
     enterprise: true,
   },
   {
-    name: "SLA-Garantie",
+    name: "SLA Guarantee",
     starter: false,
     professional: "99.5%",
     enterprise: "99.9%",
@@ -168,7 +164,7 @@ const comparisonFeatures = [
   {
     name: "Support",
     starter: "Community",
-    professional: "E-Mail",
+    professional: "Email",
     enterprise: "Priority + AM",
   },
 ];
@@ -179,7 +175,7 @@ export default function PricingPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -195,7 +191,7 @@ export default function PricingPage() {
               className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
-              <span>Zurück</span>
+              <span>Back</span>
             </Link>
           </div>
         </div>
@@ -213,11 +209,10 @@ export default function PricingPage() {
               Pricing
             </span>
             <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-light tracking-[-0.02em] mb-6">
-              Einfache, transparente Preise
+              Simple, transparent pricing
             </h1>
             <p className="text-[17px] text-white/50 max-w-[500px] mx-auto mb-10">
-              Starten Sie kostenlos und skalieren Sie mit Ihren
-              Compliance-Anforderungen.
+              Start for free and scale with your compliance needs.
             </p>
 
             {/* Billing Toggle */}
@@ -230,7 +225,7 @@ export default function PricingPage() {
                     : "text-white/60 hover:text-white"
                 }`}
               >
-                Monatlich
+                Monthly
               </button>
               <button
                 onClick={() => setBillingPeriod("yearly")}
@@ -240,7 +235,7 @@ export default function PricingPage() {
                     : "text-white/60 hover:text-white"
                 }`}
               >
-                Jährlich
+                Yearly
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full ${
                     billingPeriod === "yearly"
@@ -282,7 +277,7 @@ export default function PricingPage() {
                   {plan.highlighted && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <span className="text-[10px] font-mono text-black bg-white px-3 py-1 rounded-full">
-                        Beliebt
+                        Popular
                       </span>
                     </div>
                   )}
@@ -320,7 +315,7 @@ export default function PricingPage() {
                             €{price}
                           </span>
                           <span className="text-[14px] text-white/40">
-                            /Monat
+                            /month
                           </span>
                         </div>
                       )}
@@ -328,7 +323,7 @@ export default function PricingPage() {
                         price !== null &&
                         price > 0 && (
                           <p className="text-[12px] text-white/40 mt-1">
-                            €{price * 12} jährlich abgerechnet
+                            €{price * 12} billed annually
                           </p>
                         )}
                     </div>
@@ -374,7 +369,7 @@ export default function PricingPage() {
       <section className="py-16 px-6 md:px-12 border-t border-white/[0.06]">
         <div className="max-w-[1100px] mx-auto">
           <h2 className="text-[24px] font-light text-center mb-12">
-            Feature-Vergleich
+            Feature Comparison
           </h2>
 
           <div className="overflow-x-auto">
@@ -465,7 +460,9 @@ export default function PricingPage() {
         <div className="max-w-[800px] mx-auto">
           <div className="flex items-center justify-center gap-3 mb-12">
             <HelpCircle size={20} className="text-white/40" />
-            <h2 className="text-[24px] font-light">Häufige Fragen</h2>
+            <h2 className="text-[24px] font-light">
+              Frequently Asked Questions
+            </h2>
           </div>
 
           <div className="space-y-6">
@@ -490,25 +487,24 @@ export default function PricingPage() {
       <section className="py-20 px-6 md:px-12 border-t border-white/[0.06]">
         <div className="max-w-[600px] mx-auto text-center">
           <h2 className="text-[28px] font-light mb-4">
-            Bereit für EU Space Act Compliance?
+            Ready for EU Space Act compliance?
           </h2>
           <p className="text-[15px] text-white/50 mb-8">
-            Starten Sie kostenlos oder sprechen Sie mit unserem Team über Ihre
-            Anforderungen.
+            Start for free or talk to our team about your requirements.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/register"
+              href="/assessment"
               className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all"
             >
-              Kostenlos starten
+              Start Free Assessment
               <span>→</span>
             </Link>
             <Link
               href="/contact"
               className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-white transition-colors"
             >
-              Enterprise anfragen
+              Contact Sales
             </Link>
           </div>
         </div>

@@ -63,6 +63,7 @@ export function SpacecraftList({
 
   useEffect(() => {
     fetchSpacecraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId, statusFilter, orbitFilter]);
 
   async function fetchSpacecraft() {

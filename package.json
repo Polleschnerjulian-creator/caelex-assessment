@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "security:audit": "npm audit --audit-level=moderate",
@@ -60,6 +60,7 @@
     "react-email": "^5.2.5",
     "react-pdf": "^10.3.0",
     "resend": "^6.9.1",
+    "stream-browserify": "^3.0.0",
     "stripe": "^20.3.0",
     "swagger-ui-react": "^5.31.0",
     "three": "^0.160.0",

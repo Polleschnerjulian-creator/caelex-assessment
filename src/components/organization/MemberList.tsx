@@ -138,6 +138,7 @@ export function MemberList({
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
                 {member.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={member.image}
                     alt={member.name || ""}
