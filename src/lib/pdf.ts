@@ -33,7 +33,8 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
     const { Document, Page, Text, View, StyleSheet, pdf } =
       await getPdfModule();
 
-    // PDF Styles
+    // PDF Styles — using only properties supported by @react-pdf/renderer
+    // No CSS shorthand strings (border, padding multi-value) — use explicit properties
     const styles = StyleSheet.create({
       page: {
         padding: 40,
@@ -42,7 +43,8 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
       },
       header: {
         marginBottom: 30,
-        borderBottom: "2px solid #3B82F6",
+        borderBottomWidth: 2,
+        borderBottomColor: "#3B82F6",
         paddingBottom: 20,
       },
       logo: {
@@ -75,7 +77,8 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
         color: "#0F172A",
         marginBottom: 12,
         paddingBottom: 6,
-        borderBottom: "1px solid #E2E8F0",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E2E8F0",
       },
       profileGrid: {
         flexDirection: "row" as const,
@@ -131,7 +134,8 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
         padding: 10,
         borderRadius: 4,
         marginBottom: 8,
-        border: "1px solid #E2E8F0",
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
       },
       moduleName: {
         fontSize: 10,
@@ -141,7 +145,8 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
       },
       moduleStatus: {
         fontSize: 8,
-        padding: "2px 6px",
+        paddingVertical: 2,
+        paddingHorizontal: 6,
         borderRadius: 2,
         marginBottom: 4,
       },
@@ -149,11 +154,17 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
         fontSize: 8,
         color: "#64748B",
       },
+      moduleSummary: {
+        fontSize: 8,
+        color: "#64748B",
+        marginTop: 4,
+      },
       checklistItem: {
         flexDirection: "row" as const,
         marginBottom: 8,
         paddingBottom: 8,
-        borderBottom: "1px solid #F1F5F9",
+        borderBottomWidth: 1,
+        borderBottomColor: "#F1F5F9",
       },
       checklistNumber: {
         width: 20,
@@ -424,11 +435,10 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
                 createElement(
                   Text,
                   {
-                    style: {
-                      ...styles.moduleStatus,
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                    },
+                    style: [
+                      styles.moduleStatus,
+                      { backgroundColor: colors.bg, color: colors.text },
+                    ],
                   },
                   mod.status.replace("_", " ").toUpperCase(),
                 ),
@@ -439,13 +449,7 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
                 ),
                 createElement(
                   Text,
-                  {
-                    style: {
-                      fontSize: 8,
-                      color: "#64748B",
-                      marginTop: 4,
-                    },
-                  },
+                  { style: styles.moduleSummary },
                   mod.summary || "",
                 ),
               );
