@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
 const { withSentryConfig } = require("@sentry/nextjs");
 
 /**
@@ -157,22 +158,43 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config, { isServer, webpack }) => {
-    // Client-side polyfills for @react-pdf/renderer
+    // Client-side configuration for @react-pdf/renderer
     if (!isServer) {
+      // Force browser builds for @react-pdf packages.
+      // Their package.json `exports` field lacks a "browser" condition,
+      // so webpack 5 resolves to the Node entry point (which imports
+      // stream, zlib, fs — all unavailable in the browser).
+      // These aliases bypass the exports resolution entirely.
+      const nmDir = path.resolve(__dirname, "node_modules");
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "@react-pdf/renderer": path.join(
+          nmDir,
+          "@react-pdf/renderer/lib/react-pdf.browser.js",
+        ),
+        "@react-pdf/pdfkit": path.join(
+          nmDir,
+          "@react-pdf/pdfkit/lib/pdfkit.browser.js",
+        ),
+        "@react-pdf/font": path.join(
+          nmDir,
+          "@react-pdf/font/lib/index.browser.js",
+        ),
+        canvas: false,
+      };
+
+      // The browser builds use pako (pure JS zlib) and inline stream
+      // polyfills, so Node built-ins aren't needed. Keep false as safety net.
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        // @react-pdf/renderer needs these browser polyfills
-        stream: require.resolve("stream-browserify"),
+        stream: false,
         zlib: false,
         util: false,
       };
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        canvas: false,
-      };
+
       // Provide Buffer and process globals for @react-pdf/renderer
       config.plugins.push(
         new webpack.ProvidePlugin({
