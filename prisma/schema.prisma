@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -16,12 +17,13 @@ model User {
   emailVerified          DateTime?
   image                  String?
   password               String?                 // hashed password, null for OAuth-only users
-  organization           String?
+  organization           String?                 // Legacy: organization name as string
   operatorType           String?                 // from assessment: SCO, LO, TCO, etc.
   establishmentCountry   String?                 // ISO country code
   isThirdCountry         Boolean                 @default(false)
   role                   String                  @default("user") // user, admin, auditor
   isActive               Boolean                 @default(true)
+  theme                  String                  @default("system") // "light" | "dark" | "system"
   accounts               Account[]
   sessions               Session[]
   articleStatuses        ArticleStatus[]
@@ -37,6 +39,18 @@ model User {
   missionPhases          MissionPhase[]
   documents              Document[]
   documentTemplates      DocumentTemplate[]
+  generatedReports       SupervisionReport[]     @relation("GeneratedReports")
+  scheduledReports       ScheduledReport[]
+  reportArchives         ReportArchive[]
+  ncaSubmissions         NCASubmission[]
+  organizationMemberships OrganizationMember[]   // Multi-tenancy: user's org memberships
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  userSessions           UserSession[]
+  securityAuditLogs      SecurityAuditLog[]
+  apiKeys                ApiKey[]
+  comments               Comment[]               // Collaboration: user's comments
+  activities             Activity[]              // Collaboration: user's activities
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 }
@@ -546,11 +560,47 @@ model SupplierDataRequest {
   // Response Data
   responseData  String?  @db.Text // JSON object with supplier response
 
+  // Relations
+  portalTokens  SupplierPortalToken[]
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([assessmentId])
   @@index([status])
+}
+
+// ─── Supplier Portal Token ───
+// Token-based access for suppliers to submit LCA data without authentication
+
+model SupplierPortalToken {
+  id           String              @id @default(cuid())
+  token        String              @unique // Secure random token
+  requestId    String
+  request      SupplierDataRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  // Token Lifecycle
+  expiresAt    DateTime
+  usedAt       DateTime?           // When the token was first used
+  completedAt  DateTime?           // When form was submitted
+
+  // Access Tracking
+  ipAddress    String?
+  userAgent    String?
+  accessCount  Int                 @default(0)
+  lastAccessAt DateTime?
+
+  // Security
+  isRevoked    Boolean             @default(false)
+  revokedAt    DateTime?
+  revokedBy    String?
+  revokeReason String?
+
+  createdAt    DateTime            @default(now())
+
+  @@index([token])
+  @@index([requestId])
+  @@index([expiresAt])
 }
 
 // ─── Security Models ───
@@ -641,6 +691,7 @@ model Incident {
   lessonsLearned    String?           @db.Text
 
   // NCA Reporting
+  requiresNCANotification Boolean     @default(true)
   reportedToNCA     Boolean           @default(false)
   ncaReportDate     DateTime?
   ncaReferenceNumber String?
@@ -656,6 +707,7 @@ model Incident {
 
   affectedAssets    IncidentAsset[]
   attachments       IncidentAttachment[]
+  reports           SupervisionReport[]
 
   @@index([supervisionId])
   @@index([category])
@@ -697,8 +749,8 @@ model SupervisionReport {
 
   reportType     String            // annual_compliance, significant_change, incident, cybersecurity, debris_event, conjunction, anomaly, eol_update, insurance, ownership_transfer
   reportPeriod   String?           // e.g., "2025", "Q1 2026"
-  status         String            @default("draft") // draft, ready, submitted, acknowledged, rejected
-  dueDate        DateTime
+  status         String            @default("draft") // draft, generated, ready, submitted, acknowledged, rejected, archived
+  dueDate        DateTime?
   submittedAt    DateTime?
   acknowledgedAt DateTime?
   rejectedAt     DateTime?
@@ -707,7 +759,21 @@ model SupervisionReport {
   // Content
   title          String?
   content        String?           @db.Text // JSON structured report content
-  ncaReference   String?
+  ncaReferenceNumber String?
+  fileUrl        String?           // URL to stored PDF file
+  metadata       Json?             // Additional report metadata
+
+  // Generation
+  generatedAt    DateTime?
+  generatedBy    String?
+  generator      User?             @relation("GeneratedReports", fields: [generatedBy], references: [id])
+
+  // Incident link (for incident reports)
+  incidentId     String?
+  incident       Incident?         @relation(fields: [incidentId], references: [id])
+
+  // NCA Submissions
+  ncaSubmissions NCASubmission[]
 
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
@@ -716,6 +782,7 @@ model SupervisionReport {
   @@index([reportType])
   @@index([dueDate])
   @@index([status])
+  @@index([incidentId])
 }
 
 model SupervisionCalendarEvent {
@@ -934,6 +1001,7 @@ model Document {
 
   // Storage
   storagePath       String            // Path in secure storage
+  storageProvider   String?           // Storage provider: R2, S3, LOCAL, etc.
   checksum          String            // SHA-256 for integrity
 
   // Versioning
@@ -1157,4 +1225,1111 @@ enum ShareAccessType {
   DOWNLOAD
   COMMENT
   EDIT
+}
+
+// ============================================
+// NOTIFICATION SYSTEM
+// ============================================
+
+model NotificationLog {
+  id               String   @id @default(cuid())
+  userId           String
+  recipientEmail   String
+  notificationType String   // deadline_reminder, document_expiry, incident_alert, weekly_digest
+  entityType       String   // deadline, document, incident, summary
+  entityId         String?  // nullable for digest emails
+  subject          String
+  status           String   @default("sent") // sent, failed, bounced
+  errorMessage     String?  @db.Text
+  metadata         String?  @db.Text // JSON for additional data
+  sentAt           DateTime @default(now())
+
+  @@index([userId, sentAt])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([notificationType])
+}
+
+enum NotificationType {
+  // Deadlines
+  DEADLINE_REMINDER
+  DEADLINE_APPROACHING
+  DEADLINE_OVERDUE
+  DOCUMENT_EXPIRY
+
+  // Compliance
+  COMPLIANCE_GAP
+  COMPLIANCE_SCORE_DROPPED
+  COMPLIANCE_ACTION_REQUIRED
+  COMPLIANCE_UPDATED
+
+  // Authorization
+  AUTHORIZATION_UPDATE
+  WORKFLOW_STATUS_CHANGED
+  DOCUMENT_REQUIRED
+  AUTHORIZATION_APPROVED
+  AUTHORIZATION_REJECTED
+
+  // Incidents
+  INCIDENT_ALERT
+  INCIDENT_CREATED
+  INCIDENT_ESCALATED
+  INCIDENT_RESOLVED
+  NCA_DEADLINE_APPROACHING
+
+  // Reports
+  WEEKLY_DIGEST
+  REPORT_GENERATED
+  REPORT_SUBMITTED
+  REPORT_FAILED
+  NCA_ACKNOWLEDGED
+
+  // Team
+  MEMBER_JOINED
+  MEMBER_LEFT
+  MEMBER_ROLE_CHANGED
+  INVITATION_RECEIVED
+
+  // Spacecraft
+  SPACECRAFT_STATUS_CHANGED
+  SPACECRAFT_ADDED
+
+  // System
+  SYSTEM_UPDATE
+  SYSTEM_MAINTENANCE
+}
+
+// ============================================
+// SCHEDULED REPORTS & ARCHIVE
+// ============================================
+
+model ScheduledReport {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Report Configuration
+  name           String              // User-friendly name for this schedule
+  reportType     ScheduledReportType // Type of report to generate
+  schedule       String              // Cron expression: "0 0 1 * *" (monthly on 1st)
+  timezone       String   @default("UTC")
+
+  // Timing
+  nextRunAt      DateTime
+  lastRunAt      DateTime?
+  lastRunStatus  String?             // success, failed, skipped
+
+  // Recipients
+  recipients     String[]            // Email addresses for delivery
+  sendToSelf     Boolean  @default(true)
+
+  // Output Options
+  format         ReportFormat @default(PDF)
+  includeCharts  Boolean  @default(true)
+
+  // Filters (JSON)
+  filters        String?  @db.Text   // Module filters, date ranges, etc.
+
+  // Status
+  isActive       Boolean  @default(true)
+  failureCount   Int      @default(0)
+  maxRetries     Int      @default(3)
+
+  // Relations
+  archives       ReportArchive[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([nextRunAt, isActive])
+  @@index([reportType])
+}
+
+model ReportArchive {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Report Info
+  reportType        ScheduledReportType
+  title             String
+  description       String?  @db.Text
+
+  // File Storage
+  fileName          String
+  fileSize          Int               // in bytes
+  mimeType          String
+  storagePath       String            // Path to stored file
+  checksum          String            // SHA-256 for integrity
+
+  // Generation Context
+  generatedAt       DateTime
+  generationTimeMs  Int?              // How long it took to generate
+  scheduledReportId String?           // Link to schedule if auto-generated
+  scheduledReport   ScheduledReport?  @relation(fields: [scheduledReportId], references: [id], onDelete: SetNull)
+
+  // Report Period
+  periodStart       DateTime?
+  periodEnd         DateTime?
+
+  // Metadata
+  metadata          String?  @db.Text // JSON: filters used, data snapshot, etc.
+
+  // Retention
+  expiresAt         DateTime?         // Auto-cleanup date
+  isArchived        Boolean  @default(false) // Marked for long-term storage
+
+  // Download Tracking
+  downloadCount     Int      @default(0)
+  lastDownloadedAt  DateTime?
+
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+  @@index([reportType])
+  @@index([generatedAt])
+  @@index([scheduledReportId])
+  @@index([expiresAt])
+}
+
+enum ScheduledReportType {
+  COMPLIANCE_SUMMARY      // Overall compliance status
+  MONTHLY_DIGEST          // Monthly activity digest
+  QUARTERLY_REVIEW        // Quarterly compliance review
+  ANNUAL_COMPLIANCE       // Annual compliance report
+  INCIDENT_DIGEST         // Incident summary report
+  AUTHORIZATION_STATUS    // Authorization workflow status
+  DOCUMENT_INVENTORY      // Document status report
+  DEADLINE_FORECAST       // Upcoming deadlines report
+  AUDIT_TRAIL             // Audit log export
+  COMPLIANCE_CERTIFICATE  // Compliance certificate
+}
+
+enum ReportFormat {
+  PDF
+  CSV
+  JSON
+  XLSX
+}
+
+// ============================================
+// NCA SUBMISSION TRACKING
+// ============================================
+
+model NCASubmission {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Report Link
+  reportId          String
+  report            SupervisionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  // NCA Information
+  ncaAuthority      NCAAuthority      // Target NCA
+  ncaAuthorityName  String            // Full name for display
+  ncaPortalUrl      String?           // Link to NCA portal if applicable
+
+  // Submission Details
+  submissionMethod  SubmissionMethod
+  submittedAt       DateTime
+  submittedBy       String            // User ID who submitted
+
+  // Attachments
+  attachments       Json?             // List of { fileName, fileSize, fileUrl }
+  coverLetter       String?  @db.Text // Optional cover letter content
+
+  // Status Tracking
+  status            NCASubmissionStatus @default(SUBMITTED)
+  statusHistory     Json?             // Array of { status, timestamp, notes }
+
+  // NCA Response
+  ncaReference      String?           // NCA-assigned reference number
+  acknowledgedAt    DateTime?
+  acknowledgedBy    String?           // NCA contact name
+  rejectedAt        DateTime?
+  rejectionReason   String?  @db.Text
+
+  // Follow-up
+  responseNotes     String?  @db.Text // Notes from NCA response
+  followUpRequired  Boolean  @default(false)
+  followUpDeadline  DateTime?
+  followUpNotes     String?  @db.Text
+
+  // Resend tracking
+  originalSubmissionId String?        // If this is a resend, link to original
+  originalSubmission   NCASubmission? @relation("SubmissionResends", fields: [originalSubmissionId], references: [id])
+  resends              NCASubmission[] @relation("SubmissionResends")
+  resendCount       Int      @default(0)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([reportId])
+  @@index([ncaAuthority])
+  @@index([status])
+  @@index([submittedAt])
+}
+
+enum NCAAuthority {
+  // EU Member States
+  DE_BMWK           // Germany - Federal Ministry for Economic Affairs
+  DE_DLR            // Germany - German Aerospace Center
+  FR_CNES           // France - Centre National d'Études Spatiales
+  FR_DGAC           // France - Direction Générale de l'Aviation Civile
+  IT_ASI            // Italy - Agenzia Spaziale Italiana
+  ES_AEE            // Spain - Agencia Espacial Española
+  NL_NSO            // Netherlands - Netherlands Space Office
+  BE_BELSPO         // Belgium - Belgian Science Policy Office
+  AT_FFG            // Austria - Austrian Research Promotion Agency
+  PL_POLSA          // Poland - Polish Space Agency
+  SE_SNSA           // Sweden - Swedish National Space Agency
+  DK_DTU            // Denmark - DTU Space
+  FI_BF             // Finland - Business Finland
+  PT_FCT            // Portugal - Fundação para a Ciência e a Tecnologia
+  IE_EI             // Ireland - Enterprise Ireland
+  LU_LSA            // Luxembourg - Luxembourg Space Agency
+  CZ_CSO            // Czech Republic - Czech Space Office
+  RO_ROSA           // Romania - Romanian Space Agency
+  GR_HSA            // Greece - Hellenic Space Agency
+  // EU Level
+  EUSPA             // EU Space Programme Agency
+  EC_DEFIS          // European Commission DG DEFIS
+  // Other
+  OTHER             // Other authority
+}
+
+enum SubmissionMethod {
+  PORTAL            // Via NCA online portal
+  EMAIL             // Via official email
+  API               // Via API integration
+  REGISTERED_MAIL   // Physical registered mail
+  IN_PERSON         // In-person submission
+}
+
+enum NCASubmissionStatus {
+  DRAFT             // Preparing submission
+  SUBMITTED         // Sent to NCA
+  RECEIVED          // NCA confirmed receipt
+  UNDER_REVIEW      // NCA is reviewing
+  INFORMATION_REQUESTED // NCA requested additional info
+  ACKNOWLEDGED      // NCA formally acknowledged
+  APPROVED          // NCA approved (for authorizations)
+  REJECTED          // NCA rejected
+  WITHDRAWN         // Operator withdrew submission
+}
+
+// ============================================
+// MULTI-TENANCY: ORGANIZATIONS
+// ============================================
+
+model Organization {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique  // URL-friendly identifier
+
+  // Branding
+  logoUrl           String?
+  primaryColor      String?  @default("#3B82F6")
+
+  // Settings
+  timezone          String   @default("Europe/Berlin")
+  defaultLanguage   String   @default("en")
+
+  // Subscription
+  plan              OrganizationPlan @default(FREE)
+  planExpiresAt     DateTime?
+  maxUsers          Int      @default(3)
+  maxSpacecraft     Int      @default(5)
+
+  // Billing
+  billingEmail      String?
+  vatNumber         String?
+  billingAddress    Json?
+
+  // Status
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  members           OrganizationMember[]
+  invitations       OrganizationInvitation[]
+  spacecraft        Spacecraft[]
+  registrations     SpaceObjectRegistration[]
+  ssoConnection     SSOConnection?
+  apiKeys           ApiKey[]
+  webhooks          Webhook[]
+  subscription      Subscription?
+  comments          Comment[]               // Collaboration: organization's comments
+  activities        Activity[]              // Collaboration: organization's activities
+
+  @@index([slug])
+}
+
+// ============================================
+// SUBSCRIPTIONS & BILLING
+// ============================================
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  organizationId       String   @unique
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Stripe IDs
+  stripeCustomerId     String   @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+
+  // Status
+  status               SubscriptionStatus @default(TRIALING)
+  plan                 OrganizationPlan   @default(FREE)
+
+  // Billing Cycle
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  canceledAt           DateTime?
+
+  // Trial
+  trialStart           DateTime?
+  trialEnd             DateTime?
+
+  // Timestamps
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role           OrganizationRole @default(MEMBER)
+  permissions    String[]  // Granular permissions array
+
+  invitedBy      String?   // User ID who invited this member
+  joinedAt       DateTime  @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId])
+}
+
+model OrganizationInvitation {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  email          String
+  role           OrganizationRole @default(MEMBER)
+  token          String   @unique  // Secure invitation token
+
+  invitedBy      String   // User ID who created the invitation
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+
+  createdAt      DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@index([organizationId])
+}
+
+enum OrganizationPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum OrganizationRole {
+  OWNER       // Full access, can delete org
+  ADMIN       // Manage members, settings
+  MANAGER     // Manage compliance, reports
+  MEMBER      // View & edit assigned items
+  VIEWER      // Read-only access
+}
+
+// ============================================
+// SPACECRAFT / ASSET MANAGEMENT
+// ============================================
+
+model Spacecraft {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identification
+  name           String
+  cosparId       String?  // International designator (e.g., "2024-001A")
+  noradId        String?  // NORAD catalog number
+
+  // Mission Info
+  missionType    String   // communication, earth_observation, navigation, etc.
+  launchDate     DateTime?
+  endOfLifeDate  DateTime?
+
+  // Orbital Parameters
+  orbitType      String   // LEO, MEO, GEO, HEO
+  altitudeKm     Float?
+  inclinationDeg Float?
+
+  // Status
+  status         SpacecraftStatus @default(PRE_LAUNCH)
+
+  // Metadata
+  description    String?  @db.Text
+  metadata       Json?    // Flexible additional data
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  registrations  SpaceObjectRegistration[]
+
+  @@index([organizationId])
+  @@index([cosparId])
+  @@index([noradId])
+  @@index([status])
+}
+
+enum SpacecraftStatus {
+  PRE_LAUNCH
+  LAUNCHED
+  OPERATIONAL
+  DECOMMISSIONING
+  DEORBITED
+  LOST
+}
+
+// ============================================
+// URSO REGISTRATION (UN Registry of Space Objects)
+// ============================================
+
+model SpaceObjectRegistration {
+  id                    String   @id @default(cuid())
+
+  // Core URSO Fields (Art. 24 EU Space Act)
+  internationalDesignator String?  // COSPAR ID: YYYY-NNNXXX
+  noradCatalogNumber    String?   // 5-digit NORAD ID
+  objectName            String    // Official name
+  objectType            SpaceObjectType
+
+  // Launch Information
+  launchDate            DateTime?
+  launchSite            String?   // e.g., "Kourou, French Guiana"
+  launchVehicle         String?   // e.g., "Ariane 6"
+  launchState           String?   // ISO country code (e.g., "FR")
+
+  // Orbital Parameters
+  orbitalRegime         OrbitalRegime
+  perigee               Float?    // km
+  apogee                Float?    // km
+  inclination           Float?    // degrees
+  period                Float?    // minutes
+  nodeLongitude         Float?    // degrees (for GEO)
+
+  // Ownership & Jurisdiction
+  ownerOperator         String    // Organization name
+  stateOfRegistry       String    // ISO country code
+  jurisdictionState     String?   // If different from registry
+
+  // General Function
+  generalFunction       String?   @db.Text // Mission description
+
+  // Status
+  status                RegistrationStatus @default(DRAFT)
+  submittedAt           DateTime?
+  registeredAt          DateTime?
+  ursoReference         String?   // Reference number from UN registry
+  ncaReference          String?   // National NCA reference
+
+  // Deregistration
+  deregisteredAt        DateTime?
+  deregistrationReason  String?   @db.Text
+  reentryDate           DateTime?
+
+  // Change Tracking
+  lastAmendmentDate     DateTime?
+  amendmentReason       String?   @db.Text
+
+  // Linkage
+  spacecraftId          String
+  spacecraft            Spacecraft @relation(fields: [spacecraftId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  createdBy             String
+  submittedBy           String?
+
+  // Relations
+  statusHistory         RegistrationStatusHistory[]
+  attachments           RegistrationAttachment[]
+
+  @@index([spacecraftId])
+  @@index([organizationId])
+  @@index([internationalDesignator])
+  @@index([status])
+  @@index([stateOfRegistry])
+}
+
+model RegistrationStatusHistory {
+  id             String   @id @default(cuid())
+  registrationId String
+  registration   SpaceObjectRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  fromStatus     RegistrationStatus?
+  toStatus       RegistrationStatus
+  changedBy      String
+  reason         String?  @db.Text
+  metadata       Json?
+
+  createdAt      DateTime @default(now())
+
+  @@index([registrationId, createdAt])
+}
+
+model RegistrationAttachment {
+  id             String   @id @default(cuid())
+  registrationId String
+  registration   SpaceObjectRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  name           String
+  description    String?
+  fileType       String   // technical_specs, launch_contract, insurance_cert, etc.
+  storagePath    String
+  fileSize       Int
+  mimeType       String
+
+  uploadedBy     String
+  uploadedAt     DateTime @default(now())
+
+  @@index([registrationId])
+}
+
+enum SpaceObjectType {
+  SATELLITE
+  SPACE_STATION
+  SPACE_PROBE
+  CREWED_SPACECRAFT
+  LAUNCH_VEHICLE_STAGE
+  DEBRIS
+  OTHER
+}
+
+enum OrbitalRegime {
+  LEO      // < 2000 km
+  MEO      // 2000 - 35786 km
+  GEO      // ~35786 km
+  HEO      // Highly Elliptical Orbit
+  SSO      // Sun-Synchronous Orbit
+  POLAR    // Polar Orbit
+  BEYOND   // Lunar, interplanetary
+}
+
+enum RegistrationStatus {
+  DRAFT
+  PENDING_SUBMISSION
+  SUBMITTED
+  UNDER_REVIEW
+  REGISTERED
+  AMENDMENT_REQUIRED
+  AMENDMENT_PENDING
+  DEREGISTERED
+  REJECTED
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+
+  // Content
+  type           NotificationType
+  title          String
+  message        String   @db.Text
+  actionUrl      String?
+
+  // Metadata
+  entityType     String?  // compliance, report, incident, spacecraft, etc.
+  entityId       String?
+  severity       NotificationSeverity @default(INFO)
+
+  // Status
+  read           Boolean  @default(false)
+  readAt         DateTime?
+  dismissed      Boolean  @default(false)
+
+  // Delivery
+  emailSent      Boolean  @default(false)
+  emailSentAt    DateTime?
+
+  createdAt      DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([organizationId])
+}
+
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel Preferences
+  emailEnabled   Boolean  @default(true)
+  pushEnabled    Boolean  @default(true)
+
+  // Category Preferences (JSON: { deadline: { email: true, push: true }, ... })
+  categories     Json?
+
+  // Quiet Hours
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String?  // "22:00"
+  quietHoursEnd     String?  // "08:00"
+  quietHoursTimezone String? @default("Europe/Berlin")
+
+  // Digest
+  digestEnabled  Boolean  @default(false)
+  digestFrequency String? // daily, weekly
+
+  updatedAt      DateTime @updatedAt
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  URGENT
+  CRITICAL
+}
+
+// ============================================
+// SSO & SECURITY
+// ============================================
+
+model SSOConnection {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Provider
+  provider       SSOProvider
+
+  // SAML Config
+  entityId       String?
+  ssoUrl         String?
+  certificate    String?  @db.Text
+
+  // OIDC Config
+  clientId       String?
+  clientSecret   String?  // Encrypted
+  issuerUrl      String?
+
+  // Settings
+  autoProvision  Boolean  @default(true)  // Auto-create users on first login
+  defaultRole    OrganizationRole @default(MEMBER)
+
+  // Domain Verification
+  domains        String[] // Verified email domains for this org
+  enforceSSO     Boolean  @default(false) // Block password login for org members
+
+  // Status
+  isActive       Boolean  @default(true)
+  lastTestedAt   DateTime?
+  lastTestResult String?  // success, failed, pending
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum SSOProvider {
+  SAML
+  OIDC
+  AZURE_AD
+  OKTA
+  GOOGLE_WORKSPACE
+}
+
+model UserSession {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session Info
+  sessionToken   String   @unique
+
+  // Device Info
+  deviceType     String?  // desktop, mobile, tablet
+  browser        String?  // Chrome, Firefox, Safari, etc.
+  browserVersion String?
+  os             String?  // Windows, macOS, Linux, iOS, Android
+  osVersion      String?
+
+  // Location Info
+  ipAddress      String?
+  city           String?
+  country        String?
+  countryCode    String?
+
+  // Status
+  isActive       Boolean  @default(true)
+  lastActiveAt   DateTime @default(now())
+  expiresAt      DateTime
+
+  // Auth Method
+  authMethod     AuthMethod @default(PASSWORD)
+
+  createdAt      DateTime @default(now())
+  revokedAt      DateTime?
+  revokedReason  String?
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([userId, isActive])
+}
+
+enum AuthMethod {
+  PASSWORD
+  OAUTH_GOOGLE
+  OAUTH_GITHUB
+  SAML
+  OIDC
+  API_KEY
+}
+
+model SecurityAuditLog {
+  id             String   @id @default(cuid())
+  organizationId String?
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Event
+  event          SecurityAuditEventType
+  description    String   @db.Text
+
+  // Context
+  ipAddress      String?
+  userAgent      String?
+  city           String?
+  country        String?
+
+  // Target (what was affected)
+  targetType     String?  // user, organization, api_key, session, etc.
+  targetId       String?
+
+  // Metadata (additional context)
+  metadata       Json?
+
+  // Risk Level
+  riskLevel      RiskLevel @default(LOW)
+
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([userId, createdAt])
+  @@index([event, createdAt])
+  @@index([riskLevel, createdAt])
+}
+
+enum SecurityAuditEventType {
+  // Authentication
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGIN_BLOCKED
+  LOGOUT
+  SESSION_CREATED
+  SESSION_REVOKED
+  SESSION_EXPIRED
+
+  // Password
+  PASSWORD_CHANGED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+
+  // MFA
+  MFA_ENABLED
+  MFA_DISABLED
+  MFA_CHALLENGE_SUCCESS
+  MFA_CHALLENGE_FAILED
+
+  // SSO
+  SSO_LOGIN
+  SSO_CONFIGURED
+  SSO_UPDATED
+  SSO_DISABLED
+  SSO_TEST_SUCCESS
+  SSO_TEST_FAILED
+
+  // API Keys
+  API_KEY_CREATED
+  API_KEY_USED
+  API_KEY_REVOKED
+  API_KEY_EXPIRED
+
+  // Account
+  ACCOUNT_CREATED
+  ACCOUNT_UPDATED
+  ACCOUNT_DELETED
+  ACCOUNT_LOCKED
+  ACCOUNT_UNLOCKED
+  EMAIL_CHANGED
+  EMAIL_VERIFIED
+
+  // Organization
+  ORG_MEMBER_ADDED
+  ORG_MEMBER_REMOVED
+  ORG_MEMBER_ROLE_CHANGED
+  ORG_SETTINGS_CHANGED
+  ORG_BILLING_UPDATED
+
+  // Permissions
+  PERMISSION_GRANTED
+  PERMISSION_REVOKED
+  ROLE_CHANGED
+
+  // Security
+  SUSPICIOUS_ACTIVITY
+  BRUTE_FORCE_DETECTED
+  UNUSUAL_LOCATION
+  MULTIPLE_FAILED_LOGINS
+  RATE_LIMIT_EXCEEDED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================
+// PUBLIC API & WEBHOOKS
+// ============================================
+
+model ApiKey {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Key Info
+  name           String
+  keyHash        String   @unique  // SHA-256 hash of the key
+  keyPrefix      String   // First 8 chars for identification (caelex_...)
+
+  // Permissions
+  scopes         String[] // ['read:compliance', 'write:reports', 'read:spacecraft', ...]
+
+  // Rate Limiting
+  rateLimit      Int      @default(1000) // requests per hour
+
+  // Status
+  isActive       Boolean  @default(true)
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+
+  // Metadata
+  createdById    String
+  createdBy      User     @relation(fields: [createdById], references: [id])
+  createdAt      DateTime @default(now())
+  revokedAt      DateTime?
+  revokedReason  String?
+
+  // Relations
+  requests       ApiRequest[]
+
+  @@index([keyHash])
+  @@index([organizationId])
+  @@index([keyPrefix])
+}
+
+model ApiRequest {
+  id             String   @id @default(cuid())
+  apiKeyId       String
+  apiKey         ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  // Request Info
+  method         String   // GET, POST, PUT, DELETE
+  path           String
+  statusCode     Int
+  responseTimeMs Int
+
+  // Client Info
+  ipAddress      String?
+  userAgent      String?
+
+  // Error Info (if failed)
+  errorCode      String?
+  errorMessage   String?
+
+  createdAt      DateTime @default(now())
+
+  @@index([apiKeyId, createdAt])
+  @@index([createdAt])
+}
+
+model Webhook {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  name           String
+  url            String
+  secret         String   // For HMAC signature verification
+
+  // Events to trigger
+  events         String[] // ['compliance.score_changed', 'report.generated', 'incident.created', ...]
+
+  // Headers (custom headers to send)
+  headers        Json?    // { "X-Custom-Header": "value" }
+
+  // Status
+  isActive       Boolean  @default(true)
+
+  // Stats
+  successCount   Int      @default(0)
+  failureCount   Int      @default(0)
+  lastTriggeredAt DateTime?
+  lastSuccessAt  DateTime?
+  lastFailureAt  DateTime?
+  lastError      String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  deliveries     WebhookDelivery[]
+
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+model WebhookDelivery {
+  id             String   @id @default(cuid())
+  webhookId      String
+  webhook        Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  // Event
+  event          String
+  payload        Json
+
+  // Delivery Info
+  statusCode     Int?
+  responseBody   String?  @db.Text
+  responseTimeMs Int?
+
+  // Status
+  status         WebhookDeliveryStatus @default(PENDING)
+  attempts       Int      @default(0)
+  maxAttempts    Int      @default(3)
+  nextRetryAt    DateTime?
+
+  // Error Info
+  errorMessage   String?
+
+  createdAt      DateTime @default(now())
+  deliveredAt    DateTime?
+
+  @@index([webhookId, createdAt])
+  @@index([status, nextRetryAt])
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRYING
+}
+
+// ─── Collaboration Features ───
+
+model Comment {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Author
+  authorId       String
+  author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Target entity (polymorphic)
+  entityType     String   // 'spacecraft', 'document', 'workflow', 'incident', 'assessment'
+  entityId       String
+
+  // Content
+  content        String   @db.Text
+  mentions       String[] // Array of user IDs mentioned
+
+  // Threading
+  parentId       String?
+  parent         Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        Comment[] @relation("CommentReplies")
+
+  // Status
+  isEdited       Boolean  @default(false)
+  isDeleted      Boolean  @default(false) // Soft delete
+
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model Activity {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Actor
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Action details
+  action         String   // 'created', 'updated', 'deleted', 'commented', 'mentioned', etc.
+  entityType     String   // 'spacecraft', 'document', 'workflow', etc.
+  entityId       String
+  entityName     String?  // Cached name for display
+
+  // Additional context
+  description    String?
+  metadata       Json?    // Additional action-specific data
+
+  // Changes (for update actions)
+  changes        Json?    // { field: { old: x, new: y } }
+
+  // Timestamp
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@index([userId])
 }

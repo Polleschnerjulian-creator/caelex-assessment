@@ -30,51 +30,62 @@ const statusColors: Record<
   { bg: string; border: string; dot: string }
 > = {
   not_started: {
-    bg: "bg-white/[0.04]",
-    border: "border-white/[0.1]",
-    dot: "bg-white/10 border-white/[0.1]",
+    bg: "bg-slate-50 dark:bg-white/[0.04]",
+    border: "border-slate-200 dark:border-white/[0.1]",
+    dot: "bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/[0.1]",
   },
   in_progress: {
-    bg: "bg-amber-500/5",
-    border: "border-amber-500/20",
-    dot: "bg-amber-500/60 border-amber-500/30",
+    bg: "bg-amber-50 dark:bg-amber-500/5",
+    border: "border-amber-200 dark:border-amber-500/20",
+    dot: "bg-amber-500 dark:bg-amber-500/60 border-amber-400 dark:border-amber-500/30",
   },
   under_review: {
-    bg: "bg-blue-400/5",
-    border: "border-blue-400/20",
-    dot: "bg-blue-400/60 border-blue-400/30",
+    bg: "bg-blue-50 dark:bg-blue-400/5",
+    border: "border-blue-200 dark:border-blue-400/20",
+    dot: "bg-blue-500 dark:bg-blue-400/60 border-blue-400 dark:border-blue-400/30",
   },
   compliant: {
-    bg: "bg-emerald-500/5",
-    border: "border-emerald-500/20",
-    dot: "bg-emerald-500/60 border-emerald-500/30",
+    bg: "bg-emerald-50 dark:bg-emerald-500/5",
+    border: "border-emerald-200 dark:border-emerald-500/20",
+    dot: "bg-emerald-500 dark:bg-emerald-500/60 border-emerald-400 dark:border-emerald-500/30",
   },
   not_applicable: {
-    bg: "bg-white/[0.01]",
-    border: "border-white/10",
-    dot: "bg-white/5 border-white/10",
+    bg: "bg-slate-50 dark:bg-white/[0.01]",
+    border: "border-slate-200 dark:border-white/10",
+    dot: "bg-slate-200 dark:bg-white/5 border-slate-300 dark:border-white/10",
   },
 };
 
 const complianceTypeColors: Record<string, string> = {
-  mandatory_pre_activity: "bg-red-500/10 text-red-400/60",
-  mandatory_ongoing: "bg-amber-500/10 text-amber-400/60",
-  design_requirement: "bg-blue-500/10 text-blue-400/60",
-  conditional: "bg-yellow-500/10 text-yellow-400/60",
-  informational: "bg-white/[0.05] text-white/60",
-  enforcement: "bg-purple-500/10 text-purple-400/60",
-  scope_determination: "bg-red-500/10 text-red-400/60",
-  operational: "bg-amber-500/10 text-amber-400/60",
-  voluntary: "bg-white/[0.05] text-white/60",
-  monitoring: "bg-white/[0.05] text-white/60",
+  mandatory_pre_activity:
+    "bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400/60",
+  mandatory_ongoing:
+    "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
+  design_requirement:
+    "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400/60",
+  conditional:
+    "bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400/60",
+  informational:
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
+  enforcement:
+    "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400/60",
+  scope_determination:
+    "bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400/60",
+  operational:
+    "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
+  voluntary:
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
+  monitoring:
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
 };
 
 const priorityColors: Record<string, string> = {
-  CRITICAL: "bg-red-500/15 text-red-400",
-  HIGH: "bg-amber-500/10 text-amber-400/60",
-  MEDIUM: "bg-white/[0.04] text-white/70",
-  LOW: "bg-white/[0.04] text-white/60",
-  CONDITIONAL: "bg-blue-500/10 text-blue-300/50",
+  CRITICAL: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400",
+  HIGH: "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
+  MEDIUM: "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70",
+  LOW: "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/60",
+  CONDITIONAL:
+    "bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300/50",
 };
 
 export default function TrackerPage() {
@@ -254,11 +265,14 @@ export default function TrackerPage() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
           <div className="grid grid-cols-8 gap-2 mt-8">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-20 bg-white/[0.04] rounded-lg" />
+              <div
+                key={i}
+                className="h-20 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+              />
             ))}
           </div>
         </div>
@@ -272,17 +286,17 @@ export default function TrackerPage() {
         {/* Header */}
         <div className="flex justify-between items-start mb-10">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-3">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
               COMPLIANCE TRACKER
             </p>
-            <h1 className="text-[24px] font-medium text-white mb-1">
+            <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
               EU Space Act
             </h1>
-            <p className="text-[14px] text-white/70">
+            <p className="text-[14px] text-slate-600 dark:text-white/70">
               Track compliance across all 119 articles and 7 modules
             </p>
           </div>
-          <button className="border border-white/12 text-white/70 font-mono text-[11px] px-4 py-2 rounded-lg hover:border-white/[0.1] hover:text-white/70 transition-all">
+          <button className="border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 font-mono text-[11px] px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all">
             Export
           </button>
         </div>
@@ -298,24 +312,26 @@ export default function TrackerPage() {
             return (
               <div
                 key={mod.id}
-                className="bg-white/[0.04] border border-white/10 rounded-lg p-3 text-center"
+                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 text-center"
               >
-                <p className="font-mono text-[10px] text-white/30">
+                <p className="font-mono text-[10px] text-slate-400 dark:text-white/30">
                   {mod.number}
                 </p>
-                <p className="font-mono text-[18px] font-semibold text-white">
+                <p className="font-mono text-[18px] font-semibold text-slate-900 dark:text-white">
                   {pct}%
                 </p>
-                <p className="font-mono text-[9px] text-white/60 mt-1">
+                <p className="font-mono text-[9px] text-slate-500 dark:text-white/60 mt-1">
                   {mod.shortName}
                 </p>
               </div>
             );
           })}
           {/* Total */}
-          <div className="bg-white/[0.05] border border-white/[0.08] rounded-lg p-3 text-center">
-            <p className="font-mono text-[10px] text-white/60">ALL</p>
-            <p className="font-mono text-[18px] font-semibold text-white">
+          <div className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg p-3 text-center">
+            <p className="font-mono text-[10px] text-slate-500 dark:text-white/60">
+              ALL
+            </p>
+            <p className="font-mono text-[18px] font-semibold text-slate-900 dark:text-white">
               {moduleProgress["total"]?.total > 0
                 ? Math.round(
                     (moduleProgress["total"].compliant /
@@ -325,24 +341,26 @@ export default function TrackerPage() {
                 : 0}
               %
             </p>
-            <p className="font-mono text-[9px] text-white/70 mt-1">Total</p>
+            <p className="font-mono text-[9px] text-slate-600 dark:text-white/70 mt-1">
+              Total
+            </p>
           </div>
         </div>
 
         {/* Filter Bar */}
-        <div className="sticky top-0 z-20 bg-black/90 backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-white/10">
+        <div className="sticky top-0 z-20 bg-white/90 dark:bg-black/90 backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-slate-200 dark:border-white/10">
           {/* Search */}
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/60"
             />
             <input
               type="text"
               placeholder="Search articles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-white/[0.05] border border-white/12 rounded-lg pl-9 pr-4 py-2 text-[13px] text-white placeholder-white/20 w-[280px] focus:border-white/[0.12] focus:outline-none transition-all"
+              className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-[13px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
             />
           </div>
 
@@ -352,8 +370,8 @@ export default function TrackerPage() {
               onClick={() => setModuleFilter("all")}
               className={`px-3 py-1 rounded-full font-mono text-[11px] border transition-all ${
                 moduleFilter === "all"
-                  ? "bg-white/[0.08] text-white border-white/[0.12]"
-                  : "bg-white/[0.05] text-white/60 border-white/12 hover:text-white/60"
+                  ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
+                  : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/60"
               }`}
             >
               All
@@ -364,8 +382,8 @@ export default function TrackerPage() {
                 onClick={() => setModuleFilter(mod.id)}
                 className={`px-3 py-1 rounded-full font-mono text-[11px] border transition-all ${
                   moduleFilter === mod.id
-                    ? "bg-white/[0.08] text-white border-white/[0.12]"
-                    : "bg-white/[0.05] text-white/60 border-white/12 hover:text-white/60"
+                    ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
+                    : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/60"
                 }`}
               >
                 {mod.shortName}
@@ -379,7 +397,7 @@ export default function TrackerPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as ArticleStatusType | "all")
             }
-            className="bg-white/[0.05] border border-white/12 rounded-lg px-3 py-2 text-[11px] text-white font-mono focus:outline-none"
+            className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-[11px] text-slate-900 dark:text-white font-mono focus:outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="not_started">Not Started</option>
@@ -393,13 +411,13 @@ export default function TrackerPage() {
           <div className="flex-1" />
 
           {/* View Toggle */}
-          <div className="flex border border-white/12 rounded-lg overflow-hidden">
+          <div className="flex border border-slate-200 dark:border-white/12 rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode("articles")}
               className={`px-4 py-2 font-mono text-[11px] transition-all ${
                 viewMode === "articles"
-                  ? "bg-white/[0.06] text-white"
-                  : "text-white/70 hover:text-white/70"
+                  ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
+                  : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
               Articles
@@ -408,8 +426,8 @@ export default function TrackerPage() {
               onClick={() => setViewMode("checklist")}
               className={`px-4 py-2 font-mono text-[11px] transition-all ${
                 viewMode === "checklist"
-                  ? "bg-white/[0.06] text-white"
-                  : "text-white/70 hover:text-white/70"
+                  ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
+                  : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
               Checklist
@@ -428,14 +446,20 @@ export default function TrackerPage() {
                   className="flex items-center gap-3 mb-4 mt-8 w-full text-left"
                 >
                   {collapsedGroups.has(group) ? (
-                    <ChevronRight size={14} className="text-white/60" />
+                    <ChevronRight
+                      size={14}
+                      className="text-slate-500 dark:text-white/60"
+                    />
                   ) : (
-                    <ChevronDown size={14} className="text-white/60" />
+                    <ChevronDown
+                      size={14}
+                      className="text-slate-500 dark:text-white/60"
+                    />
                   )}
-                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/60">
                     {group}
                   </span>
-                  <span className="font-mono text-[10px] text-white/30 ml-auto">
+                  <span className="font-mono text-[10px] text-slate-400 dark:text-white/30 ml-auto">
                     {groupArticles.length} articles
                   </span>
                 </button>
@@ -453,8 +477,10 @@ export default function TrackerPage() {
                         <div
                           key={article.id}
                           className={`${colors.bg} border ${
-                            isExpanded ? "border-white/[0.1]" : colors.border
-                          } rounded-lg transition-all duration-200 hover:border-white/[0.08]`}
+                            isExpanded
+                              ? "border-slate-300 dark:border-white/[0.1]"
+                              : colors.border
+                          } rounded-lg transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.08]`}
                         >
                           {/* Collapsed Row */}
                           <button
@@ -467,17 +493,17 @@ export default function TrackerPage() {
                             />
 
                             {/* Article Number */}
-                            <span className="font-mono text-[12px] text-white/70 w-[60px]">
+                            <span className="font-mono text-[12px] text-slate-600 dark:text-white/70 w-[60px]">
                               Art. {article.number}
                             </span>
 
                             {/* Title */}
-                            <span className="text-[14px] text-white flex-1">
+                            <span className="text-[14px] text-slate-900 dark:text-white flex-1">
                               {article.title}
                             </span>
 
                             {/* Module Badge */}
-                            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-white/70">
+                            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70">
                               {article.moduleLabel}
                             </span>
 
@@ -485,7 +511,7 @@ export default function TrackerPage() {
                             <span
                               className={`font-mono text-[10px] px-2 py-0.5 rounded-full ${
                                 complianceTypeColors[article.complianceType] ||
-                                "bg-white/[0.05] text-white/60"
+                                "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60"
                               }`}
                             >
                               {article.complianceType.replace(/_/g, " ")}
@@ -495,12 +521,12 @@ export default function TrackerPage() {
                             {isExpanded ? (
                               <ChevronDown
                                 size={16}
-                                className="text-white/30"
+                                className="text-slate-400 dark:text-white/30"
                               />
                             ) : (
                               <ChevronRight
                                 size={16}
-                                className="text-white/30"
+                                className="text-slate-400 dark:text-white/30"
                               />
                             )}
                           </button>
@@ -509,17 +535,17 @@ export default function TrackerPage() {
                           {isExpanded && (
                             <div className="px-5 pb-6 pl-[76px]">
                               {/* Summary */}
-                              <p className="text-[14px] text-white/60 leading-[1.7] mb-4">
+                              <p className="text-[14px] text-slate-600 dark:text-white/60 leading-[1.7] mb-4">
                                 {article.summary}
                               </p>
 
                               {/* Operator Action */}
                               {article.operatorAction !== "None" && (
                                 <div className="mb-4">
-                                  <p className="font-mono text-[10px] text-white/30 uppercase tracking-wider mb-1">
+                                  <p className="font-mono text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-wider mb-1">
                                     REQUIRED ACTION
                                   </p>
-                                  <p className="text-[13px] text-white/70">
+                                  <p className="text-[13px] text-slate-700 dark:text-white/70">
                                     {article.operatorAction}
                                   </p>
                                 </div>
@@ -530,7 +556,7 @@ export default function TrackerPage() {
                                 {article.appliesTo.map((op) => (
                                   <span
                                     key={op}
-                                    className="font-mono text-[9px] bg-white/[0.04] text-white/70 px-2 py-0.5 rounded"
+                                    className="font-mono text-[9px] bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70 px-2 py-0.5 rounded"
                                   >
                                     {op}
                                   </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import { getIcon } from "@/lib/icons";
 
 interface OptionCardProps {
@@ -18,74 +19,77 @@ export default function OptionCard({
   isSelected = false,
   onClick,
 }: OptionCardProps) {
-  // Dynamically get the icon component
   const IconComponent = icon ? getIcon(icon) : null;
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
   return (
     <motion.button
+      role="radio"
+      aria-checked={isSelected}
+      tabIndex={0}
       onClick={onClick}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      onKeyDown={handleKeyDown}
+      whileTap={{ scale: 0.995 }}
       className={`
-        w-full p-5 rounded-xl border-2 text-left transition-all duration-200
+        w-full p-5 rounded-xl text-left transition-all duration-300 group
         ${
           isSelected
-            ? "bg-blue-500/10 border-blue-500 shadow-lg shadow-blue-500/10"
-            : "bg-navy-800 border-navy-700 hover:border-navy-600 hover:bg-navy-800/80"
+            ? "bg-white/[0.08] border border-white/[0.25]"
+            : "bg-white/[0.04] border border-white/[0.12] hover:bg-white/[0.06] hover:border-white/[0.18]"
         }
       `}
     >
       <div className="flex items-start gap-4">
+        {/* Icon */}
         {IconComponent && (
           <div
             className={`
-              w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
-              ${isSelected ? "bg-blue-500/20" : "bg-navy-700"}
+              p-2.5 rounded-lg transition-colors
+              ${
+                isSelected
+                  ? "bg-white/[0.15]"
+                  : "bg-white/[0.08] group-hover:bg-white/[0.12]"
+              }
             `}
           >
             <IconComponent
-              className={`w-6 h-6 ${isSelected ? "text-blue-400" : "text-slate-400"}`}
+              size={20}
+              className={isSelected ? "text-white" : "text-white/70"}
             />
           </div>
         )}
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
           <h3
-            className={`
-              font-semibold text-lg mb-1
-              ${isSelected ? "text-white" : "text-slate-200"}
-            `}
+            className={`text-[15px] font-medium mb-1 ${
+              isSelected ? "text-white" : "text-white"
+            }`}
           >
             {label}
           </h3>
-          <p className="text-sm text-slate-400 leading-relaxed">
+          <p className="text-[14px] text-white/70 leading-relaxed">
             {description}
           </p>
         </div>
-        {/* Selection indicator */}
+
+        {/* Selection Indicator */}
         <div
           className={`
-            w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0
-            ${
-              isSelected
-                ? "border-blue-500 bg-blue-500"
-                : "border-navy-600 bg-transparent"
-            }
+            w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all
+            ${isSelected ? "bg-white" : "border border-white/[0.30]"}
           `}
         >
           {isSelected && (
-            <motion.svg
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="w-4 h-4 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={3}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </motion.svg>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+              <Check size={12} className="text-black" />
+            </motion.div>
           )}
         </div>
       </div>

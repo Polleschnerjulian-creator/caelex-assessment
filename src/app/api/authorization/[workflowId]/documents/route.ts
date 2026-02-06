@@ -6,6 +6,7 @@ import {
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
+import { evaluateWorkflowTransitions } from "@/lib/services";
 
 // PUT /api/authorization/[workflowId]/documents - Update document status
 export async function PUT(
@@ -111,19 +112,48 @@ export async function PUT(
       });
     }
 
-    // Check if we should update workflow status
-    // If first document moved to in_progress, start the workflow
-    if (status === "in_progress" && workflow.status === "not_started") {
-      await prisma.authorizationWorkflow.update({
-        where: { id: workflowId },
-        data: {
-          status: "in_progress",
-          startedAt: new Date(),
-        },
-      });
+    // Evaluate workflow transitions after document update
+    // This handles auto-transitions:
+    // - not_started → in_progress (first document ready)
+    // - in_progress → ready_for_submission (all mandatory complete)
+    // - ready_for_submission → in_progress (mandatory doc incomplete)
+    const evaluationResult = await evaluateWorkflowTransitions(workflowId);
+
+    // Build response with workflow state info
+    const response: Record<string, unknown> = {
+      document: updatedDocument,
+    };
+
+    // Include workflow transition info if state changed
+    if (evaluationResult.transitioned) {
+      response.workflowTransition = {
+        transitioned: true,
+        previousState: evaluationResult.transitions[0]?.previousState,
+        currentState: evaluationResult.finalState,
+        transitions: evaluationResult.transitions.map((t) => ({
+          from: t.previousState,
+          to: t.currentState,
+          event: t.transitionEvent,
+        })),
+      };
+    } else {
+      response.workflowTransition = {
+        transitioned: false,
+        currentState: evaluationResult.finalState,
+      };
     }
 
-    return NextResponse.json(updatedDocument);
+    // Include completeness context
+    response.completeness = {
+      totalDocuments: evaluationResult.context.totalDocuments,
+      readyDocuments: evaluationResult.context.readyDocuments,
+      mandatoryDocuments: evaluationResult.context.mandatoryDocuments,
+      mandatoryReady: evaluationResult.context.mandatoryReady,
+      completenessPercentage: evaluationResult.context.completenessPercentage,
+      allMandatoryComplete: evaluationResult.context.allMandatoryComplete,
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error updating document:", error);
     return NextResponse.json(

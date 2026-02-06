@@ -169,7 +169,7 @@ export const handlers = [
   }),
 
   http.patch(`${baseUrl}/api/documents/:id`, async ({ params, request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       success: true,
       document: { id: params.id, ...body },
@@ -205,7 +205,7 @@ export const handlers = [
   }),
 
   http.post(`${baseUrl}/api/timeline/deadlines`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const newDeadline = {
       id: `deadline-${Date.now()}`,
       ...body,
@@ -218,7 +218,7 @@ export const handlers = [
   http.patch(
     `${baseUrl}/api/timeline/deadlines/:id`,
     async ({ params, request }) => {
-      const body = await request.json();
+      const body = (await request.json()) as Record<string, unknown>;
       return HttpResponse.json({
         success: true,
         deadline: { id: params.id, ...body },
@@ -252,7 +252,7 @@ export const handlers = [
   }),
 
   http.post(`${baseUrl}/api/tracker`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       success: true,
       tracker: { ...mockTrackerState, ...body },
@@ -260,7 +260,7 @@ export const handlers = [
   }),
 
   http.patch(`${baseUrl}/api/tracker`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       success: true,
       tracker: { ...mockTrackerState, ...body },
@@ -279,7 +279,7 @@ export const handlers = [
   }),
 
   http.post(`${baseUrl}/api/environmental/calculate`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       result: {
         totalFootprint: 1250.5,
@@ -310,7 +310,7 @@ export const handlers = [
   }),
 
   http.post(`${baseUrl}/api/cybersecurity/assess`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       result: {
         overallRiskLevel: "medium",
@@ -375,7 +375,7 @@ export const handlers = [
   }),
 
   http.post(`${baseUrl}/api/insurance/calculate`, async ({ request }) => {
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
       result: {
         minimumCoverage: 5000000,

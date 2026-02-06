@@ -16,7 +16,7 @@ export default function DashboardLayout({
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[#0A0A0B]">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0B]">
         <div className="lg:grid lg:grid-cols-[260px_1fr]">
           {/* Sidebar */}
           <Sidebar

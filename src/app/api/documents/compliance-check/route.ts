@@ -51,8 +51,8 @@ export async function GET() {
       }[];
     }[] = [];
 
-    for (const module of modules) {
-      const required = requiredDocuments[module] || [];
+    for (const moduleName of modules) {
+      const required = requiredDocuments[moduleName] || [];
       const present: typeof userDocuments = [];
       const missing: {
         category: string;
@@ -103,7 +103,7 @@ export async function GET() {
           : 100;
 
       moduleCompliance.push({
-        module,
+        module: moduleName,
         required: mandatoryRequired,
         present: mandatoryPresent,
         completeness,

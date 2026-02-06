@@ -260,7 +260,12 @@ export default function TimelinePage() {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24 bg-white/[0.01]" />);
+      days.push(
+        <div
+          key={`empty-${i}`}
+          className="h-24 bg-slate-50 dark:bg-white/[0.01]"
+        />,
+      );
     }
 
     // Add cells for each day
@@ -275,12 +280,12 @@ export default function TimelinePage() {
       days.push(
         <div
           key={day}
-          className={`h-24 p-2 border-r border-b border-white/5 ${
-            isToday ? "bg-blue-500/10" : "bg-white/[0.01]"
+          className={`h-24 p-2 border-r border-b border-slate-200 dark:border-white/5 ${
+            isToday ? "bg-blue-500/10" : "bg-slate-50 dark:bg-white/[0.01]"
           }`}
         >
           <div
-            className={`text-sm font-medium mb-1 ${isToday ? "text-blue-400" : "text-white/60"}`}
+            className={`text-sm font-medium mb-1 ${isToday ? "text-blue-400" : "text-slate-500 dark:text-white/60"}`}
           >
             {day}
           </div>
@@ -303,7 +308,7 @@ export default function TimelinePage() {
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="text-xs text-white/40">
+              <div className="text-xs text-slate-400 dark:text-white/40">
                 +{dayEvents.length - 3} more
               </div>
             )}
@@ -318,8 +323,8 @@ export default function TimelinePage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -329,13 +334,13 @@ export default function TimelinePage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
             TIMELINE
           </p>
-          <h1 className="text-2xl font-semibold text-white">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Timeline & Deadlines
           </h1>
-          <p className="text-white/60 mt-1">
+          <p className="text-slate-500 dark:text-white/60 mt-1">
             Manage compliance deadlines and mission milestones
           </p>
         </div>
@@ -349,17 +354,19 @@ export default function TimelinePage() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card
-            className={`bg-white/[0.02] ${stats.overdue > 0 ? "border-red-500/30" : ""}`}
+            className={`bg-white dark:bg-white/[0.02] ${stats.overdue > 0 ? "border-red-500/30" : ""}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2 rounded-lg ${stats.overdue > 0 ? "bg-red-500/20" : "bg-white/5"}`}
+                  className={`p-2 rounded-lg ${stats.overdue > 0 ? "bg-red-500/20" : "bg-slate-200 dark:bg-white/5"}`}
                 >
                   <AlertTriangle
                     size={18}
                     className={
-                      stats.overdue > 0 ? "text-red-400" : "text-white/40"
+                      stats.overdue > 0
+                        ? "text-red-400"
+                        : "text-slate-400 dark:text-white/40"
                     }
                   />
                 </div>
@@ -369,55 +376,63 @@ export default function TimelinePage() {
                   >
                     {stats.overdue}
                   </p>
-                  <p className="text-xs text-white/50">Overdue</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Overdue
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-orange-500/10">
                   <Clock size={18} className="text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.dueThisWeek}
                   </p>
-                  <p className="text-xs text-white/50">This Week</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    This Week
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <Calendar size={18} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.dueThisMonth}
                   </p>
-                  <p className="text-xs text-white/50">This Month</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    This Month
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-emerald-500/10">
                   <CheckCircle2 size={18} className="text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.completionRate}%
                   </p>
-                  <p className="text-xs text-white/50">Completed</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Completed
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -426,7 +441,7 @@ export default function TimelinePage() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white/[0.02] rounded-xl border border-white/5">
+      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
         {steps.map((step) => (
           <button
             key={step.id}
@@ -436,8 +451,8 @@ export default function TimelinePage() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-white/10 text-white"
-                  : "text-white/50 hover:text-white/70 hover:bg-white/5"
+                  ? "bg-slate-200 dark:bg-white/10 text-white"
+                  : "text-slate-500 dark:text-white/50 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
               }
             `}
           >
@@ -480,10 +495,10 @@ export default function TimelinePage() {
                               {categoryIcons[deadline.category]}
                             </div>
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-slate-900 dark:text-white">
                                 {deadline.title}
                               </p>
-                              <p className="text-xs text-white/50">
+                              <p className="text-xs text-slate-500 dark:text-white/50">
                                 Due:{" "}
                                 {new Date(
                                   deadline.dueDate,
@@ -522,9 +537,12 @@ export default function TimelinePage() {
                       onClick={() =>
                         setSelectedFilter(selectedFilter ? null : "filter")
                       }
-                      className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                      className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                     >
-                      <Filter size={16} className="text-white/60" />
+                      <Filter
+                        size={16}
+                        className="text-slate-500 dark:text-white/60"
+                      />
                     </button>
                   </CardHeader>
                   <CardContent>
@@ -532,10 +550,12 @@ export default function TimelinePage() {
                       <div className="text-center py-8">
                         <Calendar
                           size={48}
-                          className="mx-auto text-white/20 mb-4"
+                          className="mx-auto text-slate-300 dark:text-white/20 mb-4"
                         />
-                        <p className="text-white/60">No upcoming deadlines</p>
-                        <p className="text-sm text-white/40 mt-1">
+                        <p className="text-slate-500 dark:text-white/60">
+                          No upcoming deadlines
+                        </p>
+                        <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
                           Click &quot;Add Deadline&quot; to create one
                         </p>
                       </div>
@@ -544,7 +564,7 @@ export default function TimelinePage() {
                         {deadlines.map((deadline) => (
                           <div
                             key={deadline.id}
-                            className="flex items-center justify-between bg-white/[0.02] rounded-lg p-3 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-white/[0.04] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -556,17 +576,17 @@ export default function TimelinePage() {
                                 {categoryIcons[deadline.category]}
                               </div>
                               <div>
-                                <p className="font-medium text-white">
+                                <p className="font-medium text-slate-900 dark:text-white">
                                   {deadline.title}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-white/50">
+                                  <span className="text-xs text-slate-500 dark:text-white/50">
                                     {new Date(
                                       deadline.dueDate,
                                     ).toLocaleDateString()}
                                   </span>
                                   {deadline.regulatoryRef && (
-                                    <span className="text-xs text-white/40">
+                                    <span className="text-xs text-slate-400 dark:text-white/40">
                                       | {deadline.regulatoryRef}
                                     </span>
                                   )}
@@ -599,7 +619,7 @@ export default function TimelinePage() {
                       return (
                         <div
                           key={cat.id}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                          className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:bg-white/5 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
                             <div
@@ -608,11 +628,11 @@ export default function TimelinePage() {
                             >
                               {categoryIcons[cat.id]}
                             </div>
-                            <span className="text-sm text-white/80">
+                            <span className="text-sm text-slate-700 dark:text-white/80">
                               {cat.label}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-white">
+                          <span className="text-sm font-medium text-slate-900 dark:text-white">
                             {count}
                           </span>
                         </div>
@@ -644,13 +664,16 @@ export default function TimelinePage() {
                         ),
                       )
                     }
-                    className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                    className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                   >
-                    <ChevronLeft size={16} className="text-white/60" />
+                    <ChevronLeft
+                      size={16}
+                      className="text-slate-500 dark:text-white/60"
+                    />
                   </button>
                   <button
                     onClick={() => setCurrentMonth(new Date())}
-                    className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                    className="px-3 py-1 text-xs bg-slate-200 dark:bg-white/5 hover:bg-slate-200 dark:bg-white/10 rounded-lg transition-colors"
                   >
                     Today
                   </button>
@@ -662,20 +685,23 @@ export default function TimelinePage() {
                         ),
                       )
                     }
-                    className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                    className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                   >
-                    <ChevronRight size={16} className="text-white/60" />
+                    <ChevronRight
+                      size={16}
+                      className="text-slate-500 dark:text-white/60"
+                    />
                   </button>
                 </div>
               </CardHeader>
               <CardContent>
                 {/* Calendar Header */}
-                <div className="grid grid-cols-7 border-b border-white/10 mb-1">
+                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-white/10 mb-1">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
                         key={day}
-                        className="py-2 text-center text-xs font-medium text-white/50"
+                        className="py-2 text-center text-xs font-medium text-slate-500 dark:text-white/50"
                       >
                         {day}
                       </div>
@@ -683,7 +709,7 @@ export default function TimelinePage() {
                   )}
                 </div>
                 {/* Calendar Grid */}
-                <div className="grid grid-cols-7 border-l border-t border-white/5">
+                <div className="grid grid-cols-7 border-l border-t border-slate-200 dark:border-white/5">
                   {renderCalendar()}
                 </div>
               </CardContent>
@@ -713,10 +739,12 @@ export default function TimelinePage() {
                 <div className="text-center py-12">
                   <GanttChartSquare
                     size={64}
-                    className="mx-auto text-white/20 mb-4"
+                    className="mx-auto text-slate-300 dark:text-white/20 mb-4"
                   />
-                  <p className="text-white/60">No mission phases configured</p>
-                  <p className="text-sm text-white/40 mt-1 mb-4">
+                  <p className="text-slate-500 dark:text-white/60">
+                    No mission phases configured
+                  </p>
+                  <p className="text-sm text-slate-400 dark:text-white/40 mt-1 mb-4">
                     Create mission phases to visualize your timeline
                   </p>
                   <Button>
@@ -738,8 +766,8 @@ export default function TimelinePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-white/[0.02] rounded-lg p-4 border border-white/5">
-                  <h4 className="font-medium text-white mb-4">
+                <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Reminder Schedule
                   </h4>
                   <div className="space-y-3">
@@ -748,7 +776,7 @@ export default function TimelinePage() {
                         key={days}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-white/80">
+                        <span className="text-slate-700 dark:text-white/80">
                           {days === 1 ? "1 day before" : `${days} days before`}
                         </span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -757,31 +785,33 @@ export default function TimelinePage() {
                             className="sr-only peer"
                             defaultChecked
                           />
-                          <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                         </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-white/[0.02] rounded-lg p-4 border border-white/5">
-                  <h4 className="font-medium text-white mb-4">
+                <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Notification Channels
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80">Email notifications</span>
+                      <span className="text-slate-700 dark:text-white/80">
+                        Email notifications
+                      </span>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80">
+                      <span className="text-slate-700 dark:text-white/80">
                         In-app notifications
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -790,25 +820,29 @@ export default function TimelinePage() {
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80">Daily digest</span>
+                      <span className="text-slate-700 dark:text-white/80">
+                        Daily digest
+                      </span>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/80">Weekly summary</span>
+                      <span className="text-slate-700 dark:text-white/80">
+                        Weekly summary
+                      </span>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           className="sr-only peer"
                           defaultChecked
                         />
-                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                     </div>
                   </div>
@@ -826,22 +860,22 @@ export default function TimelinePage() {
       {/* Add Deadline Modal */}
       {showDeadlineForm && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0b] border border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Add New Deadline
               </h3>
               <button
                 onClick={() => setShowDeadlineForm(false)}
-                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
               >
-                <X size={16} className="text-white/60" />
+                <X size={16} className="text-slate-500 dark:text-white/60" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                   Title *
                 </label>
                 <input
@@ -850,13 +884,13 @@ export default function TimelinePage() {
                   onChange={(e) =>
                     setDeadlineForm({ ...deadlineForm, title: e.target.value })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   placeholder="Deadline title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                   Description
                 </label>
                 <textarea
@@ -867,14 +901,14 @@ export default function TimelinePage() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
                   placeholder="Optional description"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                     Due Date *
                   </label>
                   <input
@@ -886,11 +920,11 @@ export default function TimelinePage() {
                         dueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                     Priority *
                   </label>
                   <select
@@ -901,7 +935,7 @@ export default function TimelinePage() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -912,7 +946,7 @@ export default function TimelinePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                   Category *
                 </label>
                 <select
@@ -923,7 +957,7 @@ export default function TimelinePage() {
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 >
                   {categoryMetadata.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -934,7 +968,7 @@ export default function TimelinePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                   Regulatory Reference
                 </label>
                 <input
@@ -946,7 +980,7 @@ export default function TimelinePage() {
                       regulatoryRef: e.target.value,
                     })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   placeholder="e.g., EU Space Act Art. 45"
                 />
               </div>

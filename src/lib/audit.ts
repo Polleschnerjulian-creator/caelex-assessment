@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { logger } from "./logger";
 
 // Audit action types
 export type AuditAction =
@@ -64,6 +65,7 @@ export interface AuditLogEntry {
   previousValue?: unknown;
   newValue?: unknown;
   description?: string;
+  metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -90,7 +92,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
     });
   } catch (error) {
     // Log to console but don't throw - audit logging should not break the main flow
-    console.error("Failed to log audit event:", error);
+    logger.error("Failed to log audit event", error);
   }
 }
 
@@ -117,7 +119,7 @@ export async function logAuditEventsBatch(
       })),
     });
   } catch (error) {
-    console.error("Failed to log audit events batch:", error);
+    logger.error("Failed to log audit events batch", error);
   }
 }
 
@@ -366,16 +368,21 @@ export async function logSecurityEvent(
       },
     });
 
-    // Console log for CRITICAL events (for immediate visibility)
-    if (severity === "CRITICAL") {
-      console.error(`[SECURITY CRITICAL] ${type}: ${description}`, metadata);
-    } else if (severity === "HIGH") {
-      console.warn(`[SECURITY HIGH] ${type}: ${description}`, metadata);
+    // Use secure logger for security events
+    if (severity === "CRITICAL" || severity === "HIGH") {
+      logger.security(
+        type,
+        { description, ...metadata },
+        severity.toLowerCase() as "critical" | "high",
+      );
     }
   } catch (error) {
-    // Security logging should never fail silently in production
-    console.error("Failed to log security event:", error);
-    console.error("Event:", { type, severity, description, metadata });
+    // Security logging should never fail silently
+    logger.error("Failed to log security event", error, {
+      type,
+      severity,
+      description,
+    });
   }
 }
 

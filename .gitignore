@@ -41,6 +41,13 @@ credentials.json
 service-account.json
 secrets/
 
+# Claude Code local settings (may contain credentials in bash history)
+.claude/settings.local.json
+
+# API responses with sensitive data
+**/response.json
+**/api-response.json
+
 # audit reports
 reports/
 *-audit.json
@@ -54,3 +61,22 @@ reports/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Word temp files
+~$*
+
+# Business documents (sensitive / not for public repo)
+*.docx
+*.xlsx
+*.pdf
+
+# Generated markdown reports (root level only)
+/CAELEX*.md
+/EXIST*.md
+/AUTOMATION*.md
+/DOCUMENT*.md
+/ONBOARDING*.md
+/OUTREACH*.md
+
+# Logo source files (keep favicon + public assets)
+/logo-*.svg

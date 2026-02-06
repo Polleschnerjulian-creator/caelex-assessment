@@ -7,95 +7,89 @@ import dynamic from "next/dynamic";
 const Entity = dynamic(() => import("./Entity"), {
   ssr: false,
   loading: () => (
-    <div className="w-[280px] h-[280px] md:w-[380px] md:h-[380px] lg:w-[500px] lg:h-[500px] flex items-center justify-center">
+    <div className="w-[320px] h-[320px] md:w-[450px] md:h-[450px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
       <div
-        className="w-32 h-32 rounded-full animate-pulse"
+        className="w-40 h-40 rounded-full animate-pulse"
         style={{
           background:
-            "radial-gradient(circle, rgba(139, 159, 255, 0.1) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(139, 159, 255, 0.08) 0%, transparent 70%)",
         }}
       />
     </div>
   ),
 });
 
-const staggerDelay = {
-  label: 0.2,
-  headline: 0.4,
-  entity: 0.6,
-  subtext: 1.0,
-  cta: 1.2,
-  trust: 1.4,
-};
-
 export default function Hero() {
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 md:px-8 bg-black">
-      {/* Label */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: staggerDelay.label }}
-        className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-6"
-      >
-        EU Space Act Compliance
-      </motion.p>
-
-      {/* Headline */}
-      <motion.h1
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: staggerDelay.headline }}
-        className="text-[clamp(2.5rem,6vw,5.5rem)] font-normal tracking-[-0.04em] leading-[1.05] text-white max-w-[900px] mb-16"
-      >
-        Is your space mission
-        <br />
-        affected by the <span className="font-medium">EU Space Act</span>?
-      </motion.h1>
-
-      {/* Entity */}
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 md:px-12 py-24 bg-black overflow-hidden">
+      {/* Corner Label */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="absolute top-24 right-6 md:right-12"
+      >
+        <span className="font-mono text-[11px] text-white/30">01 / 05</span>
+      </motion.div>
+
+      {/* Entity - Centered, larger */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, delay: staggerDelay.entity }}
-        className="mb-16"
+        transition={{ duration: 1.5, delay: 0.2 }}
+        className="relative z-10"
       >
         <Entity />
       </motion.div>
 
-      {/* Subtext */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: staggerDelay.subtext }}
-        className="text-[15px] text-white/60 text-center mb-8 max-w-[480px]"
-      >
-        119 articles. 10 annexes. Up to 2% of global turnover in penalties.
-      </motion.p>
+      {/* Content below Entity */}
+      <div className="relative z-20 text-center mt-4 md:mt-8">
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="text-[clamp(2rem,5vw,4.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-white mb-6"
+        >
+          Navigate the regulatory
+          <br />
+          <span className="text-white/60">frontier of space.</span>
+        </motion.h1>
 
-      {/* CTA Button */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: staggerDelay.cta }}
-        className="mb-4"
-      >
-        <Link href="/assessment">
-          <button className="bg-white text-black text-[15px] font-medium px-8 py-3.5 rounded-full hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all duration-500">
-            Start Assessment →
-          </button>
-        </Link>
-      </motion.div>
+        {/* Subtext */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+          className="text-[14px] md:text-[15px] text-white/50 mb-10 max-w-[420px] mx-auto"
+        >
+          119 articles. 10 annexes. Penalties up to 2% of global turnover.
+        </motion.p>
 
-      {/* Trust line */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: staggerDelay.trust }}
-        className="text-[12px] text-white/60"
-      >
-        3 minutes · No signup · Client-side only
-      </motion.p>
+        {/* CTA Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <Link
+            href="/assessment"
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-[15px] font-medium rounded-full transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+          >
+            <span>Start your assessment</span>
+            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
+          <span className="text-[11px] text-white/30">
+            3 min · No signup · Client-side only
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
     </section>
   );
 }

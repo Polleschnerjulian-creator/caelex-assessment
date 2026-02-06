@@ -12,6 +12,7 @@ import {
   Filter,
   Download,
   RefreshCw,
+  type LucideIcon,
 } from "lucide-react";
 
 interface AuditLogEntry {
@@ -32,7 +33,7 @@ interface ActivityFeedProps {
   compact?: boolean;
 }
 
-const actionIcons: Record<string, React.ElementType> = {
+const actionIcons: Record<string, LucideIcon> = {
   article_status_changed: FileCheck,
   checklist_item_completed: CheckCircle2,
   checklist_item_uncompleted: Circle,
@@ -46,16 +47,16 @@ const actionIcons: Record<string, React.ElementType> = {
 };
 
 const actionColors: Record<string, string> = {
-  article_status_changed: "text-blue-400",
-  checklist_item_completed: "text-green-400",
-  checklist_item_uncompleted: "text-amber-400",
-  document_status_changed: "text-purple-400",
-  document_uploaded: "text-purple-400",
-  workflow_created: "text-blue-400",
-  workflow_status_changed: "text-blue-400",
-  workflow_submitted: "text-green-400",
-  assessment_imported: "text-cyan-400",
-  bulk_status_update: "text-blue-400",
+  article_status_changed: "text-blue-600 dark:text-blue-400",
+  checklist_item_completed: "text-green-600 dark:text-green-400",
+  checklist_item_uncompleted: "text-amber-600 dark:text-amber-400",
+  document_status_changed: "text-purple-600 dark:text-purple-400",
+  document_uploaded: "text-purple-600 dark:text-purple-400",
+  workflow_created: "text-blue-600 dark:text-blue-400",
+  workflow_status_changed: "text-blue-600 dark:text-blue-400",
+  workflow_submitted: "text-green-600 dark:text-green-400",
+  assessment_imported: "text-cyan-600 dark:text-cyan-400",
+  bulk_status_update: "text-blue-600 dark:text-blue-400",
 };
 
 const entityTypeLabels: Record<string, string> = {
@@ -206,10 +207,10 @@ export default function ActivityFeed({
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="animate-pulse flex items-start gap-3">
-            <div className="w-8 h-8 bg-white/[0.05] rounded-lg" />
+            <div className="w-8 h-8 bg-slate-200 dark:bg-white/[0.05] rounded-lg" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-white/[0.05] rounded w-3/4" />
-              <div className="h-3 bg-white/[0.04] rounded w-1/2" />
+              <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-3/4" />
+              <div className="h-3 bg-slate-100 dark:bg-white/[0.04] rounded w-1/2" />
             </div>
           </div>
         ))}
@@ -224,11 +225,11 @@ export default function ActivityFeed({
         <div className="flex items-center justify-between gap-4">
           {showFilters && (
             <div className="flex items-center gap-2">
-              <Filter size={14} className="text-white/60" />
+              <Filter size={14} className="text-slate-500 dark:text-white/60" />
               <select
                 value={entityFilter}
                 onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-white/[0.04] border border-white/12 text-white/60 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-white/[0.1]"
+                className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/12 text-slate-700 dark:text-white/60 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.1]"
               >
                 <option value="all">All Activity</option>
                 <option value="article">Articles</option>
@@ -243,7 +244,7 @@ export default function ActivityFeed({
             <button
               onClick={fetchLogs}
               disabled={refreshing}
-              className="p-1.5 text-white/70 hover:text-white/60 transition-colors"
+              className="p-1.5 text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/60 transition-colors"
             >
               <RefreshCw
                 size={14}
@@ -255,14 +256,14 @@ export default function ActivityFeed({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleExport("csv")}
-                  className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-white/70 hover:text-white/60 transition-colors"
+                  className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/60 transition-colors"
                 >
                   <Download size={12} />
                   CSV
                 </button>
                 <button
                   onClick={() => handleExport("json")}
-                  className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-white/70 hover:text-white/60 transition-colors"
+                  className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/60 transition-colors"
                 >
                   <Download size={12} />
                   JSON
@@ -276,9 +277,14 @@ export default function ActivityFeed({
       {/* Activity list */}
       {logs.length === 0 ? (
         <div className="py-12 text-center">
-          <Clock size={32} className="mx-auto text-white/10 mb-3" />
-          <p className="text-[14px] text-white/60 mb-1">No activity yet</p>
-          <p className="text-[12px] text-white/10">
+          <Clock
+            size={32}
+            className="mx-auto text-slate-300 dark:text-white/10 mb-3"
+          />
+          <p className="text-[14px] text-slate-600 dark:text-white/60 mb-1">
+            No activity yet
+          </p>
+          <p className="text-[12px] text-slate-500 dark:text-white/10">
             Activity will appear here as you track compliance.
           </p>
         </div>
@@ -287,7 +293,8 @@ export default function ActivityFeed({
           <AnimatePresence mode="popLayout">
             {logs.map((log, index) => {
               const Icon = actionIcons[log.action] || FileCheck;
-              const iconColor = actionColors[log.action] || "text-white/60";
+              const iconColor =
+                actionColors[log.action] || "text-gray-500 dark:text-white/60";
 
               return (
                 <motion.div
@@ -298,31 +305,33 @@ export default function ActivityFeed({
                   transition={{ delay: index * 0.02 }}
                   className={`flex items-start gap-3 ${compact ? "py-2" : "py-3"} ${
                     index < logs.length - 1
-                      ? "border-b border-white/[0.03]"
+                      ? "border-b border-slate-100 dark:border-white/[0.03]"
                       : ""
                   }`}
                 >
                   <div
-                    className={`p-1.5 rounded-lg bg-white/[0.04] ${iconColor}`}
+                    className={`p-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.04] ${iconColor}`}
                   >
                     <Icon size={compact ? 12 : 14} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`${compact ? "text-[12px]" : "text-[13px]"} text-white/70`}
+                      className={`${compact ? "text-[12px]" : "text-[13px]"} text-slate-800 dark:text-white/70`}
                     >
                       {getDescription(log)}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span
-                        className={`${compact ? "text-[10px]" : "text-[11px]"} text-white/60`}
+                        className={`${compact ? "text-[10px]" : "text-[11px]"} text-slate-600 dark:text-white/60`}
                       >
                         {entityTypeLabels[log.entityType] || log.entityType}
                       </span>
-                      <span className="text-white/10">·</span>
+                      <span className="text-slate-300 dark:text-white/10">
+                        ·
+                      </span>
                       <span
-                        className={`${compact ? "text-[10px]" : "text-[11px]"} text-white/60`}
+                        className={`${compact ? "text-[10px]" : "text-[11px]"} text-slate-600 dark:text-white/60`}
                       >
                         {formatTimestamp(log.timestamp)}
                       </span>
@@ -337,7 +346,7 @@ export default function ActivityFeed({
 
       {/* Load more indicator */}
       {total > logs.length && (
-        <p className="text-center text-[11px] text-white/60 pt-2">
+        <p className="text-center text-[11px] text-slate-600 dark:text-white/60 pt-2">
           Showing {logs.length} of {total} activities
         </p>
       )}

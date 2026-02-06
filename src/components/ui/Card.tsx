@@ -10,12 +10,15 @@ interface CardProps extends HTMLMotionProps<"div"> {
 }
 
 const cardVariants = {
-  default: "bg-white/[0.04] border border-white/10",
-  glass: "bg-white/[0.04] backdrop-blur-xl border border-white/10",
-  elevated: "bg-white/[0.06] border border-white/10 shadow-lg shadow-black/20",
+  default:
+    "bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10",
+  glass:
+    "bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200 dark:border-white/10",
+  elevated:
+    "bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-200/50 dark:shadow-black/20",
   interactive: `
-    bg-white/[0.04] border border-white/10
-    hover:bg-white/[0.06] hover:border-white/15
+    bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10
+    hover:bg-slate-50 dark:hover:bg-white/[0.06] hover:border-slate-300 dark:hover:border-white/15
     transition-all duration-200 cursor-pointer
   `,
 };
@@ -78,7 +81,9 @@ export function CardTitle({
   as: Tag = "h3",
 }: CardTitleProps) {
   return (
-    <Tag className={`text-[16px] font-semibold text-white ${className}`}>
+    <Tag
+      className={`text-[16px] font-semibold text-slate-900 dark:text-white ${className}`}
+    >
       {children}
     </Tag>
   );
@@ -94,7 +99,11 @@ export function CardDescription({
   children,
   className = "",
 }: CardDescriptionProps) {
-  return <p className={`text-[13px] text-white/60 ${className}`}>{children}</p>;
+  return (
+    <p className={`text-[13px] text-slate-600 dark:text-white/60 ${className}`}>
+      {children}
+    </p>
+  );
 }
 
 // Card Content
@@ -116,7 +125,7 @@ interface CardFooterProps {
 export function CardFooter({ children, className = "" }: CardFooterProps) {
   return (
     <div
-      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-white/10 ${className}`}
+      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-white/10 ${className}`}
     >
       {children}
     </div>

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { safeJsonParseArray } from "@/lib/validations";
 import {
   cybersecurityRequirements,
   getApplicableRequirements,
@@ -147,9 +148,9 @@ export async function POST(request: Request) {
         assessment.dataSensitivityLevel as DataSensitivityLevel,
       processesPersonalData: assessment.processesPersonalData,
       handlesGovData: assessment.handlesGovData,
-      existingCertifications: assessment.existingCertifications
-        ? JSON.parse(assessment.existingCertifications)
-        : [],
+      existingCertifications: safeJsonParseArray<string>(
+        assessment.existingCertifications,
+      ),
       hasSecurityTeam: assessment.hasSecurityTeam,
       securityTeamSize: assessment.securityTeamSize ?? undefined,
       hasIncidentResponsePlan: assessment.hasIncidentResponsePlan,

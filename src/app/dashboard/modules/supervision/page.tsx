@@ -224,7 +224,7 @@ export default function SupervisionPage() {
       case "low":
         return "text-blue-400 bg-blue-500/10";
       default:
-        return "text-white/60 bg-white/5";
+        return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
     }
   };
 
@@ -241,15 +241,15 @@ export default function SupervisionPage() {
       case "reported":
         return "text-blue-400 bg-blue-500/10";
       default:
-        return "text-white/60 bg-white/5";
+        return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
     }
   };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -258,13 +258,13 @@ export default function SupervisionPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/60 mb-2">
           MODULE 07
         </p>
-        <h1 className="text-2xl font-semibold text-white">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
           Supervision & Reporting
         </h1>
-        <p className="text-white/60 mt-1">
+        <p className="text-slate-600 dark:text-slate-500 dark:text-white/60 mt-1">
           Manage NCA relationships, incidents, and compliance reporting
         </p>
       </div>
@@ -272,65 +272,73 @@ export default function SupervisionPage() {
       {/* Stats Cards */}
       {config && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
                   <Building2 size={18} className="text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {config.primaryNCA?.countryCode || config.primaryCountry}
                   </p>
-                  <p className="text-xs text-white/50">Primary NCA</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Primary NCA
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-500/10">
                   <AlertTriangle size={18} className="text-red-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.openIncidents}
                   </p>
-                  <p className="text-xs text-white/50">Open Incidents</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Open Incidents
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <FileText size={18} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.pendingReports}
                   </p>
-                  <p className="text-xs text-white/50">Pending Reports</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Pending Reports
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-emerald-500/10">
                   <Calendar size={18} className="text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.upcomingEvents}
                   </p>
-                  <p className="text-xs text-white/50">Upcoming Events</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Upcoming Events
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -339,7 +347,7 @@ export default function SupervisionPage() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white/[0.02] rounded-xl border border-white/5">
+      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
         {steps.map((step, index) => (
           <button
             key={step.id}
@@ -349,15 +357,15 @@ export default function SupervisionPage() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-white/10 text-white"
-                  : "text-white/50 hover:text-white/70 hover:bg-white/5"
+                  ? "bg-slate-200 dark:bg-white/10 text-white"
+                  : "text-slate-500 dark:text-white/50 hover:text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:bg-white/5"
               }
             `}
           >
             <span
               className={`
               w-6 h-6 rounded-full flex items-center justify-center text-xs
-              ${activeStep === step.id ? "bg-emerald-500 text-white" : "bg-white/10"}
+              ${activeStep === step.id ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70"}
             `}
             >
               {config && index < steps.findIndex((s) => s.id === activeStep) ? (
@@ -393,7 +401,7 @@ export default function SupervisionPage() {
               <CardContent className="space-y-6">
                 {/* Primary NCA Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">
                     Primary Registration Country *
                   </label>
                   <select
@@ -404,7 +412,7 @@ export default function SupervisionPage() {
                         primaryCountry: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="">Select country...</option>
                     {Object.values(nationalAuthorities)
@@ -423,8 +431,8 @@ export default function SupervisionPage() {
                 {/* NCA Details */}
                 {formData.primaryCountry &&
                   nationalAuthorities[formData.primaryCountry] && (
-                    <div className="bg-white/[0.02] rounded-lg p-4 border border-white/5">
-                      <h4 className="font-medium text-white mb-3">
+                    <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
+                      <h4 className="font-medium text-slate-900 dark:text-white mb-3">
                         {
                           nationalAuthorities[formData.primaryCountry]
                             .authorityName
@@ -432,8 +440,10 @@ export default function SupervisionPage() {
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-white/50">Local Name</p>
-                          <p className="text-white/80">
+                          <p className="text-slate-500 dark:text-white/50">
+                            Local Name
+                          </p>
+                          <p className="text-slate-700 dark:text-white/80">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .authorityNameLocal
@@ -441,8 +451,10 @@ export default function SupervisionPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-white/50">Contact Email</p>
-                          <p className="text-white/80">
+                          <p className="text-slate-500 dark:text-white/50">
+                            Contact Email
+                          </p>
+                          <p className="text-slate-700 dark:text-white/80">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactEmail
@@ -450,8 +462,10 @@ export default function SupervisionPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-white/50">Phone</p>
-                          <p className="text-white/80">
+                          <p className="text-slate-500 dark:text-white/50">
+                            Phone
+                          </p>
+                          <p className="text-slate-700 dark:text-white/80">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactPhone
@@ -459,8 +473,10 @@ export default function SupervisionPage() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-white/50">Regulatory Framework</p>
-                          <p className="text-white/80">
+                          <p className="text-slate-500 dark:text-white/50">
+                            Regulatory Framework
+                          </p>
+                          <p className="text-slate-700 dark:text-white/80">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .regulatoryFramework
@@ -482,13 +498,13 @@ export default function SupervisionPage() {
                   )}
 
                 {/* Designated Contact */}
-                <div className="border-t border-white/10 pt-6">
-                  <h4 className="font-medium text-white mb-4">
+                <div className="border-t border-slate-200 dark:border-white/10 pt-6">
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Designated Contact Person
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Full Name
                       </label>
                       <input
@@ -500,12 +516,12 @@ export default function SupervisionPage() {
                             designatedContactName: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="John Smith"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Role
                       </label>
                       <input
@@ -517,12 +533,12 @@ export default function SupervisionPage() {
                             designatedContactRole: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="Compliance Officer"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Email
                       </label>
                       <input
@@ -534,12 +550,12 @@ export default function SupervisionPage() {
                             designatedContactEmail: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="compliance@company.com"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Phone
                       </label>
                       <input
@@ -551,7 +567,7 @@ export default function SupervisionPage() {
                             designatedContactPhone: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="+49 123 456789"
                       />
                     </div>
@@ -559,13 +575,13 @@ export default function SupervisionPage() {
                 </div>
 
                 {/* Communication Preferences */}
-                <div className="border-t border-white/10 pt-6">
-                  <h4 className="font-medium text-white mb-4">
+                <div className="border-t border-slate-200 dark:border-white/10 pt-6">
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Communication Preferences
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Preferred Language
                       </label>
                       <select
@@ -576,7 +592,7 @@ export default function SupervisionPage() {
                             communicationLanguage: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         <option value="en">English</option>
                         <option value="de">German</option>
@@ -586,7 +602,7 @@ export default function SupervisionPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                         Notification Method
                       </label>
                       <select
@@ -597,7 +613,7 @@ export default function SupervisionPage() {
                             notificationMethod: e.target.value,
                           })
                         }
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         <option value="email">Email Only</option>
                         <option value="portal">NCA Portal</option>
@@ -634,12 +650,12 @@ export default function SupervisionPage() {
                   {reportingObligations.map((obligation) => (
                     <div
                       key={obligation.type}
-                      className="bg-white/[0.02] rounded-lg p-4 border border-white/5 hover:border-white/10 transition-colors"
+                      className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-white">
+                            <h4 className="font-medium text-slate-900 dark:text-white">
                               {obligation.title}
                             </h4>
                             <span
@@ -659,16 +675,18 @@ export default function SupervisionPage() {
                               {obligation.frequency.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="text-sm text-white/60 mb-2">
+                          <p className="text-sm text-slate-500 dark:text-white/60 mb-2">
                             {obligation.description}
                           </p>
-                          <p className="text-xs text-white/40">
+                          <p className="text-xs text-slate-400 dark:text-white/40">
                             Legal basis: {obligation.legalBasis}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-white/50">Recipients</p>
-                          <p className="text-xs text-white/70">
+                          <p className="text-xs text-slate-500 dark:text-white/50">
+                            Recipients
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-white/70">
                             {obligation.recipients
                               .map((r) => r.replace(/_/g, " "))
                               .join(", ")}
@@ -679,7 +697,7 @@ export default function SupervisionPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-between pt-6 border-t border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
                   <Button variant="ghost" onClick={() => setActiveStep("nca")}>
                     Back
                   </Button>
@@ -709,14 +727,14 @@ export default function SupervisionPage() {
                 {/* Incident Form Modal */}
                 {showIncidentForm && (
                   <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0b] border border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                      <h3 className="text-lg font-semibold text-white mb-4">
+                    <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                         Log New Incident
                       </h3>
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                             Category *
                           </label>
                           <select
@@ -727,7 +745,7 @@ export default function SupervisionPage() {
                                 category: e.target.value,
                               })
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                           >
                             <option value="">Select category...</option>
                             {incidentCategories.map((cat) => (
@@ -739,7 +757,7 @@ export default function SupervisionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                             Severity *
                           </label>
                           <select
@@ -750,7 +768,7 @@ export default function SupervisionPage() {
                                 severity: e.target.value,
                               })
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                           >
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -760,7 +778,7 @@ export default function SupervisionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                             Title *
                           </label>
                           <input
@@ -772,13 +790,13 @@ export default function SupervisionPage() {
                                 title: e.target.value,
                               })
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                             placeholder="Brief incident title"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                             Description *
                           </label>
                           <textarea
@@ -789,14 +807,14 @@ export default function SupervisionPage() {
                                 description: e.target.value,
                               })
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white h-24 resize-none"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-24 resize-none"
                             placeholder="Detailed description of the incident"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm text-white/60 mb-1">
+                            <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                               Detected At *
                             </label>
                             <input
@@ -808,11 +826,11 @@ export default function SupervisionPage() {
                                   detectedAt: e.target.value,
                                 })
                               }
-                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm text-white/60 mb-1">
+                            <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                               Detected By *
                             </label>
                             <input
@@ -824,7 +842,7 @@ export default function SupervisionPage() {
                                   detectedBy: e.target.value,
                                 })
                               }
-                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                               placeholder="Name or system"
                             />
                           </div>
@@ -860,9 +878,14 @@ export default function SupervisionPage() {
                 {/* Incidents List */}
                 {incidents.length === 0 ? (
                   <div className="text-center py-12">
-                    <Shield size={48} className="mx-auto text-white/20 mb-4" />
-                    <p className="text-white/60">No incidents logged</p>
-                    <p className="text-sm text-white/40 mt-1">
+                    <Shield
+                      size={48}
+                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                    />
+                    <p className="text-slate-500 dark:text-white/60">
+                      No incidents logged
+                    </p>
+                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
                       Click &quot;Log Incident&quot; to record a new incident
                     </p>
                   </div>
@@ -871,12 +894,12 @@ export default function SupervisionPage() {
                     {incidents.map((incident) => (
                       <div
                         key={incident.id}
-                        className="bg-white/[0.02] rounded-lg p-4 border border-white/5 hover:border-white/10 transition-colors cursor-pointer"
+                        className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors cursor-pointer"
                       >
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-xs text-white/40">
+                              <span className="font-mono text-xs text-slate-400 dark:text-white/40">
                                 {incident.incidentNumber}
                               </span>
                               <span
@@ -890,14 +913,14 @@ export default function SupervisionPage() {
                                 {incident.status}
                               </span>
                             </div>
-                            <h4 className="font-medium text-white">
+                            <h4 className="font-medium text-slate-900 dark:text-white">
                               {incident.title}
                             </h4>
-                            <p className="text-sm text-white/50 mt-1 line-clamp-1">
+                            <p className="text-sm text-slate-500 dark:text-white/50 mt-1 line-clamp-1">
                               {incident.description}
                             </p>
                           </div>
-                          <div className="text-right text-xs text-white/40">
+                          <div className="text-right text-xs text-slate-400 dark:text-white/40">
                             <p>
                               {new Date(
                                 incident.detectedAt,
@@ -911,7 +934,7 @@ export default function SupervisionPage() {
                           </div>
                         </div>
                         {incident.reportedToNCA && (
-                          <div className="mt-2 pt-2 border-t border-white/5">
+                          <div className="mt-2 pt-2 border-t border-slate-200 dark:border-white/5">
                             <span className="text-xs text-emerald-400 flex items-center gap-1">
                               <Check size={12} /> Reported to NCA
                             </span>
@@ -922,7 +945,7 @@ export default function SupervisionPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("reporting")}
@@ -952,10 +975,12 @@ export default function SupervisionPage() {
                   <div className="text-center py-12">
                     <Calendar
                       size={48}
-                      className="mx-auto text-white/20 mb-4"
+                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
                     />
-                    <p className="text-white/60">No upcoming events</p>
-                    <p className="text-sm text-white/40 mt-1">
+                    <p className="text-slate-500 dark:text-white/60">
+                      No upcoming events
+                    </p>
+                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
                       Calendar events will be automatically created based on
                       your reporting obligations
                     </p>
@@ -975,7 +1000,7 @@ export default function SupervisionPage() {
                       return (
                         <div
                           key={event.id}
-                          className="bg-white/[0.02] rounded-lg p-4 border border-white/5 hover:border-white/10 transition-colors"
+                          className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-3">
@@ -991,7 +1016,7 @@ export default function SupervisionPage() {
                                         ? "bg-red-500/10"
                                         : eventConfig?.color === "amber"
                                           ? "bg-amber-500/10"
-                                          : "bg-white/5"
+                                          : "bg-slate-100 dark:bg-white/5"
                                 }
                               `}
                               >
@@ -1007,21 +1032,21 @@ export default function SupervisionPage() {
                                           ? "text-red-400"
                                           : eventConfig?.color === "amber"
                                             ? "text-amber-400"
-                                            : "text-white/60"
+                                            : "text-slate-500 dark:text-white/60"
                                   }
                                 `}
                                 />
                               </div>
                               <div>
-                                <h4 className="font-medium text-white">
+                                <h4 className="font-medium text-slate-900 dark:text-white">
                                   {event.title}
                                 </h4>
                                 {event.description && (
-                                  <p className="text-sm text-white/50 mt-1">
+                                  <p className="text-sm text-slate-500 dark:text-white/50 mt-1">
                                     {event.description}
                                   </p>
                                 )}
-                                <p className="text-xs text-white/40 mt-2">
+                                <p className="text-xs text-slate-400 dark:text-white/40 mt-2">
                                   Due:{" "}
                                   {new Date(event.dueDate).toLocaleDateString()}
                                 </p>
@@ -1036,7 +1061,7 @@ export default function SupervisionPage() {
                                     ? "text-red-400"
                                     : daysUntil <= 30
                                       ? "text-amber-400"
-                                      : "text-white/60"
+                                      : "text-slate-500 dark:text-white/60"
                                 }
                               `}
                               >
@@ -1044,7 +1069,7 @@ export default function SupervisionPage() {
                                   ? `${daysUntil} days`
                                   : "Overdue"}
                               </span>
-                              <p className="text-xs text-white/40 mt-1">
+                              <p className="text-xs text-slate-400 dark:text-white/40 mt-1">
                                 {eventConfig?.label}
                               </p>
                             </div>
@@ -1055,7 +1080,7 @@ export default function SupervisionPage() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("incidents")}

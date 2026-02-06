@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { safeJsonParseArray } from "@/lib/validations";
 import {
   getApplicableRequirements,
   isEligibleForSimplifiedRegime,
@@ -158,9 +159,7 @@ export async function PATCH(
         handlesGovData: body.handlesGovData ?? existing.handlesGovData,
         existingCertifications:
           body.existingCertifications ||
-          (existing.existingCertifications
-            ? JSON.parse(existing.existingCertifications)
-            : []),
+          safeJsonParseArray<string>(existing.existingCertifications),
         hasSecurityTeam: body.hasSecurityTeam ?? existing.hasSecurityTeam,
         securityTeamSize:
           body.securityTeamSize ?? existing.securityTeamSize ?? undefined,

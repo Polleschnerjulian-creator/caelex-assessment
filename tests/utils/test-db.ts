@@ -59,9 +59,10 @@ export async function cleanupTestData() {
     "milestone",
     "missionPhase",
     "deadline",
-    "notification",
+    "notificationLog",
     "auditLog",
-    "complianceTracker",
+    "authorizationDocument",
+    "authorizationWorkflow",
     "session",
     "account",
     "verificationToken",
@@ -126,6 +127,12 @@ export async function createTestDocuments(
       data: {
         userId,
         name: `Test Document ${i + 1}`,
+        fileName: `test-document-${i + 1}.pdf`,
+        fileSize: 1024,
+        mimeType: "application/pdf",
+        storagePath: `/test/documents/test-document-${i + 1}.pdf`,
+        checksum: `test-checksum-${Date.now()}-${i}`,
+        uploadedBy: userId,
         category: "LICENSE",
         status: "ACTIVE",
         isLatest: true,
@@ -156,9 +163,9 @@ export async function createTestDeadlines(
         userId,
         title: `Test Deadline ${i + 1}`,
         dueDate: new Date(Date.now() + (i + 1) * 24 * 60 * 60 * 1000),
-        category: "AUTHORIZATION",
+        category: "REGULATORY",
         priority: "MEDIUM",
-        status: "PENDING",
+        status: "UPCOMING",
         reminderDays: [7, 1],
         ...overrides,
       },
@@ -170,22 +177,23 @@ export async function createTestDeadlines(
 }
 
 /**
- * Create a test compliance tracker for a user
+ * Create a test authorization workflow for a user
+ * Note: ComplianceTracker model was replaced with AuthorizationWorkflow
  */
-export async function createTestComplianceTracker(
+export async function createTestAuthorizationWorkflow(
   userId: string,
   overrides?: Record<string, unknown>,
 ): Promise<unknown> {
   const prismaClient = getTestPrismaClient();
 
-  return prismaClient.complianceTracker.create({
+  return prismaClient.authorizationWorkflow.create({
     data: {
       userId,
-      currentStep: 1,
-      completedSteps: [],
-      assessmentData: {},
-      operatorType: null,
-      regime: null,
+      status: "not_started",
+      operatorType: "SCO",
+      primaryNCA: "de",
+      primaryNCAName: "German Space Agency (DLR)",
+      pathway: "national_authorization",
       ...overrides,
     },
   });

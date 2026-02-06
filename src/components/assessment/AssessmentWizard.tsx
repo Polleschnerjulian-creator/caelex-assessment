@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home, Check } from "lucide-react";
 import Link from "next/link";
 import { AssessmentState, AssessmentAnswers, SpaceActData } from "@/lib/types";
 import {
@@ -14,7 +14,6 @@ import { calculateCompliance, loadSpaceActData } from "@/lib/engine";
 import ProgressBar from "./ProgressBar";
 import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
-import Button from "@/components/ui/Button";
 import ResultsDashboard from "@/components/results/ResultsDashboard";
 
 const initialAnswers: AssessmentAnswers = {
@@ -42,7 +41,6 @@ export default function AssessmentWizard() {
   const [spaceActData, setSpaceActData] = useState<SpaceActData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load the JSON data on mount
   useEffect(() => {
     loadSpaceActData()
       .then(setSpaceActData)
@@ -57,13 +55,11 @@ export default function AssessmentWizard() {
     (value: string | boolean | number) => {
       if (!currentQuestion) return;
 
-      // Update the answer
       const newAnswers = {
         ...state.answers,
         [currentQuestion.id]: value,
       };
 
-      // Check for out-of-scope conditions
       if (
         currentQuestion.outOfScopeValue !== undefined &&
         value === currentQuestion.outOfScopeValue
@@ -77,7 +73,6 @@ export default function AssessmentWizard() {
         return;
       }
 
-      // Check if we've reached the end
       const nextQuestion = getCurrentQuestion(
         newAnswers,
         state.currentStep + 1,
@@ -100,11 +95,9 @@ export default function AssessmentWizard() {
     if (state.currentStep > 1) {
       setDirection(-1);
 
-      // Find the previous applicable step
       let prevStep = state.currentStep - 1;
       let prevQuestion = getCurrentQuestion(state.answers, prevStep);
 
-      // If the previous question was skipped (conditional), go back further
       while (prevStep > 0 && !prevQuestion) {
         prevStep--;
         prevQuestion = getCurrentQuestion(state.answers, prevStep);
@@ -133,10 +126,10 @@ export default function AssessmentWizard() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Loading assessment...</p>
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4" />
+          <p className="font-mono text-[12px] text-white/70">Loading...</p>
         </div>
       </div>
     );
@@ -146,7 +139,7 @@ export default function AssessmentWizard() {
   if (state.isComplete && spaceActData) {
     const result = calculateCompliance(state.answers, spaceActData);
     return (
-      <div className="min-h-screen bg-navy-950">
+      <div className="min-h-screen bg-black">
         <ResultsDashboard result={result} onRestart={handleRestart} />
       </div>
     );
@@ -155,16 +148,20 @@ export default function AssessmentWizard() {
   // Out of scope view
   if (state.isOutOfScope && currentQuestion) {
     return (
-      <div className="min-h-screen bg-navy-950 py-12 px-6">
+      <div className="min-h-screen bg-black py-12 px-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </Button>
+          <div className="flex items-center justify-between mb-12">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+            >
+              <Home size={14} />
+              <span>Home</span>
             </Link>
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+              EU Space Act Assessment
+            </span>
           </div>
 
           <OutOfScopeResult
@@ -179,23 +176,23 @@ export default function AssessmentWizard() {
 
   // Assessment wizard view
   return (
-    <div className="min-h-screen bg-navy-950 py-12 px-6">
+    <div className="min-h-screen bg-black py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-12">
           <AnimatePresence mode="wait">
             {state.currentStep > 1 ? (
-              <motion.div
+              <motion.button
                 key="back"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
+                onClick={handleBack}
+                className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
               >
-                <Button variant="ghost" size="sm" onClick={handleBack}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </motion.div>
+                <ArrowLeft size={14} />
+                <span>Back</span>
+              </motion.button>
             ) : (
               <motion.div
                 key="home"
@@ -203,23 +200,24 @@ export default function AssessmentWizard() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
               >
-                <Link href="/">
-                  <Button variant="ghost" size="sm">
-                    <Home className="w-4 h-4 mr-2" />
-                    Home
-                  </Button>
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+                >
+                  <Home size={14} />
+                  <span>Home</span>
                 </Link>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="text-sm text-slate-500 font-mono">
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
             EU Space Act Assessment
-          </div>
+          </span>
         </div>
 
         {/* Progress bar */}
-        <div className="mb-12">
+        <div className="mb-16">
           <ProgressBar
             currentStep={state.currentStep}
             totalSteps={totalSteps}
@@ -230,6 +228,7 @@ export default function AssessmentWizard() {
         {currentQuestion && (
           <QuestionStep
             question={currentQuestion}
+            questionNumber={state.currentStep}
             selectedValue={
               state.answers[currentQuestion.id as keyof AssessmentAnswers] as
                 | string
@@ -251,26 +250,18 @@ export default function AssessmentWizard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="mt-8 max-w-2xl mx-auto"
+                className="mt-10 max-w-2xl mx-auto"
               >
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg
-                        className="w-3 h-3 text-white"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={3}
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
+                <div className="bg-white/[0.05] border border-white/[0.15] rounded-xl p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <Check size={12} className="text-white" />
                     </div>
                     <div>
-                      <p className="text-green-400 font-medium text-sm">
+                      <p className="text-[14px] text-white font-medium">
                         You may qualify for the simplified Light Regime
                       </p>
-                      <p className="text-green-500/70 text-xs mt-1">
+                      <p className="text-[13px] text-white/70 mt-1">
                         Reduced obligations for resilience and a delayed EFD
                         deadline (2032)
                       </p>

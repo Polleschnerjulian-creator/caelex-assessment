@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from "@/lib/storage/r2-client";
 
 // GET /api/documents - List documents with filters
 export async function GET(req: Request) {
@@ -123,6 +124,26 @@ export async function POST(req: Request) {
     let checksum = "";
 
     if (file) {
+      // SECURITY: Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          {
+            error: `File too large. Maximum size: ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+          },
+          { status: 400 },
+        );
+      }
+
+      // SECURITY: Validate file type
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        return NextResponse.json(
+          {
+            error: `File type not allowed. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+
       fileName = file.name;
       fileSize = file.size;
       mimeType = file.type;

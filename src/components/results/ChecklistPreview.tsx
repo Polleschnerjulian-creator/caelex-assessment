@@ -1,10 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, Circle, FileDown } from "lucide-react";
+import { Circle, FileDown } from "lucide-react";
 import { ChecklistItem } from "@/lib/types";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 
 interface ChecklistPreviewProps {
   checklist: ChecklistItem[];
@@ -19,7 +17,6 @@ export default function ChecklistPreview({
   const totalItems = checklist.length;
   const remainingItems = totalItems - previewItems.length;
 
-  // Count phases
   const phases = new Set(
     checklist.map((item) => {
       if (item.articles.includes("pre") || parseInt(item.articles) < 28) {
@@ -39,15 +36,17 @@ export default function ChecklistPreview({
       transition={{ delay: 0.2 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-white">Your Next Steps</h3>
-        <div className="text-sm text-slate-500">
+        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+          Your Next Steps
+        </span>
+        <span className="font-mono text-[11px] text-white/50">
           Top 5 of {totalItems} action items
-        </div>
+        </span>
       </div>
 
-      <Card variant="default" padding="none">
+      <div className="bg-white/[0.05] border border-white/[0.12] rounded-xl overflow-hidden">
         {/* Checklist items */}
-        <div className="divide-y divide-navy-700">
+        <div className="divide-y divide-white/[0.08]">
           {previewItems.map((item, index) => (
             <motion.div
               key={index}
@@ -57,15 +56,17 @@ export default function ChecklistPreview({
               className="p-4 flex items-start gap-4"
             >
               <div className="flex-shrink-0 mt-0.5">
-                <Circle className="w-5 h-5 text-slate-600" />
+                <Circle className="w-4 h-4 text-white/40" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-slate-200 text-sm">{item.requirement}</p>
+                <p className="text-[14px] text-white/90 leading-relaxed">
+                  {item.requirement}
+                </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">
+                  <span className="font-mono text-[10px] text-white/70 bg-white/[0.08] px-2 py-0.5 rounded">
                     Art. {item.articles}
                   </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-[11px] text-white/50">
                     {item.module.replace(/_/g, " ")}
                   </span>
                 </div>
@@ -76,10 +77,10 @@ export default function ChecklistPreview({
 
         {/* More items indicator */}
         {remainingItems > 0 && (
-          <div className="px-4 py-3 bg-navy-900/50 border-t border-navy-700">
-            <p className="text-sm text-slate-400 text-center">
+          <div className="px-4 py-3 bg-white/[0.03] border-t border-white/[0.08]">
+            <p className="text-[13px] text-white/60 text-center">
               Your full compliance checklist contains{" "}
-              <span className="text-white font-semibold">
+              <span className="text-white font-medium">
                 {totalItems} action items
               </span>{" "}
               across {phases.size} phases.
@@ -88,16 +89,19 @@ export default function ChecklistPreview({
         )}
 
         {/* CTA */}
-        <div className="p-6 border-t border-navy-700 text-center">
-          <p className="text-slate-400 text-sm mb-4">
+        <div className="p-6 border-t border-white/[0.12] text-center">
+          <p className="text-[13px] text-white/70 mb-4">
             Get the complete checklist with deadlines and article references.
           </p>
-          <Button onClick={onDownloadClick}>
-            <FileDown className="w-4 h-4 mr-2" />
+          <button
+            onClick={onDownloadClick}
+            className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-5 py-2 rounded-full hover:bg-white/90 transition-all"
+          >
+            <FileDown size={14} />
             Download PDF Report
-          </Button>
+          </button>
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 }

@@ -1,27 +1,19 @@
-import Navigation from "@/components/landing/Navigation";
 import Hero from "@/components/landing/Hero";
-import DataStream from "@/components/landing/DataStream";
-import Stats from "@/components/landing/Stats";
-import Problem from "@/components/landing/Problem";
+import ProblemStatement from "@/components/landing/ProblemStatement";
 import HowItWorks from "@/components/landing/HowItWorks";
-import WhatYouGet from "@/components/landing/WhatYouGet";
-import DataFoundation from "@/components/landing/DataFoundation";
+import Modules from "@/components/landing/Modules";
+import Metrics from "@/components/landing/Metrics";
 import FinalCTA from "@/components/landing/FinalCTA";
-import Footer from "@/components/landing/Footer";
 
 export default function Home() {
   return (
-    <main className="bg-black min-h-screen">
-      <Navigation />
+    <main className="landing-page bg-black min-h-screen">
       <Hero />
-      <DataStream />
-      <Stats />
-      <Problem />
+      <ProblemStatement />
       <HowItWorks />
-      <WhatYouGet />
-      <DataFoundation />
+      <Modules />
+      <Metrics />
       <FinalCTA />
-      <Footer />
     </main>
   );
 }

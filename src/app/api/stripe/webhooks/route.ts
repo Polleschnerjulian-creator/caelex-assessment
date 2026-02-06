@@ -1,0 +1,110 @@
+/**
+ * Stripe Webhook Handler
+ * POST /api/stripe/webhooks
+ *
+ * Handles incoming Stripe webhook events.
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { stripe } from "@/lib/stripe/client";
+import {
+  handleCheckoutComplete,
+  handleInvoicePaid,
+  handlePaymentFailed,
+  handleSubscriptionUpdated,
+  handleSubscriptionCanceled,
+} from "@/lib/services/subscription-service";
+import type Stripe from "stripe";
+
+export async function POST(request: NextRequest) {
+  if (!stripe) {
+    console.error("Stripe is not configured");
+    return NextResponse.json(
+      { error: "Stripe is not configured" },
+      { status: 500 },
+    );
+  }
+
+  const body = await request.text();
+  const headersList = await headers();
+  const signature = headersList.get("stripe-signature");
+
+  if (!signature) {
+    console.error("No stripe-signature header");
+    return NextResponse.json(
+      { error: "No stripe-signature header" },
+      { status: 400 },
+    );
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!,
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error(`Webhook signature verification failed: ${message}`);
+    return NextResponse.json(
+      { error: "Webhook signature verification failed" },
+      { status: 400 },
+    );
+  }
+
+  // Handle the event
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutComplete(session);
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object;
+        await handleInvoicePaid(
+          invoice as Parameters<typeof handleInvoicePaid>[0],
+        );
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object;
+        await handlePaymentFailed(
+          invoice as Parameters<typeof handlePaymentFailed>[0],
+        );
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object;
+        await handleSubscriptionUpdated(
+          subscription as Parameters<typeof handleSubscriptionUpdated>[0],
+        );
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+        await handleSubscriptionCanceled(
+          subscription as Parameters<typeof handleSubscriptionCanceled>[0],
+        );
+        break;
+      }
+
+      default:
+        // Ignore other events
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+  } catch (error) {
+    console.error(`Error handling webhook event ${event.type}:`, error);
+    // Return 200 to acknowledge receipt (prevent retries for non-critical errors)
+    return NextResponse.json({ received: true, error: "Handler error" });
+  }
+
+  return NextResponse.json({ received: true });
+}

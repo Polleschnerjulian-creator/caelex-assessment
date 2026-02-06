@@ -14,6 +14,7 @@
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { NextResponse } from "next/server";
 
 // ─── Types ───
 
@@ -101,6 +102,14 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:sensitive",
       }),
+
+      // Supplier portal: 30 requests per hour per IP (public endpoint protection)
+      supplier: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:supplier",
+      }),
     }
   : null;
 
@@ -178,6 +187,7 @@ const fallbackLimiters = {
   assessment: new InMemoryRateLimiter(10, 3600000),
   export: new InMemoryRateLimiter(20, 3600000),
   sensitive: new InMemoryRateLimiter(5, 3600000),
+  supplier: new InMemoryRateLimiter(30, 3600000),
 };
 
 // ─── Public API ───
@@ -188,7 +198,8 @@ export type RateLimitType =
   | "registration"
   | "assessment"
   | "export"
-  | "sensitive";
+  | "sensitive"
+  | "supplier";
 
 /**
  * Check rate limit for an identifier.
@@ -217,22 +228,82 @@ export async function checkRateLimit(
 }
 
 /**
+ * Validate that a string looks like a valid IP address.
+ * Basic validation to prevent header injection attacks.
+ */
+function isValidIp(ip: string | null | undefined): ip is string {
+  if (!ip) return false;
+
+  // Basic validation: alphanumeric, dots, colons (for IPv6), and hyphens
+  // Max length for IPv6 with zone ID
+  if (ip.length > 45 || ip.length < 7) return false;
+
+  // IPv4: xxx.xxx.xxx.xxx
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (ipv4Regex.test(ip)) {
+    const parts = ip.split(".");
+    return parts.every((part) => {
+      const num = parseInt(part, 10);
+      return num >= 0 && num <= 255;
+    });
+  }
+
+  // IPv6: Basic validation (simplified)
+  const ipv6Regex = /^[a-fA-F0-9:]+$/;
+  return ipv6Regex.test(ip);
+}
+
+/**
  * Get identifier from request.
  * Prefers user ID if available, falls back to IP.
+ *
+ * SECURITY: IP headers can be spoofed. We use the following trust order:
+ * 1. Cloudflare's cf-connecting-ip (set by Cloudflare, cannot be spoofed by client)
+ * 2. Vercel's x-real-ip (set by Vercel, cannot be spoofed by client)
+ * 3. The rightmost IP in x-forwarded-for (added by trusted proxy)
+ * 4. Fallback to "unknown" with strict rate limiting
+ *
+ * NOTE: x-forwarded-for can contain multiple IPs. The leftmost is the client,
+ * but it can be spoofed. The rightmost is added by the trusted proxy.
+ * In production behind a CDN, prefer CDN-specific headers.
  */
 export function getIdentifier(request: Request, userId?: string): string {
   if (userId) {
     return `user:${userId}`;
   }
 
-  // Get IP from headers (in order of preference)
-  const forwarded = request.headers.get("x-forwarded-for");
+  // Priority 1: Cloudflare's header (trusted, cannot be spoofed by client)
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (isValidIp(cfIp)) {
+    return `ip:${cfIp}`;
+  }
+
+  // Priority 2: Vercel's header (trusted, cannot be spoofed by client)
   const realIp = request.headers.get("x-real-ip");
-  const cfIp = request.headers.get("cf-connecting-ip"); // Cloudflare
+  if (isValidIp(realIp)) {
+    return `ip:${realIp}`;
+  }
 
-  const ip = cfIp || realIp || forwarded?.split(",")[0]?.trim() || "unknown";
+  // Priority 3: x-forwarded-for - use the RIGHTMOST IP (added by trusted proxy)
+  // The leftmost IP is the original client but can be spoofed
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ips = forwarded.split(",").map((ip) => ip.trim());
+    // Use the rightmost non-internal IP (added by our trusted proxy)
+    // In a proper setup, this would be the IP of the client as seen by the CDN
+    const lastIp = ips[ips.length - 1];
+    if (isValidIp(lastIp)) {
+      return `ip:${lastIp}`;
+    }
+  }
 
-  return `ip:${ip}`;
+  // Fallback: Unknown - this will be heavily rate limited as all unknown
+  // requests share the same identifier
+  console.warn(
+    "[SECURITY] Could not determine client IP for rate limiting. " +
+      "This may indicate a misconfigured proxy or an attack attempt.",
+  );
+  return "ip:unknown";
 }
 
 /**
@@ -249,10 +320,10 @@ export function createRateLimitHeaders(result: RateLimitResult): Headers {
 /**
  * Create a 429 Too Many Requests response.
  */
-export function createRateLimitResponse(result: RateLimitResult): Response {
+export function createRateLimitResponse(result: RateLimitResult): NextResponse {
   const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
 
-  return new Response(
+  return new NextResponse(
     JSON.stringify({
       error: "Too Many Requests",
       message: "Rate limit exceeded. Please try again later.",

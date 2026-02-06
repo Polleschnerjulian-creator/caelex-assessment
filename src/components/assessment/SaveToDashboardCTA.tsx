@@ -11,6 +11,8 @@ interface SaveToDashboardCTAProps {
   result?: ComplianceResult;
 }
 
+const isAuthEnabled = Boolean(process.env.NEXT_PUBLIC_AUTH_ENABLED);
+
 export default function SaveToDashboardCTA({
   result,
 }: SaveToDashboardCTAProps) {
@@ -19,6 +21,9 @@ export default function SaveToDashboardCTA({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Don't show CTA when auth is not configured
+  if (!isAuthEnabled) return null;
 
   const handleSaveToDashboard = async () => {
     if (!result) return;

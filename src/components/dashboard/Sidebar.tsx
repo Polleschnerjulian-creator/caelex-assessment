@@ -19,6 +19,7 @@ import {
   Eye,
   ChevronRight,
 } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 interface NavItemProps {
   href: string;
@@ -41,21 +42,21 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
         transition-all duration-150
         ${
           isActive
-            ? "bg-emerald-500/10 text-emerald-400 font-medium"
-            : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
+            : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
         }
       `}
     >
       {icon && (
         <span
-          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-400" : "text-white/60 group-hover:text-white/60"}`}
+          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/60 group-hover:text-slate-700 dark:group-hover:text-white/60"}`}
         >
           {icon}
         </span>
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/70">
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70">
           {badge}
         </span>
       )}
@@ -83,20 +84,20 @@ function ModuleNavItem({ href, icon, label, onClick }: ModuleNavItemProps) {
         transition-all duration-150
         ${
           isActive
-            ? "bg-emerald-500/10 text-emerald-400 font-medium"
-            : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
+            : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
         }
       `}
     >
       <span
-        className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-400" : "text-white/60 group-hover:text-white/60"}`}
+        className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/60 group-hover:text-slate-700 dark:group-hover:text-white/60"}`}
       >
         {icon}
       </span>
       <span className="flex-1">{label}</span>
       <ChevronRight
         size={14}
-        className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "text-emerald-400 opacity-100" : "text-white/30"}`}
+        className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "text-emerald-700 dark:text-emerald-400 opacity-100" : "text-slate-400 dark:text-white/30"}`}
       />
     </Link>
   );
@@ -135,7 +136,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -145,7 +146,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:static top-0 left-0 bottom-0
           w-[280px] lg:w-[260px]
-          bg-[#0A0A0B] border-r border-white/10
+          bg-white dark:bg-[#0A0A0B] border-r border-slate-200 dark:border-white/10
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -154,16 +155,16 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         {/* Mobile close button */}
         <button
           onClick={onClose}
-          className="lg:hidden absolute top-4 right-4 p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/[0.04] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
           <X size={20} />
         </button>
 
         {/* Header */}
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[20px] font-semibold text-white">Caelex</span>
-            <span className="text-[10px] font-mono text-white/60 uppercase tracking-wider">
+            <Logo size={22} className="text-slate-900 dark:text-white" />
+            <span className="text-[10px] font-mono text-slate-500 dark:text-white/60 uppercase tracking-wider">
               Beta
             </span>
           </Link>
@@ -173,7 +174,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
           {/* Overview Section */}
           <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-white/60 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
               Overview
             </p>
             <div className="space-y-0.5">
@@ -196,7 +197,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Modules Section */}
           <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-white/60 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
               Compliance Modules
             </p>
             <div className="space-y-0.5">
@@ -241,7 +242,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Resources Section */}
           <div>
-            <p className="px-3 mb-2 text-[11px] font-medium text-white/60 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
               Resources
             </p>
             <div className="space-y-0.5">
@@ -264,7 +265,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-white/10 space-y-1">
+        <div className="p-3 border-t border-slate-200 dark:border-white/10 space-y-1">
           <NavItem
             href="/dashboard/settings"
             icon={<Settings size={16} strokeWidth={1.5} />}
@@ -277,20 +278,20 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             onClick={handleLogout}
             className="
               w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px]
-              text-white/60 hover:text-red-400 hover:bg-red-500/10
+              text-slate-700 dark:text-white/60 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10
               transition-all duration-150
             "
           >
-            <LogOut size={16} className="text-white/60" />
+            <LogOut size={16} className="text-slate-500 dark:text-white/60" />
             <span>Sign Out</span>
           </button>
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0 border border-white/10">
+            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/[0.08] flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10">
               {user?.image ? (
                 <img
                   src={user.image}
@@ -298,7 +299,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <span className="text-[12px] font-medium text-white/60">
+                <span className="text-[12px] font-medium text-slate-600 dark:text-white/60">
                   {initials}
                 </span>
               )}
@@ -306,10 +307,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-white truncate">
+              <p className="text-[13px] font-medium text-slate-900 dark:text-white truncate">
                 {user?.name || "User"}
               </p>
-              <p className="text-[11px] text-white/70 truncate">
+              <p className="text-[11px] text-slate-500 dark:text-white/70 truncate">
                 {user?.email || ""}
               </p>
             </div>

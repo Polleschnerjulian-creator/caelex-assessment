@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateIncidentNumber } from "@/data/national-authorities";
+import {
+  INCIDENT_CLASSIFICATION,
+  calculateSeverity,
+  calculateNCADeadline,
+  generateIncidentNumber,
+  type IncidentCategory,
+  type SeverityFactors,
+} from "@/lib/services/incident-response-service";
 
 // GET /api/supervision/incidents - List incidents
 export async function GET(req: Request) {
@@ -45,7 +52,26 @@ export async function GET(req: Request) {
       prisma.incident.count({ where }),
     ]);
 
-    return NextResponse.json({ incidents, total });
+    // Add computed fields
+    const incidentsWithDeadlines = incidents.map((incident) => {
+      const classification =
+        INCIDENT_CLASSIFICATION[incident.category as IncidentCategory];
+      const ncaDeadline = calculateNCADeadline(
+        incident.category as IncidentCategory,
+        incident.detectedAt,
+      );
+      const isOverdue = !incident.reportedToNCA && new Date() > ncaDeadline;
+
+      return {
+        ...incident,
+        ncaDeadline,
+        ncaDeadlineHours: classification?.ncaDeadlineHours || 72,
+        isOverdue,
+        requiresNCANotification: incident.requiresNCANotification,
+      };
+    });
+
+    return NextResponse.json({ incidents: incidentsWithDeadlines, total });
   } catch (error) {
     console.error("Error fetching incidents:", error);
     return NextResponse.json(
@@ -55,7 +81,7 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/supervision/incidents - Create new incident
+// POST /api/supervision/incidents - Create new incident with auto-classification
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -77,7 +103,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       category,
-      severity,
+      severity: providedSeverity,
       title,
       description,
       detectedAt,
@@ -86,32 +112,56 @@ export async function POST(req: Request) {
       affectedAssets,
       immediateActions,
       impactAssessment,
+      // Severity factors for auto-classification
+      severityFactors,
     } = body;
 
     // Validate required fields
-    if (
-      !category ||
-      !severity ||
-      !title ||
-      !description ||
-      !detectedAt ||
-      !detectedBy
-    ) {
+    if (!category || !title || !description || !detectedAt || !detectedBy) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        {
+          error:
+            "Missing required fields: category, title, description, detectedAt, detectedBy",
+        },
         { status: 400 },
       );
     }
 
-    // Generate incident number
-    const year = new Date().getFullYear();
-    const incidentCount = await prisma.incident.count({
-      where: {
-        incidentNumber: { startsWith: `INC-${year}` },
-      },
-    });
-    const incidentNumber = generateIncidentNumber(year, incidentCount + 1);
+    // Validate category
+    const validCategories = Object.keys(INCIDENT_CLASSIFICATION);
+    if (!validCategories.includes(category)) {
+      return NextResponse.json(
+        {
+          error: `Invalid category. Must be one of: ${validCategories.join(", ")}`,
+        },
+        { status: 400 },
+      );
+    }
 
+    const incidentCategory = category as IncidentCategory;
+    const classification = INCIDENT_CLASSIFICATION[incidentCategory];
+
+    // Auto-calculate severity if not provided
+    let severity = providedSeverity;
+    if (!severity) {
+      const factors: SeverityFactors = severityFactors || {
+        affectedSpacecraft: affectedAssets?.length || 1,
+        hasDataLoss: false,
+        affectsThirdParty: false,
+        isRecurring: false,
+        estimatedFinancialImpact: 0,
+      };
+      severity = calculateSeverity(incidentCategory, factors);
+    }
+
+    // Generate incident number
+    const incidentNumber = await generateIncidentNumber();
+
+    // Calculate NCA deadline
+    const detectionTime = new Date(detectedAt);
+    const ncaDeadline = calculateNCADeadline(incidentCategory, detectionTime);
+
+    // Create incident with auto-classification
     const incident = await prisma.incident.create({
       data: {
         supervisionId: config.id,
@@ -121,11 +171,12 @@ export async function POST(req: Request) {
         status: "detected",
         title,
         description,
-        detectedAt: new Date(detectedAt),
+        detectedAt: detectionTime,
         detectedBy,
         detectionMethod: detectionMethod || "manual",
         immediateActions: immediateActions || [],
         impactAssessment,
+        requiresNCANotification: classification.requiresNCANotification,
         affectedAssets: affectedAssets?.length
           ? {
               create: affectedAssets.map(
@@ -147,6 +198,26 @@ export async function POST(req: Request) {
       },
     });
 
+    // Create calendar event for NCA deadline if notification required
+    if (classification.requiresNCANotification) {
+      await prisma.supervisionCalendarEvent.create({
+        data: {
+          supervisionId: config.id,
+          eventType: "regulatory_deadline",
+          title: `NCA Notification Deadline: ${incidentNumber}`,
+          description: `${classification.ncaDeadlineHours}-hour deadline for NCA notification of ${incidentCategory} incident. Severity: ${severity}`,
+          dueDate: ncaDeadline,
+          status: "pending",
+          notes: JSON.stringify({
+            incidentId: incident.id,
+            incidentNumber,
+            category,
+            severity,
+          }),
+        },
+      });
+    }
+
     // Log audit event
     await prisma.auditLog.create({
       data: {
@@ -159,12 +230,29 @@ export async function POST(req: Request) {
           category,
           severity,
           title,
+          autoClassified: !providedSeverity,
+          requiresNCANotification: classification.requiresNCANotification,
+          ncaDeadline: ncaDeadline.toISOString(),
         }),
-        description: `Created incident ${incidentNumber}: ${title}`,
+        description: `Created incident ${incidentNumber}: ${title} (${severity} severity, ${classification.ncaDeadlineHours}h NCA deadline)`,
       },
     });
 
-    return NextResponse.json({ success: true, incident });
+    return NextResponse.json({
+      success: true,
+      incident: {
+        ...incident,
+        ncaDeadline,
+        ncaDeadlineHours: classification.ncaDeadlineHours,
+        autoClassified: !providedSeverity,
+      },
+      classification: {
+        severity,
+        ncaDeadlineHours: classification.ncaDeadlineHours,
+        requiresNCANotification: classification.requiresNCANotification,
+        articleReference: classification.articleRef,
+      },
+    });
   } catch (error) {
     console.error("Error creating incident:", error);
     return NextResponse.json(

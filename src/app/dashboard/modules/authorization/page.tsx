@@ -21,6 +21,7 @@ import {
   Leaf,
   DollarSign,
   BookOpen,
+  type LucideIcon,
 } from "lucide-react";
 import { ncas, determineNCA, type NCADetermination } from "@/data/ncas";
 import {
@@ -87,7 +88,7 @@ const STEPS = [
   },
 ];
 
-const documentCategoryIcons: Record<string, React.ElementType> = {
+const documentCategoryIcons: Record<string, LucideIcon> = {
   technical: FileText,
   legal: BookOpen,
   financial: DollarSign,
@@ -251,11 +252,14 @@ export default function AuthorizationPage() {
     return (
       <div className="p-6 lg:p-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-white/[0.04] rounded-xl" />
+              <div
+                key={i}
+                className="h-24 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
+              />
             ))}
           </div>
         </div>
@@ -267,13 +271,13 @@ export default function AuthorizationPage() {
     <div className="p-6 lg:p-8 max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 01
         </p>
-        <h1 className="text-[24px] font-medium text-white mb-1">
+        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
           Authorization Workflow
         </h1>
-        <p className="text-[14px] text-white/70">
+        <p className="text-[14px] text-slate-600 dark:text-white/70">
           Navigate the EU Space Act authorization process step by step
         </p>
       </div>
@@ -287,34 +291,37 @@ export default function AuthorizationPage() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
-                    ? "bg-white/[0.05] border border-white/[0.1]"
-                    : "hover:bg-white/[0.04]"
+                    ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
+                    : "hover:bg-slate-50 dark:hover:bg-white/[0.04]"
                 }`}
               >
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
                     activeStep === index
-                      ? "bg-white text-black"
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
-                        ? "bg-green-500/20 text-green-400"
-                        : "bg-white/[0.05] text-white/70"
+                        ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
+                        : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
                   }`}
                 >
                   {activeStep > index ? <CheckCircle2 size={12} /> : index + 1}
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
-                    className={`text-[13px] font-medium ${activeStep === index ? "text-white" : "text-white/60"}`}
+                    className={`text-[13px] font-medium ${activeStep === index ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/60"}`}
                   >
                     {step.label}
                   </p>
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-[11px] text-slate-500 dark:text-white/60">
                     {step.description}
                   </p>
                 </div>
               </button>
               {index < STEPS.length - 1 && (
-                <ChevronRight size={16} className="text-white/10 mx-1" />
+                <ChevronRight
+                  size={16}
+                  className="text-slate-300 dark:text-white/10 mx-1"
+                />
               )}
             </div>
           ))}

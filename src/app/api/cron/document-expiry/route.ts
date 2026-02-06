@@ -1,0 +1,93 @@
+import { NextResponse } from "next/server";
+import { processDocumentExpiry } from "@/lib/notifications";
+import { getSafeErrorMessage } from "@/lib/validations";
+
+export const runtime = "nodejs";
+export const maxDuration = 60; // 60 seconds for Vercel Hobby, 300 for Pro
+
+/**
+ * Cron endpoint for processing document expiry alerts
+ * Schedule: Daily at 9:00 AM UTC
+ *
+ * This endpoint is protected by CRON_SECRET to prevent unauthorized access.
+ * Vercel Cron automatically adds the Authorization header.
+ */
+export async function GET(req: Request) {
+  const startTime = Date.now();
+
+  // Verify cron secret
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+  const isDev = process.env.NODE_ENV === "development";
+
+  // In production, CRON_SECRET must be set
+  if (!isDev && !cronSecret) {
+    console.error("CRON_SECRET not configured in production");
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 },
+    );
+  }
+
+  // Verify authorization in non-development environments
+  if (!isDev && authHeader !== `Bearer ${cronSecret}`) {
+    console.warn("Unauthorized cron request attempt");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (isDev && !cronSecret) {
+    console.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
+  }
+
+  try {
+    console.log("Starting document expiry processing...");
+
+    const result = await processDocumentExpiry();
+
+    const duration = Date.now() - startTime;
+
+    console.log("Document expiry processing complete:", {
+      processed: result.processed,
+      sent: result.sent,
+      skipped: result.skipped,
+      errors: result.errors.length,
+      duration: `${duration}ms`,
+    });
+
+    return NextResponse.json({
+      success: true,
+      processed: result.processed,
+      sent: result.sent,
+      skipped: result.skipped,
+      errorCount: result.errors.length,
+      errors: result.errors.slice(0, 10), // Limit errors in response
+      documentsSent: result.documentsSent,
+      duration: `${duration}ms`,
+      processedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Cron job failed:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Processing failed",
+        message: getSafeErrorMessage(
+          error,
+          "Document expiry processing failed",
+        ),
+        processedAt: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * Health check / manual trigger endpoint
+ * POST is used for manual testing
+ */
+export async function POST(req: Request) {
+  // Same logic as GET but for manual triggers
+  return GET(req);
+}

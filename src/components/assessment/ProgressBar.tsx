@@ -14,21 +14,29 @@ export default function ProgressBar({
   const progress = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-mono text-slate-400">
-          Step {currentStep} of {totalSteps}
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-3">
+        <span className="font-mono text-[12px] text-white/70">
+          {String(currentStep).padStart(2, "0")} /{" "}
+          {String(totalSteps).padStart(2, "0")}
         </span>
-        <span className="text-sm font-mono text-slate-500">
+        <span className="font-mono text-[12px] text-white/60">
           {Math.round(progress)}%
         </span>
       </div>
-      <div className="h-1.5 bg-navy-800 rounded-full overflow-hidden">
+      <div
+        role="progressbar"
+        aria-valuenow={currentStep}
+        aria-valuemin={0}
+        aria-valuemax={totalSteps}
+        aria-label={`Step ${currentStep} of ${totalSteps}`}
+        className="h-[3px] bg-white/[0.12] rounded-full overflow-hidden"
+      >
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
+          className="h-full bg-white/70 rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         />
       </div>
     </div>

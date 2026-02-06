@@ -41,22 +41,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center px-6">
       <div className="max-w-[400px] w-full">
         {/* Header */}
         <div className="mb-10">
           <Link href="/" className="block">
-            <h1 className="text-[20px] font-semibold text-white mb-1">
+            <h1 className="text-[20px] font-semibold text-slate-900 dark:text-white mb-1">
               Caelex
             </h1>
           </Link>
-          <p className="text-[14px] text-white/60">Sign in to your account</p>
+          <p className="text-[14px] text-slate-600 dark:text-white/60">
+            Sign in to your account
+          </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-[0.2em] text-white/70 mb-2">
+            <label className="block font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-2">
               EMAIL
             </label>
             <input
@@ -64,30 +66,34 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/10 transition-all"
+              className="w-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-gray-400 dark:placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-gray-400 dark:focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-gray-200 dark:focus:ring-white/10 transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-[0.2em] text-white/70 mb-2">
+            <label className="block font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-2">
               PASSWORD
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-white/10 transition-all"
+              className="w-full bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder-gray-400 dark:placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-gray-400 dark:focus:border-white/20 focus:outline-none focus:ring-1 focus:ring-gray-200 dark:focus:ring-white/10 transition-all"
               required
             />
           </div>
 
-          {error && <p className="text-red-400 text-[13px]">{error}</p>}
+          {error && (
+            <p className="text-red-500 dark:text-red-400 text-[13px]">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-black py-3 rounded-full font-medium text-[15px] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
+            className="w-full bg-gray-900 dark:bg-white text-white dark:text-black py-3 rounded-full font-medium text-[15px] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
           >
             {loading ? "Signing in..." : "Sign In →"}
           </button>
@@ -95,15 +101,17 @@ export default function LoginPage() {
 
         {/* Divider */}
         <div className="flex items-center gap-4 my-8">
-          <div className="h-px bg-white/[0.06] flex-1" />
-          <span className="text-white/60 text-[12px] font-mono">or</span>
-          <div className="h-px bg-white/[0.06] flex-1" />
+          <div className="h-px bg-gray-200 dark:bg-white/[0.06] flex-1" />
+          <span className="text-slate-600 dark:text-white/60 text-[12px] font-mono">
+            or
+          </span>
+          <div className="h-px bg-gray-200 dark:bg-white/[0.06] flex-1" />
         </div>
 
         {/* Google OAuth */}
         <button
           onClick={handleGoogleSignIn}
-          className="w-full border border-white/[0.08] text-white py-3 rounded-full text-[14px] hover:bg-white/[0.04] transition-all duration-300 flex items-center justify-center gap-3"
+          className="w-full border border-gray-200 dark:border-white/[0.08] text-slate-800 dark:text-white py-3 rounded-full text-[14px] hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-all duration-300 flex items-center justify-center gap-3"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path
@@ -127,11 +135,11 @@ export default function LoginPage() {
         </button>
 
         {/* Sign up link */}
-        <p className="text-center mt-8 text-[13px] text-white/70">
+        <p className="text-center mt-8 text-[13px] text-gray-600 dark:text-white/70">
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-white/70 hover:text-white underline decoration-white/20 transition-colors"
+            className="text-slate-800 dark:text-white/70 hover:text-gray-900 dark:hover:text-white underline decoration-gray-300 dark:decoration-white/20 transition-colors"
           >
             Sign up
           </Link>

@@ -21,10 +21,16 @@ import {
   Moon,
   ClipboardCheck,
   FileCheck,
+  FileText,
+  FileSignature,
   Leaf,
   Shield,
   LayoutDashboard,
   Bell,
+  Search,
+  Award,
+  AlertTriangle,
+  Eye,
   type LucideIcon,
 } from "lucide-react";
 
@@ -50,10 +56,16 @@ const iconMap: Record<string, LucideIcon> = {
   Moon,
   ClipboardCheck,
   FileCheck,
+  FileText,
+  FileSignature,
   Leaf,
   Shield,
   LayoutDashboard,
   Bell,
+  Search,
+  Award,
+  AlertTriangle,
+  Eye,
   // Add Orbit as an alias to CircleDot
   Orbit: CircleDot,
 };

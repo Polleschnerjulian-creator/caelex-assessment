@@ -25,8 +25,16 @@ import {
   ExternalLink,
   Eye,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import FileUploader from "@/components/documents/FileUploader";
+
+// Dynamically import DocumentViewer to avoid SSR issues with react-pdf
+const DocumentViewer = dynamic(
+  () => import("@/components/documents/DocumentViewer"),
+  { ssr: false },
+);
 import {
   documentCategories,
   categoryDisplayInfo,
@@ -129,6 +137,7 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
   // Upload form state
   const [uploadForm, setUploadForm] = useState({
@@ -143,8 +152,6 @@ export default function DocumentsPage() {
     accessLevel: "INTERNAL",
     tags: "",
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -194,58 +201,32 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      if (!uploadForm.name) {
-        setUploadForm({
-          ...uploadForm,
-          name: file.name.replace(/\.[^/.]+$/, ""),
-        });
-      }
-    }
+  const handleUploadComplete = (documentId: string) => {
+    setShowUploadModal(false);
+    setUploadForm({
+      name: "",
+      description: "",
+      category: "LICENSE",
+      subcategory: "",
+      moduleType: "",
+      issueDate: "",
+      expiryDate: "",
+      regulatoryRef: "",
+      accessLevel: "INTERNAL",
+      tags: "",
+    });
+    fetchData();
   };
 
-  const handleUpload = async () => {
-    if (!uploadForm.name || !uploadForm.category) return;
-
-    setUploading(true);
+  const handleDownload = async (doc: Document) => {
     try {
-      const formData = new FormData();
-      Object.entries(uploadForm).forEach(([key, value]) => {
-        if (value) formData.append(key, value);
-      });
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
-
-      const res = await fetch("/api/documents", {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch(`/api/documents/${doc.id}/download`);
       if (res.ok) {
-        setShowUploadModal(false);
-        setUploadForm({
-          name: "",
-          description: "",
-          category: "LICENSE",
-          subcategory: "",
-          moduleType: "",
-          issueDate: "",
-          expiryDate: "",
-          regulatoryRef: "",
-          accessLevel: "INTERNAL",
-          tags: "",
-        });
-        setSelectedFile(null);
-        fetchData();
+        const data = await res.json();
+        window.open(data.downloadUrl, "_blank");
       }
     } catch (error) {
-      console.error("Error uploading document:", error);
-    } finally {
-      setUploading(false);
+      console.error("Error downloading document:", error);
     }
   };
 
@@ -299,8 +280,8 @@ export default function DocumentsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -310,11 +291,13 @@ export default function DocumentsPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
             DOCUMENTS
           </p>
-          <h1 className="text-2xl font-semibold text-white">Document Vault</h1>
-          <p className="text-white/60 mt-1">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Document Vault
+          </h1>
+          <p className="text-slate-500 dark:text-white/60 mt-1">
             Secure storage for compliance documents and certificates
           </p>
         </div>
@@ -327,34 +310,38 @@ export default function DocumentsPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
                   <FileText size={18} className="text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.total}
                   </p>
-                  <p className="text-xs text-white/50">Total Documents</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Total Documents
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card
-            className={`bg-white/[0.02] ${stats.expired > 0 ? "border-red-500/30" : ""}`}
+            className={`bg-white dark:bg-white/[0.02] ${stats.expired > 0 ? "border-red-500/30" : ""}`}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2 rounded-lg ${stats.expired > 0 ? "bg-red-500/20" : "bg-white/5"}`}
+                  className={`p-2 rounded-lg ${stats.expired > 0 ? "bg-red-500/20" : "bg-slate-200 dark:bg-white/5"}`}
                 >
                   <AlertTriangle
                     size={18}
                     className={
-                      stats.expired > 0 ? "text-red-400" : "text-white/40"
+                      stats.expired > 0
+                        ? "text-red-400"
+                        : "text-slate-400 dark:text-white/40"
                     }
                   />
                 </div>
@@ -364,39 +351,45 @@ export default function DocumentsPage() {
                   >
                     {stats.expired}
                   </p>
-                  <p className="text-xs text-white/50">Expired</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Expired
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-orange-500/10">
                   <Clock size={18} className="text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.expiringThisMonth}
                   </p>
-                  <p className="text-xs text-white/50">Expiring Soon</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Expiring Soon
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.02]">
+          <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-emerald-500/10">
                   <CheckCircle2 size={18} className="text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-white">
+                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.completeness}%
                   </p>
-                  <p className="text-xs text-white/50">Completeness</p>
+                  <p className="text-xs text-slate-500 dark:text-white/50">
+                    Completeness
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -405,7 +398,7 @@ export default function DocumentsPage() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white/[0.02] rounded-xl border border-white/5">
+      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
         {steps.map((step) => (
           <button
             key={step.id}
@@ -415,8 +408,8 @@ export default function DocumentsPage() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-white/10 text-white"
-                  : "text-white/50 hover:text-white/70 hover:bg-white/5"
+                  ? "bg-slate-200 dark:bg-white/10 text-white"
+                  : "text-slate-500 dark:text-white/50 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
               }
             `}
           >
@@ -443,20 +436,20 @@ export default function DocumentsPage() {
                 <div className="flex-1 relative">
                   <Search
                     size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40"
                   />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search documents..."
-                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <select
                   value={selectedCategory || ""}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
+                  className="bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">All Categories</option>
                   {categoryDisplayInfo.map((cat) => (
@@ -471,9 +464,14 @@ export default function DocumentsPage() {
               {Object.keys(documentsByCategory).length === 0 ? (
                 <Card>
                   <CardContent className="p-8 text-center">
-                    <Folder size={48} className="mx-auto text-white/20 mb-4" />
-                    <p className="text-white/60">No documents found</p>
-                    <p className="text-sm text-white/40 mt-1 mb-4">
+                    <Folder
+                      size={48}
+                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                    />
+                    <p className="text-slate-500 dark:text-white/60">
+                      No documents found
+                    </p>
+                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1 mb-4">
                       Upload your first document to get started
                     </p>
                     <Button onClick={() => setShowUploadModal(true)}>
@@ -500,7 +498,7 @@ export default function DocumentsPage() {
                             {categoryIcons[category] || <FileText size={16} />}
                           </div>
                           {catInfo?.label || category}
-                          <span className="text-white/40 text-sm font-normal ml-2">
+                          <span className="text-slate-400 dark:text-white/40 text-sm font-normal ml-2">
                             {docs.length} document{docs.length !== 1 ? "s" : ""}
                           </span>
                         </CardTitle>
@@ -509,24 +507,24 @@ export default function DocumentsPage() {
                         {docs.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white/[0.02] rounded-lg p-3 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-white/[0.04] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="text-white/60">
+                              <div className="text-slate-500 dark:text-white/60">
                                 {categoryIcons[doc.category] || (
                                   <FileText size={16} />
                                 )}
                               </div>
                               <div>
-                                <p className="font-medium text-white">
+                                <p className="font-medium text-slate-900 dark:text-white">
                                   {doc.name}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-white/40">
+                                  <span className="text-xs text-slate-400 dark:text-white/40">
                                     {formatFileSize(doc.fileSize)}
                                   </span>
                                   {doc.regulatoryRef && (
-                                    <span className="text-xs text-white/40">
+                                    <span className="text-xs text-slate-400 dark:text-white/40">
                                       | {doc.regulatoryRef}
                                     </span>
                                   )}
@@ -544,11 +542,25 @@ export default function DocumentsPage() {
                               >
                                 {doc.status}
                               </span>
-                              <button className="p-1.5 hover:bg-white/5 rounded transition-colors">
-                                <Eye size={14} className="text-white/40" />
+                              <button
+                                onClick={() => setViewingDocument(doc)}
+                                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
+                                title="View document"
+                              >
+                                <Eye
+                                  size={14}
+                                  className="text-slate-400 dark:text-white/40"
+                                />
                               </button>
-                              <button className="p-1.5 hover:bg-white/5 rounded transition-colors">
-                                <Download size={14} className="text-white/40" />
+                              <button
+                                onClick={() => handleDownload(doc)}
+                                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
+                                title="Download document"
+                              >
+                                <Download
+                                  size={14}
+                                  className="text-slate-400 dark:text-white/40"
+                                />
                               </button>
                             </div>
                           </div>
@@ -571,174 +583,168 @@ export default function DocumentsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-500/30 transition-colors"
-                  onClick={() =>
-                    document.getElementById("file-upload")?.click()
-                  }
-                >
-                  <input
-                    id="file-upload"
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif"
+                <div className="space-y-6">
+                  {/* Metadata form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Document Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={uploadForm.name}
+                        onChange={(e) =>
+                          setUploadForm({ ...uploadForm, name: e.target.value })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        placeholder="e.g., Space Activity License"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Category *
+                      </label>
+                      <select
+                        value={uploadForm.category}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            category: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                      >
+                        {categoryDisplayInfo.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Issue Date
+                      </label>
+                      <input
+                        type="date"
+                        value={uploadForm.issueDate}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            issueDate: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Expiry Date
+                      </label>
+                      <input
+                        type="date"
+                        value={uploadForm.expiryDate}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            expiryDate: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Linked Module
+                      </label>
+                      <select
+                        value={uploadForm.moduleType}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            moduleType: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                      >
+                        <option value="">None</option>
+                        <option value="AUTHORIZATION">Authorization</option>
+                        <option value="DEBRIS">Debris Mitigation</option>
+                        <option value="CYBERSECURITY">Cybersecurity</option>
+                        <option value="INSURANCE">Insurance</option>
+                        <option value="ENVIRONMENTAL">Environmental</option>
+                        <option value="SUPERVISION">Supervision</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Regulatory Reference
+                      </label>
+                      <input
+                        type="text"
+                        value={uploadForm.regulatoryRef}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            regulatoryRef: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        placeholder="e.g., EU Space Act Art. 18"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        value={uploadForm.description}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            description: e.target.value,
+                          })
+                        }
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                        placeholder="Optional description"
+                      />
+                    </div>
+                  </div>
+
+                  {/* File Uploader */}
+                  <FileUploader
+                    onUploadComplete={(docId) => {
+                      setUploadForm({
+                        name: "",
+                        description: "",
+                        category: "LICENSE",
+                        subcategory: "",
+                        moduleType: "",
+                        issueDate: "",
+                        expiryDate: "",
+                        regulatoryRef: "",
+                        accessLevel: "INTERNAL",
+                        tags: "",
+                      });
+                      setActiveStep("overview");
+                      fetchData();
+                    }}
+                    onCancel={() => setActiveStep("overview")}
+                    metadata={{
+                      name: uploadForm.name,
+                      description: uploadForm.description || undefined,
+                      category: uploadForm.category,
+                      subcategory: uploadForm.subcategory || undefined,
+                      moduleType: uploadForm.moduleType || undefined,
+                      issueDate: uploadForm.issueDate || undefined,
+                      expiryDate: uploadForm.expiryDate || undefined,
+                      regulatoryRef: uploadForm.regulatoryRef || undefined,
+                      accessLevel: uploadForm.accessLevel,
+                      tags: uploadForm.tags
+                        ? uploadForm.tags.split(",").map((t) => t.trim())
+                        : [],
+                    }}
                   />
-                  <Upload size={48} className="mx-auto text-white/20 mb-4" />
-                  {selectedFile ? (
-                    <div>
-                      <p className="text-white font-medium">
-                        {selectedFile.name}
-                      </p>
-                      <p className="text-sm text-white/50 mt-1">
-                        {formatFileSize(selectedFile.size)}
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-white/60">
-                        Drop a file here or click to browse
-                      </p>
-                      <p className="text-sm text-white/40 mt-1">
-                        Allowed: PDF, DOCX, XLSX, PNG, JPG | Max: 50 MB
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Document Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={uploadForm.name}
-                      onChange={(e) =>
-                        setUploadForm({ ...uploadForm, name: e.target.value })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                      placeholder="Document name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Category *
-                    </label>
-                    <select
-                      value={uploadForm.category}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          category: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                    >
-                      {categoryDisplayInfo.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Issue Date
-                    </label>
-                    <input
-                      type="date"
-                      value={uploadForm.issueDate}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          issueDate: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Expiry Date
-                    </label>
-                    <input
-                      type="date"
-                      value={uploadForm.expiryDate}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          expiryDate: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Linked Module
-                    </label>
-                    <select
-                      value={uploadForm.moduleType}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          moduleType: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                    >
-                      <option value="">None</option>
-                      <option value="AUTHORIZATION">Authorization</option>
-                      <option value="DEBRIS">Debris Mitigation</option>
-                      <option value="CYBERSECURITY">Cybersecurity</option>
-                      <option value="INSURANCE">Insurance</option>
-                      <option value="ENVIRONMENTAL">Environmental</option>
-                      <option value="SUPERVISION">Supervision</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-white/60 mb-1">
-                      Regulatory Reference
-                    </label>
-                    <input
-                      type="text"
-                      value={uploadForm.regulatoryRef}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          regulatoryRef: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50"
-                      placeholder="e.g., EU Space Act Art. 18"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm text-white/60 mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      value={uploadForm.description}
-                      onChange={(e) =>
-                        setUploadForm({
-                          ...uploadForm,
-                          description: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
-                      placeholder="Optional description"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end mt-6">
-                  <Button
-                    onClick={handleUpload}
-                    disabled={!uploadForm.name || uploading}
-                  >
-                    {uploading ? "Uploading..." : "Upload Document"}
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -769,8 +775,10 @@ export default function DocumentsPage() {
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-white">{doc.name}</p>
-                            <p className="text-xs text-white/50">
+                            <p className="font-medium text-slate-900 dark:text-white">
+                              {doc.name}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-white/50">
                               Expired:{" "}
                               {new Date(doc.expiryDate!).toLocaleDateString()}
                               {doc.regulatoryRef && ` | ${doc.regulatoryRef}`}
@@ -801,10 +809,10 @@ export default function DocumentsPage() {
                         size={48}
                         className="mx-auto text-emerald-400/50 mb-4"
                       />
-                      <p className="text-white/60">
+                      <p className="text-slate-500 dark:text-white/60">
                         No documents expiring soon
                       </p>
-                      <p className="text-sm text-white/40 mt-1">
+                      <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
                         All your documents are up to date
                       </p>
                     </div>
@@ -817,7 +825,7 @@ export default function DocumentsPage() {
                         return (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white/[0.02] rounded-lg p-3"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -834,10 +842,10 @@ export default function DocumentsPage() {
                                 )}
                               </div>
                               <div>
-                                <p className="font-medium text-white">
+                                <p className="font-medium text-slate-900 dark:text-white">
                                   {doc.name}
                                 </p>
-                                <p className="text-xs text-white/50">
+                                <p className="text-xs text-slate-500 dark:text-white/50">
                                   {
                                     categoryDisplayInfo.find(
                                       (c) => c.id === doc.category,
@@ -859,7 +867,7 @@ export default function DocumentsPage() {
                                 >
                                   {days} days
                                 </span>
-                                <p className="text-xs text-white/40">
+                                <p className="text-xs text-slate-400 dark:text-white/40">
                                   {new Date(
                                     doc.expiryDate!,
                                   ).toLocaleDateString()}
@@ -887,18 +895,18 @@ export default function DocumentsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                         Overall Compliance
                       </h3>
-                      <p className="text-sm text-white/50">
+                      <p className="text-sm text-slate-500 dark:text-white/50">
                         Document completeness across all modules
                       </p>
                     </div>
-                    <div className="text-3xl font-bold text-white">
+                    <div className="text-3xl font-bold text-slate-900 dark:text-white">
                       {overallCompleteness}%
                     </div>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-3">
+                  <div className="w-full bg-slate-200 dark:bg-white/10 rounded-full h-3">
                     <div
                       className={`h-3 rounded-full transition-all ${
                         overallCompleteness >= 80
@@ -946,10 +954,10 @@ export default function DocumentsPage() {
                             )}
                           </div>
                           <div>
-                            <h4 className="font-medium text-white">
+                            <h4 className="font-medium text-slate-900 dark:text-white">
                               {module.module}
                             </h4>
-                            <p className="text-xs text-white/50">
+                            <p className="text-xs text-slate-500 dark:text-white/50">
                               {module.present} of {module.required} required
                               documents
                             </p>
@@ -970,7 +978,7 @@ export default function DocumentsPage() {
                         </div>
                       </div>
 
-                      <div className="w-full bg-white/10 rounded-full h-2 mb-3">
+                      <div className="w-full bg-slate-200 dark:bg-white/10 rounded-full h-2 mb-3">
                         <div
                           className={`h-2 rounded-full transition-all ${
                             module.completeness >= 100
@@ -986,8 +994,8 @@ export default function DocumentsPage() {
                       </div>
 
                       {module.missing.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/5">
-                          <p className="text-xs text-white/40 mb-2">
+                        <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
+                          <p className="text-xs text-slate-400 dark:text-white/40 mb-2">
                             Missing documents:
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1014,86 +1022,58 @@ export default function DocumentsPage() {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0b] border border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">
+          <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Upload Document
               </h3>
               <button
                 onClick={() => setShowUploadModal(false)}
-                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg transition-colors"
               >
-                <X size={16} className="text-white/60" />
+                <X size={16} className="text-slate-500 dark:text-white/60" />
               </button>
             </div>
 
-            <div
-              className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-emerald-500/30 transition-colors mb-4"
-              onClick={() =>
-                document.getElementById("modal-file-upload")?.click()
-              }
-            >
-              <input
-                id="modal-file-upload"
-                type="file"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              {selectedFile ? (
+            {/* Metadata form */}
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <FileText
-                    size={32}
-                    className="mx-auto text-emerald-400 mb-2"
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                    Document Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={uploadForm.name}
+                    onChange={(e) =>
+                      setUploadForm({ ...uploadForm, name: e.target.value })
+                    }
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    placeholder="e.g., Space Activity License"
                   />
-                  <p className="text-white font-medium">{selectedFile.name}</p>
-                  <p className="text-sm text-white/50">
-                    {formatFileSize(selectedFile.size)}
-                  </p>
                 </div>
-              ) : (
                 <div>
-                  <Upload size={32} className="mx-auto text-white/20 mb-2" />
-                  <p className="text-white/60">Click to select file</p>
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                    Category *
+                  </label>
+                  <select
+                    value={uploadForm.category}
+                    onChange={(e) =>
+                      setUploadForm({ ...uploadForm, category: e.target.value })
+                    }
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  >
+                    {categoryDisplayInfo.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-white/60 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={uploadForm.name}
-                  onChange={(e) =>
-                    setUploadForm({ ...uploadForm, name: e.target.value })
-                  }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
-                  placeholder="Document name"
-                />
               </div>
-              <div>
-                <label className="block text-sm text-white/60 mb-1">
-                  Category *
-                </label>
-                <select
-                  value={uploadForm.category}
-                  onChange={(e) =>
-                    setUploadForm({ ...uploadForm, category: e.target.value })
-                  }
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
-                >
-                  {categoryDisplayInfo.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                     Issue Date
                   </label>
                   <input
@@ -1105,11 +1085,11 @@ export default function DocumentsPage() {
                         issueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
                     Expiry Date
                   </label>
                   <input
@@ -1121,30 +1101,102 @@ export default function DocumentsPage() {
                         expiryDate: e.target.value,
                       })
                     }
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                    Linked Module
+                  </label>
+                  <select
+                    value={uploadForm.moduleType}
+                    onChange={(e) =>
+                      setUploadForm({
+                        ...uploadForm,
+                        moduleType: e.target.value,
+                      })
+                    }
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  >
+                    <option value="">None</option>
+                    <option value="AUTHORIZATION">Authorization</option>
+                    <option value="DEBRIS">Debris Mitigation</option>
+                    <option value="CYBERSECURITY">Cybersecurity</option>
+                    <option value="INSURANCE">Insurance</option>
+                    <option value="ENVIRONMENTAL">Environmental</option>
+                    <option value="SUPERVISION">Supervision</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                    Regulatory Reference
+                  </label>
+                  <input
+                    type="text"
+                    value={uploadForm.regulatoryRef}
+                    onChange={(e) =>
+                      setUploadForm({
+                        ...uploadForm,
+                        regulatoryRef: e.target.value,
+                      })
+                    }
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    placeholder="e.g., EU Space Act Art. 18"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={uploadForm.description}
+                  onChange={(e) =>
+                    setUploadForm({
+                      ...uploadForm,
+                      description: e.target.value,
+                    })
+                  }
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  placeholder="Optional description"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="ghost"
-                className="flex-1"
-                onClick={() => setShowUploadModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleUpload}
-                disabled={!uploadForm.name || uploading}
-              >
-                {uploading ? "Uploading..." : "Upload"}
-              </Button>
-            </div>
+            {/* File Uploader */}
+            <FileUploader
+              onUploadComplete={handleUploadComplete}
+              onCancel={() => setShowUploadModal(false)}
+              metadata={{
+                name: uploadForm.name,
+                description: uploadForm.description || undefined,
+                category: uploadForm.category,
+                subcategory: uploadForm.subcategory || undefined,
+                moduleType: uploadForm.moduleType || undefined,
+                issueDate: uploadForm.issueDate || undefined,
+                expiryDate: uploadForm.expiryDate || undefined,
+                regulatoryRef: uploadForm.regulatoryRef || undefined,
+                accessLevel: uploadForm.accessLevel,
+                tags: uploadForm.tags
+                  ? uploadForm.tags.split(",").map((t) => t.trim())
+                  : [],
+              }}
+            />
           </div>
         </div>
+      )}
+
+      {/* Document Viewer */}
+      {viewingDocument && (
+        <DocumentViewer
+          documentId={viewingDocument.id}
+          fileName={viewingDocument.fileName}
+          mimeType={viewingDocument.mimeType}
+          onClose={() => setViewingDocument(null)}
+          onDownload={() => handleDownload(viewingDocument)}
+        />
       )}
     </div>
   );

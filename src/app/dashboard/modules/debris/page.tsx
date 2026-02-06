@@ -323,11 +323,14 @@ export default function DebrisPage() {
     return (
       <div className="p-6 lg:p-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-100 dark:bg-white/[0.05] rounded w-1/3" />
+          <div className="h-4 bg-slate-100 dark:bg-white/[0.05] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-white/[0.04] rounded-xl" />
+              <div
+                key={i}
+                className="h-24 bg-white dark:bg-white/[0.04] rounded-xl"
+              />
             ))}
           </div>
         </div>
@@ -339,13 +342,13 @@ export default function DebrisPage() {
     <div className="p-6 lg:p-8 max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 05
         </p>
-        <h1 className="text-[24px] font-medium text-white mb-1">
+        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
           Debris Mitigation Assessment
         </h1>
-        <p className="text-[14px] text-white/70">
+        <p className="text-[14px] text-slate-600 dark:text-white/70">
           Assess compliance with EU Space Act debris requirements (Art. 58-73)
         </p>
       </div>
@@ -353,35 +356,35 @@ export default function DebrisPage() {
       {/* Compliance Metrics (when assessment selected) */}
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-white">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
               {metrics.compliant}/{metrics.total}
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               requirements compliant
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-white">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.complianceScore || 0}%
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               compliance score
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
             <p className="text-[32px] font-mono font-semibold text-green-400">
               {selectedAssessment.deorbitTimelineYears || "—"}
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               years to deorbit
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-white">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.caServiceProvider || "—"}
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               CA service
             </p>
           </div>
@@ -398,36 +401,39 @@ export default function DebrisPage() {
                 disabled={index > 0 && !selectedAssessment}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
-                    ? "bg-white/[0.05] border border-white/[0.1]"
+                    ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
                     : index > 0 && !selectedAssessment
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-white/[0.04]"
+                      : "hover:bg-slate-100 dark:hover:bg-white/[0.04]"
                 }`}
               >
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
                     activeStep === index
-                      ? "bg-white text-black"
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
                         ? "bg-green-500/20 text-green-400"
-                        : "bg-white/[0.05] text-white/70"
+                        : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
                   }`}
                 >
                   {activeStep > index ? <CheckCircle2 size={12} /> : index + 1}
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
-                    className={`text-[13px] font-medium ${activeStep === index ? "text-white" : "text-white/60"}`}
+                    className={`text-[13px] font-medium ${activeStep === index ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/60"}`}
                   >
                     {step.label}
                   </p>
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-[11px] text-slate-500 dark:text-white/60">
                     {step.description}
                   </p>
                 </div>
               </button>
               {index < STEPS.length - 1 && (
-                <ChevronRight size={16} className="text-white/10 mx-1" />
+                <ChevronRight
+                  size={16}
+                  className="text-slate-300 dark:text-white/10 mx-1"
+                />
               )}
             </div>
           ))}
@@ -449,12 +455,12 @@ export default function DebrisPage() {
             {assessments.length > 0 && !showNewAssessment && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30">
                     Your Debris Assessments
                   </p>
                   <button
                     onClick={() => setShowNewAssessment(true)}
-                    className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                    className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
                   >
                     <Plus size={14} />
                     New Assessment
@@ -469,24 +475,27 @@ export default function DebrisPage() {
                       fetchRequirements(assessment.id);
                       setActiveStep(1);
                     }}
-                    className={`w-full bg-white/[0.04] border rounded-xl p-5 text-left hover:bg-white/[0.05] transition-all ${
+                    className={`w-full bg-white dark:bg-white/[0.04] border rounded-xl p-5 text-left hover:bg-slate-50 dark:hover:bg-white/[0.05] transition-all ${
                       selectedAssessment?.id === assessment.id
-                        ? "border-white/[0.15]"
-                        : "border-white/10"
+                        ? "border-slate-300 dark:border-white/[0.15]"
+                        : "border-slate-200 dark:border-white/10"
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <Satellite size={18} className="text-white/60" />
-                          <span className="text-[15px] font-medium text-white">
+                          <Satellite
+                            size={18}
+                            className="text-slate-500 dark:text-white/60"
+                          />
+                          <span className="text-[15px] font-medium text-slate-900 dark:text-white">
                             {assessment.missionName || "Unnamed Mission"}
                           </span>
-                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.05] text-white/60">
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.05] text-slate-500 dark:text-white/60">
                             {assessment.constellationTier}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-[12px] text-white/70">
+                        <div className="flex items-center gap-4 text-[12px] text-slate-600 dark:text-white/70">
                           <span className="flex items-center gap-1.5">
                             <Globe size={12} />
                             {orbitTypeConfig[assessment.orbitType as OrbitType]
@@ -498,7 +507,10 @@ export default function DebrisPage() {
                           </span>
                         </div>
                       </div>
-                      <ChevronRight size={18} className="text-white/60" />
+                      <ChevronRight
+                        size={18}
+                        className="text-slate-500 dark:text-white/60"
+                      />
                     </div>
                   </button>
                 ))}
@@ -508,11 +520,11 @@ export default function DebrisPage() {
             {/* New assessment form */}
             {(assessments.length === 0 || showNewAssessment) && (
               <div className="space-y-6">
-                <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                  <h2 className="text-[16px] font-medium text-white mb-4">
+                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                  <h2 className="text-[16px] font-medium text-slate-900 dark:text-white mb-4">
                     Mission Profile
                   </h2>
-                  <p className="text-[13px] text-white/60 mb-6">
+                  <p className="text-[13px] text-slate-500 dark:text-white/60 mb-6">
                     Define your mission parameters to determine applicable
                     debris requirements.
                   </p>
@@ -520,7 +532,7 @@ export default function DebrisPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Mission Name */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-[12px] text-slate-500 dark:text-white/60 mb-2">
                         Mission Name (optional)
                       </label>
                       <input
@@ -528,13 +540,13 @@ export default function DebrisPage() {
                         value={missionName}
                         onChange={(e) => setMissionName(e.target.value)}
                         placeholder="e.g., Constellation Alpha"
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
                     {/* Orbit Type */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-[12px] text-slate-500 dark:text-white/60 mb-2">
                         Orbit Type *
                       </label>
                       <select
@@ -546,7 +558,7 @@ export default function DebrisPage() {
                             deorbitStrategy: undefined, // Reset deorbit when orbit changes
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select orbit...</option>
                         {Object.entries(orbitTypeConfig).map(
@@ -785,8 +797,8 @@ export default function DebrisPage() {
 
                 {/* Preview of applicable requirements */}
                 {previewRequirements.length > 0 && (
-                  <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                    <h3 className="text-[14px] font-medium text-white mb-4">
+                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <h3 className="text-[14px] font-medium text-slate-900 dark:text-white mb-4">
                       Applicable Requirements Preview
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -801,7 +813,7 @@ export default function DebrisPage() {
                         </span>
                       ))}
                     </div>
-                    <p className="text-[12px] text-white/70 mt-3">
+                    <p className="text-[12px] text-slate-600 dark:text-white/70 mt-3">
                       {previewRequirements.length} requirements will apply to
                       this mission
                     </p>
@@ -851,9 +863,12 @@ export default function DebrisPage() {
             className="space-y-6"
           >
             {!selectedAssessment ? (
-              <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
-                <p className="text-[14px] text-white/60 mb-4">
+              <div className="bg-white dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+                <AlertCircle
+                  size={32}
+                  className="mx-auto text-slate-500 dark:text-white/60 mb-3"
+                />
+                <p className="text-[14px] text-slate-500 dark:text-white/60 mb-4">
                   No assessment selected. Create a mission profile first.
                 </p>
                 <button
@@ -866,22 +881,22 @@ export default function DebrisPage() {
             ) : (
               <>
                 {/* Progress bar */}
-                <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-[16px] font-medium text-white mb-1">
+                      <h2 className="text-[16px] font-medium text-slate-900 dark:text-white mb-1">
                         Compliance Checklist
                       </h2>
-                      <p className="text-[13px] text-white/60">
+                      <p className="text-[13px] text-slate-500 dark:text-white/60">
                         {metrics.compliant} of {metrics.total} requirements
                         assessed as compliant
                       </p>
                     </div>
-                    <p className="text-[28px] font-mono font-semibold text-white">
+                    <p className="text-[28px] font-mono font-semibold text-slate-900 dark:text-white">
                       {selectedAssessment.complianceScore || 0}%
                     </p>
                   </div>
-                  <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-100 dark:bg-white/[0.04] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{
@@ -902,7 +917,7 @@ export default function DebrisPage() {
                     return (
                       <div
                         key={req.id}
-                        className="bg-white/[0.015] border border-white/10 rounded-xl p-5 hover:border-white/[0.08] transition-all"
+                        className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-white/10 rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/[0.08] transition-all"
                       >
                         <div className="flex items-start gap-4">
                           <div
@@ -921,10 +936,10 @@ export default function DebrisPage() {
                             <div className="flex items-start justify-between gap-4 mb-2">
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <span className="font-mono text-[11px] text-white/70">
+                                  <span className="font-mono text-[11px] text-slate-600 dark:text-white/70">
                                     {req.articleRef}
                                   </span>
-                                  <h3 className="text-[14px] font-medium text-white">
+                                  <h3 className="text-[14px] font-medium text-slate-900 dark:text-white">
                                     {req.title}
                                   </h3>
                                   <span
@@ -958,24 +973,26 @@ export default function DebrisPage() {
                             </div>
 
                             {/* Question */}
-                            <p className="text-[13px] text-white/70 mb-3">
+                            <p className="text-[13px] text-slate-600 dark:text-white/70 mb-3">
                               {req.complianceQuestion}
                             </p>
 
                             {/* Tips (collapsed) */}
                             {req.status !== "compliant" &&
                               req.tips.length > 0 && (
-                                <div className="mt-3 p-3 bg-white/[0.04] rounded-lg">
-                                  <p className="text-[10px] uppercase tracking-wider text-white/60 mb-2">
+                                <div className="mt-3 p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/60 mb-2">
                                     Tips
                                   </p>
                                   <ul className="space-y-1">
                                     {req.tips.slice(0, 2).map((tip, i) => (
                                       <li
                                         key={i}
-                                        className="text-[11px] text-white/70 flex items-start gap-2"
+                                        className="text-[11px] text-slate-600 dark:text-white/70 flex items-start gap-2"
                                       >
-                                        <span className="text-white/10">•</span>
+                                        <span className="text-slate-300 dark:text-white/10">
+                                          •
+                                        </span>
                                         {tip}
                                       </li>
                                     ))}
@@ -1027,9 +1044,12 @@ export default function DebrisPage() {
             className="space-y-6"
           >
             {!selectedAssessment ? (
-              <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
-                <p className="text-[14px] text-white/60 mb-4">
+              <div className="bg-white dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+                <AlertCircle
+                  size={32}
+                  className="mx-auto text-slate-500 dark:text-white/60 mb-3"
+                />
+                <p className="text-[14px] text-slate-500 dark:text-white/60 mb-4">
                   No assessment selected. Create a mission profile first.
                 </p>
                 <button
@@ -1040,12 +1060,15 @@ export default function DebrisPage() {
                 </button>
               </div>
             ) : !generatedPlan ? (
-              <div className="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
-                <FileText size={48} className="mx-auto text-white/10 mb-4" />
-                <h2 className="text-[18px] font-medium text-white mb-2">
+              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+                <FileText
+                  size={48}
+                  className="mx-auto text-slate-300 dark:text-white/10 mb-4"
+                />
+                <h2 className="text-[18px] font-medium text-slate-900 dark:text-white mb-2">
                   Generate Debris Mitigation Plan
                 </h2>
-                <p className="text-[13px] text-white/60 mb-6 max-w-md mx-auto">
+                <p className="text-[13px] text-slate-500 dark:text-white/60 mb-6 max-w-md mx-auto">
                   Based on your mission profile and compliance checklist,
                   generate a structured Debris Mitigation Plan document.
                 </p>
@@ -1064,7 +1087,7 @@ export default function DebrisPage() {
                     Generate Plan
                   </button>
 
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-[11px] text-slate-500 dark:text-white/60">
                     Compliance Score: {selectedAssessment.complianceScore || 0}%
                     • {requirements.length} requirements assessed
                   </p>
@@ -1073,13 +1096,13 @@ export default function DebrisPage() {
             ) : (
               <>
                 {/* Generated Plan Display */}
-                <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-[18px] font-medium text-white mb-1">
+                      <h2 className="text-[18px] font-medium text-slate-900 dark:text-white mb-1">
                         Debris Mitigation Plan
                       </h2>
-                      <p className="text-[12px] text-white/70">
+                      <p className="text-[12px] text-slate-600 dark:text-white/70">
                         Generated{" "}
                         {new Date(
                           (generatedPlan as Record<string, string>).generatedAt,
@@ -1099,7 +1122,7 @@ export default function DebrisPage() {
                         a.click();
                         URL.revokeObjectURL(url);
                       }}
-                      className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                      className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
                     >
                       <Download size={14} />
                       Export JSON
@@ -1107,8 +1130,8 @@ export default function DebrisPage() {
                   </div>
 
                   {/* Mission Overview */}
-                  <div className="mb-6 p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-3">
+                  <div className="mb-6 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                    <h3 className="text-[13px] font-medium text-slate-900 dark:text-white mb-3">
                       Mission Overview
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-[12px]">
@@ -1121,10 +1144,12 @@ export default function DebrisPage() {
                         ).missionOverview,
                       ).map(([key, value]) => (
                         <div key={key}>
-                          <p className="text-white/70 capitalize">
+                          <p className="text-slate-600 dark:text-white/70 capitalize">
                             {key.replace(/([A-Z])/g, " $1")}
                           </p>
-                          <p className="text-white/70">{String(value)}</p>
+                          <p className="text-slate-600 dark:text-white/70">
+                            {String(value)}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -1141,15 +1166,15 @@ export default function DebrisPage() {
                   ).map(([sectionKey, section]) => (
                     <div
                       key={sectionKey}
-                      className="mb-6 p-4 bg-white/[0.04] rounded-lg"
+                      className="mb-6 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
                     >
-                      <h3 className="text-[13px] font-medium text-white mb-3 capitalize">
+                      <h3 className="text-[13px] font-medium text-slate-900 dark:text-white mb-3 capitalize">
                         {sectionKey.replace(/([A-Z])/g, " $1")}
                       </h3>
                       <div className="space-y-3">
                         {Object.entries(section).map(([key, value]) => (
                           <div key={key}>
-                            <p className="text-[11px] text-white/70 uppercase tracking-wider mb-1">
+                            <p className="text-[11px] text-slate-600 dark:text-white/70 uppercase tracking-wider mb-1">
                               {key.replace(/([A-Z])/g, " $1")}
                             </p>
                             {Array.isArray(value) ? (
@@ -1157,9 +1182,11 @@ export default function DebrisPage() {
                                 {(value as string[]).map((item, i) => (
                                   <li
                                     key={i}
-                                    className="text-[12px] text-white/60 flex items-start gap-2"
+                                    className="text-[12px] text-slate-500 dark:text-white/60 flex items-start gap-2"
                                   >
-                                    <span className="text-white/60">•</span>
+                                    <span className="text-slate-500 dark:text-white/60">
+                                      •
+                                    </span>
                                     {item}
                                   </li>
                                 ))}
@@ -1171,7 +1198,7 @@ export default function DebrisPage() {
                                 {value ? "✓ Yes" : "✗ No"}
                               </p>
                             ) : (
-                              <p className="text-[12px] text-white/60">
+                              <p className="text-[12px] text-slate-500 dark:text-white/60">
                                 {String(value)}
                               </p>
                             )}
@@ -1182,14 +1209,14 @@ export default function DebrisPage() {
                   ))}
 
                   {/* Requirements Matrix */}
-                  <div className="p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-3">
+                  <div className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                    <h3 className="text-[13px] font-medium text-slate-900 dark:text-white mb-3">
                       Requirements Matrix
                     </h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-[12px]">
                         <thead>
-                          <tr className="text-left text-white/70 border-b border-white/10">
+                          <tr className="text-left text-slate-600 dark:text-white/70 border-b border-slate-200 dark:border-white/10">
                             <th className="pb-2">Article</th>
                             <th className="pb-2">Requirement</th>
                             <th className="pb-2">Status</th>
@@ -1206,12 +1233,12 @@ export default function DebrisPage() {
                           ).map((req) => (
                             <tr
                               key={req.id}
-                              className="border-b border-white/[0.02]"
+                              className="border-b border-slate-100 dark:border-white/[0.02]"
                             >
-                              <td className="py-2 font-mono text-white/60">
+                              <td className="py-2 font-mono text-slate-500 dark:text-white/60">
                                 {req.articleRef}
                               </td>
-                              <td className="py-2 text-white/60">
+                              <td className="py-2 text-slate-500 dark:text-white/60">
                                 {req.title}
                               </td>
                               <td className="py-2">
@@ -1237,7 +1264,7 @@ export default function DebrisPage() {
                 <div className="flex justify-center">
                   <button
                     onClick={() => setGeneratedPlan(null)}
-                    className="text-[12px] text-white/70 hover:text-white/70 transition-colors"
+                    className="text-[12px] text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
                   >
                     Regenerate Plan
                   </button>

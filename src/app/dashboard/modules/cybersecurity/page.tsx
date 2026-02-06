@@ -449,11 +449,14 @@ export default function CybersecurityPage() {
     return (
       <div className="p-6 lg:p-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-white/[0.04] rounded-xl" />
+              <div
+                key={i}
+                className="h-24 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
+              />
             ))}
           </div>
         </div>
@@ -465,13 +468,13 @@ export default function CybersecurityPage() {
     <div className="p-6 lg:p-8 max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mb-3">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 04
         </p>
-        <h1 className="text-[24px] font-medium text-white mb-1">
+        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
           Cybersecurity & Resilience
         </h1>
-        <p className="text-[14px] text-white/70">
+        <p className="text-[14px] text-slate-600 dark:text-white/70">
           NIS2-aligned cybersecurity assessment (Art. 74-95)
         </p>
       </div>
@@ -479,56 +482,62 @@ export default function CybersecurityPage() {
       {/* Maturity Metrics (when assessment selected) */}
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-white">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.maturityScore || 0}%
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               maturity score
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
             <p
               className={`text-[18px] font-medium ${
                 maturityInfo.color === "red"
-                  ? "text-red-400"
+                  ? "text-red-600 dark:text-red-400"
                   : maturityInfo.color === "orange"
-                    ? "text-orange-400"
+                    ? "text-orange-600 dark:text-orange-400"
                     : maturityInfo.color === "yellow"
-                      ? "text-yellow-400"
+                      ? "text-yellow-600 dark:text-yellow-400"
                       : maturityInfo.color === "blue"
-                        ? "text-blue-400"
-                        : "text-green-400"
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-green-600 dark:text-green-400"
               }`}
             >
               {maturityInfo.label.split(" ")[0]}
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               maturity level
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-green-400">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+            <p className="text-[32px] font-mono font-semibold text-green-600 dark:text-green-400">
               {metrics.compliant}/{metrics.total}
             </p>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               requirements compliant
             </p>
           </div>
-          <div className="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
             <div className="flex items-center gap-2">
               {selectedAssessment.isSimplifiedRegime ? (
-                <CheckCircle2 size={20} className="text-green-400" />
+                <CheckCircle2
+                  size={20}
+                  className="text-green-600 dark:text-green-400"
+                />
               ) : (
-                <Shield size={20} className="text-blue-400" />
+                <Shield
+                  size={20}
+                  className="text-blue-600 dark:text-blue-400"
+                />
               )}
-              <p className="text-[14px] font-medium text-white">
+              <p className="text-[14px] font-medium text-slate-900 dark:text-white">
                 {selectedAssessment.isSimplifiedRegime
                   ? "Simplified"
                   : "Standard"}
               </p>
             </div>
-            <p className="font-mono text-[11px] text-white/60 mt-1">
+            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
               compliance regime
             </p>
           </div>

@@ -22,34 +22,34 @@ const variants: Record<
   { bg: string; text: string; dot: string }
 > = {
   default: {
-    bg: "bg-white/10",
-    text: "text-white/70",
-    dot: "bg-white/50",
+    bg: "bg-slate-100 dark:bg-white/10",
+    text: "text-slate-600 dark:text-white/70",
+    dot: "bg-slate-400 dark:bg-white/50",
   },
   success: {
-    bg: "bg-emerald-500/15",
-    text: "text-emerald-400",
-    dot: "bg-emerald-400",
+    bg: "bg-emerald-100 dark:bg-emerald-500/15",
+    text: "text-emerald-700 dark:text-emerald-400",
+    dot: "bg-emerald-500 dark:bg-emerald-400",
   },
   warning: {
-    bg: "bg-amber-500/15",
-    text: "text-amber-400",
-    dot: "bg-amber-400",
+    bg: "bg-amber-100 dark:bg-amber-500/15",
+    text: "text-amber-700 dark:text-amber-400",
+    dot: "bg-amber-500 dark:bg-amber-400",
   },
   error: {
-    bg: "bg-red-500/15",
-    text: "text-red-400",
-    dot: "bg-red-400",
+    bg: "bg-red-100 dark:bg-red-500/15",
+    text: "text-red-700 dark:text-red-400",
+    dot: "bg-red-500 dark:bg-red-400",
   },
   info: {
-    bg: "bg-blue-500/15",
-    text: "text-blue-400",
-    dot: "bg-blue-400",
+    bg: "bg-blue-100 dark:bg-blue-500/15",
+    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500 dark:bg-blue-400",
   },
   outline: {
-    bg: "bg-transparent border border-white/20",
-    text: "text-white/70",
-    dot: "bg-white/50",
+    bg: "bg-transparent border border-slate-300 dark:border-white/20",
+    text: "text-slate-600 dark:text-white/70",
+    dot: "bg-slate-400 dark:bg-white/50",
   },
 };
 
