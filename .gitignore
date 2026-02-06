@@ -48,8 +48,8 @@ secrets/
 **/response.json
 **/api-response.json
 
-# audit reports
-reports/
+# audit reports (root-level only)
+/reports/
 *-audit.json
 
 # development prompts
