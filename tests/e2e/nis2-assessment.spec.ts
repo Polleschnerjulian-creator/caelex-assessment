@@ -22,8 +22,8 @@ test.describe("NIS2 Assessment - Regulation Picker", () => {
     // Should navigate to NIS2 assessment page
     await page.waitForURL("**/assessment/nis2");
 
-    // Should show the first NIS2 question
-    await expect(page.getByText(/sector/i)).toBeVisible();
+    // Should show the first NIS2 question — space sub-sector (no generic sector question)
+    await expect(page.getByText(/primary space activity/i)).toBeVisible();
   });
 
   test("should still navigate to EU Space Act assessment", async ({ page }) => {
@@ -39,49 +39,43 @@ test.describe("NIS2 Assessment Wizard", () => {
     await page.goto("/assessment/nis2");
   });
 
-  test("should display the first question about sector", async ({ page }) => {
-    await expect(page.getByText(/sector/i)).toBeVisible();
-    await expect(page.getByText(/Space/i)).toBeVisible();
-    await expect(page.getByText(/Digital Infrastructure/i)).toBeVisible();
-    await expect(page.getByText(/Transport/i)).toBeVisible();
+  test("should display space sub-sector options as the first question", async ({
+    page,
+  }) => {
+    // Should show space sub-sector options directly (no generic sector picker)
+    await expect(page.getByText(/primary space activity/i)).toBeVisible();
+    await expect(page.getByText(/Ground Infrastructure/i)).toBeVisible();
+    await expect(page.getByText(/Satellite Communications/i)).toBeVisible();
+    await expect(page.getByText(/Spacecraft Manufacturing/i)).toBeVisible();
+    await expect(page.getByText(/Launch Services/i)).toBeVisible();
+    await expect(page.getByText(/Earth Observation/i)).toBeVisible();
+  });
+
+  test("should NOT show generic sector options", async ({ page }) => {
+    // These should NOT appear — Caelex is space-only
+    await expect(page.getByText(/Digital Infrastructure/i)).not.toBeVisible();
+    await expect(page.getByText(/Transport/i)).not.toBeVisible();
+    await expect(page.getByText(/Other Sector/i)).not.toBeVisible();
   });
 
   test("should show NIS2 Directive header", async ({ page }) => {
     await expect(page.getByText(/NIS2 Directive Assessment/i)).toBeVisible();
   });
 
-  test("should navigate to space sub-sector when Space is selected", async ({
+  test("should navigate to EU establishment after selecting sub-sector", async ({
     page,
   }) => {
-    await page.click("text=Space");
+    await page.click("text=Ground Infrastructure");
 
-    // Should show space sub-sector question
-    await expect(page.getByText(/primary space activity/i)).toBeVisible();
-    await expect(page.getByText(/Ground Infrastructure/i)).toBeVisible();
-    await expect(page.getByText(/Satellite Communications/i)).toBeVisible();
-  });
-
-  test("should skip sub-sector when non-space sector is selected", async ({
-    page,
-  }) => {
-    await page.click("text=Transport");
-
-    // Should skip directly to EU establishment question (step 3)
-    await expect(
-      page
-        .getByText(/established in the EU/i)
-        .or(page.getByText(/organization's size/i)),
-    ).toBeVisible();
+    // Should go to EU establishment question (Q2)
+    await expect(page.getByText(/established in the EU/i)).toBeVisible();
   });
 
   test("should show out of scope for non-EU entities", async ({ page }) => {
-    // Q1: Select space
-    await page.click("text=Space");
-
-    // Q2: Sub-sector
+    // Q1: Sub-sector
     await page.click("text=Ground Infrastructure");
 
-    // Q3: Not EU established
+    // Q2: Not EU established
     await page.click("text=No, outside the EU");
 
     // Should show out of scope message
@@ -93,17 +87,17 @@ test.describe("NIS2 Assessment Wizard", () => {
   });
 
   test("should allow navigation back", async ({ page }) => {
-    // Q1: Select space
-    await page.click("text=Space");
+    // Q1: Select sub-sector
+    await page.click("text=Ground Infrastructure");
 
     // Should be at Q2
-    await expect(page.getByText(/primary space activity/i)).toBeVisible();
+    await expect(page.getByText(/established in the EU/i)).toBeVisible();
 
     // Go back
     await page.click('button:has-text("Back")');
 
-    // Should be back at Q1
-    await expect(page.getByText(/sector/i)).toBeVisible();
+    // Should be back at Q1 — space sub-sector
+    await expect(page.getByText(/primary space activity/i)).toBeVisible();
   });
 
   test("should display progress bar", async ({ page }) => {
@@ -117,7 +111,6 @@ test.describe("NIS2 Assessment Wizard", () => {
 
   test("should show restart option on out of scope", async ({ page }) => {
     // Get to out of scope
-    await page.click("text=Space");
     await page.click("text=Ground Infrastructure");
     await page.click("text=No, outside the EU");
 
@@ -137,28 +130,25 @@ test.describe("NIS2 Assessment - Full Flow", () => {
   }) => {
     await page.goto("/assessment/nis2");
 
-    // Q1: Sector - Space
-    await page.click("text=Space");
-
-    // Q2: Sub-sector - Ground Infrastructure
+    // Q1: Sub-sector - Ground Infrastructure
     await page.click("text=Ground Infrastructure");
 
-    // Q3: EU Established - Yes
+    // Q2: EU Established - Yes
     await page.click("text=Yes, EU-established");
 
-    // Q4: Entity Size - Medium
+    // Q3: Entity Size - Medium
     await page.click("text=Medium Enterprise");
 
-    // Q5: Member states
+    // Q4: Member states
     await page.click("text=1 member state");
 
-    // Q6: Ground infra - Yes
+    // Q5: Ground infra - Yes
     await page.click("text=Yes");
 
-    // Q7: ISO 27001 - No
+    // Q6: ISO 27001 - No
     await page.click("text=No certification");
 
-    // Q8: Incident response - No
+    // Q7: Incident response - No
     await page.click("text=No formal capability");
 
     // Should show results/calculating
@@ -175,28 +165,25 @@ test.describe("NIS2 Assessment - Full Flow", () => {
   }) => {
     await page.goto("/assessment/nis2");
 
-    // Q1: Space
-    await page.click("text=Space");
-
-    // Q2: Satellite Communications
+    // Q1: Satellite Communications
     await page.click("text=Satellite Communications");
 
-    // Q3: EU - Yes
+    // Q2: EU - Yes
     await page.click("text=Yes, EU-established");
 
-    // Q4: Large
+    // Q3: Large
     await page.click("text=Large Enterprise");
 
-    // Q5: Multiple member states
+    // Q4: Multiple member states
     await page.click("text=2-5 member states");
 
-    // Q6: Ground infra - Yes
+    // Q5: Ground infra - Yes
     await page.click("text=Yes");
 
-    // Q7: ISO 27001 - Yes
+    // Q6: ISO 27001 - Yes
     await page.click("text=Yes, ISO 27001 certified");
 
-    // Q8: CSIRT - Yes
+    // Q7: CSIRT - Yes
     await page.click("text=Yes, we have incident response");
 
     // Should show results
@@ -215,11 +202,11 @@ test.describe("NIS2 Assessment Mobile", () => {
   test("should be usable on mobile viewport", async ({ page }) => {
     await page.goto("/assessment/nis2");
 
-    // Options should be visible
-    await expect(page.getByText(/Space/i)).toBeVisible();
+    // Should show space sub-sector options directly
+    await expect(page.getByText(/primary space activity/i)).toBeVisible();
 
     // Click should work
-    await page.click("text=Space");
-    await expect(page.getByText(/primary space activity/i)).toBeVisible();
+    await page.click("text=Ground Infrastructure");
+    await expect(page.getByText(/established in the EU/i)).toBeVisible();
   });
 });

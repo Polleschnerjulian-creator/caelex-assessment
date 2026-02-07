@@ -14,59 +14,13 @@ import { NIS2AssessmentAnswers } from "./nis2-types";
 // These determine whether a space operator falls under NIS2 and what classification applies.
 
 export const NIS2_QUESTIONS: Question[] = [
-  // Q1: Sector
-  {
-    id: "sector",
-    step: 1,
-    title: "Which sector best describes your primary activity?",
-    subtitle:
-      "NIS2 applies to entities in sectors of high criticality (Annex I) and other critical sectors (Annex II)",
-    options: [
-      {
-        id: "space",
-        label: "Space",
-        description:
-          "Satellite operations, ground infrastructure, launch services, or space data provision",
-        icon: "Satellite",
-        value: "space",
-      },
-      {
-        id: "digital_infrastructure",
-        label: "Digital Infrastructure",
-        description:
-          "Internet exchange points, DNS, TLD registries, cloud computing, data centres",
-        icon: "Server",
-        value: "digital_infrastructure",
-      },
-      {
-        id: "transport",
-        label: "Transport",
-        description: "Air, rail, water, or road transport services",
-        icon: "Plane",
-        value: "transport",
-      },
-      {
-        id: "other",
-        label: "Other Sector",
-        description:
-          "Energy, health, banking, water, manufacturing, postal, chemicals, food, digital providers",
-        icon: "Building2",
-        value: "other",
-      },
-    ],
-  },
-
-  // Q2: Space Sub-Sector (conditional on Q1 = "space")
+  // Q1: Space Sub-Sector (Caelex is space-only, sector is always "space")
   {
     id: "spaceSubSector",
-    step: 2,
+    step: 1,
     title: "What is your primary space activity?",
     subtitle:
-      "Space is listed as a sector of high criticality in NIS2 Annex I, Sector 11",
-    showWhen: {
-      questionId: "sector",
-      value: "space",
-    },
+      "Space is listed as a sector of high criticality in NIS2 Annex I, Sector 11. Select your primary area of operations.",
     options: [
       {
         id: "ground_infrastructure",
@@ -92,19 +46,43 @@ export const NIS2_QUESTIONS: Question[] = [
         value: "spacecraft_manufacturing",
       },
       {
+        id: "launch_services",
+        label: "Launch Services",
+        description:
+          "Launch vehicle operations, launch site management, rideshare services",
+        icon: "Rocket",
+        value: "launch_services",
+      },
+      {
         id: "earth_observation",
         label: "Earth Observation",
         description: "Remote sensing data acquisition and processing",
         icon: "Eye",
         value: "earth_observation",
       },
+      {
+        id: "navigation",
+        label: "Navigation & PNT",
+        description:
+          "GNSS augmentation services, positioning, navigation, and timing",
+        icon: "Navigation",
+        value: "navigation",
+      },
+      {
+        id: "space_situational_awareness",
+        label: "Space Situational Awareness",
+        description:
+          "SSA/STM services, space debris tracking, conjunction assessment",
+        icon: "Radar",
+        value: "space_situational_awareness",
+      },
     ],
   },
 
-  // Q3: EU Establishment
+  // Q2: EU Establishment
   {
     id: "isEUEstablished",
-    step: 3,
+    step: 2,
     title: "Is your organization established in the EU?",
     subtitle:
       "NIS2 primarily applies to entities established in EU member states. Non-EU entities may also be in scope if they provide services within the EU.",
@@ -130,10 +108,10 @@ export const NIS2_QUESTIONS: Question[] = [
       "The NIS2 Directive primarily applies to entities established in the EU. However, if you provide services within the EU, you may need to designate an EU representative under Art. 26. Additionally, the forthcoming EU Space Act will apply to third-country operators serving the EU market. Consider re-assessing your NIS2 obligations if you expand into the EU.",
   },
 
-  // Q4: Entity Size
+  // Q3: Entity Size
   {
     id: "entitySize",
-    step: 4,
+    step: 3,
     title: "What best describes your organization's size?",
     subtitle:
       "NIS2 generally applies to medium and large entities, but some space sector operators are captured regardless of size",
@@ -169,10 +147,10 @@ export const NIS2_QUESTIONS: Question[] = [
     ],
   },
 
-  // Q5: Cross-border operations
+  // Q4: Cross-border operations
   {
     id: "memberStateCount",
-    step: 5,
+    step: 4,
     title: "In how many EU member states does your organization operate?",
     subtitle:
       "Cross-border operators may be subject to supervision by multiple authorities",
@@ -201,10 +179,10 @@ export const NIS2_QUESTIONS: Question[] = [
     ],
   },
 
-  // Q6: Space-specific activity booleans (presented as multi-select)
+  // Q5: Space-specific activity booleans (presented as multi-select)
   {
     id: "operatesGroundInfra",
-    step: 6,
+    step: 5,
     title: "Do you operate ground-based space infrastructure?",
     subtitle:
       "Ground stations, TT&C facilities, data centres for space data processing, or mission control centres",
@@ -226,10 +204,10 @@ export const NIS2_QUESTIONS: Question[] = [
     ],
   },
 
-  // Q7: Existing ISO 27001
+  // Q6: Existing ISO 27001
   {
     id: "hasISO27001",
-    step: 7,
+    step: 6,
     title: "Does your organization hold ISO 27001 certification?",
     subtitle:
       "Existing certifications can significantly reduce your NIS2 compliance effort",
@@ -252,10 +230,10 @@ export const NIS2_QUESTIONS: Question[] = [
     ],
   },
 
-  // Q8: Existing incident response capability
+  // Q7: Existing incident response capability
   {
     id: "hasExistingCSIRT",
-    step: 8,
+    step: 7,
     title:
       "Does your organization have an established incident response capability?",
     subtitle:
@@ -336,7 +314,7 @@ export function getTotalNIS2Questions(answers: NIS2AssessmentAnswers): number {
 // Get default empty answers
 export function getDefaultNIS2Answers(): NIS2AssessmentAnswers {
   return {
-    sector: null,
+    sector: "space", // Caelex is space-only — sector is always "space"
     spaceSubSector: null,
     operatesGroundInfra: null,
     operatesSatComms: null,

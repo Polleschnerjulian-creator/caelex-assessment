@@ -61,18 +61,28 @@ describe("NIS2_QUESTIONS", () => {
     expect(firstStep).toBe(1);
   });
 
-  it("should have sector as the first question", () => {
+  it("should have space sub-sector as the first question (Caelex is space-only)", () => {
     const firstQuestion = NIS2_QUESTIONS.find((q) => q.step === 1);
     expect(firstQuestion).toBeDefined();
-    expect(firstQuestion!.id).toBe("sector");
+    expect(firstQuestion!.id).toBe("spaceSubSector");
   });
 
-  it("should have conditional space sub-sector question", () => {
+  it("should not have a generic sector question", () => {
+    const sectorQ = NIS2_QUESTIONS.find((q) => q.id === "sector");
+    expect(sectorQ).toBeUndefined();
+  });
+
+  it("should have space sub-sector with all sub-sector options", () => {
     const subSectorQ = NIS2_QUESTIONS.find((q) => q.id === "spaceSubSector");
     expect(subSectorQ).toBeDefined();
-    expect(subSectorQ!.showWhen).toBeDefined();
-    expect(subSectorQ!.showWhen!.questionId).toBe("sector");
-    expect(subSectorQ!.showWhen!.value).toBe("space");
+    // Should NOT have conditional showWhen — it's always shown
+    expect(subSectorQ!.showWhen).toBeUndefined();
+    const optionIds = subSectorQ!.options.map((o) => o.id);
+    expect(optionIds).toContain("ground_infrastructure");
+    expect(optionIds).toContain("satellite_communications");
+    expect(optionIds).toContain("spacecraft_manufacturing");
+    expect(optionIds).toContain("launch_services");
+    expect(optionIds).toContain("earth_observation");
   });
 
   it("should include EU establishment question with out-of-scope handling", () => {
@@ -88,32 +98,29 @@ describe("NIS2_QUESTIONS", () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe("getCurrentNIS2Question", () => {
-  it("should return the first question at step 1 with default answers", () => {
+  it("should return the space sub-sector question at step 1", () => {
     const answers = makeAnswers();
     const question = getCurrentNIS2Question(answers, 1);
 
     expect(question).toBeDefined();
-    expect(question!.id).toBe("sector");
+    expect(question!.id).toBe("spaceSubSector");
     expect(question!.step).toBe(1);
   });
 
-  it("should return space sub-sector question at step 2 when sector=space", () => {
-    const answers = makeAnswers({ sector: "space" });
+  it("should return EU establishment question at step 2", () => {
+    const answers = makeAnswers();
     const question = getCurrentNIS2Question(answers, 2);
 
     expect(question).toBeDefined();
-    expect(question!.id).toBe("spaceSubSector");
+    expect(question!.id).toBe("isEUEstablished");
   });
 
-  it("should skip space sub-sector question at step 2 when sector is not space", () => {
-    const answers = makeAnswers({ sector: "transport" });
-    const question = getCurrentNIS2Question(answers, 2);
+  it("should return entity size question at step 3", () => {
+    const answers = makeAnswers();
+    const question = getCurrentNIS2Question(answers, 3);
 
-    // Should skip to step 3 or beyond
-    if (question) {
-      expect(question.id).not.toBe("spaceSubSector");
-      expect(question.step).toBeGreaterThan(2);
-    }
+    expect(question).toBeDefined();
+    expect(question!.id).toBe("entitySize");
   });
 
   it("should return null for a step beyond the last question", () => {
@@ -123,9 +130,8 @@ describe("getCurrentNIS2Question", () => {
     expect(question).toBeNull();
   });
 
-  it("should skip questions when showWhen condition is not met", () => {
-    // Set sector to non-space, so spaceSubSector should be skipped
-    const answers = makeAnswers({ sector: "digital_infrastructure" });
+  it("should have no conditional questions (all shown for space)", () => {
+    const answers = makeAnswers();
 
     // Get all questions through iteration
     const questions = [];
@@ -134,9 +140,8 @@ describe("getCurrentNIS2Question", () => {
       if (q) questions.push(q);
     }
 
-    // None should be spaceSubSector
-    const hasSubSector = questions.some((q) => q.id === "spaceSubSector");
-    expect(hasSubSector).toBe(false);
+    // All questions should be visible
+    expect(questions.length).toBe(NIS2_QUESTIONS.length);
   });
 });
 
@@ -145,31 +150,19 @@ describe("getCurrentNIS2Question", () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe("getTotalNIS2Questions", () => {
-  it("should return total count including conditional questions when conditions are met", () => {
-    const answers = makeAnswers({ sector: "space" });
+  it("should return total count of all questions (no conditionals for space-only)", () => {
+    const answers = makeAnswers();
     const total = getTotalNIS2Questions(answers);
 
-    // With space selected, all questions should be visible (including sub-sector)
+    // All questions should be visible — no conditional questions
     expect(total).toBe(NIS2_QUESTIONS.length);
   });
 
-  it("should return fewer questions when conditions are not met", () => {
-    const answers = makeAnswers({ sector: "transport" });
+  it("should return 7 questions for the space-only assessment", () => {
+    const answers = makeAnswers();
     const total = getTotalNIS2Questions(answers);
 
-    // Without space, sub-sector is hidden
-    expect(total).toBeLessThan(NIS2_QUESTIONS.length);
-  });
-
-  it("should return consistent count for space vs non-space", () => {
-    const spaceAnswers = makeAnswers({ sector: "space" });
-    const nonSpaceAnswers = makeAnswers({ sector: "transport" });
-
-    const spaceTotal = getTotalNIS2Questions(spaceAnswers);
-    const nonSpaceTotal = getTotalNIS2Questions(nonSpaceAnswers);
-
-    // Space should have one more question (sub-sector)
-    expect(spaceTotal).toBe(nonSpaceTotal + 1);
+    expect(total).toBe(7);
   });
 
   it("should return a positive number", () => {
@@ -185,10 +178,10 @@ describe("getTotalNIS2Questions", () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe("getDefaultNIS2Answers", () => {
-  it("should return all null values", () => {
+  it("should return default values with sector preset to space", () => {
     const defaults = getDefaultNIS2Answers();
 
-    expect(defaults.sector).toBeNull();
+    expect(defaults.sector).toBe("space"); // Caelex is space-only
     expect(defaults.spaceSubSector).toBeNull();
     expect(defaults.entitySize).toBeNull();
     expect(defaults.isEUEstablished).toBeNull();

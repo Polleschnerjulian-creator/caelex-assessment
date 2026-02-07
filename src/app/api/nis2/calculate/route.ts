@@ -23,27 +23,8 @@ import {
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 
 // Valid values for input validation
-const VALID_SECTORS = [
-  "space",
-  "energy",
-  "transport",
-  "banking",
-  "financial_market",
-  "health",
-  "drinking_water",
-  "waste_water",
-  "digital_infrastructure",
-  "ict_service_management",
-  "public_administration",
-  "postal_courier",
-  "waste_management",
-  "chemicals",
-  "food",
-  "manufacturing",
-  "digital_providers",
-  "research",
-  "other",
-] as const;
+// Caelex is space-only — only "space" sector is accepted
+const VALID_SECTORS = ["space"] as const;
 
 const VALID_SPACE_SUB_SECTORS = [
   "ground_infrastructure",
@@ -176,10 +157,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    // Caelex is space-only — ensure sector is always "space"
+    const normalizedAnswers = {
+      ...(answers as NIS2AssessmentAnswers),
+      sector: "space" as const,
+    };
+
     // ─── Calculate NIS2 Compliance ───
-    const result = await calculateNIS2Compliance(
-      answers as NIS2AssessmentAnswers,
-    );
+    const result = await calculateNIS2Compliance(normalizedAnswers);
 
     // ─── Redact sensitive details before sending to client ───
     const redactedResult = redactNIS2ResultForClient(result);

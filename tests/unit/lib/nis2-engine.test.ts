@@ -228,14 +228,13 @@ describe("classifyNIS2Entity", () => {
       expect(result.reason).toContain("Small enterprises");
     });
 
-    it("should classify entities in uncovered sectors as out of scope", () => {
+    it("should classify entities with null size as out of scope", () => {
       const answers = makeAnswers({
-        sector: "research" as NIS2AssessmentAnswers["sector"],
+        entitySize: null,
       });
       const result = classifyNIS2Entity(answers);
 
       expect(result.classification).toBe("out_of_scope");
-      expect(result.reason).toContain("not covered");
     });
   });
 
@@ -271,14 +270,15 @@ describe("classifyNIS2Entity", () => {
       expect(result.articleRef).toContain("Art. 3(1)(e)");
     });
 
-    it("should classify large non-space entities in covered sectors as essential", () => {
+    it("should classify large space entities with ground infra as essential", () => {
       const answers = makeAnswers({
-        sector: "digital_infrastructure",
         entitySize: "large",
+        operatesGroundInfra: true,
       });
       const result = classifyNIS2Entity(answers);
 
       expect(result.classification).toBe("essential");
+      expect(result.articleRef).toContain("Art. 3(1)");
     });
   });
 
@@ -338,14 +338,17 @@ describe("classifyNIS2Entity", () => {
       expect(result.classification).toBe("important");
     });
 
-    it("should classify medium non-space entities in covered sectors as important", () => {
+    it("should classify medium space entities without critical infra as important", () => {
       const answers = makeAnswers({
-        sector: "transport",
         entitySize: "medium",
+        operatesGroundInfra: false,
+        operatesSatComms: false,
+        spaceSubSector: "spacecraft_manufacturing",
       });
       const result = classifyNIS2Entity(answers);
 
       expect(result.classification).toBe("important");
+      expect(result.articleRef).toContain("Art. 3(2)");
     });
   });
 

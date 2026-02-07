@@ -62,20 +62,8 @@ export function classifyNIS2Entity(answers: NIS2AssessmentAnswers): {
     };
   }
 
-  // Not in a covered sector
-  if (
-    answers.sector !== "space" &&
-    answers.sector !== "digital_infrastructure" &&
-    answers.sector !== "transport" &&
-    answers.sector !== "other"
-  ) {
-    return {
-      classification: "out_of_scope",
-      reason:
-        "Your sector is not covered by the NIS2 Directive. The directive applies to sectors listed in Annex I (high criticality) and Annex II (other critical sectors).",
-      articleRef: "NIS2 Art. 2, Annex I, Annex II",
-    };
-  }
+  // Caelex is space-only — always treat as space sector (Annex I, Sector 11)
+  const sector = answers.sector || "space";
 
   // Micro enterprises are generally excluded (Art. 2(1))
   if (answers.entitySize === "micro") {
@@ -91,81 +79,60 @@ export function classifyNIS2Entity(answers: NIS2AssessmentAnswers): {
     return {
       classification: "out_of_scope",
       reason:
-        "Micro enterprises (< 10 employees, < €2M turnover) are generally excluded from NIS2 scope under Art. 2(1). However, member states may designate critical operators regardless of size under Art. 2(2).",
+        "Micro enterprises (< 10 employees, < €2M turnover) are generally excluded from NIS2 scope under Art. 2(1). However, member states may designate critical space operators regardless of size under Art. 2(2).",
       articleRef: "NIS2 Art. 2(1)",
     };
   }
 
-  // Space sector classification
-  if (answers.sector === "space") {
-    // Large entities in Annex I sectors = essential
-    if (answers.entitySize === "large") {
-      return {
-        classification: "essential",
-        reason:
-          "Large entities (> 250 employees or > €50M turnover) operating in the space sector (NIS2 Annex I, Sector 11) are classified as essential entities under Art. 3(1).",
-        articleRef: "NIS2 Art. 3(1)(a)",
-      };
-    }
-
-    // Medium entities in Annex I sectors = important (default)
-    if (answers.entitySize === "medium") {
-      // Exception: Ground infrastructure operators or SATCOM for government
-      if (answers.operatesGroundInfra || answers.operatesSatComms) {
-        return {
-          classification: "essential",
-          reason:
-            "Medium entities operating critical space infrastructure (ground stations, SATCOM) may be classified as essential entities by member states under Art. 3(1)(e) due to the criticality of space infrastructure services.",
-          articleRef: "NIS2 Art. 3(1)(e)",
-        };
-      }
-      return {
-        classification: "important",
-        reason:
-          "Medium entities (50-250 employees) in the space sector (NIS2 Annex I) are classified as important entities under Art. 3(2). This means full NIS2 compliance is required, with lighter supervisory measures than essential entities.",
-        articleRef: "NIS2 Art. 3(2)",
-      };
-    }
-
-    // Small entities in Annex I — generally out of scope unless designated
-    if (answers.entitySize === "small") {
-      if (
-        answers.operatesGroundInfra ||
-        answers.operatesSatComms ||
-        answers.providesLaunchServices
-      ) {
-        return {
-          classification: "important",
-          reason:
-            "Small entities providing critical space services (ground infrastructure, SATCOM, launch services) may be designated as important entities by member states under Art. 2(2)(b), as disruption could have significant impact on public safety or national security.",
-          articleRef: "NIS2 Art. 2(2)(b)",
-        };
-      }
-      return {
-        classification: "out_of_scope",
-        reason:
-          "Small enterprises (< 50 employees, < €10M turnover) are generally excluded from NIS2 under Art. 2(1), unless designated by a member state under Art. 2(2). Monitor your national authority's designations.",
-        articleRef: "NIS2 Art. 2(1), Art. 2(2)",
-      };
-    }
-  }
-
-  // Non-space sectors — simplified classification
+  // Space sector classification (Annex I, high criticality)
+  // Large entities in Annex I sectors = essential
   if (answers.entitySize === "large") {
     return {
       classification: "essential",
       reason:
-        "Large entities in NIS2-covered sectors are classified as essential entities.",
-      articleRef: "NIS2 Art. 3(1)",
+        "Large entities (> 250 employees or > €50M turnover) operating in the space sector (NIS2 Annex I, Sector 11) are classified as essential entities under Art. 3(1).",
+      articleRef: "NIS2 Art. 3(1)(a)",
     };
   }
 
+  // Medium entities in Annex I sectors = important (default)
   if (answers.entitySize === "medium") {
+    // Exception: Ground infrastructure operators or SATCOM for government
+    if (answers.operatesGroundInfra || answers.operatesSatComms) {
+      return {
+        classification: "essential",
+        reason:
+          "Medium entities operating critical space infrastructure (ground stations, SATCOM) may be classified as essential entities by member states under Art. 3(1)(e) due to the criticality of space infrastructure services.",
+        articleRef: "NIS2 Art. 3(1)(e)",
+      };
+    }
     return {
       classification: "important",
       reason:
-        "Medium entities in NIS2-covered sectors are classified as important entities.",
+        "Medium entities (50-250 employees) in the space sector (NIS2 Annex I) are classified as important entities under Art. 3(2). This means full NIS2 compliance is required, with lighter supervisory measures than essential entities.",
       articleRef: "NIS2 Art. 3(2)",
+    };
+  }
+
+  // Small entities in Annex I — generally out of scope unless designated
+  if (answers.entitySize === "small") {
+    if (
+      answers.operatesGroundInfra ||
+      answers.operatesSatComms ||
+      answers.providesLaunchServices
+    ) {
+      return {
+        classification: "important",
+        reason:
+          "Small entities providing critical space services (ground infrastructure, SATCOM, launch services) may be designated as important entities by member states under Art. 2(2)(b), as disruption could have significant impact on public safety or national security.",
+        articleRef: "NIS2 Art. 2(2)(b)",
+      };
+    }
+    return {
+      classification: "out_of_scope",
+      reason:
+        "Small enterprises (< 50 employees, < €10M turnover) are generally excluded from NIS2 under Art. 2(1), unless designated by a member state under Art. 2(2). Monitor your national authority's designations.",
+      articleRef: "NIS2 Art. 2(1), Art. 2(2)",
     };
   }
 
@@ -173,7 +140,7 @@ export function classifyNIS2Entity(answers: NIS2AssessmentAnswers): {
   return {
     classification: "out_of_scope",
     reason:
-      "Based on your organization's profile, you do not appear to fall within the scope of NIS2. However, member states may designate additional entities under Art. 2(2). Consult your national competent authority.",
+      "Based on your organization's profile, you do not appear to fall within the scope of NIS2. However, member states may designate additional space operators under Art. 2(2). Consult your national competent authority.",
     articleRef: "NIS2 Art. 2",
   };
 }
@@ -391,7 +358,7 @@ export async function calculateNIS2Compliance(
     entityClassification: classification,
     classificationReason: reason,
     classificationArticleRef: articleRef,
-    sector: answers.sector || "space",
+    sector: "space", // Caelex is space-only
     subSector: answers.spaceSubSector || null,
     organizationSize: answers.entitySize || "unknown",
     applicableRequirements,

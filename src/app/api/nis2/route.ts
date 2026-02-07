@@ -76,18 +76,18 @@ export async function POST(request: Request) {
     } = body;
 
     // Validate required fields
-    if (!sector || !entitySize) {
+    if (!entitySize) {
       return NextResponse.json(
         {
-          error: "Missing required fields: sector, entitySize",
+          error: "Missing required fields: entitySize",
         },
         { status: 400 },
       );
     }
 
-    // Build answers for classification
+    // Build answers for classification — Caelex is space-only
     const answers: NIS2AssessmentAnswers = {
-      sector,
+      sector: "space",
       spaceSubSector: subSector || null,
       operatesGroundInfra,
       operatesSatComms,
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
           assessmentName,
           entityClassification: classification.classification,
           classificationReason: classification.reason,
-          sector,
+          sector: "space",
           subSector: subSector || null,
           organizationSize: entitySize,
           employeeCount: employeeCount || null,
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
       entityId: assessment.id,
       newValue: {
         entityClassification: classification.classification,
-        sector,
+        sector: "space",
         subSector,
         entitySize,
         applicableRequirements: complianceResult.applicableRequirements.length,

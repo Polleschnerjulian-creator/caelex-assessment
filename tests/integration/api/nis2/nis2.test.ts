@@ -369,18 +369,25 @@ describe("POST /api/nis2", () => {
     expect(data.error).toBe("Unauthorized");
   });
 
-  it("should return 400 when sector is missing", async () => {
+  it("should accept request without sector (defaults to space)", async () => {
     authed();
-    const { sector, ...incomplete } = validNIS2AssessmentPayload;
+    const { sector: _sector, ...withoutSector } = validNIS2AssessmentPayload;
+
+    vi.mocked(prisma.$transaction).mockResolvedValue({
+      id: "new-nis2-assessment",
+    } as never);
+    vi.mocked(prisma.nIS2Assessment.findUnique).mockResolvedValue(
+      mockNIS2Assessment as never,
+    );
+
     const req = makeRequest("http://localhost/api/nis2", {
       method: "POST",
-      body: incomplete,
+      body: withoutSector,
     });
     const res = await nis2POST(req);
-    const data = await res.json();
 
-    expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    // Should succeed — sector is always "space" for Caelex
+    expect(res.status).toBe(200);
   });
 
   it("should return 400 when entitySize is missing", async () => {
