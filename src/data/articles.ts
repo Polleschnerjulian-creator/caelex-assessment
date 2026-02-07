@@ -21,7 +21,8 @@ export type ComplianceModule =
   | "debris"
   | "insurance"
   | "supervision"
-  | "regulatory";
+  | "regulatory"
+  | "nis2";
 
 export type ComplianceType =
   | "informational"

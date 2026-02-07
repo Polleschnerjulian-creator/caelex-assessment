@@ -18,6 +18,8 @@ export type IncidentCategory =
   | "spacecraft_anomaly"
   | "conjunction_event"
   | "regulatory_breach"
+  | "nis2_significant_incident"
+  | "nis2_near_miss"
   | "other";
 
 /**
@@ -97,6 +99,24 @@ export const INCIDENT_CLASSIFICATION: Record<
     description: "Non-compliance with regulatory requirements",
     articleRef: "Art. 33-34",
   },
+  nis2_significant_incident: {
+    defaultSeverity: "critical",
+    ncaDeadlineHours: 24, // NIS2 Art. 23(4)(a): Early warning within 24 hours
+    requiresNCANotification: true,
+    requiresEUSPANotification: false,
+    description:
+      "NIS2 significant incident: causes severe operational disruption or financial loss, or has affected or is capable of affecting other entities",
+    articleRef: "NIS2 Art. 23",
+  },
+  nis2_near_miss: {
+    defaultSeverity: "medium",
+    ncaDeadlineHours: 72, // Voluntary reporting timeline
+    requiresNCANotification: false,
+    requiresEUSPANotification: false,
+    description:
+      "NIS2 near-miss: event that could have resulted in a significant incident but was prevented or did not materialise",
+    articleRef: "NIS2 Art. 30",
+  },
   other: {
     defaultSeverity: "low",
     ncaDeadlineHours: 168, // 7 days
@@ -106,6 +126,88 @@ export const INCIDENT_CLASSIFICATION: Record<
     articleRef: "Art. 33-34",
   },
 };
+
+/**
+ * NIS2 Art. 23 — Incident Reporting Timeline Constants
+ *
+ * Space operators classified as essential or important entities must
+ * report significant incidents to their CSIRT/competent authority.
+ */
+export const NIS2_REPORTING_TIMELINE = {
+  /** Art. 23(4)(a): Early warning — without undue delay, within 24 hours */
+  earlyWarningHours: 24,
+  /** Art. 23(4)(b): Incident notification — within 72 hours of awareness */
+  notificationHours: 72,
+  /** Art. 23(4)(c): Intermediate report — upon request of CSIRT/authority */
+  intermediateReportDays: "upon_request",
+  /** Art. 23(4)(d): Final report — within 1 month of notification */
+  finalReportDays: 30,
+  /** Art. 23(4)(d): Extended for ongoing incidents */
+  progressReportDays: 30,
+  /** Art. 23(4)(e): Final report after progress report — within 1 month */
+  finalAfterProgressDays: 30,
+} as const;
+
+/**
+ * Determine if an incident qualifies as NIS2 "significant" under Art. 23(3)
+ *
+ * A significant incident is one that:
+ * (a) has caused or is capable of causing severe operational disruption or financial loss
+ * (b) has affected or is capable of affecting other natural or legal persons by causing
+ *     considerable material or non-material damage
+ */
+export function isNIS2SignificantIncident(factors: {
+  causedOperationalDisruption: boolean;
+  financialLossEuros?: number;
+  affectedOtherEntities: boolean;
+  affectedPersonCount?: number;
+  causedDataBreach: boolean;
+  affectedServiceAvailability: boolean;
+  serviceDowntimeHours?: number;
+}): { isSignificant: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+
+  if (factors.causedOperationalDisruption) {
+    reasons.push("Caused severe operational disruption (Art. 23(3)(a))");
+  }
+
+  if (factors.financialLossEuros && factors.financialLossEuros > 500000) {
+    reasons.push(
+      `Financial loss exceeds €500K threshold (€${factors.financialLossEuros.toLocaleString()})`,
+    );
+  }
+
+  if (factors.affectedOtherEntities) {
+    reasons.push(
+      "Affected or capable of affecting other entities (Art. 23(3)(b))",
+    );
+  }
+
+  if (factors.affectedPersonCount && factors.affectedPersonCount > 0) {
+    reasons.push(
+      `Affected ${factors.affectedPersonCount.toLocaleString()} persons`,
+    );
+  }
+
+  if (factors.causedDataBreach) {
+    reasons.push("Caused a data breach requiring GDPR notification");
+  }
+
+  if (
+    factors.affectedServiceAvailability &&
+    factors.serviceDowntimeHours &&
+    factors.serviceDowntimeHours > 4
+  ) {
+    reasons.push(
+      `Service unavailable for ${factors.serviceDowntimeHours} hours`,
+    );
+  }
+
+  return {
+    isSignificant: reasons.length > 0,
+    reasons,
+  };
+}
 
 /**
  * Severity escalation factors

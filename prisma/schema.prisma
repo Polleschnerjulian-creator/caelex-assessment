@@ -50,6 +50,7 @@ model User {
   apiKeys                ApiKey[]
   comments               Comment[]               // Collaboration: user's comments
   activities             Activity[]              // Collaboration: user's activities
+  nis2Assessments        NIS2Assessment[]        // NIS2 Directive assessments
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 }
@@ -335,6 +336,90 @@ model CybersecurityRequirementStatus {
   assessment    CybersecurityAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   requirementId String   // matches CybersecurityRequirement.id
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+}
+
+// ─── NIS2 Directive Assessment ───
+
+model NIS2Assessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+
+  // Entity Classification (NIS2 Art. 3-4)
+  entityClassification String?  // "essential" | "important" | "out_of_scope"
+  classificationReason String?  @db.Text
+
+  // Sector Info (NIS2 Annex I/II)
+  sector               String?  // "space" | "transport" | "digital_infrastructure" | etc.
+  subSector            String?  // "ground_infrastructure" | "satellite_communications" | "spacecraft_manufacturing"
+
+  // Organization Profile
+  organizationSize     String?  // micro, small, medium, large
+  employeeCount        Int?
+  annualRevenue        Float?   // EUR
+  memberStateCount     Int      @default(1) // Number of EU member states with operations
+
+  // Space-Specific Context
+  operatesGroundInfra  Boolean  @default(false)
+  operatesSatComms     Boolean  @default(false)
+  manufacturesSpacecraft Boolean @default(false)
+  providesLaunchServices Boolean @default(false)
+  providesEOData       Boolean  @default(false)
+
+  // Existing Compliance
+  existingCertifications String? // JSON array: ['iso27001', 'soc2', 'tisax']
+  hasISO27001          Boolean  @default(false)
+  hasExistingCSIRT     Boolean  @default(false)
+  hasRiskManagement    Boolean  @default(false)
+
+  // NIS2 Compliance Specifics
+  hasDesignatedRepresentative Boolean @default(false) // Art. 26-27
+  hasRegisteredWithAuthority  Boolean @default(false) // Art. 3(4)
+
+  // Supervisory Authority
+  supervisoryAuthority String?  // Member state NCA responsible for NIS2
+
+  // Calculated Results
+  complianceScore      Int?     // 0-100
+  maturityScore        Int?     // 0-100
+  riskLevel            String?  // low, medium, high, critical
+
+  // Overlap with EU Space Act
+  euSpaceActOverlapCount Int?   // Number of overlapping requirements
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Relations
+  requirements         NIS2RequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([entityClassification])
+}
+
+model NIS2RequirementStatus {
+  id            String          @id @default(cuid())
+  assessmentId  String
+  assessment    NIS2Assessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches NIS2Requirement.id from data file
   status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
   notes         String?  @db.Text
   evidenceNotes String?  @db.Text
@@ -975,6 +1060,7 @@ enum ModuleType {
   REGISTRATION
   TIMELINE
   DOCUMENTS
+  NIS2
 }
 
 // ============================================
@@ -1296,6 +1382,10 @@ enum NotificationType {
   // System
   SYSTEM_UPDATE
   SYSTEM_MAINTENANCE
+
+  // NIS2
+  NIS2_DEADLINE_APPROACHING
+  NIS2_ASSESSMENT_UPDATED
 }
 
 // ============================================

@@ -37,7 +37,13 @@ export type AuditAction =
   | "environmental_report_generated"
   | "supplier_request_created"
   | "supplier_request_sent"
-  | "supplier_data_received";
+  | "supplier_data_received"
+  | "nis2_assessment_created"
+  | "nis2_assessment_updated"
+  | "nis2_assessment_deleted"
+  | "nis2_requirement_status_changed"
+  | "nis2_report_generated"
+  | "nis2_classification_determined";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -55,7 +61,9 @@ export type AuditEntityType =
   | "insurance_policy"
   | "environmental_assessment"
   | "environmental_impact"
-  | "supplier_request";
+  | "supplier_request"
+  | "nis2_assessment"
+  | "nis2_requirement";
 
 export interface AuditLogEntry {
   userId: string;

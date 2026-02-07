@@ -85,6 +85,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/v1/webhooks",
   "/api/auth/",
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
+  "/api/nis2/calculate", // NIS2 assessment is public, CSRF exempt (rate limited instead)
 ];
 
 function validateOrigin(req: NextRequest): boolean {
@@ -120,8 +121,12 @@ export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
 
-  // Block bots on assessment API endpoints
-  if (pathname.startsWith("/api/assessment") && isLikelyBot(req)) {
+  // Block bots on assessment API endpoints (EU Space Act + NIS2)
+  if (
+    (pathname.startsWith("/api/assessment") ||
+      pathname.startsWith("/api/nis2/calculate")) &&
+    isLikelyBot(req)
+  ) {
     return applySecurityHeaders(
       new NextResponse(
         JSON.stringify({

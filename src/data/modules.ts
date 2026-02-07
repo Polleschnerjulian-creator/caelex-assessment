@@ -109,6 +109,17 @@ export const modules: ModuleDefinition[] = [
     articleRange: "Art. 104, 114–119",
     color: "rgba(200,200,200,0.5)",
   },
+  {
+    id: "nis2",
+    number: "09",
+    name: "NIS2 Directive",
+    shortName: "NIS2",
+    icon: "ShieldCheck",
+    description:
+      "NIS2 Directive (EU) 2022/2555 — cybersecurity for space sector entities",
+    articleRange: "Art. 20–21, 23, 27",
+    color: "rgba(139,255,255,0.5)",
+  },
 ];
 
 // Legacy export for backwards compatibility

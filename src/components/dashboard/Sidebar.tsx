@@ -13,6 +13,7 @@ import {
   X,
   FileCheck,
   Shield,
+  ShieldCheck,
   Trash2,
   Leaf,
   Scale,
@@ -141,6 +142,7 @@ function ModuleNavItem({
 const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/authorization": "authorization",
   "/dashboard/modules/cybersecurity": "cybersecurity",
+  "/dashboard/modules/nis2": "nis2",
   "/dashboard/modules/debris": "debris",
   "/dashboard/modules/environmental": "environmental",
   "/dashboard/modules/insurance": "insurance",
@@ -284,6 +286,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 requiredPlan={getRequiredPlanLabel(
                   "/dashboard/modules/cybersecurity",
                 )}
+              />
+              <ModuleNavItem
+                href="/dashboard/modules/nis2"
+                icon={<ShieldCheck size={16} strokeWidth={1.5} />}
+                label="NIS2 Directive"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/nis2")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/modules/nis2")}
               />
               <ModuleNavItem
                 href="/dashboard/modules/debris"

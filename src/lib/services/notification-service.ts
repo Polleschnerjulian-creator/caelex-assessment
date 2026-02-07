@@ -239,6 +239,20 @@ export const NOTIFICATION_CONFIG: Record<
     category: "system",
     defaultSeverity: "WARNING",
   },
+
+  // NIS2 Directive
+  NIS2_DEADLINE_APPROACHING: {
+    label: "NIS2 Deadline Approaching",
+    category: "nis2",
+    defaultSeverity: "WARNING",
+    emailSubjectPrefix: "[NIS2]",
+  },
+  NIS2_ASSESSMENT_UPDATED: {
+    label: "NIS2 Assessment Updated",
+    category: "nis2",
+    defaultSeverity: "INFO",
+    emailSubjectPrefix: "[NIS2]",
+  },
 };
 
 export const NOTIFICATION_CATEGORIES = [
