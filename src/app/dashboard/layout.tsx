@@ -29,6 +29,7 @@ export default function DashboardLayout({
                   name?: string | null;
                   email?: string | null;
                   image?: string | null;
+                  role?: string;
                   organization?: string;
                 }
               }

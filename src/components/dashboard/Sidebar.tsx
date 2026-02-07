@@ -20,6 +20,7 @@ import {
   Eye,
   ChevronRight,
   Lock,
+  Crown,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -156,6 +157,7 @@ interface SidebarProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: string;
   } & { organization?: string };
   isOpen?: boolean;
   onClose?: () => void;
@@ -360,6 +362,21 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               />
             </div>
           </div>
+
+          {/* Admin — only for cs@ahrensandco.de */}
+          {user?.email === "cs@ahrensandco.de" && (
+            <div className="mt-6">
+              <div className="space-y-0.5">
+                <NavItem
+                  href="/dashboard/admin"
+                  icon={<Crown size={16} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                >
+                  Admin Panel
+                </NavItem>
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* Footer */}
