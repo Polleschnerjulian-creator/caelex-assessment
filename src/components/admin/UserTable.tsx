@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, UserX, Shield, ShieldCheck, Eye } from "lucide-react";
+import { User, UserX, Check } from "lucide-react";
 
 interface AdminUser {
   id: string;
@@ -38,15 +38,17 @@ const ROLE_STYLES: Record<string, string> = {
 
 const PLAN_STYLES: Record<string, string> = {
   ENTERPRISE:
-    "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20",
   PROFESSIONAL:
-    "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  STARTER: "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  FREE: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/50",
+    "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20",
+  STARTER:
+    "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
+  FREE: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/50 border-slate-200 dark:border-white/10",
 };
 
 export default function UserTable({ users, onRefresh }: Props) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [successId, setSuccessId] = useState<string | null>(null);
 
   async function updateUserRole(userId: string, role: string) {
     setLoadingId(userId);
@@ -66,6 +68,32 @@ export default function UserTable({ users, onRefresh }: Props) {
     } catch (error) {
       console.error("Error updating role:", error);
       alert("Failed to update role");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function updateOrgPlan(orgId: string, plan: string) {
+    setLoadingId(orgId);
+    setSuccessId(null);
+    try {
+      const res = await fetch(`/api/admin/organizations/${orgId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+
+      if (res.ok) {
+        setSuccessId(orgId);
+        onRefresh();
+        setTimeout(() => setSuccessId(null), 2000);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to update plan");
+      }
+    } catch (error) {
+      console.error("Error updating plan:", error);
+      alert("Failed to update plan");
     } finally {
       setLoadingId(null);
     }
@@ -117,13 +145,13 @@ export default function UserTable({ users, onRefresh }: Props) {
                 Organization
               </th>
               <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+                Plan
+              </th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
                 Role
               </th>
               <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
                 Status
-              </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
-                Joined
               </th>
               <th className="text-right px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
                 Actions
@@ -135,7 +163,8 @@ export default function UserTable({ users, onRefresh }: Props) {
               const orgMembership = user.organizationMemberships?.[0];
               const orgName =
                 orgMembership?.organization?.name || user.organization || "—";
-              const orgPlan = orgMembership?.organization?.plan;
+              const orgId = orgMembership?.organization?.id;
+              const orgPlan = orgMembership?.organization?.plan || null;
 
               return (
                 <tr
@@ -170,18 +199,35 @@ export default function UserTable({ users, onRefresh }: Props) {
 
                   {/* Organization */}
                   <td className="px-4 py-3.5">
-                    <div className="min-w-0">
-                      <p className="text-[13px] text-slate-700 dark:text-white/80 truncate">
-                        {orgName}
-                      </p>
-                      {orgPlan && (
-                        <span
-                          className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${PLAN_STYLES[orgPlan] || PLAN_STYLES.FREE}`}
+                    <p className="text-[13px] text-slate-700 dark:text-white/80 truncate">
+                      {orgName}
+                    </p>
+                  </td>
+
+                  {/* Plan */}
+                  <td className="px-4 py-3.5">
+                    {orgId && orgPlan ? (
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={orgPlan}
+                          onChange={(e) => updateOrgPlan(orgId, e.target.value)}
+                          disabled={loadingId === orgId}
+                          className={`px-2 py-1 border rounded-md text-[12px] font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${PLAN_STYLES[orgPlan] || PLAN_STYLES.FREE}`}
                         >
-                          {orgPlan}
-                        </span>
-                      )}
-                    </div>
+                          <option value="FREE">Free</option>
+                          <option value="STARTER">Starter</option>
+                          <option value="PROFESSIONAL">Professional</option>
+                          <option value="ENTERPRISE">Enterprise</option>
+                        </select>
+                        {successId === orgId && (
+                          <Check size={14} className="text-emerald-500" />
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[12px] text-slate-400 dark:text-white/30">
+                        —
+                      </span>
+                    )}
                   </td>
 
                   {/* Role */}
@@ -211,17 +257,6 @@ export default function UserTable({ users, onRefresh }: Props) {
                         Inactive
                       </span>
                     )}
-                  </td>
-
-                  {/* Joined */}
-                  <td className="px-4 py-3.5">
-                    <p className="text-[12px] text-slate-500 dark:text-white/50">
-                      {new Date(user.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
                   </td>
 
                   {/* Actions */}
