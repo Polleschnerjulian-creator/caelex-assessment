@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { calculateCompliance } from "@/lib/engine";
 import { AssessmentAnswers, SpaceActData } from "@/lib/types";
+
+// Mock server-only to allow importing engine.server in test environment
+vi.mock("server-only", () => ({}));
+
+// Import after mocking server-only
+const { calculateCompliance } = await import("@/lib/engine.server");
 
 // Mock space act data
 const mockSpaceActData: SpaceActData = {
@@ -656,17 +661,17 @@ describe("Compliance Engine", () => {
         expect(result.moduleStatuses.length).toBeGreaterThan(0);
 
         // Each module status should have required fields
-        for (const module of result.moduleStatuses) {
-          expect(module).toHaveProperty("id");
-          expect(module).toHaveProperty("name");
-          expect(module).toHaveProperty("status");
-          expect(module).toHaveProperty("articleCount");
+        for (const mod of result.moduleStatuses) {
+          expect(mod).toHaveProperty("id");
+          expect(mod).toHaveProperty("name");
+          expect(mod).toHaveProperty("status");
+          expect(mod).toHaveProperty("articleCount");
           expect([
             "required",
             "simplified",
             "recommended",
             "not_applicable",
-          ]).toContain(module.status);
+          ]).toContain(mod.status);
         }
       });
 

@@ -1,3 +1,17 @@
+/**
+ * Copyright 2026 Caelex GmbH. All rights reserved.
+ *
+ * PROPRIETARY AND CONFIDENTIAL
+ * This file contains proprietary regulatory compliance mappings and data
+ * that represent significant research and development investment.
+ *
+ * Unauthorized reproduction, distribution, reverse-engineering, or use
+ * of this data to build competing products or services is strictly prohibited
+ * and may result in legal action.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
 // Authorization document types required under EU Space Act
 // Based on Art. 7-9 requirements
 

@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
   getOrganizationApiKeys,
   createApiKey,
@@ -26,6 +27,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: "Organization ID is required" },
         { status: 400 },
+      );
+    }
+
+    // Verify user is a member of the organization
+    const member = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id, organizationId },
+    });
+    if (!member) {
+      return NextResponse.json(
+        { error: "You do not have access to this organization" },
+        { status: 403 },
       );
     }
 
@@ -63,6 +75,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Organization ID is required" },
         { status: 400 },
+      );
+    }
+
+    // Verify user is a member of the organization
+    const member = await prisma.organizationMember.findFirst({
+      where: { userId: session.user.id, organizationId },
+    });
+    if (!member) {
+      return NextResponse.json(
+        { error: "You do not have access to this organization" },
+        { status: 403 },
       );
     }
 

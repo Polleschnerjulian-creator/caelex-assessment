@@ -2,7 +2,8 @@
  * Next.js Middleware (Lightweight)
  *
  * Handles:
- * - Security headers
+ * - Security headers + X-Robots-Tag for data protection
+ * - Bot detection for assessment API
  * - Protected route redirects
  * - CSRF validation for API routes
  *
@@ -23,11 +24,57 @@ const SECURITY_HEADERS: Record<string, string> = {
     "camera=(), microphone=(), geolocation=(), interest-cohort=()",
 };
 
-function applySecurityHeaders(response: NextResponse): NextResponse {
+// Known scraper/bot User-Agents to block on assessment endpoints
+const BLOCKED_USER_AGENTS = [
+  "scrapy",
+  "python-requests",
+  "go-http-client",
+  "wget",
+  "curl",
+  "httpclient",
+  "java/",
+  "libwww",
+  "mechanize",
+  "phantomjs",
+  "headlesschrome",
+];
+
+function applySecurityHeaders(
+  response: NextResponse,
+  pathname?: string,
+): NextResponse {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
+
+  // Prevent indexing of API routes, JSON data files, and dashboard
+  if (
+    pathname &&
+    (pathname.startsWith("/api") ||
+      pathname.endsWith(".json") ||
+      pathname.startsWith("/dashboard"))
+  ) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+
   return response;
+}
+
+// ─── Bot Detection ───
+
+function isLikelyBot(req: NextRequest): boolean {
+  const ua = (req.headers.get("user-agent") || "").toLowerCase();
+
+  // No User-Agent at all
+  if (!ua || ua.length < 10) return true;
+
+  // Known scraper user agents
+  if (BLOCKED_USER_AGENTS.some((bot) => ua.includes(bot))) return true;
+
+  // WebDriver/headless browser indicators
+  if (req.headers.get("sec-ch-ua-platform") === "") return true;
+
+  return false;
 }
 
 // ─── CSRF Protection ───
@@ -37,6 +84,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/supplier/",
   "/api/v1/webhooks",
   "/api/auth/",
+  "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
 ];
 
 function validateOrigin(req: NextRequest): boolean {
@@ -72,6 +120,20 @@ export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
 
+  // Block bots on assessment API endpoints
+  if (pathname.startsWith("/api/assessment") && isLikelyBot(req)) {
+    return applySecurityHeaders(
+      new NextResponse(
+        JSON.stringify({
+          error: "Forbidden",
+          message: "Automated access is not permitted",
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
+      ),
+      pathname,
+    );
+  }
+
   // CSRF check for API routes
   if (isApiRoute && !validateOrigin(req)) {
     return applySecurityHeaders(
@@ -82,6 +144,7 @@ export default function middleware(req: NextRequest) {
         }),
         { status: 403, headers: { "Content-Type": "application/json" } },
       ),
+      pathname,
     );
   }
 
@@ -96,11 +159,12 @@ export default function middleware(req: NextRequest) {
       if (!process.env.AUTH_SECRET) {
         return applySecurityHeaders(
           NextResponse.redirect(new URL("/", req.url)),
+          pathname,
         );
       }
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
-      return applySecurityHeaders(NextResponse.redirect(loginUrl));
+      return applySecurityHeaders(NextResponse.redirect(loginUrl), pathname);
     }
   }
 
@@ -114,11 +178,12 @@ export default function middleware(req: NextRequest) {
       const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
       return applySecurityHeaders(
         NextResponse.redirect(new URL(callbackUrl || "/dashboard", req.url)),
+        pathname,
       );
     }
   }
 
-  return applySecurityHeaders(NextResponse.next());
+  return applySecurityHeaders(NextResponse.next(), pathname);
 }
 
 // ─── Matcher ───

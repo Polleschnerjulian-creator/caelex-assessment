@@ -288,15 +288,75 @@ vi.mock("@/lib/engine", async () => {
 
 import AssessmentWizard from "@/components/assessment/AssessmentWizard";
 
+// Mock the compliance result returned by the server API
+const mockComplianceResult = {
+  operatorType: "spacecraft_operator",
+  operatorTypeLabel: "Spacecraft Operator (EU)",
+  operatorAbbreviation: "SCO",
+  isEU: true,
+  isThirdCountry: false,
+  regime: "standard",
+  regimeLabel: "Standard (Full Requirements)",
+  regimeReason: "Standard regime applies",
+  entitySize: "medium",
+  entitySizeLabel: "Medium Enterprise",
+  constellationTier: null,
+  constellationTierLabel: "N/A",
+  orbit: "LEO",
+  orbitLabel: "Low Earth Orbit (LEO)",
+  offersEUServices: true,
+  applicableArticles: [
+    {
+      number: 6,
+      title: "Authorization requirement",
+      compliance_type: "mandatory_pre_activity",
+      applies_to: ["SCO"],
+    },
+  ],
+  totalArticles: 119,
+  applicableCount: 34,
+  applicablePercentage: 29,
+  moduleStatuses: [
+    {
+      id: "authorization",
+      name: "Authorization & Licensing",
+      icon: "FileCheck",
+      description: "Multi-authority authorization process",
+      status: "required",
+      articleCount: 12,
+      summary: "Full authorization required",
+    },
+  ],
+  checklist: [
+    {
+      requirement: "Submit authorization application",
+      articles: "6-8",
+      module: "authorization",
+    },
+  ],
+  keyDates: [{ date: "1 January 2030", description: "Application date" }],
+  estimatedAuthorizationCost: "~€100K/platform",
+  authorizationPath: "National Authority → EUSPA",
+};
+
 describe("AssessmentWizard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock fetch for the server-side assessment API
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ result: mockComplianceResult }),
+    });
   });
 
   describe("Initialization", () => {
-    it("shows loading state initially", () => {
+    it("renders first question immediately (no loading state needed)", () => {
       render(<AssessmentWizard />);
-      expect(screen.getByText("Loading...")).toBeInTheDocument();
+      // Since assessment data is no longer loaded client-side,
+      // the wizard starts immediately with the first question
+      expect(
+        screen.getByText("What is your primary space activity?"),
+      ).toBeInTheDocument();
     });
 
     it("renders first question after data loads", async () => {

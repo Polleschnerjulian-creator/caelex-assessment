@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { safeJsonParseObject, getSafeErrorMessage } from "@/lib/validations";
@@ -34,6 +35,17 @@ import { logger } from "@/lib/logger";
 // ─── Configuration ───
 
 const CRON_SECRET = process.env.CRON_SECRET;
+
+function isValidCronSecret(header: string, secret: string): boolean {
+  try {
+    const headerBuffer = Buffer.from(header);
+    const expectedBuffer = Buffer.from(`Bearer ${secret}`);
+    if (headerBuffer.length !== expectedBuffer.length) return false;
+    return timingSafeEqual(headerBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
+}
 
 // ─── Types ───
 
@@ -66,17 +78,17 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
 
     // In production, CRON_SECRET must be set
-    if (process.env.NODE_ENV === "production" && !CRON_SECRET) {
+    const isDev = process.env.NODE_ENV === "development";
+    if (!isDev && !CRON_SECRET) {
       logger.error("CRON_SECRET not configured in production");
       return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 },
+        { error: "Service unavailable: cron authentication not configured" },
+        { status: 503 },
       );
     }
 
     // In development, allow bypass for testing but log warning
-    const isDev = process.env.NODE_ENV === "development";
-    if (!isDev && authHeader !== `Bearer ${CRON_SECRET}`) {
+    if (!isDev && !isValidCronSecret(authHeader || "", CRON_SECRET!)) {
       logger.warn("Unauthorized cron job attempt");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

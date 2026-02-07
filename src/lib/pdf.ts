@@ -113,8 +113,13 @@ function drawPageHeader(doc: jsPDF) {
   doc.line(MARGIN, MARGIN + 7, PAGE_W - MARGIN, MARGIN + 7);
 }
 
-// Draw page footer with icon + text
-function drawPageFooter(doc: jsPDF, pageNum: number, totalPages: number) {
+// Draw page footer with icon + text + report ID
+function drawPageFooter(
+  doc: jsPDF,
+  pageNum: number,
+  totalPages: number,
+  reportId?: string,
+) {
   const footerY = PAGE_H - 12;
 
   // Small icon
@@ -137,16 +142,68 @@ function drawPageFooter(doc: jsPDF, pageNum: number, totalPages: number) {
   doc.text(`${pageNum}/${totalPages}`, PAGE_W - MARGIN, footerY + 0.5, {
     align: "right",
   });
+
+  // Report ID (fingerprint) - small text at bottom
+  if (reportId) {
+    doc.setFontSize(5);
+    setColor(doc, "#CBD5E1");
+    doc.text(reportId, MARGIN, PAGE_H - 6);
+  }
+}
+
+// Generate a unique report fingerprint for tracking
+function generateReportId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 8);
+  return `CX-${timestamp}-${random}`.toUpperCase();
+}
+
+// Draw diagonal watermark on a page
+function drawWatermark(doc: jsPDF, text: string) {
+  const prevColor = doc.getTextColor();
+  doc.setTextColor(220, 220, 220); // Very light gray
+  doc.setFontSize(28);
+  doc.setFont("helvetica", "normal");
+
+  // Save graphics state, rotate, draw, restore
+  const centerX = PAGE_W / 2;
+  const centerY = PAGE_H / 2;
+  doc.text(text, centerX, centerY, {
+    align: "center",
+    angle: 35,
+  });
+
+  // Restore previous color
+  doc.setTextColor(
+    parseInt(prevColor.toString().substring(0, 2) || "0", 16),
+    parseInt(prevColor.toString().substring(2, 4) || "0", 16),
+    parseInt(prevColor.toString().substring(4, 6) || "0", 16),
+  );
 }
 
 // Function to generate and download PDF
-export async function generatePDF(result: ComplianceResult): Promise<void> {
+export async function generatePDF(
+  result: ComplianceResult,
+  userEmail?: string,
+): Promise<void> {
   try {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     const today = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
+    });
+
+    // Generate unique report ID for fingerprinting
+    const reportId = generateReportId();
+
+    // Set PDF metadata with fingerprint
+    doc.setProperties({
+      title: "EU Space Act Compliance Report - Caelex",
+      subject: `Assessment Report ${reportId}`,
+      author: "Caelex GmbH",
+      keywords: reportId,
+      creator: "Caelex Compliance Platform (caelex.eu)",
     });
 
     const totalPages = 3;
@@ -318,8 +375,13 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
       y += 6;
     });
 
+    // Watermark (visible diagonal text)
+    if (userEmail) {
+      drawWatermark(doc, `Generated for ${userEmail}`);
+    }
+
     // Footer
-    drawPageFooter(doc, 1, totalPages);
+    drawPageFooter(doc, 1, totalPages, reportId);
 
     // ========================================
     // PAGE 2: Modules
@@ -357,8 +419,13 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
       y += 35;
     }
 
+    // Watermark
+    if (userEmail) {
+      drawWatermark(doc, `Generated for ${userEmail}`);
+    }
+
     // Footer
-    drawPageFooter(doc, 2, totalPages);
+    drawPageFooter(doc, 2, totalPages, reportId);
 
     // ========================================
     // PAGE 3: Checklist
@@ -427,13 +494,18 @@ export async function generatePDF(result: ComplianceResult): Promise<void> {
     doc.setFontSize(7);
     setColor(doc, "#92400E");
     const disclaimerText = doc.splitTextToSize(
-      "DISCLAIMER: This assessment is based on the EU Space Act proposal (COM(2025) 335). The regulation is subject to amendments during the legislative process. This does not constitute legal advice. For specific compliance questions, consult a qualified space law professional.",
+      "DISCLAIMER: This assessment is based on the EU Space Act proposal (COM(2025) 335). The regulation is subject to amendments during the legislative process. This does not constitute legal advice. For specific compliance questions, consult a qualified space law professional. This report is proprietary to Caelex GmbH and may not be redistributed or used to build competing products.",
       CONTENT_W - 8,
     );
     doc.text(disclaimerText, MARGIN + 4, y + 5);
 
+    // Watermark
+    if (userEmail) {
+      drawWatermark(doc, `Generated for ${userEmail}`);
+    }
+
     // Footer
-    drawPageFooter(doc, 3, totalPages);
+    drawPageFooter(doc, 3, totalPages, reportId);
 
     // ========================================
     // Download

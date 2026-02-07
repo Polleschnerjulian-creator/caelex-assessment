@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Home, Check } from "lucide-react";
 import Link from "next/link";
 import {
   AssessmentState,
   AssessmentAnswers,
-  SpaceActData,
   ComplianceResult,
 } from "@/lib/types";
 import {
@@ -15,7 +14,6 @@ import {
   getCurrentQuestion,
   getTotalQuestions,
 } from "@/lib/questions";
-import { calculateCompliance, loadSpaceActData } from "@/lib/engine";
 import ProgressBar from "./ProgressBar";
 import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
@@ -43,52 +41,81 @@ export default function AssessmentWizard() {
   });
 
   const [direction, setDirection] = useState(0);
-  const [spaceActData, setSpaceActData] = useState<SpaceActData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [complianceResult, setComplianceResult] =
+    useState<ComplianceResult | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [calculationError, setCalculationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSpaceActData()
-      .then(setSpaceActData)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, []);
+  // Track when the assessment started (for anti-bot timing)
+  const startedAtRef = useRef<number>(Date.now());
 
   const currentQuestion = getCurrentQuestion(state.answers, state.currentStep);
   const totalSteps = getTotalQuestions(state.answers);
 
-  // Compute compliance result when assessment is complete
-  const complianceResult: ComplianceResult | null = useMemo(() => {
-    if (state.isComplete && spaceActData) {
-      return calculateCompliance(state.answers, spaceActData);
-    }
-    return null;
-  }, [state.isComplete, state.answers, spaceActData]);
-
-  // Store assessment results in localStorage for dashboard import
+  // When assessment is complete, call the server API
   useEffect(() => {
-    if (!complianceResult) return;
-    try {
-      localStorage.setItem(
-        "caelex-pending-assessment",
-        JSON.stringify({
-          operatorType: complianceResult.operatorType,
-          regime: complianceResult.regime,
-          entitySize: complianceResult.entitySize,
-          constellationTier: complianceResult.constellationTier,
-          orbit: complianceResult.orbit,
-          isEU: complianceResult.isEU,
-          isThirdCountry: complianceResult.isThirdCountry,
-          applicableArticles: complianceResult.applicableArticles.map(
-            (a) => a.number,
-          ),
-          moduleStatuses: complianceResult.moduleStatuses,
-          completedAt: new Date().toISOString(),
-        }),
-      );
-    } catch {
-      // localStorage may be unavailable
-    }
-  }, [complianceResult]);
+    if (!state.isComplete || complianceResult) return;
+
+    const calculateOnServer = async () => {
+      setIsCalculating(true);
+      setCalculationError(null);
+
+      try {
+        const response = await fetch("/api/assessment/calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answers: state.answers,
+            startedAt: startedAtRef.current,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `Server error: ${response.status}`,
+          );
+        }
+
+        const data = await response.json();
+        setComplianceResult(data.result);
+
+        // Store in localStorage for dashboard import
+        try {
+          localStorage.setItem(
+            "caelex-pending-assessment",
+            JSON.stringify({
+              operatorType: data.result.operatorType,
+              regime: data.result.regime,
+              entitySize: data.result.entitySize,
+              constellationTier: data.result.constellationTier,
+              orbit: data.result.orbit,
+              isEU: data.result.isEU,
+              isThirdCountry: data.result.isThirdCountry,
+              applicableArticles: data.result.applicableArticles.map(
+                (a: { number: number | string }) => a.number,
+              ),
+              moduleStatuses: data.result.moduleStatuses,
+              completedAt: new Date().toISOString(),
+            }),
+          );
+        } catch {
+          // localStorage may be unavailable
+        }
+      } catch (error) {
+        console.error("Assessment calculation error:", error);
+        setCalculationError(
+          error instanceof Error
+            ? error.message
+            : "Failed to calculate compliance. Please try again.",
+        );
+      } finally {
+        setIsCalculating(false);
+      }
+    };
+
+    calculateOnServer();
+  }, [state.isComplete, state.answers, complianceResult]);
 
   const handleSelect = useCallback(
     (value: string | boolean | number) => {
@@ -153,6 +180,9 @@ export default function AssessmentWizard() {
 
   const handleRestart = useCallback(() => {
     setDirection(-1);
+    setComplianceResult(null);
+    setCalculationError(null);
+    startedAtRef.current = Date.now();
     setState({
       currentStep: 1,
       answers: initialAnswers,
@@ -162,13 +192,32 @@ export default function AssessmentWizard() {
     });
   }, []);
 
-  // Loading state
-  if (isLoading) {
+  // Calculating state (server API call in progress)
+  if (isCalculating) {
     return (
       <div className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-mono text-[12px] text-white/70">Loading...</p>
+          <p className="font-mono text-[12px] text-white/70">
+            Calculating your compliance profile...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (calculationError) {
+    return (
+      <div className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-red-400 text-[14px] mb-4">{calculationError}</p>
+          <button
+            onClick={handleRestart}
+            className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-[13px] text-white transition-colors"
+          >
+            Start Over
+          </button>
         </div>
       </div>
     );

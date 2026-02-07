@@ -87,6 +87,26 @@ export interface Article {
   deadlines?: string;
 }
 
+/**
+ * Redacted article type returned to the client.
+ * Sensitive fields (summary, operator_action, decision_logic, etc.) are stripped
+ * to protect proprietary regulatory mappings.
+ */
+export type RedactedArticle = Pick<
+  Article,
+  "number" | "title" | "compliance_type" | "applies_to" | "excludes"
+>;
+
+/**
+ * Compliance result with redacted articles for client-side use.
+ */
+export type RedactedComplianceResult = Omit<
+  ComplianceResult,
+  "applicableArticles"
+> & {
+  applicableArticles: RedactedArticle[];
+};
+
 export interface Section {
   number: number;
   name: string;

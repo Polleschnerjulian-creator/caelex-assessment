@@ -31,9 +31,17 @@ export default function TermsPage() {
       {/* Content */}
       <div className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
-          <h1 className="text-[32px] font-light tracking-[-0.02em] mb-8">
-            Allgemeine Geschäftsbedingungen (AGB)
-          </h1>
+          <div className="flex items-center gap-3 mb-8">
+            <h1 className="text-[32px] font-light tracking-[-0.02em]">
+              Allgemeine Geschäftsbedingungen (AGB)
+            </h1>
+            <Link
+              href="/legal/terms-en"
+              className="text-[12px] text-white/40 hover:text-white/60 transition-colors border border-white/10 rounded-full px-3 py-1"
+            >
+              English Version
+            </Link>
+          </div>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-8">
             <section>

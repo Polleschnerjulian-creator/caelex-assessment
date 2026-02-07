@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { processDocumentExpiry } from "@/lib/notifications";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60 seconds for Vercel Hobby, 300 for Pro
+
+function isValidCronSecret(header: string, secret: string): boolean {
+  try {
+    const headerBuffer = Buffer.from(header);
+    const expectedBuffer = Buffer.from(`Bearer ${secret}`);
+    if (headerBuffer.length !== expectedBuffer.length) return false;
+    return timingSafeEqual(headerBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Cron endpoint for processing document expiry alerts
@@ -25,13 +37,13 @@ export async function GET(req: Request) {
   if (!isDev && !cronSecret) {
     logger.error("CRON_SECRET not configured in production");
     return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 },
+      { error: "Service unavailable: cron authentication not configured" },
+      { status: 503 },
     );
   }
 
   // Verify authorization in non-development environments
-  if (!isDev && authHeader !== `Bearer ${cronSecret}`) {
+  if (!isDev && !isValidCronSecret(authHeader || "", cronSecret!)) {
     logger.warn("Unauthorized cron request attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

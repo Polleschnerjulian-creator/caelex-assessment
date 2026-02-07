@@ -57,7 +57,7 @@ export default function ResultsDashboard({
       setIsGeneratingPDF(true);
       setPdfError(null);
       try {
-        await generatePDF(result);
+        await generatePDF(result, email);
       } catch (error) {
         console.error("PDF generation failed:", error);
         setPdfError("Failed to generate PDF. Please try again.");

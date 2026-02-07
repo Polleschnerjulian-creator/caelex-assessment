@@ -29,6 +29,7 @@ const legalLinks = [
   { label: "Impressum", href: "/legal/impressum" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
+  { label: "Terms of Service (EN)", href: "/legal/terms-en" },
   { label: "Cookie Policy", href: "/legal/cookies" },
 ];
 
