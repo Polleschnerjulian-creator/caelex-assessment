@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { CreditCard, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import PricingTable from "@/components/billing/PricingTable";
@@ -71,12 +71,7 @@ function BillingContent() {
     }
   }, [searchParams]);
 
-  // Fetch subscription data
-  useEffect(() => {
-    fetchSubscription();
-  }, []);
-
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/stripe/subscription?organizationId=${orgId}`,
@@ -90,7 +85,12 @@ function BillingContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [orgId]);
+
+  // Fetch subscription data
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
 
   const handleSelectPlan = async (
     plan: PlanType,
