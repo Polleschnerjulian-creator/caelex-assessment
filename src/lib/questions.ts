@@ -13,6 +13,9 @@ export interface Question {
   subtitle?: string;
   options: QuestionOption[];
   isYesNo?: boolean;
+  // For multi-select questions (e.g., jurisdiction picker)
+  isMultiSelect?: boolean;
+  maxSelections?: number;
   // For conditional follow-up questions
   showWhen?: {
     questionId: string;

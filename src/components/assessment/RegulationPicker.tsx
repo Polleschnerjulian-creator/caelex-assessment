@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Shield,
   Satellite,
+  Globe,
   ArrowRight,
   CheckCircle2,
   Clock,
@@ -69,6 +70,28 @@ const REGULATIONS: RegulationOption[] = [
       "Incident reporting timeline",
     ],
   },
+  {
+    id: "space-law",
+    title: "National Space Laws",
+    subtitle: "10 Jurisdictions",
+    description:
+      "Compare licensing requirements, insurance obligations, debris rules, and regulatory timelines across 10 European jurisdictions — with EU Space Act transition preview.",
+    icon: <Globe className="w-8 h-8" />,
+    href: "/assessment/space-law",
+    status: "live",
+    statusLabel: "Database live",
+    stats: [
+      { label: "Countries", value: "10" },
+      { label: "Compare", value: "Up to 3" },
+      { label: "Criteria", value: "10" },
+    ],
+    features: [
+      "Multi-jurisdiction comparison",
+      "Licensing & insurance requirements",
+      "EU Space Act cross-reference",
+      "Favorability scoring",
+    ],
+  },
 ];
 
 function StatusBadge({ status, label }: { status: string; label: string }) {
@@ -130,7 +153,7 @@ export default function RegulationPicker() {
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="max-w-4xl w-full">
+        <div className="max-w-6xl w-full">
           {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -148,7 +171,7 @@ export default function RegulationPicker() {
           </motion.div>
 
           {/* Regulation cards */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {REGULATIONS.map((reg, index) => (
               <motion.div
                 key={reg.id}
