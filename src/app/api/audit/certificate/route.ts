@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { generateComplianceCertificateData } from "@/lib/services/audit-export-service";
 import { ComplianceCertificate } from "@/lib/pdf/reports/compliance-certificate";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -21,6 +22,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Rate limit: export tier (20/hr)
+    const rateLimitResult = await checkRateLimit("export", userId);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const body = await request.json();
 
     // Get organization name from request or user profile

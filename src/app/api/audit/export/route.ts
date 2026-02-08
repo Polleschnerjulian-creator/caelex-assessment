@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { exportAuditLogs } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 
 // GET /api/audit/export - Export audit logs for compliance reporting
 export async function GET(request: Request) {
@@ -11,6 +12,12 @@ export async function GET(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Rate limit: export tier (20/hr)
+    const rateLimitResult = await checkRateLimit("export", userId);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters

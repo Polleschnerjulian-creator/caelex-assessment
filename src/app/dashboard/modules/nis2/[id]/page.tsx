@@ -38,6 +38,7 @@ import {
   Info,
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import EvidencePanel from "@/components/audit/EvidencePanel";
 import { getIcon } from "@/lib/icons";
 import type { Question, QuestionOption } from "@/lib/questions";
 
@@ -1951,6 +1952,12 @@ export default function NIS2AssessmentDetailPage() {
                               </ul>
                             </div>
                           )}
+
+                        {/* Compliance Evidence */}
+                        <EvidencePanel
+                          regulationType="NIS2"
+                          requirementId={req.requirementId}
+                        />
 
                         {/* Status buttons */}
                         <div className="pt-3 border-t border-slate-200 dark:border-white/[0.06]">

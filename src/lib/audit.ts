@@ -43,7 +43,15 @@ export type AuditAction =
   | "nis2_assessment_deleted"
   | "nis2_requirement_status_changed"
   | "nis2_report_generated"
-  | "nis2_classification_determined";
+  | "nis2_classification_determined"
+  | "evidence_created"
+  | "evidence_updated"
+  | "evidence_status_changed"
+  | "evidence_deleted"
+  | "evidence_document_linked"
+  | "evidence_document_unlinked"
+  | "audit_package_exported"
+  | "hash_chain_verified";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -63,7 +71,8 @@ export type AuditEntityType =
   | "environmental_impact"
   | "supplier_request"
   | "nis2_assessment"
-  | "nis2_requirement";
+  | "nis2_requirement"
+  | "compliance_evidence";
 
 export interface AuditLogEntry {
   userId: string;
@@ -79,23 +88,51 @@ export interface AuditLogEntry {
 }
 
 /**
- * Log an audit event to the database
+ * Log an audit event to the database.
+ * Automatically extends the SHA-256 hash chain for tamper-evident audit trails.
+ * Hash computation is best-effort — failures fall back to null (never breaks logging).
  */
 export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   try {
+    const timestamp = new Date();
+    const previousValue = entry.previousValue
+      ? JSON.stringify(entry.previousValue)
+      : null;
+    const newValue = entry.newValue ? JSON.stringify(entry.newValue) : null;
+
+    // Compute hash chain — dynamically imported to keep client bundles clean
+    let hashFields: { entryHash: string; previousHash: string } | null = null;
+    try {
+      const { computeHashForNewEntry } = await import("./audit-hash.server");
+      hashFields = await computeHashForNewEntry(entry.userId, {
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        timestamp,
+        previousValue,
+        newValue,
+        description: entry.description || null,
+        ipAddress: entry.ipAddress || null,
+        userAgent: entry.userAgent || null,
+      });
+    } catch {
+      // Hash computation failed — continue without hash (backward-compatible)
+    }
+
     await prisma.auditLog.create({
       data: {
         userId: entry.userId,
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,
-        previousValue: entry.previousValue
-          ? JSON.stringify(entry.previousValue)
-          : null,
-        newValue: entry.newValue ? JSON.stringify(entry.newValue) : null,
+        previousValue,
+        newValue,
         description: entry.description,
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
+        timestamp,
+        entryHash: hashFields?.entryHash || null,
+        previousHash: hashFields?.previousHash || null,
       },
     });
   } catch (error) {

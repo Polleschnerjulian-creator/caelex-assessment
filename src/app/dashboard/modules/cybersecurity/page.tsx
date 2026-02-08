@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import EvidencePanel from "@/components/audit/EvidencePanel";
 import {
   getApplicableRequirements,
   isEligibleForSimplifiedRegime,
@@ -1364,6 +1365,12 @@ function CybersecurityPageContent() {
                                     </ul>
                                   </div>
                                 )}
+
+                                {/* Compliance Evidence */}
+                                <EvidencePanel
+                                  regulationType="CYBERSECURITY"
+                                  requirementId={req.id}
+                                />
 
                                 {/* References */}
                                 <div className="flex flex-wrap gap-2">

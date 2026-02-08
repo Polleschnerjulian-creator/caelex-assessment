@@ -21,6 +21,7 @@ import {
   Zap,
   Target,
 } from "lucide-react";
+import EvidencePanel from "@/components/audit/EvidencePanel";
 import {
   debrisRequirements,
   getApplicableRequirements,
@@ -1025,6 +1026,12 @@ function DebrisPageContent() {
                                   </ul>
                                 </div>
                               )}
+
+                            {/* Compliance Evidence */}
+                            <EvidencePanel
+                              regulationType="DEBRIS"
+                              requirementId={req.id}
+                            />
                           </div>
                         </div>
                       </div>

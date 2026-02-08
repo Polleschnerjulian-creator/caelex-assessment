@@ -117,6 +117,7 @@ export const ALL_MODULES = [
   "supervision",
   "timeline",
   "insurance",
+  "audit-center",
 ];
 
 /**

@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { generateAuditReportData } from "@/lib/services/audit-export-service";
 import { AuditReport } from "@/lib/pdf/reports/audit-report";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +21,13 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    // Rate limit: export tier (20/hr)
+    const rateLimitResult = await checkRateLimit("export", userId);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const body = await request.json();
 
     // Parse request body

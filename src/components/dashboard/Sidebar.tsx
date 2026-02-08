@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Lock,
   Crown,
+  ClipboardCheck,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -150,6 +151,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/supervision": "supervision",
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
+  "/dashboard/audit-center": "audit-center",
 };
 
 interface SidebarProps {
@@ -351,6 +353,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/documents")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/documents")}
+              />
+              <ModuleNavItem
+                href="/dashboard/audit-center"
+                icon={<ClipboardCheck size={16} strokeWidth={1.5} />}
+                label="Audit Center"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/audit-center")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/audit-center")}
               />
               <ModuleNavItem
                 href="/dashboard/timeline"

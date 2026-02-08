@@ -14,7 +14,8 @@ export type ReportType =
   | "insurance"
   | "ownership_transfer"
   | "audit_trail"
-  | "compliance_certificate";
+  | "compliance_certificate"
+  | "audit_center";
 
 export interface ReportMetadata {
   reportId: string;

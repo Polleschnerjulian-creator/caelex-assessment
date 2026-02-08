@@ -216,6 +216,10 @@ model AuditLog {
   ipAddress     String?
   userAgent     String?
 
+  // Hash chain integrity
+  entryHash     String?   // SHA-256 hash of this entry
+  previousHash  String?   // Hash of the previous entry (chain link)
+
   // Timestamp (critical for audits)
   timestamp     DateTime @default(now())
 
@@ -223,6 +227,7 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([timestamp])
   @@index([action])
+  @@index([entryHash])
 }
 
 // ─── Debris Assessment ───
@@ -1128,6 +1133,7 @@ model Document {
   accessLogs        DocumentAccessLog[]
   comments          DocumentComment[]
   shares            DocumentShare[]
+  complianceEvidenceLinks ComplianceEvidenceDocument[]  // Audit Center: evidence-to-document links
 
   @@index([userId, category])
   @@index([expiryDate])
@@ -1654,6 +1660,7 @@ model Organization {
   subscription      Subscription?
   comments          Comment[]               // Collaboration: organization's comments
   activities        Activity[]              // Collaboration: organization's activities
+  complianceEvidence ComplianceEvidence[]   // Audit Center: org-scoped compliance evidence
 
   @@index([slug])
 }
@@ -2421,4 +2428,95 @@ model Activity {
   @@index([organizationId, createdAt])
   @@index([entityType, entityId])
   @@index([userId])
+}
+
+// ============================================
+// AUDIT CENTER — COMPLIANCE EVIDENCE
+// ============================================
+
+enum RegulationType {
+  EU_SPACE_ACT
+  NIS2
+  CYBERSECURITY
+  DEBRIS
+  ENVIRONMENTAL
+  INSURANCE
+  AUTHORIZATION
+  REGISTRATION
+  SUPERVISION
+  NATIONAL_SPACE_LAW
+}
+
+enum EvidenceStatus {
+  DRAFT
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum EvidenceType {
+  DOCUMENT
+  SCREENSHOT
+  ATTESTATION
+  CERTIFICATE
+  LOG_EXTRACT
+  POLICY
+  PROCEDURE
+  TEST_RESULT
+  EXTERNAL_REPORT
+  OTHER
+}
+
+model ComplianceEvidence {
+  id              String            @id @default(cuid())
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       String            // userId of the creator (audit trail)
+
+  // What this evidence proves compliance for
+  regulationType  RegulationType
+  requirementId   String            // e.g., "art-74", "nis2-req-1", "debris-req-5"
+
+  // Evidence details
+  title           String
+  description     String?           @db.Text
+  evidenceType    EvidenceType
+  status          EvidenceStatus    @default(DRAFT)
+
+  // Validity period
+  validFrom       DateTime?
+  validUntil      DateTime?
+
+  // Review
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  reviewNotes     String?           @db.Text
+
+  // Linked documents (from existing Document vault)
+  documents       ComplianceEvidenceDocument[]
+
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([organizationId, regulationType, requirementId, title])
+  @@index([organizationId])
+  @@index([organizationId, regulationType])
+  @@index([regulationType, requirementId])
+  @@index([status])
+}
+
+model ComplianceEvidenceDocument {
+  id              String             @id @default(cuid())
+  evidenceId      String
+  evidence        ComplianceEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  documentId      String
+  document        Document           @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  addedAt         DateTime           @default(now())
+
+  @@unique([evidenceId, documentId])
+  @@index([evidenceId])
+  @@index([documentId])
 }

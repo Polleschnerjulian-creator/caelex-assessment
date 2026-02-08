@@ -17,6 +17,7 @@ const MODULE_LABELS: Record<string, string> = {
   supervision: "Supervision & Audit",
   documents: "Document Management",
   timeline: "Timeline & Deadlines",
+  "audit-center": "Audit Center",
 };
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
@@ -38,6 +39,8 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
     "Centralized document vault with 20+ categories, expiry tracking, and compliance status.",
   timeline:
     "Deadline management, configurable reminders, and regulatory milestone tracking.",
+  "audit-center":
+    "Centralized compliance evidence management, hash-verified audit trails, and audit-ready export packages across all regulatory modules.",
 };
 
 interface FeatureGateProps {
