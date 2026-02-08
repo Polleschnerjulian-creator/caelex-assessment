@@ -154,6 +154,10 @@ const nextConfig = {
   experimental: {
     // Type-safe server actions
     typedRoutes: false, // Enable when ready
+    // Limit server action body size to 10MB (prevents abuse)
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
 
   // Webpack configuration

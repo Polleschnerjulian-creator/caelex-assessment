@@ -206,6 +206,29 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
+  // Request size limit for API routes (10MB general, 50MB for document uploads)
+  if (isApiRoute) {
+    const contentLength = parseInt(
+      req.headers.get("content-length") || "0",
+      10,
+    );
+    const isUploadRoute = pathname.startsWith("/api/documents");
+    const maxSize = isUploadRoute ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+
+    if (contentLength > maxSize) {
+      return applySecurityHeaders(
+        new NextResponse(
+          JSON.stringify({
+            error: "Payload Too Large",
+            message: `Request body exceeds maximum size of ${maxSize / (1024 * 1024)}MB`,
+          }),
+          { status: 413, headers: { "Content-Type": "application/json" } },
+        ),
+        pathname,
+      );
+    }
+  }
+
   // Rate limiting for API routes
   if (isApiRoute) {
     const isExempt = RATE_LIMIT_EXEMPT_ROUTES.some((route) =>
