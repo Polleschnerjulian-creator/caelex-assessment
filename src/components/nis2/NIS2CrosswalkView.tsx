@@ -95,7 +95,8 @@ export default function NIS2CrosswalkView({
             Weeks Saved
           </div>
           <div className="text-[9px] text-blue-400/40 mt-1 leading-tight">
-            Effort transferable to EU Space Act
+            Estimated effort transferable to EU Space Act. Actual savings depend
+            on organization size and existing measures.
           </div>
         </div>
         <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3 text-center">

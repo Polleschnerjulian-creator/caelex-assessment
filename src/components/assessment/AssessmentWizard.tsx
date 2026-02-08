@@ -18,6 +18,7 @@ import ProgressBar from "./ProgressBar";
 import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
 import ResultsDashboard from "@/components/results/ResultsDashboard";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 const initialAnswers: AssessmentAnswers = {
   activityType: null,
@@ -302,6 +303,13 @@ export default function AssessmentWizard() {
             EU Space Act Assessment
           </span>
         </div>
+
+        {/* Legal disclaimer on first step */}
+        {state.currentStep === 1 && (
+          <div className="mb-6">
+            <DisclaimerBanner variant="banner" />
+          </div>
+        )}
 
         {/* Progress bar */}
         <div className="mb-16">

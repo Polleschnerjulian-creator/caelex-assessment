@@ -15,6 +15,7 @@ import ProgressBar from "./ProgressBar";
 import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
 import NIS2ResultsDashboard from "@/components/nis2/NIS2ResultsDashboard";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface NIS2AssessmentState {
   currentStep: number;
@@ -304,6 +305,13 @@ export default function NIS2AssessmentWizard() {
             NIS2 Directive Assessment
           </span>
         </div>
+
+        {/* Legal disclaimer on first step */}
+        {state.currentStep === 1 && (
+          <div className="mb-6">
+            <DisclaimerBanner variant="banner" />
+          </div>
+        )}
 
         {/* Progress bar */}
         <div className="mb-16">

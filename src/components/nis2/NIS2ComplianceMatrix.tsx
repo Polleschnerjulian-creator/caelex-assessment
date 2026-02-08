@@ -49,7 +49,7 @@ export default function NIS2ComplianceMatrix({
               {penalties.applicable}
             </div>
             <div className="text-xs text-red-400/60">
-              Maximum administrative fine
+              Maximum administrative fine under NIS2 Art. 34
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

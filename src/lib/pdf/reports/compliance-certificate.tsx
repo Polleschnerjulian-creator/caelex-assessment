@@ -478,8 +478,10 @@ export function ComplianceCertificate({ data }: ComplianceCertificateProps) {
           </Text>
           <Text style={styles.footerDisclaimer}>
             This certificate is based on self-reported data and automated
-            assessment. It does not constitute official regulatory approval.
-            Verify authenticity at caelex.eu/verify/{data.certificateNumber}
+            assessment. It does not constitute official regulatory approval or
+            legal advice. Regulatory requirements are subject to change. Consult
+            qualified legal counsel. Verify at caelex.eu/verify/
+            {data.certificateNumber}
           </Text>
         </View>
       </Page>

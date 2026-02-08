@@ -8,6 +8,7 @@ import NIS2IncidentTimeline from "./NIS2IncidentTimeline";
 import NIS2RequirementsList from "./NIS2RequirementsList";
 import NIS2CrosswalkView from "./NIS2CrosswalkView";
 import NIS2ComplianceMatrix from "./NIS2ComplianceMatrix";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface NIS2ResultsDashboardProps {
   result: {
@@ -163,18 +164,12 @@ export default function NIS2ResultsDashboard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 mt-6"
           >
-            <p className="text-xs text-white/30 leading-relaxed">
-              <strong className="text-white/40">Disclaimer:</strong> This
-              assessment is based on the NIS2 Directive (EU) 2022/2555 and its
-              transposition requirements. National implementation may vary by
-              Member State. The EU Space Act (COM(2025) 335) is subject to
-              amendments during the legislative process and will introduce
-              additional space-specific cybersecurity requirements. This does
-              not constitute legal advice. Consult qualified legal counsel for
-              definitive compliance determinations.
-            </p>
+            <DisclaimerBanner
+              assessmentType="nis2"
+              variant="footer"
+              showTermsLink
+            />
           </motion.div>
 
           {/* CTA */}

@@ -12,6 +12,7 @@ import ChecklistPreview from "./ChecklistPreview";
 import ArticleBreakdown from "./ArticleBreakdown";
 import EmailGate from "./EmailGate";
 import SaveToDashboardCTA from "@/components/assessment/SaveToDashboardCTA";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface ResultsDashboardProps {
   result: ComplianceResult;
@@ -168,14 +169,11 @@ export default function ResultsDashboard({
         </motion.div>
 
         {/* Disclaimer */}
-        <div className="mt-12 text-center">
-          <p className="text-[12px] text-white/50 max-w-3xl mx-auto leading-relaxed">
-            This assessment is based on the EU Space Act proposal (COM(2025)
-            335). The regulation is subject to amendments during the legislative
-            process. This does not constitute legal advice. For specific
-            compliance questions, consult a qualified space law professional.
-          </p>
-        </div>
+        <DisclaimerBanner
+          assessmentType="eu-space-act"
+          variant="footer"
+          showTermsLink
+        />
       </div>
 
       {/* Email Gate Modal */}

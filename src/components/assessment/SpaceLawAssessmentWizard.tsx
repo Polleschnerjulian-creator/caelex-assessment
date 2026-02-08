@@ -18,6 +18,7 @@ import ProgressBar from "./ProgressBar";
 import QuestionStep from "./QuestionStep";
 import MultiSelectQuestionStep from "./MultiSelectQuestionStep";
 import SpaceLawResultsDashboard from "@/components/space-law/SpaceLawResultsDashboard";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface SpaceLawAssessmentState {
   currentStep: number;
@@ -251,6 +252,13 @@ export default function SpaceLawAssessmentWizard() {
             National Space Laws
           </span>
         </div>
+
+        {/* Legal disclaimer on first step */}
+        {state.currentStep === 1 && (
+          <div className="mb-6">
+            <DisclaimerBanner variant="banner" />
+          </div>
+        )}
 
         {/* Progress bar */}
         <div className="mb-16">

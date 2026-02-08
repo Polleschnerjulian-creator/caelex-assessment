@@ -12,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface RegulationOption {
   id: string;
@@ -179,6 +180,16 @@ export default function RegulationPicker() {
               Select a regulatory framework to assess your compliance
               obligations. Each assessment takes 3\u20135 minutes.
             </p>
+          </motion.div>
+
+          {/* Legal disclaimer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mb-12"
+          >
+            <DisclaimerBanner assessmentType="general" variant="inline" />
           </motion.div>
 
           {/* Regulation cards */}

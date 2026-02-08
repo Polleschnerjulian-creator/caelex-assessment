@@ -8,6 +8,7 @@ import ComparisonMatrix from "./ComparisonMatrix";
 import EUSpaceActCrossRef from "./EUSpaceActCrossRef";
 import SpaceLawRecommendations from "./SpaceLawRecommendations";
 import type { RedactedSpaceLawResult } from "@/lib/space-law-types";
+import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 interface SpaceLawResultsDashboardProps {
   result: RedactedSpaceLawResult;
@@ -138,18 +139,12 @@ export default function SpaceLawResultsDashboard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 mt-6"
           >
-            <p className="text-xs text-white/30 leading-relaxed">
-              <strong className="text-white/40">Disclaimer:</strong> This
-              assessment is based on currently enacted national space
-              legislation, which is subject to amendment and revision by
-              respective national governments. The EU Space Act (COM(2025) 335)
-              is subject to amendments during the legislative process and may
-              supersede or modify national licensing regimes for EU Member
-              States. This does not constitute legal advice. Consult qualified
-              legal counsel for definitive compliance determinations.
-            </p>
+            <DisclaimerBanner
+              assessmentType="national-space-laws"
+              variant="footer"
+              showTermsLink
+            />
           </motion.div>
 
           {/* CTA */}
