@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { User, UserX, Check } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface AdminUser {
   id: string;
@@ -55,7 +56,7 @@ export default function UserTable({ users, onRefresh }: Props) {
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ role }),
       });
 
@@ -79,7 +80,7 @@ export default function UserTable({ users, onRefresh }: Props) {
     try {
       const res = await fetch(`/api/admin/organizations/${orgId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ plan }),
       });
 
@@ -104,7 +105,7 @@ export default function UserTable({ users, onRefresh }: Props) {
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ isActive: !currentActive }),
       });
 

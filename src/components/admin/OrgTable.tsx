@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Building2, Users, Rocket, Crown, Check } from "lucide-react";
 import type { OrganizationPlan } from "@prisma/client";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface AdminOrg {
   id: string;
@@ -68,7 +69,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
     try {
       const res = await fetch(`/api/admin/organizations/${orgId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ plan }),
       });
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Crown, CheckCircle, AlertCircle, Zap } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Props {
   onClose: () => void;
@@ -28,7 +29,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
     try {
       const res = await fetch("/api/admin/quick-actions/upgrade-plan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           email: email.trim(),
           plan,
