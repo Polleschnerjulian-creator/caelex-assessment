@@ -30,6 +30,12 @@ import {
   HelpCircle,
   Play,
   Sparkles,
+  Lightbulb,
+  TrendingUp,
+  Zap,
+  Target,
+  Layers,
+  Info,
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { getIcon } from "@/lib/icons";
@@ -58,6 +64,41 @@ interface RequirementMeta {
   evidenceRequired: string[];
   euSpaceActRef?: string;
   iso27001Ref?: string;
+  canBeSimplified?: boolean;
+  implementationTimeWeeks?: number;
+}
+
+interface ImplementationPhaseReq {
+  id: string;
+  title: string;
+  articleRef: string;
+  severity: string;
+  category: string;
+  estimatedWeeks: number;
+  rationale: string;
+}
+
+interface ImplementationPhase {
+  phase: number;
+  name: string;
+  description: string;
+  totalWeeks: number;
+  requirements: ImplementationPhaseReq[];
+}
+
+interface SmartRecommendations {
+  iso27001Coverage: { count: number; total: number; percentage: number };
+  criticalGaps: Array<{
+    id: string;
+    title: string;
+    articleRef: string;
+    implementationWeeks: number;
+  }>;
+  euSpaceActOverlap: { count: number; articles: string[] };
+  totalImplementationWeeks: number;
+  recommendations: string[];
+  implementationPhases: ImplementationPhase[];
+  autoAssessedCount: number;
 }
 
 interface NIS2Assessment {
@@ -789,6 +830,8 @@ export default function NIS2AssessmentDetailPage() {
 
   const [assessment, setAssessment] = useState<NIS2Assessment | null>(null);
   const [reqMeta, setReqMeta] = useState<Record<string, RequirementMeta>>({});
+  const [recommendations, setRecommendations] =
+    useState<SmartRecommendations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -808,6 +851,9 @@ export default function NIS2AssessmentDetailPage() {
   const [expandedReqs, setExpandedReqs] = useState<Set<string>>(new Set());
   const [updatingReq, setUpdatingReq] = useState<string | null>(null);
 
+  // Implementation phases expand
+  const [expandedPhases, setExpandedPhases] = useState<Set<number>>(new Set());
+
   // Fetch assessment
   const fetchAssessment = useCallback(async () => {
     try {
@@ -822,6 +868,9 @@ export default function NIS2AssessmentDetailPage() {
       setAssessment(data.assessment);
       if (data.requirementMeta) {
         setReqMeta(data.requirementMeta);
+      }
+      if (data.recommendations) {
+        setRecommendations(data.recommendations);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
@@ -903,6 +952,16 @@ export default function NIS2AssessmentDetailPage() {
       const next = new Set(prev);
       if (next.has(reqId)) next.delete(reqId);
       else next.add(reqId);
+      return next;
+    });
+  };
+
+  // Toggle phase expand
+  const togglePhaseExpand = (phase: number) => {
+    setExpandedPhases((prev) => {
+      const next = new Set(prev);
+      if (next.has(phase)) next.delete(phase);
+      else next.add(phase);
       return next;
     });
   };
@@ -1080,6 +1139,392 @@ export default function NIS2AssessmentDetailPage() {
             </motion.button>
           )}
         </AnimatePresence>
+
+        {/* ─── Smart Recommendations Panel ─── */}
+        {recommendations && recommendations.recommendations.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
+          >
+            {/* Gradient top accent */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500" />
+
+            <div className="p-6 pt-7">
+              {/* Section header */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 flex items-center justify-center">
+                  <Lightbulb className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Smart Recommendations
+                  </h2>
+                  <p className="text-[11px] text-slate-400 dark:text-white/30">
+                    AI-generated insights based on your assessment profile
+                  </p>
+                </div>
+                {recommendations.autoAssessedCount > 0 && (
+                  <span className="ml-auto text-[11px] bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-full px-2.5 py-1 font-medium">
+                    {recommendations.autoAssessedCount} auto-assessed
+                  </span>
+                )}
+              </div>
+
+              {/* 3-column insight cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                {/* ISO 27001 Coverage */}
+                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+                      ISO 27001 Coverage
+                    </span>
+                  </div>
+                  <div className="text-2xl font-mono font-bold text-slate-900 dark:text-white">
+                    {recommendations.iso27001Coverage.percentage}%
+                  </div>
+                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                    {recommendations.iso27001Coverage.count} of{" "}
+                    {recommendations.iso27001Coverage.total} requirements
+                  </div>
+                  <div className="h-1.5 bg-slate-200 dark:bg-white/[0.06] rounded-full mt-2 overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500 rounded-full transition-all"
+                      style={{
+                        width: `${recommendations.iso27001Coverage.percentage}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Critical Gaps */}
+                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+                      Critical Gaps
+                    </span>
+                  </div>
+                  <div
+                    className={`text-2xl font-mono font-bold ${recommendations.criticalGaps.length > 0 ? "text-red-400" : "text-green-400"}`}
+                  >
+                    {recommendations.criticalGaps.length}
+                  </div>
+                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                    {recommendations.criticalGaps.length > 0
+                      ? "Require immediate attention"
+                      : "No critical gaps remaining"}
+                  </div>
+                </div>
+
+                {/* EU Space Act Overlap */}
+                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Layers className="w-4 h-4 text-green-400" />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+                      EU Space Act Overlap
+                    </span>
+                  </div>
+                  <div className="text-2xl font-mono font-bold text-green-400">
+                    {recommendations.euSpaceActOverlap.count}
+                  </div>
+                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                    {recommendations.euSpaceActOverlap.count > 0
+                      ? "Dual-compliance synergies"
+                      : "No overlapping requirements"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendation list */}
+              <div className="space-y-2.5">
+                {recommendations.recommendations.map((rec, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 bg-slate-50/60 dark:bg-white/[0.015] rounded-lg px-4 py-3 border border-slate-100/80 dark:border-white/[0.04]"
+                  >
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <p className="text-xs text-slate-600 dark:text-white/60 leading-relaxed">
+                      {rec}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Estimated total implementation time */}
+              {recommendations.totalImplementationWeeks > 0 && (
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-slate-400 dark:text-white/30" />
+                  <span className="text-xs text-slate-500 dark:text-white/40">
+                    Estimated total implementation time:{" "}
+                    <span className="font-semibold text-slate-700 dark:text-white/70">
+                      {recommendations.totalImplementationWeeks} weeks
+                    </span>{" "}
+                    for all outstanding requirements
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── Gap Analysis & Implementation Plan ─── */}
+        {recommendations && recommendations.implementationPhases.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-4"
+          >
+            {/* Section header */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/10 to-red-500/10 flex items-center justify-center">
+                <Target className="w-4.5 h-4.5 text-amber-500 dark:text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Implementation Roadmap
+                </h2>
+                <p className="text-[11px] text-slate-400 dark:text-white/30">
+                  {recommendations.implementationPhases.length} phases &middot;{" "}
+                  {recommendations.implementationPhases.reduce(
+                    (sum, p) => sum + p.requirements.length,
+                    0,
+                  )}{" "}
+                  requirements to address
+                </p>
+              </div>
+            </div>
+
+            {/* Severity summary row */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                {
+                  label: "Critical",
+                  count: assessment.requirements.filter((r) => {
+                    const m = reqMeta[r.requirementId];
+                    return (
+                      m?.severity === "critical" &&
+                      r.status !== "compliant" &&
+                      r.status !== "not_applicable"
+                    );
+                  }).length,
+                  color: "text-red-400",
+                  bg: "bg-red-500/10",
+                  border: "border-red-500/20",
+                },
+                {
+                  label: "Major",
+                  count: assessment.requirements.filter((r) => {
+                    const m = reqMeta[r.requirementId];
+                    return (
+                      m?.severity === "major" &&
+                      r.status !== "compliant" &&
+                      r.status !== "not_applicable"
+                    );
+                  }).length,
+                  color: "text-amber-400",
+                  bg: "bg-amber-500/10",
+                  border: "border-amber-500/20",
+                },
+                {
+                  label: "Minor",
+                  count: assessment.requirements.filter((r) => {
+                    const m = reqMeta[r.requirementId];
+                    return (
+                      m?.severity === "minor" &&
+                      r.status !== "compliant" &&
+                      r.status !== "not_applicable"
+                    );
+                  }).length,
+                  color: "text-slate-400",
+                  bg: "bg-slate-500/10",
+                  border: "border-slate-500/20",
+                },
+              ].map((sev) => (
+                <div
+                  key={sev.label}
+                  className={`${sev.bg} border ${sev.border} rounded-xl p-3 text-center`}
+                >
+                  <div className={`text-lg font-mono font-bold ${sev.color}`}>
+                    {sev.count}
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-white/40">
+                    {sev.label} outstanding
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Phase cards */}
+            {recommendations.implementationPhases.map((phase) => {
+              const isPhaseExpanded = expandedPhases.has(phase.phase);
+              const phaseColors: Record<
+                number,
+                {
+                  accent: string;
+                  bg: string;
+                  border: string;
+                  iconBg: string;
+                  icon: typeof Zap;
+                }
+              > = {
+                1: {
+                  accent: "text-green-500 dark:text-green-400",
+                  bg: "bg-green-500/5",
+                  border: "border-green-500/20",
+                  iconBg:
+                    "bg-gradient-to-br from-green-500/10 to-emerald-500/10",
+                  icon: Zap,
+                },
+                2: {
+                  accent: "text-red-400",
+                  bg: "bg-red-500/5",
+                  border: "border-red-500/20",
+                  iconBg: "bg-gradient-to-br from-red-500/10 to-orange-500/10",
+                  icon: AlertTriangle,
+                },
+                3: {
+                  accent: "text-amber-400",
+                  bg: "bg-amber-500/5",
+                  border: "border-amber-500/20",
+                  iconBg:
+                    "bg-gradient-to-br from-amber-500/10 to-yellow-500/10",
+                  icon: TrendingUp,
+                },
+                4: {
+                  accent: "text-slate-400",
+                  bg: "bg-slate-500/5",
+                  border: "border-slate-500/20",
+                  iconBg: "bg-gradient-to-br from-slate-500/10 to-slate-400/10",
+                  icon: FileText,
+                },
+              };
+              const pc = phaseColors[phase.phase] || phaseColors[4];
+              const PhaseIcon = pc.icon;
+
+              return (
+                <div
+                  key={phase.phase}
+                  className={`bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden`}
+                >
+                  {/* Phase header */}
+                  <button
+                    onClick={() => togglePhaseExpand(phase.phase)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-lg ${pc.iconBg} flex items-center justify-center`}
+                      >
+                        <PhaseIcon className={`w-4 h-4 ${pc.accent}`} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+                            Phase {phase.phase}
+                          </span>
+                          <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+                            {phase.name}
+                          </h3>
+                        </div>
+                        <p className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                          {phase.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                      <div className="text-right hidden sm:block">
+                        <div className="text-xs font-mono text-slate-500 dark:text-white/40">
+                          {phase.requirements.length} req
+                          {phase.requirements.length !== 1 ? "s" : ""}
+                        </div>
+                        {phase.totalWeeks > 0 && (
+                          <div className="text-[10px] text-slate-400 dark:text-white/25">
+                            ~{phase.totalWeeks} weeks
+                          </div>
+                        )}
+                      </div>
+                      {isPhaseExpanded ? (
+                        <ChevronUp
+                          size={16}
+                          className="text-slate-400 dark:text-white/30"
+                        />
+                      ) : (
+                        <ChevronDown
+                          size={16}
+                          className="text-slate-400 dark:text-white/30"
+                        />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Phase requirements list */}
+                  <AnimatePresence>
+                    {isPhaseExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="border-t border-slate-100 dark:border-white/[0.06]"
+                      >
+                        <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                          {phase.requirements.map((pr) => {
+                            const sevColors: Record<string, string> = {
+                              critical: "text-red-400 bg-red-500/10",
+                              major: "text-amber-400 bg-amber-500/10",
+                              minor: "text-slate-400 bg-slate-500/10",
+                            };
+                            return (
+                              <div
+                                key={pr.id}
+                                className="px-5 py-3 flex items-center justify-between gap-4"
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <span className="text-[10px] font-mono text-slate-400 dark:text-white/25 flex-shrink-0 w-[70px]">
+                                    {pr.articleRef}
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-xs text-slate-700 dark:text-white/70 truncate">
+                                      {pr.title}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 dark:text-white/25 mt-0.5">
+                                      {pr.rationale}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span className="text-[10px] text-slate-400 dark:text-white/25 hidden sm:inline">
+                                    {pr.category}
+                                  </span>
+                                  <span
+                                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${sevColors[pr.severity] || ""}`}
+                                  >
+                                    {pr.severity}
+                                  </span>
+                                  {pr.estimatedWeeks > 0 && (
+                                    <span className="text-[10px] font-mono text-slate-400 dark:text-white/25">
+                                      {pr.estimatedWeeks}w
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </motion.div>
+        )}
 
         {/* Header Card */}
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6">

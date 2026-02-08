@@ -15,6 +15,7 @@ import {
   calculateNIS2Compliance,
   classifyNIS2Entity,
 } from "@/lib/nis2-engine.server";
+import { generateAutoAssessments } from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 
 // GET /api/nis2 - Get all NIS2 assessments for user
@@ -153,6 +154,51 @@ export async function POST(request: Request) {
           status: "not_assessed",
         })),
       });
+
+      // Auto-assess requirements based on wizard answers (ISO 27001, CSIRT, risk mgmt)
+      const autoAssessments = generateAutoAssessments(
+        complianceResult.applicableRequirements,
+        answers,
+      );
+      let autoAssessedCount = 0;
+      for (const auto of autoAssessments) {
+        if (auto.suggestedStatus === "partial" && auto.reason) {
+          const result = await prisma.nIS2RequirementStatus.updateMany({
+            where: {
+              assessmentId: assessment.id,
+              requirementId: auto.requirementId,
+              status: "not_assessed",
+            },
+            data: {
+              status: auto.suggestedStatus,
+              notes: auto.reason,
+            },
+          });
+          if (result.count > 0) autoAssessedCount++;
+        }
+      }
+
+      // Recalculate maturity score after auto-assessment
+      if (autoAssessedCount > 0) {
+        const updatedReqs = await prisma.nIS2RequirementStatus.findMany({
+          where: { assessmentId: assessment.id },
+        });
+        const total = updatedReqs.length;
+        const compliant = updatedReqs.filter(
+          (r) => r.status === "compliant",
+        ).length;
+        const partial = updatedReqs.filter(
+          (r) => r.status === "partial",
+        ).length;
+        const maturityScore =
+          total > 0
+            ? Math.round(((compliant + 0.5 * partial) / total) * 100)
+            : 0;
+        await prisma.nIS2Assessment.update({
+          where: { id: assessment.id },
+          data: { maturityScore },
+        });
+      }
     }
 
     // Fetch with requirements

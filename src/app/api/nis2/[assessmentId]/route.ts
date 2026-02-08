@@ -16,6 +16,10 @@ import {
   calculateNIS2Compliance,
   classifyNIS2Entity,
 } from "@/lib/nis2-engine.server";
+import {
+  generateAutoAssessments,
+  generateRecommendations,
+} from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 
 // GET /api/nis2/[assessmentId] - Get assessment details with requirement metadata
@@ -65,6 +69,8 @@ export async function GET(
         evidenceRequired: string[];
         euSpaceActRef?: string;
         iso27001Ref?: string;
+        canBeSimplified?: boolean;
+        implementationTimeWeeks?: number;
       }
     > = {};
 
@@ -84,6 +90,8 @@ export async function GET(
           evidenceRequired: req.evidenceRequired,
           euSpaceActRef: req.euSpaceActRef,
           iso27001Ref: req.iso27001Ref,
+          canBeSimplified: req.canBeSimplified,
+          implementationTimeWeeks: req.implementationTimeWeeks,
         };
       }
       requirementMeta = metaMap;
@@ -91,7 +99,32 @@ export async function GET(
       // If requirements data file fails to load, return without enrichment
     }
 
-    return NextResponse.json({ assessment, requirementMeta });
+    // Generate smart recommendations & gap analysis
+    let recommendations = null;
+    try {
+      recommendations = generateRecommendations(
+        {
+          hasISO27001: assessment.hasISO27001,
+          hasExistingCSIRT: assessment.hasExistingCSIRT,
+          hasRiskManagement: assessment.hasRiskManagement,
+          operatesGroundInfra: assessment.operatesGroundInfra,
+          operatesSatComms: assessment.operatesSatComms,
+          organizationSize: assessment.organizationSize,
+          entityClassification: assessment.entityClassification,
+          subSector: assessment.subSector,
+        },
+        assessment.requirements.map((r) => ({
+          requirementId: r.requirementId,
+          status: r.status,
+          notes: r.notes,
+        })),
+        requirementMeta,
+      );
+    } catch (recError) {
+      console.error("Error generating recommendations:", recError);
+    }
+
+    return NextResponse.json({ assessment, requirementMeta, recommendations });
   } catch (error) {
     console.error("Error fetching NIS2 assessment:", error);
     const message =
@@ -236,7 +269,67 @@ export async function PATCH(
             status: "not_assessed",
           })),
         });
+
+        // Auto-assess newly added requirements based on updated answers
+        const autoAssessments = generateAutoAssessments(toAdd, answers);
+        for (const auto of autoAssessments) {
+          if (auto.suggestedStatus === "partial" && auto.reason) {
+            await prisma.nIS2RequirementStatus.updateMany({
+              where: {
+                assessmentId,
+                requirementId: auto.requirementId,
+                status: "not_assessed",
+              },
+              data: {
+                status: auto.suggestedStatus,
+                notes: auto.reason,
+              },
+            });
+          }
+        }
       }
+
+      // Also auto-assess existing requirements that are still "not_assessed"
+      // (e.g., user re-ran wizard with new ISO 27001 certification)
+      const existingNotAssessed = existingReqs.filter(
+        (r) =>
+          r.status === "not_assessed" && applicableReqIds.has(r.requirementId),
+      );
+      if (existingNotAssessed.length > 0) {
+        const existingApplicable =
+          complianceResult.applicableRequirements.filter((r) =>
+            existingNotAssessed.some((er) => er.requirementId === r.id),
+          );
+        const autoForExisting = generateAutoAssessments(
+          existingApplicable,
+          answers,
+        );
+        for (const auto of autoForExisting) {
+          if (auto.suggestedStatus === "partial" && auto.reason) {
+            await prisma.nIS2RequirementStatus.updateMany({
+              where: {
+                assessmentId,
+                requirementId: auto.requirementId,
+                status: "not_assessed",
+              },
+              data: {
+                status: auto.suggestedStatus,
+                notes: auto.reason,
+              },
+            });
+          }
+        }
+      }
+
+      // Recalculate maturity score
+      const allReqs = await prisma.nIS2RequirementStatus.findMany({
+        where: { assessmentId },
+      });
+      const total = allReqs.length;
+      const compliant = allReqs.filter((r) => r.status === "compliant").length;
+      const partial = allReqs.filter((r) => r.status === "partial").length;
+      updateData.maturityScore =
+        total > 0 ? Math.round(((compliant + 0.5 * partial) / total) * 100) : 0;
 
       // Remove requirements that are no longer applicable
       const toRemove = existingReqs.filter(
