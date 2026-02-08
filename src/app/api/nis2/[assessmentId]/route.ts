@@ -18,7 +18,7 @@ import {
 } from "@/lib/nis2-engine.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 
-// GET /api/nis2/[assessmentId] - Get assessment details
+// GET /api/nis2/[assessmentId] - Get assessment details with requirement metadata
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ assessmentId: string }> },
@@ -49,13 +49,54 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ assessment });
+    // Enrich requirements with metadata from the data file (title, article, category, etc.)
+    // This data is server-only and cannot be loaded on the client.
+    let requirementMeta: Record<
+      string,
+      {
+        title: string;
+        articleRef: string;
+        category: string;
+        severity: string;
+        complianceQuestion: string;
+        description: string;
+        spaceSpecificGuidance: string;
+        tips: string[];
+        evidenceRequired: string[];
+        euSpaceActRef?: string;
+        iso27001Ref?: string;
+      }
+    > = {};
+
+    try {
+      const { NIS2_REQUIREMENTS } = await import("@/data/nis2-requirements");
+      const metaMap: typeof requirementMeta = {};
+      for (const req of NIS2_REQUIREMENTS) {
+        metaMap[req.id] = {
+          title: req.title,
+          articleRef: req.articleRef,
+          category: req.category,
+          severity: req.severity,
+          complianceQuestion: req.complianceQuestion,
+          description: req.description,
+          spaceSpecificGuidance: req.spaceSpecificGuidance,
+          tips: req.tips,
+          evidenceRequired: req.evidenceRequired,
+          euSpaceActRef: req.euSpaceActRef,
+          iso27001Ref: req.iso27001Ref,
+        };
+      }
+      requirementMeta = metaMap;
+    } catch {
+      // If requirements data file fails to load, return without enrichment
+    }
+
+    return NextResponse.json({ assessment, requirementMeta });
   } catch (error) {
     console.error("Error fetching NIS2 assessment:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

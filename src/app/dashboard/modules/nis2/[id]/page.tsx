@@ -41,6 +41,20 @@ interface RequirementStatus {
   targetDate: string | null;
 }
 
+interface RequirementMeta {
+  title: string;
+  articleRef: string;
+  category: string;
+  severity: string;
+  complianceQuestion: string;
+  description: string;
+  spaceSpecificGuidance: string;
+  tips: string[];
+  evidenceRequired: string[];
+  euSpaceActRef?: string;
+  iso27001Ref?: string;
+}
+
 interface NIS2Assessment {
   id: string;
   assessmentName: string | null;
@@ -153,6 +167,7 @@ export default function NIS2AssessmentDetailPage() {
   const assessmentId = params.id as string;
 
   const [assessment, setAssessment] = useState<NIS2Assessment | null>(null);
+  const [reqMeta, setReqMeta] = useState<Record<string, RequirementMeta>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -181,6 +196,9 @@ export default function NIS2AssessmentDetailPage() {
       }
       const data = await res.json();
       setAssessment(data.assessment);
+      if (data.requirementMeta) {
+        setReqMeta(data.requirementMeta);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
@@ -660,6 +678,12 @@ export default function NIS2AssessmentDetailPage() {
                 const StatusIcon = sc.icon;
                 const isExpanded = expandedReqs.has(req.requirementId);
                 const isUpdating = updatingReq === req.requirementId;
+                const meta = reqMeta[req.requirementId];
+                const severityColors: Record<string, string> = {
+                  critical: "text-red-400 bg-red-500/10",
+                  major: "text-amber-400 bg-amber-500/10",
+                  minor: "text-slate-400 bg-slate-500/10",
+                };
 
                 return (
                   <motion.div
@@ -671,18 +695,30 @@ export default function NIS2AssessmentDetailPage() {
                       onClick={() => toggleReqExpand(req.requirementId)}
                       className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-left"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <StatusIcon
                           className={`w-4 h-4 ${sc.color} flex-shrink-0`}
                         />
-                        <span className="text-xs font-mono text-slate-500 dark:text-white/40 flex-shrink-0">
-                          {req.requirementId}
+                        <span className="text-[11px] font-mono text-slate-400 dark:text-white/30 flex-shrink-0">
+                          {meta?.articleRef || req.requirementId}
                         </span>
-                        <span className="text-sm text-slate-700 dark:text-white/70 truncate">
+                        <span className="text-sm text-slate-900 dark:text-white/80 truncate">
+                          {meta?.title || req.requirementId}
+                        </span>
+                        {meta?.severity && (
+                          <span
+                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${severityColors[meta.severity] || ""} flex-shrink-0`}
+                          >
+                            {meta.severity}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <span
+                          className={`text-[11px] font-medium ${sc.color} hidden sm:inline`}
+                        >
                           {sc.label}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
                         {isUpdating && (
                           <Loader2
                             size={14}
@@ -708,43 +744,144 @@ export default function NIS2AssessmentDetailPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="border-t border-slate-200 dark:border-white/[0.06] px-4 py-3"
+                        className="border-t border-slate-200 dark:border-white/[0.06] px-4 py-4 space-y-4"
                       >
-                        <div className="text-xs text-slate-500 dark:text-white/40 mb-3">
-                          Set compliance status:
+                        {/* Compliance Question */}
+                        {meta?.complianceQuestion && (
+                          <div className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-3">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-blue-400/60 mb-1">
+                              Compliance Question
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-white/70">
+                              {meta.complianceQuestion}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Description */}
+                        {meta?.description && (
+                          <p className="text-xs text-slate-500 dark:text-white/50 leading-relaxed">
+                            {meta.description}
+                          </p>
+                        )}
+
+                        {/* Space-Specific Guidance */}
+                        {meta?.spaceSpecificGuidance && (
+                          <div className="border-l-2 border-cyan-500/30 pl-3">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/60 mb-1">
+                              Space Sector Guidance
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
+                              {meta.spaceSpecificGuidance}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Cross-references */}
+                        {(meta?.euSpaceActRef || meta?.iso27001Ref) && (
+                          <div className="flex flex-wrap gap-2">
+                            {meta.euSpaceActRef && (
+                              <span className="text-[10px] bg-green-500/10 text-green-400 rounded-md px-2 py-1">
+                                EU Space Act {meta.euSpaceActRef}
+                              </span>
+                            )}
+                            {meta.iso27001Ref && (
+                              <span className="text-[10px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-1">
+                                ISO 27001 {meta.iso27001Ref}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Tips */}
+                        {meta?.tips && meta.tips.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
+                              Implementation Tips
+                            </div>
+                            <ul className="space-y-1">
+                              {meta.tips.map((tip, i) => (
+                                <li
+                                  key={i}
+                                  className="text-xs text-slate-500 dark:text-white/40 flex items-start gap-2"
+                                >
+                                  <span className="text-blue-400 mt-0.5">
+                                    &bull;
+                                  </span>
+                                  {tip}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Evidence Required */}
+                        {meta?.evidenceRequired &&
+                          meta.evidenceRequired.length > 0 && (
+                            <div>
+                              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
+                                Evidence Required
+                              </div>
+                              <ul className="space-y-1">
+                                {meta.evidenceRequired.map((ev, i) => (
+                                  <li
+                                    key={i}
+                                    className="text-xs text-slate-500 dark:text-white/40 flex items-start gap-2"
+                                  >
+                                    <CheckCircle2
+                                      size={12}
+                                      className="text-slate-400/50 mt-0.5 flex-shrink-0"
+                                    />
+                                    {ev}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                        {/* Status buttons */}
+                        <div className="pt-3 border-t border-slate-200 dark:border-white/[0.06]">
+                          <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30 mb-2">
+                            Set Status
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {(
+                              [
+                                "compliant",
+                                "partial",
+                                "non_compliant",
+                                "not_applicable",
+                                "not_assessed",
+                              ] as ReqStatusValue[]
+                            ).map((s) => {
+                              const btnSc = statusConfig[s];
+                              const isActive = req.status === s;
+                              return (
+                                <button
+                                  key={s}
+                                  onClick={() =>
+                                    handleUpdateRequirement(
+                                      req.requirementId,
+                                      s,
+                                    )
+                                  }
+                                  disabled={isUpdating}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                    isActive
+                                      ? `${btnSc.bgColor} ${btnSc.color} ring-1 ring-current`
+                                      : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                                  } disabled:opacity-50`}
+                                >
+                                  {btnSc.label}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(
-                            [
-                              "compliant",
-                              "partial",
-                              "non_compliant",
-                              "not_applicable",
-                              "not_assessed",
-                            ] as ReqStatusValue[]
-                          ).map((s) => {
-                            const btnSc = statusConfig[s];
-                            const isActive = req.status === s;
-                            return (
-                              <button
-                                key={s}
-                                onClick={() =>
-                                  handleUpdateRequirement(req.requirementId, s)
-                                }
-                                disabled={isUpdating}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                  isActive
-                                    ? `${btnSc.bgColor} ${btnSc.color} ring-1 ring-current`
-                                    : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
-                                } disabled:opacity-50`}
-                              >
-                                {btnSc.label}
-                              </button>
-                            );
-                          })}
-                        </div>
+
+                        {/* User notes */}
                         {req.notes && (
-                          <p className="text-xs text-slate-500 dark:text-white/40 mt-3 border-l-2 border-slate-200 dark:border-white/10 pl-2">
+                          <p className="text-xs text-slate-500 dark:text-white/40 border-l-2 border-slate-200 dark:border-white/10 pl-2 italic">
                             {req.notes}
                           </p>
                         )}
