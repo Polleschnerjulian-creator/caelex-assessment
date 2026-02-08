@@ -207,9 +207,14 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   } catch (error) {
-    console.error("Audit export error:", error);
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      "Audit export error:",
+      msg,
+      error instanceof Error ? error.stack : "",
+    );
     return NextResponse.json(
-      { error: "Failed to generate audit package" },
+      { error: `Failed to generate audit package: ${msg}` },
       { status: 500 },
     );
   }
