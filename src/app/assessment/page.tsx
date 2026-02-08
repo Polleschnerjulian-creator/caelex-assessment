@@ -19,7 +19,7 @@ const RegulationPicker = dynamic(
 
 export default function AssessmentPage() {
   return (
-    <div className="dark-section text-white">
+    <div className="landing-page dark-section text-white">
       <RegulationPicker />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import {
   Shield,
   Satellite,
@@ -32,7 +33,7 @@ const REGULATIONS: RegulationOption[] = [
     subtitle: "COM(2025) 335",
     description:
       "Comprehensive regulation for space operators covering authorization, debris mitigation, cybersecurity, environmental footprint, and insurance.",
-    icon: <Satellite className="w-8 h-8" />,
+    icon: <Satellite className="w-7 h-7" />,
     href: "/assessment/eu-space-act",
     status: "upcoming",
     statusLabel: "Applies from 2030",
@@ -54,13 +55,13 @@ const REGULATIONS: RegulationOption[] = [
     subtitle: "(EU) 2022/2555",
     description:
       "Cybersecurity regulation listing Space as Annex I high-criticality sector. Requires risk management, incident reporting, and supply chain security.",
-    icon: <Shield className="w-8 h-8" />,
+    icon: <Shield className="w-7 h-7" />,
     href: "/assessment/nis2",
     status: "live",
     statusLabel: "In force since Oct 2024",
     stats: [
       { label: "Requirements", value: "51" },
-      { label: "Penalty", value: "€10M / 2%" },
+      { label: "Penalty", value: "\u20AC10M / 2%" },
       { label: "Reporting", value: "24h / 72h" },
     ],
     features: [
@@ -75,8 +76,8 @@ const REGULATIONS: RegulationOption[] = [
     title: "National Space Laws",
     subtitle: "10 Jurisdictions",
     description:
-      "Compare licensing requirements, insurance obligations, debris rules, and regulatory timelines across 10 European jurisdictions — with EU Space Act transition preview.",
-    icon: <Globe className="w-8 h-8" />,
+      "Compare licensing requirements, insurance obligations, debris rules, and regulatory timelines across 10 European jurisdictions \u2014 with EU Space Act transition preview.",
+    icon: <Globe className="w-7 h-7" />,
     href: "/assessment/space-law",
     status: "live",
     statusLabel: "Database live",
@@ -97,33 +98,29 @@ const REGULATIONS: RegulationOption[] = [
 function StatusBadge({ status, label }: { status: string; label: string }) {
   const config = {
     live: {
-      bg: "bg-green-500/10 border-green-500/30",
-      text: "text-green-400",
-      icon: <AlertTriangle className="w-3 h-3" />,
-      dot: "bg-green-500",
+      bg: "bg-emerald-500/20",
+      text: "text-emerald-400",
+      dot: "bg-emerald-500",
     },
     upcoming: {
-      bg: "bg-amber-500/10 border-amber-500/30",
+      bg: "bg-amber-500/20",
       text: "text-amber-400",
-      icon: <Clock className="w-3 h-3" />,
       dot: "bg-amber-500",
     },
     coming_soon: {
-      bg: "bg-slate-500/10 border-slate-500/30",
-      text: "text-slate-400",
-      icon: <Clock className="w-3 h-3" />,
-      dot: "bg-slate-500",
+      bg: "bg-white/[0.04]",
+      text: "text-white/40",
+      dot: "bg-white/40",
     },
   }[status] || {
-    bg: "bg-slate-500/10 border-slate-500/30",
-    text: "text-slate-400",
-    icon: <Clock className="w-3 h-3" />,
-    dot: "bg-slate-500",
+    bg: "bg-white/[0.04]",
+    text: "text-white/40",
+    dot: "bg-white/40",
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.text}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono text-[10px] ${config.bg} ${config.text}`}
     >
       <span
         className={`w-1.5 h-1.5 rounded-full ${config.dot} ${status === "live" ? "animate-pulse" : ""}`}
@@ -134,39 +131,53 @@ function StatusBadge({ status, label }: { status: string; label: string }) {
 }
 
 export default function RegulationPicker() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
   return (
-    <div className="min-h-screen bg-navy-950 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       {/* Header */}
-      <div className="border-b border-white/[0.08] bg-navy-950/80 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-white/[0.06]">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
           <Link
             href="/"
-            className="text-slate-400 hover:text-white transition-colors text-sm flex items-center gap-2"
+            className="text-white/50 hover:text-white transition-colors duration-300 text-[13px] flex items-center gap-2"
           >
-            ← Back to home
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            Back to home
           </Link>
-          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">
             Compliance Assessment
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="max-w-6xl w-full">
+      <div
+        ref={ref}
+        className="flex-1 flex items-center justify-center px-6 md:px-12 py-24 md:py-32"
+      >
+        <div className="max-w-[1200px] w-full">
           {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-16 md:mb-20"
           >
-            <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-light tracking-[-0.02em] text-white mb-4">
-              Choose your regulation
+            <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+              Select Framework
+            </span>
+            <h1 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] text-white leading-[1.2] mb-5">
+              Choose your regulation.
+              <br />
+              <span className="text-white/50">
+                Assess your compliance in minutes.
+              </span>
             </h1>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-[14px] md:text-[16px] text-white/45 max-w-2xl mx-auto leading-[1.6]">
               Select a regulatory framework to assess your compliance
-              obligations. Each assessment takes 3-5 minutes.
+              obligations. Each assessment takes 3\u20135 minutes.
             </p>
           </motion.div>
 
@@ -176,26 +187,30 @@ export default function RegulationPicker() {
               <motion.div
                 key={reg.id}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.15 + index * 0.1 }}
               >
                 <Link href={reg.href} className="block group">
-                  <div className="relative p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-300 h-full">
+                  <div className="relative p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500 h-full">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-blue-400">
+                        <div className="w-11 h-11 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/60 group-hover:bg-white/[0.06] transition-colors">
                           {reg.icon}
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                          <h3 className="text-[15px] font-medium text-white tracking-[-0.01em]">
                             {reg.title}
                           </h3>
-                          <p className="text-xs font-mono text-white/40">
+                          <p className="font-mono text-[10px] text-white/30 tracking-[0.05em]">
                             {reg.subtitle}
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="mb-4">
                       <StatusBadge
                         status={reg.status}
                         label={reg.statusLabel}
@@ -203,21 +218,21 @@ export default function RegulationPicker() {
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-slate-400 mb-5 leading-relaxed">
+                    <p className="text-[13px] text-white/45 mb-5 leading-[1.7]">
                       {reg.description}
                     </p>
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-3 mb-5">
+                    <div className="grid grid-cols-3 gap-2 mb-5">
                       {reg.stats.map((stat) => (
                         <div
                           key={stat.label}
-                          className="bg-white/[0.03] rounded-lg p-2.5 text-center"
+                          className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-2.5 text-center"
                         >
-                          <div className="text-sm font-semibold text-white font-mono">
+                          <div className="font-mono text-[13px] font-light text-white">
                             {stat.value}
                           </div>
-                          <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">
+                          <div className="font-mono text-[9px] text-white/30 uppercase tracking-[0.15em] mt-0.5">
                             {stat.label}
                           </div>
                         </div>
@@ -225,22 +240,25 @@ export default function RegulationPicker() {
                     </div>
 
                     {/* Features */}
-                    <div className="space-y-2 mb-5">
+                    <div className="space-y-2.5 mb-6">
                       {reg.features.map((feature) => (
                         <div
                           key={feature}
-                          className="flex items-center gap-2 text-sm text-slate-400"
+                          className="flex items-center gap-2.5 text-[13px] text-white/45"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-400/60 flex-shrink-0" />
+                          <span className="w-1 h-1 rounded-full bg-white/20 flex-shrink-0" />
                           {feature}
                         </div>
                       ))}
                     </div>
 
-                    {/* CTA */}
-                    <div className="flex items-center gap-2 text-sm font-medium text-blue-400 group-hover:text-blue-300 transition-colors">
-                      Start assessment
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    {/* Divider */}
+                    <div className="border-t border-white/[0.06] pt-4">
+                      {/* CTA */}
+                      <div className="flex items-center gap-2 text-[13px] font-medium text-white/60 group-hover:text-white transition-colors duration-300">
+                        Start assessment
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -251,11 +269,12 @@ export default function RegulationPicker() {
           {/* Bottom note */}
           <motion.p
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.6 }}
-            className="text-center text-white/30 text-xs mt-8"
+            className="text-center text-white/25 font-mono text-[11px] tracking-[0.05em] mt-12"
           >
-            No account required. No data stored. 100% client-side assessment.
+            No account required &middot; No data stored &middot; 100%
+            client-side assessment
           </motion.p>
         </div>
       </div>
