@@ -2,12 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import {
   User,
   Shield,
-  Building2,
-  CreditCard,
   Monitor,
   Smartphone,
   Loader2,
@@ -17,12 +14,10 @@ import {
   LogOut,
   Globe,
   Clock,
-  Users,
-  Crown,
 } from "lucide-react";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
-import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { OrganizationCard } from "@/components/settings/OrganizationCard";
 import { useToast } from "@/components/ui/Toast";
 
 // ─── Types ───
@@ -43,123 +38,6 @@ interface SessionInfo {
   createdAt: string;
   expiresAt: string;
   isCurrent: boolean;
-}
-
-// ─── Plan Badge Colors ───
-
-const planBadgeStyles: Record<string, string> = {
-  FREE: "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white/60",
-  STARTER: "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  PROFESSIONAL:
-    "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  ENTERPRISE:
-    "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400",
-};
-
-// ─── Role Badge Colors ───
-
-const roleBadgeStyles: Record<string, string> = {
-  OWNER: "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  ADMIN: "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  MEMBER: "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white/60",
-};
-
-// ─── Organization Section ───
-
-function OrganizationCard() {
-  const { organization, plan, role, isLoading } = useOrganization();
-
-  if (isLoading) {
-    return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  const displayName = organization?.name || "Personal Workspace";
-  const displayPlan = plan || "FREE";
-  const displayRole = role?.toUpperCase() || "OWNER";
-  const memberCount = organization ? organization.maxUsers : 1;
-
-  return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
-          <Building2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        </div>
-        <div>
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-            ORGANIZATION
-          </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
-            Your workspace and subscription details
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Organization Name */}
-        <div>
-          <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-            Organization
-          </p>
-          <p className="text-[15px] text-slate-900 dark:text-white">
-            {displayName}
-          </p>
-        </div>
-
-        {/* Current Plan */}
-        <div>
-          <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-            Current Plan
-          </p>
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium ${planBadgeStyles[displayPlan] || planBadgeStyles.FREE}`}
-          >
-            <Crown className="w-3 h-3" />
-            {displayPlan}
-          </span>
-        </div>
-
-        {/* Your Role */}
-        <div>
-          <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-            Your Role
-          </p>
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium ${roleBadgeStyles[displayRole] || roleBadgeStyles.MEMBER}`}
-          >
-            {displayRole}
-          </span>
-        </div>
-
-        {/* Member Count */}
-        <div>
-          <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-            Members
-          </p>
-          <p className="text-[15px] text-slate-900 dark:text-white flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-slate-400 dark:text-white/40" />
-            {memberCount === 1 ? "1 member" : `Up to ${memberCount} members`}
-          </p>
-        </div>
-      </div>
-
-      {/* Manage Billing Link */}
-      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
-        <Link
-          href="/dashboard/settings/billing"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.06] text-[13px] text-slate-700 dark:text-white/70 font-medium transition-colors"
-        >
-          <CreditCard className="w-4 h-4" />
-          Manage Billing
-        </Link>
-      </div>
-    </div>
-  );
 }
 
 // ─── Security Section ───
