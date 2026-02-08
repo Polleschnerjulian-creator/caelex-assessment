@@ -75,7 +75,12 @@ export default function NIS2ModulePage() {
   const fetchAssessments = useCallback(async () => {
     try {
       const res = await fetch("/api/nis2");
-      if (!res.ok) throw new Error("Failed to fetch assessments");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(
+          errData.error || `Failed to fetch assessments (${res.status})`,
+        );
+      }
       const data = await res.json();
       setAssessments(data.assessments || []);
     } catch (err) {
@@ -117,7 +122,12 @@ export default function NIS2ModulePage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to create assessment");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.error || `Failed to create assessment (${res.status})`,
+        );
+      }
 
       await fetchAssessments();
     } catch (err) {

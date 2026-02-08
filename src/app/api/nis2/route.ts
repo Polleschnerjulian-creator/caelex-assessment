@@ -38,10 +38,9 @@ export async function GET() {
     return NextResponse.json({ assessments });
   } catch (error) {
     console.error("Error fetching NIS2 assessments:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -197,9 +196,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating NIS2 assessment:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
