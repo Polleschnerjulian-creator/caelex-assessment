@@ -16,6 +16,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import {
+  CSRF_COOKIE_NAME,
+  CSRF_HEADER_NAME,
+  generateCsrfToken,
+  validateCsrfToken,
+} from "@/lib/csrf";
 
 // ─── Rate Limiting (Edge-compatible) ───
 
@@ -245,18 +251,47 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // CSRF check for API routes
-  if (isApiRoute && !validateOrigin(req)) {
-    return applySecurityHeaders(
-      new NextResponse(
-        JSON.stringify({
-          error: "Forbidden",
-          message: "Invalid request origin",
-        }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
-      ),
-      pathname,
+  // CSRF check for API routes (origin validation + double-submit cookie)
+  if (isApiRoute) {
+    // Layer 1: Origin validation
+    if (!validateOrigin(req)) {
+      return applySecurityHeaders(
+        new NextResponse(
+          JSON.stringify({
+            error: "Forbidden",
+            message: "Invalid request origin",
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } },
+        ),
+        pathname,
+      );
+    }
+
+    // Layer 2: Double-submit cookie validation for mutating requests
+    const method = req.method.toUpperCase();
+    const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+    const isCsrfExempt = CSRF_EXEMPT_ROUTES.some((route) =>
+      pathname.startsWith(route),
     );
+
+    if (isMutating && !isCsrfExempt) {
+      const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
+      const headerToken = req.headers.get(CSRF_HEADER_NAME);
+
+      // Only enforce if the cookie exists (gradual rollout: cookie is set on page load)
+      if (cookieToken && !validateCsrfToken(cookieToken, headerToken)) {
+        return applySecurityHeaders(
+          new NextResponse(
+            JSON.stringify({
+              error: "Forbidden",
+              message: "Invalid CSRF token",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          ),
+          pathname,
+        );
+      }
+    }
   }
 
   // Protected routes — check for session cookie
@@ -294,7 +329,19 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  return applySecurityHeaders(NextResponse.next(), pathname);
+  // Set CSRF cookie if not present (readable by JS for double-submit pattern)
+  const response = applySecurityHeaders(NextResponse.next(), pathname);
+  if (!req.cookies.has(CSRF_COOKIE_NAME)) {
+    const isProduction = process.env.NODE_ENV === "production";
+    response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), {
+      httpOnly: false, // Must be readable by JS for double-submit pattern
+      secure: isProduction,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 24, // 24 hours
+    });
+  }
+  return response;
 }
 
 // ─── Matcher ───
