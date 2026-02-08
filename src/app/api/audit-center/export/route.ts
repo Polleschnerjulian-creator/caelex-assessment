@@ -16,7 +16,8 @@ import {
   generateAuditPackageData,
   getAcceptedEvidenceDocuments,
 } from "@/lib/services/audit-package-service.server";
-import { AuditCenterReport } from "@/lib/pdf/reports/audit-center-report";
+import { buildAuditCenterReportConfig } from "@/lib/pdf/reports/audit-center-report";
+import { BaseReport } from "@/lib/pdf/templates/base-report";
 import { exportAuditLogs } from "@/lib/audit";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
@@ -66,9 +67,8 @@ export async function POST(request: Request) {
         userId,
       );
 
-      const element = React.createElement(AuditCenterReport, {
-        data: reportData,
-      });
+      const config = buildAuditCenterReportConfig(reportData);
+      const element = React.createElement(BaseReport, { config });
       const buffer = await renderToBuffer(
         element as unknown as Parameters<typeof renderToBuffer>[0],
       );
@@ -108,9 +108,8 @@ export async function POST(request: Request) {
       );
 
       // Generate PDF buffer
-      const pdfElement = React.createElement(AuditCenterReport, {
-        data: reportData,
-      });
+      const pdfConfig = buildAuditCenterReportConfig(reportData);
+      const pdfElement = React.createElement(BaseReport, { config: pdfConfig });
       const pdfBuffer = await renderToBuffer(
         pdfElement as unknown as Parameters<typeof renderToBuffer>[0],
       );

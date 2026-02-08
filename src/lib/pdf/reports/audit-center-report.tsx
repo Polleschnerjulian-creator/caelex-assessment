@@ -317,6 +317,12 @@ function buildReportConfig(data: AuditCenterReportData): ReportConfig {
   };
 }
 
+export function buildAuditCenterReportConfig(
+  data: AuditCenterReportData,
+): ReportConfig {
+  return buildReportConfig(data);
+}
+
 export function AuditCenterReport({ data }: { data: AuditCenterReportData }) {
   const config = buildReportConfig(data);
   return <BaseReport config={config} />;
