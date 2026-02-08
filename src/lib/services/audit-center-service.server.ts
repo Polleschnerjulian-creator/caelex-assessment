@@ -117,12 +117,14 @@ export async function getAuditCenterOverview(
       orderBy: { updatedAt: "desc" },
       take: 1,
     }),
-    // Evidence by status
-    prisma.complianceEvidence.groupBy({
-      by: ["status"],
-      where: { organizationId },
-      _count: true,
-    }),
+    // Evidence by status (wrapped in catch for schema migration safety)
+    prisma.complianceEvidence
+      .groupBy({
+        by: ["status"],
+        where: { organizationId },
+        _count: true,
+      })
+      .catch(() => [] as { status: string; _count: number }[]),
     // Total audit entries
     prisma.auditLog.count({
       where: { userId },
@@ -343,11 +345,13 @@ export async function getAuditCenterOverview(
   );
 
   // Count unique requirements that have at least one evidence
-  const evidenceWithReqs = await prisma.complianceEvidence.findMany({
-    where: { organizationId },
-    select: { regulationType: true, requirementId: true },
-    distinct: ["regulationType", "requirementId"],
-  });
+  const evidenceWithReqs = await prisma.complianceEvidence
+    .findMany({
+      where: { organizationId },
+      select: { regulationType: true, requirementId: true },
+      distinct: ["regulationType", "requirementId"],
+    })
+    .catch(() => [] as { regulationType: string; requirementId: string }[]);
 
   const evidenceCoverage: EvidenceCoverage = {
     totalRequirements: totalReqsAcrossModules,
