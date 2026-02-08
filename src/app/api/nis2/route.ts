@@ -109,57 +109,51 @@ export async function POST(request: Request) {
     // Calculate full compliance result for overlap counts
     const complianceResult = await calculateNIS2Compliance(answers);
 
-    // Create assessment with requirement statuses in transaction
-    const assessment = await prisma.$transaction(async (tx) => {
-      const newAssessment = await tx.nIS2Assessment.create({
-        data: {
-          userId,
-          assessmentName,
-          entityClassification: classification.classification,
-          classificationReason: classification.reason,
-          sector: "space",
-          subSector: subSector || null,
-          organizationSize: entitySize,
-          employeeCount: employeeCount || null,
-          annualRevenue: annualRevenue || null,
-          memberStateCount,
-          operatesGroundInfra,
-          operatesSatComms,
-          manufacturesSpacecraft,
-          providesLaunchServices,
-          providesEOData,
-          hasISO27001,
-          hasExistingCSIRT,
-          hasRiskManagement,
-          complianceScore: 0,
-          maturityScore: 0,
-          riskLevel:
-            classification.classification === "essential"
-              ? "high"
-              : classification.classification === "important"
-                ? "medium"
-                : "low",
-          euSpaceActOverlapCount: complianceResult.euSpaceActOverlap.count,
-        },
-      });
-
-      // Create requirement status entries for applicable requirements
-      if (complianceResult.applicableRequirements.length > 0) {
-        await Promise.all(
-          complianceResult.applicableRequirements.map((req) =>
-            tx.nIS2RequirementStatus.create({
-              data: {
-                assessmentId: newAssessment.id,
-                requirementId: req.id,
-                status: "not_assessed",
-              },
-            }),
-          ),
-        );
-      }
-
-      return newAssessment;
+    // Create assessment then bulk-insert requirement statuses.
+    // Uses sequential queries instead of interactive $transaction because
+    // Neon serverless pooled connections can drop mid-transaction.
+    const assessment = await prisma.nIS2Assessment.create({
+      data: {
+        userId,
+        assessmentName,
+        entityClassification: classification.classification,
+        classificationReason: classification.reason,
+        sector: "space",
+        subSector: subSector || null,
+        organizationSize: entitySize,
+        employeeCount: employeeCount || null,
+        annualRevenue: annualRevenue || null,
+        memberStateCount,
+        operatesGroundInfra,
+        operatesSatComms,
+        manufacturesSpacecraft,
+        providesLaunchServices,
+        providesEOData,
+        hasISO27001,
+        hasExistingCSIRT,
+        hasRiskManagement,
+        complianceScore: 0,
+        maturityScore: 0,
+        riskLevel:
+          classification.classification === "essential"
+            ? "high"
+            : classification.classification === "important"
+              ? "medium"
+              : "low",
+        euSpaceActOverlapCount: complianceResult.euSpaceActOverlap.count,
+      },
     });
+
+    // Bulk-create requirement status entries for applicable requirements
+    if (complianceResult.applicableRequirements.length > 0) {
+      await prisma.nIS2RequirementStatus.createMany({
+        data: complianceResult.applicableRequirements.map((req) => ({
+          assessmentId: assessment.id,
+          requirementId: req.id,
+          status: "not_assessed",
+        })),
+      });
+    }
 
     // Fetch with requirements
     const assessmentWithRequirements = await prisma.nIS2Assessment.findUnique({
