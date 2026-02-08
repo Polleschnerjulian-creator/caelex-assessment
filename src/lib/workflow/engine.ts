@@ -240,7 +240,8 @@ export class WorkflowEngine<TContext = Record<string, unknown>> {
       }
 
       if (this.options.debug) {
-        console.log(
+        // Debug output guarded by options flag — intentional development aid
+        console.debug(
           `[Workflow ${this.definition.id}] Transition: ${currentState} --[${event}]--> ${targetState}`,
         );
       }

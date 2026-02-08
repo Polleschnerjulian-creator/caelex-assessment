@@ -140,7 +140,7 @@ export function validateEnv(): Env {
   }
 
   if (!env.AUTH_GOOGLE_ID || !env.AUTH_GOOGLE_SECRET) {
-    console.log(
+    console.warn(
       "ℹ️ Google OAuth not configured. OAuth login will be disabled.",
     );
   }

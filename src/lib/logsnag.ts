@@ -56,7 +56,6 @@ export async function trackEvent({
 }: TrackEventParams): Promise<void> {
   // Skip in development or if LogSnag is not configured
   if (process.env.NODE_ENV !== "production" || !logsnag) {
-    console.log(`[LogSnag Skip] ${channel}: ${event}`, { description, tags });
     return;
   }
 
