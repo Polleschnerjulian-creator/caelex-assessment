@@ -8,6 +8,7 @@ import { stripe } from "@/lib/stripe/client";
 import { prisma } from "@/lib/prisma";
 import { PRICING_TIERS, PlanType, hasModuleAccess } from "@/lib/stripe/pricing";
 import { trackSubscription } from "@/lib/logsnag";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
 import type StripeTypes from "stripe";
 
 // ─── Internal Stripe Types ───
@@ -387,7 +388,49 @@ export async function handlePaymentFailed(
     data: { status: "PAST_DUE" },
   });
 
-  // TODO: Send notification email about failed payment
+  // Send notification email about failed payment to org admins/owner
+  if (isEmailConfigured()) {
+    const orgMembers = await prisma.organizationMember.findMany({
+      where: {
+        organizationId: subscription.organizationId,
+        role: { in: ["OWNER", "ADMIN"] },
+      },
+      include: { user: { select: { email: true, name: true } } },
+    });
+
+    const billingUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || ""}/dashboard/settings/billing`;
+
+    for (const member of orgMembers) {
+      if (!member.user.email) continue;
+      try {
+        await sendEmail({
+          to: member.user.email,
+          subject: "Payment Failed – Action Required",
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; max-width: 600px;">
+              <h1 style="color: #EF4444;">Payment Failed</h1>
+              <p>Hi ${member.user.name || "there"},</p>
+              <p>We were unable to process your latest subscription payment. Your account has been marked as <strong>past due</strong>.</p>
+              <p>Please update your payment method to avoid any interruption to your service.</p>
+              <div style="margin: 30px 0;">
+                <a href="${billingUrl}" style="background: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                  Update Payment Method
+                </a>
+              </div>
+              <p style="color: #6b7280; font-size: 14px;">If you believe this is an error, please contact our support team.</p>
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+              <p style="color: #9ca3af; font-size: 12px;">Caelex - Space Compliance, Simplified</p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error(
+          `Failed to send payment failure email to ${member.user.email}:`,
+          emailError,
+        );
+      }
+    }
+  }
 }
 
 /**
