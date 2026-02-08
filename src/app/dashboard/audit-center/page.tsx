@@ -28,6 +28,7 @@ import {
   Filter,
 } from "lucide-react";
 import Link from "next/link";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 // ─── Types ───
 
@@ -140,6 +141,7 @@ function AuditCenterContent() {
   // Exports
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
+  const [exportingCert, setExportingCert] = useState(false);
   const [verifyingChain, setVerifyingChain] = useState(false);
   const [chainStatus, setChainStatus] = useState<{
     valid: boolean;
@@ -184,21 +186,26 @@ function AuditCenterContent() {
   const handleExportPdf = async () => {
     setExportingPdf(true);
     try {
-      const res = await fetch("/api/audit/report", {
+      const res = await fetch("/api/audit-center/export", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ includeSecurityEvents: true }),
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ format: "pdf" }),
       });
-      if (!res.ok) throw new Error("Failed to generate report");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to generate report");
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Audit-Report-${new Date().toISOString().split("T")[0]}.pdf`;
+      a.download = `Audit-Center-Report-${new Date().toISOString().split("T")[0]}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      setError("Failed to export PDF report");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to export PDF report",
+      );
     } finally {
       setExportingPdf(false);
     }
@@ -220,6 +227,34 @@ function AuditCenterContent() {
       setError("Failed to export audit trail");
     } finally {
       setExportingCsv(false);
+    }
+  };
+
+  const handleExportCertificate = async () => {
+    setExportingCert(true);
+    try {
+      const res = await fetch("/api/audit/certificate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to generate certificate");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Compliance-Certificate-${new Date().toISOString().split("T")[0]}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to export certificate",
+      );
+    } finally {
+      setExportingCert(false);
     }
   };
 
@@ -737,11 +772,16 @@ function AuditCenterContent() {
           </button>
 
           {/* Compliance Certificate */}
-          <Link
-            href="/api/audit/certificate"
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-green-500/30 transition-colors text-left"
+          <button
+            onClick={handleExportCertificate}
+            disabled={exportingCert}
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-green-500/30 transition-colors text-left disabled:opacity-50"
           >
-            <ShieldCheck size={16} className="text-green-400" />
+            {exportingCert ? (
+              <Loader2 size={16} className="animate-spin text-green-400" />
+            ) : (
+              <ShieldCheck size={16} className="text-green-400" />
+            )}
             <div>
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Certificate
@@ -750,7 +790,7 @@ function AuditCenterContent() {
                 Compliance cert
               </div>
             </div>
-          </Link>
+          </button>
 
           {/* Verify Chain */}
           <button

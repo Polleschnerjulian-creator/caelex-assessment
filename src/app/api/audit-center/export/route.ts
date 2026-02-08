@@ -3,6 +3,8 @@
  * POST: Generate audit package (PDF report or ZIP with evidence documents)
  */
 
+export const maxDuration = 60; // Allow up to 60s for PDF generation
+
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
