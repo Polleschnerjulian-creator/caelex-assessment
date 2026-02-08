@@ -74,6 +74,15 @@ const productionRequirements = z.object({
   AUTH_URL: z.string().url("AUTH_URL required in production"),
   ENCRYPTION_KEY: z.string().min(32, "ENCRYPTION_KEY required in production"),
   ENCRYPTION_SALT: z.string().min(16, "ENCRYPTION_SALT required in production"),
+  UPSTASH_REDIS_REST_URL: z
+    .string()
+    .url("UPSTASH_REDIS_REST_URL required in production for rate limiting"),
+  UPSTASH_REDIS_REST_TOKEN: z
+    .string()
+    .min(
+      1,
+      "UPSTASH_REDIS_REST_TOKEN required in production for rate limiting",
+    ),
 });
 
 // ─── Types ───
@@ -129,12 +138,6 @@ export function validateEnv(): Env {
   }
 
   // Log warnings for missing optional variables
-  if (!env.UPSTASH_REDIS_REST_URL && env.NODE_ENV === "production") {
-    console.warn(
-      "⚠️ UPSTASH_REDIS_REST_URL not set. Rate limiting will use in-memory fallback.",
-    );
-  }
-
   if (!env.SENTRY_DSN && env.NODE_ENV === "production") {
     console.warn("⚠️ SENTRY_DSN not set. Error monitoring disabled.");
   }
