@@ -611,10 +611,22 @@ export async function checkLimitUsage(
     case "spacecraft":
       current = organization.spacecraft.length;
       break;
-    case "storage":
-      // TODO: Calculate actual storage usage
-      current = 0;
+    case "storage": {
+      // Calculate actual storage usage from documents uploaded by org members
+      const memberIds = organization.members.map((m) => m.userId);
+      const storageResult = await prisma.document.aggregate({
+        where: {
+          userId: { in: memberIds },
+          isLatest: true,
+        },
+        _sum: { fileSize: true },
+      });
+      // Storage limit is in GB, so convert bytes to GB
+      current = Math.round(
+        (storageResult._sum.fileSize || 0) / (1024 * 1024 * 1024),
+      );
       break;
+    }
   }
 
   const exceeded = limit !== "unlimited" && current >= limit;
