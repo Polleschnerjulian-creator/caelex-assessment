@@ -6,13 +6,74 @@
  * - Bot detection for assessment API
  * - Protected route redirects
  * - CSRF validation for API routes
+ * - Rate limiting for all API routes (general tier)
  *
  * NOTE: Kept minimal to stay under Vercel's 1MB Edge Function limit.
- * Rate limiting and auth verification happen in API route handlers.
+ * Auth verification happens in API route handlers.
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// ─── Rate Limiting (Edge-compatible) ───
+
+// Initialize rate limiter only when Redis is configured
+let apiRateLimiter: Ratelimit | null = null;
+let authRateLimiter: Ratelimit | null = null;
+
+function getApiRateLimiter(): Ratelimit | null {
+  if (apiRateLimiter) return apiRateLimiter;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  apiRateLimiter = new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(100, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:mw:api",
+  });
+  return apiRateLimiter;
+}
+
+function getAuthRateLimiter(): Ratelimit | null {
+  if (authRateLimiter) return authRateLimiter;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  authRateLimiter = new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(10, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:mw:auth",
+  });
+  return authRateLimiter;
+}
+
+// Routes exempt from middleware rate limiting (webhooks, cron jobs)
+const RATE_LIMIT_EXEMPT_ROUTES = [
+  "/api/v1/webhooks",
+  "/api/cron/",
+  "/api/auth/", // NextAuth callbacks have their own protection
+];
+
+function getClientIp(req: NextRequest): string {
+  // Trust CDN headers first (cannot be spoofed by client)
+  const cfIp = req.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp;
+
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) return realIp;
+
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ips = forwarded.split(",").map((ip) => ip.trim());
+    return ips[ips.length - 1] || "unknown";
+  }
+
+  return "unknown";
+}
 
 // ─── Security Headers ───
 
@@ -117,7 +178,7 @@ function validateOrigin(req: NextRequest): boolean {
 
 // ─── Main Middleware ───
 
-export default function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
 
@@ -137,6 +198,51 @@ export default function middleware(req: NextRequest) {
       ),
       pathname,
     );
+  }
+
+  // Rate limiting for API routes
+  if (isApiRoute) {
+    const isExempt = RATE_LIMIT_EXEMPT_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
+
+    if (!isExempt) {
+      // Use stricter limiter for auth-related endpoints
+      const isAuthRoute =
+        pathname.startsWith("/api/auth") ||
+        pathname === "/api/signup" ||
+        pathname === "/api/login";
+      const limiter = isAuthRoute ? getAuthRateLimiter() : getApiRateLimiter();
+
+      if (limiter) {
+        const ip = getClientIp(req);
+        const result = await limiter.limit(`ip:${ip}`);
+
+        if (!result.success) {
+          const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
+          return applySecurityHeaders(
+            new NextResponse(
+              JSON.stringify({
+                error: "Too Many Requests",
+                message: "Rate limit exceeded. Please try again later.",
+                retryAfter,
+              }),
+              {
+                status: 429,
+                headers: {
+                  "Content-Type": "application/json",
+                  "Retry-After": retryAfter.toString(),
+                  "X-RateLimit-Limit": result.limit.toString(),
+                  "X-RateLimit-Remaining": "0",
+                  "X-RateLimit-Reset": result.reset.toString(),
+                },
+              },
+            ),
+            pathname,
+          );
+        }
+      }
+    }
   }
 
   // CSRF check for API routes
