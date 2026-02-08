@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   ShieldOff,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface NIS2Assessment {
   id: string;
@@ -107,7 +108,7 @@ export default function NIS2ModulePage() {
 
       const res = await fetch("/api/nis2", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentName: `NIS2 Assessment ${new Date().toLocaleDateString()}`,
           sector: (pendingData?.sector as string) || "space",

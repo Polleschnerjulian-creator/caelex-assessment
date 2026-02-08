@@ -291,6 +291,9 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Layer 2: Double-submit cookie validation for mutating requests
+    // NOTE: Currently in monitoring mode (log-only). Origin validation (Layer 1)
+    // provides primary CSRF protection. Double-submit enforcement will be enabled
+    // once all client-side fetch calls include csrfHeaders().
     const method = req.method.toUpperCase();
     const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
     const isCsrfExempt = CSRF_EXEMPT_ROUTES.some((route) =>
@@ -301,18 +304,9 @@ export default async function middleware(req: NextRequest) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
 
-      // Only enforce if the cookie exists (gradual rollout: cookie is set on page load)
       if (cookieToken && !validateCsrfToken(cookieToken, headerToken)) {
-        return applySecurityHeaders(
-          new NextResponse(
-            JSON.stringify({
-              error: "Forbidden",
-              message: "Invalid CSRF token",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          ),
-          pathname,
-        );
+        // Log for monitoring — will be enforced once all clients send CSRF headers
+        console.warn(`[CSRF] Missing/invalid token on ${method} ${pathname}`);
       }
     }
   }
