@@ -15,6 +15,7 @@ interface OverlapRequirement {
 interface NIS2CrosswalkViewProps {
   overlappingRequirements: OverlapRequirement[];
   overlapCount: number;
+  totalApplicable: number;
   totalPotentialSavingsWeeks: number;
 }
 
@@ -45,6 +46,7 @@ const effortConfig = {
 export default function NIS2CrosswalkView({
   overlappingRequirements,
   overlapCount,
+  totalApplicable,
   totalPotentialSavingsWeeks,
 }: NIS2CrosswalkViewProps) {
   const singleImpl = overlappingRequirements.filter(
@@ -85,12 +87,15 @@ export default function NIS2CrosswalkView({
             Overlapping
           </div>
         </div>
-        <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 text-center">
+        <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 text-center group/weeks relative">
           <div className="text-xl font-mono font-bold text-blue-400">
             {totalPotentialSavingsWeeks}
           </div>
           <div className="text-[10px] uppercase tracking-wider text-blue-400/60 mt-1">
             Weeks Saved
+          </div>
+          <div className="text-[9px] text-blue-400/40 mt-1 leading-tight">
+            Effort transferable to EU Space Act
           </div>
         </div>
         <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3 text-center">
@@ -99,7 +104,7 @@ export default function NIS2CrosswalkView({
             <span className="text-xl font-mono font-bold text-white">
               {Math.round(
                 ((singleImpl.length + partialOverlap.length * 0.5) /
-                  Math.max(overlappingRequirements.length, 1)) *
+                  Math.max(totalApplicable, 1)) *
                   100,
               )}
               %

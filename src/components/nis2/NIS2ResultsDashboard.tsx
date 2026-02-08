@@ -138,6 +138,7 @@ export default function NIS2ResultsDashboard({
                 result.euSpaceActOverlap.overlappingRequirements || []
               }
               overlapCount={result.euSpaceActOverlap.count}
+              totalApplicable={result.applicableCount}
               totalPotentialSavingsWeeks={
                 result.euSpaceActOverlap.totalPotentialSavingsWeeks
               }
