@@ -10,6 +10,7 @@ import {
   Globe,
   Globe2,
   Users,
+  User,
   GraduationCap,
   Building,
   Landmark,
@@ -31,6 +32,11 @@ import {
   Award,
   AlertTriangle,
   Eye,
+  Wifi,
+  Navigation,
+  Radar,
+  MapPin,
+  Map,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +51,7 @@ const iconMap: Record<string, LucideIcon> = {
   Globe,
   Globe2,
   Users,
+  User,
   GraduationCap,
   Building,
   Landmark,
@@ -66,6 +73,11 @@ const iconMap: Record<string, LucideIcon> = {
   Award,
   AlertTriangle,
   Eye,
+  Wifi,
+  Navigation,
+  Radar,
+  MapPin,
+  Map,
   // Add Orbit as an alias to CircleDot
   Orbit: CircleDot,
 };
