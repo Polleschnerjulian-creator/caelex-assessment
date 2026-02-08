@@ -14,6 +14,8 @@ import {
   hasPermission,
   getDefaultPermissionsForRole,
 } from "@/lib/services/organization-service";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
+import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
   params: Promise<{ orgId: string; id: string }>;
@@ -87,8 +89,37 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const invitation = await resendInvitation(invitationId, session.user.id);
 
-    // TODO: Send invitation email again
-    // await sendInvitationEmail(invitation);
+    // Send invitation email
+    const inviteUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || ""}/invite/${invitation.token}`;
+    if (isEmailConfigured()) {
+      const org = await prisma.organization.findUnique({
+        where: { id: orgId },
+        select: { name: true },
+      });
+      const inviterName =
+        session.user.name || session.user.email || "A team member";
+      const orgName = org?.name || "an organization";
+
+      await sendEmail({
+        to: invitation.email,
+        subject: `Reminder: You've been invited to join ${orgName} on Caelex`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; max-width: 600px;">
+            <h1 style="color: #3B82F6;">Invitation Reminder</h1>
+            <p>${inviterName} has invited you to join <strong>${orgName}</strong> on Caelex as a <strong>${invitation.role}</strong>.</p>
+            <p>This is a reminder — your invitation is still waiting for you.</p>
+            <div style="margin: 30px 0;">
+              <a href="${inviteUrl}" style="background: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                Accept Invitation
+              </a>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">This invitation expires in 7 days. If you didn't expect this email, you can safely ignore it.</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+            <p style="color: #9ca3af; font-size: 12px;">Caelex - Space Compliance, Simplified</p>
+          </div>
+        `,
+      });
+    }
 
     return NextResponse.json({
       invitation: {
@@ -96,7 +127,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         email: invitation.email,
         role: invitation.role,
         expiresAt: invitation.expiresAt,
-        inviteUrl: `${process.env.NEXTAUTH_URL || ""}/invite/${invitation.token}`,
+        inviteUrl,
       },
       message: "Invitation resent successfully",
     });

@@ -12,6 +12,7 @@ import type {
   Prisma,
 } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
 
 // ─── Types ───
 
@@ -569,30 +570,58 @@ async function sendNotificationEmail(
     ? `${config.emailSubjectPrefix} ${notification.title}`
     : notification.title;
 
-  // TODO: Integrate with email service
-  // await sendEmail({
-  //   to: user.email,
-  //   subject,
-  //   template: 'notification',
-  //   data: {
-  //     name: user.name,
-  //     title: notification.title,
-  //     message: notification.message,
-  //     actionUrl: notification.actionUrl,
-  //     severity: notification.severity,
-  //   },
-  // });
+  if (!isEmailConfigured()) {
+    logger.info(
+      `[Notification Email] Email not configured, skipping: ${subject}`,
+    );
+    return;
+  }
 
-  // Mark as email sent
-  await prisma.notification.update({
-    where: { id: notification.id },
-    data: {
-      emailSent: true,
-      emailSentAt: new Date(),
-    },
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.AUTH_URL || "";
+  const actionLink = notification.actionUrl
+    ? `<div style="margin: 20px 0;"><a href="${baseUrl}${notification.actionUrl}" style="background: #3B82F6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Details</a></div>`
+    : "";
+
+  const severityColor =
+    notification.severity === "URGENT"
+      ? "#EF4444"
+      : notification.severity === "WARNING"
+        ? "#F59E0B"
+        : "#3B82F6";
+
+  const result = await sendEmail({
+    to: user.email,
+    subject,
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; max-width: 600px;">
+        <div style="border-left: 4px solid ${severityColor}; padding-left: 16px; margin-bottom: 20px;">
+          <h2 style="color: #1E293B; margin: 0 0 8px 0;">${notification.title}</h2>
+          <p style="color: #475569; margin: 0;">${notification.message || ""}</p>
+        </div>
+        ${actionLink}
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+        <p style="color: #9ca3af; font-size: 12px;">Caelex - Space Compliance, Simplified</p>
+      </div>
+    `,
+    userId: notification.userId,
+    notificationType: "deadline_reminder",
+    entityType: "summary",
   });
 
-  logger.info(`[Notification Email] Would send to ${user.email}: ${subject}`);
+  if (result.success) {
+    await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        emailSent: true,
+        emailSentAt: new Date(),
+      },
+    });
+    logger.info(`[Notification Email] Sent to ${user.email}: ${subject}`);
+  } else {
+    logger.error(
+      `[Notification Email] Failed to send to ${user.email}: ${result.error}`,
+    );
+  }
 }
 
 // ─── Convenience Functions ───
