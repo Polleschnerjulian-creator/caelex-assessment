@@ -60,7 +60,7 @@ export async function getActivities(
   const { page = 1, limit = 50 } = options;
   const skip = (page - 1) * limit;
 
-  const where: any = {
+  const where: Prisma.ActivityWhereInput = {
     organizationId,
     ...(filters.userId && { userId: filters.userId }),
     ...(filters.entityType && { entityType: filters.entityType }),

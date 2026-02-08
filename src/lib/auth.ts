@@ -70,8 +70,10 @@ const isProduction = process.env.NODE_ENV === "production";
 
 function createNoOpAuth() {
   // Returns a middleware-compatible function that passes through
-  const noOpMiddleware = (handler: Function) => {
-    return async (req: any) => {
+  const noOpMiddleware = (
+    handler: (req: Request & { auth?: null }) => Promise<Response>,
+  ) => {
+    return async (req: Request & { auth?: null }) => {
       // Attach empty auth to the request so middleware doesn't crash
       req.auth = null;
       return handler(req);
@@ -85,7 +87,7 @@ function createNoOpAuth() {
     },
     signIn: async () => undefined,
     signOut: async () => undefined,
-    auth: noOpMiddleware as any,
+    auth: noOpMiddleware as any, // Intentional: cannot match NextAuth's complex return type
   };
 }
 

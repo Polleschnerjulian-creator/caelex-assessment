@@ -143,7 +143,7 @@ export async function getComments(
   const { page = 1, limit = 50 } = options;
   const skip = (page - 1) * limit;
 
-  const where: any = {
+  const where: Record<string, unknown> = {
     organizationId,
     ...(filters.entityType && { entityType: filters.entityType }),
     ...(filters.entityId && { entityId: filters.entityId }),

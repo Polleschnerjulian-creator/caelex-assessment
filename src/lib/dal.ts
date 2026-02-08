@@ -370,7 +370,13 @@ export interface UserProfileDTO {
   operatorType: string | null;
 }
 
-export function toUserProfileDTO(user: any): UserProfileDTO {
+export function toUserProfileDTO(user: {
+  id: string;
+  name: string | null;
+  email: string | null;
+  organization: string | null;
+  operatorType: string | null;
+}): UserProfileDTO {
   return {
     id: user.id,
     name: user.name,
@@ -387,7 +393,12 @@ export interface ArticleStatusDTO {
   updatedAt: Date;
 }
 
-export function toArticleStatusDTO(status: any): ArticleStatusDTO {
+export function toArticleStatusDTO(status: {
+  articleId: string;
+  status: string;
+  notes: string | null;
+  updatedAt: Date;
+}): ArticleStatusDTO {
   return {
     articleId: status.articleId,
     status: status.status,
