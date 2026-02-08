@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
-import { MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from "@/lib/storage/r2-client";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  MAX_FILE_SIZE,
+  ALLOWED_MIME_TYPES,
+  getR2Client,
+  getR2BucketName,
+  isR2Configured,
+} from "@/lib/storage/r2-client";
 
 // GET /api/documents - List documents with filters
 export async function GET(req: Request) {
@@ -152,11 +159,30 @@ export async function POST(req: Request) {
       const fileBuffer = Buffer.from(await file.arrayBuffer());
       checksum = crypto.createHash("sha256").update(fileBuffer).digest("hex");
 
-      // For now, store path as a reference - in production, upload to S3/GCS
-      storagePath = `documents/${session.user.id}/${Date.now()}-${fileName}`;
+      // Generate a safe storage path
+      const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      storagePath = `documents/${session.user.id}/${Date.now()}-${safeFileName}`;
 
-      // TODO: Implement actual file storage
-      // await uploadToStorage(storagePath, fileBuffer);
+      // Upload to R2 if configured, otherwise store path reference only
+      if (isR2Configured()) {
+        const r2 = getR2Client();
+        if (r2) {
+          await r2.send(
+            new PutObjectCommand({
+              Bucket: getR2BucketName(),
+              Key: storagePath,
+              Body: fileBuffer,
+              ContentType: mimeType,
+              ContentLength: fileSize,
+              Metadata: {
+                "user-id": session.user.id,
+                "original-filename": fileName,
+                checksum,
+              },
+            }),
+          );
+        }
+      }
     }
 
     const document = await prisma.document.create({
