@@ -380,8 +380,8 @@ export const articles: Article[] = [
     titleName: "Governance Aspects",
   },
   {
-    id: "art-40-47",
-    number: "40-47",
+    id: "art-40-43",
+    number: "40-43",
     title: "EUSPA Tasks & Structures",
     summary:
       "EU Space Programme Agency tasks, governance, and structural provisions",
@@ -394,21 +394,128 @@ export const articles: Article[] = [
     titleName: "Governance Aspects",
   },
   {
-    id: "art-48",
-    number: "48",
-    title: "Commission Supervision (TCO)",
-    summary: "Commission supervisory powers over third country operators",
-    appliesTo: ["TCO"],
-    complianceType: "mandatory_ongoing",
-    operatorAction: "Cooperate with Commission supervision activities",
-    module: "supervision",
-    moduleLabel: "Supervision",
+    id: "art-44",
+    number: "44",
+    title: "Insurance Obligation",
+    summary:
+      "General obligation for space operators to obtain and maintain third-party liability insurance or equivalent financial guarantee covering space activities",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "mandatory_pre_activity",
+    operatorAction:
+      "Obtain third-party liability insurance or financial guarantee before commencing space activities",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
     titleGroup: "Title III",
     titleName: "Governance Aspects",
   },
   {
-    id: "art-49-52",
-    number: "49-52",
+    id: "art-45",
+    number: "45",
+    title: "Minimum Insurance Coverage",
+    summary:
+      "Minimum coverage amounts for third-party liability insurance based on risk profile, mission type, and orbital regime",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "mandatory_pre_activity",
+    operatorAction:
+      "Ensure insurance coverage meets minimum thresholds set by delegated acts for your mission risk profile",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-46",
+    number: "46",
+    title: "Launch Provider Insurance",
+    summary:
+      "Specific insurance requirements for launch operators covering launch phase risks, including third-party damage from launch failures",
+    appliesTo: ["LO", "LSO"],
+    complianceType: "mandatory_pre_activity",
+    operatorAction:
+      "Obtain launch-specific insurance covering pre-launch, launch, and early orbit phase risks",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-47",
+    number: "47",
+    title: "Third-Party Liability",
+    summary:
+      "Framework for third-party liability including cross-waiver arrangements between operators and state indemnification thresholds",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "mandatory_ongoing",
+    operatorAction:
+      "Establish liability framework with cross-waiver agreements and understand state indemnification thresholds",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-48",
+    number: "48",
+    title: "Insurance Review & Adjustment",
+    summary:
+      "Periodic review of insurance adequacy by NCAs, with power to require adjustments based on mission changes or risk reassessment",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "mandatory_ongoing",
+    operatorAction:
+      "Submit to periodic insurance reviews and adjust coverage as required by NCA directives",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-49",
+    number: "49",
+    title: "Financial Guarantee Alternatives",
+    summary:
+      "Alternative financial guarantee mechanisms permitted in lieu of traditional insurance, including bank guarantees, escrow, and self-insurance for qualified entities",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "conditional",
+    operatorAction:
+      "Evaluate alternative financial guarantee options if traditional insurance is unavailable or insufficient",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-50",
+    number: "50",
+    title: "State Indemnification",
+    summary:
+      "Government backstop provisions for claims exceeding maximum insurable amounts, including conditions for state indemnification and inter-state cost sharing",
+    appliesTo: ["ALL"],
+    complianceType: "informational",
+    operatorAction:
+      "Understand state indemnification thresholds and conditions for your jurisdiction",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-51",
+    number: "51",
+    title: "Insurance Reporting",
+    summary:
+      "Annual reporting obligations for insurance status, including proof of coverage, claims history, and notification of material changes to insurance terms",
+    appliesTo: ["SCO", "LO", "LSO", "ISOS"],
+    complianceType: "mandatory_ongoing",
+    operatorAction:
+      "Submit annual insurance status reports and notify NCA of any material changes to coverage",
+    module: "insurance",
+    moduleLabel: "Insurance & Liability",
+    titleGroup: "Title III",
+    titleName: "Governance Aspects",
+  },
+  {
+    id: "art-52-54",
+    number: "52-54",
     title: "Investigation Powers",
     summary:
       "Powers of investigation including on-site inspections and information requests",
@@ -422,8 +529,8 @@ export const articles: Article[] = [
     titleName: "Governance Aspects",
   },
   {
-    id: "art-53-55",
-    number: "53-55",
+    id: "art-55",
+    number: "55",
     title: "Findings & Corrective Measures",
     summary: "Process for findings, corrective measures, and compliance orders",
     appliesTo: ["ALL"],

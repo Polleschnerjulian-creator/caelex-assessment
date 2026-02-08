@@ -95,7 +95,7 @@ export const modules: ModuleDefinition[] = [
     shortName: "Supervision",
     icon: "Eye",
     description: "Ongoing supervisory obligations and incident reporting",
-    articleRange: "Art. 26–31, 40–57, 73",
+    articleRange: "Art. 26–31, 40–43, 52–57, 73",
     color: "rgba(255,255,139,0.5)",
   },
   {
