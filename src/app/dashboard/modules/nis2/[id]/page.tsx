@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import EvidencePanel from "@/components/audit/EvidencePanel";
+import AstraButton from "@/components/astra/AstraButton";
 import { getIcon } from "@/lib/icons";
 import type { Question, QuestionOption } from "@/lib/questions";
 
@@ -1957,6 +1958,15 @@ export default function NIS2AssessmentDetailPage() {
                         <EvidencePanel
                           regulationType="NIS2"
                           requirementId={req.requirementId}
+                        />
+
+                        {/* ASTRA AI Agent */}
+                        <AstraButton
+                          articleId={req.requirementId}
+                          articleRef={meta?.articleRef || req.requirementId}
+                          title={meta?.title || req.requirementId}
+                          severity={meta?.severity || "major"}
+                          regulationType="NIS2"
                         />
 
                         {/* Status buttons */}

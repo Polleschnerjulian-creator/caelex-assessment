@@ -25,6 +25,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
+import AstraButton from "@/components/astra/AstraButton";
+import AstraBulkButton from "@/components/astra/AstraBulkButton";
 import {
   getApplicableRequirements,
   isEligibleForSimplifiedRegime,
@@ -1200,6 +1202,25 @@ function CybersecurityPageContent() {
                   )}
                 </div>
 
+                {/* ASTRA Bulk Button for active category */}
+                {activeCategory && groupedRequirements[activeCategory] && (
+                  <div className="flex justify-end">
+                    <AstraBulkButton
+                      category={activeCategory}
+                      categoryLabel={categoryConfig[activeCategory].label}
+                      articles={(groupedRequirements[activeCategory] || []).map(
+                        (r) => ({
+                          id: r.id,
+                          articleRef: r.articleRef,
+                          title: r.title,
+                          severity: r.severity,
+                        }),
+                      )}
+                      regulationType="CYBERSECURITY"
+                    />
+                  </div>
+                )}
+
                 {/* Requirements list */}
                 <div className="space-y-3">
                   {(activeCategory
@@ -1370,6 +1391,15 @@ function CybersecurityPageContent() {
                                 <EvidencePanel
                                   regulationType="CYBERSECURITY"
                                   requirementId={req.id}
+                                />
+
+                                {/* ASTRA AI Agent */}
+                                <AstraButton
+                                  articleId={req.id}
+                                  articleRef={req.articleRef}
+                                  title={req.title}
+                                  severity={req.severity}
+                                  regulationType="CYBERSECURITY"
                                 />
 
                                 {/* References */}

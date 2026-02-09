@@ -31,6 +31,7 @@ import {
   documentStatusFlow,
   workflowStatusFlow,
 } from "@/data/authorization-documents";
+import AstraButton from "@/components/astra/AstraButton";
 
 interface Workflow {
   id: string;
@@ -836,6 +837,15 @@ function AuthorizationPageContent() {
                                   </ul>
                                 </div>
                               )}
+
+                            {/* ASTRA AI Agent */}
+                            <AstraButton
+                              articleId={doc.id}
+                              articleRef={doc.articleRef || doc.documentType}
+                              title={doc.name}
+                              severity={doc.required ? "critical" : "major"}
+                              regulationType="AUTHORIZATION"
+                            />
                           </div>
                         </div>
                       </div>

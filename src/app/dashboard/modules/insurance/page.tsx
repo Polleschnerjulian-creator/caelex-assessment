@@ -53,6 +53,7 @@ import {
   type PolicyStatus,
   type MissionRiskLevel,
 } from "@/data/insurance-requirements";
+import AstraButton from "@/components/astra/AstraButton";
 
 // Icon mapping for insurance types
 const insuranceTypeIcons: Record<InsuranceType, React.ReactNode> = {
@@ -1143,6 +1144,17 @@ function InsurancePageContent() {
                               )}
                             </select>
                           </div>
+                        </div>
+
+                        {/* ASTRA AI Agent */}
+                        <div className="mb-4">
+                          <AstraButton
+                            articleId={policy.id}
+                            articleRef={`Art. 44-51`}
+                            title={typeDef?.name || policy.insuranceType}
+                            severity={isRequired ? "critical" : "major"}
+                            regulationType="INSURANCE"
+                          />
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

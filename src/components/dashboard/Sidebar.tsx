@@ -22,9 +22,11 @@ import {
   Lock,
   Crown,
   ClipboardCheck,
+  Zap,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { useAstra } from "@/components/astra/AstraProvider";
 import { getRequiredPlan, PRICING_TIERS } from "@/lib/stripe/pricing";
 
 interface NavItemProps {
@@ -167,6 +169,7 @@ interface SidebarProps {
 
 export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const { hasModuleAccess, isLoading } = useOrganization();
+  const { openGeneral } = useAstra();
 
   const handleNavClick = () => {
     if (onClose) onClose();
@@ -337,6 +340,32 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/supervision",
                 )}
               />
+            </div>
+          </div>
+
+          {/* AI Agent Section */}
+          <div className="mb-6">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+              AI Agent
+            </p>
+            <div className="space-y-0.5">
+              <button
+                onClick={() => {
+                  openGeneral();
+                  handleNavClick();
+                }}
+                className="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] w-full text-left
+                  text-slate-800 dark:text-cyan-400/80 hover:text-slate-900 dark:hover:text-cyan-300
+                  hover:bg-slate-100 dark:hover:bg-cyan-500/[0.06] transition-all duration-150"
+              >
+                <span className="w-4 h-4 flex-shrink-0 text-cyan-500 dark:text-cyan-400">
+                  <Zap size={16} strokeWidth={1.5} />
+                </span>
+                <span className="flex-1">ASTRA</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium uppercase tracking-wider">
+                  Beta
+                </span>
+              </button>
             </div>
           </div>
 

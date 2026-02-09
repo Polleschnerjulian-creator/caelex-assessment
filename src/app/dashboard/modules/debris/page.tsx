@@ -22,6 +22,7 @@ import {
   Target,
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
+import AstraButton from "@/components/astra/AstraButton";
 import {
   debrisRequirements,
   getApplicableRequirements,
@@ -1031,6 +1032,15 @@ function DebrisPageContent() {
                             <EvidencePanel
                               regulationType="DEBRIS"
                               requirementId={req.id}
+                            />
+
+                            {/* ASTRA AI Agent */}
+                            <AstraButton
+                              articleId={req.id}
+                              articleRef={req.articleRef}
+                              title={req.title}
+                              severity={req.severity}
+                              regulationType="DEBRIS"
                             />
                           </div>
                         </div>

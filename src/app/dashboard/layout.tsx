@@ -8,6 +8,8 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { OrganizationProvider } from "@/components/providers/OrganizationProvider";
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
+import { AstraProvider } from "@/components/astra/AstraProvider";
+import AstraChatPanel from "@/components/astra/AstraChatPanel";
 
 export default function DashboardLayout({
   children,
@@ -20,37 +22,42 @@ export default function DashboardLayout({
   return (
     <OrganizationProvider>
       <ToastProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0B]">
-          <div className="lg:grid lg:grid-cols-[260px_1fr]">
-            {/* Sidebar */}
-            <Sidebar
-              user={
-                session?.user as {
-                  name?: string | null;
-                  email?: string | null;
-                  image?: string | null;
-                  role?: string;
-                  organization?: string;
+        <AstraProvider>
+          <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A0B]">
+            <div className="lg:grid lg:grid-cols-[260px_1fr]">
+              {/* Sidebar */}
+              <Sidebar
+                user={
+                  session?.user as {
+                    name?: string | null;
+                    email?: string | null;
+                    image?: string | null;
+                    role?: string;
+                    organization?: string;
+                  }
                 }
-              }
-              isOpen={sidebarOpen}
-              onClose={() => setSidebarOpen(false)}
-            />
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+              />
 
-            {/* Main content */}
-            <div className="flex flex-col min-h-screen">
-              <TopBar onMenuClick={() => setSidebarOpen(true)} />
-              <main className="flex-1 p-6 lg:p-8">
-                <div className="max-w-[1400px] mx-auto">
-                  <ErrorBoundary>{children}</ErrorBoundary>
-                </div>
-              </main>
+              {/* Main content */}
+              <div className="flex flex-col min-h-screen">
+                <TopBar onMenuClick={() => setSidebarOpen(true)} />
+                <main className="flex-1 p-6 lg:p-8">
+                  <div className="max-w-[1400px] mx-auto">
+                    <ErrorBoundary>{children}</ErrorBoundary>
+                  </div>
+                </main>
+              </div>
             </div>
-          </div>
 
-          {/* Onboarding overlay for new users */}
-          <OnboardingOverlay />
-        </div>
+            {/* ASTRA Chat Panel */}
+            <AstraChatPanel />
+
+            {/* Onboarding overlay for new users */}
+            <OnboardingOverlay />
+          </div>
+        </AstraProvider>
       </ToastProvider>
     </OrganizationProvider>
   );

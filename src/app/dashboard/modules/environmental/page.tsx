@@ -38,6 +38,7 @@ import {
   type PropellantType,
   type EFDGrade,
 } from "@/data/environmental-requirements";
+import AstraButton from "@/components/astra/AstraButton";
 
 type WizardStep = "mission_profile" | "calculator" | "suppliers" | "report";
 
@@ -1852,9 +1853,18 @@ function ReportStep({
                     {req.title}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 dark:text-white/60">
-                  Deadline: {req.deadline}
-                </span>
+                <div className="flex items-center gap-3">
+                  <AstraButton
+                    articleId={req.article}
+                    articleRef={req.article}
+                    title={req.title}
+                    severity="major"
+                    regulationType="ENVIRONMENTAL"
+                  />
+                  <span className="text-[11px] text-slate-500 dark:text-white/60">
+                    Deadline: {req.deadline}
+                  </span>
+                </div>
               </div>
             ))}
         </div>
