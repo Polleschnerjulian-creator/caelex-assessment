@@ -17,12 +17,12 @@ export default function Home() {
       <Hero />
       <TrustBar />
       <ProblemStatement />
+      <AstraShowcase />
       <ValueProposition />
       <PlatformPreview />
       <Lifecycle />
       <Modules />
       <FeatureGrid />
-      <AstraShowcase />
       <TargetAudience />
       <Metrics />
       <FinalCTA />
