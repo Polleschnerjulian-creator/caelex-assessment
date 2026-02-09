@@ -29,7 +29,7 @@ export default function Hero() {
         transition={{ duration: 1, delay: 0.5 }}
         className="absolute top-24 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">01 / 11</span>
+        <span className="font-mono text-[11px] text-white/30">01 / 12</span>
       </motion.div>
 
       {/* Entity - Centered, larger */}

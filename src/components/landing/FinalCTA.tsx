@@ -28,7 +28,7 @@ export default function FinalCTA() {
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">11 / 11</span>
+        <span className="font-mono text-[11px] text-white/30">12 / 12</span>
       </motion.div>
 
       <div className="max-w-[700px] text-center">

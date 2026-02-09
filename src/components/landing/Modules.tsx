@@ -158,7 +158,7 @@ export default function Modules() {
           >
             <div>
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4">
-                07 / 11 — Platform
+                07 / 12 — Platform
               </span>
               <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-light tracking-[-0.02em] text-white">
                 Eight modules.

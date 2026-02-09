@@ -66,7 +66,7 @@ export default function Lifecycle() {
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">06 / 11</span>
+        <span className="font-mono text-[11px] text-white/30">06 / 12</span>
       </motion.div>
 
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">

@@ -97,7 +97,7 @@ export default function Metrics() {
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
       >
-        <span className="font-mono text-[11px] text-white/30">10 / 11</span>
+        <span className="font-mono text-[11px] text-white/30">11 / 12</span>
       </motion.div>
 
       <div className="max-w-[1400px] mx-auto">
