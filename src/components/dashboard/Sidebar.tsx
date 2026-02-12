@@ -1,8 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   ListChecks,
@@ -19,6 +21,7 @@ import {
   Scale,
   Eye,
   ChevronRight,
+  ChevronDown,
   Lock,
   Crown,
   ClipboardCheck,
@@ -77,7 +80,8 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
   );
 }
 
-interface ModuleNavItemProps {
+// Compact module item for use inside collapsible groups
+interface CompactModuleItemProps {
   href: string;
   icon: React.ReactNode;
   label: string;
@@ -86,18 +90,16 @@ interface ModuleNavItemProps {
   requiredPlan?: string;
 }
 
-function ModuleNavItem({
+function CompactModuleItem({
   href,
   icon,
   label,
   onClick,
   locked,
   requiredPlan,
-}: ModuleNavItemProps) {
+}: CompactModuleItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + "/");
-
-  // If locked, navigate to billing instead
   const targetHref = locked ? "/dashboard/settings/billing" : href;
 
   return (
@@ -105,45 +107,108 @@ function ModuleNavItem({
       href={targetHref}
       onClick={onClick}
       className={`
-        group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px]
+        group flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px]
         transition-all duration-150
         ${
           locked
             ? "text-slate-400 dark:text-white/25 hover:text-slate-500 dark:hover:text-white/35 hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-default"
             : isActive
               ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-              : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+              : "text-slate-700 dark:text-white/50 hover:text-slate-900 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
         }
       `}
     >
       <span
-        className={`w-4 h-4 flex-shrink-0 ${
+        className={`w-3.5 h-3.5 flex-shrink-0 ${
           locked
             ? "text-slate-300 dark:text-white/20"
             : isActive
               ? "text-emerald-700 dark:text-emerald-400"
-              : "text-slate-600 dark:text-white/60 group-hover:text-slate-700 dark:group-hover:text-white/60"
+              : "text-slate-500 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/50"
         }`}
       >
         {icon}
       </span>
       <span className={`flex-1 ${locked ? "opacity-60" : ""}`}>{label}</span>
-      {locked ? (
+      {locked && (
         <span className="flex items-center gap-1">
           {requiredPlan && (
-            <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/20">
+            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/20">
               {requiredPlan}
             </span>
           )}
-          <Lock size={12} className="text-slate-300 dark:text-white/20" />
+          <Lock size={10} className="text-slate-300 dark:text-white/20" />
         </span>
-      ) : (
-        <ChevronRight
-          size={14}
-          className={`opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "text-emerald-700 dark:text-emerald-400 opacity-100" : "text-slate-400 dark:text-white/30"}`}
-        />
       )}
     </Link>
+  );
+}
+
+// Collapsible module group
+interface ModuleGroupProps {
+  title: string;
+  count: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  hasActiveItem?: boolean;
+}
+
+function ModuleGroup({
+  title,
+  count,
+  isExpanded,
+  onToggle,
+  children,
+  hasActiveItem,
+}: ModuleGroupProps) {
+  return (
+    <div className="mb-1">
+      <button
+        onClick={onToggle}
+        className={`
+          w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-wider
+          transition-all duration-150
+          ${
+            hasActiveItem
+              ? "text-emerald-700 dark:text-emerald-400/90"
+              : "text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70"
+          }
+          hover:bg-slate-50 dark:hover:bg-white/[0.02]
+        `}
+      >
+        <motion.span
+          animate={{ rotate: isExpanded ? 0 : -90 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="w-3.5 h-3.5 flex-shrink-0"
+        >
+          <ChevronDown size={14} strokeWidth={2} />
+        </motion.span>
+        <span className="flex-1 text-left">{title}</span>
+        <span
+          className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+            hasActiveItem
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/40"
+          }`}
+        >
+          {count}
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pl-2 pt-1 space-y-0.5">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -156,7 +221,6 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/environmental": "environmental",
   "/dashboard/modules/insurance": "insurance",
   "/dashboard/modules/supervision": "supervision",
-  // Global modules
   "/dashboard/modules/copuos": "copuos",
   "/dashboard/modules/uk-space": "uk-space",
   "/dashboard/modules/us-regulatory": "us-regulatory",
@@ -166,6 +230,28 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/timeline": "timeline",
   "/dashboard/audit-center": "audit-center",
 };
+
+// Module groups configuration
+const EU_MODULES = [
+  "/dashboard/modules/authorization",
+  "/dashboard/modules/cybersecurity",
+  "/dashboard/modules/nis2",
+  "/dashboard/modules/debris",
+  "/dashboard/modules/environmental",
+  "/dashboard/modules/insurance",
+  "/dashboard/modules/supervision",
+];
+
+const INTERNATIONAL_MODULES = [
+  "/dashboard/modules/copuos",
+  "/dashboard/modules/uk-space",
+];
+
+const US_MODULES = [
+  "/dashboard/modules/us-regulatory",
+  "/dashboard/modules/export-control",
+  "/dashboard/modules/spectrum",
+];
 
 interface SidebarProps {
   user?: {
@@ -179,8 +265,48 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
+  const pathname = usePathname();
   const { hasModuleAccess, isLoading } = useOrganization();
   const { openGeneral } = useAstra();
+
+  // Determine which group has the active route
+  const getActiveGroup = (): string | null => {
+    if (EU_MODULES.some((m) => pathname.startsWith(m))) return "eu";
+    if (INTERNATIONAL_MODULES.some((m) => pathname.startsWith(m)))
+      return "international";
+    if (US_MODULES.some((m) => pathname.startsWith(m))) return "us";
+    return null;
+  };
+
+  const activeGroup = getActiveGroup();
+
+  // Track expanded state for each group
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {
+      eu: activeGroup === "eu",
+      international: activeGroup === "international",
+      us: activeGroup === "us",
+    },
+  );
+
+  // Update expanded state when route changes
+  useEffect(() => {
+    const newActiveGroup = getActiveGroup();
+    if (newActiveGroup) {
+      setExpandedGroups((prev) => ({
+        ...prev,
+        [newActiveGroup]: true,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const toggleGroup = (group: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [group]: !prev[group],
+    }));
+  };
 
   const handleNavClick = () => {
     if (onClose) onClose();
@@ -199,15 +325,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         .slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || "?";
 
-  // Helper to check if a module path is locked
   const isModuleLocked = (path: string): boolean => {
-    if (isLoading) return false; // Don't show locks while loading
+    if (isLoading) return false;
     const moduleName = MODULE_MAP[path];
     if (!moduleName) return false;
     return !hasModuleAccess(moduleName);
   };
 
-  // Helper to get the required plan label for a locked module
   const getRequiredPlanLabel = (path: string): string | undefined => {
     const moduleName = MODULE_MAP[path];
     if (!moduleName) return undefined;
@@ -257,8 +381,8 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
           {/* Overview Section */}
-          <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+          <div className="mb-5">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
               Overview
             </p>
             <div className="space-y-0.5">
@@ -279,15 +403,23 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             </div>
           </div>
 
-          {/* Modules Section */}
-          <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+          {/* Compliance Modules Section */}
+          <div className="mb-5">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
               Compliance Modules
             </p>
-            <div className="space-y-0.5">
-              <ModuleNavItem
+
+            {/* EU Regulations Group */}
+            <ModuleGroup
+              title="EU Regulations"
+              count={7}
+              isExpanded={expandedGroups.eu}
+              onToggle={() => toggleGroup("eu")}
+              hasActiveItem={activeGroup === "eu"}
+            >
+              <CompactModuleItem
                 href="/dashboard/modules/authorization"
-                icon={<FileCheck size={16} strokeWidth={1.5} />}
+                icon={<FileCheck size={14} strokeWidth={1.5} />}
                 label="Authorization"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/authorization")}
@@ -295,9 +427,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/authorization",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/cybersecurity"
-                icon={<Shield size={16} strokeWidth={1.5} />}
+                icon={<Shield size={14} strokeWidth={1.5} />}
                 label="Cybersecurity"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/cybersecurity")}
@@ -305,25 +437,25 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/cybersecurity",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/nis2"
-                icon={<ShieldCheck size={16} strokeWidth={1.5} />}
+                icon={<ShieldCheck size={14} strokeWidth={1.5} />}
                 label="NIS2 Directive"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/nis2")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/nis2")}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/debris"
-                icon={<Trash2 size={16} strokeWidth={1.5} />}
+                icon={<Trash2 size={14} strokeWidth={1.5} />}
                 label="Debris Mitigation"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/debris")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/debris")}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/environmental"
-                icon={<Leaf size={16} strokeWidth={1.5} />}
+                icon={<Leaf size={14} strokeWidth={1.5} />}
                 label="Environmental"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/environmental")}
@@ -331,9 +463,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/environmental",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/insurance"
-                icon={<Scale size={16} strokeWidth={1.5} />}
+                icon={<Scale size={14} strokeWidth={1.5} />}
                 label="Insurance"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/insurance")}
@@ -341,9 +473,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/insurance",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/supervision"
-                icon={<Eye size={16} strokeWidth={1.5} />}
+                icon={<Eye size={14} strokeWidth={1.5} />}
                 label="Supervision"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/supervision")}
@@ -351,26 +483,27 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/supervision",
                 )}
               />
-            </div>
-          </div>
+            </ModuleGroup>
 
-          {/* Global Modules Section */}
-          <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
-              Global Modules
-            </p>
-            <div className="space-y-0.5">
-              <ModuleNavItem
+            {/* International Group */}
+            <ModuleGroup
+              title="International"
+              count={2}
+              isExpanded={expandedGroups.international}
+              onToggle={() => toggleGroup("international")}
+              hasActiveItem={activeGroup === "international"}
+            >
+              <CompactModuleItem
                 href="/dashboard/modules/copuos"
-                icon={<Globe size={16} strokeWidth={1.5} />}
+                icon={<Globe size={14} strokeWidth={1.5} />}
                 label="COPUOS/IADC"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/copuos")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/uk-space"
-                icon={<Building2 size={16} strokeWidth={1.5} />}
+                icon={<Building2 size={14} strokeWidth={1.5} />}
                 label="UK Space Act"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/uk-space")}
@@ -378,9 +511,19 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/uk-space",
                 )}
               />
-              <ModuleNavItem
+            </ModuleGroup>
+
+            {/* US Regulations Group */}
+            <ModuleGroup
+              title="US Regulations"
+              count={3}
+              isExpanded={expandedGroups.us}
+              onToggle={() => toggleGroup("us")}
+              hasActiveItem={activeGroup === "us"}
+            >
+              <CompactModuleItem
                 href="/dashboard/modules/us-regulatory"
-                icon={<Flag size={16} strokeWidth={1.5} />}
+                icon={<Flag size={14} strokeWidth={1.5} />}
                 label="US Regulatory"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/us-regulatory")}
@@ -388,9 +531,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/us-regulatory",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/export-control"
-                icon={<AlertTriangle size={16} strokeWidth={1.5} />}
+                icon={<AlertTriangle size={14} strokeWidth={1.5} />}
                 label="Export Control"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/export-control")}
@@ -398,9 +541,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/export-control",
                 )}
               />
-              <ModuleNavItem
+              <CompactModuleItem
                 href="/dashboard/modules/spectrum"
-                icon={<Radio size={16} strokeWidth={1.5} />}
+                icon={<Radio size={14} strokeWidth={1.5} />}
                 label="Spectrum & ITU"
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/spectrum")}
@@ -408,12 +551,12 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   "/dashboard/modules/spectrum",
                 )}
               />
-            </div>
+            </ModuleGroup>
           </div>
 
           {/* AI Agent Section */}
-          <div className="mb-6">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+          <div className="mb-5">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
               AI Agent
             </p>
             <div className="space-y-0.5">
@@ -439,40 +582,37 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Resources Section */}
           <div>
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
               Resources
             </p>
             <div className="space-y-0.5">
-              <ModuleNavItem
+              <NavItem
                 href="/dashboard/documents"
                 icon={<FileText size={16} strokeWidth={1.5} />}
-                label="Documents"
                 onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/documents")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/documents")}
-              />
-              <ModuleNavItem
+              >
+                Documents
+              </NavItem>
+              <NavItem
                 href="/dashboard/audit-center"
                 icon={<ClipboardCheck size={16} strokeWidth={1.5} />}
-                label="Audit Center"
                 onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/audit-center")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/audit-center")}
-              />
-              <ModuleNavItem
+              >
+                Audit Center
+              </NavItem>
+              <NavItem
                 href="/dashboard/timeline"
                 icon={<Clock size={16} strokeWidth={1.5} />}
-                label="Timeline"
                 onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/timeline")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/timeline")}
-              />
+              >
+                Timeline
+              </NavItem>
             </div>
           </div>
 
           {/* Admin — only for cs@ahrensandco.de */}
           {user?.email === "cs@ahrensandco.de" && (
-            <div className="mt-6">
+            <div className="mt-5">
               <div className="space-y-0.5">
                 <NavItem
                   href="/dashboard/admin"
