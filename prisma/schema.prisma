@@ -53,6 +53,9 @@ model User {
   nis2Assessments        NIS2Assessment[]        // NIS2 Directive assessments
   copuosAssessments      CopuosAssessment[]      // COPUOS/IADC/ISO assessments
   ukSpaceAssessments     UkSpaceAssessment[]     // UK Space Industry Act assessments
+  usRegulatoryAssessments UsRegulatoryAssessment[] // US Space Regulatory assessments
+  exportControlAssessments ExportControlAssessment[] // ITAR/EAR Export Control assessments
+  spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 }
@@ -857,6 +860,412 @@ model UkRequirementStatus {
   notes         String?  @db.Text
   evidenceNotes String?  @db.Text
   targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── US Space Regulatory Assessment Models ───
+
+model UsRegulatoryAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, in_progress, completed, archived
+
+  // Operator Profile
+  operatorTypes        String   // JSON array of operator types
+  activityTypes        String   // JSON array of activity types
+  agencies             String   // JSON array of required agencies (FCC, FAA, NOAA)
+  isUsEntity           Boolean  @default(true)
+  usNexus              String   @default("us_licensed") // us_licensed, us_operated, us_launched, us_market_access
+
+  // Orbit/Mission Details
+  orbitRegime          String?  // LEO, MEO, GEO, HEO, cislunar, deep_space
+  altitudeKm           Int?
+  frequencyBands       String?  // JSON array
+  satelliteCount       Int?
+  hasManeuverability   Boolean  @default(false)
+  hasPropulsion        Boolean  @default(false)
+  missionDurationYears Int?
+  isConstellation      Boolean  @default(false)
+  isSmallSatellite     Boolean  @default(false)
+  isNGSO               Boolean  @default(true)
+
+  // Remote Sensing
+  providesRemoteSensing      Boolean @default(false)
+  remoteSensingResolutionM   Float?
+  noaaTierClassification     String? // tier1, tier2, tier3
+
+  // Launch Details (for FAA)
+  launchVehicle        String?
+  launchSite           String?
+  launchDate           DateTime?
+
+  // FCC License Status
+  fccSpaceStationLicense     String?  // not_started, applied, granted, denied
+  fccSpaceStationLicenseNo   String?
+  fccSpectrumLicense         String?
+  fccSpectrumLicenseNo       String?
+  fccDebrisPlanStatus        String?  // not_submitted, submitted, approved
+
+  // FAA License Status
+  faaLaunchLicense           String?
+  faaLaunchLicenseNo         String?
+  faaReentryLicense          String?
+  faaSiteOperatorLicense     String?
+  faaFinancialResponsibility String?  // not_obtained, in_process, obtained
+
+  // NOAA License Status
+  noaaRemoteSensingLicense   String?
+  noaaLicenseNo              String?
+
+  // Insurance/Financial
+  insuranceProvider          String?
+  insuranceCoverageUsd       Float?
+  insuranceConfirmed         Boolean @default(false)
+  mplDetermination           Float?  // FAA Maximum Probable Loss
+
+  // Deorbit Planning
+  plannedDisposalYears       Int?
+  deorbitStrategy            String?  // active_deorbit, passive_decay, graveyard_orbit
+  deorbitCapabilityConfirmed Boolean @default(false)
+
+  // Calculated Results - Per Agency
+  fccComplianceScore         Int?     // 0-100
+  faaComplianceScore         Int?     // 0-100
+  noaaComplianceScore        Int?     // 0-100
+
+  // Overall Calculated Results
+  overallComplianceScore     Int?     // 0-100
+  mandatoryScore             Int?     // 0-100 (mandatory requirements only)
+  riskLevel                  String?  // low, medium, high, critical
+  criticalGaps               Int?     // Count of critical non-compliant requirements
+  majorGaps                  Int?     // Count of major non-compliant requirements
+
+  // Cross-References
+  euSpaceActOverlapCount     Int?     // Number of overlapping EU Space Act articles
+  copuosOverlapCount         Int?     // Number of overlapping COPUOS guidelines
+
+  // Report
+  reportGenerated            Boolean  @default(false)
+  reportGeneratedAt          DateTime?
+
+  // Documentation Checklist (JSON)
+  documentationChecklistJson String?  @db.Text
+
+  // Relations
+  requirementStatuses        UsRequirementStatus[]
+
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([orbitRegime])
+}
+
+model UsRequirementStatus {
+  id            String                  @id @default(cuid())
+  assessmentId  String
+  assessment    UsRegulatoryAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches UsRequirement.id from data file
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── Export Control (ITAR/EAR) ───
+
+model ExportControlAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, in_progress, completed, archived
+
+  // Company Profile
+  companyTypes         String   // JSON array: spacecraft_manufacturer, satellite_operator, etc.
+  hasITARItems         Boolean  @default(false)
+  hasEARItems          Boolean  @default(false)
+  hasForeignNationals  Boolean  @default(false)
+  foreignNationalCountries String? // JSON array of country codes
+  exportsToCountries   String?  // JSON array of country codes
+  hasTechnologyTransfer Boolean @default(false)
+  hasDefenseContracts  Boolean  @default(false)
+  hasManufacturingAbroad Boolean @default(false)
+  hasJointVentures     Boolean  @default(false)
+  annualExportValue    Float?
+
+  // Registration & Compliance Infrastructure
+  registeredWithDDTC   Boolean  @default(false)
+  ddtcRegistrationNo   String?
+  ddtcRegistrationExpiry DateTime?
+  hasTCP               Boolean  @default(false) // Technology Control Plan
+  tcpLastReviewDate    DateTime?
+  hasECL               Boolean  @default(false) // Export Control Licensing System
+  hasAutomatedScreening Boolean @default(false)
+  screeningVendor      String?
+
+  // Empowered Official (ITAR)
+  empoweredOfficialName  String?
+  empoweredOfficialEmail String?
+  empoweredOfficialTitle String?
+
+  // Jurisdiction Determination
+  jurisdictionDetermination String? // itar_only, ear_only, dual_use, itar_with_ear_parts, ear99
+  jurisdictionDeterminationDate DateTime?
+  hasCJRequest         Boolean  @default(false) // Commodity Jurisdiction request pending/completed
+  cjRequestDate        DateTime?
+  cjDeterminationDate  DateTime?
+  cjDetermination      String?  // Result of CJ request
+
+  // ITAR Licensing Status
+  activeITARLicenses   Int?     // Count of active ITAR licenses
+  pendingITARLicenses  Int?     // Count of pending ITAR license applications
+  activeTAAs           Int?     // Count of active TAAs
+  activeMLAs           Int?     // Count of active MLAs
+
+  // EAR Licensing Status
+  activeEARLicenses    Int?     // Count of active BIS licenses
+  pendingEARLicenses   Int?     // Count of pending BIS license applications
+  usesLicenseExceptions Boolean @default(false)
+  licenseExceptionsUsed String? // JSON array: TMP, RPL, GOV, TSR, STA, etc.
+
+  // Training & Audit
+  lastTrainingDate     DateTime?
+  nextTrainingDue      DateTime?
+  trainingCompletionRate Float?  // 0-100%
+  lastAuditDate        DateTime?
+  nextAuditDue         DateTime?
+  lastAuditFindings    String?  @db.Text // Summary of findings
+
+  // Voluntary Disclosure History
+  hasVoluntaryDisclosures Boolean @default(false)
+  voluntaryDisclosureCount Int?
+  lastVoluntaryDisclosureDate DateTime?
+
+  // Calculated Results - By Regulation
+  itarComplianceScore  Int?     // 0-100
+  earComplianceScore   Int?     // 0-100
+
+  // Overall Calculated Results
+  overallComplianceScore Int?   // 0-100
+  mandatoryScore       Int?     // 0-100 (mandatory requirements only)
+  criticalScore        Int?     // 0-100 (critical risk requirements only)
+  riskLevel            String?  // low, medium, high, critical
+  criticalGaps         Int?     // Count of critical gaps
+  highGaps             Int?     // Count of high-risk gaps
+
+  // Penalty Exposure (calculated)
+  maxCivilPenalty      Float?   // Max civil penalty exposure
+  maxCriminalPenalty   Float?   // Max criminal penalty exposure
+  maxImprisonment      Int?     // Max imprisonment in years
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Documentation Checklist (JSON)
+  documentationChecklistJson String? @db.Text
+
+  // Relations
+  requirementStatuses  ExportControlRequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([riskLevel])
+  @@index([hasITARItems])
+  @@index([hasEARItems])
+}
+
+model ExportControlRequirementStatus {
+  id            String                    @id @default(cuid())
+  assessmentId  String
+  assessment    ExportControlAssessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches ExportControlRequirement.id from data file
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+  responsibleParty String? // Person/team responsible for this requirement
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── Spectrum Management & ITU Compliance ───
+
+model SpectrumAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, in_progress, completed, archived
+
+  // Network/Mission Profile
+  networkName          String?
+  operatorName         String?
+  orbitType            String   // GEO, NGSO_LEO, NGSO_MEO, NGSO_HEO
+  altitudeKm           Int?
+  inclinationDeg       Float?
+  satelliteCount       Int      @default(1)
+  isConstellation      Boolean  @default(false)
+  administrationCode   String?  // ITU notifying administration (e.g., F, D, G, USA)
+
+  // Service Types (JSON array)
+  serviceTypes         String   // JSON: ["FSS", "MSS", "BSS", "EESS", etc.]
+
+  // Frequency Bands (JSON array)
+  frequencyBands       String   // JSON: ["Ku", "Ka", "V", "L", etc.]
+
+  // Frequency Details (JSON object with band-specific info)
+  frequencyDetails     String?  @db.Text // JSON: { "Ku": { uplinkMHz: [14000, 14500], downlinkMHz: [11700, 12200], bandwidthMHz: 500 }, ... }
+
+  // EPFD Compliance (for NGSO)
+  requiresEPFD         Boolean  @default(false)
+  epfdCompliant        Boolean?
+  epfdStudyCompleted   Boolean  @default(false)
+  epfdStudyDate        DateTime?
+
+  // ITU Filing Status (per phase)
+  apiStatus            String   @default("not_started") // not_started, in_preparation, submitted, published, extended
+  apiFilingDate        DateTime?
+  apiPublicationDate   DateTime?
+  apiExpiryDate        DateTime?
+  apiReference         String?
+
+  crCStatus            String   @default("not_started") // not_started, in_preparation, submitted, published
+  crCFilingDate        DateTime?
+  crCPublicationDate   DateTime?
+  crCReference         String?
+
+  notificationStatus   String   @default("not_started") // not_started, in_preparation, submitted, examined, favorable, unfavorable
+  notificationFilingDate DateTime?
+  notificationExaminationDate DateTime?
+  notificationReference String?
+
+  recordingStatus      String   @default("not_started") // not_started, pending, recorded, suspended
+  recordingDate        DateTime?
+  recordingReference   String?
+  mfrnReference        String?  // Master International Frequency Register reference
+
+  // Due Diligence / Bringing into Use
+  biuDeadline          DateTime?
+  biuAchieved          Boolean  @default(false)
+  biuDate              DateTime?
+  biuEvidenceDocument  String?  // Reference to uploaded evidence
+
+  // NGSO Milestones (for NGSO systems)
+  milestone10Percent   DateTime? // 10% of constellation deployed
+  milestone50Percent   DateTime? // 50% of constellation deployed
+  milestone100Percent  DateTime? // 100% of constellation deployed
+  milestone10Achieved  Boolean   @default(false)
+  milestone50Achieved  Boolean   @default(false)
+  milestone100Achieved Boolean   @default(false)
+
+  // Coordination Status (JSON object)
+  coordinationStatus   String?  @db.Text // JSON: { "affectedAdmins": [...], "coordinations": { "USA": { status: "in_progress", date: "...", notes: "..." }, ... } }
+  hasCoordinationAgreements Boolean @default(false)
+  coordinationAgreementsJson String? @db.Text // JSON array of coordination agreements
+
+  // Jurisdiction Licenses (JSON object tracking licenses per jurisdiction)
+  jurisdictionLicenses String?  @db.Text // JSON: { "ITU": { status: "recorded", reference: "..." }, "FCC": { status: "granted", licenseNo: "..." }, ... }
+
+  // Multi-jurisdiction tracking
+  primaryJurisdiction  String?  // Primary licensing authority (ITU region or country code)
+  additionalJurisdictions String? // JSON array of additional jurisdictions requiring licenses
+
+  // WRC Compliance
+  wrcDecisionsApplicable String? // JSON array of applicable WRC decision IDs
+  wrcCompliant         Boolean?
+
+  // Interference
+  interferenceAnalysisComplete Boolean @default(false)
+  interferenceAnalysisDate DateTime?
+  identifiedInterferenceRisks String? @db.Text // JSON array of identified risks
+  mitigationMeasures   String?  @db.Text // JSON array of mitigation measures
+
+  // Calculated Results - By Source
+  ituComplianceScore   Int?     // 0-100
+  nationalComplianceScore Int?  // 0-100
+
+  // Overall Calculated Results
+  overallComplianceScore Int?   // 0-100
+  mandatoryScore       Int?     // 0-100 (mandatory requirements only)
+  criticalScore        Int?     // 0-100 (critical requirements only)
+  riskLevel            String?  // low, medium, high, critical
+  criticalGaps         Int?     // Count of critical gaps
+  highGaps             Int?     // Count of high-risk gaps
+
+  // Filing Timeline (calculated)
+  totalFilingDurationMonths Int? // Estimated total duration in months
+  nextMilestoneDate    DateTime?
+  nextMilestoneDescription String?
+
+  // Cross-References
+  euSpaceActOverlapCount Int?   // Number of overlapping EU Space Act articles
+  usRegulatoryOverlapCount Int? // Number of overlapping US regulatory requirements
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Documentation Checklist (JSON)
+  documentationChecklistJson String? @db.Text
+
+  // Relations
+  requirementStatuses  SpectrumRequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([orbitType])
+  @@index([administrationCode])
+}
+
+model SpectrumRequirementStatus {
+  id            String              @id @default(cuid())
+  assessmentId  String
+  assessment    SpectrumAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches SpectrumRequirement.id from data file
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+  responsibleParty String? // Person/team responsible for this requirement
+  filingReference String? // Reference number if related to a filing
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
