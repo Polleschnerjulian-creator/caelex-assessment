@@ -236,7 +236,7 @@ function WizardStep1({
             onClick={() => toggleType(type.id)}
             className={`p-3 sm:p-4 rounded-lg border text-left transition-all ${
               selected.includes(type.id)
-                ? "bg-blue-600/20 border-blue-500 text-white"
+                ? "bg-emerald-600/20 border-emerald-500 text-white"
                 : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/40 hover:border-slate-500"
             }`}
           >
@@ -393,7 +393,7 @@ function WizardStep3({
             data.hasTechnologyTransfer
               ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
               : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
-          } ${data.hasTechnologyTransfer && "border-blue-600"}`}
+          } ${data.hasTechnologyTransfer && "border-emerald-600"}`}
         >
           <input
             type="checkbox"
@@ -418,7 +418,7 @@ function WizardStep3({
             data.hasDefenseContracts
               ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
               : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
-          } ${data.hasDefenseContracts && "border-blue-600"}`}
+          } ${data.hasDefenseContracts && "border-emerald-600"}`}
         >
           <input
             type="checkbox"
@@ -443,7 +443,7 @@ function WizardStep3({
             data.hasManufacturingAbroad
               ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
               : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
-          } ${data.hasManufacturingAbroad && "border-blue-600"}`}
+          } ${data.hasManufacturingAbroad && "border-emerald-600"}`}
         >
           <input
             type="checkbox"
@@ -468,7 +468,7 @@ function WizardStep3({
             data.hasJointVentures
               ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
               : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
-          } ${data.hasJointVentures && "border-blue-600"}`}
+          } ${data.hasJointVentures && "border-emerald-600"}`}
         >
           <input
             type="checkbox"
@@ -619,7 +619,7 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Q1 2026 ITAR/EAR Assessment"
-          className="w-full px-4 py-2 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
         />
       </div>
     </div>
@@ -954,7 +954,7 @@ export default function ExportControlPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
           <p className="text-slate-600 dark:text-white/60">
             Loading Export Control Module...
           </p>
@@ -979,7 +979,7 @@ export default function ExportControlPage() {
 
         <button
           onClick={() => setShowWizard(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -1032,7 +1032,7 @@ export default function ExportControlPage() {
                       key={step}
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
-                          ? "bg-blue-500"
+                          ? "bg-emerald-500"
                           : "bg-slate-100 dark:bg-white/[0.06]"
                       }`}
                     />
@@ -1076,7 +1076,7 @@ export default function ExportControlPage() {
                       handleCreateAssessment();
                     }
                   }}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
                 >
                   {wizardStep < 4 ? "Continue" : "Create Assessment"}
                 </button>
@@ -1099,7 +1099,7 @@ export default function ExportControlPage() {
           </p>
           <button
             onClick={() => setShowWizard(true)}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
           >
             Create Assessment
           </button>
@@ -1200,7 +1200,7 @@ export default function ExportControlPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab
-                    ? "border-blue-500 text-blue-400"
+                    ? "border-emerald-500 text-emerald-400"
                     : "border-transparent text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -1233,7 +1233,7 @@ export default function ExportControlPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
-                    ? "bg-blue-600 text-white"
+                    ? "bg-emerald-600 text-white"
                     : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:bg-white/[0.06]"
                 }`}
               >

@@ -460,7 +460,7 @@ function UkSpacePageContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     );
   }
@@ -480,7 +480,7 @@ function UkSpacePageContent() {
         </div>
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -502,7 +502,7 @@ function UkSpacePageContent() {
                   key={license}
                   className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg"
                 >
-                  <FileCheck className="w-4 h-4 text-blue-400" />
+                  <FileCheck className="w-4 h-4 text-emerald-400" />
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-white">
                       {config.label}
@@ -577,14 +577,14 @@ function UkSpacePageContent() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
-                    ? "bg-blue-500/20 text-blue-400"
+                    ? "bg-emerald-500/20 text-emerald-400"
                     : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     activeStep === index
-                      ? "bg-blue-500 text-white"
+                      ? "bg-emerald-500 text-white"
                       : activeStep > index
                         ? "bg-green-500 text-white"
                         : "bg-slate-100 dark:bg-white/[0.06] text-slate-400"
@@ -638,8 +638,8 @@ function UkSpacePageContent() {
                         className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg hover:bg-slate-100 dark:bg-white/[0.06] transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 rounded-lg bg-blue-500/20">
-                            <Icon className="w-5 h-5 text-blue-400" />
+                          <div className="p-2 rounded-lg bg-emerald-500/20">
+                            <Icon className="w-5 h-5 text-emerald-400" />
                           </div>
                           <div className="text-left">
                             <div className="font-medium text-slate-900 dark:text-white">
@@ -686,7 +686,7 @@ function UkSpacePageContent() {
                 </p>
                 <button
                   onClick={() => setShowNewAssessment(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Start New Assessment
@@ -719,7 +719,7 @@ function UkSpacePageContent() {
                   value={assessmentName}
                   onChange={(e) => setAssessmentName(e.target.value)}
                   placeholder="e.g., SatCom-1 Launch Assessment"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -742,7 +742,7 @@ function UkSpacePageContent() {
                         onClick={() => setForm({ ...form, operatorType: type })}
                         className={`p-3 rounded-lg border text-center transition-colors ${
                           form.operatorType === type
-                            ? "bg-blue-500/20 border-blue-500 text-white"
+                            ? "bg-emerald-500/20 border-emerald-500 text-white"
                             : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
                         }`}
                       >
@@ -773,7 +773,7 @@ function UkSpacePageContent() {
                       onClick={() => toggleActivityType(activity)}
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         form.activityTypes.includes(activity)
-                          ? "bg-blue-500/20 border-blue-500 text-white"
+                          ? "bg-emerald-500/20 border-emerald-500 text-white"
                           : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
                       }`}
                     >
@@ -796,7 +796,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchFromUk: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-slate-300">Launch from UK</span>
                   </label>
@@ -807,7 +807,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchToOrbit: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-slate-300">Orbital Mission</span>
                   </label>
@@ -818,7 +818,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isSuborbital: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-slate-300">Suborbital</span>
                   </label>
@@ -829,7 +829,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, involvesPeople: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-slate-300">Human Spaceflight</span>
                   </label>
@@ -840,7 +840,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isCommercial: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-slate-300">Commercial Activity</span>
                   </label>
@@ -859,7 +859,7 @@ function UkSpacePageContent() {
                     setForm({ ...form, spacecraftName: e.target.value })
                   }
                   placeholder="e.g., SatCom-1"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -877,7 +877,7 @@ function UkSpacePageContent() {
                     })
                   }
                   placeholder="e.g., 500"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -892,7 +892,7 @@ function UkSpacePageContent() {
                     setForm({ ...form, plannedLaunchSite: e.target.value })
                   }
                   placeholder="e.g., SaxaVord Spaceport"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -907,7 +907,7 @@ function UkSpacePageContent() {
                     setForm({ ...form, targetOrbit: e.target.value })
                   }
                   placeholder="e.g., LEO 550km SSO"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -927,7 +927,7 @@ function UkSpacePageContent() {
                   form.activityTypes.length === 0 ||
                   creating
                 }
-                className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
               >
                 {creating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -997,7 +997,7 @@ function UkSpacePageContent() {
                       e.target.value as UkRequirementCategory | "all",
                     )
                   }
-                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="all">All Categories</option>
                   {(
@@ -1017,7 +1017,7 @@ function UkSpacePageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UkComplianceStatus | "all")
                 }
-                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="compliant">Compliant</option>
@@ -1125,7 +1125,7 @@ function UkSpacePageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
               >
                 Continue to Gap Analysis
                 <ArrowRight className="w-4 h-4" />
@@ -1239,7 +1239,7 @@ function UkSpacePageContent() {
               </button>
               <button
                 onClick={() => setActiveStep(3)}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
               >
                 Generate Report
                 <ArrowRight className="w-4 h-4" />
@@ -1258,7 +1258,7 @@ function UkSpacePageContent() {
           >
             <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <div className="text-center py-8">
-                <FileText className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                <FileText className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                   Compliance Report Ready
                 </h2>
@@ -1318,7 +1318,7 @@ function UkSpacePageContent() {
                           key={license}
                           className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-white/[0.06] rounded-lg"
                         >
-                          <FileCheck className="w-4 h-4 text-blue-400" />
+                          <FileCheck className="w-4 h-4 text-emerald-400" />
                           <span className="text-slate-900 dark:text-white text-sm">
                             {licenseTypeConfig[license].label}
                           </span>
@@ -1331,7 +1331,7 @@ function UkSpacePageContent() {
                 <button
                   onClick={generateReport}
                   disabled={generatingReport}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-700 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 text-white rounded-lg transition-colors"
                 >
                   {generatingReport ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

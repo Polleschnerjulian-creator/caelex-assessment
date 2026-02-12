@@ -644,7 +644,7 @@ function UsRegulatoryPageContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     );
   }
@@ -663,7 +663,7 @@ function UsRegulatoryPageContent() {
         </div>
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New Assessment</span>
@@ -678,7 +678,7 @@ function UsRegulatoryPageContent() {
               onClick={() => setActiveAgencyTab("overview")}
               className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                 activeAgencyTab === "overview"
-                  ? "text-white border-b-2 border-blue-500 bg-slate-100 dark:bg-white/[0.06]/50"
+                  ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-white/[0.06]/50"
                   : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
               }`}
             >
@@ -697,7 +697,7 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveAgencyTab(agency)}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                     activeAgencyTab === agency
-                      ? "text-white border-b-2 border-blue-500 bg-slate-100 dark:bg-white/[0.06]/50"
+                      ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-white/[0.06]/50"
                       : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
                   }`}
                 >
@@ -807,7 +807,7 @@ function UsRegulatoryPageContent() {
                           key={license}
                           className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg"
                         >
-                          <FileCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <FileCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
                               {config.label}
@@ -882,7 +882,7 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveStep(index)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors ${
                     activeStep === index
-                      ? "bg-blue-500/20 text-blue-400"
+                      ? "bg-emerald-500/20 text-emerald-400"
                       : activeStep > index
                         ? "text-green-400"
                         : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
@@ -891,7 +891,7 @@ function UsRegulatoryPageContent() {
                   <div
                     className={`w-5 sm:w-6 h-5 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium flex-shrink-0 ${
                       activeStep === index
-                        ? "bg-blue-500 text-white"
+                        ? "bg-emerald-500 text-white"
                         : activeStep > index
                           ? "bg-green-500 text-white"
                           : "bg-slate-200 dark:bg-white/[0.08] text-slate-400"
@@ -942,7 +942,7 @@ function UsRegulatoryPageContent() {
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
                 placeholder="e.g., LEO Constellation"
-                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm sm:text-base"
               />
             </div>
 
@@ -966,12 +966,12 @@ function UsRegulatoryPageContent() {
                       onClick={() => toggleOperatorType(type)}
                       className={`flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-lg border text-left transition-all ${
                         isSelected
-                          ? "bg-blue-500/10 border-blue-500 text-white"
+                          ? "bg-emerald-500/10 border-emerald-500 text-white"
                           : "bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
                       <Icon
-                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-blue-400" : "text-slate-600 dark:text-white/60"}`}
+                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-emerald-400" : "text-slate-600 dark:text-white/60"}`}
                       />
                       <div className="min-w-0">
                         <div className="text-sm sm:text-base font-medium">
@@ -986,7 +986,7 @@ function UsRegulatoryPageContent() {
                               key={agency}
                               className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
                                 agency === "FCC"
-                                  ? "bg-blue-500/20 text-blue-400"
+                                  ? "bg-emerald-500/20 text-emerald-400"
                                   : agency === "FAA"
                                     ? "bg-orange-500/20 text-orange-400"
                                     : "bg-green-500/20 text-green-400"
@@ -1022,7 +1022,7 @@ function UsRegulatoryPageContent() {
                       onClick={() => toggleActivityType(type)}
                       className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors ${
                         isSelected
-                          ? "bg-blue-500 text-white"
+                          ? "bg-emerald-500 text-white"
                           : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
@@ -1052,7 +1052,7 @@ function UsRegulatoryPageContent() {
                       }
                       className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm transition-colors ${
                         form.orbitRegime === orbit
-                          ? "bg-blue-500 text-white"
+                          ? "bg-emerald-500 text-white"
                           : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
@@ -1193,7 +1193,7 @@ function UsRegulatoryPageContent() {
                   form.activityTypes.length === 0 ||
                   creating
                 }
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
               >
                 {creating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1357,7 +1357,7 @@ function UsRegulatoryPageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg w-full sm:w-auto"
               >
                 <span>Gap Analysis</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1392,8 +1392,8 @@ function UsRegulatoryPageContent() {
                   Medium
                 </div>
               </div>
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2.5 sm:p-4">
-                <div className="text-xl sm:text-2xl font-bold text-blue-400">
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold text-emerald-400">
                   {gapAnalysis.filter((g) => g.priority === "low").length}
                 </div>
                 <div className="text-[10px] sm:text-sm text-slate-600 dark:text-white/60">
@@ -1423,7 +1423,7 @@ function UsRegulatoryPageContent() {
                               ? "bg-red-500/20 text-red-400"
                               : gap.priority === "medium"
                                 ? "bg-amber-500/20 text-amber-400"
-                                : "bg-blue-500/20 text-blue-400"
+                                : "bg-emerald-500/20 text-emerald-400"
                           }`}
                         >
                           {gap.priority.toUpperCase()}
@@ -1441,7 +1441,7 @@ function UsRegulatoryPageContent() {
                         {gap.gap}
                       </p>
                       <div className="mt-2 p-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
-                        <p className="text-xs sm:text-sm text-blue-400 line-clamp-2">
+                        <p className="text-xs sm:text-sm text-emerald-400 line-clamp-2">
                           {gap.recommendation}
                         </p>
                       </div>
@@ -1482,7 +1482,7 @@ function UsRegulatoryPageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(3)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg w-full sm:w-auto"
               >
                 <span>Report</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1523,7 +1523,7 @@ function UsRegulatoryPageContent() {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl sm:text-4xl font-bold text-blue-400">
+                  <div className="text-2xl sm:text-4xl font-bold text-emerald-400">
                     {score?.mandatory ?? 0}%
                   </div>
                   <div className="text-xs sm:text-sm text-slate-600 dark:text-white/60">
@@ -1655,7 +1655,7 @@ function UsRegulatoryPageContent() {
                 <button
                   onClick={generateReport}
                   disabled={generatingReport}
-                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg transition-colors w-full sm:w-auto"
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {generatingReport ? (
                     <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
@@ -1734,7 +1734,7 @@ function UsRegulatoryPageContent() {
               </p>
               <button
                 onClick={() => setShowNewAssessment(true)}
-                className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+                className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg"
               >
                 Create Assessment
               </button>

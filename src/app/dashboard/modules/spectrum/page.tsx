@@ -251,7 +251,7 @@ function WizardStep1({
             }}
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(st.id)
-                ? "border-blue-500 bg-blue-500/10"
+                ? "border-emerald-500 bg-emerald-500/10"
                 : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
             }`}
           >
@@ -259,7 +259,7 @@ function WizardStep1({
               <div
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                   selected.includes(st.id)
-                    ? "border-blue-500 bg-blue-500"
+                    ? "border-emerald-500 bg-emerald-500"
                     : "border-slate-500"
                 }`}
               >
@@ -340,7 +340,7 @@ function WizardStep2({
             }}
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(fb.id)
-                ? "border-blue-500 bg-blue-500/10"
+                ? "border-emerald-500 bg-emerald-500/10"
                 : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
             }`}
           >
@@ -349,7 +349,7 @@ function WizardStep2({
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                     selected.includes(fb.id)
-                      ? "border-blue-500 bg-blue-500"
+                      ? "border-emerald-500 bg-emerald-500"
                       : "border-slate-500"
                   }`}
                 >
@@ -443,7 +443,7 @@ function WizardStep3({
                 onClick={() => onChange({ ...data, orbitType: orbit.id })}
                 className={`p-3 rounded-lg border text-left transition-all ${
                   data.orbitType === orbit.id
-                    ? "border-blue-500 bg-blue-500/10"
+                    ? "border-emerald-500 bg-emerald-500/10"
                     : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
                 }`}
               >
@@ -473,7 +473,7 @@ function WizardStep3({
                 satelliteCount: parseInt(e.target.value) || 1,
               })
             }
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -487,7 +487,7 @@ function WizardStep3({
             value={(data.networkName as string) || ""}
             onChange={(e) => onChange({ ...data, networkName: e.target.value })}
             placeholder="e.g., STARLINK, ONEWEB"
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -501,7 +501,7 @@ function WizardStep3({
             onChange={(e) =>
               onChange({ ...data, administrationCode: e.target.value })
             }
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="">Select administration...</option>
             <option value="F">France (F)</option>
@@ -519,10 +519,10 @@ function WizardStep3({
       {/* NGSO Constellation Warning */}
       {(data.orbitType === "LEO" || data.orbitType === "MEO") &&
         Number(data.satelliteCount) > 10 && (
-          <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
             <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-300">
+              <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-300">
                 <p className="font-medium">NGSO Constellation Detected</p>
                 <p className="mt-1">
                   Milestone requirements apply: 10% deployment within 2 years,
@@ -581,7 +581,7 @@ function WizardStep4({
               onClick={() => onChange({ ...data, primaryJurisdiction: j.id })}
               className={`p-3 rounded-lg border text-left transition-all ${
                 data.primaryJurisdiction === j.id
-                  ? "border-blue-500 bg-blue-500/10"
+                  ? "border-emerald-500 bg-emerald-500/10"
                   : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
               }`}
             >
@@ -595,7 +595,7 @@ function WizardStep4({
                   </p>
                 </div>
                 {data.primaryJurisdiction === j.id && (
-                  <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 )}
               </div>
             </button>
@@ -615,7 +615,7 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Project Aurora Spectrum Filing"
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         />
       </div>
 
@@ -699,7 +699,7 @@ function FilingStatusCard({
       case "submitted":
       case "under_review":
       case "coordination_ongoing":
-        return "text-blue-400 bg-blue-500/10";
+        return "text-emerald-400 bg-emerald-500/10";
       case "in_preparation":
         return "text-amber-400 bg-amber-500/10";
       case "expired":
@@ -896,7 +896,7 @@ export default function SpectrumManagementPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
           <p className="text-slate-600 dark:text-white/60">
             Loading Spectrum Management Module...
           </p>
@@ -921,7 +921,7 @@ export default function SpectrumManagementPage() {
 
         <button
           onClick={() => setShowWizard(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -973,7 +973,7 @@ export default function SpectrumManagementPage() {
                       key={step}
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
-                          ? "bg-blue-500"
+                          ? "bg-emerald-500"
                           : "bg-slate-100 dark:bg-white/[0.06]"
                       }`}
                     />
@@ -1026,7 +1026,7 @@ export default function SpectrumManagementPage() {
                       (wizardData.frequencyBands as string[]).length === 0) ||
                     (wizardStep === 3 && !wizardData.orbitType)
                   }
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -1061,7 +1061,7 @@ export default function SpectrumManagementPage() {
           </p>
           <button
             onClick={() => setShowWizard(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Assessment
@@ -1231,7 +1231,7 @@ export default function SpectrumManagementPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab
-                      ? "bg-blue-600 text-white"
+                      ? "bg-emerald-600 text-white"
                       : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
