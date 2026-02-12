@@ -42,69 +42,74 @@ export default function Navigation() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className={`dark-section fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
-          scrolled || mobileOpen
-            ? "bg-black/50 backdrop-blur-xl"
-            : "bg-transparent"
-        }`}
+        className="dark-section fixed top-0 left-0 right-0 z-50"
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
+            {/* Liquid Glass Bar — wraps logo + nav */}
+            <div
+              className={`flex items-center justify-between w-full rounded-2xl px-5 py-2.5 transition-all duration-700 ${
+                scrolled || mobileOpen
+                  ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                  : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+              }`}
             >
-              <Logo size={28} className="text-white" />
-            </Link>
-
-            {/* Right Side Navigation */}
-            <div className="flex items-center gap-6">
-              {/* Links */}
+              {/* Logo */}
               <Link
-                href="/#platform"
-                className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                href="/"
+                className="transition-opacity duration-300 hover:opacity-70"
               >
-                Platform
-              </Link>
-              <Link
-                href="/resources"
-                className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
-              >
-                Resources
+                <Logo size={28} className="text-white" />
               </Link>
 
-              {/* Auth + CTAs */}
-              <div className="hidden md:flex items-center gap-4">
+              {/* Right Side Navigation */}
+              <div className="flex items-center gap-6">
+                {/* Links */}
                 <Link
-                  href="/login"
-                  className="text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  href="/#platform"
+                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
                 >
-                  Log in
+                  Platform
                 </Link>
                 <Link
-                  href="/contact"
-                  className="text-[13px] font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
+                  href="/resources"
+                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
                 >
-                  Request Demo
+                  Resources
                 </Link>
-                <Link
-                  href="/assessment"
-                  className="text-[13px] font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
+
+                {/* Auth + CTAs */}
+                <div className="hidden md:flex items-center gap-4">
+                  <Link
+                    href="/login"
+                    className="text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="text-[13px] font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
+                  >
+                    Request Demo
+                  </Link>
+                  <Link
+                    href="/assessment"
+                    className="text-[13px] font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
+                  >
+                    Start Assessment
+                  </Link>
+                </div>
+
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setMobileOpen(!mobileOpen)}
+                  className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
+                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={mobileOpen}
                 >
-                  Start Assessment
-                </Link>
+                  {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
               </div>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
-                aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileOpen}
-              >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
             </div>
           </div>
         </div>
