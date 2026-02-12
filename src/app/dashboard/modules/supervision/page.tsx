@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Building2,
@@ -166,7 +167,7 @@ function SupervisionPageContent() {
     try {
       const res = await fetch("/api/supervision", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(formData),
       });
 
@@ -190,7 +191,7 @@ function SupervisionPageContent() {
     try {
       const res = await fetch("/api/supervision/incidents", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(incidentForm),
       });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
@@ -624,7 +625,7 @@ function TimelinePageContent() {
     try {
       const res = await fetch("/api/timeline/deadlines", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(deadlineForm),
       });
 
@@ -649,7 +650,7 @@ function TimelinePageContent() {
     try {
       const res = await fetch(`/api/timeline/deadlines/${id}/complete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({}),
       });
 

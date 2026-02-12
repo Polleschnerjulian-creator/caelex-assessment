@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface FileUploaderProps {
   onUploadComplete: (documentId: string) => void;
@@ -125,7 +126,7 @@ export default function FileUploader({
       // Step 1: Get presigned upload URL
       const uploadUrlRes = await fetch("/api/documents/upload-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           filename: file.name,
           mimeType: file.type,
@@ -183,7 +184,7 @@ export default function FileUploader({
 
       const confirmRes = await fetch("/api/documents/confirm-upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           fileKey,
           name: metadata.name,

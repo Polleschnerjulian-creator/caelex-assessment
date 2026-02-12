@@ -59,73 +59,18 @@ const securityHeaders = [
       "payment=()",
     ].join(", "),
   },
-  // Content Security Policy
-  {
-    key: "Content-Security-Policy",
-    value: [
-      // Default: only allow same origin
-      "default-src 'self'",
-      // Scripts: self, inline (for Next.js), eval (for dev), Google OAuth, Sentry, Vercel, blob: for @react-pdf/renderer workers
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://accounts.google.com https://apis.google.com https://*.sentry.io https://va.vercel-scripts.com",
-      // Styles: self, inline (for CSS-in-JS), Google Fonts
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      // Fonts: self, Google Fonts
-      "font-src 'self' https://fonts.gstatic.com data:",
-      // Images: self, data URIs, HTTPS, blob (for file previews)
-      "img-src 'self' data: https: blob:",
-      // Connections: self, auth providers, database, analytics, Sentry, Stripe, blob: for @react-pdf/renderer
-      "connect-src 'self' blob: https://accounts.google.com https://*.neon.tech wss://*.neon.tech https://*.upstash.io https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com https://vitals.vercel-insights.com",
-      // Frames: Google OAuth popup, Stripe
-      "frame-src 'self' https://accounts.google.com https://js.stripe.com https://hooks.stripe.com",
-      // Form submissions: only to self
-      "form-action 'self'",
-      // Base URI: only self
-      "base-uri 'self'",
-      // Prevent embedding in frames
-      "frame-ancestors 'none'",
-      // Upgrade HTTP to HTTPS
-      "upgrade-insecure-requests",
-      // Block all object/embed
-      "object-src 'none'",
-      // Worker scripts
-      "worker-src 'self' blob:",
-      // Manifest
-      "manifest-src 'self'",
-    ].join("; "),
-  },
+  // NOTE: Content-Security-Policy is now set dynamically in middleware.ts
+  // with nonce-based script protection. See src/lib/csp-nonce.ts for config.
 ];
 
-const isDev = process.env.NODE_ENV === "development";
-
 const nextConfig = {
-  // Apply security headers to all routes (production only for CSP)
+  // Apply security headers to all routes
+  // NOTE: CSP is handled dynamically in middleware.ts with nonces
   async headers() {
-    // In development, skip CSP to allow hot reload and inline styles
-    if (isDev) {
-      return [
-        {
-          source: "/:path*",
-          headers: securityHeaders.filter(
-            (h) => h.key !== "Content-Security-Policy",
-          ),
-        },
-      ];
-    }
-
     return [
       {
         source: "/:path*",
         headers: securityHeaders,
-      },
-      // Additional CSP for API routes (more restrictive)
-      {
-        source: "/api/:path*",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: "default-src 'none'; frame-ancestors 'none'",
-          },
-        ],
       },
     ];
   },

@@ -22,6 +22,11 @@ import {
   generateCsrfToken,
   validateCsrfToken,
 } from "@/lib/csrf";
+import {
+  generateNonce,
+  buildCspHeader,
+  CSP_NONCE_HEADER,
+} from "@/lib/csp-nonce";
 
 // ─── Rate Limiting (Edge-compatible) ───
 
@@ -109,6 +114,7 @@ const BLOCKED_USER_AGENTS = [
 function applySecurityHeaders(
   response: NextResponse,
   pathname?: string,
+  nonce?: string,
 ): NextResponse {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
     response.headers.set(key, value);
@@ -122,6 +128,23 @@ function applySecurityHeaders(
       pathname.startsWith("/dashboard"))
   ) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+
+  // Apply CSP with nonce (skip for API routes which get stricter CSP)
+  if (nonce && !pathname?.startsWith("/api")) {
+    const isDev = process.env.NODE_ENV === "development";
+    response.headers.set(
+      "Content-Security-Policy",
+      buildCspHeader(nonce, isDev),
+    );
+    // Pass nonce to components via header
+    response.headers.set(CSP_NONCE_HEADER, nonce);
+  } else if (pathname?.startsWith("/api")) {
+    // Strict CSP for API routes
+    response.headers.set(
+      "Content-Security-Policy",
+      "default-src 'none'; frame-ancestors 'none'",
+    );
   }
 
   return response;
@@ -188,6 +211,9 @@ export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
 
+  // Generate CSP nonce for this request
+  const nonce = generateNonce();
+
   // Block bots on assessment API endpoints (EU Space Act + NIS2)
   if (
     (pathname.startsWith("/api/assessment") ||
@@ -203,6 +229,7 @@ export default async function middleware(req: NextRequest) {
         { status: 403, headers: { "Content-Type": "application/json" } },
       ),
       pathname,
+      nonce,
     );
   }
 
@@ -225,6 +252,7 @@ export default async function middleware(req: NextRequest) {
           { status: 413, headers: { "Content-Type": "application/json" } },
         ),
         pathname,
+        nonce,
       );
     }
   }
@@ -268,6 +296,7 @@ export default async function middleware(req: NextRequest) {
               },
             ),
             pathname,
+            nonce,
           );
         }
       }
@@ -287,13 +316,12 @@ export default async function middleware(req: NextRequest) {
           { status: 403, headers: { "Content-Type": "application/json" } },
         ),
         pathname,
+        nonce,
       );
     }
 
     // Layer 2: Double-submit cookie validation for mutating requests
-    // NOTE: Currently in monitoring mode (log-only). Origin validation (Layer 1)
-    // provides primary CSRF protection. Double-submit enforcement will be enabled
-    // once all client-side fetch calls include csrfHeaders().
+    // ENFORCEMENT MODE: Rejects requests with missing/invalid CSRF tokens
     const method = req.method.toUpperCase();
     const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
     const isCsrfExempt = CSRF_EXEMPT_ROUTES.some((route) =>
@@ -304,9 +332,19 @@ export default async function middleware(req: NextRequest) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
 
-      if (cookieToken && !validateCsrfToken(cookieToken, headerToken)) {
-        // Log for monitoring — will be enforced once all clients send CSRF headers
-        console.warn(`[CSRF] Missing/invalid token on ${method} ${pathname}`);
+      if (!cookieToken || !validateCsrfToken(cookieToken, headerToken)) {
+        return applySecurityHeaders(
+          new NextResponse(
+            JSON.stringify({
+              error: "Forbidden",
+              message: "Invalid or missing CSRF token",
+              code: "CSRF_VALIDATION_FAILED",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          ),
+          pathname,
+          nonce,
+        );
       }
     }
   }
@@ -323,11 +361,16 @@ export default async function middleware(req: NextRequest) {
         return applySecurityHeaders(
           NextResponse.redirect(new URL("/", req.url)),
           pathname,
+          nonce,
         );
       }
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
-      return applySecurityHeaders(NextResponse.redirect(loginUrl), pathname);
+      return applySecurityHeaders(
+        NextResponse.redirect(loginUrl),
+        pathname,
+        nonce,
+      );
     }
   }
 
@@ -342,12 +385,13 @@ export default async function middleware(req: NextRequest) {
       return applySecurityHeaders(
         NextResponse.redirect(new URL(callbackUrl || "/dashboard", req.url)),
         pathname,
+        nonce,
       );
     }
   }
 
   // Set CSRF cookie if not present (readable by JS for double-submit pattern)
-  const response = applySecurityHeaders(NextResponse.next(), pathname);
+  const response = applySecurityHeaders(NextResponse.next(), pathname, nonce);
   if (!req.cookies.has(CSRF_COOKIE_NAME)) {
     const isProduction = process.env.NODE_ENV === "production";
     response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), {
@@ -364,5 +408,9 @@ export default async function middleware(req: NextRequest) {
 // ─── Matcher ───
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup", "/api/:path*"],
+  // Apply middleware to all routes for CSP nonce injection
+  // Exclude static files and Next.js internals
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)",
+  ],
 };

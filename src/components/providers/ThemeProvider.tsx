@@ -8,6 +8,7 @@ import {
   useCallback,
 } from "react";
 import { useSession } from "next-auth/react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 export type Theme = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
@@ -84,7 +85,7 @@ function ThemeProviderWithSession({ children }: { children: React.ReactNode }) {
         try {
           await fetch("/api/user/theme", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
             body: JSON.stringify({ theme: newTheme }),
           });
           // Update session to reflect new theme

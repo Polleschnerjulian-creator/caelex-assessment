@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, Loader2, CheckCircle } from "lucide-react";
 import { ComplianceResult } from "@/lib/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface SaveToDashboardCTAProps {
   result?: ComplianceResult;
@@ -35,7 +36,7 @@ export default function SaveToDashboardCTA({
       // Save assessment results to API
       const response = await fetch("/api/tracker/import-assessment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           operatorType: result.operatorType,
           complianceResult: result,

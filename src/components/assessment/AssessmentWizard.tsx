@@ -19,6 +19,7 @@ import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
 import ResultsDashboard from "@/components/results/ResultsDashboard";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 const initialAnswers: AssessmentAnswers = {
   activityType: null,
@@ -64,7 +65,7 @@ export default function AssessmentWizard() {
       try {
         const response = await fetch("/api/assessment/calculate", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             answers: state.answers,
             startedAt: startedAtRef.current,

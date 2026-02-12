@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect, useCallback, useMemo } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
   PlayCircle,
@@ -12,16 +13,72 @@ import {
   X,
   ClipboardList,
   Loader2,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  FileText,
+  Upload,
+  BarChart3,
+  Calendar,
+  AlertTriangle,
+  Clock,
+  Zap,
+  FileUp,
+  FileBarChart,
+  CalendarDays,
 } from "lucide-react";
 import { articles } from "@/data/articles";
 import { modules } from "@/data/modules";
-import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import dynamic from "next/dynamic";
+
+// Dynamic imports for chart components (to avoid SSR issues with Recharts)
+const ComplianceDonutChart = dynamic(
+  () => import("@/components/dashboard/charts/ComplianceDonutChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> },
+);
+const ModuleProgressChart = dynamic(
+  () => import("@/components/dashboard/charts/ModuleProgressChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> },
+);
+const ComplianceTimelineChart = dynamic(
+  () => import("@/components/dashboard/charts/ComplianceTimelineChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> },
+);
+const RegulatoryRadarChart = dynamic(
+  () => import("@/components/dashboard/charts/RegulatoryRadarChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> },
+);
+const Sparkline = dynamic(
+  () => import("@/components/dashboard/charts/Sparkline"),
+  { ssr: false },
+);
+
+// ─── Types ───
 
 interface ArticleStatusData {
   status: string;
   notes: string | null;
   updatedAt: Date;
 }
+
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  description?: string;
+  timestamp: string;
+}
+
+interface Deadline {
+  id: string;
+  title: string;
+  dueDate: string;
+  module?: string;
+  priority: "critical" | "high" | "medium" | "low";
+}
+
+// ─── Constants ───
 
 const moduleRoutes: Record<string, string> = {
   authorization: "/dashboard/modules/authorization",
@@ -33,6 +90,399 @@ const moduleRoutes: Record<string, string> = {
   supervision: "/dashboard/modules/supervision",
   regulatory: "/dashboard/modules/supervision",
 };
+
+const CHART_COLORS = {
+  blue: "#3B82F6",
+  cyan: "#06B6D4",
+  green: "#22C55E",
+  amber: "#F59E0B",
+  red: "#EF4444",
+  purple: "#8B5CF6",
+};
+
+// ─── Demo Data ───
+
+const DEMO_COMPLIANCE_SEGMENTS = [
+  { name: "EU Regulations", value: 45, color: CHART_COLORS.blue },
+  { name: "US Regulations", value: 30, color: CHART_COLORS.cyan },
+  { name: "International", value: 25, color: CHART_COLORS.green },
+];
+
+const DEMO_MODULE_PROGRESS = [
+  {
+    name: "Authorization",
+    shortName: "Auth",
+    progress: 78,
+    status: "in-progress" as const,
+  },
+  {
+    name: "Cybersecurity",
+    shortName: "Cyber",
+    progress: 65,
+    status: "in-progress" as const,
+  },
+  {
+    name: "Debris Mitigation",
+    shortName: "Debris",
+    progress: 45,
+    status: "in-progress" as const,
+  },
+  {
+    name: "Environmental",
+    shortName: "Enviro",
+    progress: 35,
+    status: "at-risk" as const,
+  },
+  {
+    name: "Insurance",
+    shortName: "Insur",
+    progress: 20,
+    status: "at-risk" as const,
+  },
+  {
+    name: "Registration",
+    shortName: "Regist",
+    progress: 15,
+    status: "at-risk" as const,
+  },
+  {
+    name: "Supervision",
+    shortName: "Super",
+    progress: 0,
+    status: "not-started" as const,
+  },
+];
+
+const DEMO_TIMELINE_DATA = [
+  { month: "Aug", overall: 10, eu: 12, us: 8, uk: 5 },
+  { month: "Sep", overall: 18, eu: 20, us: 15, uk: 12 },
+  { month: "Oct", overall: 28, eu: 30, us: 25, uk: 22 },
+  { month: "Nov", overall: 35, eu: 38, us: 32, uk: 30 },
+  { month: "Dec", overall: 42, eu: 45, us: 38, uk: 35 },
+  { month: "Jan", overall: 48, eu: 52, us: 45, uk: 42 },
+];
+
+const DEMO_RADAR_DATA = [
+  { category: "Auth", value: 75, fullMark: 100 },
+  { category: "Cyber", value: 60, fullMark: 100 },
+  { category: "Debris", value: 45, fullMark: 100 },
+  { category: "Enviro", value: 35, fullMark: 100 },
+  { category: "Insur", value: 20, fullMark: 100 },
+  { category: "Export", value: 50, fullMark: 100 },
+  { category: "Spectrum", value: 40, fullMark: 100 },
+];
+
+const DEMO_DEADLINES: Deadline[] = [
+  {
+    id: "1",
+    title: "NIS2 Compliance Deadline",
+    dueDate: "2024-10-17",
+    module: "cybersecurity",
+    priority: "critical",
+  },
+  {
+    id: "2",
+    title: "Space Debris Plan Submission",
+    dueDate: "2024-11-30",
+    module: "debris",
+    priority: "high",
+  },
+  {
+    id: "3",
+    title: "Insurance Review",
+    dueDate: "2024-12-15",
+    module: "insurance",
+    priority: "medium",
+  },
+  {
+    id: "4",
+    title: "Annual Registration Update",
+    dueDate: "2025-01-31",
+    module: "registration",
+    priority: "low",
+  },
+  {
+    id: "5",
+    title: "Environmental Impact Report",
+    dueDate: "2025-03-01",
+    module: "environmental",
+    priority: "medium",
+  },
+];
+
+const DEMO_RISK_HEATMAP = [
+  { module: "Auth", risk: "low" },
+  { module: "Cyber", risk: "medium" },
+  { module: "Debris", risk: "high" },
+  { module: "Enviro", risk: "critical" },
+  { module: "Insur", risk: "high" },
+  { module: "Export", risk: "medium" },
+  { module: "Spectrum", risk: "low" },
+  { module: "Regist", risk: "medium" },
+];
+
+// ─── Helper Components ───
+
+function ChartSkeleton() {
+  return (
+    <div className="h-[280px] w-full flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+    </div>
+  );
+}
+
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl ${className}`}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function KPICard({
+  value,
+  label,
+  trend,
+  trendValue,
+  sparklineData,
+  sparklineColor,
+  delay = 0,
+}: {
+  value: string | number;
+  label: string;
+  trend?: "up" | "down" | "neutral";
+  trendValue?: string;
+  sparklineData?: number[];
+  sparklineColor?: string;
+  delay?: number;
+}) {
+  const TrendIcon =
+    trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor =
+    trend === "up"
+      ? "text-green-400"
+      : trend === "down"
+        ? "text-red-400"
+        : "text-white/40";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.1 }}
+      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 relative overflow-hidden"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <div>
+          <p className="text-[32px] font-mono font-semibold text-white leading-none">
+            {value}
+          </p>
+          <p className="text-[11px] font-mono uppercase tracking-wider text-white/50 mt-2">
+            {label}
+          </p>
+        </div>
+        {trend && trendValue && (
+          <div className={`flex items-center gap-1 ${trendColor}`}>
+            <TrendIcon className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-mono">{trendValue}</span>
+          </div>
+        )}
+      </div>
+      {sparklineData && sparklineData.length > 0 && (
+        <div className="mt-2">
+          <Sparkline
+            data={sparklineData}
+            color={sparklineColor || CHART_COLORS.blue}
+            height={28}
+          />
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function SectionHeader({
+  title,
+  action,
+}: {
+  title: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+        {title}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-white/30" />
+      </div>
+      <h3 className="text-[14px] font-medium text-white/80 mb-1">{title}</h3>
+      <p className="text-[12px] text-white/50 mb-4 max-w-[240px]">
+        {description}
+      </p>
+      {action}
+    </div>
+  );
+}
+
+function DeadlineItem({ deadline }: { deadline: Deadline }) {
+  const priorityColors = {
+    critical: "bg-red-500/20 text-red-400 border-red-500/30",
+    high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    low: "bg-green-500/20 text-green-400 border-green-500/30",
+  };
+
+  const dueDate = new Date(deadline.dueDate);
+  const today = new Date();
+  const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / 86400000);
+
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <div
+        className={`w-2 h-2 rounded-full ${
+          deadline.priority === "critical"
+            ? "bg-red-500"
+            : deadline.priority === "high"
+              ? "bg-amber-500"
+              : deadline.priority === "medium"
+                ? "bg-blue-500"
+                : "bg-green-500"
+        }`}
+      />
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] text-white/80 truncate">{deadline.title}</p>
+        <p className="text-[10px] text-white/40">
+          {daysUntil > 0 ? `${daysUntil} days` : "Overdue"}
+        </p>
+      </div>
+      <span
+        className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
+      >
+        {deadline.priority}
+      </span>
+    </div>
+  );
+}
+
+function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
+  const riskColors = {
+    critical: "bg-red-500",
+    high: "bg-red-500/60",
+    medium: "bg-amber-500/60",
+    low: "bg-green-500/60",
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
+      >
+        <span className="text-[10px] font-mono text-white/90 font-medium">
+          {module.slice(0, 2)}
+        </span>
+      </div>
+      <span className="text-[9px] text-white/40">{module}</span>
+    </div>
+  );
+}
+
+function QuickActionButton({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
+    >
+      <Icon className="w-5 h-5 text-white/60 group-hover:text-blue-400 transition-colors" />
+      <span className="text-[10px] text-white/50 group-hover:text-white/70 transition-colors">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function ActivityItem({
+  activity,
+}: {
+  activity: {
+    action: string;
+    entityType: string;
+    description?: string;
+    timestamp: string;
+  };
+}) {
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    document: FileText,
+    assessment: ClipboardList,
+    compliance: CheckCircle,
+    default: BarChart3,
+  };
+  const Icon = iconMap[activity.entityType] || iconMap.default;
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  return (
+    <div className="flex items-start gap-3 py-3 border-b border-white/5 last:border-0">
+      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-white/50" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] text-white/80 truncate">
+          {activity.description || activity.action.replace(/_/g, " ")}
+        </p>
+        <p className="text-[10px] text-white/40 mt-0.5">
+          {timeAgo(activity.timestamp)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Dashboard Content ───
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -46,7 +496,63 @@ function DashboardContent() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [documentCount, setDocumentCount] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<AuditLogEntry[]>([]);
+  const [pendingAssessment, setPendingAssessment] = useState<{
+    operatorType: string;
+    completedAt: string;
+  } | null>(null);
 
+  const firstName = session?.user?.name?.split(" ")[0] || "there";
+  const daysUntilEnforcement = Math.ceil(
+    (new Date("2030-01-01").getTime() - Date.now()) / 86400000,
+  );
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [articlesRes, docsRes, activityRes] = await Promise.all([
+          fetch("/api/tracker/articles"),
+          fetch("/api/documents/dashboard"),
+          fetch("/api/audit?limit=10").catch(() => null),
+        ]);
+
+        if (articlesRes.ok) {
+          const data = await articlesRes.json();
+          setArticleStatuses(data);
+          setHasData(Object.keys(data).length > 0);
+        }
+
+        if (docsRes.ok) {
+          const data = await docsRes.json();
+          setDocumentCount(data.stats?.total ?? 0);
+        }
+
+        if (activityRes?.ok) {
+          const data = await activityRes.json();
+          setRecentActivity(data.logs || []);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Check for pending assessment
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("caelex-pending-assessment");
+      if (stored) {
+        setPendingAssessment(JSON.parse(stored));
+      }
+    } catch {}
+  }, []);
+
+  // Success toast from import
   useEffect(() => {
     if (searchParams.get("imported") === "true") {
       setShowSuccessToast(true);
@@ -56,132 +562,180 @@ function DashboardContent() {
     }
   }, [searchParams]);
 
-  const firstName = session?.user?.name?.split(" ")[0] || "there";
-  const daysUntilEnforcement = Math.ceil(
-    (new Date("2030-01-01").getTime() - Date.now()) / 86400000,
-  );
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/tracker/articles");
-        if (res.ok) {
-          const data = await res.json();
-          setArticleStatuses(data);
-          setHasData(Object.keys(data).length > 0);
-        }
-      } catch (error) {
-        console.error("Error fetching article statuses:", error);
-      } finally {
-        setLoading(false);
+  // Calculate stats
+  const stats = useMemo(() => {
+    let total = 0,
+      compliant = 0,
+      applicable = 0;
+    for (const article of articles) {
+      const status = articleStatuses[article.id]?.status;
+      if (status && status !== "not_applicable") {
+        applicable++;
+        if (status === "compliant") compliant++;
       }
-    };
-    fetchData();
-  }, []);
-
-  const [documentCount, setDocumentCount] = useState<number>(0);
-  const [pendingAssessment, setPendingAssessment] = useState<{
-    operatorType: string;
-    regime: string;
-    entitySize: string;
-    constellationTier: string | null;
-    orbit: string;
-    isEU: boolean;
-    isThirdCountry: boolean;
-    applicableArticles: (string | number)[];
-    moduleStatuses: {
-      id: string;
-      name: string;
-      status: string;
-      articleCount: number;
-    }[];
-    completedAt: string;
-  } | null>(null);
-
-  // Fetch document count
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const res = await fetch("/api/documents/dashboard");
-        if (res.ok) {
-          const data = await res.json();
-          setDocumentCount(data.stats?.total ?? 0);
-        }
-      } catch (error) {
-        console.error("Error fetching document count:", error);
-      }
-    };
-    fetchDocuments();
-  }, []);
-
-  // Check for pending assessment in localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("caelex-pending-assessment");
-      if (stored) {
-        setPendingAssessment(JSON.parse(stored));
-      }
-    } catch {
-      // localStorage may be unavailable
+      total++;
     }
-  }, []);
-
-  const stats = { total: 0, compliant: 0, applicable: 0, documents: 0 };
-
-  for (const article of articles) {
-    const status = articleStatuses[article.id]?.status;
-    if (status && status !== "not_applicable") {
-      stats.applicable++;
-      if (status === "compliant") stats.compliant++;
-    }
-    stats.total++;
-  }
+    return { total, compliant, applicable };
+  }, [articleStatuses]);
 
   const progressPercent =
     stats.applicable > 0
       ? Math.round((stats.compliant / stats.applicable) * 100)
       : 0;
 
-  const moduleProgress: Record<
-    string,
-    { total: number; compliant: number; status: string }
-  > = {};
-  for (const mod of modules) {
-    moduleProgress[mod.id] = { total: 0, compliant: 0, status: "Not Started" };
-  }
-
-  for (const article of articles) {
-    const status = articleStatuses[article.id]?.status;
-    if (
-      status &&
-      status !== "not_applicable" &&
-      moduleProgress[article.module]
-    ) {
-      moduleProgress[article.module].total++;
-      if (status === "compliant") moduleProgress[article.module].compliant++;
+  // Calculate module progress
+  const moduleProgress = useMemo(() => {
+    const progress: Record<string, { total: number; compliant: number }> = {};
+    for (const mod of modules) {
+      progress[mod.id] = { total: 0, compliant: 0 };
     }
-  }
-
-  for (const mod of modules) {
-    const prog = moduleProgress[mod.id];
-    if (prog.total === 0) {
-      prog.status = "Not Started";
-    } else if (prog.compliant === prog.total) {
-      prog.status = "Complete";
-    } else if (prog.compliant > 0) {
-      prog.status = `${Math.round((prog.compliant / prog.total) * 100)}% Complete`;
-    } else {
-      prog.status = "Not Started";
+    for (const article of articles) {
+      const status = articleStatuses[article.id]?.status;
+      if (status && status !== "not_applicable" && progress[article.module]) {
+        progress[article.module].total++;
+        if (status === "compliant") progress[article.module].compliant++;
+      }
     }
-  }
+    return progress;
+  }, [articleStatuses]);
 
+  // Prepare chart data
+  const complianceSegments = hasData
+    ? [
+        {
+          name: "EU Regulations",
+          value: progressPercent,
+          color: CHART_COLORS.blue,
+        },
+        {
+          name: "US Regulations",
+          value: Math.max(0, progressPercent - 15),
+          color: CHART_COLORS.cyan,
+        },
+        {
+          name: "International",
+          value: Math.max(0, progressPercent - 25),
+          color: CHART_COLORS.green,
+        },
+      ]
+    : DEMO_COMPLIANCE_SEGMENTS;
+
+  const moduleChartData = hasData
+    ? modules.map((mod) => {
+        const prog = moduleProgress[mod.id];
+        const percent =
+          prog.total > 0 ? Math.round((prog.compliant / prog.total) * 100) : 0;
+        return {
+          name: mod.name,
+          shortName: mod.name.slice(0, 6),
+          progress: percent,
+          status:
+            percent >= 75
+              ? ("complete" as const)
+              : percent > 0
+                ? ("in-progress" as const)
+                : ("not-started" as const),
+        };
+      })
+    : DEMO_MODULE_PROGRESS;
+
+  const radarData = hasData
+    ? [
+        {
+          category: "Auth",
+          value:
+            moduleProgress.authorization?.total > 0
+              ? Math.round(
+                  (moduleProgress.authorization.compliant /
+                    moduleProgress.authorization.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Cyber",
+          value:
+            moduleProgress.cybersecurity?.total > 0
+              ? Math.round(
+                  (moduleProgress.cybersecurity.compliant /
+                    moduleProgress.cybersecurity.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Debris",
+          value:
+            moduleProgress.debris?.total > 0
+              ? Math.round(
+                  (moduleProgress.debris.compliant /
+                    moduleProgress.debris.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Enviro",
+          value:
+            moduleProgress.environmental?.total > 0
+              ? Math.round(
+                  (moduleProgress.environmental.compliant /
+                    moduleProgress.environmental.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Insur",
+          value:
+            moduleProgress.insurance?.total > 0
+              ? Math.round(
+                  (moduleProgress.insurance.compliant /
+                    moduleProgress.insurance.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Regist",
+          value:
+            moduleProgress.registration?.total > 0
+              ? Math.round(
+                  (moduleProgress.registration.compliant /
+                    moduleProgress.registration.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+        {
+          category: "Super",
+          value:
+            moduleProgress.supervision?.total > 0
+              ? Math.round(
+                  (moduleProgress.supervision.compliant /
+                    moduleProgress.supervision.total) *
+                    100,
+                )
+              : 0,
+          fullMark: 100,
+        },
+      ]
+    : DEMO_RADAR_DATA;
+
+  // Import handlers
   const handleImport = async () => {
     if (!selectedOperator) return;
     setImporting(true);
     try {
       const res = await fetch("/api/tracker/import-assessment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ operatorType: selectedOperator }),
       });
       if (res.ok) {
@@ -203,9 +757,7 @@ function DashboardContent() {
   const handleDismissPendingAssessment = () => {
     try {
       localStorage.removeItem("caelex-pending-assessment");
-    } catch {
-      // localStorage may be unavailable
-    }
+    } catch {}
     setPendingAssessment(null);
   };
 
@@ -215,31 +767,25 @@ function DashboardContent() {
     try {
       const res = await fetch("/api/tracker/import-assessment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ operatorType: pendingAssessment.operatorType }),
       });
       if (res.ok) {
-        // Remove from localStorage
         try {
           localStorage.removeItem("caelex-pending-assessment");
-        } catch {
-          // localStorage may be unavailable
-        }
+        } catch {}
         setPendingAssessment(null);
-
-        // Refetch article statuses
         const articlesRes = await fetch("/api/tracker/articles");
         if (articlesRes.ok) {
           const data = await articlesRes.json();
           setArticleStatuses(data);
           setHasData(true);
         }
-
         setShowSuccessToast(true);
-        const timer = setTimeout(() => setShowSuccessToast(false), 5000);
+        setTimeout(() => setShowSuccessToast(false), 5000);
       }
     } catch (error) {
-      console.error("Error importing assessment from localStorage:", error);
+      console.error("Error importing assessment:", error);
     } finally {
       setImporting(false);
     }
@@ -247,16 +793,18 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
-          <div className="grid grid-cols-4 gap-4 mt-8">
+      <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
+        <div className="animate-pulse space-y-6 max-w-[1400px]">
+          <div className="h-8 bg-white/5 rounded w-1/3" />
+          <div className="h-4 bg-white/5 rounded w-1/2" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-32 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
-              />
+              <div key={i} className="h-32 bg-white/5 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-[340px] bg-white/5 rounded-xl" />
             ))}
           </div>
         </div>
@@ -265,276 +813,391 @@ function DashboardContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
       {/* Success Toast */}
-      {showSuccessToast && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
-          <div className="bg-green-100 dark:bg-green-500/10 border border-green-300 dark:border-green-500/20 rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg">
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="text-[14px] text-green-800 dark:text-white font-medium">
-              Assessment imported successfully!
-            </span>
-            <button
-              onClick={() => setShowSuccessToast(false)}
-              className="text-green-600 dark:text-white/70 hover:text-green-800 dark:hover:text-white/80 ml-2"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showSuccessToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50"
+          >
+            <div className="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 flex items-center gap-3 shadow-xl backdrop-blur-sm">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <span className="text-[14px] text-white font-medium">
+                Assessment imported successfully!
+              </span>
+              <button
+                onClick={() => setShowSuccessToast(false)}
+                className="text-white/50 hover:text-white/80"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="max-w-[1200px]">
-        {/* Pending Assessment Import Banner */}
+      <div className="max-w-[1400px]">
+        {/* Pending Assessment Banner */}
         {pendingAssessment && (
-          <div className="mb-6 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-5">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5"
+          >
             <div className="flex items-start gap-4">
-              <ClipboardList className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+              <ClipboardList className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <h3 className="text-[14px] font-medium text-emerald-900 dark:text-white mb-1">
+                <h3 className="text-[14px] font-medium text-white mb-1">
                   Assessment results available
                 </h3>
-                <p className="text-[13px] text-emerald-700 dark:text-white/70">
+                <p className="text-[13px] text-white/60">
                   Import your compliance assessment to populate your dashboard
-                  automatically. Completed{" "}
-                  {new Date(pendingAssessment.completedAt).toLocaleDateString()}
-                  .
+                  automatically.
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={handleImportFromLocalStorage}
                   disabled={importing}
-                  className="inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-500 text-white text-[12px] font-medium px-4 py-2 rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all disabled:opacity-50"
+                  className="bg-emerald-500 text-white text-[12px] font-medium px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {importing ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Importing...
-                    </>
-                  ) : (
-                    "Import Assessment"
-                  )}
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  {importing ? "Importing..." : "Import Assessment"}
                 </button>
                 <button
                   onClick={handleDismissPendingAssessment}
-                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 p-1 rounded transition-colors"
-                  title="Dismiss"
+                  className="text-emerald-400 hover:text-emerald-300 p-1"
                 >
                   <X size={16} />
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* Welcome */}
-        <div className="mb-10">
-          <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
+        {/* Header */}
+        <div className="mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[28px] font-medium text-white mb-1"
+          >
             Welcome back, {firstName}
-          </h1>
-          <p className="text-[14px] text-slate-600 dark:text-white/70">
-            EU Space Act compliance overview
-          </p>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-[14px] text-white/60"
+          >
+            Your compliance command center
+          </motion.p>
         </div>
 
-        {/* Import CTA */}
+        {/* ROW 1: KPI Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <KPICard
+            value={`${progressPercent}%`}
+            label="Overall Compliance"
+            trend={progressPercent > 0 ? "up" : "neutral"}
+            trendValue={progressPercent > 0 ? "+5%" : "—"}
+            sparklineData={
+              hasData
+                ? [10, 15, 22, 28, 35, progressPercent]
+                : [10, 18, 28, 35, 42, 48]
+            }
+            sparklineColor={CHART_COLORS.green}
+            delay={0}
+          />
+          <KPICard
+            value={hasData ? stats.applicable : "52"}
+            label="Applicable Articles"
+            trend="neutral"
+            sparklineData={[45, 48, 50, 51, 52, 52]}
+            sparklineColor={CHART_COLORS.blue}
+            delay={1}
+          />
+          <KPICard
+            value={documentCount}
+            label="Documents Uploaded"
+            trend={documentCount > 0 ? "up" : "neutral"}
+            trendValue={documentCount > 0 ? "+3" : "—"}
+            sparklineData={[0, 2, 5, 8, 12, documentCount]}
+            sparklineColor={CHART_COLORS.cyan}
+            delay={2}
+          />
+          <KPICard
+            value={daysUntilEnforcement}
+            label="Days to 2030"
+            trend="down"
+            trendValue="-1 daily"
+            sparklineData={[1500, 1480, 1460, 1440, 1425, daysUntilEnforcement]}
+            sparklineColor={CHART_COLORS.amber}
+            delay={3}
+          />
+        </div>
+
+        {/* No Data CTA */}
         {!hasData && (
-          <div className="bg-slate-50 dark:bg-white/[0.04] border border-dashed border-slate-300 dark:border-white/[0.08] rounded-xl p-10 text-center mb-10">
-            <h2 className="text-[16px] font-medium text-slate-900 dark:text-white mb-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-10 text-center mb-8"
+          >
+            <h2 className="text-[16px] font-medium text-white mb-2">
               Import your assessment results
             </h2>
-            <p className="text-[13px] text-slate-600 dark:text-white/70 mb-6">
+            <p className="text-[13px] text-white/60 mb-6 max-w-md mx-auto">
               Run the free assessment to determine which articles apply to your
-              operation.
+              operation and see real metrics.
             </p>
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="border border-slate-300 dark:border-white/[0.1] text-slate-700 dark:text-white/60 font-mono text-[12px] px-5 py-2.5 rounded-full hover:border-slate-400 dark:hover:border-white/[0.2] hover:text-slate-900 dark:hover:text-white transition-all flex items-center gap-2"
+                className="bg-blue-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
               >
-                <PlayCircle size={14} />
+                <PlayCircle size={16} />
                 Run Assessment
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-white/60 font-mono text-[12px] px-5 py-2.5 rounded-full hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-all"
+                className="border border-white/20 text-white/70 font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-white/5 transition-all"
               >
                 I already ran it
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* Import Modal */}
-        {showImportModal && (
-          <div className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center p-6">
-            <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-white/[0.08] rounded-xl p-8 max-w-[400px] w-full shadow-xl">
-              <h2 className="text-[18px] font-medium text-slate-900 dark:text-white mb-2">
-                Select Operator Type
-              </h2>
-              <p className="text-[13px] text-slate-600 dark:text-white/70 mb-6">
-                Choose your operator type to import applicable articles.
-              </p>
-              <select
-                value={selectedOperator}
-                onChange={(e) => setSelectedOperator(e.target.value)}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-slate-400 dark:focus:border-white/[0.15]"
+        {/* ROW 2: Compliance Overview + Module Progress */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <GlassCard className="p-6">
+            <SectionHeader title="Compliance Overview" />
+            <ComplianceDonutChart
+              data={complianceSegments}
+              totalScore={hasData ? progressPercent : 48}
+              isDemo={!hasData}
+            />
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <SectionHeader title="Module Progress" />
+            <ModuleProgressChart data={moduleChartData} isDemo={!hasData} />
+          </GlassCard>
+        </div>
+
+        {/* ROW 3: Timeline + Radar */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <GlassCard className="p-6">
+            <SectionHeader title="Compliance Timeline" />
+            <ComplianceTimelineChart
+              data={DEMO_TIMELINE_DATA}
+              isDemo={!hasData}
+            />
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <SectionHeader title="Regulatory Coverage" />
+            <RegulatoryRadarChart data={radarData} isDemo={!hasData} />
+          </GlassCard>
+        </div>
+
+        {/* ROW 4: Recent Activity */}
+        <GlassCard className="p-6 mb-8">
+          <SectionHeader
+            title="Recent Activity"
+            action={
+              <Link
+                href="/dashboard/audit-center"
+                className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1"
               >
-                <option value="">Select operator type...</option>
-                <option value="SCO">EU Spacecraft Operator</option>
-                <option value="LO">EU Launch Operator</option>
-                <option value="LSO">EU Launch Site Operator</option>
-                <option value="TCO">Third Country Operator</option>
-                <option value="ISOS">In-Space Services Provider</option>
-                <option value="PDP">Primary Data Provider</option>
-              </select>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowImportModal(false)}
-                  className="flex-1 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-white/60 py-2.5 rounded-lg font-mono text-[12px] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleImport}
-                  disabled={!selectedOperator || importing}
-                  className="flex-1 bg-slate-900 dark:bg-white text-white dark:text-black py-2.5 rounded-lg font-medium text-[13px] hover:bg-slate-800 dark:hover:bg-white/90 transition-all disabled:opacity-50"
-                >
-                  {importing ? "Importing..." : "Import"}
-                </button>
-              </div>
+                View all <ChevronRight className="w-3 h-3" />
+              </Link>
+            }
+          />
+          {recentActivity.length > 0 ? (
+            <div className="divide-y divide-white/5">
+              {recentActivity.slice(0, 5).map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
+              ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <EmptyState
+              icon={BarChart3}
+              title="No activity yet"
+              description="Start your first assessment to see activity here"
+              action={
+                <Link
+                  href="/assessment"
+                  className="text-[12px] text-blue-400 hover:text-blue-300"
+                >
+                  Run Assessment
+                </Link>
+              }
+            />
+          )}
+        </GlassCard>
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-            <p className="text-[36px] font-mono font-semibold text-slate-900 dark:text-white">
-              {progressPercent}%
-            </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
-              articles compliant
-            </p>
-            <div className="h-1 bg-slate-100 dark:bg-white/[0.04] rounded-full mt-4">
-              <div
-                className="h-full bg-slate-900 dark:bg-white rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
+        {/* ROW 5: Deadlines, Risk Heatmap, Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Upcoming Deadlines */}
+          <GlassCard className="p-5">
+            <SectionHeader title="Upcoming Deadlines" />
+            <div className="space-y-1">
+              {DEMO_DEADLINES.slice(0, 5).map((deadline) => (
+                <DeadlineItem key={deadline.id} deadline={deadline} />
+              ))}
+            </div>
+            {!hasData && (
+              <p className="text-[10px] text-amber-400/70 mt-3 text-center">
+                Sample deadlines
+              </p>
+            )}
+          </GlassCard>
+
+          {/* Risk Heatmap */}
+          <GlassCard className="p-5">
+            <SectionHeader title="Risk Heatmap" />
+            <div className="grid grid-cols-4 gap-3 mt-2">
+              {DEMO_RISK_HEATMAP.map((item, i) => (
+                <RiskHeatmapCell
+                  key={i}
+                  module={item.module}
+                  risk={item.risk}
+                />
+              ))}
+            </div>
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-white/5">
+              {["Critical", "High", "Medium", "Low"].map((level, i) => (
+                <div key={level} className="flex items-center gap-1.5">
+                  <div
+                    className={`w-2.5 h-2.5 rounded ${
+                      i === 0
+                        ? "bg-red-500"
+                        : i === 1
+                          ? "bg-red-500/60"
+                          : i === 2
+                            ? "bg-amber-500/60"
+                            : "bg-green-500/60"
+                    }`}
+                  />
+                  <span className="text-[9px] text-white/40">{level}</span>
+                </div>
+              ))}
+            </div>
+            {!hasData && (
+              <p className="text-[10px] text-amber-400/70 mt-2 text-center">
+                Sample data
+              </p>
+            )}
+          </GlassCard>
+
+          {/* Quick Actions */}
+          <GlassCard className="p-5">
+            <SectionHeader title="Quick Actions" />
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              <QuickActionButton
+                icon={Zap}
+                label="Run Assessment"
+                href="/assessment"
+              />
+              <QuickActionButton
+                icon={FileUp}
+                label="Upload Doc"
+                href="/dashboard/documents"
+              />
+              <QuickActionButton
+                icon={FileBarChart}
+                label="Generate Report"
+                href="/dashboard/tracker"
+              />
+              <QuickActionButton
+                icon={CalendarDays}
+                label="View Timeline"
+                href="/dashboard/timeline"
               />
             </div>
-          </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-            <p className="text-[36px] font-mono font-semibold text-slate-900 dark:text-white">
-              {hasData ? stats.applicable : "—"}
-            </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
-              {hasData ? "applicable articles" : "run assessment first"}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-            <p className="text-[36px] font-mono font-semibold text-slate-900 dark:text-white">
-              {documentCount}
-            </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
-              {documentCount === 1 ? "document" : "documents"} uploaded
-            </p>
-          </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-            <p className="text-[36px] font-mono font-semibold text-slate-900 dark:text-white">
-              {daysUntilEnforcement}
-            </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
-              until 01.01.2030
-            </p>
-          </div>
+          </GlassCard>
         </div>
 
-        {/* Module Rows */}
-        <div className="mb-12">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
-            COMPLIANCE MODULES
-          </p>
-          <div className="flex flex-col gap-3">
-            {modules.map((mod) => {
-              const prog = moduleProgress[mod.id];
-              const progressWidth =
-                prog.total > 0 ? (prog.compliant / prog.total) * 100 : 0;
-              return (
-                <Link
-                  key={mod.id}
-                  href={moduleRoutes[mod.id] || "/dashboard/tracker"}
-                  className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-white/10 rounded-lg px-6 py-5 hover:border-slate-300 dark:hover:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.025] transition-all duration-300 group"
+        {/* Import Modal */}
+        <AnimatePresence>
+          {showImportModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+              onClick={() => setShowImportModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#0F172A] border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+              >
+                <h2 className="text-[18px] font-medium text-white mb-2">
+                  Select Operator Type
+                </h2>
+                <p className="text-[13px] text-white/60 mb-6">
+                  Choose your operator type to import applicable articles.
+                </p>
+                <select
+                  value={selectedOperator}
+                  onChange={(e) => setSelectedOperator(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-blue-500/50"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-4">
-                      <span className="font-mono text-[12px] text-slate-400 dark:text-white/30 w-6">
-                        {mod.number}
-                      </span>
-                      <span className="text-[15px] font-medium text-slate-900 dark:text-white">
-                        {mod.name}
-                      </span>
-                      <span className="font-mono text-[11px] text-slate-500 dark:text-white/60">
-                        {mod.articleRange}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="font-mono text-[10px] uppercase tracking-wider bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/60 px-3 py-1 rounded-full">
-                        {prog.status}
-                      </span>
-                      <ChevronRight
-                        size={16}
-                        className="text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors"
-                      />
-                    </div>
-                  </div>
-                  {prog.total > 0 && (
-                    <div className="h-0.5 bg-slate-100 dark:bg-white/[0.04] rounded-full ml-10">
-                      <div
-                        className="h-full bg-slate-400 dark:bg-white/30 rounded-full transition-all duration-500"
-                        style={{ width: `${progressWidth}%` }}
-                      />
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
-            RECENT ACTIVITY
-          </p>
-          <div className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-            <ActivityFeed
-              limit={10}
-              showFilters={false}
-              showExport={false}
-              compact
-            />
-          </div>
-        </div>
+                  <option value="">Select operator type...</option>
+                  <option value="SCO">EU Spacecraft Operator</option>
+                  <option value="LO">EU Launch Operator</option>
+                  <option value="LSO">EU Launch Site Operator</option>
+                  <option value="TCO">Third Country Operator</option>
+                  <option value="ISOS">In-Space Services Provider</option>
+                  <option value="PDP">Primary Data Provider</option>
+                </select>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowImportModal(false)}
+                    className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleImport}
+                    disabled={!selectedOperator || importing}
+                    className="flex-1 bg-blue-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-blue-600 transition-all disabled:opacity-50"
+                  >
+                    {importing ? "Importing..." : "Import"}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
+// ─── Main Export ───
+
 export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 lg:p-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-            <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
-            <div className="grid grid-cols-4 gap-4 mt-8">
+        <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
+          <div className="animate-pulse space-y-6 max-w-[1400px]">
+            <div className="h-8 bg-white/5 rounded w-1/3" />
+            <div className="h-4 bg-white/5 rounded w-1/2" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
               {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-32 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
-                />
+                <div key={i} className="h-32 bg-white/5 rounded-xl" />
               ))}
             </div>
           </div>

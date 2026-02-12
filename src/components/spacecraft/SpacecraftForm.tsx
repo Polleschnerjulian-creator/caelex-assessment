@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Loader2, Satellite, Calendar, MapPin, Info } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 type SpacecraftStatus =
   | "PRE_LAUNCH"
@@ -108,7 +109,7 @@ export function SpacecraftForm({
 
       const response = await fetch(url, {
         method: isEditing ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           name: formData.name,
           cosparId: formData.cosparId || null,

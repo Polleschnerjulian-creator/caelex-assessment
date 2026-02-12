@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Globe2,
@@ -307,7 +308,7 @@ function CopuosPageContent() {
     try {
       const res = await fetch("/api/copuos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           missionName: missionName || null,
           ...form,
@@ -337,7 +338,7 @@ function CopuosPageContent() {
     try {
       const res = await fetch(`/api/copuos/${selectedAssessment.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           guidelineStatuses: [{ guidelineId, status, notes }],
         }),

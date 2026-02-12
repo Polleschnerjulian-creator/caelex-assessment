@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Bell, Filter, CheckCheck, Loader2 } from "lucide-react";
 import { NotificationItem } from "./NotificationItem";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Notification {
   id: string;
@@ -70,7 +71,7 @@ export function NotificationList() {
     try {
       const response = await fetch("/api/notifications/mark-read", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ all: true }),
       });
 
@@ -89,7 +90,7 @@ export function NotificationList() {
     try {
       const response = await fetch("/api/notifications/mark-read", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ notificationIds: [id] }),
       });
 
@@ -108,7 +109,7 @@ export function NotificationList() {
     try {
       const response = await fetch("/api/notifications/dismiss", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ notificationId: id }),
       });
 

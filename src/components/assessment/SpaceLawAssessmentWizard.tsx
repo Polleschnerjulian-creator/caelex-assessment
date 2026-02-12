@@ -19,6 +19,7 @@ import QuestionStep from "./QuestionStep";
 import MultiSelectQuestionStep from "./MultiSelectQuestionStep";
 import SpaceLawResultsDashboard from "@/components/space-law/SpaceLawResultsDashboard";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface SpaceLawAssessmentState {
   currentStep: number;
@@ -58,7 +59,7 @@ export default function SpaceLawAssessmentWizard() {
       try {
         const response = await fetch("/api/space-law/calculate", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             answers: state.answers,
             startedAt: startedAtRef.current,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Satellite,
@@ -552,7 +553,10 @@ function RegistrationDetailModal({
                       `/api/registration/${registrationId}/submit`,
                       {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                          "Content-Type": "application/json",
+                          ...csrfHeaders(),
+                        },
                         body: JSON.stringify({ organizationId }),
                       },
                     );

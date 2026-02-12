@@ -16,6 +16,7 @@ import QuestionStep from "./QuestionStep";
 import OutOfScopeResult from "./OutOfScopeResult";
 import NIS2ResultsDashboard from "@/components/nis2/NIS2ResultsDashboard";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface NIS2AssessmentState {
   currentStep: number;
@@ -64,7 +65,7 @@ export default function NIS2AssessmentWizard() {
       try {
         const response = await fetch("/api/nis2/calculate", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             answers: state.answers,
             startedAt: startedAtRef.current,

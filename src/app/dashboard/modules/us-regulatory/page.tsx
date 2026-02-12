@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Globe2,
@@ -485,7 +486,7 @@ function UsRegulatoryPageContent() {
     try {
       const res = await fetch("/api/us-regulatory", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentName: assessmentName || null,
           ...form,
@@ -528,7 +529,7 @@ function UsRegulatoryPageContent() {
     try {
       const res = await fetch(`/api/us-regulatory/${selectedAssessment.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           requirementStatuses: [{ requirementId, status, notes }],
         }),

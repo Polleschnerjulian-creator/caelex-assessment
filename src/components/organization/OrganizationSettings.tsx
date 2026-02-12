@@ -5,7 +5,6 @@ import {
   Building2,
   Palette,
   Globe,
-  Mail,
   Receipt,
   Save,
   Loader2,
@@ -13,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { PlanBadge } from "./PlanBadge";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 type OrganizationPlan = "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
 
@@ -112,7 +112,7 @@ export function OrganizationSettings({
     try {
       const response = await fetch(`/api/organizations/${organization.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           name: formData.name,
           logoUrl: formData.logoUrl || null,
@@ -145,6 +145,7 @@ export function OrganizationSettings({
     try {
       const response = await fetch(`/api/organizations/${organization.id}`, {
         method: "DELETE",
+        headers: csrfHeaders(),
       });
 
       if (!response.ok) {

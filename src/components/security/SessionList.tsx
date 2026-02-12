@@ -10,10 +10,10 @@ import {
   LogOut,
   Loader2,
   AlertTriangle,
-  Check,
   RefreshCw,
   Shield,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Session {
   id: string;
@@ -75,6 +75,7 @@ export function SessionList() {
     try {
       const response = await fetch(`/api/sessions/${sessionId}`, {
         method: "DELETE",
+        headers: csrfHeaders(),
       });
 
       if (response.ok) {
@@ -108,7 +109,7 @@ export function SessionList() {
     try {
       const response = await fetch("/api/sessions/revoke-all", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ exceptCurrent: true }),
       });
 

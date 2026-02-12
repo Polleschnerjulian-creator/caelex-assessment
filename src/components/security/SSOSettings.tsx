@@ -13,8 +13,8 @@ import {
   Trash2,
   TestTube,
   Download,
-  ExternalLink,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface SSOProvider {
   value: string;
@@ -112,7 +112,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
     try {
       const response = await fetch("/api/sso", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           organizationId,
           ...formData,
@@ -141,7 +141,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
     try {
       const response = await fetch("/api/sso/test", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId }),
       });
 
@@ -168,7 +168,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
     try {
       const response = await fetch(
         `/api/sso?organizationId=${organizationId}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers: csrfHeaders() },
       );
 
       if (response.ok) {
@@ -186,7 +186,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
     try {
       const response = await fetch("/api/sso/domains", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId, domain: newDomain }),
       });
 
@@ -206,7 +206,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
     try {
       const response = await fetch(
         `/api/sso/domains?organizationId=${organizationId}&domain=${encodeURIComponent(domain)}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers: csrfHeaders() },
       );
 
       if (response.ok) {

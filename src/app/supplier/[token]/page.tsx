@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { useParams } from "next/navigation";
 import { Loader2, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import SupplierDataForm from "@/components/supplier-portal/SupplierDataForm";
@@ -67,7 +68,7 @@ export default function SupplierPortalPage() {
     try {
       const response = await fetch(`/api/supplier/${token}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(data),
       });
 

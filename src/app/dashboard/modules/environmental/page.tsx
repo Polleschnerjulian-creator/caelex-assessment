@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Leaf,
@@ -253,7 +254,7 @@ function EnvironmentalPageContent() {
           `/api/environmental/${selectedAssessment.id}`,
           {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
             body: JSON.stringify(payload),
           },
         );
@@ -271,7 +272,7 @@ function EnvironmentalPageContent() {
         // Create new
         const response = await fetch("/api/environmental", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify(payload),
         });
 
@@ -301,7 +302,7 @@ function EnvironmentalPageContent() {
 
       const response = await fetch("/api/environmental/calculate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ assessmentId: selectedAssessment.id }),
       });
 
@@ -344,7 +345,7 @@ function EnvironmentalPageContent() {
       setLoading(true);
       const response = await fetch("/api/environmental/suppliers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentId: selectedAssessment.id,
           generateDefaults: true,
@@ -365,7 +366,7 @@ function EnvironmentalPageContent() {
     try {
       await fetch("/api/environmental/suppliers", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ supplierId, status }),
       });
       await fetchSuppliers();
@@ -383,7 +384,7 @@ function EnvironmentalPageContent() {
 
       const response = await fetch("/api/environmental/report/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ assessmentId: selectedAssessment.id }),
       });
 

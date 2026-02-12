@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { useSession } from "next-auth/react";
 import {
   User,
@@ -18,6 +19,8 @@ import {
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
 import { OrganizationCard } from "@/components/settings/OrganizationCard";
+import { MfaSetupCard } from "@/components/settings/MfaSetupCard";
+import { PasskeyManagementCard } from "@/components/settings/PasskeyManagementCard";
 import { useToast } from "@/components/ui/Toast";
 
 // ─── Types ───
@@ -98,7 +101,7 @@ function SecurityCard() {
       setRevokingAll(true);
       const res = await fetch("/api/sessions/revoke-all", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ exceptCurrent: true }),
       });
       if (res.ok) {
@@ -148,7 +151,7 @@ function SecurityCard() {
       setChangingPassword(true);
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
@@ -519,6 +522,12 @@ export default function SettingsPage() {
 
         {/* Security */}
         <SecurityCard />
+
+        {/* Two-Factor Authentication */}
+        <MfaSetupCard />
+
+        {/* Passkeys */}
+        <PasskeyManagementCard />
       </div>
     </div>
   );

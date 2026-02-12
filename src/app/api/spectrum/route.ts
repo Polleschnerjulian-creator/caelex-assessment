@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import {
   type SpectrumProfile,
   type ServiceType,
@@ -93,6 +94,12 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit("assessment", session.user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
     }
 
     const userId = session.user.id;

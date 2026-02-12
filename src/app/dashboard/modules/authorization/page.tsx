@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import EmptyState from "@/components/dashboard/EmptyState";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { ncas, determineNCA, type NCADetermination } from "@/data/ncas";
 import {
   authorizationDocuments,
@@ -173,7 +174,7 @@ function AuthorizationPageContent() {
     try {
       const res = await fetch("/api/authorization", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           operatorType: formOperatorType,
           establishmentCountry: formCountry,
@@ -214,7 +215,7 @@ function AuthorizationPageContent() {
     try {
       await fetch(`/api/authorization/${selectedWorkflow.id}/documents`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ documentId, status }),
       });
     } catch (error) {
@@ -1136,7 +1137,10 @@ function AuthorizationPageContent() {
                             `/api/authorization/${selectedWorkflow.id}`,
                             {
                               method: "PUT",
-                              headers: { "Content-Type": "application/json" },
+                              headers: {
+                                "Content-Type": "application/json",
+                                ...csrfHeaders(),
+                              },
                               body: JSON.stringify({ status: "submitted" }),
                             },
                           );

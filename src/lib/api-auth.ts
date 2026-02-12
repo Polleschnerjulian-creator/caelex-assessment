@@ -1,6 +1,7 @@
 /**
  * API Authentication Middleware
  * Handles API key validation for public API endpoints
+ * Supports optional HMAC request signing for enhanced security
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -12,6 +13,7 @@ import {
   checkRateLimit,
   logApiRequest,
 } from "./services/api-key-service";
+import { verifySignature, extractRequestDetails } from "./hmac-signing.server";
 
 // ─── Types ───
 
@@ -20,6 +22,7 @@ export interface ApiAuthResult {
   apiKey?: ApiKey;
   error?: string;
   statusCode?: number;
+  signatureVerified?: boolean;
 }
 
 export interface ApiContext {
@@ -32,9 +35,12 @@ export interface ApiContext {
 
 /**
  * Authenticate an API request
+ * @param request - The incoming request
+ * @param requestBody - The request body (needed for HMAC verification)
  */
 export async function authenticateApiRequest(
   request: NextRequest,
+  requestBody?: string | null,
 ): Promise<ApiAuthResult> {
   // Get API key from header
   const authHeader = request.headers.get("Authorization");
@@ -63,6 +69,36 @@ export async function authenticateApiRequest(
     };
   }
 
+  // Check HMAC signature if required
+  if (result.apiKey.requireSigning) {
+    if (!result.apiKey.signingSecret) {
+      return {
+        authenticated: false,
+        error: "API key requires signing but has no signing secret configured",
+        statusCode: 500,
+      };
+    }
+
+    const url = new URL(request.url);
+    const signatureHeader = request.headers.get("X-Signature");
+
+    const signatureResult = verifySignature(
+      signatureHeader,
+      result.apiKey.signingSecret,
+      request.method,
+      url.pathname,
+      requestBody ?? null,
+    );
+
+    if (!signatureResult.valid) {
+      return {
+        authenticated: false,
+        error: signatureResult.error || "Invalid signature",
+        statusCode: 401,
+      };
+    }
+  }
+
   // Check rate limit
   const rateLimitResult = await checkRateLimit(
     result.apiKey.id,
@@ -80,6 +116,7 @@ export async function authenticateApiRequest(
   return {
     authenticated: true,
     apiKey: result.apiKey,
+    signatureVerified: result.apiKey.requireSigning,
   };
 }
 
@@ -208,8 +245,18 @@ export function withApiAuth(
   return async (request: NextRequest): Promise<NextResponse> => {
     const startTime = Date.now();
 
-    // Authenticate
-    const authResult = await authenticateApiRequest(request);
+    // Extract body for HMAC verification (need to clone request since body can only be read once)
+    let requestBody: string | null = null;
+    if (["POST", "PUT", "PATCH"].includes(request.method)) {
+      try {
+        requestBody = await request.clone().text();
+      } catch {
+        requestBody = null;
+      }
+    }
+
+    // Authenticate (with HMAC verification if required)
+    const authResult = await authenticateApiRequest(request, requestBody);
 
     if (!authResult.authenticated || !authResult.apiKey) {
       return apiError(

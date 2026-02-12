@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import {
   Radio,
   Globe,
@@ -808,7 +809,7 @@ export default function SpectrumManagementPage() {
     try {
       const res = await fetch("/api/spectrum", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(wizardData),
       });
 
@@ -845,7 +846,7 @@ export default function SpectrumManagementPage() {
     try {
       const res = await fetch(`/api/spectrum/${assessment.id}/requirements`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           updates: [{ requirementId, status: newStatus }],
         }),

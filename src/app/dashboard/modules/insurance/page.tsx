@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Shield,
@@ -226,7 +227,7 @@ function InsurancePageContent() {
     try {
       const res = await fetch("/api/insurance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(formData),
       });
       if (res.ok) {
@@ -248,7 +249,7 @@ function InsurancePageContent() {
     try {
       const res = await fetch(`/api/insurance/${selectedAssessment.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(updates),
       });
       if (res.ok) {
@@ -266,7 +267,10 @@ function InsurancePageContent() {
   const deleteAssessment = async (id: string) => {
     if (!confirm("Delete this insurance assessment?")) return;
     try {
-      const res = await fetch(`/api/insurance/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/insurance/${id}`, {
+        method: "DELETE",
+        headers: { ...csrfHeaders() },
+      });
       if (res.ok) {
         if (selectedAssessment?.id === id) {
           setSelectedAssessment(null);
@@ -286,7 +290,7 @@ function InsurancePageContent() {
     try {
       const res = await fetch("/api/insurance/policies", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentId: selectedAssessment.id,
           insuranceType,
@@ -317,7 +321,7 @@ function InsurancePageContent() {
     try {
       const res = await fetch("/api/insurance/report/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ assessmentId: selectedAssessment.id }),
       });
       if (res.ok) {

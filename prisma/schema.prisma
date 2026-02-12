@@ -56,6 +56,18 @@ model User {
   usRegulatoryAssessments UsRegulatoryAssessment[] // US Space Regulatory assessments
   exportControlAssessments ExportControlAssessment[] // ITAR/EAR Export Control assessments
   spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
+
+  // Security: MFA & Passkeys
+  mfaConfig              MfaConfig?
+  webAuthnCredentials    WebAuthnCredential[]
+  loginEvents            LoginEvent[]
+
+  // Security: Account Lockout
+  failedLoginAttempts    Int                     @default(0)
+  lockedUntil            DateTime?
+  unlockToken            String?                 @unique
+  unlockTokenExpires     DateTime?
+
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 }
@@ -163,6 +175,7 @@ model AuthorizationWorkflow {
 
   @@index([userId])
   @@index([status])
+  @@index([userId, status, targetSubmission])
 }
 
 model AuthorizationDocument {
@@ -1442,7 +1455,7 @@ model SupervisionReport {
 
   // Incident link (for incident reports)
   incidentId     String?
-  incident       Incident?         @relation(fields: [incidentId], references: [id])
+  incident       Incident?         @relation(fields: [incidentId], references: [id], onDelete: SetNull)
 
   // NCA Submissions
   ncaSubmissions NCASubmission[]
@@ -1455,6 +1468,7 @@ model SupervisionReport {
   @@index([dueDate])
   @@index([status])
   @@index([incidentId])
+  @@index([generatedBy])
 }
 
 model SupervisionCalendarEvent {
@@ -1540,6 +1554,8 @@ model Deadline {
   @@index([status, dueDate])
   @@index([category])
   @@index([moduleSource])
+  @@index([parentId])
+  @@index([userId, status, dueDate])
 }
 
 model MissionPhase {
@@ -1722,6 +1738,7 @@ model Document {
   @@index([expiryDate])
   @@index([status])
   @@index([moduleType])
+  @@index([userId, status, expiryDate])
 }
 
 model DocumentAccessLog {
@@ -2149,6 +2166,7 @@ model NCASubmission {
   @@index([ncaAuthority])
   @@index([status])
   @@index([submittedAt])
+  @@index([originalSubmissionId])
 }
 
 enum NCAAuthority {
@@ -2692,7 +2710,124 @@ model UserSession {
   @@index([userId, isActive])
 }
 
+// ============================================
+// MULTI-FACTOR AUTHENTICATION (MFA)
+// ============================================
+
+model MfaConfig {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // TOTP Secret (AES-256 encrypted)
+  encryptedSecret String   @db.Text
+  iv              String   // Initialization vector for decryption
+
+  // Backup Codes (bcrypt hashed, comma-separated)
+  backupCodes     String?  @db.Text
+
+  // Status
+  enabled         Boolean  @default(false)
+  verifiedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ============================================
+// WEBAUTHN / PASSKEYS
+// ============================================
+
+model WebAuthnCredential {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Credential Data
+  credentialId    String   @unique @db.Text  // Base64-encoded credential ID
+  publicKey       String   @db.Text          // Base64-encoded public key
+  counter         Int      @default(0)       // Signature counter for replay protection
+
+  // Device Info
+  deviceName      String?                    // User-provided name (e.g., "MacBook Pro")
+  deviceType      String?                    // platform, cross-platform
+  aaguid          String?                    // Authenticator AAGUID
+
+  // Transports (how the authenticator communicates)
+  transports      String?                    // JSON array: ["internal", "usb", "nfc", "ble"]
+
+  // Usage
+  lastUsedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([credentialId])
+}
+
+// ============================================
+// LOGIN EVENTS & SUSPICIOUS ACTIVITY
+// ============================================
+
+model LoginEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Event Type
+  eventType       LoginEventType @default(LOGIN_SUCCESS)
+
+  // Device Info
+  deviceType      String?  // desktop, mobile, tablet
+  browser         String?
+  browserVersion  String?
+  os              String?
+  osVersion       String?
+
+  // Location Info
+  ipAddress       String?
+  city            String?
+  country         String?
+  countryCode     String?
+
+  // Auth Method Used
+  authMethod      AuthMethod @default(PASSWORD)
+
+  // Suspicious Activity Detection
+  isSuspicious    Boolean  @default(false)
+  suspiciousReasons String? @db.Text  // JSON array of reasons
+
+  // Related Session
+  sessionId       String?
+
+  // Additional metadata (coordinates for impossible travel detection)
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([isSuspicious, createdAt])
+}
+
+enum LoginEventType {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGIN_BLOCKED
+  MFA_REQUIRED
+  MFA_SUCCESS
+  MFA_FAILED
+  PASSKEY_SUCCESS
+  PASSKEY_FAILED
+  BACKUP_CODE_USED
+  ACCOUNT_LOCKED
+  ACCOUNT_UNLOCKED
+  SUSPICIOUS_LOGIN
+}
+
 enum AuthMethod {
+  PASSKEY
   PASSWORD
   OAUTH_GOOGLE
   OAUTH_GITHUB
@@ -2755,6 +2890,14 @@ enum SecurityAuditEventType {
   MFA_DISABLED
   MFA_CHALLENGE_SUCCESS
   MFA_CHALLENGE_FAILED
+  MFA_BACKUP_CODES_GENERATED
+  MFA_BACKUP_CODE_USED
+
+  // Passkeys / WebAuthn
+  PASSKEY_REGISTERED
+  PASSKEY_REMOVED
+  PASSKEY_LOGIN_SUCCESS
+  PASSKEY_LOGIN_FAILED
 
   // SSO
   SSO_LOGIN
@@ -2797,6 +2940,9 @@ enum SecurityAuditEventType {
   UNUSUAL_LOCATION
   MULTIPLE_FAILED_LOGINS
   RATE_LIMIT_EXCEEDED
+
+  // Honey Tokens
+  HONEY_TOKEN_TRIGGERED
 }
 
 enum RiskLevel {
@@ -2804,6 +2950,92 @@ enum RiskLevel {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// ============================================
+// HONEY TOKENS (Attacker Detection)
+// ============================================
+
+// Fake credentials/data planted to detect unauthorized access
+model HoneyToken {
+  id              String   @id @default(cuid())
+
+  // Token Type
+  tokenType       HoneyTokenType @default(API_KEY)
+  name            String         // Descriptive name (e.g., "Fake AWS Key", "Legacy API Key")
+  description     String?        @db.Text
+
+  // Token Value
+  tokenValue      String   @unique @db.Text // The fake credential/value
+  tokenHash       String?        // Optional hash for quick lookup
+
+  // Detection Config
+  alertEmail      String?        // Email to notify on trigger
+  alertWebhookUrl String?        // Webhook URL to call on trigger
+
+  // Context (where the token appears to belong)
+  contextPath     String?        // e.g., ".env.backup", "config/legacy.json"
+  contextType     String?        // "environment", "config", "document", "api"
+
+  // Statistics
+  triggerCount    Int      @default(0)
+  lastTriggeredAt DateTime?
+  lastTriggeredIp String?
+  lastTriggeredUa String?
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  triggers        HoneyTokenTrigger[]
+
+  @@index([tokenValue])
+  @@index([tokenHash])
+  @@index([tokenType, isActive])
+}
+
+// Records each time a honey token is accessed/used
+model HoneyTokenTrigger {
+  id              String   @id @default(cuid())
+  honeyTokenId    String
+  honeyToken      HoneyToken @relation(fields: [honeyTokenId], references: [id], onDelete: Cascade)
+
+  // Request Context
+  ipAddress       String?
+  userAgent       String?  @db.Text
+  requestPath     String?
+  requestMethod   String?
+  requestHeaders  Json?    // Sanitized headers for analysis
+
+  // Geolocation
+  city            String?
+  country         String?
+  countryCode     String?
+
+  // Analysis
+  severity        RiskLevel @default(HIGH)
+  notes           String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+
+  @@index([honeyTokenId, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+enum HoneyTokenType {
+  API_KEY           // Fake API key (caelex_fake_...)
+  DATABASE_URL      // Fake database connection string
+  AWS_CREDENTIAL    // Fake AWS access key/secret
+  OAUTH_SECRET      // Fake OAuth client secret
+  ENCRYPTION_KEY    // Fake encryption key
+  WEBHOOK_SECRET    // Fake webhook signing secret
+  JWT_SECRET        // Fake JWT signing key
+  SSH_KEY           // Fake SSH private key
+  ADMIN_PASSWORD    // Fake admin credentials
+  CUSTOM            // Custom token type
 }
 
 // ============================================
@@ -2825,6 +3057,10 @@ model ApiKey {
 
   // Rate Limiting
   rateLimit      Int      @default(1000) // requests per hour
+
+  // HMAC Signing (optional - when set, requests must include X-Signature header)
+  signingSecret  String?  @db.Text // Encrypted signing secret for HMAC verification
+  requireSigning Boolean  @default(false) // Whether this key requires HMAC signatures
 
   // Status
   isActive       Boolean  @default(true)

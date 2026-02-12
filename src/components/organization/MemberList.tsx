@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MoreVertical, UserMinus, Mail, Shield } from "lucide-react";
 import { RoleSelector } from "./RoleSelector";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 type OrganizationRole = "OWNER" | "ADMIN" | "MANAGER" | "MEMBER" | "VIEWER";
 
@@ -44,7 +45,7 @@ export function MemberList({
         `/api/organizations/${organizationId}/members/${userId}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({ role: newRole }),
         },
       );
@@ -76,7 +77,7 @@ export function MemberList({
     try {
       const response = await fetch(
         `/api/organizations/${organizationId}/members/${userId}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers: csrfHeaders() },
       );
 
       if (!response.ok) {

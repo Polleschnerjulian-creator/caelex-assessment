@@ -17,6 +17,7 @@ import {
   ChevronUp,
   AlertCircle,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface WebhookItem {
   id: string;
@@ -89,7 +90,7 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
     try {
       const response = await fetch(`/api/v1/webhooks/${webhookId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId, isActive: !isActive }),
       });
 
@@ -109,7 +110,7 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
     try {
       const response = await fetch(
         `/api/v1/webhooks/${webhookId}?organizationId=${organizationId}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers: { ...csrfHeaders() } },
       );
 
       if (response.ok) {
@@ -124,7 +125,7 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
     try {
       const response = await fetch(`/api/v1/webhooks/${webhookId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId, test: true }),
       });
 
@@ -529,7 +530,7 @@ function WebhookModal({
       if (isEditing) {
         const response = await fetch(`/api/v1/webhooks/${webhook.id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             organizationId,
             name: name.trim(),
@@ -547,7 +548,7 @@ function WebhookModal({
       } else {
         const response = await fetch("/api/v1/webhooks", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             organizationId,
             name: name.trim(),

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
+import { csrfHeaders } from "@/lib/csrf-client";
 import {
   debrisRequirements,
   getApplicableRequirements,
@@ -171,7 +172,7 @@ function DebrisPageContent() {
     try {
       const res = await fetch("/api/debris", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           missionName: missionName || null,
           orbitType: form.orbitType,
@@ -217,7 +218,7 @@ function DebrisPageContent() {
     try {
       const res = await fetch("/api/debris/requirements", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentId: selectedAssessment.id,
           requirementId,
@@ -246,7 +247,7 @@ function DebrisPageContent() {
     try {
       const res = await fetch("/api/debris/plan/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ assessmentId: selectedAssessment.id }),
       });
 

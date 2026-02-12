@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
@@ -80,6 +81,7 @@ function ApplicationFormContent() {
 
       const response = await fetch("/api/careers/apply", {
         method: "POST",
+        headers: { ...csrfHeaders() },
         body: formDataToSend,
       });
 

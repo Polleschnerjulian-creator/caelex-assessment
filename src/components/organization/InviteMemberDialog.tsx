@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Send, Copy, Check, Loader2 } from "lucide-react";
 import { RoleSelector } from "./RoleSelector";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 type OrganizationRole = "OWNER" | "ADMIN" | "MANAGER" | "MEMBER" | "VIEWER";
 
@@ -40,7 +41,7 @@ export function InviteMemberDialog({
         `/api/organizations/${organizationId}/invitations`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({ email, role }),
         },
       );

@@ -264,8 +264,8 @@ const response = await fetch('https://app.caelex.eu/api/v1/compliance/overview',
 });
 
 const data = await response.json();
-console.log('Compliance Score:', data.overallScore);
-console.log('Status:', data.status);`}
+// Access compliance data: data.overallScore, data.status
+const { overallScore, status } = data;`}
           />
 
           <CodeBlock
@@ -426,9 +426,9 @@ app.post('/webhooks/caelex', (req, res) => {
     return res.status(401).send('Invalid signature');
   }
 
-  // Process the webhook
+  // Process the webhook event
   const event = req.body;
-  console.log('Received event:', event.type);
+  // Handle event based on event.type (e.g., 'compliance.updated')
 
   res.status(200).send('OK');
 });`}

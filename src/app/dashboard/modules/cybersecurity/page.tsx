@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
+import { csrfHeaders } from "@/lib/csrf-client";
 import AstraBulkButton from "@/components/astra/AstraBulkButton";
 import {
   getApplicableRequirements,
@@ -275,7 +276,7 @@ function CybersecurityPageContent() {
     try {
       const res = await fetch("/api/cybersecurity", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentName: assessmentName || null,
           ...form,
@@ -311,7 +312,7 @@ function CybersecurityPageContent() {
     try {
       const res = await fetch("/api/cybersecurity/requirements", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           assessmentId: selectedAssessment.id,
           requirementId,
@@ -338,7 +339,7 @@ function CybersecurityPageContent() {
     try {
       const res = await fetch("/api/cybersecurity/framework/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ assessmentId: selectedAssessment.id }),
       });
 

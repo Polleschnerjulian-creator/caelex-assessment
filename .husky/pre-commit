@@ -37,9 +37,15 @@ if [ -n "$STAGED_FILES" ]; then
   fi
 
   # Check for database connection strings with credentials
-  if git diff --cached | grep -iE '(mysql|postgres|mongodb|redis)://[^:]+:[^@]+@' > /dev/null 2>&1; then
-    echo "ERROR: Database connection string with credentials found in staged changes"
-    SECRETS_FOUND=1
+  # Exclude: GitHub Actions (test creds), honey-tokens (fake creds), template literals
+  DB_STRINGS=$(git diff --cached | grep -iE '(mysql|postgres|mongodb|redis)://[^:]+:[^@]+@' || true)
+  if [ -n "$DB_STRINGS" ]; then
+    # Filter out allowed patterns
+    REAL_SECRETS=$(echo "$DB_STRINGS" | grep -v 'localhost' | grep -v '127.0.0.1' | grep -v 'example\.com' | grep -v '\${' | grep -v 'test:test' || true)
+    if [ -n "$REAL_SECRETS" ]; then
+      echo "ERROR: Database connection string with credentials found in staged changes"
+      SECRETS_FOUND=1
+    fi
   fi
 
   # Check for .env files being committed

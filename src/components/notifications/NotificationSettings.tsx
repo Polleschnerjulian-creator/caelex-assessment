@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bell, Mail, Moon, Clock, Loader2, Save, Check } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Category {
   id: string;
@@ -70,7 +71,7 @@ export function NotificationSettings() {
     try {
       const response = await fetch("/api/notifications/settings", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(settings),
       });
 

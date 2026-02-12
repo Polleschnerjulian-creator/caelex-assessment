@@ -13,6 +13,7 @@ import {
   EyeOff,
   Clock,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface ApiKey {
   id: string;
@@ -74,7 +75,7 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
     try {
       const response = await fetch(`/api/v1/keys/${keyId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId }),
       });
 
@@ -349,7 +350,7 @@ function CreateApiKeyModal({
 
       const response = await fetch("/api/v1/keys", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           organizationId,
           name: name.trim(),

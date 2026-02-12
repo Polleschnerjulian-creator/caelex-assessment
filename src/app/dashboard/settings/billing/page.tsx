@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useCallback } from "react";
+import { csrfHeaders } from "@/lib/csrf-client";
 import { useSearchParams } from "next/navigation";
 import { CreditCard, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import PricingTable from "@/components/billing/PricingTable";
@@ -103,7 +104,7 @@ function BillingContent() {
     try {
       const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           priceId,
           organizationId: orgId,
@@ -137,7 +138,7 @@ function BillingContent() {
     try {
       const response = await fetch("/api/stripe/create-portal-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ organizationId: orgId }),
       });
 
@@ -172,7 +173,7 @@ function BillingContent() {
     try {
       const response = await fetch("/api/stripe/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           organizationId: orgId,
           action: "cancel",
@@ -202,7 +203,7 @@ function BillingContent() {
     try {
       const response = await fetch("/api/stripe/subscription", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           organizationId: orgId,
           action: "reactivate",

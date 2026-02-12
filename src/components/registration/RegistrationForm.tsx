@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, ChevronRight, ChevronLeft, RefreshCw, Wand2 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Spacecraft {
   id: string;
@@ -137,7 +138,7 @@ export default function RegistrationForm({
 
       const response = await fetch("/api/registration/generate-cospar", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ launchYear: year }),
       });
 
@@ -223,7 +224,7 @@ export default function RegistrationForm({
 
       const response = await fetch("/api/registration", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(payload),
       });
 

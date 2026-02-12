@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { csrfHeaders } from "@/lib/csrf-client";
 import {
   AlertTriangle,
   Shield,
@@ -865,7 +866,7 @@ export default function ExportControlPage() {
     try {
       const res = await fetch("/api/export-control", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(wizardData),
       });
 
@@ -894,7 +895,7 @@ export default function ExportControlPage() {
         `/api/export-control/${currentAssessment.id}/requirements`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({ requirementId, status }),
         },
       );

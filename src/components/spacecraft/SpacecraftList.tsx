@@ -5,13 +5,13 @@ import {
   Satellite,
   Plus,
   Search,
-  Filter,
   MoreVertical,
   Edit,
   Trash2,
   ExternalLink,
 } from "lucide-react";
 import { SpacecraftStatusBadge } from "./SpacecraftStatusBadge";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 type SpacecraftStatus =
   | "PRE_LAUNCH"
@@ -103,7 +103,7 @@ export function SpacecraftList({
     try {
       const response = await fetch(
         `/api/organizations/${organizationId}/spacecraft/${id}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers: csrfHeaders() },
       );
 
       if (response.ok) {

@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface NotificationPreferences {
   enableAutoReminders: boolean;
@@ -66,7 +67,7 @@ export default function NotificationPreferencesCard({
 
       const response = await fetch("/api/notifications/preferences", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(preferences),
       });
 
