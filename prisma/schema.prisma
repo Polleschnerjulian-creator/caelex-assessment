@@ -51,6 +51,8 @@ model User {
   comments               Comment[]               // Collaboration: user's comments
   activities             Activity[]              // Collaboration: user's activities
   nis2Assessments        NIS2Assessment[]        // NIS2 Directive assessments
+  copuosAssessments      CopuosAssessment[]      // COPUOS/IADC/ISO assessments
+  ukSpaceAssessments     UkSpaceAssessment[]     // UK Space Industry Act assessments
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 }
@@ -690,6 +692,178 @@ model SupplierPortalToken {
   @@index([token])
   @@index([requestId])
   @@index([expiresAt])
+}
+
+// ─── COPUOS/IADC/ISO Assessment ───
+
+model CopuosAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, in_progress, completed, archived
+
+  // Mission Profile
+  missionName          String?
+  orbitRegime          String   // LEO, MEO, GEO, HEO, GTO, cislunar, deep_space
+  altitudeKm           Int?
+  inclinationDeg       Float?
+  missionType          String   // commercial, scientific, governmental, educational, military
+  satelliteCategory    String   // cubesat, smallsat, medium, large, mega
+  satelliteMassKg      Float
+  hasManeuverability   Boolean  @default(false)
+  hasPropulsion        Boolean  @default(false)
+  plannedLifetimeYears Int      @default(5)
+  isConstellation      Boolean  @default(false)
+  constellationSize    Int?
+  launchDate           DateTime?
+  countryOfRegistry    String?
+
+  // Disposal Planning
+  deorbitStrategy      String?  // active_deorbit, passive_decay, graveyard_orbit, adr_contracted
+  deorbitTimelineYears Int?
+  passivationPlan      Boolean  @default(false)
+
+  // Collision Avoidance
+  caServiceProvider    String?
+  caServiceActive      Boolean  @default(false)
+
+  // Calculated Results
+  complianceScore      Int?     // 0-100
+  mandatoryScore       Int?     // 0-100 (mandatory guidelines only)
+  riskLevel            String?  // low, medium, high, critical
+  criticalGaps         Int?     // Count of critical non-compliant guidelines
+  majorGaps            Int?     // Count of major non-compliant guidelines
+
+  // EU Space Act Cross-References
+  euSpaceActOverlapCount Int?   // Number of overlapping articles
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // Relations
+  guidelineStatuses    CopuosGuidelineStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([orbitRegime])
+  @@index([status])
+}
+
+model CopuosGuidelineStatus {
+  id            String           @id @default(cuid())
+  assessmentId  String
+  assessment    CopuosAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  guidelineId   String   // matches CopuosGuideline.id from data file
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, guidelineId])
+  @@index([assessmentId])
+  @@index([status])
+}
+
+// ─── UK Space Industry Act Models ───
+
+model UkSpaceAssessment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Assessment Info
+  assessmentName       String?
+  status               String   @default("draft") // draft, in_progress, completed, archived
+
+  // Operator Profile
+  operatorType         String   // launch_operator, return_operator, satellite_operator, spaceport_operator, range_control
+  activityTypes        String   // JSON array of activity types
+  launchFromUk         Boolean  @default(false)
+  launchToOrbit        Boolean  @default(false)
+  isSuborbital         Boolean  @default(false)
+  hasUkNexus           Boolean  @default(true)
+  involvesPeople       Boolean  @default(false)
+  isCommercial         Boolean  @default(true)
+
+  // Spacecraft/Mission Details
+  spacecraftName       String?
+  spacecraftMassKg     Float?
+  plannedLaunchSite    String?
+  targetOrbit          String?
+  missionDurationYears Int?
+
+  // License Information
+  requiredLicenses     String?  // JSON array of required license types
+  licenseApplications  String?  // JSON object tracking license application statuses
+
+  // Safety Case
+  safetyCaseStatus     String?  // not_started, in_development, submitted, approved
+  safetyCaseRef        String?
+
+  // Insurance
+  insuranceProvider    String?
+  insuranceCoverage    Float?   // Amount in GBP
+  insuranceConfirmed   Boolean  @default(false)
+
+  // Registration
+  ukRegistryRef        String?  // UK Space Registry reference
+  registrationStatus   String?  // pending, registered, updated
+
+  // Calculated Results
+  complianceScore      Int?     // 0-100
+  mandatoryScore       Int?     // 0-100 (mandatory requirements only)
+  riskLevel            String?  // low, medium, high, critical
+  criticalGaps         Int?     // Count of critical non-compliant requirements
+  majorGaps            Int?     // Count of major non-compliant requirements
+
+  // EU Space Act Cross-References
+  euSpaceActOverlapCount Int?   // Number of overlapping articles
+
+  // Report
+  reportGenerated      Boolean  @default(false)
+  reportGeneratedAt    DateTime?
+
+  // CAA Documentation
+  caaDocChecklistJson  String?  @db.Text // JSON - CAA documentation checklist status
+
+  // Relations
+  requirementStatuses  UkRequirementStatus[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([operatorType])
+  @@index([status])
+}
+
+model UkRequirementStatus {
+  id            String           @id @default(cuid())
+  assessmentId  String
+  assessment    UkSpaceAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  requirementId String   // matches UkSpaceRequirement.id from data file
+  status        String   @default("not_assessed") // compliant, partial, non_compliant, not_assessed, not_applicable
+  notes         String?  @db.Text
+  evidenceNotes String?  @db.Text
+  targetDate    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assessmentId, requirementId])
+  @@index([assessmentId])
+  @@index([status])
 }
 
 // ─── Security Models ───
