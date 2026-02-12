@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -11,21 +11,6 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
   display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
-  display: "swap",
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-serif",
-  display: "swap",
-  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -78,11 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <meta
           name="format-detection"
