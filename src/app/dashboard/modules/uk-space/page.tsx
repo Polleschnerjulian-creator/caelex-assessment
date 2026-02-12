@@ -470,10 +470,10 @@ function UkSpacePageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             UK Space Industry Act Compliance
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-slate-600 dark:text-white/70 mt-1">
             Assess compliance with UK Space Industry Act 2018 and Space Industry
             Regulations 2021
           </p>
@@ -489,8 +489,10 @@ function UkSpacePageContent() {
 
       {/* Required Licenses Overview */}
       {selectedAssessment && requiredLicenses.length > 0 && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-4">
-          <h3 className="font-medium text-white mb-3">Required CAA Licenses</h3>
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4">
+          <h3 className="font-medium text-slate-900 dark:text-white mb-3">
+            Required CAA Licenses
+          </h3>
           <div className="flex flex-wrap gap-2">
             {requiredLicenses.map((license) => {
               const config = licenseTypeConfig[license];
@@ -498,14 +500,14 @@ function UkSpacePageContent() {
               return (
                 <div
                   key={license}
-                  className="flex items-center gap-2 px-3 py-2 bg-navy-900 rounded-lg"
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg"
                 >
                   <FileCheck className="w-4 h-4 text-blue-400" />
                   <div>
-                    <div className="text-sm font-medium text-white">
+                    <div className="text-sm font-medium text-slate-900 dark:text-white">
                       {config.label}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                       {config.section}
                     </div>
                   </div>
@@ -544,15 +546,17 @@ function UkSpacePageContent() {
             return (
               <div
                 key={category}
-                className="bg-navy-800 border border-navy-700 rounded-xl p-4"
+                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4"
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-${config.color}-500/20`}>
                     <Icon className={`w-5 h-5 text-${config.color}-400`} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-white">{config.label}</h3>
-                    <p className="text-sm text-slate-400">
+                    <h3 className="font-medium text-slate-900 dark:text-white">
+                      {config.label}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-white/60">
                       {score.byCategory[category] ?? 0}% compliant
                     </p>
                   </div>
@@ -565,7 +569,7 @@ function UkSpacePageContent() {
 
       {/* Progress Steps */}
       {selectedAssessment && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4">
           <div className="flex items-center justify-between">
             {STEPS.map((step, index) => (
               <button
@@ -574,7 +578,7 @@ function UkSpacePageContent() {
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
                     ? "bg-blue-500/20 text-blue-400"
-                    : "text-slate-400 hover:text-white"
+                    : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 <div
@@ -583,7 +587,7 @@ function UkSpacePageContent() {
                       ? "bg-blue-500 text-white"
                       : activeStep > index
                         ? "bg-green-500 text-white"
-                        : "bg-navy-700 text-slate-400"
+                        : "bg-slate-100 dark:bg-white/[0.06] text-slate-400"
                   }`}
                 >
                   {activeStep > index ? (
@@ -594,7 +598,7 @@ function UkSpacePageContent() {
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{step.label}</div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-500 dark:text-white/50">
                     {step.description}
                   </div>
                 </div>
@@ -617,8 +621,8 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
           >
             {assessments.length > 0 ? (
-              <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
-                <h2 className="text-lg font-semibold text-white mb-4">
+              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   Your Assessments
                 </h2>
                 <div className="space-y-3">
@@ -631,19 +635,19 @@ function UkSpacePageContent() {
                       <button
                         key={assessment.id}
                         onClick={() => selectAssessment(assessment)}
-                        className="w-full flex items-center justify-between p-4 bg-navy-900 rounded-lg hover:bg-navy-700 transition-colors"
+                        className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg hover:bg-slate-100 dark:bg-white/[0.06] transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2 rounded-lg bg-blue-500/20">
                             <Icon className="w-5 h-5 text-blue-400" />
                           </div>
                           <div className="text-left">
-                            <div className="font-medium text-white">
+                            <div className="font-medium text-slate-900 dark:text-white">
                               {assessment.assessmentName ||
                                 assessment.spacecraftName ||
                                 "Untitled"}
                             </div>
-                            <div className="text-sm text-slate-400">
+                            <div className="text-sm text-slate-600 dark:text-white/60">
                               {
                                 operatorTypeConfig[
                                   assessment.operatorType as UkOperatorType
@@ -655,10 +659,10 @@ function UkSpacePageContent() {
                         <div className="flex items-center gap-4">
                           {assessment.complianceScore !== null && (
                             <div className="text-right">
-                              <div className="text-lg font-bold text-white">
+                              <div className="text-lg font-bold text-slate-900 dark:text-white">
                                 {assessment.complianceScore}%
                               </div>
-                              <div className="text-xs text-slate-400">
+                              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                                 Compliance
                               </div>
                             </div>
@@ -671,9 +675,9 @@ function UkSpacePageContent() {
                 </div>
               </div>
             ) : (
-              <div className="bg-navy-800 border border-navy-700 rounded-xl p-12 text-center">
+              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
                 <Globe2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-white mb-2">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                   No Assessments Yet
                 </h2>
                 <p className="text-slate-400 mb-6 max-w-md mx-auto">
@@ -698,9 +702,9 @@ function UkSpacePageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-navy-800 border border-navy-700 rounded-xl p-6"
+            className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6"
           >
-            <h2 className="text-lg font-semibold text-white mb-6">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
               Operator Profile
             </h2>
 
@@ -715,7 +719,7 @@ function UkSpacePageContent() {
                   value={assessmentName}
                   onChange={(e) => setAssessmentName(e.target.value)}
                   placeholder="e.g., SatCom-1 Launch Assessment"
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -739,7 +743,7 @@ function UkSpacePageContent() {
                         className={`p-3 rounded-lg border text-center transition-colors ${
                           form.operatorType === type
                             ? "bg-blue-500/20 border-blue-500 text-white"
-                            : "bg-navy-900 border-navy-700 text-slate-400 hover:border-slate-600"
+                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
                         }`}
                       >
                         <Icon className="w-6 h-6 mx-auto mb-2" />
@@ -770,7 +774,7 @@ function UkSpacePageContent() {
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         form.activityTypes.includes(activity)
                           ? "bg-blue-500/20 border-blue-500 text-white"
-                          : "bg-navy-900 border-navy-700 text-slate-400 hover:border-slate-600"
+                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
                       }`}
                     >
                       {config.label}
@@ -792,7 +796,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchFromUk: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-navy-700 bg-navy-900 text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-slate-300">Launch from UK</span>
                   </label>
@@ -803,7 +807,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchToOrbit: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-navy-700 bg-navy-900 text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-slate-300">Orbital Mission</span>
                   </label>
@@ -814,7 +818,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isSuborbital: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-navy-700 bg-navy-900 text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-slate-300">Suborbital</span>
                   </label>
@@ -825,7 +829,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, involvesPeople: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-navy-700 bg-navy-900 text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-slate-300">Human Spaceflight</span>
                   </label>
@@ -836,7 +840,7 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isCommercial: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-navy-700 bg-navy-900 text-blue-500 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-slate-300">Commercial Activity</span>
                   </label>
@@ -855,7 +859,7 @@ function UkSpacePageContent() {
                     setForm({ ...form, spacecraftName: e.target.value })
                   }
                   placeholder="e.g., SatCom-1"
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -873,7 +877,7 @@ function UkSpacePageContent() {
                     })
                   }
                   placeholder="e.g., 500"
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -888,7 +892,7 @@ function UkSpacePageContent() {
                     setForm({ ...form, plannedLaunchSite: e.target.value })
                   }
                   placeholder="e.g., SaxaVord Spaceport"
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -903,16 +907,16 @@ function UkSpacePageContent() {
                     setForm({ ...form, targetOrbit: e.target.value })
                   }
                   placeholder="e.g., LEO 550km SSO"
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-navy-700">
+            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setShowNewAssessment(false)}
-                className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -946,11 +950,11 @@ function UkSpacePageContent() {
           >
             {/* Summary Cards */}
             <div className="grid grid-cols-5 gap-4">
-              <div className="bg-navy-800 border border-navy-700 rounded-xl p-4">
-                <div className="text-2xl font-bold text-white">
+              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {stats.total}
                 </div>
-                <div className="text-sm text-slate-400">
+                <div className="text-sm text-slate-600 dark:text-white/60">
                   Applicable Requirements
                 </div>
               </div>
@@ -976,7 +980,9 @@ function UkSpacePageContent() {
                 <div className="text-2xl font-bold text-slate-400">
                   {stats.notAssessed}
                 </div>
-                <div className="text-sm text-slate-500">Not Assessed</div>
+                <div className="text-sm text-slate-500 dark:text-white/60">
+                  Not Assessed
+                </div>
               </div>
             </div>
 
@@ -991,7 +997,7 @@ function UkSpacePageContent() {
                       e.target.value as UkRequirementCategory | "all",
                     )
                   }
-                  className="bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Categories</option>
                   {(
@@ -1011,7 +1017,7 @@ function UkSpacePageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UkComplianceStatus | "all")
                 }
-                className="bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="compliant">Compliant</option>
@@ -1031,7 +1037,7 @@ function UkSpacePageContent() {
                 return (
                   <div
                     key={requirement.id}
-                    className="bg-navy-800 border border-navy-700 rounded-xl p-4"
+                    className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -1041,7 +1047,7 @@ function UkSpacePageContent() {
                           >
                             {catConfig.label}
                           </span>
-                          <span className="text-sm text-slate-400">
+                          <span className="text-sm text-slate-600 dark:text-white/60">
                             {requirement.sectionRef}
                           </span>
                           {requirement.bindingLevel === "mandatory" && (
@@ -1055,14 +1061,14 @@ function UkSpacePageContent() {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-medium text-white mb-1">
+                        <h3 className="font-medium text-slate-900 dark:text-white mb-1">
                           {requirement.title}
                         </h3>
-                        <p className="text-sm text-slate-400 mb-3">
+                        <p className="text-sm text-slate-600 dark:text-white/60 mb-3">
                           {requirement.complianceQuestion}
                         </p>
 
-                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/50">
                           {requirement.caaGuidanceRef && (
                             <span className="flex items-center gap-1">
                               <FileText className="w-3 h-3" />
@@ -1100,7 +1106,7 @@ function UkSpacePageContent() {
                               className={`p-2 rounded-lg transition-colors ${
                                 status === s
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "bg-navy-700 text-slate-500 hover:text-white"
+                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
                               }`}
                               title={config.label}
                             >
@@ -1136,12 +1142,12 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Gap Analysis
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/60">
                   <AlertCircle className="w-4 h-4" />
                   {gapAnalysis.length} gaps identified
                 </div>
@@ -1150,8 +1156,10 @@ function UkSpacePageContent() {
               {gapAnalysis.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                  <p className="text-white font-medium">No gaps identified</p>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-slate-900 dark:text-white font-medium">
+                    No gaps identified
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-white/60">
                     All assessed requirements are compliant
                   </p>
                 </div>
@@ -1182,23 +1190,23 @@ function UkSpacePageContent() {
                             >
                               {gap.priority.toUpperCase()} PRIORITY
                             </span>
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-slate-500 dark:text-white/50">
                               Effort: {gap.estimatedEffort}
                             </span>
                             {gap.caaGuidanceRef && (
-                              <span className="text-xs text-slate-500">
+                              <span className="text-xs text-slate-500 dark:text-white/50">
                                 {gap.caaGuidanceRef}
                               </span>
                             )}
                           </div>
-                          <p className="text-white font-medium mb-1">
+                          <p className="text-slate-900 dark:text-white font-medium mb-1">
                             {gap.gap}
                           </p>
-                          <p className="text-sm text-slate-400">
+                          <p className="text-sm text-slate-600 dark:text-white/60">
                             {gap.recommendation}
                           </p>
                           {gap.dependencies.length > 0 && (
-                            <div className="mt-2 text-xs text-slate-500">
+                            <div className="mt-2 text-xs text-slate-500 dark:text-white/50">
                               Dependencies: {gap.dependencies.join(", ")}
                             </div>
                           )}
@@ -1209,7 +1217,7 @@ function UkSpacePageContent() {
                             setStatusFilter("all");
                             setActiveStep(1);
                           }}
-                          className="px-3 py-1.5 bg-navy-700 hover:bg-navy-600 text-white text-sm rounded-lg transition-colors"
+                          className="px-3 py-1.5 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] text-slate-900 dark:text-white text-sm rounded-lg transition-colors"
                         >
                           Address
                         </button>
@@ -1224,7 +1232,7 @@ function UkSpacePageContent() {
             <div className="flex justify-between">
               <button
                 onClick={() => setActiveStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Assessment
@@ -1248,10 +1256,10 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <div className="text-center py-8">
                 <FileText className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-white mb-2">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                   Compliance Report Ready
                 </h2>
                 <p className="text-slate-400 mb-6 max-w-md mx-auto">
@@ -1262,10 +1270,10 @@ function UkSpacePageContent() {
                 {score && (
                   <div className="flex items-center justify-center gap-8 mb-8">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-white">
+                      <div className="text-4xl font-bold text-slate-900 dark:text-white">
                         {score.overall}%
                       </div>
-                      <div className="text-sm text-slate-400">
+                      <div className="text-sm text-slate-600 dark:text-white/60">
                         Overall Score
                       </div>
                     </div>
@@ -1273,7 +1281,9 @@ function UkSpacePageContent() {
                       <div className="text-4xl font-bold text-amber-400">
                         {score.mandatory}%
                       </div>
-                      <div className="text-sm text-slate-400">Mandatory</div>
+                      <div className="text-sm text-slate-600 dark:text-white/60">
+                        Mandatory
+                      </div>
                     </div>
                     <div className="text-center">
                       <div
@@ -1289,7 +1299,9 @@ function UkSpacePageContent() {
                       >
                         {selectedAssessment.riskLevel?.toUpperCase() || "N/A"}
                       </div>
-                      <div className="text-sm text-slate-400">Risk Level</div>
+                      <div className="text-sm text-slate-600 dark:text-white/60">
+                        Risk Level
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1297,17 +1309,17 @@ function UkSpacePageContent() {
                 {/* Required Licenses Summary */}
                 {requiredLicenses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-sm font-medium text-slate-400 mb-3">
+                    <h3 className="text-sm font-medium text-slate-600 dark:text-white/60 mb-3">
                       Required CAA Licenses
                     </h3>
                     <div className="flex justify-center gap-4">
                       {requiredLicenses.map((license) => (
                         <div
                           key={license}
-                          className="flex items-center gap-2 px-3 py-2 bg-navy-700 rounded-lg"
+                          className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-white/[0.06] rounded-lg"
                         >
                           <FileCheck className="w-4 h-4 text-blue-400" />
-                          <span className="text-white text-sm">
+                          <span className="text-slate-900 dark:text-white text-sm">
                             {licenseTypeConfig[license].label}
                           </span>
                         </div>
@@ -1335,7 +1347,7 @@ function UkSpacePageContent() {
             <div className="flex justify-start">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Gap Analysis

@@ -97,7 +97,7 @@ function LegalDisclaimerBanner({
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/95 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
     >
       <div className="max-w-2xl w-full bg-red-950/50 border-2 border-red-500 rounded-xl p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-4">
@@ -110,7 +110,7 @@ function LegalDisclaimerBanner({
         <div className="space-y-4 text-sm sm:text-base text-slate-300">
           <p>
             This module is for{" "}
-            <strong className="text-white">
+            <strong className="text-slate-900 dark:text-white">
               COMPLIANCE TRACKING AND EDUCATIONAL PURPOSES ONLY
             </strong>
             . It does <strong className="text-red-400">NOT</strong> constitute
@@ -146,7 +146,7 @@ function LegalDisclaimerBanner({
 
         <button
           onClick={onAcknowledge}
-          className="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          className="mt-6 w-full bg-red-600 hover:bg-red-700 text-slate-900 dark:text-white font-semibold py-3 px-6 rounded-lg transition-colors"
         >
           I Understand and Acknowledge
         </button>
@@ -221,10 +221,10 @@ function WizardStep1({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
           Organization Type
         </h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-white/60">
           Select all that apply to your organization
         </p>
       </div>
@@ -237,11 +237,11 @@ function WizardStep1({
             className={`p-3 sm:p-4 rounded-lg border text-left transition-all ${
               selected.includes(type.id)
                 ? "bg-blue-600/20 border-blue-500 text-white"
-                : "bg-navy-800 border-navy-700 text-slate-300 hover:border-slate-500"
+                : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/40 hover:border-slate-500"
             }`}
           >
             <div className="font-medium text-sm sm:text-base">{type.label}</div>
-            <div className="text-xs text-slate-400 mt-1">
+            <div className="text-xs text-slate-600 dark:text-white/70 mt-1">
               {type.description}
             </div>
           </button>
@@ -261,10 +261,10 @@ function WizardStep2({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
           Regulatory Scope
         </h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-white/60">
           What types of items do you handle?
         </p>
       </div>
@@ -274,7 +274,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasITARItems
               ? "bg-red-900/20 border-red-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -286,11 +286,11 @@ function WizardStep2({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white flex items-center gap-2">
+            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
               <Lock className="w-4 h-4 text-red-500" />
               ITAR-Controlled Items
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Defense articles on the U.S. Munitions List (USML), including most
               spacecraft, launch vehicles, and military satellite components
             </p>
@@ -306,7 +306,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasEARItems
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -318,11 +318,11 @@ function WizardStep2({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white flex items-center gap-2">
+            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
               <Globe className="w-4 h-4 text-amber-500" />
               EAR-Controlled Items
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Commercial items on the Commerce Control List (CCL) or EAR99,
               including commercial satellites and dual-use space technology
             </p>
@@ -348,8 +348,10 @@ function WizardStep3({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-2">Risk Factors</h3>
-        <p className="text-sm text-slate-400">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+          Risk Factors
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-white/60">
           Additional factors that affect compliance requirements
         </p>
       </div>
@@ -359,7 +361,7 @@ function WizardStep3({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasForeignNationals
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -371,11 +373,11 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white flex items-center gap-2">
+            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
               <Users className="w-4 h-4" />
               Foreign National Employees
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Employs non-U.S. persons who may access controlled technology
             </p>
             {Boolean(data.hasForeignNationals) && (
@@ -389,8 +391,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTechnologyTransfer
-              ? "bg-navy-800 border-navy-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           } ${data.hasTechnologyTransfer && "border-blue-600"}`}
         >
           <input
@@ -402,10 +404,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">
+            <div className="font-medium text-slate-900 dark:text-white">
               Technology Transfer Activities
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Shares technical data with foreign persons or entities
             </p>
           </div>
@@ -414,8 +416,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasDefenseContracts
-              ? "bg-navy-800 border-navy-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           } ${data.hasDefenseContracts && "border-blue-600"}`}
         >
           <input
@@ -427,8 +429,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">Defense Contracts</div>
-            <p className="text-xs text-slate-400 mt-1">
+            <div className="font-medium text-slate-900 dark:text-white">
+              Defense Contracts
+            </div>
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Works on DoD or other government defense contracts
             </p>
           </div>
@@ -437,8 +441,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasManufacturingAbroad
-              ? "bg-navy-800 border-navy-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           } ${data.hasManufacturingAbroad && "border-blue-600"}`}
         >
           <input
@@ -450,8 +454,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">Foreign Manufacturing</div>
-            <p className="text-xs text-slate-400 mt-1">
+            <div className="font-medium text-slate-900 dark:text-white">
+              Foreign Manufacturing
+            </div>
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Has manufacturing facilities or co-production outside the U.S.
             </p>
           </div>
@@ -460,8 +466,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasJointVentures
-              ? "bg-navy-800 border-navy-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           } ${data.hasJointVentures && "border-blue-600"}`}
         >
           <input
@@ -473,10 +479,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">
+            <div className="font-medium text-slate-900 dark:text-white">
               Joint Ventures with Foreign Partners
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Participates in joint ventures involving foreign persons/entities
             </p>
           </div>
@@ -496,10 +502,10 @@ function WizardStep4({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
           Current Compliance Status
         </h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-white/60">
           Your existing compliance infrastructure
         </p>
       </div>
@@ -509,7 +515,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.registeredWithDDTC
               ? "bg-green-900/20 border-green-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -521,8 +527,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">Registered with DDTC</div>
-            <p className="text-xs text-slate-400 mt-1">
+            <div className="font-medium text-slate-900 dark:text-white">
+              Registered with DDTC
+            </div>
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Currently registered with Directorate of Defense Trade Controls
             </p>
           </div>
@@ -532,7 +540,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTCP
               ? "bg-green-900/20 border-green-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -542,10 +550,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">
+            <div className="font-medium text-slate-900 dark:text-white">
               Technology Control Plan (TCP)
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Has implemented a Technology Control Plan for ITAR data
             </p>
           </div>
@@ -555,7 +563,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasAutomatedScreening
               ? "bg-green-900/20 border-green-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -567,10 +575,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">
+            <div className="font-medium text-slate-900 dark:text-white">
               Automated Restricted Party Screening
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Uses automated screening against SDN, Entity List, DPL
             </p>
           </div>
@@ -580,7 +588,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasECL
               ? "bg-green-900/20 border-green-700"
-              : "bg-navy-800 border-navy-700 hover:border-slate-500"
+              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
           }`}
         >
           <input
@@ -590,10 +598,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-white">
+            <div className="font-medium text-slate-900 dark:text-white">
               Export Compliance Program
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
               Has written export compliance manual and procedures
             </p>
           </div>
@@ -611,7 +619,7 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Q1 2026 ITAR/EAR Assessment"
-          className="w-full px-4 py-2 bg-navy-800 border border-navy-700 rounded-lg text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
         />
       </div>
     </div>
@@ -638,7 +646,8 @@ function RequirementCard({
     compliant: "bg-green-500/20 text-green-400 border-green-500/50",
     partial: "bg-amber-500/20 text-amber-400 border-amber-500/50",
     non_compliant: "bg-red-500/20 text-red-400 border-red-500/50",
-    not_assessed: "bg-slate-500/20 text-slate-400 border-slate-500/50",
+    not_assessed:
+      "bg-slate-500/20 text-slate-600 dark:text-white/60 border-slate-500/50",
     not_applicable: "bg-slate-600/20 text-slate-500 border-slate-600/50",
   };
 
@@ -646,7 +655,7 @@ function RequirementCard({
     critical: "text-red-400",
     high: "text-orange-400",
     medium: "text-amber-400",
-    low: "text-slate-400",
+    low: "text-slate-600 dark:text-white/60",
   };
 
   const statusIcons: Record<ComplianceStatus, React.ReactNode> = {
@@ -658,7 +667,7 @@ function RequirementCard({
   };
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
       <div
         className="p-3 sm:p-4 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -684,14 +693,14 @@ function RequirementCard({
               >
                 {req.regulation}
               </span>
-              <span className="text-xs text-slate-500 truncate">
+              <span className="text-xs text-slate-500 dark:text-white/50 truncate">
                 {req.cfrReference}
               </span>
             </div>
-            <h4 className="text-sm sm:text-base font-medium text-white mt-1 line-clamp-2">
+            <h4 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white mt-1 line-clamp-2">
               {req.title}
             </h4>
-            <p className="text-xs text-slate-400 mt-1 line-clamp-2 hidden sm:block">
+            <p className="text-xs text-slate-600 dark:text-white/70 mt-1 line-clamp-2 hidden sm:block">
               {req.description}
             </p>
           </div>
@@ -706,7 +715,7 @@ function RequirementCard({
               </span>
             </span>
             <ChevronRight
-              className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? "rotate-90" : ""}`}
+              className={`w-4 h-4 text-slate-600 dark:text-white/60 transition-transform ${expanded ? "rotate-90" : ""}`}
             />
           </div>
         </div>
@@ -720,7 +729,7 @@ function RequirementCard({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 sm:px-4 pb-4 border-t border-navy-700 pt-4 space-y-4">
+            <div className="px-3 sm:px-4 pb-4 border-t border-slate-200 dark:border-white/10 pt-4 space-y-4">
               <p className="text-sm text-slate-300">{req.description}</p>
 
               <div className="flex flex-wrap gap-2">
@@ -741,7 +750,7 @@ function RequirementCard({
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       requirement.status === status
                         ? statusColors[status]
-                        : "bg-navy-700 text-slate-400 hover:bg-navy-600"
+                        : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/[0.08]"
                     }`}
                   >
                     {status.replace("_", " ")}
@@ -946,7 +955,9 @@ export default function ExportControlPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
-          <p className="text-slate-400">Loading Export Control Module...</p>
+          <p className="text-slate-600 dark:text-white/60">
+            Loading Export Control Module...
+          </p>
         </div>
       </div>
     );
@@ -957,11 +968,11 @@ export default function ExportControlPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Scale className="w-6 h-6 text-red-500" />
             ITAR/EAR Export Control
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
             Compliance tracking for export-controlled articles and technology
           </p>
         </div>
@@ -998,21 +1009,21 @@ export default function ExportControlPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/90 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
             onClick={() => setShowWizard(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-navy-900 border border-navy-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 sm:p-6 border-b border-navy-700">
-                <h2 className="text-lg font-semibold text-white">
+              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-white/10">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   New Export Control Assessment
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
                   Step {wizardStep} of 4
                 </p>
                 <div className="flex gap-1 mt-3">
@@ -1020,7 +1031,9 @@ export default function ExportControlPage() {
                     <div
                       key={step}
                       className={`h-1 flex-1 rounded ${
-                        step <= wizardStep ? "bg-blue-500" : "bg-navy-700"
+                        step <= wizardStep
+                          ? "bg-blue-500"
+                          : "bg-slate-100 dark:bg-white/[0.06]"
                       }`}
                     />
                   ))}
@@ -1042,7 +1055,7 @@ export default function ExportControlPage() {
                 )}
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-navy-700 flex justify-between">
+              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 flex justify-between">
                 <button
                   onClick={() => {
                     if (wizardStep === 1) {
@@ -1051,7 +1064,7 @@ export default function ExportControlPage() {
                       setWizardStep((s) => s - 1);
                     }
                   }}
-                  className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   {wizardStep === 1 ? "Cancel" : "Back"}
                 </button>
@@ -1075,12 +1088,12 @@ export default function ExportControlPage() {
 
       {/* No Assessments State */}
       {assessments.length === 0 && !showWizard && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
           <Scale className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
             No Export Control Assessments
           </h3>
-          <p className="text-slate-400 text-sm mb-4 max-w-md mx-auto">
+          <p className="text-slate-600 dark:text-white/60 text-sm mb-4 max-w-md mx-auto">
             Create your first ITAR/EAR compliance assessment to track your
             export control requirements.
           </p>
@@ -1098,32 +1111,42 @@ export default function ExportControlPage() {
         <>
           {/* Score Overview */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4">
-            <div className="bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-400">Overall Score</div>
-              <div className="text-xl sm:text-2xl font-bold text-white mt-1">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                Overall Score
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
                 {currentAssessment.overallComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-400">ITAR Score</div>
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                ITAR Score
+              </div>
               <div className="text-xl sm:text-2xl font-bold text-red-400 mt-1">
                 {currentAssessment.itarComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-400">EAR Score</div>
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                EAR Score
+              </div>
               <div className="text-xl sm:text-2xl font-bold text-amber-400 mt-1">
                 {currentAssessment.earComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-400">Critical Gaps</div>
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                Critical Gaps
+              </div>
               <div className="text-xl sm:text-2xl font-bold text-red-500 mt-1">
                 {currentAssessment.criticalGaps ?? 0}
               </div>
             </div>
-            <div className="col-span-2 sm:col-span-1 bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-400">Risk Level</div>
+            <div className="col-span-2 sm:col-span-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                Risk Level
+              </div>
               <div
                 className={`text-xl sm:text-2xl font-bold mt-1 capitalize ${
                   currentAssessment.riskLevel === "critical"
@@ -1170,7 +1193,7 @@ export default function ExportControlPage() {
             )}
 
           {/* Tabs */}
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-navy-700">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-white/10">
             {(["all", "ITAR", "EAR"] as const).map((tab) => (
               <button
                 key={tab}
@@ -1178,11 +1201,11 @@ export default function ExportControlPage() {
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab
                     ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-slate-400 hover:text-white"
+                    : "border-transparent text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {tab === "all" ? "All Requirements" : tab}
-                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-navy-700">
+                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-slate-100 dark:bg-white/[0.06]">
                   {tab === "all"
                     ? requirements.length
                     : requirements.filter(
@@ -1211,7 +1234,7 @@ export default function ExportControlPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
                     ? "bg-blue-600 text-white"
-                    : "bg-navy-800 text-slate-400 hover:bg-navy-700"
+                    : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:bg-white/[0.06]"
                 }`}
               >
                 {status === "all" ? "All" : status.replace("_", " ")}
@@ -1233,9 +1256,9 @@ export default function ExportControlPage() {
           {/* Requirements List */}
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
-              <div className="bg-navy-800 border border-navy-700 rounded-lg p-8 text-center">
+              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-8 text-center">
                 <Search className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">
+                <p className="text-slate-600 dark:text-white/60">
                   No requirements match your filters
                 </p>
               </div>
@@ -1253,14 +1276,14 @@ export default function ExportControlPage() {
           </div>
 
           {/* Report Generation */}
-          <div className="bg-navy-800 border border-navy-700 rounded-lg p-4">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="font-medium text-white flex items-center gap-2">
+                <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Compliance Report
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
                   Generate a comprehensive export control compliance report
                 </p>
               </div>
@@ -1271,7 +1294,7 @@ export default function ExportControlPage() {
                     "_blank",
                   )
                 }
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg text-sm transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] text-white rounded-lg text-sm transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Generate Report
@@ -1280,8 +1303,8 @@ export default function ExportControlPage() {
           </div>
 
           {/* Resources */}
-          <div className="bg-navy-800 border border-navy-700 rounded-lg p-4">
-            <h3 className="font-medium text-white flex items-center gap-2 mb-4">
+          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-4">
+            <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2 mb-4">
               <BookOpen className="w-4 h-4" />
               Regulatory Resources
             </h3>
@@ -1290,29 +1313,31 @@ export default function ExportControlPage() {
                 href="https://www.pmddtc.state.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-lg transition-colors"
               >
                 <Lock className="w-5 h-5 text-red-400" />
                 <div>
                   <div className="text-sm text-white">DDTC (ITAR)</div>
-                  <div className="text-xs text-slate-400">State Department</div>
+                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                    State Department
+                  </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 ml-auto" />
+                <ExternalLink className="w-4 h-4 text-slate-600 dark:text-white/60 ml-auto" />
               </a>
               <a
                 href="https://www.bis.doc.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-lg transition-colors"
               >
                 <Globe className="w-5 h-5 text-amber-400" />
                 <div>
                   <div className="text-sm text-white">BIS (EAR)</div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                     Commerce Department
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 ml-auto" />
+                <ExternalLink className="w-4 h-4 text-slate-600 dark:text-white/60 ml-auto" />
               </a>
             </div>
           </div>

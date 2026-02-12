@@ -654,10 +654,10 @@ function UsRegulatoryPageContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
             US Space Regulatory
           </h1>
-          <p className="text-sm sm:text-base text-slate-400 mt-1">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-white/70 mt-1">
             FCC, FAA/AST & NOAA compliance
           </p>
         </div>
@@ -672,14 +672,14 @@ function UsRegulatoryPageContent() {
 
       {/* Multi-Agency Tabs */}
       {selectedAssessment && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-navy-700">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-white/10">
             <button
               onClick={() => setActiveAgencyTab("overview")}
               className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                 activeAgencyTab === "overview"
-                  ? "text-white border-b-2 border-blue-500 bg-navy-700/50"
-                  : "text-slate-400 hover:text-white hover:bg-navy-700/30"
+                  ? "text-white border-b-2 border-blue-500 bg-slate-100 dark:bg-white/[0.06]/50"
+                  : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
               }`}
             >
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -697,8 +697,8 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveAgencyTab(agency)}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                     activeAgencyTab === agency
-                      ? "text-white border-b-2 border-blue-500 bg-navy-700/50"
-                      : "text-slate-400 hover:text-white hover:bg-navy-700/30"
+                      ? "text-white border-b-2 border-blue-500 bg-slate-100 dark:bg-white/[0.06]/50"
+                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
                   }`}
                 >
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -731,19 +731,21 @@ function UsRegulatoryPageContent() {
                   return (
                     <div
                       key={status.agency}
-                      className="bg-navy-900 border border-navy-600 rounded-lg p-3 sm:p-4"
+                      className="bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg p-3 sm:p-4"
                     >
                       <div className="flex items-center gap-2 mb-2 sm:mb-3">
                         <Icon
                           className={`w-4 sm:w-5 h-4 sm:h-5 text-${config.color}-400`}
                         />
-                        <span className="text-sm sm:text-base font-medium text-white">
+                        <span className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
                           {config.label}
                         </span>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-slate-400">Score</span>
+                          <span className="text-slate-600 dark:text-white/60">
+                            Score
+                          </span>
                           <span
                             className={`font-medium ${
                               status.score >= 80
@@ -756,7 +758,7 @@ function UsRegulatoryPageContent() {
                             {status.score}%
                           </span>
                         </div>
-                        <div className="w-full bg-navy-700 rounded-full h-1.5 sm:h-2">
+                        <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 sm:h-2">
                           <div
                             className={`h-full rounded-full ${
                               status.score >= 80
@@ -768,7 +770,7 @@ function UsRegulatoryPageContent() {
                             style={{ width: `${status.score}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-xs text-slate-500 mt-1 sm:mt-2">
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-white/50 mt-1 sm:mt-2">
                           <span>Req: {status.requirements?.length ?? 0}</span>
                           <span>Gaps: {status.gaps?.length ?? 0}</span>
                         </div>
@@ -778,7 +780,7 @@ function UsRegulatoryPageContent() {
                             .map((license) => (
                               <span
                                 key={license}
-                                className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-navy-700 text-slate-300 rounded truncate max-w-[120px]"
+                                className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-white/[0.06] text-slate-300 rounded truncate max-w-[120px]"
                               >
                                 {licenseTypeConfig[license]?.label}
                               </span>
@@ -803,14 +805,14 @@ function UsRegulatoryPageContent() {
                       return (
                         <div
                           key={license}
-                          className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-navy-900 border border-navy-600 rounded-lg"
+                          className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg"
                         >
                           <FileCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-white truncate">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
                               {config.label}
                             </div>
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                               {config.cfrPart}
                             </div>
                           </div>
@@ -849,7 +851,7 @@ function UsRegulatoryPageContent() {
                 25.114).
               </p>
               {deorbitResult.recommendations.length > 0 && (
-                <ul className="text-xs sm:text-sm text-slate-400 mt-2 space-y-1">
+                <ul className="text-xs sm:text-sm text-slate-600 dark:text-white/60 mt-2 space-y-1">
                   {deorbitResult.recommendations.slice(0, 2).map((rec, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <AlertTriangle className="w-3 h-3 text-orange-400 mt-0.5 flex-shrink-0" />
@@ -872,7 +874,7 @@ function UsRegulatoryPageContent() {
 
       {/* Wizard Steps */}
       {(selectedAssessment || showNewAssessment) && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-2 sm:p-4 overflow-hidden">
+        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-2 sm:p-4 overflow-hidden">
           <div className="flex items-center justify-between overflow-x-auto scrollbar-hide">
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center flex-shrink-0">
@@ -883,7 +885,7 @@ function UsRegulatoryPageContent() {
                       ? "bg-blue-500/20 text-blue-400"
                       : activeStep > index
                         ? "text-green-400"
-                        : "text-slate-400 hover:text-white"
+                        : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   <div
@@ -892,7 +894,7 @@ function UsRegulatoryPageContent() {
                         ? "bg-blue-500 text-white"
                         : activeStep > index
                           ? "bg-green-500 text-white"
-                          : "bg-navy-600 text-slate-400"
+                          : "bg-slate-200 dark:bg-white/[0.08] text-slate-400"
                     }`}
                   >
                     {activeStep > index ? (
@@ -905,7 +907,7 @@ function UsRegulatoryPageContent() {
                     <div className="text-xs sm:text-sm font-medium whitespace-nowrap">
                       {step.label}
                     </div>
-                    <div className="text-[10px] sm:text-xs text-slate-500 hidden lg:block">
+                    <div className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 hidden lg:block">
                       {step.description}
                     </div>
                   </div>
@@ -931,8 +933,8 @@ function UsRegulatoryPageContent() {
             className="space-y-4 sm:space-y-6"
           >
             {/* Assessment Name */}
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-3 sm:p-4">
-              <label className="block text-sm font-medium text-white mb-2">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+              <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                 Assessment Name (optional)
               </label>
               <input
@@ -940,13 +942,13 @@ function UsRegulatoryPageContent() {
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
                 placeholder="e.g., LEO Constellation"
-                className="w-full px-3 py-2.5 bg-navy-900 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
               />
             </div>
 
             {/* Operator Types */}
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Space operations in the US
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -965,17 +967,17 @@ function UsRegulatoryPageContent() {
                       className={`flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-lg border text-left transition-all ${
                         isSelected
                           ? "bg-blue-500/10 border-blue-500 text-white"
-                          : "bg-navy-900 border-navy-600 text-slate-300 hover:border-navy-500"
+                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
                       <Icon
-                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-blue-400" : "text-slate-400"}`}
+                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-blue-400" : "text-slate-600 dark:text-white/60"}`}
                       />
                       <div className="min-w-0">
                         <div className="text-sm sm:text-base font-medium">
                           {config.label}
                         </div>
-                        <div className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 line-clamp-2">
+                        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50 mt-0.5 sm:mt-1 line-clamp-2">
                           {config.description}
                         </div>
                         <div className="flex flex-wrap gap-1 mt-1.5 sm:mt-2">
@@ -1002,8 +1004,8 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Activity Types */}
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Select your activities
               </h3>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -1021,7 +1023,7 @@ function UsRegulatoryPageContent() {
                       className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors ${
                         isSelected
                           ? "bg-blue-500 text-white"
-                          : "bg-navy-900 border border-navy-600 text-slate-300 hover:border-navy-500"
+                          : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
                       {config.label}
@@ -1032,8 +1034,8 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Orbit Configuration */}
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Orbit Configuration
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
@@ -1051,7 +1053,7 @@ function UsRegulatoryPageContent() {
                       className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm transition-colors ${
                         form.orbitRegime === orbit
                           ? "bg-blue-500 text-white"
-                          : "bg-navy-900 border border-navy-600 text-slate-300 hover:border-navy-500"
+                          : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/40 hover:border-slate-400 dark:border-white/30"
                       }`}
                     >
                       {orbit === "cislunar"
@@ -1060,7 +1062,7 @@ function UsRegulatoryPageContent() {
                           ? "Deep"
                           : orbit}
                       {orbit === "LEO" && (
-                        <span className="block text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">
+                        <span className="block text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50 mt-0.5 sm:mt-1">
                           5yr rule
                         </span>
                       )}
@@ -1071,13 +1073,13 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Mission Details */}
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-white mb-3 sm:mb-4">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Mission Details
               </h3>
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-400 mb-1">
+                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-1">
                     Satellites
                   </label>
                   <input
@@ -1093,11 +1095,11 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="1"
-                    className="w-full px-2 sm:px-3 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-400 mb-1">
+                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-1">
                     Duration (yr)
                   </label>
                   <input
@@ -1112,11 +1114,11 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="5"
-                    className="w-full px-2 sm:px-3 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-400 mb-1">
+                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-1">
                     Altitude (km)
                   </label>
                   <input
@@ -1131,7 +1133,7 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="550"
-                    className="w-full px-2 sm:px-3 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
               </div>
@@ -1147,7 +1149,7 @@ function UsRegulatoryPageContent() {
                         hasPropulsion: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-navy-900 border-navy-600"
+                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
                   />
                   Has Propulsion
                 </label>
@@ -1161,7 +1163,7 @@ function UsRegulatoryPageContent() {
                         hasManeuverability: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-navy-900 border-navy-600"
+                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
                   />
                   Maneuverable
                 </label>
@@ -1175,7 +1177,7 @@ function UsRegulatoryPageContent() {
                         providesRemoteSensing: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-navy-900 border-navy-600"
+                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
                   />
                   Remote Sensing (NOAA)
                 </label>
@@ -1224,14 +1226,14 @@ function UsRegulatoryPageContent() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-navy-800 border border-navy-700 rounded-lg p-2 sm:p-3 text-center"
+                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-2 sm:p-3 text-center"
                 >
                   <div
                     className={`text-lg sm:text-2xl font-bold text-${stat.color}-400`}
                   >
                     {stat.count}
                   </div>
-                  <div className="text-[10px] sm:text-xs text-slate-400">
+                  <div className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                     {stat.label}
                   </div>
                 </div>
@@ -1247,7 +1249,7 @@ function UsRegulatoryPageContent() {
                     e.target.value as UsRequirementCategory | "all",
                   )
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-navy-800 border border-navy-600 rounded-lg text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
               >
                 <option value="all">All Categories</option>
                 {Object.entries(categoryConfig).map(([cat, config]) => (
@@ -1261,7 +1263,7 @@ function UsRegulatoryPageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UsComplianceStatus | "all")
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-navy-800 border border-navy-600 rounded-lg text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
               >
                 <option value="all">All Statuses</option>
                 {Object.entries(statusConfig).map(([status, config]) => (
@@ -1284,7 +1286,7 @@ function UsRegulatoryPageContent() {
                 return (
                   <div
                     key={req.id}
-                    className="bg-navy-800 border border-navy-700 rounded-lg p-3 sm:p-4"
+                    className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -1294,7 +1296,7 @@ function UsRegulatoryPageContent() {
                           >
                             {req.agency}
                           </span>
-                          <span className="text-[10px] sm:text-xs text-slate-400 truncate">
+                          <span className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50 truncate">
                             {req.cfrReference}
                           </span>
                           {req.severity === "critical" && (
@@ -1303,10 +1305,10 @@ function UsRegulatoryPageContent() {
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm sm:text-base font-medium text-white">
+                        <h4 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
                           {req.title}
                         </h4>
-                        <p className="text-xs sm:text-sm text-slate-400 mt-1 line-clamp-2">
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-white/70 mt-1 line-clamp-2">
                           {req.complianceQuestion}
                         </p>
                         {req.penalties && (
@@ -1337,7 +1339,7 @@ function UsRegulatoryPageContent() {
                               className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
                                 currentStatus === status
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "text-slate-500 hover:text-slate-300 hover:bg-navy-700"
+                                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-100 dark:bg-white/[0.06]"
                               }`}
                               title={config.label}
                             >
@@ -1378,7 +1380,7 @@ function UsRegulatoryPageContent() {
                 <div className="text-xl sm:text-2xl font-bold text-red-400">
                   {gapAnalysis.filter((g) => g.priority === "high").length}
                 </div>
-                <div className="text-[10px] sm:text-sm text-slate-400">
+                <div className="text-[10px] sm:text-sm text-slate-600 dark:text-white/60">
                   High Priority
                 </div>
               </div>
@@ -1386,7 +1388,7 @@ function UsRegulatoryPageContent() {
                 <div className="text-xl sm:text-2xl font-bold text-amber-400">
                   {gapAnalysis.filter((g) => g.priority === "medium").length}
                 </div>
-                <div className="text-[10px] sm:text-sm text-slate-400">
+                <div className="text-[10px] sm:text-sm text-slate-600 dark:text-white/60">
                   Medium
                 </div>
               </div>
@@ -1394,7 +1396,9 @@ function UsRegulatoryPageContent() {
                 <div className="text-xl sm:text-2xl font-bold text-blue-400">
                   {gapAnalysis.filter((g) => g.priority === "low").length}
                 </div>
-                <div className="text-[10px] sm:text-sm text-slate-400">Low</div>
+                <div className="text-[10px] sm:text-sm text-slate-600 dark:text-white/60">
+                  Low
+                </div>
               </div>
             </div>
 
@@ -1402,12 +1406,12 @@ function UsRegulatoryPageContent() {
               {gapAnalysis.slice(0, 20).map((gap, index) => (
                 <div
                   key={gap.requirementId}
-                  className={`bg-navy-800 border rounded-lg p-3 sm:p-4 ${
+                  className={`bg-white dark:bg-white/[0.04] border rounded-lg p-3 sm:p-4 ${
                     gap.priority === "high"
                       ? "border-red-500/30"
                       : gap.priority === "medium"
                         ? "border-amber-500/30"
-                        : "border-navy-700"
+                        : "border-slate-200 dark:border-white/10"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -1429,14 +1433,14 @@ function UsRegulatoryPageContent() {
                         >
                           {gap.agency}
                         </span>
-                        <span className="text-[10px] sm:text-xs text-slate-400 truncate">
+                        <span className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50 truncate">
                           {gap.cfrReference}
                         </span>
                       </div>
                       <p className="text-sm sm:text-base text-white line-clamp-2">
                         {gap.gap}
                       </p>
-                      <div className="mt-2 p-2 bg-navy-900 rounded-lg">
+                      <div className="mt-2 p-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
                         <p className="text-xs sm:text-sm text-blue-400 line-clamp-2">
                           {gap.recommendation}
                         </p>
@@ -1451,7 +1455,7 @@ function UsRegulatoryPageContent() {
                           {gap.dependencies.slice(0, 2).map((dep, i) => (
                             <span
                               key={i}
-                              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-navy-700 text-slate-400 rounded truncate max-w-[140px]"
+                              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/60 rounded truncate max-w-[140px]"
                             >
                               {dep}
                             </span>
@@ -1496,8 +1500,8 @@ function UsRegulatoryPageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
           >
-            <div className="bg-navy-800 border border-navy-700 rounded-xl p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-4">
+            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4">
                 Compliance Report
               </h2>
 
@@ -1514,7 +1518,7 @@ function UsRegulatoryPageContent() {
                   >
                     {score?.overall ?? 0}%
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-400">
+                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/60">
                     Overall
                   </div>
                 </div>
@@ -1522,7 +1526,7 @@ function UsRegulatoryPageContent() {
                   <div className="text-2xl sm:text-4xl font-bold text-blue-400">
                     {score?.mandatory ?? 0}%
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-400">
+                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/60">
                     Mandatory
                   </div>
                 </div>
@@ -1542,7 +1546,9 @@ function UsRegulatoryPageContent() {
                       .slice(0, 3)
                       .toUpperCase()}
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-400">Risk</div>
+                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/60">
+                    Risk
+                  </div>
                 </div>
               </div>
 
@@ -1554,14 +1560,14 @@ function UsRegulatoryPageContent() {
                   return (
                     <div
                       key={agency}
-                      className="bg-navy-900 rounded-lg p-3 sm:p-4"
+                      className="bg-slate-50 dark:bg-white/[0.02] rounded-lg p-3 sm:p-4"
                     >
                       <div className="flex items-center justify-between sm:justify-start sm:gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <config.icon
                             className={`w-4 sm:w-5 h-4 sm:h-5 text-${config.color}-400`}
                           />
-                          <span className="text-sm sm:text-base font-medium text-white">
+                          <span className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
                             {config.label}
                           </span>
                         </div>
@@ -1588,7 +1594,7 @@ function UsRegulatoryPageContent() {
                       >
                         {agencyScore}%
                       </div>
-                      <div className="w-full bg-navy-700 rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
+                      <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
                         <div
                           className={`h-full rounded-full ${
                             agencyScore >= 80
@@ -1607,7 +1613,7 @@ function UsRegulatoryPageContent() {
 
               {/* Required Licenses Summary */}
               <div className="mb-4 sm:mb-6">
-                <h3 className="text-sm sm:text-base font-medium text-white mb-2 sm:mb-3">
+                <h3 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white mb-2 sm:mb-3">
                   Required Licenses
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -1617,13 +1623,13 @@ function UsRegulatoryPageContent() {
                     return (
                       <div
                         key={license}
-                        className="flex items-center justify-between p-2.5 sm:p-3 bg-navy-900 rounded-lg"
+                        className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs sm:text-sm font-medium text-white truncate">
+                          <div className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white truncate">
                             {config.label}
                           </div>
-                          <div className="text-[10px] sm:text-xs text-slate-400">
+                          <div className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
                             {config.cfrPart}
                           </div>
                         </div>
@@ -1673,20 +1679,20 @@ function UsRegulatoryPageContent() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3 sm:space-y-4"
             >
-              <h2 className="text-base sm:text-lg font-medium text-white">
+              <h2 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white">
                 Your Assessments
               </h2>
               {assessments.map((assessment) => (
                 <button
                   key={assessment.id}
                   onClick={() => selectAssessment(assessment)}
-                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-navy-800 border border-navy-700 rounded-lg hover:border-navy-600 transition-colors text-left gap-3"
+                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg hover:border-slate-300 dark:border-white/20 transition-colors text-left gap-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm sm:text-base font-medium text-white truncate">
+                    <div className="text-sm sm:text-base font-medium text-slate-900 dark:text-white truncate">
                       {assessment.assessmentName || "Untitled Assessment"}
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1 truncate">
+                    <div className="text-xs sm:text-sm text-slate-600 dark:text-white/60 mt-0.5 sm:mt-1 truncate">
                       {JSON.parse(assessment.agencies).join(", ")}
                     </div>
                   </div>
@@ -1717,13 +1723,13 @@ function UsRegulatoryPageContent() {
               key="empty"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-navy-800 border border-navy-700 rounded-xl p-6 sm:p-8 text-center"
+              className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 sm:p-8 text-center"
             >
               <Globe2 className="w-10 sm:w-12 h-10 sm:h-12 text-slate-500 mx-auto mb-3 sm:mb-4" />
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-2">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">
                 No US Regulatory Assessments
               </h2>
-              <p className="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-white/60 mb-4 sm:mb-6">
                 Evaluate FCC, FAA, and NOAA compliance.
               </p>
               <button
