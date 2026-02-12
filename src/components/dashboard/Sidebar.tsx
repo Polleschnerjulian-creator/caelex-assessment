@@ -23,6 +23,11 @@ import {
   Crown,
   ClipboardCheck,
   Zap,
+  Globe,
+  Building2,
+  Radio,
+  AlertTriangle,
+  Flag,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -151,6 +156,12 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/environmental": "environmental",
   "/dashboard/modules/insurance": "insurance",
   "/dashboard/modules/supervision": "supervision",
+  // Global modules
+  "/dashboard/modules/copuos": "copuos",
+  "/dashboard/modules/uk-space": "uk-space",
+  "/dashboard/modules/us-regulatory": "us-regulatory",
+  "/dashboard/modules/export-control": "export-control",
+  "/dashboard/modules/spectrum": "spectrum",
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
   "/dashboard/audit-center": "audit-center",
@@ -338,6 +349,63 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 locked={isModuleLocked("/dashboard/modules/supervision")}
                 requiredPlan={getRequiredPlanLabel(
                   "/dashboard/modules/supervision",
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Global Modules Section */}
+          <div className="mb-6">
+            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/60 uppercase tracking-wider">
+              Global Modules
+            </p>
+            <div className="space-y-0.5">
+              <ModuleNavItem
+                href="/dashboard/modules/copuos"
+                icon={<Globe size={16} strokeWidth={1.5} />}
+                label="COPUOS/IADC"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/copuos")}
+                requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
+              />
+              <ModuleNavItem
+                href="/dashboard/modules/uk-space"
+                icon={<Building2 size={16} strokeWidth={1.5} />}
+                label="UK Space Act"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/uk-space")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/uk-space",
+                )}
+              />
+              <ModuleNavItem
+                href="/dashboard/modules/us-regulatory"
+                icon={<Flag size={16} strokeWidth={1.5} />}
+                label="US Regulatory"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/us-regulatory")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/us-regulatory",
+                )}
+              />
+              <ModuleNavItem
+                href="/dashboard/modules/export-control"
+                icon={<AlertTriangle size={16} strokeWidth={1.5} />}
+                label="Export Control"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/export-control")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/export-control",
+                )}
+              />
+              <ModuleNavItem
+                href="/dashboard/modules/spectrum"
+                icon={<Radio size={16} strokeWidth={1.5} />}
+                label="Spectrum & ITU"
+                onClick={handleNavClick}
+                locked={isModuleLocked("/dashboard/modules/spectrum")}
+                requiredPlan={getRequiredPlanLabel(
+                  "/dashboard/modules/spectrum",
                 )}
               />
             </div>
