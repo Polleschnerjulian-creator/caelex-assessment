@@ -44,16 +44,21 @@ export default function Hero() {
       <div className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-16 pt-32 pb-24">
         <div className="max-w-[1200px] mx-auto w-full">
           {/* Headline */}
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-[clamp(2.25rem,5.5vw,4.5rem)] font-semibold tracking-[-0.025em] leading-[1.1] text-white mb-10 md:mb-12"
+            className="mb-10 md:mb-12"
           >
-            The World&apos;s Space
-            <br />
-            Compliance Platform.
-          </motion.h1>
+            <p className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-medium tracking-[-0.01em] text-white/60 mb-2">
+              Caelex
+            </p>
+            <h1 className="text-[clamp(2.25rem,5.5vw,4.5rem)] font-semibold tracking-[-0.025em] leading-[1.1] text-white">
+              The Space Compliance
+              <br />
+              Platform.
+            </h1>
+          </motion.div>
 
           {/* Module Ticker */}
           <motion.div
