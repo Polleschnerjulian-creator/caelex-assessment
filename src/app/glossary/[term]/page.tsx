@@ -10,10 +10,8 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
-import {
-  Breadcrumbs,
-  generateGlossaryBreadcrumbs,
-} from "@/components/seo/Breadcrumbs";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { generateGlossaryBreadcrumbs } from "@/lib/breadcrumbs";
 import { siteConfig } from "@/lib/seo";
 import {
   getAllTerms,
