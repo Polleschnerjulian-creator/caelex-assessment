@@ -224,7 +224,7 @@ function SupervisionPageContent() {
       case "medium":
         return "text-amber-400 bg-amber-500/10";
       case "low":
-        return "text-blue-400 bg-blue-500/10";
+        return "text-emerald-400 bg-emerald-500/10";
       default:
         return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
     }
@@ -241,7 +241,7 @@ function SupervisionPageContent() {
       case "resolved":
         return "text-emerald-400 bg-emerald-500/10";
       case "reported":
-        return "text-blue-400 bg-blue-500/10";
+        return "text-emerald-400 bg-emerald-500/10";
       default:
         return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
     }
@@ -277,8 +277,8 @@ function SupervisionPageContent() {
           <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Building2 size={18} className="text-blue-400" />
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                  <Building2 size={18} className="text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -670,7 +670,7 @@ function SupervisionPageContent() {
                                     ? "bg-orange-500/20 text-orange-400"
                                     : obligation.frequency === "within_72h"
                                       ? "bg-amber-500/20 text-amber-400"
-                                      : "bg-blue-500/20 text-blue-400"
+                                      : "bg-emerald-500/20 text-emerald-400"
                               }
                             `}
                             >
@@ -1011,7 +1011,7 @@ function SupervisionPageContent() {
                                 p-2 rounded-lg
                                 ${
                                   eventConfig?.color === "blue"
-                                    ? "bg-blue-500/10"
+                                    ? "bg-emerald-500/10"
                                     : eventConfig?.color === "orange"
                                       ? "bg-orange-500/10"
                                       : eventConfig?.color === "red"
@@ -1027,7 +1027,7 @@ function SupervisionPageContent() {
                                   className={`
                                   ${
                                     eventConfig?.color === "blue"
-                                      ? "text-blue-400"
+                                      ? "text-emerald-400"
                                       : eventConfig?.color === "orange"
                                         ? "text-orange-400"
                                         : eventConfig?.color === "red"

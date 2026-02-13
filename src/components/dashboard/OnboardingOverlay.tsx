@@ -260,11 +260,11 @@ export default function OnboardingOverlay() {
                     transition={{ duration: 0.25 }}
                   >
                     {/* Icon */}
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
+                    <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
                       <Download
                         size={28}
                         strokeWidth={1.5}
-                        className="text-blue-500"
+                        className="text-emerald-500"
                       />
                     </div>
 
@@ -309,10 +309,10 @@ export default function OnboardingOverlay() {
                           disabled={importing}
                           className="
                             w-full flex items-center justify-center gap-2
-                            bg-blue-600 hover:bg-blue-700 text-white
+                            bg-emerald-600 hover:bg-emerald-700 text-white
                             text-[14px] font-medium px-6 py-3 rounded-xl
                             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                            shadow-sm shadow-blue-500/20
+                            shadow-sm shadow-emerald-500/20
                           "
                         >
                           {importing ? (
@@ -390,11 +390,11 @@ export default function OnboardingOverlay() {
                           transition-all duration-200 text-left
                         "
                       >
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/15 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center flex-shrink-0">
                           <FileCheck
                             size={18}
                             strokeWidth={1.5}
-                            className="text-blue-500"
+                            className="text-emerald-500"
                           />
                         </div>
                         <div className="flex-1 min-w-0">

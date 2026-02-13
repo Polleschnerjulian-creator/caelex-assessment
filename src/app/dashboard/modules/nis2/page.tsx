@@ -367,7 +367,7 @@ function DashboardOptionCard({
         w-full p-4 rounded-xl text-left transition-all duration-200 group
         ${
           isSelected
-            ? "bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-500 dark:border-blue-400/50"
+            ? "bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500 dark:border-emerald-400/50"
             : "bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.05]"
         }
       `}
@@ -380,7 +380,7 @@ function DashboardOptionCard({
               p-2.5 rounded-lg transition-colors flex-shrink-0
               ${
                 isSelected
-                  ? "bg-blue-100 dark:bg-blue-500/20"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20"
                   : "bg-slate-100 dark:bg-white/[0.06] group-hover:bg-slate-200 dark:group-hover:bg-white/[0.08]"
               }
             `}
@@ -389,7 +389,7 @@ function DashboardOptionCard({
               size={20}
               className={
                 isSelected
-                  ? "text-blue-600 dark:text-blue-400"
+                  ? "text-emerald-600 dark:text-emerald-400"
                   : "text-slate-500 dark:text-white/50"
               }
             />
@@ -401,7 +401,7 @@ function DashboardOptionCard({
           <h3
             className={`text-[14px] font-medium ${
               isSelected
-                ? "text-blue-700 dark:text-blue-300"
+                ? "text-emerald-700 dark:text-emerald-300"
                 : "text-slate-900 dark:text-white"
             }`}
           >
@@ -418,7 +418,7 @@ function DashboardOptionCard({
             w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all
             ${
               isSelected
-                ? "bg-blue-500 dark:bg-blue-400"
+                ? "bg-emerald-500 dark:bg-emerald-400"
                 : "border-2 border-slate-300 dark:border-white/20"
             }
           `}
@@ -661,7 +661,7 @@ function NIS2Wizard({
       {/* Progress bar */}
       <div className="h-1 bg-slate-100 dark:bg-white/[0.04]">
         <motion.div
-          className="h-full bg-blue-500"
+          className="h-full bg-emerald-500"
           initial={{ width: 0 }}
           animate={{
             width: `${(currentStep / totalSteps) * 100}%`,
@@ -741,7 +741,7 @@ function NIS2Wizard({
                 type="text"
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400/50 transition-colors"
+                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
                 placeholder="e.g. Q1 2026 NIS2 Audit"
               />
             </div>
@@ -776,9 +776,9 @@ function NIS2Wizard({
                   key={i}
                   className={`w-1.5 h-1.5 rounded-full transition-colors ${
                     i + 1 === currentStep
-                      ? "bg-blue-500"
+                      ? "bg-emerald-500"
                       : i + 1 < currentStep
-                        ? "bg-blue-300 dark:bg-blue-500/50"
+                        ? "bg-emerald-300 dark:bg-emerald-500/50"
                         : "bg-slate-200 dark:bg-white/10"
                   }`}
                 />
@@ -789,7 +789,7 @@ function NIS2Wizard({
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !assessmentName.trim()}
-                className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {submitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -805,7 +805,7 @@ function NIS2Wizard({
                     setDirection(1);
                     setCurrentStep((prev) => prev + 1);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   Next
                   <ArrowRight size={14} />
@@ -894,7 +894,7 @@ export default function NIS2ModulePage() {
               </a>
               <button
                 onClick={() => setShowWizard(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 <Plus size={14} />
                 New Assessment
@@ -942,7 +942,7 @@ export default function NIS2ModulePage() {
             </p>
             <button
               onClick={() => setShowWizard(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
             >
               <Plus size={14} />
               Start Assessment
@@ -1023,7 +1023,7 @@ export default function NIS2ModulePage() {
                       <div className="w-24">
                         <div className="h-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 rounded-full transition-all"
+                            className="h-full bg-emerald-500 rounded-full transition-all"
                             style={{ width: `${progress}%` }}
                           />
                         </div>

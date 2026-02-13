@@ -94,8 +94,8 @@ export default function AdminDashboard() {
           icon={<Users size={20} />}
           label="Total Users"
           value={stats.totalUsers}
-          bgColor="bg-blue-500/10 dark:bg-blue-500/10"
-          iconColor="text-blue-600 dark:text-blue-400"
+          bgColor="bg-emerald-500/10 dark:bg-emerald-500/10"
+          iconColor="text-emerald-600 dark:text-emerald-400"
           loading={loading}
         />
         <StatCard

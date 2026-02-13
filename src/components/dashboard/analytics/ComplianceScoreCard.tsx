@@ -32,7 +32,7 @@ export function ComplianceScoreCard({
       case "A":
         return "text-green-400";
       case "B":
-        return "text-blue-400";
+        return "text-emerald-400";
       case "C":
         return "text-yellow-400";
       case "D":
@@ -49,7 +49,7 @@ export function ComplianceScoreCard({
       case "compliant":
         return "bg-green-500/20 text-green-400 border-green-500/30";
       case "mostly_compliant":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
       case "partial":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
       case "non_compliant":

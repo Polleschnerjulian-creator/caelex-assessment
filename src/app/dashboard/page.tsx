@@ -357,7 +357,7 @@ function DeadlineItem({ deadline }: { deadline: Deadline }) {
   const priorityColors = {
     critical: "bg-red-500/20 text-red-400 border-red-500/30",
     high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    medium: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     low: "bg-green-500/20 text-green-400 border-green-500/30",
   };
 
@@ -374,7 +374,7 @@ function DeadlineItem({ deadline }: { deadline: Deadline }) {
             : deadline.priority === "high"
               ? "bg-amber-500"
               : deadline.priority === "medium"
-                ? "bg-blue-500"
+                ? "bg-emerald-500"
                 : "bg-green-500"
         }`}
       />
@@ -429,7 +429,7 @@ function QuickActionButton({
       href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
     >
-      <Icon className="w-5 h-5 text-white/60 group-hover:text-blue-400 transition-colors" />
+      <Icon className="w-5 h-5 text-white/60 group-hover:text-emerald-400 transition-colors" />
       <span className="text-[10px] text-white/50 group-hover:text-white/70 transition-colors">
         {label}
       </span>
@@ -959,7 +959,7 @@ function DashboardContent() {
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="bg-blue-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2"
+                className="bg-emerald-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
               >
                 <PlayCircle size={16} />
                 Run Assessment
@@ -1014,7 +1014,7 @@ function DashboardContent() {
             action={
               <Link
                 href="/dashboard/audit-center"
-                className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
                 View all <ChevronRight className="w-3 h-3" />
               </Link>
@@ -1034,7 +1034,7 @@ function DashboardContent() {
               action={
                 <Link
                   href="/assessment"
-                  className="text-[12px] text-blue-400 hover:text-blue-300"
+                  className="text-[12px] text-emerald-400 hover:text-emerald-300"
                 >
                   Run Assessment
                 </Link>
@@ -1151,7 +1151,7 @@ function DashboardContent() {
                 <select
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-blue-500/50"
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">Select operator type...</option>
                   <option value="SCO">EU Spacecraft Operator</option>
@@ -1171,7 +1171,7 @@ function DashboardContent() {
                   <button
                     onClick={handleImport}
                     disabled={!selectedOperator || importing}
-                    className="flex-1 bg-blue-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-blue-600 transition-all disabled:opacity-50"
+                    className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-emerald-600 transition-all disabled:opacity-50"
                   >
                     {importing ? "Importing..." : "Import"}
                   </button>

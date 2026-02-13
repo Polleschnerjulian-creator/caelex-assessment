@@ -69,7 +69,7 @@ const STATUS_CONFIG: Record<
   },
   SUBMITTED: {
     label: "Submitted",
-    color: "text-blue-400 bg-blue-500/10",
+    color: "text-emerald-400 bg-emerald-500/10",
     icon: Globe,
   },
   UNDER_REVIEW: {
@@ -242,7 +242,7 @@ function RegistrationPageContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Satellite className="w-7 h-7 text-blue-400" />
+            <Satellite className="w-7 h-7 text-emerald-400" />
             URSO Registration
           </h1>
           <p className="text-slate-400 mt-1">
@@ -259,7 +259,7 @@ function RegistrationPageContent() {
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Registration
@@ -304,7 +304,7 @@ function RegistrationPageContent() {
             placeholder="Search by name, COSPAR ID, or spacecraft..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ function RegistrationPageContent() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 bg-navy-900 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="all">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -346,7 +346,7 @@ function RegistrationPageContent() {
           {registrations.length === 0 && (
             <button
               onClick={() => setShowCreateForm(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
               Create First Registration
             </button>
@@ -413,7 +413,7 @@ function StatCard({
   color: "blue" | "slate" | "amber" | "green";
 }) {
   const colors = {
-    blue: "text-blue-400 bg-blue-500/10",
+    blue: "text-emerald-400 bg-emerald-500/10",
     slate: "text-slate-400 bg-slate-500/10",
     amber: "text-amber-400 bg-amber-500/10",
     green: "text-green-400 bg-green-500/10",
@@ -471,7 +471,7 @@ function RegistrationDetailModal({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-navy-900 rounded-xl p-8">
-          <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
         </div>
       </div>
     );
@@ -568,7 +568,7 @@ function RegistrationDetailModal({
                     console.error("Error submitting:", error);
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
                 Submit to URSO

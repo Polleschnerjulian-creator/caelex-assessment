@@ -1199,9 +1199,9 @@ function CalculatorStep({
             </div>
 
             {assessment.isSimplifiedAssessment && (
-              <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
-                <Info className="w-4 h-4 text-blue-400" />
-                <p className="text-[12px] text-blue-300">
+              <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
+                <Info className="w-4 h-4 text-emerald-400" />
+                <p className="text-[12px] text-emerald-300">
                   Screening LCA - Simplified assessment based on industry
                   averages
                 </p>
@@ -1333,7 +1333,7 @@ function SuppliersStep({
 }) {
   const statusColors: Record<string, string> = {
     pending: "bg-white/10 text-white/70",
-    sent: "bg-blue-500/20 text-blue-400",
+    sent: "bg-emerald-500/20 text-emerald-400",
     received: "bg-emerald-500/20 text-emerald-400",
     overdue: "bg-red-500/20 text-red-400",
   };
@@ -1341,13 +1341,13 @@ function SuppliersStep({
   return (
     <div className="space-y-6">
       {/* Info Card */}
-      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
+        <Info className="w-5 h-5 text-emerald-400 mt-0.5" />
         <div>
-          <p className="text-[13px] text-blue-300 font-medium mb-1">
+          <p className="text-[13px] text-emerald-300 font-medium mb-1">
             Article 99: Supply Chain Data Collection
           </p>
-          <p className="text-[12px] text-blue-300/70">
+          <p className="text-[12px] text-emerald-300/70">
             You may request environmental data from suppliers to improve LCA
             accuracy. Use the default templates or create custom requests.
           </p>
@@ -1454,7 +1454,7 @@ function SuppliersStep({
                   </div>
 
                   {supplier.status === "pending" && (
-                    <button className="mt-3 flex items-center gap-1.5 text-[12px] text-blue-400 hover:text-blue-300">
+                    <button className="mt-3 flex items-center gap-1.5 text-[12px] text-emerald-400 hover:text-emerald-300">
                       <Mail className="w-3.5 h-3.5" />
                       Send Request Email
                     </button>
@@ -1474,7 +1474,7 @@ function SuppliersStep({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
                 <span className="text-slate-500 dark:text-white/60">
                   Sent: {suppliers.filter((s) => s.status === "sent").length}
                 </span>
@@ -1830,9 +1830,9 @@ function ReportStep({
         </h3>
 
         {report.regulatoryCompliance.isSimplifiedAssessment && (
-          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
-            <Info className="w-4 h-4 text-blue-400" />
-            <p className="text-[12px] text-blue-300">
+          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
+            <Info className="w-4 h-4 text-emerald-400" />
+            <p className="text-[12px] text-emerald-300">
               Simplified Regime applies: Screening LCA is sufficient until 2032
             </p>
           </div>

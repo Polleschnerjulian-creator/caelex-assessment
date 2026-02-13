@@ -644,7 +644,7 @@ function AuthorizationPageContent() {
                               href={ncaDetermination.primaryNCA.website}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300"
+                              className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300"
                             >
                               <ExternalLink size={12} />
                               Website
@@ -739,7 +739,7 @@ function AuthorizationPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to NCA Determination
                 </button>
@@ -769,7 +769,7 @@ function AuthorizationPageContent() {
                       initial={{ width: 0 }}
                       animate={{ width: `${progress.percent}%` }}
                       transition={{ duration: 0.5, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+                      className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
                     />
                   </div>
                 </div>
@@ -962,7 +962,7 @@ function AuthorizationPageContent() {
                       <div
                         className={`absolute left-2.5 w-3 h-3 rounded-full ${
                           milestone.status === "current"
-                            ? "bg-blue-500"
+                            ? "bg-emerald-500"
                             : milestone.status === "completed"
                               ? "bg-green-500"
                               : "bg-white/[0.1]"
@@ -1037,7 +1037,7 @@ function AuthorizationPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to NCA Determination
                 </button>
@@ -1105,7 +1105,7 @@ function AuthorizationPageContent() {
                                   isCompleted
                                     ? "bg-green-500"
                                     : isCurrent
-                                      ? "bg-blue-500"
+                                      ? "bg-emerald-500"
                                       : "bg-white/[0.1]"
                                 }`}
                               />

@@ -51,7 +51,7 @@ export function DeadlineTimeline({
         <h3 className="text-lg font-semibold text-white">Upcoming Deadlines</h3>
         <Link
           href="/dashboard/timeline"
-          className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+          className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
         >
           View all
           <ChevronRight className="w-4 h-4" />
@@ -100,7 +100,7 @@ function DeadlineItem({
       case "medium":
         return "border-yellow-500 bg-yellow-500/10";
       case "low":
-        return "border-blue-500 bg-blue-500/10";
+        return "border-emerald-500 bg-emerald-500/10";
       default:
         return "border-slate-500 bg-slate-500/10";
     }
@@ -115,7 +115,7 @@ function DeadlineItem({
       case "medium":
         return "text-yellow-400";
       case "low":
-        return "text-blue-400";
+        return "text-emerald-400";
       default:
         return "text-slate-400";
     }

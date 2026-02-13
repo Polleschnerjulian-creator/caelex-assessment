@@ -226,10 +226,10 @@ function MissionTimelineGantt() {
     { bar: string; bg: string; text: string; border: string }
   > = {
     blue: {
-      bar: "bg-blue-500",
-      bg: "bg-blue-500/10",
-      text: "text-blue-400",
-      border: "border-blue-500/30",
+      bar: "bg-emerald-500",
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-400",
+      border: "border-emerald-500/30",
     },
     amber: {
       bar: "bg-amber-500",
@@ -262,7 +262,7 @@ function MissionTimelineGantt() {
       case "completed":
         return { text: "Completed", cls: "bg-emerald-500/20 text-emerald-400" };
       case "active":
-        return { text: "Active", cls: "bg-blue-500/20 text-blue-400" };
+        return { text: "Active", cls: "bg-emerald-500/20 text-emerald-400" };
       case "future":
         return { text: "Upcoming", cls: "bg-slate-500/20 text-slate-400" };
     }
@@ -297,7 +297,7 @@ function MissionTimelineGantt() {
         {/* Legend */}
         <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-slate-500 dark:text-white/50">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-blue-500" />
+            <span className="w-3 h-3 rounded-sm bg-emerald-500" />
             Active
           </div>
           <div className="flex items-center gap-1.5">
@@ -743,11 +743,11 @@ function TimelinePageContent() {
         <div
           key={day}
           className={`h-24 p-2 border-r border-b border-slate-200 dark:border-white/5 ${
-            isToday ? "bg-blue-500/10" : "bg-slate-50 dark:bg-white/[0.01]"
+            isToday ? "bg-emerald-500/10" : "bg-slate-50 dark:bg-white/[0.01]"
           }`}
         >
           <div
-            className={`text-sm font-medium mb-1 ${isToday ? "text-blue-400" : "text-slate-500 dark:text-white/60"}`}
+            className={`text-sm font-medium mb-1 ${isToday ? "text-emerald-400" : "text-slate-500 dark:text-white/60"}`}
           >
             {day}
           </div>
@@ -761,7 +761,7 @@ function TimelinePageContent() {
                       ? "bg-red-500/20 text-red-300"
                       : event.priority === "CRITICAL"
                         ? "bg-orange-500/20 text-orange-300"
-                        : "bg-blue-500/20 text-blue-300"
+                        : "bg-emerald-500/20 text-emerald-300"
                     : "bg-purple-500/20 text-purple-300"
                 }`}
                 title={event.title}

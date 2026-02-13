@@ -84,8 +84,8 @@ const regulationColors: Record<
   { bg: string; text: string; label: string }
 > = {
   EU_SPACE_ACT: {
-    bg: "bg-blue-500/10",
-    text: "text-blue-400",
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-400",
     label: "EU Space Act",
   },
   NIS2: { bg: "bg-cyan-500/10", text: "text-cyan-400", label: "NIS2" },
@@ -310,8 +310,8 @@ function AuditCenterContent() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 flex items-center justify-center">
-            <ClipboardCheck className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 flex items-center justify-center">
+            <ClipboardCheck className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
           </div>
           <div>
             <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -351,7 +351,7 @@ function AuditCenterContent() {
         {/* Compliance Score */}
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+            <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
               Compliance Score
             </span>
@@ -461,7 +461,7 @@ function AuditCenterContent() {
           onClick={() => setRegulationFilter("all")}
           className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-colors ${
             regulationFilter === "all"
-              ? "bg-blue-500/10 text-blue-500 dark:text-blue-400"
+              ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
               : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
           }`}
         >
@@ -700,7 +700,7 @@ function AuditCenterContent() {
                     )}
                     <Link
                       href={item.modulePath}
-                      className="p-1 text-slate-400 dark:text-white/25 hover:text-blue-400 transition-colors"
+                      className="p-1 text-slate-400 dark:text-white/25 hover:text-emerald-400 transition-colors"
                     >
                       <ExternalLink size={12} />
                     </Link>
@@ -733,12 +733,12 @@ function AuditCenterContent() {
           <button
             onClick={handleExportPdf}
             disabled={exportingPdf}
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-blue-500/30 transition-colors text-left disabled:opacity-50"
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-emerald-500/30 transition-colors text-left disabled:opacity-50"
           >
             {exportingPdf ? (
-              <Loader2 size={16} className="animate-spin text-blue-400" />
+              <Loader2 size={16} className="animate-spin text-emerald-400" />
             ) : (
-              <FileText size={16} className="text-blue-400" />
+              <FileText size={16} className="text-emerald-400" />
             )}
             <div>
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
@@ -828,7 +828,7 @@ function AuditCenterContent() {
               </span>
             )}
             {overview.evidenceCoverage.byStatus.submitted > 0 && (
-              <span className="text-[10px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-0.5">
+              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.submitted} submitted
               </span>
             )}

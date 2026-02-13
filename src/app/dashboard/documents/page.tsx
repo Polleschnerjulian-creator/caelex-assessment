@@ -315,8 +315,8 @@ function DocumentsPageContent() {
           <Card className="bg-white dark:bg-white/[0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <FileText size={18} className="text-blue-400" />
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                  <FileText size={18} className="text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">

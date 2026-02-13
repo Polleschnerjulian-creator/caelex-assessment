@@ -505,7 +505,7 @@ function CybersecurityPageContent() {
                     : maturityInfo.color === "yellow"
                       ? "text-yellow-600 dark:text-yellow-400"
                       : maturityInfo.color === "blue"
-                        ? "text-blue-600 dark:text-blue-400"
+                        ? "text-emerald-600 dark:text-emerald-400"
                         : "text-green-600 dark:text-green-400"
               }`}
             >
@@ -533,7 +533,7 @@ function CybersecurityPageContent() {
               ) : (
                 <Shield
                   size={20}
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-emerald-600 dark:text-emerald-400"
                 />
               )}
               <p className="text-[14px] font-medium text-slate-900 dark:text-white">
@@ -977,7 +977,7 @@ function CybersecurityPageContent() {
                             (form.existingCertifications || []).includes(
                               cert.id,
                             )
-                              ? "bg-blue-500/20 border-blue-500/30 text-blue-400"
+                              ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
                               : "bg-white/[0.04] border-white/10 text-white/60 hover:border-white/[0.1]"
                           }`}
                         >
@@ -994,18 +994,18 @@ function CybersecurityPageContent() {
                     className={`p-4 rounded-lg border ${
                       previewSimplified
                         ? "bg-green-500/10 border-green-500/20"
-                        : "bg-blue-500/10 border-blue-500/20"
+                        : "bg-emerald-500/10 border-emerald-500/20"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       {previewSimplified ? (
                         <CheckCircle2 size={20} className="text-green-400" />
                       ) : (
-                        <Shield size={20} className="text-blue-400" />
+                        <Shield size={20} className="text-emerald-400" />
                       )}
                       <div>
                         <p
-                          className={`text-[14px] font-medium ${previewSimplified ? "text-green-400" : "text-blue-400"}`}
+                          className={`text-[14px] font-medium ${previewSimplified ? "text-green-400" : "text-emerald-400"}`}
                         >
                           {previewSimplified
                             ? "Eligible for Simplified Regime (Art. 86-88)"
@@ -1107,7 +1107,7 @@ function CybersecurityPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Security Profile
                 </button>
@@ -1138,7 +1138,7 @@ function CybersecurityPageContent() {
                               : maturityInfo.color === "yellow"
                                 ? "text-yellow-400"
                                 : maturityInfo.color === "blue"
-                                  ? "text-blue-400"
+                                  ? "text-emerald-400"
                                   : "text-green-400"
                         }`}
                       >
@@ -1161,7 +1161,7 @@ function CybersecurityPageContent() {
                             : maturityInfo.color === "yellow"
                               ? "bg-yellow-500"
                               : maturityInfo.color === "blue"
-                                ? "bg-blue-500"
+                                ? "bg-emerald-500"
                                 : "bg-green-500"
                       }`}
                     />
@@ -1245,7 +1245,7 @@ function CybersecurityPageContent() {
                                   ? "bg-red-500/10"
                                   : req.severity === "major"
                                     ? "bg-orange-500/10"
-                                    : "bg-blue-500/10"
+                                    : "bg-emerald-500/10"
                               }`}
                             >
                               {categoryIcons[req.category]}
@@ -1267,7 +1267,7 @@ function CybersecurityPageContent() {
                                           ? "bg-red-500/10 text-red-400"
                                           : req.severity === "major"
                                             ? "bg-orange-500/10 text-orange-400"
-                                            : "bg-blue-500/10 text-blue-400"
+                                            : "bg-emerald-500/10 text-emerald-400"
                                       }`}
                                     >
                                       {req.severity}
@@ -1411,7 +1411,7 @@ function CybersecurityPageContent() {
                                     </span>
                                   )}
                                   {req.isoReference && (
-                                    <span className="text-[10px] px-2 py-1 rounded bg-blue-500/10 text-blue-400">
+                                    <span className="text-[10px] px-2 py-1 rounded bg-emerald-500/10 text-emerald-400">
                                       {req.isoReference}
                                     </span>
                                   )}
@@ -1452,7 +1452,7 @@ function CybersecurityPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Security Profile
                 </button>
@@ -1715,7 +1715,7 @@ function CybersecurityPageContent() {
                                       ? "bg-red-500/10 text-red-400"
                                       : req.priority === "major"
                                         ? "bg-orange-500/10 text-orange-400"
-                                        : "bg-blue-500/10 text-blue-400"
+                                        : "bg-emerald-500/10 text-emerald-400"
                                   }`}
                                 >
                                   {req.title}
@@ -1741,7 +1741,7 @@ function CybersecurityPageContent() {
                         >
                           <Info
                             size={14}
-                            className="text-blue-400 mt-0.5 flex-shrink-0"
+                            className="text-emerald-400 mt-0.5 flex-shrink-0"
                           />
                           {rec}
                         </li>

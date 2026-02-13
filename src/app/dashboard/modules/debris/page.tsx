@@ -905,7 +905,7 @@ function DebrisPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Mission Profile
                 </button>
@@ -1101,7 +1101,7 @@ function DebrisPageContent() {
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-blue-400 hover:text-blue-300"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Mission Profile
                 </button>

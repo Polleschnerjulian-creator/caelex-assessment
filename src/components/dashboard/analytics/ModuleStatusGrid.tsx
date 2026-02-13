@@ -97,7 +97,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
       case "non_compliant":
         return <XCircle className="w-5 h-5 text-red-400" />;
       case "pending":
-        return <Clock className="w-5 h-5 text-blue-400" />;
+        return <Clock className="w-5 h-5 text-emerald-400" />;
       default:
         return <Clock className="w-5 h-5 text-slate-400" />;
     }

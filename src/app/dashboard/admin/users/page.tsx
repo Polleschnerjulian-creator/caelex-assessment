@@ -60,8 +60,11 @@ export default function UsersAdminPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 bg-blue-500/10 rounded-lg flex items-center justify-center">
-            <Users size={18} className="text-blue-600 dark:text-blue-400" />
+          <div className="w-9 h-9 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+            <Users
+              size={18}
+              className="text-emerald-600 dark:text-emerald-400"
+            />
           </div>
           <div>
             <h1 className="text-[22px] font-semibold text-slate-900 dark:text-white">

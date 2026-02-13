@@ -570,7 +570,7 @@ function InsurancePageContent() {
               >
                 <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-blue-400" />
+                    <Building2 className="w-5 h-5 text-emerald-400" />
                     Organization & Mission Profile
                   </h2>
 
@@ -883,7 +883,7 @@ function InsurancePageContent() {
                               key={i}
                               className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
                             >
-                              <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                              <Info className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                               {note}
                             </li>
                           ))}
@@ -935,7 +935,7 @@ function InsurancePageContent() {
                           riskLevel === "low"
                             ? "bg-green-500/20 text-green-400"
                             : riskLevel === "medium"
-                              ? "bg-blue-500/20 text-blue-400"
+                              ? "bg-emerald-500/20 text-emerald-400"
                               : riskLevel === "high"
                                 ? "bg-orange-500/20 text-orange-400"
                                 : "bg-red-500/20 text-red-400"
@@ -957,7 +957,7 @@ function InsurancePageContent() {
                               key={i}
                               className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
                             >
-                              <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                              <Info className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                               {note}
                             </li>
                           ))}
@@ -969,7 +969,7 @@ function InsurancePageContent() {
 
                 <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-blue-400" />
+                    <FileText className="w-5 h-5 text-emerald-400" />
                     Required Insurance Coverage
                   </h2>
 
@@ -984,7 +984,7 @@ function InsurancePageContent() {
                             key={type}
                             className={`p-4 rounded-lg border ${
                               isRequired
-                                ? "bg-blue-500/10 border-blue-500/30"
+                                ? "bg-emerald-500/10 border-emerald-500/30"
                                 : "bg-slate-50 dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
                             }`}
                           >
@@ -992,7 +992,7 @@ function InsurancePageContent() {
                               {insuranceTypeIcons[type as InsuranceType]}
                               <h3 className="font-medium">{def.name}</h3>
                               {isRequired && (
-                                <span className="ml-auto text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                                <span className="ml-auto text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
                                   Required
                                 </span>
                               )}
@@ -1119,7 +1119,7 @@ function InsurancePageContent() {
                         key={policy.id}
                         className={`bg-white dark:bg-white/[0.04] border rounded-xl p-6 ${
                           isRequired
-                            ? "border-blue-500/30"
+                            ? "border-emerald-500/30"
                             : "border-slate-200 dark:border-white/10"
                         }`}
                       >
@@ -1141,7 +1141,7 @@ function InsurancePageContent() {
                           </div>
                           <div className="flex items-center gap-3">
                             {isRequired && (
-                              <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                              <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
                                 Required
                               </span>
                             )}
@@ -1156,7 +1156,7 @@ function InsurancePageContent() {
                                 statusConfig?.color === "green"
                                   ? "border-green-500/30 text-green-400"
                                   : statusConfig?.color === "blue"
-                                    ? "border-blue-500/30 text-blue-400"
+                                    ? "border-emerald-500/30 text-emerald-400"
                                     : statusConfig?.color === "yellow"
                                       ? "border-yellow-500/30 text-yellow-400"
                                       : statusConfig?.color === "orange"
@@ -1290,7 +1290,7 @@ function InsurancePageContent() {
               >
                 {report ? (
                   <>
-                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-xl p-6">
+                    <div className="bg-gradient-to-r from-emerald-500/20 to-purple-500/20 border border-emerald-500/30 rounded-xl p-6">
                       <h2 className="text-xl font-bold mb-2">
                         Insurance Compliance Report
                       </h2>
@@ -1336,7 +1336,7 @@ function InsurancePageContent() {
                       <h3 className="text-lg font-semibold mb-4">
                         TPL Requirement
                       </h3>
-                      <div className="text-3xl font-bold text-blue-400 mb-2">
+                      <div className="text-3xl font-bold text-emerald-400 mb-2">
                         {formatCurrency(report.tplRequirement.amount)}
                       </div>
                       <p className="text-slate-600 dark:text-white/70">
@@ -1358,7 +1358,7 @@ function InsurancePageContent() {
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-blue-400">
+                          <p className="text-2xl font-bold text-emerald-400">
                             {report.complianceStatus.requiredPolicies}
                           </p>
                           <p className="text-sm text-slate-600 dark:text-white/70">
@@ -1404,7 +1404,7 @@ function InsurancePageContent() {
                                 key={i}
                                 className="flex items-start gap-3 text-slate-600 dark:text-white/70"
                               >
-                                <CheckCircle2 className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                                <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
                                 {rec}
                               </li>
                             ),

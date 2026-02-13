@@ -47,16 +47,16 @@ const actionIcons: Record<string, LucideIcon> = {
 };
 
 const actionColors: Record<string, string> = {
-  article_status_changed: "text-blue-600 dark:text-blue-400",
+  article_status_changed: "text-emerald-600 dark:text-emerald-400",
   checklist_item_completed: "text-green-600 dark:text-green-400",
   checklist_item_uncompleted: "text-amber-600 dark:text-amber-400",
   document_status_changed: "text-purple-600 dark:text-purple-400",
   document_uploaded: "text-purple-600 dark:text-purple-400",
-  workflow_created: "text-blue-600 dark:text-blue-400",
-  workflow_status_changed: "text-blue-600 dark:text-blue-400",
+  workflow_created: "text-emerald-600 dark:text-emerald-400",
+  workflow_status_changed: "text-emerald-600 dark:text-emerald-400",
   workflow_submitted: "text-green-600 dark:text-green-400",
   assessment_imported: "text-cyan-600 dark:text-cyan-400",
-  bulk_status_update: "text-blue-600 dark:text-blue-400",
+  bulk_status_update: "text-emerald-600 dark:text-emerald-400",
 };
 
 const entityTypeLabels: Record<string, string> = {

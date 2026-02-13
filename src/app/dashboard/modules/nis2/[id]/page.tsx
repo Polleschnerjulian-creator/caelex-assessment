@@ -410,7 +410,7 @@ function WizardOptionCard({
         w-full p-4 rounded-xl text-left transition-all duration-200 group
         ${
           isSelected
-            ? "bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-500 dark:border-blue-400/50"
+            ? "bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500 dark:border-emerald-400/50"
             : "bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.05]"
         }
       `}
@@ -418,13 +418,13 @@ function WizardOptionCard({
       <div className="flex items-center gap-4">
         {IconComponent && (
           <div
-            className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${isSelected ? "bg-blue-100 dark:bg-blue-500/20" : "bg-slate-100 dark:bg-white/[0.06]"}`}
+            className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${isSelected ? "bg-emerald-100 dark:bg-emerald-500/20" : "bg-slate-100 dark:bg-white/[0.06]"}`}
           >
             <IconComponent
               size={20}
               className={
                 isSelected
-                  ? "text-blue-600 dark:text-blue-400"
+                  ? "text-emerald-600 dark:text-emerald-400"
                   : "text-slate-500 dark:text-white/50"
               }
             />
@@ -432,7 +432,7 @@ function WizardOptionCard({
         )}
         <div className="flex-1 min-w-0">
           <h3
-            className={`text-[14px] font-medium ${isSelected ? "text-blue-700 dark:text-blue-300" : "text-slate-900 dark:text-white"}`}
+            className={`text-[14px] font-medium ${isSelected ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-white"}`}
           >
             {label}
           </h3>
@@ -441,7 +441,7 @@ function WizardOptionCard({
           </p>
         </div>
         <div
-          className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isSelected ? "bg-blue-500 dark:bg-blue-400" : "border-2 border-slate-300 dark:border-white/20"}`}
+          className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${isSelected ? "bg-emerald-500 dark:bg-emerald-400" : "border-2 border-slate-300 dark:border-white/20"}`}
         >
           {isSelected && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -584,7 +584,7 @@ function InlineAssessmentWizard({
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -609,7 +609,7 @@ function InlineAssessmentWizard({
       {/* Progress bar */}
       <div className="h-1 bg-slate-100 dark:bg-white/[0.04]">
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
+          className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500"
           initial={{ width: 0 }}
           animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
           transition={{ duration: 0.3, ease: "easeOut" }}
@@ -715,7 +715,7 @@ function InlineAssessmentWizard({
               {NIS2_WIZARD_QUESTIONS.map((_, i) => (
                 <div
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i + 1 === currentStep ? "bg-blue-500" : i + 1 < currentStep ? "bg-blue-300 dark:bg-blue-500/50" : "bg-slate-200 dark:bg-white/10"}`}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i + 1 === currentStep ? "bg-emerald-500" : i + 1 < currentStep ? "bg-emerald-300 dark:bg-emerald-500/50" : "bg-slate-200 dark:bg-white/10"}`}
                 />
               ))}
             </div>
@@ -723,7 +723,7 @@ function InlineAssessmentWizard({
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {submitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -740,7 +740,7 @@ function InlineAssessmentWizard({
                     setDirection(1);
                     setCurrentStep((prev) => prev + 1);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   Next
                   <ArrowRight size={14} />
@@ -1114,7 +1114,7 @@ export default function NIS2AssessmentDetailPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => setShowWizard(true)}
-              className="w-full group relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 hover:from-blue-700 hover:via-blue-600 hover:to-cyan-600 rounded-2xl p-6 text-left transition-all duration-300 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20"
+              className="w-full group relative overflow-hidden bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-600 rounded-2xl p-6 text-left transition-all duration-300 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20"
             >
               {/* Background pattern */}
               <div className="absolute inset-0 opacity-10">
@@ -1151,13 +1151,13 @@ export default function NIS2AssessmentDetailPage() {
             className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
           >
             {/* Gradient top accent */}
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500" />
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-green-500" />
 
             <div className="p-6 pt-7">
               {/* Section header */}
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 flex items-center justify-center">
-                  <Lightbulb className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 flex items-center justify-center">
+                  <Lightbulb className="w-4.5 h-4.5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -1168,7 +1168,7 @@ export default function NIS2AssessmentDetailPage() {
                   </p>
                 </div>
                 {recommendations.autoAssessedCount > 0 && (
-                  <span className="ml-auto text-[11px] bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-full px-2.5 py-1 font-medium">
+                  <span className="ml-auto text-[11px] bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-full px-2.5 py-1 font-medium">
                     {recommendations.autoAssessedCount} auto-assessed
                   </span>
                 )}
@@ -1179,7 +1179,7 @@ export default function NIS2AssessmentDetailPage() {
                 {/* ISO 27001 Coverage */}
                 <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
                   <div className="flex items-center gap-2 mb-2">
-                    <ShieldCheck className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
                       ISO 27001 Coverage
                     </span>
@@ -1193,7 +1193,7 @@ export default function NIS2AssessmentDetailPage() {
                   </div>
                   <div className="h-1.5 bg-slate-200 dark:bg-white/[0.06] rounded-full mt-2 overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 rounded-full transition-all"
+                      className="h-full bg-emerald-500 rounded-full transition-all"
                       style={{
                         width: `${recommendations.iso27001Coverage.percentage}%`,
                       }}
@@ -1247,7 +1247,7 @@ export default function NIS2AssessmentDetailPage() {
                     key={idx}
                     className="flex items-start gap-3 bg-slate-50/60 dark:bg-white/[0.015] rounded-lg px-4 py-3 border border-slate-100/80 dark:border-white/[0.04]"
                   >
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5">
                       {idx + 1}
                     </span>
                     <p className="text-xs text-slate-600 dark:text-white/60 leading-relaxed">
@@ -1543,7 +1543,7 @@ export default function NIS2AssessmentDetailPage() {
                     if (e.key === "Escape") setEditingName(false);
                   }}
                   autoFocus
-                  className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-lg font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-lg font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
                 <button
                   onClick={handleSaveName}
@@ -1612,7 +1612,7 @@ export default function NIS2AssessmentDetailPage() {
               </div>
               <div className="h-1.5 bg-slate-200 dark:bg-white/[0.06] rounded-full mt-2 overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 rounded-full transition-all"
+                  className="h-full bg-emerald-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -1722,17 +1722,17 @@ export default function NIS2AssessmentDetailPage() {
               </span>
             )}
             {assessment.hasISO27001 && (
-              <span className="text-[11px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-1">
+              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
                 ISO 27001
               </span>
             )}
             {assessment.hasExistingCSIRT && (
-              <span className="text-[11px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-1">
+              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
                 CSIRT
               </span>
             )}
             {assessment.hasRiskManagement && (
-              <span className="text-[11px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-1">
+              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
                 Risk Mgmt
               </span>
             )}
@@ -1837,7 +1837,7 @@ export default function NIS2AssessmentDetailPage() {
                         {isUpdating && (
                           <Loader2
                             size={14}
-                            className="animate-spin text-blue-400"
+                            className="animate-spin text-emerald-400"
                           />
                         )}
                         {isExpanded ? (
@@ -1863,8 +1863,8 @@ export default function NIS2AssessmentDetailPage() {
                       >
                         {/* Compliance Question */}
                         {meta?.complianceQuestion && (
-                          <div className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-3">
-                            <div className="text-[10px] font-mono uppercase tracking-wider text-blue-400/60 mb-1">
+                          <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3">
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/60 mb-1">
                               Compliance Question
                             </div>
                             <p className="text-sm text-slate-700 dark:text-white/70">
@@ -1901,7 +1901,7 @@ export default function NIS2AssessmentDetailPage() {
                               </span>
                             )}
                             {meta.iso27001Ref && (
-                              <span className="text-[10px] bg-blue-500/10 text-blue-400 rounded-md px-2 py-1">
+                              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
                                 ISO 27001 {meta.iso27001Ref}
                               </span>
                             )}
@@ -1920,7 +1920,7 @@ export default function NIS2AssessmentDetailPage() {
                                   key={i}
                                   className="text-xs text-slate-500 dark:text-white/40 flex items-start gap-2"
                                 >
-                                  <span className="text-blue-400 mt-0.5">
+                                  <span className="text-emerald-400 mt-0.5">
                                     &bull;
                                   </span>
                                   {tip}

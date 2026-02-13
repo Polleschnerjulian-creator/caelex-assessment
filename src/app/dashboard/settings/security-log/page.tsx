@@ -79,8 +79,8 @@ const RISK_LEVEL_CONFIG: Record<
     label: "Low",
   },
   MEDIUM: {
-    color: "text-blue-600 dark:text-blue-400",
-    bg: "bg-blue-100 dark:bg-blue-500/10",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-100 dark:bg-emerald-500/10",
     icon: <Info className="w-4 h-4" />,
     label: "Medium",
   },
@@ -415,7 +415,7 @@ export default function SecurityLogPage() {
             {
               key: "MEDIUM",
               label: "Medium",
-              color: "text-blue-600 dark:text-blue-400",
+              color: "text-emerald-600 dark:text-emerald-400",
             },
             {
               key: "LOW",

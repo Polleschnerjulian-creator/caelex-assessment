@@ -83,7 +83,7 @@ export function TrendChart({
   const getStrokeColor = (trend: number) => {
     if (trend > 0) return "#22C55E"; // green-500
     if (trend < 0) return "#EF4444"; // red-500
-    return "#3B82F6"; // blue-500
+    return "#3B82F6"; // emerald-500
   };
 
   const getFillColor = (trend: number) => {

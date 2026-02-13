@@ -72,7 +72,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
       case "medium":
         return "text-yellow-400 bg-yellow-500/10 border-yellow-500/30";
       case "low":
-        return "text-blue-400 bg-blue-500/10 border-blue-500/30";
+        return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
       default:
         return "text-slate-400 bg-slate-500/10 border-slate-500/30";
     }
@@ -119,7 +119,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
         </div>
         <Link
           href="/dashboard/supervision"
-          className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+          className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
         >
           View all
           <ChevronRight className="w-4 h-4" />
@@ -190,7 +190,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
             </span>
           )}
           {summary.bySeverity.low > 0 && (
-            <span className="px-2 py-1 text-xs font-medium rounded border text-blue-400 bg-blue-500/10 border-blue-500/30">
+            <span className="px-2 py-1 text-xs font-medium rounded border text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
               {summary.bySeverity.low} Low
             </span>
           )}

@@ -46,9 +46,9 @@ const statusColors: Record<
     dot: "bg-amber-500 dark:bg-amber-500/60 border-amber-400 dark:border-amber-500/30",
   },
   under_review: {
-    bg: "bg-blue-50 dark:bg-blue-400/5",
-    border: "border-blue-200 dark:border-blue-400/20",
-    dot: "bg-blue-500 dark:bg-blue-400/60 border-blue-400 dark:border-blue-400/30",
+    bg: "bg-emerald-50 dark:bg-emerald-400/5",
+    border: "border-emerald-200 dark:border-emerald-400/20",
+    dot: "bg-emerald-500 dark:bg-emerald-400/60 border-emerald-400 dark:border-emerald-400/30",
   },
   compliant: {
     bg: "bg-emerald-50 dark:bg-emerald-500/5",
@@ -68,7 +68,7 @@ const complianceTypeColors: Record<string, string> = {
   mandatory_ongoing:
     "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
   design_requirement:
-    "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400/60",
+    "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400/60",
   conditional:
     "bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400/60",
   informational:
@@ -91,7 +91,7 @@ const priorityColors: Record<string, string> = {
   MEDIUM: "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70",
   LOW: "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/60",
   CONDITIONAL:
-    "bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300/50",
+    "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300/50",
 };
 
 export default function TrackerPage() {
