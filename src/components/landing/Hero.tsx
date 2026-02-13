@@ -52,12 +52,10 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-light tracking-[-0.03em] leading-[1.05] text-white">
-                Caelex
+              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-semibold tracking-[-0.03em] leading-[1.05] text-white">
+                The World&apos;s Space
                 <br />
-                <span className="text-white/60">
-                  The Space Compliance Platform.
-                </span>
+                Compliance Platform.
               </h1>
             </motion.div>
 
@@ -92,22 +90,22 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Bottom bar: Module ticker */}
+          {/* Bottom bar: Module ticker - more prominent */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="pt-8 border-t border-white/[0.08]"
+            className="pt-8 border-t border-white/[0.12]"
           >
-            <div className="flex flex-wrap gap-x-2 gap-y-2 md:gap-x-3">
+            <div className="flex flex-wrap gap-x-3 gap-y-2 md:gap-x-4">
               {MODULES.map((module, i) => (
                 <span
                   key={module}
-                  className="text-[12px] md:text-[13px] text-white/40 whitespace-nowrap"
+                  className="text-[13px] md:text-[14px] text-white/60 whitespace-nowrap font-medium"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
-                    <span className="ml-2 md:ml-3 text-white/20">·</span>
+                    <span className="ml-3 md:ml-4 text-white/30">·</span>
                   )}
                 </span>
               ))}
