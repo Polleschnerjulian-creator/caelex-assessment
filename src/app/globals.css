@@ -71,6 +71,19 @@ body {
 
 /* ===== LANDING PAGE SPECIFIC STYLES ===== */
 
+/* Smooth scroll snap for landing page sections */
+.landing-page {
+  scroll-snap-type: y proximity;
+  overflow-y: auto;
+  height: 100vh;
+  scroll-behavior: smooth;
+}
+
+.landing-page section {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
 /* Ultra-minimal scrollbar for landing page */
 .landing-page ::-webkit-scrollbar {
   width: 4px;
