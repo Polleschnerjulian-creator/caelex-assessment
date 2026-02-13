@@ -83,7 +83,7 @@ export function TrendChart({
   const getStrokeColor = (trend: number) => {
     if (trend > 0) return "#22C55E"; // green-500
     if (trend < 0) return "#EF4444"; // red-500
-    return "#3B82F6"; // emerald-500
+    return "#10B981"; // emerald-500
   };
 
   const getFillColor = (trend: number) => {
@@ -153,8 +153,8 @@ export function TrendChart({
                 <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="gradientBlue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
               </linearGradient>
             </defs>
 

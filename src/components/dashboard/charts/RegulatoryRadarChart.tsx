@@ -85,9 +85,9 @@ export default function RegulatoryRadarChart({
           <Radar
             name="Coverage"
             dataKey="value"
-            stroke="#3B82F6"
+            stroke="#10B981"
             strokeWidth={2}
-            fill="#3B82F6"
+            fill="#10B981"
             fillOpacity={0.25}
             animationBegin={0}
             animationDuration={800}

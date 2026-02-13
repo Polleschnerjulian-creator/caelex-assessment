@@ -107,8 +107,8 @@ export default function ComplianceTimelineChart({
         >
           <defs>
             <linearGradient id="colorOverall" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+              <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorEU" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.2} />
@@ -145,7 +145,7 @@ export default function ComplianceTimelineChart({
           <Area
             type="monotone"
             dataKey="overall"
-            stroke="#3B82F6"
+            stroke="#10B981"
             strokeWidth={2}
             fill="url(#colorOverall)"
             animationBegin={0}

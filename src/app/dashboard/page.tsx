@@ -92,7 +92,7 @@ const moduleRoutes: Record<string, string> = {
 };
 
 const CHART_COLORS = {
-  blue: "#3B82F6",
+  emerald: "#10B981",
   cyan: "#06B6D4",
   green: "#22C55E",
   amber: "#F59E0B",
@@ -103,7 +103,7 @@ const CHART_COLORS = {
 // ─── Demo Data ───
 
 const DEMO_COMPLIANCE_SEGMENTS = [
-  { name: "EU Regulations", value: 45, color: CHART_COLORS.blue },
+  { name: "EU Regulations", value: 45, color: CHART_COLORS.emerald },
   { name: "US Regulations", value: 30, color: CHART_COLORS.cyan },
   { name: "International", value: 25, color: CHART_COLORS.green },
 ];
@@ -302,7 +302,7 @@ function KPICard({
         <div className="mt-2">
           <Sparkline
             data={sparklineData}
-            color={sparklineColor || CHART_COLORS.blue}
+            color={sparklineColor || CHART_COLORS.emerald}
             height={28}
           />
         </div>
@@ -605,7 +605,7 @@ function DashboardContent() {
         {
           name: "EU Regulations",
           value: progressPercent,
-          color: CHART_COLORS.blue,
+          color: CHART_COLORS.emerald,
         },
         {
           name: "US Regulations",
@@ -919,7 +919,7 @@ function DashboardContent() {
             label="Applicable Articles"
             trend="neutral"
             sparklineData={[45, 48, 50, 51, 52, 52]}
-            sparklineColor={CHART_COLORS.blue}
+            sparklineColor={CHART_COLORS.emerald}
             delay={1}
           />
           <KPICard

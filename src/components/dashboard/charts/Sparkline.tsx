@@ -10,7 +10,7 @@ interface SparklineProps {
 
 export default function Sparkline({
   data,
-  color = "#3B82F6",
+  color = "#10B981",
   height = 30,
 }: SparklineProps) {
   const chartData = data.map((value, index) => ({ value, index }));
