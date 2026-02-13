@@ -126,6 +126,33 @@ function DebrisPageContent() {
     unknown
   > | null>(null);
   const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  // Download PDF function
+  const downloadPdf = async () => {
+    if (!selectedAssessment) return;
+    setDownloadingPdf(true);
+    try {
+      const res = await fetch("/api/debris/plan/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ assessmentId: selectedAssessment.id }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Debris-Mitigation-Plan-${selectedAssessment.id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     fetchAssessments();
@@ -1129,24 +1156,38 @@ function DebrisPageContent() {
                         ).toLocaleString()}
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob(
-                          [JSON.stringify(generatedPlan, null, 2)],
-                          { type: "application/json" },
-                        );
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `debris-mitigation-plan-${selectedAssessment.id}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}
-                      className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
-                    >
-                      <Download size={14} />
-                      Export JSON
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={downloadPdf}
+                        disabled={downloadingPdf}
+                        className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg text-[12px] font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                      >
+                        {downloadingPdf ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Download size={14} />
+                        )}
+                        Download PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          const blob = new Blob(
+                            [JSON.stringify(generatedPlan, null, 2)],
+                            { type: "application/json" },
+                          );
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `debris-mitigation-plan-${selectedAssessment.id}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/80 transition-colors"
+                      >
+                        <Download size={14} />
+                        Export JSON
+                      </button>
+                    </div>
                   </div>
 
                   {/* Mission Overview */}

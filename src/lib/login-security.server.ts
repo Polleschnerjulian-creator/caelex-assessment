@@ -7,6 +7,7 @@ import "server-only";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendSuspiciousLoginEmail } from "@/lib/email/suspicious-login";
+import { revokeAllUserSessions } from "@/lib/services/session-service";
 import type { AuthMethod } from "@prisma/client";
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -398,6 +399,13 @@ export async function recordFailedAttempt(userId: string): Promise<{
       where: { id: userId },
       data: { lockedUntil },
     });
+
+    // Invalidate all active sessions for security
+    await revokeAllUserSessions(
+      userId,
+      undefined,
+      "Account locked due to too many failed login attempts",
+    );
 
     return { locked: true, attemptsRemaining: 0 };
   }

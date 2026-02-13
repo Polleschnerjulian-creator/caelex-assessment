@@ -25,6 +25,7 @@ import {
 import {
   generateNonce,
   buildCspHeader,
+  buildApiCspHeader,
   CSP_NONCE_HEADER,
 } from "@/lib/csp-nonce";
 
@@ -130,25 +131,20 @@ function applySecurityHeaders(
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
   }
 
-  // CSP temporarily disabled - Next.js framework scripts don't support nonces yet
-  // TODO: Re-enable once Next.js adds native CSP nonce support
-  // See: https://github.com/vercel/next.js/discussions/54152
-  //
-  // if (nonce && !pathname?.startsWith("/api")) {
-  //   const isDev = process.env.NODE_ENV === "development";
-  //   response.headers.set(
-  //     "Content-Security-Policy",
-  //     buildCspHeader(nonce, isDev),
-  //   );
-  //   response.headers.set(CSP_NONCE_HEADER, nonce);
-  // }
-
-  // Basic CSP for API routes only
+  // Apply CSP based on route type
   if (pathname?.startsWith("/api")) {
+    // Strict CSP for API routes (no scripts needed)
+    response.headers.set("Content-Security-Policy", buildApiCspHeader());
+  } else if (nonce) {
+    // Full CSP for page routes
+    // Note: Uses 'unsafe-inline' for scripts due to Next.js limitation
+    // Still provides protection against external script injection
+    const isDev = process.env.NODE_ENV === "development";
     response.headers.set(
       "Content-Security-Policy",
-      "default-src 'none'; frame-ancestors 'none'",
+      buildCspHeader(nonce, isDev),
     );
+    response.headers.set(CSP_NONCE_HEADER, nonce);
   }
 
   return response;

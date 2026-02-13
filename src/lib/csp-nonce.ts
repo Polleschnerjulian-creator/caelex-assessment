@@ -47,16 +47,24 @@ export const SCRIPT_HASHES = {
 } as const;
 
 /**
- * Build CSP header value with nonce and hashes.
+ * Build CSP header value.
+ *
+ * Note: Next.js framework scripts don't support nonces yet (as of Next.js 15).
+ * We use 'unsafe-inline' for scripts but still get significant protection:
+ * - Blocks external script injection (main XSS vector)
+ * - Restricts connections to trusted domains
+ * - Prevents clickjacking via frame-ancestors
+ * - Blocks object/embed elements
+ *
+ * When Next.js adds native CSP nonce support, switch to nonce-based approach.
+ * See: https://github.com/vercel/next.js/discussions/54152
  */
 export function buildCspHeader(nonce: string, isDev = false): string {
   const scriptSrcParts = [
     "'self'",
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'", // Allows scripts loaded by trusted scripts
-    // Script hashes for static inline scripts
-    `'${SCRIPT_HASHES.themeScript}'`,
-    // External trusted sources
+    // Unfortunately needed for Next.js framework scripts
+    "'unsafe-inline'",
+    // External trusted sources only
     "https://accounts.google.com",
     "https://apis.google.com",
     "https://*.sentry.io",
@@ -72,7 +80,7 @@ export function buildCspHeader(nonce: string, isDev = false): string {
   const directives = [
     // Default: only allow same origin
     "default-src 'self'",
-    // Scripts: nonce-based with strict-dynamic
+    // Scripts: self + unsafe-inline (Next.js requirement) + trusted external sources
     `script-src ${scriptSrcParts.join(" ")}`,
     // Styles: self, inline (needed for CSS-in-JS like Tailwind), Google Fonts
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -80,19 +88,19 @@ export function buildCspHeader(nonce: string, isDev = false): string {
     "font-src 'self' https://fonts.gstatic.com data:",
     // Images: self, data URIs, HTTPS, blob (for file previews)
     "img-src 'self' data: https: blob:",
-    // Connections: self, auth providers, database, analytics, Sentry, Stripe
+    // Connections: explicitly whitelisted domains only
     "connect-src 'self' blob: https://accounts.google.com https://*.neon.tech wss://*.neon.tech https://*.upstash.io https://*.sentry.io https://*.ingest.sentry.io https://api.stripe.com https://vitals.vercel-insights.com",
     // Frames: Google OAuth popup, Stripe
     "frame-src 'self' https://accounts.google.com https://js.stripe.com https://hooks.stripe.com",
     // Form submissions: only to self
     "form-action 'self'",
-    // Base URI: only self
+    // Base URI: only self (prevents base tag hijacking)
     "base-uri 'self'",
-    // Prevent embedding in frames
+    // Prevent embedding in frames (clickjacking protection)
     "frame-ancestors 'none'",
     // Upgrade HTTP to HTTPS
     "upgrade-insecure-requests",
-    // Block all object/embed
+    // Block all object/embed (Flash, Java applets)
     "object-src 'none'",
     // Worker scripts
     "worker-src 'self' blob:",
@@ -101,4 +109,12 @@ export function buildCspHeader(nonce: string, isDev = false): string {
   ];
 
   return directives.join("; ");
+}
+
+/**
+ * Build a strict CSP header for API routes.
+ * API routes don't need scripts, so we can be very restrictive.
+ */
+export function buildApiCspHeader(): string {
+  return "default-src 'none'; frame-ancestors 'none'";
 }

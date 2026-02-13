@@ -74,6 +74,10 @@ export function generateGreeting(context: AstraContext): AstraMessage {
 
     case "general":
       return createAstraMessage(getGeneralGreeting());
+
+    default:
+      // Handle module or other context types
+      return createAstraMessage(getGeneralGreeting());
   }
 }
 

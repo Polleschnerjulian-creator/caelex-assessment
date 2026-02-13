@@ -29,6 +29,7 @@ import {
   Eye,
   Minus,
   XCircle,
+  Download,
 } from "lucide-react";
 
 import {
@@ -178,6 +179,7 @@ function InsurancePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [showNewAssessment, setShowNewAssessment] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   // Form state for new assessment
   const [formData, setFormData] = useState({
@@ -334,6 +336,31 @@ function InsurancePageContent() {
       console.error("Error generating report:", error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const downloadPdf = async () => {
+    if (!selectedAssessment) return;
+    setDownloadingPdf(true);
+    try {
+      const res = await fetch("/api/insurance/report/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ assessmentId: selectedAssessment.id }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Insurance-Compliance-Report-${selectedAssessment.id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -1406,7 +1433,7 @@ function InsurancePageContent() {
                   </div>
                 )}
 
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <button
                     onClick={() => setCurrentStep(3)}
                     className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -1414,15 +1441,27 @@ function InsurancePageContent() {
                     <ChevronLeft className="w-5 h-5" />
                     Back
                   </button>
-                  {selectedAssessment && (
-                    <button
-                      onClick={() => deleteAssessment(selectedAssessment.id)}
-                      className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 font-medium transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      Delete Assessment
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {selectedAssessment && report && (
+                      <button
+                        onClick={downloadPdf}
+                        disabled={downloadingPdf}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-[13px] transition-all disabled:opacity-50"
+                      >
+                        <Download className="w-4 h-4" />
+                        {downloadingPdf ? "Generating..." : "Download PDF"}
+                      </button>
+                    )}
+                    {selectedAssessment && (
+                      <button
+                        onClick={() => deleteAssessment(selectedAssessment.id)}
+                        className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 font-medium transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        Delete Assessment
+                      </button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )}

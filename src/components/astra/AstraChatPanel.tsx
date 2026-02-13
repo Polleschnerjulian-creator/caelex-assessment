@@ -2,13 +2,31 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Zap, RotateCcw } from "lucide-react";
+import {
+  X,
+  Send,
+  Zap,
+  RotateCcw,
+  MessageSquare,
+  AlertCircle,
+} from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMessageBubble from "./AstraMessageBubble";
 
 export default function AstraChatPanel() {
-  const { isOpen, messages, context, isTyping, close, sendMessage, resetChat } =
-    useAstra();
+  const {
+    isOpen,
+    messages,
+    context,
+    isTyping,
+    remainingQueries,
+    error,
+    conversationId,
+    close,
+    sendMessage,
+    resetChat,
+    clearError,
+  } = useAstra();
 
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,12 +72,35 @@ export default function AstraChatPanel() {
   const hasUserMessages = messages.some((m) => m.role === "user");
 
   // Mode label
-  const modeLabel =
-    context?.mode === "article"
-      ? context.articleRef
-      : context?.mode === "category"
-        ? context.categoryLabel
-        : "General";
+  const getModeLabel = () => {
+    if (!context) return "General";
+    switch (context.mode) {
+      case "article":
+        return (context as { articleRef: string }).articleRef;
+      case "category":
+        return (context as { categoryLabel: string }).categoryLabel;
+      case "module":
+        return (context as { moduleName: string }).moduleName;
+      default:
+        return "General";
+    }
+  };
+
+  // Status indicator
+  const getStatusBadge = () => {
+    if (conversationId) {
+      return (
+        <span className="text-[9px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 font-medium">
+          Connected
+        </span>
+      );
+    }
+    return (
+      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium uppercase tracking-wider">
+        Ready
+      </span>
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -99,21 +140,28 @@ export default function AstraChatPanel() {
                     <span className="text-[13px] font-medium text-white">
                       ASTRA
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium uppercase tracking-wider">
-                      Framework
-                    </span>
+                    {getStatusBadge()}
                   </div>
-                  <p className="text-[10px] text-white/30">{modeLabel}</p>
+                  <p className="text-[10px] text-white/30">{getModeLabel()}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-1">
+                {/* Conversation indicator */}
+                {conversationId && (
+                  <div
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.02] text-white/30"
+                    title={`Conversation: ${conversationId.slice(0, 8)}...`}
+                  >
+                    <MessageSquare size={12} />
+                  </div>
+                )}
                 {/* New Chat button */}
                 {hasUserMessages && (
                   <button
                     onClick={resetChat}
                     className="p-2 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
-                    title="Neuen Chat starten"
+                    title="Start new chat"
                   >
                     <RotateCcw size={14} />
                   </button>
@@ -127,6 +175,31 @@ export default function AstraChatPanel() {
                 </button>
               </div>
             </div>
+
+            {/* Error Banner */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle size={14} className="text-red-400" />
+                      <span className="text-[11px] text-red-400">{error}</span>
+                    </div>
+                    <button
+                      onClick={clearError}
+                      className="p-1 rounded hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 custom-scrollbar">
@@ -171,7 +244,7 @@ export default function AstraChatPanel() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Nachricht eingeben..."
+                  placeholder="Ask about regulations..."
                   disabled={isTyping}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3.5 py-2.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-500/20 disabled:opacity-50 transition-all"
                 />
@@ -183,9 +256,14 @@ export default function AstraChatPanel() {
                   <Send size={14} />
                 </button>
               </div>
-              <p className="text-[9px] text-white/15 mt-1.5 text-center">
-                ASTRA Framework-Modus · Phase 1
-              </p>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-[9px] text-white/15">ASTRA AI Copilot</p>
+                {remainingQueries !== null && (
+                  <p className="text-[9px] text-white/30">
+                    {remainingQueries} queries remaining
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
         </>

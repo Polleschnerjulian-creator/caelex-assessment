@@ -40,6 +40,10 @@ export interface ValidateApiKeyResult {
   valid: boolean;
   apiKey?: ApiKey;
   error?: string;
+  /** True if authenticated with the previous key during grace period */
+  usingPreviousKey?: boolean;
+  /** When the previous key will stop working (if usingPreviousKey is true) */
+  graceEndsAt?: Date;
 }
 
 export interface ApiKeyUsageStats {
@@ -55,6 +59,7 @@ export interface ApiKeyUsageStats {
 
 const API_KEY_PREFIX = "caelex_";
 const API_KEY_LENGTH = 32; // Characters after prefix
+const ROTATION_GRACE_PERIOD_HOURS = 48; // Grace period for key rotation
 
 // Available API scopes
 export const API_SCOPES = {
@@ -147,7 +152,8 @@ function hashApiKey(key: string): string {
 // ─── Key Validation ───
 
 /**
- * Validate an API key and return the key record if valid
+ * Validate an API key and return the key record if valid.
+ * Supports key rotation: during the grace period (48h), both the new and previous keys are valid.
  */
 export async function validateApiKey(
   plainTextKey: string,
@@ -157,10 +163,10 @@ export async function validateApiKey(
     return { valid: false, error: "Invalid key format" };
   }
 
-  // Hash and lookup
+  // Hash and lookup by current key
   const keyHash = hashApiKey(plainTextKey);
 
-  const apiKey = await prisma.apiKey.findUnique({
+  let apiKey = await prisma.apiKey.findUnique({
     where: { keyHash },
     include: {
       organization: {
@@ -168,6 +174,30 @@ export async function validateApiKey(
       },
     },
   });
+
+  let usingPreviousKey = false;
+
+  // If not found by current hash, check if it matches a previous key during grace period
+  if (!apiKey) {
+    // Find key where previousKeyHash matches and grace period hasn't ended
+    const keyByPreviousHash = await prisma.apiKey.findFirst({
+      where: {
+        previousKeyHash: keyHash,
+        graceEndsAt: { gt: new Date() },
+        isActive: true,
+      },
+      include: {
+        organization: {
+          select: { id: true, name: true, isActive: true },
+        },
+      },
+    });
+
+    if (keyByPreviousHash) {
+      apiKey = keyByPreviousHash;
+      usingPreviousKey = true;
+    }
+  }
 
   if (!apiKey) {
     return { valid: false, error: "Invalid API key" };
@@ -193,6 +223,16 @@ export async function validateApiKey(
     where: { id: apiKey.id },
     data: { lastUsedAt: new Date() },
   });
+
+  // Return result with deprecation warning if using previous key
+  if (usingPreviousKey && apiKey.graceEndsAt) {
+    return {
+      valid: true,
+      apiKey,
+      usingPreviousKey: true,
+      graceEndsAt: apiKey.graceEndsAt,
+    };
+  }
 
   return { valid: true, apiKey };
 }
@@ -307,6 +347,7 @@ export async function revokeApiKey(
 
 /**
  * Regenerate an API key (revoke old, create new with same settings)
+ * @deprecated Use rotateApiKey() instead for a graceful 48h transition period
  */
 export async function regenerateApiKey(
   keyId: string,
@@ -334,6 +375,113 @@ export async function regenerateApiKey(
     expiresAt: existingKey.expiresAt || undefined,
     createdById: regeneratedById,
   });
+}
+
+/**
+ * Rotate an API key with a 48-hour grace period.
+ * The old key continues to work during the grace period, allowing time for migration.
+ *
+ * @param keyId - The ID of the key to rotate
+ * @param organizationId - The organization that owns the key
+ * @param rotatedById - The user performing the rotation
+ * @returns The updated key and the new plaintext key
+ */
+export async function rotateApiKey(
+  keyId: string,
+  organizationId: string,
+  rotatedById: string,
+): Promise<{ apiKey: ApiKey; plainTextKey: string; graceEndsAt: Date }> {
+  // Get existing key
+  const existingKey = await prisma.apiKey.findFirst({
+    where: { id: keyId, organizationId, isActive: true },
+  });
+
+  if (!existingKey) {
+    throw new Error("API key not found or already revoked");
+  }
+
+  // Generate new key
+  const randomBytes = crypto.randomBytes(API_KEY_LENGTH);
+  const keyBody = randomBytes.toString("base64url").slice(0, API_KEY_LENGTH);
+  const plainTextKey = `${API_KEY_PREFIX}${keyBody}`;
+  const newKeyHash = hashApiKey(plainTextKey);
+  const newKeyPrefix = plainTextKey.slice(0, 12);
+
+  // Calculate grace period end (48 hours from now)
+  const graceEndsAt = new Date();
+  graceEndsAt.setHours(graceEndsAt.getHours() + ROTATION_GRACE_PERIOD_HOURS);
+
+  // Update the key: move current hash to previous, set new hash
+  const apiKey = await prisma.apiKey.update({
+    where: { id: keyId },
+    data: {
+      previousKeyHash: existingKey.keyHash,
+      keyHash: newKeyHash,
+      keyPrefix: newKeyPrefix,
+      rotatedAt: new Date(),
+      graceEndsAt,
+    },
+  });
+
+  // Log security event
+  await logSecurityEvent({
+    event: "API_KEY_ROTATED",
+    description: `API key "${existingKey.name}" rotated with 48h grace period`,
+    userId: rotatedById,
+    organizationId,
+    targetType: "api_key",
+    targetId: keyId,
+    metadata: {
+      graceEndsAt: graceEndsAt.toISOString(),
+      previousKeyPrefix: existingKey.keyPrefix,
+      newKeyPrefix,
+    },
+  });
+
+  return { apiKey, plainTextKey, graceEndsAt };
+}
+
+/**
+ * Complete a key rotation early by clearing the previous key.
+ * Use this after confirming all systems have migrated to the new key.
+ */
+export async function completeKeyRotation(
+  keyId: string,
+  organizationId: string,
+  completedById: string,
+): Promise<ApiKey> {
+  const existingKey = await prisma.apiKey.findFirst({
+    where: { id: keyId, organizationId, isActive: true },
+  });
+
+  if (!existingKey) {
+    throw new Error("API key not found or already revoked");
+  }
+
+  if (!existingKey.previousKeyHash) {
+    throw new Error("No active rotation to complete");
+  }
+
+  const apiKey = await prisma.apiKey.update({
+    where: { id: keyId },
+    data: {
+      previousKeyHash: null,
+      rotatedAt: null,
+      graceEndsAt: null,
+    },
+  });
+
+  // Log security event
+  await logSecurityEvent({
+    event: "API_KEY_ROTATION_COMPLETED",
+    description: `API key "${existingKey.name}" rotation completed early`,
+    userId: completedById,
+    organizationId,
+    targetType: "api_key",
+    targetId: keyId,
+  });
+
+  return apiKey;
 }
 
 /**
@@ -521,4 +669,59 @@ export async function expireOldApiKeys(): Promise<number> {
   });
 
   return result.count;
+}
+
+/**
+ * Clear expired grace periods.
+ * Removes previousKeyHash for keys where graceEndsAt has passed.
+ */
+export async function clearExpiredGracePeriods(): Promise<number> {
+  const result = await prisma.apiKey.updateMany({
+    where: {
+      previousKeyHash: { not: null },
+      graceEndsAt: { lt: new Date() },
+    },
+    data: {
+      previousKeyHash: null,
+      rotatedAt: null,
+      graceEndsAt: null,
+    },
+  });
+
+  return result.count;
+}
+
+/**
+ * Check if an API key is currently in rotation (has an active grace period)
+ */
+export async function isKeyInRotation(
+  keyId: string,
+  organizationId: string,
+): Promise<{
+  inRotation: boolean;
+  graceEndsAt?: Date;
+  hoursRemaining?: number;
+}> {
+  const key = await prisma.apiKey.findFirst({
+    where: { id: keyId, organizationId },
+    select: { previousKeyHash: true, graceEndsAt: true },
+  });
+
+  if (!key || !key.previousKeyHash || !key.graceEndsAt) {
+    return { inRotation: false };
+  }
+
+  if (key.graceEndsAt < new Date()) {
+    return { inRotation: false };
+  }
+
+  const hoursRemaining = Math.ceil(
+    (key.graceEndsAt.getTime() - Date.now()) / (1000 * 60 * 60),
+  );
+
+  return {
+    inRotation: true,
+    graceEndsAt: key.graceEndsAt,
+    hoursRemaining,
+  };
 }

@@ -56,6 +56,7 @@ model User {
   usRegulatoryAssessments UsRegulatoryAssessment[] // US Space Regulatory assessments
   exportControlAssessments ExportControlAssessment[] // ITAR/EAR Export Control assessments
   spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
+  astraConversations     AstraConversation[]     // ASTRA AI conversations
 
   // Security: MFA & Passkeys
   mfaConfig              MfaConfig?
@@ -2262,6 +2263,7 @@ model Organization {
   comments          Comment[]               // Collaboration: organization's comments
   activities        Activity[]              // Collaboration: organization's activities
   complianceEvidence ComplianceEvidence[]   // Audit Center: org-scoped compliance evidence
+  astraConversations AstraConversation[]    // ASTRA AI conversations
 
   @@index([slug])
 }
@@ -2912,6 +2914,8 @@ enum SecurityAuditEventType {
   API_KEY_USED
   API_KEY_REVOKED
   API_KEY_EXPIRED
+  API_KEY_ROTATED
+  API_KEY_ROTATION_COMPLETED
 
   // Account
   ACCOUNT_CREATED
@@ -3067,6 +3071,11 @@ model ApiKey {
   lastUsedAt     DateTime?
   expiresAt      DateTime?
 
+  // Key Rotation (48h grace period)
+  previousKeyHash String?  // Hash of the previous key (valid during grace period)
+  rotatedAt       DateTime? // When the key was rotated
+  graceEndsAt     DateTime? // When the previous key stops working
+
   // Metadata
   createdById    String
   createdBy      User     @relation(fields: [createdById], references: [id])
@@ -3080,6 +3089,7 @@ model ApiKey {
   @@index([keyHash])
   @@index([organizationId])
   @@index([keyPrefix])
+  @@index([previousKeyHash])
 }
 
 model ApiRequest {
@@ -3338,4 +3348,48 @@ model ComplianceEvidenceDocument {
   @@unique([evidenceId, documentId])
   @@index([evidenceId])
   @@index([documentId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ASTRA AI Compliance Copilot
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model AstraConversation {
+  id              String         @id @default(cuid())
+  userId          String
+  organizationId  String
+  mode            String         @default("general")  // general, assessment, document, analysis
+  summary         String?        @db.Text  // Summarized older messages for context compression
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  messages        AstraMessage[]
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@index([userId, organizationId])
+}
+
+model AstraMessage {
+  id              String            @id @default(cuid())
+  conversationId  String
+  role            String            // "user" | "assistant" | "system"
+  content         String            @db.Text
+  toolCalls       Json?             // Tool calls made (JSON array of AstraToolCall)
+  toolResults     Json?             // Tool results received (JSON array of AstraToolResult)
+  sources         Json?             // Regulatory sources cited (JSON array of AstraSource)
+  confidence      String?           // "HIGH" | "MEDIUM" | "LOW"
+  tokensUsed      Int?              // For cost tracking
+  createdAt       DateTime          @default(now())
+
+  // Relations
+  conversation    AstraConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([conversationId, createdAt])
 }

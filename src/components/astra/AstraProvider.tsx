@@ -14,8 +14,12 @@ import type {
   AstraArticleContext,
   AstraCategoryContext,
   AstraMissionData,
+  AstraChatResponse,
+  AstraResponse,
+  ConfidenceLevel,
 } from "@/lib/astra/types";
-import { MockAstraEngine } from "@/lib/astra/engine";
+
+// ─── Context Type ───
 
 interface AstraContextType {
   isOpen: boolean;
@@ -23,6 +27,9 @@ interface AstraContextType {
   context: AstraContext | null;
   missionData: AstraMissionData;
   isTyping: boolean;
+  conversationId: string | null;
+  remainingQueries: number | null;
+  error: string | null;
   openWithArticle: (
     articleId: string,
     articleRef: string,
@@ -46,9 +53,60 @@ interface AstraContextType {
   sendMessage: (text: string) => void;
   resetChat: () => void;
   updateMissionData: (data: Partial<AstraMissionData>) => void;
+  clearError: () => void;
 }
 
 const AstraCtx = createContext<AstraContextType | null>(null);
+
+// ─── Helper: Convert API Response to Legacy Message Format ───
+
+function responseToMessage(
+  response: AstraResponse,
+  conversationId: string,
+): AstraMessage {
+  return {
+    id: `${conversationId}-${Date.now()}`,
+    role: "astra",
+    type: "text",
+    content: response.message,
+    timestamp: new Date(),
+    metadata: {
+      sources: response.sources,
+      actions: response.actions,
+      confidence: response.confidence,
+      complianceImpact: response.complianceImpact,
+    },
+  };
+}
+
+// ─── Helper: Create Local Greeting ───
+
+function createLocalGreeting(ctx: AstraContext): AstraMessage {
+  let content: string;
+
+  if (ctx.mode === "article") {
+    const articleCtx = ctx as AstraArticleContext;
+    content = `I'm here to help you understand **${articleCtx.articleRef}** - ${articleCtx.title}. What would you like to know about this regulation?`;
+  } else if (ctx.mode === "category") {
+    const catCtx = ctx as AstraCategoryContext;
+    content = `Let me help you navigate **${catCtx.categoryLabel}** which covers ${catCtx.articles.length} articles. What specific aspect interests you?`;
+  } else {
+    content = `Hello! I'm **ASTRA**, your AI compliance copilot for space regulations. I can help you with:\n\n• EU Space Act requirements (119 articles)\n• NIS2 cybersecurity obligations\n• National space laws (10 jurisdictions)\n• Your Caelex compliance status\n\nWhat would you like to know?`;
+  }
+
+  return {
+    id: `greeting-${Date.now()}`,
+    role: "astra",
+    type: "text",
+    content,
+    timestamp: new Date(),
+    metadata: {
+      confidence: "HIGH" as ConfidenceLevel,
+    },
+  };
+}
+
+// ─── Provider Component ───
 
 export function AstraProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,7 +114,16 @@ export function AstraProvider({ children }: { children: ReactNode }) {
   const [context, setContext] = useState<AstraContext | null>(null);
   const [missionData, setMissionData] = useState<AstraMissionData>({});
   const [isTyping, setIsTyping] = useState(false);
-  const engineRef = useRef(new MockAstraEngine());
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [remainingQueries, setRemainingQueries] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Track abort controller for cancellation
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const openWithArticle = useCallback(
     (
@@ -70,7 +137,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       if (
         context &&
         context.mode === "article" &&
-        context.articleId === articleId
+        (context as AstraArticleContext).articleId === articleId
       ) {
         setIsOpen(true);
         return;
@@ -86,9 +153,10 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         regulationType,
       };
       setContext(ctx);
-      const greeting = engineRef.current.getGreeting(ctx);
-      setMessages([greeting]);
+      setMessages([createLocalGreeting(ctx)]);
       setMissionData({});
+      setConversationId(null);
+      setError(null);
       setIsOpen(true);
     },
     [context],
@@ -114,9 +182,10 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         regulationType,
       };
       setContext(ctx);
-      const greeting = engineRef.current.getGreeting(ctx);
-      setMessages([greeting]);
+      setMessages([createLocalGreeting(ctx)]);
       setMissionData({});
+      setConversationId(null);
+      setError(null);
       setIsOpen(true);
     },
     [],
@@ -131,30 +200,43 @@ export function AstraProvider({ children }: { children: ReactNode }) {
 
     const ctx: AstraContext = { mode: "general" };
     setContext(ctx);
-    const greeting = engineRef.current.getGreeting(ctx);
-    setMessages([greeting]);
+    setMessages([createLocalGreeting(ctx)]);
     setMissionData({});
+    setConversationId(null);
+    setError(null);
     setIsOpen(true);
   }, [messages.length]);
 
   const close = useCallback(() => {
     setIsOpen(false);
-    // History is preserved — user can re-open to continue
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
   }, []);
 
   const resetChat = useCallback(() => {
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
     const ctx: AstraContext = { mode: "general" };
     setContext(ctx);
-    const greeting = engineRef.current.getGreeting(ctx);
-    setMessages([greeting]);
+    setMessages([createLocalGreeting(ctx)]);
     setMissionData({});
+    setConversationId(null);
     setIsTyping(false);
+    setError(null);
   }, []);
 
   const sendMessage = useCallback(
     async (text: string) => {
       if (!context || !text.trim() || isTyping) return;
 
+      // Add user message immediately
       const userMsg: AstraMessage = {
         id: crypto.randomUUID(),
         role: "user",
@@ -164,19 +246,108 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       };
       setMessages((prev) => [...prev, userMsg]);
       setIsTyping(true);
+      setError(null);
+
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
 
       try {
-        const responses = await engineRef.current.processMessage(
-          text.trim(),
-          context,
-          missionData,
+        // Build request payload
+        const payload = {
+          message: text.trim(),
+          conversationId: conversationId || undefined,
+          context: {
+            articleId:
+              context.mode === "article"
+                ? (context as AstraArticleContext).articleId
+                : undefined,
+            moduleId:
+              context.mode === "module"
+                ? (context as { mode: "module"; moduleId: string }).moduleId
+                : undefined,
+            mode: context.mode === "general" ? undefined : context.mode,
+          },
+          missionData:
+            Object.keys(missionData).length > 0 ? missionData : undefined,
+        };
+
+        const response = await fetch("/api/astra/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          signal: abortControllerRef.current.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+
+          if (response.status === 429) {
+            throw new Error(
+              errorData.message ||
+                "Rate limit exceeded. Please try again later.",
+            );
+          } else if (response.status === 401) {
+            throw new Error("Please log in to use ASTRA.");
+          } else if (response.status === 403) {
+            throw new Error(
+              errorData.message ||
+                "You need an active organization to use ASTRA.",
+            );
+          } else {
+            throw new Error(
+              errorData.message || "An error occurred. Please try again.",
+            );
+          }
+        }
+
+        const data: AstraChatResponse = await response.json();
+
+        // Update conversation ID if this is a new conversation
+        if (data.conversationId && !conversationId) {
+          setConversationId(data.conversationId);
+        }
+
+        // Update remaining queries
+        if (data.remainingQueries !== undefined) {
+          setRemainingQueries(data.remainingQueries);
+        }
+
+        // Add assistant message
+        const assistantMsg = responseToMessage(
+          data.response,
+          data.conversationId,
         );
-        setMessages((prev) => [...prev, ...responses]);
+        setMessages((prev) => [...prev, assistantMsg]);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          // Request was cancelled, don't show error
+          return;
+        }
+
+        const errorMessage =
+          err instanceof Error ? err.message : "An unexpected error occurred.";
+        setError(errorMessage);
+
+        // Add error message to chat
+        const errorMsg: AstraMessage = {
+          id: crypto.randomUUID(),
+          role: "astra",
+          type: "text",
+          content: `I encountered an issue: ${errorMessage}`,
+          timestamp: new Date(),
+          metadata: {
+            confidence: "HIGH" as ConfidenceLevel,
+          },
+        };
+        setMessages((prev) => [...prev, errorMsg]);
       } finally {
         setIsTyping(false);
+        abortControllerRef.current = null;
       }
     },
-    [context, missionData, isTyping],
+    [context, missionData, isTyping, conversationId],
   );
 
   const updateMissionData = useCallback((data: Partial<AstraMissionData>) => {
@@ -191,6 +362,9 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         context,
         missionData,
         isTyping,
+        conversationId,
+        remainingQueries,
+        error,
         openWithArticle,
         openWithCategory,
         openGeneral,
@@ -198,6 +372,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         sendMessage,
         resetChat,
         updateMissionData,
+        clearError,
       }}
     >
       {children}
