@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraChatPanel from "@/components/astra/AstraChatPanel";
+import AstraFAB from "@/components/astra/AstraFAB";
 
 export default function DashboardLayout({
   children,
@@ -53,6 +54,9 @@ export default function DashboardLayout({
 
             {/* ASTRA Chat Panel */}
             <AstraChatPanel />
+
+            {/* ASTRA Floating Action Button */}
+            <AstraFAB />
 
             {/* Onboarding overlay for new users */}
             <OnboardingOverlay />
