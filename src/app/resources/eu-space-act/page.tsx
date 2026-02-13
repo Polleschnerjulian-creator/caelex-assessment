@@ -1,15 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import Logo from "@/components/ui/Logo";
-import {
-  ArrowLeft,
-  ExternalLink,
-  AlertTriangle,
-  Check,
-  ChevronRight,
-} from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { ExternalLink, AlertTriangle, Check, ChevronRight } from "lucide-react";
 
 const keyStats = [
   { value: "119", label: "Articles" },
@@ -127,46 +121,28 @@ const chapters = [
 ];
 
 export default function EUSpaceActPage() {
-  return (
-    <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/resources"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Resources</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  return (
+    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
       {/* Hero */}
-      <section className="pt-32 pb-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
             <Link
               href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-white/60 transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
             >
               <span>Resources</span>
               <ChevronRight size={12} />
               <span>EU Space Act</span>
             </Link>
-            <h1 className="text-[clamp(2rem,4vw,3rem)] font-light tracking-[-0.02em] mb-6">
+            <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               EU Space Act Overview
             </h1>
             <p className="text-[17px] text-white/50 leading-relaxed mb-8">
@@ -180,7 +156,7 @@ export default function EUSpaceActPage() {
               href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[14px] text-white/70 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-[14px] text-emerald-400/70 hover:text-emerald-400 transition-colors"
             >
               <span>Read the full legal text</span>
               <ExternalLink size={14} />
@@ -190,18 +166,24 @@ export default function EUSpaceActPage() {
       </section>
 
       {/* Key Stats */}
-      <section className="py-12 px-6 md:px-12 border-b border-white/[0.06] bg-white/[0.01]">
+      <section className="py-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            style={{
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+            }}
+          >
             {keyStats.map((stat, index) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="text-[36px] font-light text-white mb-1">
+                <div className="text-[36px] font-medium text-white mb-1">
                   {stat.value}
                 </div>
                 <div className="text-[12px] text-white/40 uppercase tracking-wider">
@@ -214,13 +196,21 @@ export default function EUSpaceActPage() {
       </section>
 
       {/* Why It Matters */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
             Why It Matters
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="p-6 rounded-xl bg-amber-500/[0.08] border border-amber-500/20"
+              style={{
+                boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+              }}
+            >
               <div className="flex items-center gap-3 mb-4">
                 <AlertTriangle className="text-amber-400" size={20} />
                 <h3 className="text-[16px] font-medium text-amber-400">
@@ -236,8 +226,16 @@ export default function EUSpaceActPage() {
                 <li>• Limited liability framework for space activities</li>
                 <li>• No mandatory cybersecurity requirements</li>
               </ul>
-            </div>
-            <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="p-6 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20"
+              style={{
+                boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+              }}
+            >
               <div className="flex items-center gap-3 mb-4">
                 <Check className="text-emerald-400" size={20} />
                 <h3 className="text-[16px] font-medium text-emerald-400">
@@ -251,13 +249,13 @@ export default function EUSpaceActPage() {
                 <li>• Clear liability rules and insurance minimums</li>
                 <li>• Mandatory cybersecurity and incident reporting</li>
               </ul>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Scope */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-3">
             Who Is Affected?
@@ -271,9 +269,13 @@ export default function EUSpaceActPage() {
               <motion.div
                 key={item.title}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
-                className="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/[0.06] rounded-lg"
+                className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                style={{
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
               >
                 <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Check size={14} className="text-emerald-400" />
@@ -293,7 +295,7 @@ export default function EUSpaceActPage() {
       </section>
 
       {/* Structure */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-3">
             Structure of the Regulation
@@ -307,11 +309,15 @@ export default function EUSpaceActPage() {
               <motion.div
                 key={chapter.number}
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.1 + index * 0.03 }}
-                className="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/[0.06] rounded-lg hover:bg-white/[0.03] transition-colors"
+                className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                style={{
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
               >
-                <div className="w-10 h-10 rounded-lg bg-white/[0.05] flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                   <span className="text-[14px] font-mono text-white/60">
                     {chapter.number}
                   </span>
@@ -321,7 +327,7 @@ export default function EUSpaceActPage() {
                     <h3 className="text-[15px] font-medium text-white">
                       {chapter.title}
                     </h3>
-                    <span className="text-[10px] font-mono text-white/30 bg-white/[0.05] px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded">
                       Art. {chapter.articles}
                     </span>
                   </div>
@@ -336,12 +342,18 @@ export default function EUSpaceActPage() {
       </section>
 
       {/* Key Obligations */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
             Key Obligations Summary
           </h2>
-          <div className="prose prose-invert max-w-none">
+          <div
+            className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            style={{
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+            }}
+          >
             <div className="space-y-8 text-[15px] text-white/70 leading-relaxed">
               <div>
                 <h3 className="text-[17px] font-medium text-white mb-3">
@@ -421,18 +433,23 @@ export default function EUSpaceActPage() {
       </section>
 
       {/* Penalties */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
             Enforcement & Penalties
           </h2>
-          <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-xl">
+          <div
+            className="p-6 rounded-xl bg-red-500/[0.08] border border-red-500/20"
+            style={{
+              boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+            }}
+          >
             <p className="text-[15px] text-white/70 leading-relaxed mb-6">
               Non-compliance can result in significant penalties, including:
             </p>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
-                <div className="text-[24px] font-light text-red-400 mb-2">
+                <div className="text-[24px] font-medium text-red-400 mb-2">
                   Up to 2%
                 </div>
                 <p className="text-[13px] text-white/50">
@@ -440,7 +457,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <div className="text-[24px] font-light text-red-400 mb-2">
+                <div className="text-[24px] font-medium text-red-400 mb-2">
                   €10M+
                 </div>
                 <p className="text-[13px] text-white/50">
@@ -448,7 +465,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <div className="text-[24px] font-light text-red-400 mb-2">
+                <div className="text-[24px] font-medium text-red-400 mb-2">
                   Revocation
                 </div>
                 <p className="text-[13px] text-white/50">
@@ -463,7 +480,7 @@ export default function EUSpaceActPage() {
       {/* CTA */}
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light mb-4">
+          <h2 className="text-[24px] font-medium mb-4">
             Understand your obligations
           </h2>
           <p className="text-[15px] text-white/50 mb-8">
@@ -473,14 +490,13 @@ export default function EUSpaceActPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
             >
               Start Assessment
-              <span>→</span>
             </Link>
             <Link
               href="/resources/timeline"
-              className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-emerald-400 transition-colors"
             >
               View Timeline
               <ChevronRight size={16} />

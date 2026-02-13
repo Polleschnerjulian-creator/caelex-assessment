@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import Logo from "@/components/ui/Logo";
-import { ArrowLeft, ChevronRight, Search, BookMarked } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { ChevronRight, Search, BookMarked } from "lucide-react";
 
 const glossaryTerms = [
   {
@@ -179,6 +178,8 @@ const glossaryTerms = [
 
 export default function GlossaryPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const filteredTerms = glossaryTerms.filter(
     (item) =>
@@ -201,47 +202,28 @@ export default function GlossaryPage() {
   );
 
   return (
-    <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/resources"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Resources</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
       {/* Hero */}
-      <section className="pt-32 pb-8 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-8 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
             <Link
               href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-white/60 transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
             >
               <span>Resources</span>
               <ChevronRight size={12} />
               <span>Glossary</span>
             </Link>
             <div className="flex items-center gap-4 mb-6">
-              <BookMarked size={32} className="text-white/60" />
-              <h1 className="text-[clamp(2rem,4vw,3rem)] font-light tracking-[-0.02em]">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                <BookMarked size={24} className="text-emerald-400" />
+              </div>
+              <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em]">
                 Space Law Glossary
               </h1>
             </div>
@@ -251,7 +233,13 @@ export default function GlossaryPage() {
             </p>
 
             {/* Search */}
-            <div className="relative">
+            <div
+              className="relative rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+              style={{
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              }}
+            >
               <Search
                 size={18}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
@@ -261,7 +249,7 @@ export default function GlossaryPage() {
                 placeholder="Search terms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl pl-12 pr-4 py-3 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-transparent pl-12 pr-4 py-3 text-[15px] text-white placeholder:text-white/30 focus:outline-none"
               />
             </div>
           </motion.div>
@@ -274,7 +262,7 @@ export default function GlossaryPage() {
           {Object.keys(termsByLetter).length === 0 ? (
             <div className="text-center py-16">
               <p className="text-white/40">
-                No terms found matching "{searchTerm}"
+                No terms found matching &quot;{searchTerm}&quot;
               </p>
             </div>
           ) : (
@@ -282,12 +270,12 @@ export default function GlossaryPage() {
               <motion.div
                 key={letter}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4 }}
                 className="mb-12"
               >
                 <div className="sticky top-16 bg-black/90 backdrop-blur-sm py-3 mb-4 z-10">
-                  <span className="text-[24px] font-light text-white/80">
+                  <span className="text-[24px] font-medium text-emerald-400/80">
                     {letter}
                   </span>
                 </div>
@@ -295,7 +283,11 @@ export default function GlossaryPage() {
                   {terms.map((item) => (
                     <div
                       key={item.term}
-                      className="p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl hover:bg-white/[0.03] transition-colors"
+                      className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                      style={{
+                        boxShadow:
+                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                      }}
                     >
                       <h3 className="text-[16px] font-medium text-white mb-2">
                         {item.term}
@@ -311,7 +303,7 @@ export default function GlossaryPage() {
                           {item.related.map((rel) => (
                             <span
                               key={rel}
-                              className="text-[11px] text-white/50 bg-white/[0.05] px-2 py-1 rounded"
+                              className="text-[11px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded"
                             >
                               {rel}
                             </span>
@@ -328,9 +320,9 @@ export default function GlossaryPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 md:px-12 border-t border-white/[0.06]">
+      <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light mb-4">
+          <h2 className="text-[24px] font-medium mb-4">
             Ready to assess your compliance?
           </h2>
           <p className="text-[15px] text-white/50 mb-8">
@@ -339,10 +331,9 @@ export default function GlossaryPage() {
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all duration-300"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Start Assessment
-            <span>→</span>
           </Link>
         </div>
       </section>

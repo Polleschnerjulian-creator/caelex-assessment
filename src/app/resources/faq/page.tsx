@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import Logo from "@/components/ui/Logo";
-import { ArrowLeft, ChevronRight, ChevronDown, HelpCircle } from "lucide-react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { ChevronRight, ChevronDown, HelpCircle } from "lucide-react";
 
 const faqCategories = [
   {
@@ -158,54 +157,36 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function FAQPage() {
-  return (
-    <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/resources"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Resources</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  return (
+    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
       {/* Hero */}
-      <section className="pt-32 pb-12 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-12 px-6 md:px-12">
         <div className="max-w-[800px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
             <Link
               href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-white/60 transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
             >
               <span>Resources</span>
               <ChevronRight size={12} />
               <span>FAQ</span>
             </Link>
-            <h1 className="text-[clamp(2rem,4vw,3rem)] font-light tracking-[-0.02em] mb-6">
+            <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               Frequently Asked Questions
             </h1>
             <p className="text-[17px] text-white/50 leading-relaxed">
               Answers to the most common questions about EU Space Act
-              compliance. Can't find what you're looking for?{" "}
+              compliance. Can&apos;t find what you&apos;re looking for?{" "}
               <Link
                 href="/contact"
-                className="text-white/70 hover:text-white underline"
+                className="text-emerald-400/70 hover:text-emerald-400 transition-colors"
               >
                 Contact us
               </Link>
@@ -222,17 +203,23 @@ export default function FAQPage() {
             <motion.div
               key={category.title}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
               className="mb-12"
             >
               <div className="flex items-center gap-3 mb-4">
-                <HelpCircle size={18} className="text-white/40" />
-                <h2 className="text-[12px] text-white/40 uppercase tracking-wider">
+                <HelpCircle size={18} className="text-emerald-400/60" />
+                <h2 className="text-[12px] text-emerald-400/60 uppercase tracking-wider">
                   {category.title}
                 </h2>
               </div>
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6">
+              <div
+                className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] px-6"
+                style={{
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
+              >
                 {category.faqs.map((faq) => (
                   <FAQItem
                     key={faq.question}
@@ -247,23 +234,24 @@ export default function FAQPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 md:px-12 border-t border-white/[0.06]">
+      <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light mb-4">Still have questions?</h2>
+          <h2 className="text-[24px] font-medium mb-4">
+            Still have questions?
+          </h2>
           <p className="text-[15px] text-white/50 mb-8">
             Our team is here to help you navigate EU Space Act compliance.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
             >
               Contact Us
-              <span>→</span>
             </Link>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-emerald-400 transition-colors"
             >
               Take Assessment
               <ChevronRight size={16} />

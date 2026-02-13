@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import Logo from "@/components/ui/Logo";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 import {
-  ArrowLeft,
   ChevronRight,
   Calendar,
   AlertCircle,
@@ -154,46 +153,28 @@ function getDaysUntil(dateString: string): number {
 }
 
 export default function TimelinePage() {
-  return (
-    <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/resources"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Resources</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  return (
+    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
       {/* Hero */}
-      <section className="pt-32 pb-12 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
             <Link
               href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-white/60 transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
             >
               <span>Resources</span>
               <ChevronRight size={12} />
               <span>Timeline</span>
             </Link>
-            <h1 className="text-[clamp(2rem,4vw,3rem)] font-light tracking-[-0.02em] mb-6">
+            <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               Compliance Timeline
             </h1>
             <p className="text-[17px] text-white/50 leading-relaxed">
@@ -205,7 +186,7 @@ export default function TimelinePage() {
       </section>
 
       {/* Critical Deadlines */}
-      <section className="py-12 px-6 md:px-12 border-b border-white/[0.06] bg-white/[0.01]">
+      <section className="py-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <AlertCircle size={18} className="text-amber-400" />
@@ -220,9 +201,12 @@ export default function TimelinePage() {
                 <motion.div
                   key={deadline.title}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-xl"
+                  className="p-6 rounded-xl bg-amber-500/[0.08] border border-amber-500/20"
+                  style={{
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+                  }}
                 >
                   <div className="flex items-center gap-2 text-[12px] text-amber-400 mb-3">
                     <Calendar size={14} />
@@ -235,7 +219,7 @@ export default function TimelinePage() {
                     {deadline.description}
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[28px] font-light text-amber-400">
+                    <span className="text-[28px] font-medium text-amber-400">
                       {days > 0 ? days : 0}
                     </span>
                     <span className="text-[12px] text-white/40">
@@ -261,14 +245,14 @@ export default function TimelinePage() {
 
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-white/[0.06]" />
+            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-white/[0.08]" />
 
             <div className="space-y-6">
               {timelineEvents.map((event, index) => (
                 <motion.div
                   key={event.title}
                   initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
                   className="relative pl-12"
                 >
@@ -279,7 +263,7 @@ export default function TimelinePage() {
                         ? "bg-emerald-500/20"
                         : event.critical
                           ? "bg-amber-500/20"
-                          : "bg-white/[0.05]"
+                          : "bg-white/[0.06]"
                     }`}
                   >
                     {event.status === "completed" ? (
@@ -293,23 +277,27 @@ export default function TimelinePage() {
 
                   {/* Content */}
                   <div
-                    className={`p-5 rounded-xl border transition-colors ${
+                    className={`p-5 rounded-xl border transition-all duration-300 ${
                       event.critical
-                        ? "bg-amber-500/5 border-amber-500/20"
-                        : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.03]"
+                        ? "bg-amber-500/[0.08] border-amber-500/20"
+                        : "bg-white/[0.03] backdrop-blur-[10px] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
                     }`}
+                    style={{
+                      boxShadow:
+                        "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                    }}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-[12px] font-mono text-white/40">
                         {event.date}
                       </span>
                       {event.critical && (
-                        <span className="text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-medium text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded uppercase tracking-wider">
                           Critical
                         </span>
                       )}
                       {event.status === "completed" && (
-                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wider">
                           Completed
                         </span>
                       )}
@@ -326,7 +314,7 @@ export default function TimelinePage() {
                           key={i}
                           className="flex items-start gap-2 text-[13px] text-white/40"
                         >
-                          <span className="text-white/20 mt-1">•</span>
+                          <span className="text-emerald-400/60 mt-1">•</span>
                           <span>{detail}</span>
                         </li>
                       ))}
@@ -340,10 +328,10 @@ export default function TimelinePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 md:px-12 border-t border-white/[0.06]">
+      <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light mb-4">
-            Don't wait until the deadline
+          <h2 className="text-[24px] font-medium mb-4">
+            Don&apos;t wait until the deadline
           </h2>
           <p className="text-[15px] text-white/50 mb-8">
             Start your compliance journey today. Our assessment helps you
@@ -351,10 +339,9 @@ export default function TimelinePage() {
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all duration-300"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Start Assessment
-            <span>→</span>
           </Link>
         </div>
       </section>

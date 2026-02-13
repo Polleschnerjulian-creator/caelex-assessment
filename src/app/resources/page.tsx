@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import Logo from "@/components/ui/Logo";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 import {
-  ArrowLeft,
   FileText,
   BookOpen,
   Scale,
@@ -122,41 +121,23 @@ const externalResources = [
 ];
 
 export default function ResourcesPage() {
-  return (
-    <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Home</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  return (
+    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
       {/* Hero */}
-      <section className="pt-32 pb-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-16 px-6 md:px-12">
         <div className="max-w-[1100px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <span className="font-mono text-[11px] text-white/40 uppercase tracking-[0.2em] block mb-4">
+            <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
               Resources
             </span>
-            <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-light tracking-[-0.02em] mb-6">
+            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] mb-6">
               EU Space Act Knowledge Base
             </h1>
             <p className="text-[17px] text-white/50 max-w-[600px] leading-relaxed">
@@ -169,7 +150,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Featured Resources */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[1100px] mx-auto">
           <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
             Start Here
@@ -181,17 +162,23 @@ export default function ResourcesPage() {
                 <motion.div
                   key={resource.title}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Link href={resource.href} className="group block h-full">
-                    <div className="h-full p-6 bg-white/[0.02] border border-white/[0.08] rounded-2xl hover:bg-white/[0.04] hover:border-white/[0.15] transition-all duration-300">
+                    <div
+                      className="h-full p-6 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                      style={{
+                        boxShadow:
+                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                      }}
+                    >
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/[0.05] flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center">
                           <Icon size={24} className="text-white/60" />
                         </div>
                         {resource.tag && (
-                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
+                          <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-2 py-1 rounded uppercase tracking-wider">
                             {resource.tag}
                           </span>
                         )}
@@ -202,7 +189,7 @@ export default function ResourcesPage() {
                       <p className="text-[14px] text-white/40 leading-relaxed">
                         {resource.description}
                       </p>
-                      <div className="flex items-center gap-1 mt-4 text-[13px] text-white/30 group-hover:text-white/50 transition-colors">
+                      <div className="flex items-center gap-1 mt-4 text-[13px] text-white/30 group-hover:text-emerald-400/70 transition-colors">
                         <span>Read more</span>
                         <ChevronRight
                           size={14}
@@ -219,7 +206,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Compliance Guides */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[1100px] mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <BookOpen size={20} className="text-white/40" />
@@ -234,12 +221,18 @@ export default function ResourcesPage() {
                 <motion.div
                   key={guide.title}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.2 + index * 0.05 }}
                 >
                   <Link href={guide.href} className="group block">
-                    <div className="flex items-start gap-4 p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-300">
-                      <div className="w-10 h-10 rounded-lg bg-white/[0.05] flex items-center justify-center flex-shrink-0">
+                    <div
+                      className="flex items-start gap-4 p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                      style={{
+                        boxShadow:
+                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                         <Icon size={20} className="text-white/50" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -247,7 +240,7 @@ export default function ResourcesPage() {
                           <h3 className="text-[15px] font-medium text-white group-hover:text-white/90">
                             {guide.title}
                           </h3>
-                          <span className="text-[10px] font-mono text-white/30 bg-white/[0.05] px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-mono text-white/30 bg-white/[0.06] px-2 py-0.5 rounded">
                             {guide.articles}
                           </span>
                         </div>
@@ -257,7 +250,7 @@ export default function ResourcesPage() {
                       </div>
                       <ChevronRight
                         size={18}
-                        className="text-white/20 group-hover:text-white/40 group-hover:translate-x-1 transition-all flex-shrink-0 mt-2"
+                        className="text-white/20 group-hover:text-emerald-400/70 group-hover:translate-x-1 transition-all flex-shrink-0 mt-2"
                       />
                     </div>
                   </Link>
@@ -269,13 +262,19 @@ export default function ResourcesPage() {
       </section>
 
       {/* Glossary Teaser */}
-      <section className="py-16 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12">
         <div className="max-w-[1100px] mx-auto">
           <Link href="/resources/glossary" className="group block">
-            <div className="p-8 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/[0.08] rounded-2xl hover:border-white/[0.15] transition-all duration-300">
+            <div
+              className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+              style={{
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-white/[0.05] flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-xl bg-white/[0.06] flex items-center justify-center">
                     <BookMarked size={28} className="text-white/50" />
                   </div>
                   <div>
@@ -290,7 +289,7 @@ export default function ResourcesPage() {
                 </div>
                 <ChevronRight
                   size={24}
-                  className="text-white/20 group-hover:text-white/40 group-hover:translate-x-2 transition-all"
+                  className="text-white/20 group-hover:text-emerald-400/70 group-hover:translate-x-2 transition-all"
                 />
               </div>
             </div>
@@ -315,9 +314,13 @@ export default function ResourcesPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.3 + index * 0.05 }}
-                className="group block p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-300"
+                className="group block p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
+                style={{
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
               >
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="text-[14px] font-medium text-white group-hover:text-white/90">
@@ -325,7 +328,7 @@ export default function ResourcesPage() {
                   </h3>
                   <ExternalLink
                     size={14}
-                    className="text-white/30 flex-shrink-0"
+                    className="text-white/30 group-hover:text-emerald-400/70 transition-colors flex-shrink-0"
                   />
                 </div>
                 <p className="text-[12px] text-white/40">
@@ -338,9 +341,9 @@ export default function ResourcesPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 md:px-12 border-t border-white/[0.06]">
+      <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light mb-4">
+          <h2 className="text-[24px] font-medium mb-4">
             Not sure where you stand?
           </h2>
           <p className="text-[15px] text-white/50 mb-8">
@@ -349,10 +352,9 @@ export default function ResourcesPage() {
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-black bg-white px-8 py-4 rounded-full hover:bg-white/90 transition-all duration-300"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Start Assessment
-            <span>→</span>
           </Link>
         </div>
       </section>
