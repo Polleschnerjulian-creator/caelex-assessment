@@ -4,9 +4,24 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
+const MODULES = [
+  "Authorization",
+  "Cybersecurity",
+  "Debris Mitigation",
+  "Export Control",
+  "Insurance",
+  "Environmental",
+  "Supervision",
+  "Spectrum & ITU",
+  "NIS2",
+  "COPUOS/IADC",
+  "UK Space Act",
+  "US Regulatory",
+];
+
 export default function Hero() {
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden">
+    <section className="relative min-h-screen bg-black overflow-hidden flex flex-col">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -19,99 +34,89 @@ export default function Hero() {
         />
       </div>
 
-      {/* Dark overlay to darken the image */}
-      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/70 pointer-events-none" />
 
       {/* Gradient overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20 pointer-events-none" />
 
-      {/* Main content container */}
-      <div className="relative z-10 min-h-screen flex flex-col justify-end px-6 md:px-12 lg:px-16 pb-12 md:pb-16">
-        {/* Bottom content area */}
-        <div className="max-w-[1400px] mx-auto w-full">
-          {/* Main grid: Headline left, Description right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-12">
-            {/* Left: Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-light tracking-[-0.03em] leading-[1.05] text-white">
-                Space Compliance
-                <br />
-                <span className="text-white/60">Platform.</span>
-              </h1>
-            </motion.div>
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-16 pt-32 pb-24">
+        <div className="max-w-[1200px] mx-auto w-full">
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-[clamp(2.25rem,5.5vw,4.5rem)] font-semibold tracking-[-0.025em] leading-[1.1] text-white mb-10 md:mb-12"
+          >
+            The World&apos;s Space
+            <br />
+            Compliance Platform.
+          </motion.h1>
 
-            {/* Right: CTA and Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col gap-6"
-            >
-              {/* CTA Button */}
-              <div>
-                <Link
-                  href="/assessment"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white text-[14px] font-medium rounded-full border border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-white/30"
-                >
-                  <span>Start Free Assessment</span>
-                </Link>
-              </div>
-
-              {/* Description text */}
-              <div className="max-w-[420px]">
-                <p className="text-[13px] text-white/60 leading-[1.7] mb-4">
-                  <span className="text-emerald-400 font-medium">ASTRA</span>,
-                  unser KI-Assistent, automatisiert Ihre gesamte Compliance —
-                  von der Erstbewertung bis zur laufenden Überwachung.
-                </p>
-                <p className="text-[13px] text-white/45 leading-[1.7]">
-                  170+ Anforderungen. 3 Frameworks. 10 Jurisdiktionen. Eine
-                  Plattform, die mitdenkt.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Bottom bar: Tagline left, Pills right */}
+          {/* Module Ticker */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-8 border-t border-white/[0.08]"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8 md:mb-10 overflow-hidden"
           >
-            {/* Left: Tagline */}
-            <p className="text-[12px] text-white/40">
-              Von Satellitenbetreibern bis Launch Provider — compliant in
-              Minuten, nicht Monaten.
-            </p>
-
-            {/* Right: Regulation Pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-[11px] font-medium text-emerald-400/90 bg-emerald-500/15 border border-emerald-500/20 rounded-full backdrop-blur-sm">
-                EU Space Act
-              </span>
-              <span className="px-3 py-1 text-[11px] font-medium text-cyan-400/90 bg-cyan-500/15 border border-cyan-500/20 rounded-full backdrop-blur-sm">
-                NIS2
-              </span>
-              <span className="px-3 py-1 text-[11px] font-medium text-purple-400/90 bg-purple-500/15 border border-purple-500/20 rounded-full backdrop-blur-sm">
-                10 Jurisdictions
-              </span>
+            <div className="flex flex-wrap gap-x-2 gap-y-2 md:gap-x-3">
+              {MODULES.map((module, i) => (
+                <span
+                  key={module}
+                  className="text-[13px] md:text-[14px] text-white/50 whitespace-nowrap"
+                >
+                  {module}
+                  {i < MODULES.length - 1 && (
+                    <span className="ml-2 md:ml-3 text-white/20">·</span>
+                  )}
+                </span>
+              ))}
             </div>
+          </motion.div>
+
+          {/* Summary Line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-[14px] md:text-[15px] text-white/40 mb-10 md:mb-12 max-w-[600px]"
+          >
+            12 modules. 10+ jurisdictions. Every regulation that governs space —
+            in one place.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+          >
+            <Link
+              href="/assessment"
+              className="inline-flex items-center justify-center px-7 py-3.5 bg-white text-black text-[14px] font-medium rounded transition-all duration-200 hover:bg-white/90"
+            >
+              Start Assessment
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center px-7 py-3.5 text-white text-[14px] font-medium rounded border border-white/25 transition-all duration-200 hover:bg-white/5 hover:border-white/40"
+            >
+              Request Demo
+            </Link>
           </motion.div>
         </div>
       </div>
 
-      {/* Subtle vignette effect */}
+      {/* Subtle vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.5) 100%)",
+            "radial-gradient(ellipse at 70% 50%, transparent 0%, transparent 30%, rgba(0,0,0,0.6) 100%)",
         }}
       />
     </section>
