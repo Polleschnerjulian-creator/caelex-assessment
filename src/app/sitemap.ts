@@ -1,5 +1,8 @@
 import { MetadataRoute } from "next";
 import { moduleMetadata, jurisdictionMetadata } from "@/lib/seo";
+import { getAllTerms } from "@/content/glossary/terms";
+import { getAllPosts } from "@/content/blog/posts";
+import { getAllGuides } from "@/content/guides/guides";
 
 // ============================================================================
 // SITEMAP CONFIGURATION
@@ -7,110 +10,7 @@ import { moduleMetadata, jurisdictionMetadata } from "@/lib/seo";
 
 const baseUrl = "https://caelex.eu";
 
-// Blog posts - add as they are created
-const blogPosts = [
-  { slug: "eu-space-act-explained", updatedAt: "2025-01-15" },
-  { slug: "eu-space-act-article-5-authorization", updatedAt: "2025-01-15" },
-  { slug: "eu-space-act-timeline", updatedAt: "2025-01-15" },
-  { slug: "nis2-space-operators", updatedAt: "2025-01-15" },
-  { slug: "itar-vs-ear-space", updatedAt: "2025-01-15" },
-  { slug: "space-debris-iadc-vs-iso", updatedAt: "2025-01-15" },
-  { slug: "satellite-insurance-requirements-europe", updatedAt: "2025-01-15" },
-  { slug: "uk-space-industry-act-guide", updatedAt: "2025-01-15" },
-  { slug: "french-space-operations-act", updatedAt: "2025-01-15" },
-  { slug: "german-satellite-data-security-act", updatedAt: "2025-01-15" },
-  { slug: "space-compliance-checklist", updatedAt: "2025-01-15" },
-  { slug: "what-is-a-space-operator", updatedAt: "2025-01-15" },
-  { slug: "copuos-guidelines-compliance", updatedAt: "2025-01-15" },
-  { slug: "itu-frequency-coordination", updatedAt: "2025-01-15" },
-  { slug: "space-cybersecurity-nist-framework", updatedAt: "2025-01-15" },
-  { slug: "mega-constellation-compliance", updatedAt: "2025-01-15" },
-  { slug: "space-sustainability-rating", updatedAt: "2025-01-15" },
-  { slug: "eu-space-act-vs-national-laws", updatedAt: "2025-01-15" },
-  { slug: "small-satellite-compliance", updatedAt: "2025-01-15" },
-  { slug: "space-regulation-2026-outlook", updatedAt: "2025-01-15" },
-];
-
-// Pillar guides
-const guides = [
-  { slug: "eu-space-act", updatedAt: "2025-01-15" },
-  { slug: "nis2-space", updatedAt: "2025-01-15" },
-  { slug: "space-debris-mitigation", updatedAt: "2025-01-15" },
-  { slug: "space-insurance", updatedAt: "2025-01-15" },
-  { slug: "space-export-control", updatedAt: "2025-01-15" },
-  { slug: "satellite-licensing", updatedAt: "2025-01-15" },
-  { slug: "space-cybersecurity", updatedAt: "2025-01-15" },
-];
-
-// Glossary terms
-const glossaryTerms = [
-  "sco",
-  "lo",
-  "lso",
-  "isos",
-  "cap",
-  "pdp",
-  "tco",
-  "nca",
-  "tpl",
-  "ssa",
-  "sst",
-  "stm",
-  "leo",
-  "meo",
-  "geo",
-  "heo",
-  "sso",
-  "iadc",
-  "copuos",
-  "itu",
-  "itar",
-  "ear",
-  "erc",
-  "nis2",
-  "enisa",
-  "los",
-  "gnss",
-  "pnt",
-  "sar",
-  "sda",
-  "cdm",
-  "cola",
-  "tle",
-  "rso",
-  "fcc",
-  "faa",
-  "noaa",
-  "bfr",
-  "cnes",
-  "uksa",
-  "asi",
-  "nso",
-  "belspo",
-  "esa",
-  "euspa",
-  "iso-24113",
-  "iso-27001",
-  "nist-csf",
-  "soc-2",
-  "tisax",
-  "csa-star",
-  "kessler-syndrome",
-  "orbital-debris",
-  "deorbit",
-  "passivation",
-  "end-of-life",
-  "graveyard-orbit",
-  "space-situational-awareness",
-  "frequency-coordination",
-  "orbital-slot",
-  "launch-license",
-  "re-entry-license",
-  "on-orbit-servicing",
-  "active-debris-removal",
-  "dual-use",
-  "deemed-export",
-];
+// Dynamic content imports - these are used to generate sitemap entries
 
 // Comparison pages
 const comparisonPages = [
@@ -226,25 +126,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  // Blog posts
+  // Blog posts (from content)
+  const blogPosts = getAllPosts();
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.updatedAt,
+    lastModified: post.publishedAt,
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
 
-  // Guide pages
+  // Guide pages (from content)
+  const guides = getAllGuides();
   const guidePages: MetadataRoute.Sitemap = guides.map((guide) => ({
     url: `${baseUrl}/guides/${guide.slug}`,
-    lastModified: guide.updatedAt,
+    lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.9,
   }));
 
-  // Glossary term pages
+  // Glossary term pages (from content)
+  const glossaryTerms = getAllTerms();
   const glossaryPages: MetadataRoute.Sitemap = glossaryTerms.map((term) => ({
-    url: `${baseUrl}/glossary/${term}`,
+    url: `${baseUrl}/glossary/${term.slug}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.6,
