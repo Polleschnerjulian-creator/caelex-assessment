@@ -10,7 +10,7 @@ import PlatformPreview from "@/components/landing/PlatformPreview";
 import Lifecycle from "@/components/landing/Lifecycle";
 import Modules from "@/components/landing/Modules";
 import FeatureGrid from "@/components/landing/FeatureGrid";
-import AstraShowcase from "@/components/landing/AstraShowcase";
+import AstraSection from "@/components/landing/AstraSection";
 import TargetAudience from "@/components/landing/TargetAudience";
 import Metrics from "@/components/landing/Metrics";
 import FinalCTA from "@/components/landing/FinalCTA";
@@ -25,7 +25,7 @@ export default function Home() {
       <RegulatoryCoverage />
       <JurisdictionCompare />
       <ProblemStatement />
-      <AstraShowcase />
+      <AstraSection />
       <ValueProposition />
       <PlatformPreview />
       <Lifecycle />
