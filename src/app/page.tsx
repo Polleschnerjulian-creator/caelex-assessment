@@ -1,5 +1,6 @@
 import Hero from "@/components/landing/Hero";
 import WhatWeCover from "@/components/landing/WhatWeCover";
+import HowItWorks from "@/components/landing/HowItWorks";
 import TrustBar from "@/components/landing/TrustBar";
 import RegulatoryCoverage from "@/components/landing/RegulatoryCoverage";
 import JurisdictionCompare from "@/components/landing/JurisdictionCompare";
@@ -19,6 +20,7 @@ export default function Home() {
     <main className="landing-page bg-black text-white min-h-screen">
       <Hero />
       <WhatWeCover />
+      <HowItWorks />
       <TrustBar />
       <RegulatoryCoverage />
       <JurisdictionCompare />
