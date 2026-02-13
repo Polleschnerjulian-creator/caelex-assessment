@@ -37,3 +37,22 @@ export {
   getChangeTypeInfo,
   type NCASignificantChangeReportData,
 } from "./reports/nca-significant-change-report";
+
+// Module-Specific Report Templates
+export {
+  DebrisMitigationPlanPDF,
+  buildDebrisMitigationPlanConfig,
+  type DebrisMitigationPlanData,
+} from "./reports/debris-mitigation-plan";
+
+export {
+  InsuranceComplianceReportPDF,
+  buildInsuranceComplianceReportConfig,
+  type InsuranceComplianceReportData,
+} from "./reports/insurance-compliance-report";
+
+export {
+  AuthorizationApplicationPDF,
+  buildAuthorizationApplicationConfig,
+  type AuthorizationApplicationData,
+} from "./reports/authorization-application";
