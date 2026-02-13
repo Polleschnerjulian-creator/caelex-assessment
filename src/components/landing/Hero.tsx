@@ -52,7 +52,7 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-semibold tracking-[-0.03em] leading-[1.05] text-white">
+              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
                 The World&apos;s Space
                 <br />
                 Compliance Platform.
