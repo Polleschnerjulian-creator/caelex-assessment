@@ -39,9 +39,9 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.3 }}
             >
               <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-light tracking-[-0.03em] leading-[1.05] text-white">
-                Caelex
+                Space Compliance
                 <br />
-                <span className="text-white/60">Where Compliance Begins.</span>
+                <span className="text-white/60">Platform.</span>
               </h1>
             </motion.div>
 
@@ -58,20 +58,20 @@ export default function Hero() {
                   href="/assessment"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm text-white text-[14px] font-medium rounded-full border border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-white/30"
                 >
-                  <span>Start Assessment</span>
+                  <span>Start Free Assessment</span>
                 </Link>
               </div>
 
               {/* Description text */}
-              <div className="max-w-[400px]">
-                <p className="text-[13px] text-white/50 leading-[1.7] mb-4">
-                  Compliance doesn&apos;t begin with paperwork — it starts with
-                  understanding. Context that guides decisions forward.
+              <div className="max-w-[420px]">
+                <p className="text-[13px] text-white/60 leading-[1.7] mb-4">
+                  <span className="text-emerald-400 font-medium">ASTRA</span>,
+                  unser KI-Assistent, automatisiert Ihre gesamte Compliance —
+                  von der Erstbewertung bis zur laufenden Überwachung.
                 </p>
-                <p className="text-[13px] text-white/50 leading-[1.7]">
-                  Caelex is your platform for regulatory clarity. A calm
-                  interface for navigating complex requirements and building
-                  compliance. Less confusion. More certainty.
+                <p className="text-[13px] text-white/45 leading-[1.7]">
+                  170+ Anforderungen. 3 Frameworks. 10 Jurisdiktionen. Eine
+                  Plattform, die mitdenkt.
                 </p>
               </div>
             </motion.div>
@@ -86,7 +86,8 @@ export default function Hero() {
           >
             {/* Left: Tagline */}
             <p className="text-[12px] text-white/40">
-              Clarity begins with the right questions.
+              Von Satellitenbetreibern bis Launch Provider — compliant in
+              Minuten, nicht Monaten.
             </p>
 
             {/* Right: Regulation Pills */}
