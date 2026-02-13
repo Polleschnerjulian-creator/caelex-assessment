@@ -8,15 +8,15 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 const productLinks = [
   { label: "Platform", href: "/#modules" },
   { label: "Assessment", href: "/assessment" },
-  { label: "Resources", href: "/resources" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Pricing", href: "/pricing" },
 ];
 
 const resourceLinks = [
-  { label: "EU Space Act Overview", href: "/resources/eu-space-act" },
   { label: "Compliance Timeline", href: "/resources/timeline" },
   { label: "FAQ", href: "/resources/faq" },
   { label: "Glossary", href: "/resources/glossary" },
+  { label: "API Documentation", href: "/docs/api" },
 ];
 
 const companyLinks = [
@@ -29,11 +29,10 @@ const legalLinks = [
   { label: "Impressum", href: "/legal/impressum" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
-  { label: "Terms of Service (EN)", href: "/legal/terms-en" },
   { label: "Cookie Policy", href: "/legal/cookies" },
 ];
 
-// Inline SVG icons for social links (no extra dependencies)
+// Inline SVG icons for social links
 function LinkedInIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -77,10 +76,7 @@ export default function Footer() {
     setError(null);
     setSubscribing(true);
 
-    // Simulate subscription (no backend yet — will connect to mailing list API later)
-    // Stores: email, consent timestamp, consent text for GDPR audit trail
     setTimeout(() => {
-      // Store signup locally for future mailing list integration
       try {
         const signups = JSON.parse(
           localStorage.getItem("caelex-newsletter-signups") || "[]",
@@ -110,11 +106,11 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div className="max-w-md">
               <h3 className="text-[16px] font-medium text-white mb-2">
-                Stay ahead of EU Space Act changes
+                Stay ahead of space regulatory changes
               </h3>
               <p className="text-[13px] text-white/40 leading-relaxed">
-                Get regulatory updates, compliance insights, and deadline
-                reminders. No spam, unsubscribe anytime.
+                Get updates on EU Space Act, NIS2, and national space laws.
+                Compliance insights and deadline reminders. Unsubscribe anytime.
               </p>
             </div>
 
@@ -187,16 +183,19 @@ export default function Footer() {
 
       {/* Main Footer */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 md:gap-8">
           {/* Brand Column */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <CaelexIcon size={24} className="text-white" />
               <span className="text-[18px] text-white font-medium">caelex</span>
             </div>
-            <p className="text-[13px] text-white/40 leading-relaxed mb-6">
-              Space Compliance Platform for the EU Space Act era.
+            <p className="text-[13px] text-white/40 leading-relaxed mb-4">
+              Space Regulatory Compliance Platform.
+              <br />
+              EU Space Act · NIS2 · National Laws
             </p>
+
             <a
               href="mailto:cs@caelex.eu"
               className="text-[13px] text-white/50 hover:text-white transition-colors block mb-6"
@@ -255,6 +254,35 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h4 className="text-[11px] text-white/40 uppercase tracking-wider mb-4">
+              Legal
+            </h4>
+            <ul className="space-y-3">
+              {legalLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new Event("show-cookie-consent"))
+                  }
+                  className="text-[13px] text-white/50 hover:text-white transition-colors"
+                >
+                  Cookie Settings
+                </button>
+              </li>
+            </ul>
+          </div>
+
           {/* Resources */}
           <div>
             <h4 className="text-[11px] text-white/40 uppercase tracking-wider mb-4">
@@ -292,35 +320,6 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-[11px] text-white/40 uppercase tracking-wider mb-4">
-              Legal
-            </h4>
-            <ul className="space-y-3">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-[13px] text-white/50 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <button
-                  onClick={() =>
-                    window.dispatchEvent(new Event("show-cookie-consent"))
-                  }
-                  className="text-[13px] text-white/50 hover:text-white transition-colors"
-                >
-                  Cookie Settings
-                </button>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
 
@@ -336,14 +335,22 @@ export default function Footer() {
             </div>
 
             {/* External Links */}
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
               <a
                 href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
               >
-                EU Space Act (EUR-Lex)
+                EU Space Act
+              </a>
+              <a
+                href="https://eur-lex.europa.eu/eli/dir/2022/2555/oj"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+              >
+                NIS2 Directive
               </a>
               <a
                 href="https://www.euspa.europa.eu/"
@@ -353,15 +360,24 @@ export default function Footer() {
               >
                 EUSPA
               </a>
+              <a
+                href="https://www.esa.int/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+              >
+                ESA
+              </a>
             </div>
           </div>
 
           {/* Disclaimer */}
-          <p className="text-[10px] text-white/20 text-center md:text-left mt-6 max-w-[800px] leading-relaxed">
+          <p className="text-[10px] text-white/20 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
             This platform provides regulatory guidance based on the EU Space Act
-            proposal (COM(2025) 335) and does not constitute legal advice. For
-            binding compliance decisions, please consult qualified legal
-            professionals.
+            (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space
+            laws across European jurisdictions. Information provided does not
+            constitute legal advice. For binding compliance decisions, consult
+            qualified legal professionals.
           </p>
         </div>
       </div>

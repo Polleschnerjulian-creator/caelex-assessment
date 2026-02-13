@@ -87,7 +87,7 @@ export default function Navigation() {
                     Log in
                   </Link>
                   <Link
-                    href="/contact"
+                    href="/demo"
                     className="text-[13px] font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
                   >
                     Request Demo
@@ -149,7 +149,7 @@ export default function Navigation() {
                   Start Assessment
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/demo"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/80 text-[14px] font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
                 >

@@ -75,7 +75,7 @@ export default function Hero() {
                   Start Assessment
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/demo"
                   className="inline-flex items-center justify-center px-6 py-3 text-white text-[14px] font-medium rounded-full border border-white/25 transition-all duration-200 hover:bg-white/5 hover:border-white/40"
                 >
                   Request Demo
