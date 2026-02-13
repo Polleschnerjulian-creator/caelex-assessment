@@ -1,363 +1,351 @@
-"use client";
-
+import { Metadata } from "next";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
 import {
-  FileText,
   BookOpen,
-  Scale,
-  ExternalLink,
-  Clock,
+  FileText,
+  BookText,
   HelpCircle,
-  Shield,
-  Trash2,
-  Leaf,
-  Eye,
-  FileCheck,
-  ChevronRight,
-  BookMarked,
+  Calendar,
+  ArrowRight,
+  Newspaper,
+  Globe,
+  Layers,
 } from "lucide-react";
+import Navigation from "@/components/landing/Navigation";
+import Footer from "@/components/landing/Footer";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { getAllPosts, getFeaturedPosts } from "@/content/blog/posts";
+import { getAllGuides } from "@/content/guides/guides";
+import { getAllTerms } from "@/content/glossary/terms";
 
-const featuredResources = [
+export const metadata: Metadata = {
+  title: "Resources | Space Compliance Knowledge Hub | Caelex",
+  description:
+    "Access comprehensive space compliance resources: guides, blog articles, glossary, FAQ, and regulatory timelines. Everything you need to navigate EU Space Act, NIS2, and national space laws.",
+};
+
+const resourceCategories = [
   {
-    title: "EU Space Act Overview",
+    title: "Compliance Guides",
     description:
-      "Comprehensive breakdown of COM(2025) 335 — scope, key obligations, and what it means for operators",
-    href: "/resources/eu-space-act",
-    icon: Scale,
-    tag: "Essential",
+      "In-depth guides on EU Space Act, NIS2, debris mitigation, and more",
+    href: "/guides",
+    icon: BookOpen,
+    color: "emerald",
+    stats: "3+ comprehensive guides",
   },
   {
-    title: "Compliance Timeline",
+    title: "Blog",
+    description: "Latest insights, regulatory updates, and expert analysis",
+    href: "/blog",
+    icon: Newspaper,
+    color: "blue",
+    stats: "6+ articles",
+  },
+  {
+    title: "Glossary",
+    description: "Definitions for space compliance terminology and acronyms",
+    href: "/glossary",
+    icon: BookText,
+    color: "purple",
+    stats: "42+ terms",
+  },
+  {
+    title: "Compliance Modules",
     description:
-      "Critical deadlines, transition periods, and implementation milestones you need to know",
-    href: "/resources/timeline",
-    icon: Clock,
-    tag: "Updated",
+      "Explore our 12 compliance modules for authorization, cybersecurity, and more",
+    href: "/modules",
+    icon: Layers,
+    color: "amber",
+    stats: "12 modules",
+  },
+  {
+    title: "Jurisdictions",
+    description: "Compare space regulations across European countries",
+    href: "/jurisdictions",
+    icon: Globe,
+    color: "cyan",
+    stats: "11 countries",
   },
   {
     title: "FAQ",
     description:
-      "Answers to the most common questions about EU Space Act compliance",
+      "Frequently asked questions about space compliance and our platform",
     href: "/resources/faq",
     icon: HelpCircle,
-    tag: null,
+    color: "rose",
+    stats: "Coming soon",
   },
 ];
 
-const complianceGuides = [
-  {
-    title: "Authorization Requirements",
-    description:
-      "Articles 4-18: Licensing process, application requirements, and approval criteria",
-    href: "/resources/guides/authorization",
-    icon: FileCheck,
-    articles: "Art. 4-18",
+const colorClasses: Record<
+  string,
+  { bg: string; text: string; border: string }
+> = {
+  emerald: {
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-400",
+    border: "border-emerald-500/20 hover:border-emerald-500/40",
   },
-  {
-    title: "Cybersecurity Obligations",
-    description:
-      "Articles 32-38: Security requirements, incident reporting, and risk management",
-    href: "/resources/guides/cybersecurity",
-    icon: Shield,
-    articles: "Art. 32-38",
+  blue: {
+    bg: "bg-blue-500/10",
+    text: "text-blue-400",
+    border: "border-blue-500/20 hover:border-blue-500/40",
   },
-  {
-    title: "Space Debris Mitigation",
-    description:
-      "Articles 39-47: End-of-life requirements, collision avoidance, and debris tracking",
-    href: "/resources/guides/debris",
-    icon: Trash2,
-    articles: "Art. 39-47",
+  purple: {
+    bg: "bg-purple-500/10",
+    text: "text-purple-400",
+    border: "border-purple-500/20 hover:border-purple-500/40",
   },
-  {
-    title: "Environmental Sustainability",
-    description:
-      "Articles 48-56: LCA requirements, reporting obligations, and sustainability metrics",
-    href: "/resources/guides/environmental",
-    icon: Leaf,
-    articles: "Art. 48-56",
+  amber: {
+    bg: "bg-amber-500/10",
+    text: "text-amber-400",
+    border: "border-amber-500/20 hover:border-amber-500/40",
   },
-  {
-    title: "Insurance & Liability",
-    description:
-      "Articles 57-68: Coverage requirements, third-party liability, and financial security",
-    href: "/resources/guides/insurance",
-    icon: Scale,
-    articles: "Art. 57-68",
+  cyan: {
+    bg: "bg-cyan-500/10",
+    text: "text-cyan-400",
+    border: "border-cyan-500/20 hover:border-cyan-500/40",
   },
-  {
-    title: "Ongoing Supervision",
-    description:
-      "Articles 69-82: Reporting duties, inspections, audits, and compliance monitoring",
-    href: "/resources/guides/supervision",
-    icon: Eye,
-    articles: "Art. 69-82",
+  rose: {
+    bg: "bg-rose-500/10",
+    text: "text-rose-400",
+    border: "border-rose-500/20 hover:border-rose-500/40",
   },
-];
-
-const externalResources = [
-  {
-    title: "COM(2025) 335 Final",
-    description: "Official EU Space Act proposal — full legal text",
-    href: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
-  },
-  {
-    title: "EUSPA Official Website",
-    description: "EU Agency for the Space Programme",
-    href: "https://www.euspa.europa.eu/",
-  },
-  {
-    title: "ESA Space Debris Office",
-    description: "Technical resources on debris mitigation",
-    href: "https://www.esa.int/Space_Safety/Space_Debris",
-  },
-  {
-    title: "ISO Space Standards",
-    description: "International standards for space operations",
-    href: "https://www.iso.org/committee/46614.html",
-  },
-];
+};
 
 export default function ResourcesPage() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const featuredPosts = getFeaturedPosts().slice(0, 3);
+  const guides = getAllGuides().slice(0, 3);
+  const terms = getAllTerms();
+  const posts = getAllPosts();
 
   return (
-    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-6 md:px-12">
-        <div className="max-w-[1100px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
+    <div className="min-h-screen bg-black text-white">
+      <Navigation />
+
+      <main className="pt-32 pb-20">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          {/* Breadcrumbs */}
+          <Breadcrumbs
+            items={[{ label: "Resources", href: "/resources" }]}
+            className="mb-8"
+          />
+
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               Resources
-            </span>
-            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] mb-6">
-              EU Space Act Knowledge Base
             </h1>
-            <p className="text-[17px] text-white/50 max-w-[600px] leading-relaxed">
-              Everything you need to understand and comply with the most
-              comprehensive regulatory framework for commercial space operations
-              in history.
+            <p className="text-[17px] text-white/50 leading-relaxed">
+              Your comprehensive knowledge hub for space compliance. Access
+              guides, articles, glossary terms, and regulatory information to
+              navigate EU Space Act, NIS2, and national space laws.
             </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Featured Resources */}
-      <section className="py-16 px-6 md:px-12">
-        <div className="max-w-[1100px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
-            Start Here
-          </h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {featuredResources.map((resource, index) => {
-              const Icon = resource.icon;
-              return (
-                <motion.div
-                  key={resource.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Link href={resource.href} className="group block h-full">
-                    <div
-                      className="h-full p-6 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
-                      style={{
-                        boxShadow:
-                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center">
-                          <Icon size={24} className="text-white/60" />
-                        </div>
-                        {resource.tag && (
-                          <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-2 py-1 rounded uppercase tracking-wider">
-                            {resource.tag}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-[17px] font-medium text-white mb-2 group-hover:text-white/90">
-                        {resource.title}
-                      </h3>
-                      <p className="text-[14px] text-white/40 leading-relaxed">
-                        {resource.description}
-                      </p>
-                      <div className="flex items-center gap-1 mt-4 text-[13px] text-white/30 group-hover:text-emerald-400/70 transition-colors">
-                        <span>Read more</span>
-                        <ChevronRight
-                          size={14}
-                          className="group-hover:translate-x-1 transition-transform"
-                        />
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
           </div>
-        </div>
-      </section>
 
-      {/* Compliance Guides */}
-      <section className="py-16 px-6 md:px-12">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <BookOpen size={20} className="text-white/40" />
-            <h2 className="text-[12px] text-white/40 uppercase tracking-wider">
-              Compliance Guides by Module
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {complianceGuides.map((guide, index) => {
-              const Icon = guide.icon;
-              return (
-                <motion.div
-                  key={guide.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.2 + index * 0.05 }}
-                >
-                  <Link href={guide.href} className="group block">
-                    <div
-                      className="flex items-start gap-4 p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
-                      style={{
-                        boxShadow:
-                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-                      }}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
-                        <Icon size={20} className="text-white/50" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-[15px] font-medium text-white group-hover:text-white/90">
-                            {guide.title}
-                          </h3>
-                          <span className="text-[10px] font-mono text-white/30 bg-white/[0.06] px-2 py-0.5 rounded">
-                            {guide.articles}
-                          </span>
-                        </div>
-                        <p className="text-[13px] text-white/40">
-                          {guide.description}
-                        </p>
-                      </div>
-                      <ChevronRight
-                        size={18}
-                        className="text-white/20 group-hover:text-emerald-400/70 group-hover:translate-x-1 transition-all flex-shrink-0 mt-2"
-                      />
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Glossary Teaser */}
-      <section className="py-16 px-6 md:px-12">
-        <div className="max-w-[1100px] mx-auto">
-          <Link href="/resources/glossary" className="group block">
-            <div
-              className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
-              style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-white/[0.06] flex items-center justify-center">
-                    <BookMarked size={28} className="text-white/50" />
-                  </div>
-                  <div>
-                    <h3 className="text-[18px] font-medium text-white mb-1">
-                      Space Law Glossary
-                    </h3>
-                    <p className="text-[14px] text-white/40">
-                      50+ terms defined — from "space object" to "orbital slot"
-                      to "de-orbit maneuver"
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight
-                  size={24}
-                  className="text-white/20 group-hover:text-emerald-400/70 group-hover:translate-x-2 transition-all"
-                />
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="text-[32px] font-medium text-white">
+                {guides.length}+
+              </div>
+              <div className="text-[13px] text-white/40">
+                Comprehensive Guides
               </div>
             </div>
-          </Link>
-        </div>
-      </section>
+            <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="text-[32px] font-medium text-white">
+                {posts.length}+
+              </div>
+              <div className="text-[13px] text-white/40">Blog Articles</div>
+            </div>
+            <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="text-[32px] font-medium text-white">
+                {terms.length}+
+              </div>
+              <div className="text-[13px] text-white/40">Glossary Terms</div>
+            </div>
+            <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="text-[32px] font-medium text-white">12</div>
+              <div className="text-[13px] text-white/40">
+                Compliance Modules
+              </div>
+            </div>
+          </div>
 
-      {/* External Resources */}
-      <section className="py-16 px-6 md:px-12">
-        <div className="max-w-[1100px] mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <ExternalLink size={18} className="text-white/40" />
-            <h2 className="text-[12px] text-white/40 uppercase tracking-wider">
-              Official Sources & Standards
+          {/* Resource Categories Grid */}
+          <section className="mb-20">
+            <h2 className="text-[24px] font-medium text-white mb-8">
+              Browse by Category
             </h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {externalResources.map((resource, index) => (
-              <motion.a
-                key={resource.title}
-                href={resource.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.3 + index * 0.05 }}
-                className="group block p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
-                style={{
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-                }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-[14px] font-medium text-white group-hover:text-white/90">
-                    {resource.title}
-                  </h3>
-                  <ExternalLink
-                    size={14}
-                    className="text-white/30 group-hover:text-emerald-400/70 transition-colors flex-shrink-0"
-                  />
-                </div>
-                <p className="text-[12px] text-white/40">
-                  {resource.description}
-                </p>
-              </motion.a>
-            ))}
-          </div>
-        </div>
-      </section>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {resourceCategories.map((category) => {
+                const Icon = category.icon;
+                const colors = colorClasses[category.color];
 
-      {/* CTA */}
-      <section className="py-20 px-6 md:px-12">
-        <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-medium mb-4">
-            Not sure where you stand?
-          </h2>
-          <p className="text-[15px] text-white/50 mb-8">
-            Take our free assessment to understand which parts of the EU Space
-            Act apply to your operations.
-          </p>
-          <Link
-            href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-          >
-            Start Assessment
-          </Link>
+                return (
+                  <Link
+                    key={category.href}
+                    href={category.href}
+                    className={`group p-6 rounded-2xl bg-white/[0.04] border ${colors.border} transition-all duration-300 hover:bg-white/[0.06]`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`w-12 h-12 rounded-xl ${colors.bg} flex items-center justify-center flex-shrink-0`}
+                      >
+                        <Icon size={24} className={colors.text} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-[18px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors">
+                          {category.title}
+                        </h3>
+                        <p className="text-[13px] text-white/40 leading-relaxed mb-3">
+                          {category.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] text-white/30">
+                            {category.stats}
+                          </span>
+                          <span className="text-[12px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            Explore <ArrowRight size={12} />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Featured Guides */}
+          <section className="mb-20">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-[24px] font-medium text-white">
+                Featured Guides
+              </h2>
+              <Link
+                href="/guides"
+                className="text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+              >
+                View all guides <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {guides.map((guide) => (
+                <Link
+                  key={guide.slug}
+                  href={`/guides/${guide.slug}`}
+                  className="group p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
+                >
+                  <div className="flex items-center gap-2 text-[11px] text-emerald-400/70 mb-3">
+                    <BookOpen size={12} />
+                    <span>{guide.readingTime} min read</span>
+                  </div>
+                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                    {guide.title}
+                  </h3>
+                  <p className="text-[13px] text-white/40 line-clamp-2">
+                    {guide.description}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Latest Articles */}
+          <section className="mb-20">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-[24px] font-medium text-white">
+                Latest Articles
+              </h2>
+              <Link
+                href="/blog"
+                className="text-[13px] text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+              >
+                View all articles <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {featuredPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+                >
+                  <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                      {post.category}
+                    </span>
+                  </div>
+                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-[13px] text-white/40 line-clamp-2">
+                    {post.description}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Quick Links */}
+          <section className="p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+            <h2 className="text-[20px] font-medium text-white mb-6">
+              Quick Links
+            </h2>
+            <div className="grid md:grid-cols-4 gap-4">
+              <Link
+                href="/assessment"
+                className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
+              >
+                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                  Start Assessment
+                </div>
+                <div className="text-[12px] text-white/40">
+                  Get your compliance profile
+                </div>
+              </Link>
+              <Link
+                href="/demo"
+                className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
+              >
+                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                  Request Demo
+                </div>
+                <div className="text-[12px] text-white/40">
+                  See the platform in action
+                </div>
+              </Link>
+              <Link
+                href="/pricing"
+                className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
+              >
+                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                  Pricing
+                </div>
+                <div className="text-[12px] text-white/40">
+                  Plans for every operator
+                </div>
+              </Link>
+              <Link
+                href="/contact"
+                className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
+              >
+                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                  Contact
+                </div>
+                <div className="text-[12px] text-white/40">
+                  Get in touch with us
+                </div>
+              </Link>
+            </div>
+          </section>
         </div>
-      </section>
-    </main>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

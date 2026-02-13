@@ -262,6 +262,18 @@ export const pageMetadata = {
       "space licensing modules",
     ],
   }),
+
+  resources: generateMetadata({
+    title: "Resources",
+    description:
+      "Access comprehensive space compliance resources: guides, blog articles, glossary, and regulatory information for EU Space Act, NIS2, and national space laws.",
+    path: "/resources",
+    keywords: [
+      "space compliance resources",
+      "space regulation guides",
+      "satellite compliance knowledge",
+    ],
+  }),
 };
 
 // ============================================================================

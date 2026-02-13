@@ -13,10 +13,11 @@ const productLinks = [
 ];
 
 const resourceLinks = [
-  { label: "Compliance Timeline", href: "/resources/timeline" },
-  { label: "FAQ", href: "/resources/faq" },
-  { label: "Glossary", href: "/resources/glossary" },
-  { label: "API Documentation", href: "/docs/api" },
+  { label: "Guides", href: "/guides" },
+  { label: "Blog", href: "/blog" },
+  { label: "Glossary", href: "/glossary" },
+  { label: "Modules", href: "/modules" },
+  { label: "Jurisdictions", href: "/jurisdictions" },
 ];
 
 const companyLinks = [
