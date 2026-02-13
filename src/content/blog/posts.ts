@@ -2,6 +2,8 @@
 // BLOG POSTS DATA
 // ============================================================================
 
+import { additionalPosts } from "./additional-posts";
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -878,38 +880,44 @@ Begin your compliance journey now with Caelex's automated assessment.
 // ============================================================================
 
 export function getAllPosts(): BlogPost[] {
-  return blogPosts.sort(
+  const allPosts = [...blogPosts, ...additionalPosts];
+  return allPosts.sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 }
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
-  return blogPosts.find((post) => post.slug === slug);
+  const allPosts = [...blogPosts, ...additionalPosts];
+  return allPosts.find((post) => post.slug === slug);
 }
 
 export function getFeaturedPosts(): BlogPost[] {
-  return blogPosts.filter((post) => post.featured);
+  const allPosts = [...blogPosts, ...additionalPosts];
+  return allPosts.filter((post) => post.featured);
 }
 
 export function getPostsByCategory(category: string): BlogPost[] {
-  return blogPosts.filter(
+  const allPosts = [...blogPosts, ...additionalPosts];
+  return allPosts.filter(
     (post) => post.category.toLowerCase() === category.toLowerCase(),
   );
 }
 
 export function getAllCategories(): string[] {
-  return [...new Set(blogPosts.map((post) => post.category))];
+  const allPosts = [...blogPosts, ...additionalPosts];
+  return [...new Set(allPosts.map((post) => post.category))];
 }
 
 export function getRelatedPosts(
   currentSlug: string,
   limit: number = 3,
 ): BlogPost[] {
+  const allPosts = [...blogPosts, ...additionalPosts];
   const currentPost = getPostBySlug(currentSlug);
   if (!currentPost) return [];
 
-  return blogPosts
+  return allPosts
     .filter(
       (post) =>
         post.slug !== currentSlug &&

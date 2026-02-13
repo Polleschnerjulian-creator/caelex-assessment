@@ -2,6 +2,8 @@
 // GLOSSARY TERMS - Space Compliance Terminology
 // ============================================================================
 
+import { additionalTerms } from "./additional-terms";
+
 export interface GlossaryTerm {
   slug: string;
   term: string;
@@ -1800,18 +1802,21 @@ Authorization applications must include:
 // HELPER FUNCTIONS
 // ============================================================================
 
+// Combine base terms with additional terms
+const allTermsArray = [...glossaryTerms, ...additionalTerms];
+
 export function getAllTerms(): GlossaryTerm[] {
-  return glossaryTerms.sort((a, b) => a.term.localeCompare(b.term));
+  return allTermsArray.sort((a, b) => a.term.localeCompare(b.term));
 }
 
 export function getTermBySlug(slug: string): GlossaryTerm | undefined {
-  return glossaryTerms.find((term) => term.slug === slug);
+  return allTermsArray.find((term) => term.slug === slug);
 }
 
 export function getTermsByCategory(
   category: GlossaryTerm["category"],
 ): GlossaryTerm[] {
-  return glossaryTerms
+  return allTermsArray
     .filter((term) => term.category === category)
     .sort((a, b) => a.term.localeCompare(b.term));
 }
