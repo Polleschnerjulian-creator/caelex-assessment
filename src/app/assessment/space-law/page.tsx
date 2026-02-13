@@ -9,8 +9,10 @@ const SpaceLawAssessmentWizard = dynamic(
     loading: () => (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/50">Loading space law assessment...</p>
+          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[13px] text-white/50">
+            Loading space law assessment...
+          </p>
         </div>
       </div>
     ),
@@ -19,7 +21,7 @@ const SpaceLawAssessmentWizard = dynamic(
 
 export default function SpaceLawAssessmentPage() {
   return (
-    <div className="dark-section text-white">
+    <div className="landing-page text-white">
       <SpaceLawAssessmentWizard />
     </div>
   );

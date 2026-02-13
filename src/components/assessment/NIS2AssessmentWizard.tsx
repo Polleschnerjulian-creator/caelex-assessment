@@ -195,10 +195,10 @@ export default function NIS2AssessmentWizard() {
   // Calculating state
   if (isCalculating) {
     return (
-      <div className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-mono text-[12px] text-white/70">
+          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[13px] text-white/60">
             Calculating your NIS2 compliance profile...
           </p>
         </div>
@@ -209,12 +209,12 @@ export default function NIS2AssessmentWizard() {
   // Error state
   if (calculationError) {
     return (
-      <div className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-[14px] mb-4">{calculationError}</p>
+          <p className="text-red-400 text-[14px] mb-6">{calculationError}</p>
           <button
             onClick={handleRestart}
-            className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-[13px] text-white transition-colors"
+            className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
           >
             Start Over
           </button>
@@ -230,7 +230,7 @@ export default function NIS2AssessmentWizard() {
       typeof NIS2ResultsDashboard
     >[0]["result"];
     return (
-      <div className="dark-section min-h-screen bg-black text-white">
+      <div className="landing-page min-h-screen bg-black text-white">
         <NIS2ResultsDashboard result={typedResult} onRestart={handleRestart} />
       </div>
     );
@@ -239,18 +239,18 @@ export default function NIS2AssessmentWizard() {
   // Out of scope view
   if (state.isOutOfScope && currentQuestion) {
     return (
-      <div className="dark-section min-h-screen bg-black text-white py-12 px-6">
+      <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-12">
             <Link
               href="/assessment"
-              className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
             >
               <Home size={14} />
               <span>Assessments</span>
             </Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+            <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
               NIS2 Directive Assessment
             </span>
           </div>
@@ -267,7 +267,7 @@ export default function NIS2AssessmentWizard() {
 
   // Assessment wizard view
   return (
-    <div className="dark-section min-h-screen bg-black text-white py-12 px-6">
+    <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
@@ -279,7 +279,7 @@ export default function NIS2AssessmentWizard() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
-                className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
               >
                 <ArrowLeft size={14} />
                 <span>Back</span>
@@ -293,7 +293,7 @@ export default function NIS2AssessmentWizard() {
               >
                 <Link
                   href="/assessment"
-                  className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
                 >
                   <ArrowLeft size={14} />
                   <span>All assessments</span>
@@ -302,7 +302,7 @@ export default function NIS2AssessmentWizard() {
             )}
           </AnimatePresence>
 
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+          <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
             NIS2 Directive Assessment
           </span>
         </div>

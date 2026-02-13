@@ -86,23 +86,29 @@ export default function MultiSelectQuestionStep({
       >
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
             Question {String(questionNumber).padStart(2, "0")}
           </span>
 
-          <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[-0.02em] text-white mb-4">
+          <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-medium tracking-[-0.02em] text-white mb-4">
             {question.title}
           </h2>
 
           {question.subtitle && (
-            <p className="text-[15px] text-white/70 leading-relaxed">
+            <p className="text-[15px] text-white/50 leading-relaxed">
               {question.subtitle}
             </p>
           )}
 
           {/* Selection count */}
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.1]">
-            <span className="font-mono text-[12px] text-white/70">
+          <div
+            className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            style={{
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+            }}
+          >
+            <span className="text-[12px] text-emerald-400/70">
               {localSelected.length} / {maxSelections} selected
             </span>
           </div>
@@ -139,22 +145,27 @@ export default function MultiSelectQuestionStep({
                 }}
                 whileTap={!isDisabled ? { scale: 0.98 } : undefined}
                 className={`
-                  p-4 rounded-xl text-left transition-all duration-200 group
+                  p-4 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px]
                   ${
                     isSelected
-                      ? "bg-white/[0.08] border border-white/[0.25]"
+                      ? "bg-emerald-500/[0.12] border border-emerald-500/30"
                       : isDisabled
-                        ? "bg-white/[0.02] border border-white/[0.06] opacity-40 cursor-not-allowed"
-                        : "bg-white/[0.04] border border-white/[0.12] hover:bg-white/[0.06] hover:border-white/[0.18] cursor-pointer"
+                        ? "bg-white/[0.02] border border-white/[0.04] opacity-40 cursor-not-allowed"
+                        : "bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] cursor-pointer"
                   }
                 `}
+                style={{
+                  boxShadow: isSelected
+                    ? "inset 0 1px 0 rgba(16,185,129,0.1), 0 4px 24px rgba(0,0,0,0.2)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
               >
                 <div className="flex items-start gap-3">
                   {/* Flag or Icon */}
                   <div
                     className={`
                       w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0
-                      ${isSelected ? "bg-white/[0.15]" : "bg-white/[0.08]"}
+                      ${isSelected ? "bg-emerald-500/20" : "bg-white/[0.06]"}
                     `}
                   >
                     {flag ? (
@@ -162,17 +173,23 @@ export default function MultiSelectQuestionStep({
                     ) : IconComponent ? (
                       <IconComponent
                         size={18}
-                        className={isSelected ? "text-white" : "text-white/70"}
+                        className={
+                          isSelected ? "text-emerald-400" : "text-white/70"
+                        }
                       />
                     ) : null}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[14px] font-medium text-white mb-0.5">
+                    <h3
+                      className={`text-[14px] font-medium mb-0.5 ${
+                        isSelected ? "text-emerald-400" : "text-white"
+                      }`}
+                    >
                       {option.label}
                     </h3>
-                    <p className="text-[12px] text-white/60 leading-relaxed">
+                    <p className="text-[12px] text-white/50 leading-relaxed">
                       {option.description}
                     </p>
                   </div>
@@ -181,12 +198,12 @@ export default function MultiSelectQuestionStep({
                   <div
                     className={`
                       w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all
-                      ${isSelected ? "bg-white" : "border border-white/[0.30]"}
+                      ${isSelected ? "bg-emerald-500" : "border border-white/[0.25]"}
                     `}
                   >
                     {isSelected && (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                        <Check size={12} className="text-black" />
+                        <Check size={12} className="text-white" />
                       </motion.div>
                     )}
                   </div>
@@ -207,11 +224,11 @@ export default function MultiSelectQuestionStep({
               y: 0,
             }}
             className={`
-              flex items-center gap-2 px-8 py-3.5 rounded-xl text-[14px] font-medium transition-all
+              flex items-center gap-2 px-8 py-3.5 rounded-full text-[14px] font-medium transition-all
               ${
                 localSelected.length > 0
-                  ? "bg-white text-black hover:bg-white/90 cursor-pointer"
-                  : "bg-white/20 text-white/40 cursor-not-allowed"
+                  ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
+                  : "bg-white/10 text-white/40 cursor-not-allowed"
               }
             `}
           >
