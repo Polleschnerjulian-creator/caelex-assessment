@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Building2 } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ import {
 } from "@/lib/unified-assessment-questions";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 import UnifiedResultsDashboard from "@/components/unified/UnifiedResultsDashboard";
+import AssessmentResultsGate from "@/components/assessment/AssessmentResultsGate";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { getIcon } from "@/lib/icons";
 
@@ -80,6 +82,8 @@ const variants = {
 };
 
 export default function UnifiedAssessmentWizard() {
+  const { data: session, status: authStatus } = useSession();
+
   const [state, setState] = useState<UnifiedAssessmentState>({
     currentPhase: 1,
     currentStep: 1,
@@ -94,6 +98,7 @@ export default function UnifiedAssessmentWizard() {
     useState<RedactedUnifiedResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [calculationError, setCalculationError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // For text input questions
   const [textInput, setTextInput] = useState("");
@@ -335,8 +340,23 @@ export default function UnifiedAssessmentWizard() {
     );
   }
 
-  // Results view
+  // Results view - show gate first if not authenticated
   if (complianceResult) {
+    // Check if user is authenticated or has been authenticated during this session
+    const showResults =
+      isAuthenticated || (authStatus === "authenticated" && session?.user);
+
+    if (!showResults) {
+      return (
+        <div className="landing-page min-h-screen bg-black text-white">
+          <AssessmentResultsGate
+            result={complianceResult}
+            onAuthenticated={() => setIsAuthenticated(true)}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="landing-page min-h-screen bg-black text-white">
         <UnifiedResultsDashboard

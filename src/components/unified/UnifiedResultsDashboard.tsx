@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Building2,
   Globe,
@@ -22,6 +23,7 @@ import {
   Zap,
   Target,
   FileText,
+  LayoutDashboard,
 } from "lucide-react";
 import { RedactedUnifiedResult } from "@/lib/unified-assessment-types";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
@@ -767,20 +769,36 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <DisclaimerBanner variant="inline" />
         </motion.div>
 
-        {/* Actions */}
+        {/* Primary CTA - Go to Dashboard */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="mt-8 flex flex-wrap justify-center gap-4"
+          className="mt-10"
         >
-          <button
-            onClick={onRestart}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+          <Link
+            href="/dashboard"
+            className="flex items-center justify-center gap-3 w-full max-w-md mx-auto px-8 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[16px] font-medium hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all duration-300 group"
           >
-            <RotateCcw size={14} />
-            Start New Assessment
-          </button>
+            <LayoutDashboard size={20} />
+            Go to Dashboard
+            <ArrowRight
+              size={18}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+          </Link>
+          <p className="text-center text-[12px] text-white/40 mt-3">
+            Track your compliance progress and manage all requirements
+          </p>
+        </motion.div>
+
+        {/* Secondary Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 flex flex-wrap justify-center gap-4"
+        >
           <button
             onClick={() => {
               // Export functionality
@@ -793,10 +811,17 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 text-white text-[13px] font-medium hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all duration-300"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
           >
             <Download size={14} />
-            Export Profile
+            Export JSON
+          </button>
+          <button
+            onClick={onRestart}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+          >
+            <RotateCcw size={14} />
+            Start Over
           </button>
         </motion.div>
 

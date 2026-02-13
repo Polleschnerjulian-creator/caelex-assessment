@@ -58,6 +58,10 @@ model User {
   spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
   astraConversations     AstraConversation[]     // ASTRA AI conversations
 
+  // Unified Assessment
+  unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
+  unifiedAssessmentCompletedAt DateTime?
+
   // Security: MFA & Passkeys
   mfaConfig              MfaConfig?
   webAuthnCredentials    WebAuthnCredential[]
