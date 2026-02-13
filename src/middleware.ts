@@ -176,6 +176,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/auth/",
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
   "/api/nis2/calculate", // NIS2 assessment is public, CSRF exempt (rate limited instead)
+  "/api/astra/", // ASTRA has session auth + rate limiting, CSRF exempt
 ];
 
 function validateOrigin(req: NextRequest): boolean {
