@@ -2,14 +2,23 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Scale, FileText, Globe, Shield, Lock } from "lucide-react";
+import {
+  Scale,
+  FileText,
+  Globe,
+  Shield,
+  Lock,
+  MapPin,
+  Satellite,
+} from "lucide-react";
 
 const trustItems = [
-  { icon: Scale, label: "EU Space Act", detail: "COM(2025) 335" },
-  { icon: FileText, label: "119 Articles", detail: "Fully mapped" },
-  { icon: Globe, label: "27 NCAs", detail: "All EU authorities" },
-  { icon: Shield, label: "NIS2 Aligned", detail: "Cyber framework" },
-  { icon: Lock, label: "GDPR Compliant", detail: "Data protection" },
+  { icon: Scale, label: "EU Space Act", detail: "119 Articles" },
+  { icon: Shield, label: "NIS2 Directive", detail: "Cybersecurity" },
+  { icon: MapPin, label: "10 Jurisdictions", detail: "National Laws" },
+  { icon: Globe, label: "27 NCAs", detail: "All Authorities" },
+  { icon: Satellite, label: "7 Operator Types", detail: "Full Coverage" },
+  { icon: Lock, label: "GDPR Compliant", detail: "EU Hosted" },
 ];
 
 export default function TrustBar() {

@@ -21,8 +21,9 @@ const MODULES = [
     name: "Authorization & Licensing",
     description:
       "Multi-jurisdictional authorization workflow from national to EU-level approval. NCA determination, document checklists, and application tracking.",
-    articleRange: "Art. 6–16, 32–39, 105–108",
+    articleRange: "EU Space Act Art. 6–16",
     icon: FileCheck,
+    regulation: "eu-space-act",
     features: [
       "NCA determination engine",
       "Document workflow tracking",
@@ -36,8 +37,9 @@ const MODULES = [
     name: "Registration & Registry",
     description:
       "URSO registration and Union Register of Space Objects compliance. Automated data validation and submission preparation.",
-    articleRange: "Art. 24",
+    articleRange: "EU Space Act Art. 24",
     icon: Database,
+    regulation: "eu-space-act",
     features: [
       "URSO data templates",
       "Registry submission prep",
@@ -47,42 +49,30 @@ const MODULES = [
   },
   {
     id: "03",
-    slug: "environmental",
-    name: "Environmental Footprint",
+    slug: "nis2",
+    name: "NIS2 Cybersecurity",
     description:
-      "Environmental Footprint Declaration per Annex III methodology. Lifecycle assessment tools and impact calculation.",
-    articleRange: "Art. 96–100",
-    icon: Leaf,
+      "Full NIS2 Directive compliance for space operators. Essential/important entity classification, 51 security requirements, incident reporting.",
+    articleRange: "NIS2 Art. 21, 23, 27, 29",
+    icon: Shield,
+    regulation: "nis2",
+    highlight: true,
     features: [
-      "Annex III calculator",
-      "Lifecycle assessment",
-      "Emission tracking",
-      "Declaration generator",
+      "Entity classification",
+      "51 requirements mapped",
+      "24h incident reporting",
+      "Maturity assessment",
     ],
   },
   {
     id: "04",
-    slug: "cybersecurity",
-    name: "Cybersecurity & Resilience",
-    description:
-      "NIS2-aligned security framework with risk analysis, maturity scoring, and incident reporting workflows.",
-    articleRange: "Art. 74–95",
-    icon: Shield,
-    features: [
-      "Security profile builder",
-      "Maturity assessment",
-      "Gap analysis",
-      "Framework generator",
-    ],
-  },
-  {
-    id: "05",
     slug: "debris",
     name: "Debris Mitigation & Safety",
     description:
       "Space debris mitigation planning, collision avoidance procedures, and end-of-life disposal compliance.",
-    articleRange: "Art. 58–72, 101–103",
+    articleRange: "EU Space Act Art. 58–72",
     icon: Orbit,
+    regulation: "eu-space-act",
     features: [
       "Disposal planning",
       "Collision assessment",
@@ -91,13 +81,30 @@ const MODULES = [
     ],
   },
   {
+    id: "05",
+    slug: "environmental",
+    name: "Environmental Footprint",
+    description:
+      "Environmental Footprint Declaration per Annex III methodology. Lifecycle assessment tools and impact calculation.",
+    articleRange: "EU Space Act Art. 96–100",
+    icon: Leaf,
+    regulation: "eu-space-act",
+    features: [
+      "Annex III calculator",
+      "Lifecycle assessment",
+      "Emission tracking",
+      "Declaration generator",
+    ],
+  },
+  {
     id: "06",
     slug: "insurance",
     name: "Insurance & Liability",
     description:
       "Third-party liability coverage management and state-backed insurance requirement tracking.",
-    articleRange: "Art. 44–51",
+    articleRange: "EU Space Act Art. 44–51",
     icon: ShieldCheck,
+    regulation: "eu-space-act",
     features: [
       "Coverage calculator",
       "Policy tracking",
@@ -111,8 +118,9 @@ const MODULES = [
     name: "Supervision & Reporting",
     description:
       "Ongoing supervisory obligations, incident reporting, and regulatory communication management.",
-    articleRange: "Art. 26–31, 40–57, 73",
+    articleRange: "EU Space Act Art. 26–31",
     icon: Eye,
+    regulation: "eu-space-act",
     features: [
       "Incident reporting",
       "Audit trail",
@@ -125,9 +133,10 @@ const MODULES = [
     slug: "regulatory-intelligence",
     name: "Regulatory Intelligence",
     description:
-      "Real-time monitoring of delegated acts, implementing decisions, and evolving compliance requirements.",
-    articleRange: "Art. 104, 114–119",
+      "Real-time monitoring of EU Space Act delegated acts, NIS2 updates, and national law changes across 10 jurisdictions.",
+    articleRange: "Multi-regulation",
     icon: Bell,
+    regulation: "all",
     features: [
       "Change tracking",
       "Impact analysis",
@@ -158,18 +167,26 @@ export default function Modules() {
           >
             <div>
               <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4">
-                07 / 12 — Platform
+                07 / 14 — Platform
               </span>
               <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-light tracking-[-0.02em] text-white">
                 Eight modules.
                 <br />
-                <span className="text-white/50">One compliance platform.</span>
+                <span className="text-white/50">
+                  Complete regulatory coverage.
+                </span>
               </h2>
             </div>
-            <div className="hidden md:block">
-              <p className="font-mono text-[11px] text-white/30">
-                119 articles · 10 annexes
-              </p>
+            <div className="hidden md:flex items-center gap-4">
+              <span className="font-mono text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
+                EU Space Act
+              </span>
+              <span className="font-mono text-[10px] text-cyan-400/60 bg-cyan-500/10 px-2 py-1 rounded">
+                NIS2
+              </span>
+              <span className="font-mono text-[10px] text-purple-400/60 bg-purple-500/10 px-2 py-1 rounded">
+                10 National Laws
+              </span>
             </div>
           </motion.div>
         </div>
@@ -181,6 +198,8 @@ export default function Modules() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {MODULES.map((module, index) => {
               const Icon = module.icon;
+              const isNIS2 = module.regulation === "nis2";
+              const isMulti = module.regulation === "all";
               return (
                 <motion.div
                   key={module.id}
@@ -191,42 +210,87 @@ export default function Modules() {
                 >
                   <Link
                     href={`/modules/${module.slug}`}
-                    className="block h-full bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
+                    className={`block h-full rounded-xl p-6 transition-all duration-500 ${
+                      isNIS2
+                        ? "bg-cyan-500/5 border border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/30"
+                        : "bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
+                    }`}
                   >
                     {/* Header */}
                     <div className="flex items-start justify-between mb-5">
-                      <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors">
-                        <Icon size={18} className="text-white/60" />
+                      <div
+                        className={`p-2.5 rounded-lg transition-colors ${
+                          isNIS2
+                            ? "bg-cyan-500/10 group-hover:bg-cyan-500/20"
+                            : "bg-white/[0.04] group-hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        <Icon
+                          size={18}
+                          className={isNIS2 ? "text-cyan-400" : "text-white/60"}
+                        />
                       </div>
-                      <span className="font-mono text-[11px] text-white/20">
-                        {module.id}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {isNIS2 && (
+                          <span className="font-mono text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                            NIS2
+                          </span>
+                        )}
+                        {isMulti && (
+                          <span className="font-mono text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                            ALL
+                          </span>
+                        )}
+                        <span className="font-mono text-[11px] text-white/20">
+                          {module.id}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Module name */}
-                    <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
+                    <h3
+                      className={`text-[15px] font-medium mb-2 tracking-[-0.01em] ${
+                        isNIS2 ? "text-cyan-50" : "text-white"
+                      }`}
+                    >
                       {module.name}
                     </h3>
 
                     {/* Article range */}
-                    <p className="font-mono text-[10px] text-white/40 mb-4">
+                    <p
+                      className={`font-mono text-[10px] mb-4 ${
+                        isNIS2 ? "text-cyan-400/60" : "text-white/40"
+                      }`}
+                    >
                       {module.articleRange}
                     </p>
 
                     {/* Description */}
-                    <p className="text-[13px] text-white/50 leading-[1.6] mb-5">
+                    <p
+                      className={`text-[13px] leading-[1.6] mb-5 ${
+                        isNIS2 ? "text-cyan-100/50" : "text-white/50"
+                      }`}
+                    >
                       {module.description}
                     </p>
 
                     {/* Features */}
-                    <div className="pt-4 border-t border-white/[0.06]">
+                    <div
+                      className={`pt-4 border-t ${isNIS2 ? "border-cyan-500/10" : "border-white/[0.06]"}`}
+                    >
                       <div className="grid grid-cols-2 gap-2">
                         {module.features.map((feature, i) => (
                           <div
                             key={i}
-                            className="flex items-center gap-2 text-[11px] text-white/30"
+                            className={`flex items-center gap-2 text-[11px] ${
+                              isNIS2 ? "text-cyan-200/30" : "text-white/30"
+                            }`}
                           >
-                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                            <span
+                              className={`w-1 h-1 rounded-full ${
+                                isNIS2 ? "bg-cyan-400/40" : "bg-white/20"
+                              }`}
+                            />
                             {feature}
                           </div>
                         ))}
@@ -235,7 +299,11 @@ export default function Modules() {
 
                     {/* Hover indicator */}
                     <div className="mt-5 overflow-hidden h-4">
-                      <span className="block text-[12px] text-white/30 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5">
+                      <span
+                        className={`block text-[12px] transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5 ${
+                          isNIS2 ? "text-cyan-400/50" : "text-white/30"
+                        }`}
+                      >
                         <span>Explore module</span>
                         <span>→</span>
                       </span>
@@ -264,23 +332,23 @@ export default function Modules() {
               </p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">119</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
-                Articles
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">27</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
-                NCAs
-              </p>
-            </div>
-            <div className="text-center">
               <p className="font-mono text-[24px] font-light text-white">
-                2030
+                170+
               </p>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
-                Enforcement
+                Requirements
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-mono text-[24px] font-light text-white">3</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+                Frameworks
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-mono text-[24px] font-light text-white">10</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+                Jurisdictions
               </p>
             </div>
           </div>

@@ -51,21 +51,39 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="text-[clamp(2rem,5vw,4.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-white mb-6"
         >
-          The compliance platform
+          Space Regulatory
           <br />
-          <span className="text-white/60">for the EU Space Act.</span>
+          <span className="text-white/60">Compliance Platform.</span>
         </motion.h1>
+
+        {/* Regulation Pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.95 }}
+          className="flex flex-wrap items-center justify-center gap-2 mb-6"
+        >
+          <span className="px-3 py-1 text-[12px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+            EU Space Act
+          </span>
+          <span className="px-3 py-1 text-[12px] font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
+            NIS2 Directive
+          </span>
+          <span className="px-3 py-1 text-[12px] font-medium text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-full">
+            10 National Space Laws
+          </span>
+        </motion.div>
 
         {/* Subtext */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.0 }}
-          className="text-[14px] md:text-[16px] text-white/50 mb-10 max-w-[560px] mx-auto leading-[1.6]"
+          className="text-[14px] md:text-[16px] text-white/50 mb-10 max-w-[600px] mx-auto leading-[1.6]"
         >
           From initial assessment to ongoing compliance. Caelex automates
           authorization workflows, document management, and regulatory tracking
-          across all 119 articles.
+          across the EU Space Act, NIS2, and national laws in 10 jurisdictions.
         </motion.p>
 
         {/* Dual CTA Buttons */}

@@ -1,5 +1,7 @@
 import Hero from "@/components/landing/Hero";
 import TrustBar from "@/components/landing/TrustBar";
+import RegulatoryCoverage from "@/components/landing/RegulatoryCoverage";
+import JurisdictionCompare from "@/components/landing/JurisdictionCompare";
 import ProblemStatement from "@/components/landing/ProblemStatement";
 import ValueProposition from "@/components/landing/ValueProposition";
 import PlatformPreview from "@/components/landing/PlatformPreview";
@@ -16,6 +18,8 @@ export default function Home() {
     <main className="landing-page bg-black text-white min-h-screen">
       <Hero />
       <TrustBar />
+      <RegulatoryCoverage />
+      <JurisdictionCompare />
       <ProblemStatement />
       <AstraShowcase />
       <ValueProposition />
