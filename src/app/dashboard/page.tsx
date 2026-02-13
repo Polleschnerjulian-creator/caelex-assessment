@@ -793,7 +793,7 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
+      <div className="p-6 lg:p-8 bg-[#0A0A0B] min-h-screen">
         <div className="animate-pulse space-y-6 max-w-[1400px]">
           <div className="h-8 bg-white/5 rounded w-1/3" />
           <div className="h-4 bg-white/5 rounded w-1/2" />
@@ -813,7 +813,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
+    <div className="p-6 lg:p-8 bg-[#0A0A0B] min-h-screen">
       {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
@@ -1191,7 +1191,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 lg:p-8 bg-[#0A0F1E] min-h-screen">
+        <div className="p-6 lg:p-8 bg-[#0A0A0B] min-h-screen">
           <div className="animate-pulse space-y-6 max-w-[1400px]">
             <div className="h-8 bg-white/5 rounded w-1/3" />
             <div className="h-4 bg-white/5 rounded w-1/2" />
