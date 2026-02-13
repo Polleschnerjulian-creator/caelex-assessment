@@ -82,7 +82,7 @@ export function ComplianceScoreCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-white">Compliance Score</h2>
@@ -107,7 +107,7 @@ export function ComplianceScoreCard({
               fill="none"
               stroke="currentColor"
               strokeWidth="12"
-              className="text-navy-700"
+              className="text-white/20"
             />
             {/* Progress circle */}
             <motion.circle

@@ -1140,7 +1140,7 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[#0F172A] border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+                className="bg-[#0A0A0B] border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
                 <h2 className="text-[18px] font-medium text-white mb-2">
                   Select Operator Type

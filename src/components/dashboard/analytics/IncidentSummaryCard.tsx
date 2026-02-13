@@ -109,7 +109,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
   };
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-white">
@@ -128,7 +128,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-navy-900 rounded-lg">
+        <div className="text-center p-3 bg-zinc-900 rounded-lg">
           <p className="text-2xl font-bold text-white">{summary.total}</p>
           <p className="text-xs text-slate-400">Total</p>
         </div>
@@ -213,7 +213,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
                 <Link
                   key={incident.id}
                   href={`/dashboard/supervision/incidents/${incident.id}`}
-                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-navy-700/50 transition-colors"
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-white/[0.06]/50 transition-colors"
                 >
                   <div
                     className={`p-1.5 rounded ${getSeverityColor(incident.severity)}`}
