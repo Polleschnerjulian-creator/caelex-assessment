@@ -34,17 +34,16 @@ export default function Hero() {
         />
       </div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      {/* Dark overlay - lighter */}
+      <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
       {/* Gradient overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30 pointer-events-none" />
 
-      {/* Main content container */}
-      <div className="relative z-10 min-h-screen flex flex-col justify-end px-6 md:px-12 lg:px-16 pb-12 md:pb-16">
-        {/* Bottom content area */}
-        <div className="max-w-[1400px] mx-auto w-full">
+      {/* Main content container - aligned with nav (px-6 md:px-12) */}
+      <div className="relative z-10 min-h-screen flex flex-col justify-end pb-12 md:pb-16">
+        <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12">
           {/* Main grid: Headline left, CTA right */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
@@ -122,7 +121,7 @@ export default function Hero() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.5) 100%)",
+            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.4) 100%)",
         }}
       />
     </section>
