@@ -903,8 +903,8 @@ export default function PricingPage() {
             </p>
           </motion.div>
 
-          <GlassCard className="p-10" hover={false}>
-            <div className="grid md:grid-cols-2 gap-12">
+          <GlassCard className="p-6 sm:p-10" hover={false}>
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
               {/* Input Fields */}
               <div className="space-y-8">
                 <div>
@@ -1215,10 +1215,10 @@ export default function PricingPage() {
                       onClick={() => setExpandedFaq(isExpanded ? null : i)}
                       className="w-full p-6 flex items-center gap-4 text-left"
                     >
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-500/10">
+                      <div className="hidden sm:flex w-12 h-12 rounded-xl items-center justify-center flex-shrink-0 bg-emerald-500/10">
                         <Icon size={20} className="text-emerald-400" />
                       </div>
-                      <span className="flex-1 text-[17px] font-medium text-white">
+                      <span className="flex-1 text-[15px] sm:text-[17px] font-medium text-white">
                         {faq.question}
                       </span>
                       {isExpanded ? (
@@ -1236,8 +1236,8 @@ export default function PricingPage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-6 pb-6 pl-[88px]">
-                            <p className="text-[16px] text-white/60 leading-relaxed">
+                          <div className="px-6 pb-6 pl-6 sm:pl-[88px]">
+                            <p className="text-[15px] sm:text-[16px] text-white/60 leading-relaxed">
                               {faq.answer}
                             </p>
                           </div>
@@ -1265,7 +1265,7 @@ export default function PricingPage() {
         />
 
         <div className="relative z-10 max-w-[900px] mx-auto">
-          <GlassCard className="p-12 md:p-16" hover={false}>
+          <GlassCard className="p-8 sm:p-12 md:p-16" hover={false}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

@@ -67,8 +67,8 @@ function DataStream({ text, index, total }: DataStreamProps) {
     return () => clearInterval(flashInterval);
   }, []);
 
-  // Calculate orbit parameters - bigger radii for bigger container
-  const radiusBase = 220 + (index % 5) * 55; // 220-440px
+  // Calculate orbit parameters - responsive radii
+  const radiusBase = 140 + (index % 5) * 35; // 140-280px (smaller for mobile)
   const duration = 25 + ((index * 1.5) % 35); // 25-60s (slower)
   const delay = -(index / total) * duration;
   // Nearly invisible: 0.01 to 0.05 max
@@ -95,7 +95,7 @@ function DataStream({ text, index, total }: DataStreamProps) {
 // NO MOUSE INTERACTION - Entity is autonomous
 export default function Entity() {
   return (
-    <div className="relative w-[400px] h-[400px] lg:w-[700px] lg:h-[700px]">
+    <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] lg:w-[700px] lg:h-[700px]">
       {/* Inline styles for orbit animations */}
       <style jsx>{`
         @keyframes orbit0 {

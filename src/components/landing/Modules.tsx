@@ -232,12 +232,12 @@ export default function Modules() {
                       </div>
                       <div className="flex items-center gap-2">
                         {isNIS2 && (
-                          <span className="font-mono text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-[10px] sm:text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
                             NIS2
                           </span>
                         )}
                         {isMulti && (
-                          <span className="font-mono text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-[10px] sm:text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
                             ALL
                           </span>
                         )}
@@ -327,7 +327,7 @@ export default function Modules() {
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 py-8 border-t border-white/[0.06]">
             <div className="text-center">
               <p className="font-mono text-[24px] font-light text-white">8</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Modules
               </p>
             </div>
@@ -335,19 +335,19 @@ export default function Modules() {
               <p className="font-mono text-[24px] font-light text-white">
                 170+
               </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Requirements
               </p>
             </div>
             <div className="text-center">
               <p className="font-mono text-[24px] font-light text-white">3</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Frameworks
               </p>
             </div>
             <div className="text-center">
               <p className="font-mono text-[24px] font-light text-white">10</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Jurisdictions
               </p>
             </div>

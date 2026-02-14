@@ -101,7 +101,7 @@ export default function FinalCTA() {
               />
             </Link>
           </div>
-          <span className="text-[11px] text-white/25">
+          <span className="text-[12px] sm:text-[11px] text-white/25">
             No credit card required. Free compliance assessment.
           </span>
         </motion.div>

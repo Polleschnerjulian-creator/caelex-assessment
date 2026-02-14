@@ -124,7 +124,7 @@ export default function TargetAudience() {
                 <p className="text-[12px] text-white/45 leading-[1.6] mb-3">
                   {audience.description}
                 </p>
-                <span className="inline-block font-mono text-[9px] text-white/30 uppercase tracking-wider">
+                <span className="inline-block font-mono text-[11px] sm:text-[10px] md:text-[9px] text-white/30 uppercase tracking-wider">
                   {audience.tag}
                 </span>
               </motion.div>

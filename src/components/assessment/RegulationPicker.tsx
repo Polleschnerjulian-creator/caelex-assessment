@@ -169,7 +169,7 @@ export default function RegulationPicker() {
                       <div className="font-mono text-[28px] font-medium text-white">
                         3
                       </div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
                         Frameworks
                       </div>
                     </div>
@@ -177,7 +177,7 @@ export default function RegulationPicker() {
                       <div className="font-mono text-[28px] font-medium text-white">
                         ~35
                       </div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
                         Questions
                       </div>
                     </div>
@@ -185,7 +185,7 @@ export default function RegulationPicker() {
                       <div className="font-mono text-[28px] font-medium text-white">
                         8-10
                       </div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
                         Minutes
                       </div>
                     </div>
@@ -211,7 +211,7 @@ export default function RegulationPicker() {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.5 }}
-            className="text-center text-white/25 text-[11px] tracking-[0.05em] mt-10"
+            className="text-center text-white/25 text-[12px] sm:text-[11px] tracking-[0.05em] mt-10"
           >
             No data stored · 100% client-side processing · Results exportable
           </motion.p>

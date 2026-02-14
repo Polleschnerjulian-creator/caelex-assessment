@@ -48,11 +48,11 @@ export default function TrustBar() {
                 className="flex items-center gap-2.5"
               >
                 <Icon size={14} className="text-white/25" />
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-[11px] text-white/45 tracking-wide">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5">
+                  <span className="font-mono text-[12px] sm:text-[11px] text-white/45 tracking-wide">
                     {item.label}
                   </span>
-                  <span className="font-mono text-[10px] text-white/25">
+                  <span className="font-mono text-[11px] sm:text-[10px] text-white/25">
                     {item.detail}
                   </span>
                 </div>

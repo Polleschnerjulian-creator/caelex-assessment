@@ -269,7 +269,7 @@ function DocumentsTab() {
                 </div>
               </div>
               <span
-                className={`text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
+                className={`text-[11px] sm:text-[10px] md:text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
               >
                 {config.label}
               </span>
@@ -298,7 +298,7 @@ function TimelineTab() {
               {deadline.title}
             </p>
             <span
-              className={`text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
+              className={`text-[11px] sm:text-[10px] md:text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
             >
               {deadline.urgency}
             </span>

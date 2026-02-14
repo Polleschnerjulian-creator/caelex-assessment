@@ -235,7 +235,7 @@ export default function AstraSection() {
                         {cap.name}
                       </h4>
                       {cap.isNew && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-medium text-emerald-400 bg-emerald-500/15 rounded uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 text-[10px] sm:text-[9px] font-medium text-emerald-400 bg-emerald-500/15 rounded uppercase tracking-wider">
                           New
                         </span>
                       )}

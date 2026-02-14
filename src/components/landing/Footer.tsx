@@ -184,7 +184,7 @@ export default function Footer() {
 
       {/* Main Footer */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 md:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 md:gap-8">
           {/* Brand Column */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
@@ -204,34 +204,34 @@ export default function Footer() {
               cs@caelex.eu
             </a>
 
-            {/* Social Links */}
+            {/* Social Links - min 44px touch targets for mobile */}
             <div className="flex items-center gap-3">
               <a
                 href="https://linkedin.com/company/caelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
                 aria-label="Follow Caelex on LinkedIn"
               >
-                <LinkedInIcon className="w-3.5 h-3.5" />
+                <LinkedInIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </a>
               <a
                 href="https://x.com/caboracaelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
                 aria-label="Follow Caelex on X"
               >
-                <XIcon className="w-3.5 h-3.5" />
+                <XIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </a>
               <a
                 href="https://instagram.com/caelex.eu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
                 aria-label="Follow Caelex on Instagram"
               >
-                <InstagramIcon className="w-3.5 h-3.5" />
+                <InstagramIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </a>
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function Footer() {
                 href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+                className="text-[12px] sm:text-[11px] text-white/30 hover:text-white/50 transition-colors"
               >
                 EU Space Act
               </a>
@@ -349,7 +349,7 @@ export default function Footer() {
                 href="https://eur-lex.europa.eu/eli/dir/2022/2555/oj"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+                className="text-[12px] sm:text-[11px] text-white/30 hover:text-white/50 transition-colors"
               >
                 NIS2 Directive
               </a>
@@ -357,7 +357,7 @@ export default function Footer() {
                 href="https://www.euspa.europa.eu/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+                className="text-[12px] sm:text-[11px] text-white/30 hover:text-white/50 transition-colors"
               >
                 EUSPA
               </a>
@@ -365,7 +365,7 @@ export default function Footer() {
                 href="https://www.esa.int/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-white/30 hover:text-white/50 transition-colors"
+                className="text-[12px] sm:text-[11px] text-white/30 hover:text-white/50 transition-colors"
               >
                 ESA
               </a>
@@ -373,7 +373,7 @@ export default function Footer() {
           </div>
 
           {/* Disclaimer */}
-          <p className="text-[10px] text-white/20 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
+          <p className="text-[11px] sm:text-[10px] text-white/20 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
             This platform provides regulatory guidance based on the EU Space Act
             (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space
             laws across European jurisdictions. Information provided does not

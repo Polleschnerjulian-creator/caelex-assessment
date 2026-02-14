@@ -80,7 +80,7 @@ export default function HowItWorks() {
                 className="relative"
               >
                 {/* Large Ghost Number */}
-                <div className="absolute -top-4 left-4 text-[120px] md:text-[140px] font-bold text-white/[0.04] leading-none select-none pointer-events-none z-0">
+                <div className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/[0.04] leading-none select-none pointer-events-none z-0">
                   {step.number}
                 </div>
 
