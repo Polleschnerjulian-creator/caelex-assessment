@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import {
   Send,
   CheckCircle,
@@ -107,8 +105,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* Hero Section */}
       <section className="relative pt-32 pb-16 overflow-hidden">
         {/* Background Effects */}
@@ -414,8 +410,6 @@ export default function ContactPage() {
           </GlassCard>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

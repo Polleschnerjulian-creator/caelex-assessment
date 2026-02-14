@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { HelpCircle, ChevronDown, ArrowRight } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { siteConfig } from "@/lib/seo";
 import {
@@ -92,7 +90,6 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
       <FAQPageJsonLd faqs={allFaqs} />
 
       <main className="pt-32 pb-20">
@@ -218,7 +215,6 @@ export default function FAQPage() {
           </section>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

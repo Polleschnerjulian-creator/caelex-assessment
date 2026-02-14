@@ -9,8 +9,6 @@ import {
   Shield,
   Banknote,
 } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateJurisdictionBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
@@ -365,8 +363,6 @@ export default async function JurisdictionPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* JSON-LD */}
       <ArticleJsonLd
         title={jurisdiction.h1}
@@ -569,8 +565,6 @@ export default async function JurisdictionPage({ params }: PageProps) {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

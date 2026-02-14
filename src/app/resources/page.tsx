@@ -11,8 +11,6 @@ import {
   Globe,
   Layers,
 } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { getAllPosts, getFeaturedPosts } from "@/content/blog/posts";
 import { getAllGuides } from "@/content/guides/guides";
@@ -138,8 +136,6 @@ export default function ResourcesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}
@@ -360,8 +356,6 @@ export default function ResourcesPage() {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

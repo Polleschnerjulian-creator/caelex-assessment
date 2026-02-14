@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { BookText, ArrowRight, Search } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
 import {
@@ -48,8 +46,6 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}
@@ -212,8 +208,6 @@ export default function GlossaryPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

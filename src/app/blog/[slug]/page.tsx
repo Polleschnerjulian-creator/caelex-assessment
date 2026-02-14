@@ -2,8 +2,6 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Clock, Calendar, Tag } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateBlogBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
@@ -155,8 +153,6 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* JSON-LD */}
       <ArticleJsonLd
         title={post.title}
@@ -313,8 +309,6 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

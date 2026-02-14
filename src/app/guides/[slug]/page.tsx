@@ -2,8 +2,6 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, Clock, Calendar } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateGuideBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
@@ -185,8 +183,6 @@ export default async function GuidePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* JSON-LD */}
       <ArticleJsonLd
         title={guide.title}
@@ -324,8 +320,6 @@ export default async function GuidePage({ params }: PageProps) {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

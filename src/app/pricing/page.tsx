@@ -4,8 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import {
   Check,
   HelpCircle,
@@ -226,8 +224,6 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* Hero Section */}
       <section ref={heroRef} className="relative pt-32 pb-16 overflow-hidden">
         {/* Background Effects */}
@@ -660,8 +656,6 @@ export default function PricingPage() {
           </GlassCard>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

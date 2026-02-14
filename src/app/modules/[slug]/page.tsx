@@ -9,8 +9,6 @@ import {
   Scale,
   Shield,
 } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateModuleBreadcrumbs } from "@/lib/breadcrumbs";
 import { ProductJsonLd } from "@/components/seo/JsonLd";
@@ -381,8 +379,6 @@ export default async function ModulePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* JSON-LD */}
       <ProductJsonLd
         name={moduleInfo.title}
@@ -560,8 +556,6 @@ export default async function ModulePage({ params }: PageProps) {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -16,7 +16,6 @@ import {
   Play,
   Calendar,
 } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
 import { CaelexIcon } from "@/components/ui/Logo";
 
 const benefits = [
@@ -102,8 +101,6 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background Effects */}

@@ -4,8 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import {
   ArrowRight,
   Target,
@@ -164,8 +162,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* Hero Section */}
       <section
         ref={heroRef}
@@ -651,8 +647,6 @@ export default function AboutPage() {
           </motion.div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

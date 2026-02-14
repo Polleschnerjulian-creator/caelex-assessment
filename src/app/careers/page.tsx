@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import {
   MapPin,
   Clock,
@@ -101,8 +99,6 @@ const values = [
 export default function CareersPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background Effects */}
@@ -397,8 +393,6 @@ export default function CareersPage() {
           </motion.div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }

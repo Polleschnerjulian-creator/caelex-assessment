@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Clock, Calendar, Tag } from "lucide-react";
-import Navigation from "@/components/landing/Navigation";
-import Footer from "@/components/landing/Footer";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { pageMetadata } from "@/lib/seo";
 import {
@@ -20,8 +18,6 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navigation />
-
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}
@@ -162,8 +158,6 @@ export default function BlogPage() {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
