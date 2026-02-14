@@ -1,33 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import Logo from "@/components/ui/Logo";
-import { ArrowLeft } from "lucide-react";
-
 export default function ImpressumPage() {
   return (
     <main className="dark-section min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-            >
-              <Logo size={24} className="text-white" />
-            </Link>
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span>Back</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Content */}
       <div className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
