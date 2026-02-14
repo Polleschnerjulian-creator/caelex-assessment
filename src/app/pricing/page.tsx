@@ -19,7 +19,6 @@ import {
   ChevronUp,
   TrendingUp,
   Award,
-  Crown,
   Lock,
   Globe,
   FileCheck,
@@ -28,45 +27,12 @@ import {
   Headphones,
   Target,
   RefreshCw,
-  FileText,
   ShieldCheck,
   Leaf,
   Send,
   Eye,
   Info,
 } from "lucide-react";
-
-// ============================================================================
-// COUNTDOWN HOOK - 2030 Deadline
-// ============================================================================
-function useCountdown(targetDate: Date) {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const difference = targetDate.getTime() - new Date().getTime();
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(timer);
-  }, [targetDate]);
-
-  return timeLeft;
-}
 
 // ============================================================================
 // ANIMATED COUNTER
@@ -148,7 +114,6 @@ const plans = [
     icon: Zap,
     monthlyPrice: 449,
     yearlyPrice: 374,
-    foundingPrice: 314,
     highlighted: false,
     cta: "Start Free Trial",
     ctaHref: "/contact?plan=essentials",
@@ -176,7 +141,6 @@ const plans = [
     icon: Rocket,
     monthlyPrice: 1199,
     yearlyPrice: 999,
-    foundingPrice: 839,
     highlighted: true,
     cta: "Start Free Trial",
     ctaHref: "/contact?plan=professional",
@@ -204,7 +168,6 @@ const plans = [
     icon: Building2,
     monthlyPrice: 2499,
     yearlyPrice: 2083,
-    foundingPrice: null,
     priceLabel: "from",
     highlighted: false,
     cta: "Contact Sales",
@@ -563,20 +526,14 @@ export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly",
   );
-  const [showFoundingBanner, setShowFoundingBanner] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   // User-driven estimate inputs
   const [estimatedHours, setEstimatedHours] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
 
-  const deadline = new Date("2030-01-01T00:00:00");
-  const timeLeft = useCountdown(deadline);
-
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
-
-  const foundingSpotsLeft = 4;
 
   // Calculate user estimate (only when both inputs have values)
   const hours = parseInt(estimatedHours) || 0;
@@ -591,43 +548,9 @@ export default function PricingPage() {
       {/* ================================================================== */}
       {/* FOUNDING MEMBER BANNER */}
       {/* ================================================================== */}
-      <AnimatePresence>
-        {showFoundingBanner && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="relative overflow-hidden bg-emerald-500"
-          >
-            <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Crown size={18} className="text-white" />
-                <span className="text-[14px] font-medium text-white">
-                  <span className="hidden sm:inline">
-                    Founding Member Program:{" "}
-                  </span>
-                  <span className="font-bold">30% off for life</span>
-                  <span className="mx-2 opacity-60">•</span>
-                  <span className="opacity-90">
-                    Only {foundingSpotsLeft} spots left
-                  </span>
-                </span>
-              </div>
-              <button
-                onClick={() => setShowFoundingBanner(false)}
-                className="text-white/70 hover:text-white transition-colors p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ================================================================== */}
       {/* HERO SECTION */}
       {/* ================================================================== */}
-      <section ref={heroRef} className="relative pt-28 pb-20 overflow-hidden">
+      <section ref={heroRef} className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -639,59 +562,6 @@ export default function PricingPage() {
         </div>
 
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-12 text-center">
-          {/* Countdown */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={heroInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-            className="mb-10"
-          >
-            <GlassCard
-              className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-8 px-8 py-5"
-              hover={false}
-            >
-              <div className="flex items-center gap-2 text-[15px] text-white/60">
-                <Clock size={18} className="text-emerald-400" />
-                <span>EU Space Act Deadline</span>
-              </div>
-              <div className="flex items-center gap-4">
-                {[
-                  { value: timeLeft.days, label: "Days" },
-                  { value: timeLeft.hours, label: "Hrs" },
-                  { value: timeLeft.minutes, label: "Min" },
-                  { value: timeLeft.seconds, label: "Sec" },
-                ].map((item, i) => (
-                  <div key={item.label} className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-[28px] sm:text-[32px] font-light tracking-tight text-emerald-400">
-                        {String(item.value).padStart(2, "0")}
-                      </div>
-                      <div className="text-[11px] uppercase tracking-wider text-white/40 mt-1">
-                        {item.label}
-                      </div>
-                    </div>
-                    {i < 3 && (
-                      <span className="text-white/20 text-[24px] -mt-4">:</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Honest Value Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={heroInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8"
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[14px] text-emerald-400">
-              <FileText size={16} />
-              Automates EU Space Act compliance preparation
-            </span>
-          </motion.div>
-
           {/* Headline */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -760,7 +630,6 @@ export default function PricingPage() {
                 billingPeriod === "yearly"
                   ? plan.yearlyPrice
                   : plan.monthlyPrice;
-              const foundingPrice = plan.foundingPrice;
 
               return (
                 <motion.div
@@ -833,26 +702,13 @@ export default function PricingPage() {
                             </span>
                           </div>
                         ) : (
-                          <div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[48px] font-light tracking-[-0.02em] text-white">
-                                €{price?.toLocaleString("de-DE")}
-                              </span>
-                              <span className="text-[16px] text-white/40">
-                                /month
-                              </span>
-                            </div>
-                            {foundingPrice && foundingSpotsLeft > 0 && (
-                              <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/20">
-                                <Crown size={14} className="text-emerald-400" />
-                                <span className="text-[14px] text-white/70">
-                                  Founding:{" "}
-                                  <span className="font-semibold text-emerald-400">
-                                    €{foundingPrice}/mo
-                                  </span>
-                                </span>
-                              </div>
-                            )}
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-[48px] font-light tracking-[-0.02em] text-white">
+                              €{price?.toLocaleString("de-DE")}
+                            </span>
+                            <span className="text-[16px] text-white/40">
+                              /month
+                            </span>
                           </div>
                         )}
                         {billingPeriod === "yearly" && price && (
