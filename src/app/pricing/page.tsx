@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  Calculator,
   TrendingUp,
   Award,
   Crown,
@@ -29,6 +28,12 @@ import {
   Headphones,
   Target,
   RefreshCw,
+  FileText,
+  ShieldCheck,
+  Leaf,
+  Send,
+  Eye,
+  Info,
 } from "lucide-react";
 
 // ============================================================================
@@ -68,14 +73,10 @@ function useCountdown(targetDate: Date) {
 // ============================================================================
 function AnimatedCounter({
   target,
-  prefix = "",
   suffix = "",
-  duration = 2000,
 }: {
   target: number;
-  prefix?: string;
   suffix?: string;
-  duration?: number;
 }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -85,6 +86,7 @@ function AnimatedCounter({
     if (!inView) return;
 
     let startTime: number;
+    const duration = 2000;
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / duration, 1);
@@ -93,11 +95,10 @@ function AnimatedCounter({
       if (progress < 1) requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
-  }, [inView, target, duration]);
+  }, [inView, target]);
 
   return (
     <span ref={ref}>
-      {prefix}
       {count.toLocaleString("de-DE")}
       {suffix}
     </span>
@@ -151,6 +152,8 @@ const plans = [
     highlighted: false,
     cta: "Start Free Trial",
     ctaHref: "/contact?plan=essentials",
+    valueStatement:
+      "Automates compliance mapping at a fraction of consulting rates",
     features: [
       "Full Compliance Assessment",
       "1 Jurisdiction Coverage",
@@ -177,6 +180,8 @@ const plans = [
     highlighted: true,
     cta: "Start Free Trial",
     ctaHref: "/contact?plan=professional",
+    valueStatement:
+      "Replaces manual compliance work typically done at €250–400/h",
     features: [
       "Everything in Essentials",
       "All 10 Jurisdictions",
@@ -204,6 +209,7 @@ const plans = [
     highlighted: false,
     cta: "Contact Sales",
     ctaHref: "/contact?plan=enterprise",
+    valueStatement: "Continuous compliance automation with dedicated support",
     features: [
       "Everything in Professional",
       "Unlimited Everything",
@@ -219,6 +225,58 @@ const plans = [
       "Compliance Consulting",
     ],
     notIncluded: [],
+  },
+];
+
+// ============================================================================
+// AUTHORIZATION WORKSTREAMS
+// ============================================================================
+const authorizationWorkstreams = [
+  {
+    icon: Shield,
+    title: "Safety & Sustainability Assessment",
+    items: [
+      "Debris mitigation plan",
+      "Collision avoidance capability",
+      "End-of-life disposal strategy",
+      "Trackability requirements",
+    ],
+  },
+  {
+    icon: ShieldCheck,
+    title: "Cybersecurity & NIS2 Compliance",
+    items: [
+      "Risk management framework",
+      "Incident reporting procedures",
+      "Supply chain security assessment",
+    ],
+  },
+  {
+    icon: Leaf,
+    title: "Environmental Footprint",
+    items: [
+      "Mission environmental impact calculation",
+      "Footprint declaration",
+      "Qualified technical body certification",
+    ],
+  },
+  {
+    icon: Send,
+    title: "Authorization Documentation",
+    items: [
+      "Technical file preparation",
+      "Submission to up to 3 Member State NCAs",
+      "6-month technical assessment response",
+    ],
+  },
+  {
+    icon: Eye,
+    title: "Ongoing Monitoring",
+    items: [
+      "Regulatory updates from delegated acts",
+      "Re-authorization triggers",
+      "Annual reporting obligations",
+    ],
   },
 ];
 
@@ -461,10 +519,10 @@ const featureCategories = [
 // ============================================================================
 const faqs = [
   {
-    question: "Why is CAELEX cheaper than hiring a regulatory consultant?",
+    question: "What does Caelex replace vs. what do we still need?",
     answer:
-      "Traditional space regulatory consultants charge €150-300/hour. A typical EU Space Act compliance project takes 400-600 hours, costing €60,000-180,000. CAELEX automates 80% of that work. You get continuous compliance monitoring, not just a one-time audit.",
-    icon: Calculator,
+      "Caelex automates compliance mapping, gap analysis, document preparation, and ongoing regulatory monitoring — work traditionally done by consultants at €250–400/hour. You still need: authorization fees to your NCA (~€100K per product line), specialized legal counsel for specific filings, technical compliance measures (hardware, systems), and insurance coverage. Caelex handles the preparation work, not the fees or technical implementation.",
+    icon: Info,
   },
   {
     question: "What happens if we miss the 2030 deadline?",
@@ -479,15 +537,15 @@ const faqs = [
     icon: TrendingUp,
   },
   {
-    question: "Is CAELEX recognized by National Competent Authorities?",
+    question: "Is Caelex recognized by National Competent Authorities?",
     answer:
-      "CAELEX generates NCA-ready submission packages that follow the exact format required by each authority. Our templates are reviewed by former regulatory officials.",
+      "Caelex generates NCA-ready submission packages that follow the exact format required by each authority. Our templates are reviewed by former regulatory officials. Caelex complements but does not replace specialized legal counsel for NCA interactions.",
     icon: Award,
   },
   {
     question: "What if we operate in multiple jurisdictions?",
     answer:
-      "Professional and Enterprise plans cover all 10 European jurisdictions (FR, UK, DE, LU, NL, BE, AT, DK, IT, NO). Our comparison tools help you choose the optimal authorization jurisdiction.",
+      "Professional and Enterprise plans cover all 10 European jurisdictions (FR, UK, DE, LU, NL, BE, AT, DK, IT, NO). Our comparison tools help you choose the optimal authorization jurisdiction based on your specific operation.",
     icon: Globe,
   },
   {
@@ -507,8 +565,10 @@ export default function PricingPage() {
   );
   const [showFoundingBanner, setShowFoundingBanner] = useState(true);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [spacecraftCount, setSpacecraftCount] = useState(5);
-  const [jurisdictionCount, setJurisdictionCount] = useState(3);
+
+  // User-driven estimate inputs
+  const [estimatedHours, setEstimatedHours] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
 
   const deadline = new Date("2030-01-01T00:00:00");
   const timeLeft = useCountdown(deadline);
@@ -516,13 +576,15 @@ export default function PricingPage() {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
 
-  // ROI Calculator
-  const consultantCost = spacecraftCount * jurisdictionCount * 25000;
-  const caelexCost = billingPeriod === "yearly" ? 999 * 12 : 1199 * 12;
-  const savings = consultantCost - caelexCost;
-  const savingsPercent = Math.round((savings / consultantCost) * 100);
-
   const foundingSpotsLeft = 4;
+
+  // Calculate user estimate (only when both inputs have values)
+  const hours = parseInt(estimatedHours) || 0;
+  const rate = parseInt(hourlyRate) || 0;
+  const consultingEstimate = hours * rate;
+  const caelexAnnual = 11988; // Professional yearly
+  const hasEstimate = hours > 0 && rate > 0;
+  const savings = consultingEstimate - caelexAnnual;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -566,7 +628,6 @@ export default function PricingPage() {
       {/* HERO SECTION */}
       {/* ================================================================== */}
       <section ref={heroRef} className="relative pt-28 pb-20 overflow-hidden">
-        {/* Background */}
         <div className="absolute inset-0">
           <div
             className="absolute inset-0"
@@ -618,22 +679,17 @@ export default function PricingPage() {
             </GlassCard>
           </motion.div>
 
-          {/* Price Anchor */}
+          {/* Honest Value Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-3 text-[15px] text-white/50">
-              <span className="line-through">
-                €100,000+ regulatory consultants
-              </span>
-              <span className="text-white/30">→</span>
-              <span className="text-emerald-400 font-semibold">
-                From €314/mo
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[14px] text-emerald-400">
+              <FileText size={16} />
+              Automates EU Space Act compliance preparation
+            </span>
           </motion.div>
 
           {/* Headline */}
@@ -643,13 +699,14 @@ export default function PricingPage() {
             transition={{ duration: 0.6, delay: 0.15 }}
           >
             <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-8">
-              Compliance that
+              Compliance automation
               <br />
-              <span className="text-emerald-400">pays for itself</span>
+              <span className="text-emerald-400">for space operators</span>
             </h1>
-            <p className="text-[18px] md:text-[20px] text-white/60 max-w-[600px] mx-auto mb-12 leading-relaxed">
-              Join 50+ operators who switched from six-figure consulting fees to
-              automated compliance. Average ROI: 12x in year one.
+            <p className="text-[18px] md:text-[20px] text-white/60 max-w-[650px] mx-auto mb-12 leading-relaxed">
+              Map requirements, track deadlines, prepare documentation, and
+              monitor regulatory changes — continuously, not as a one-time
+              consulting project.
             </p>
 
             {/* Billing Toggle */}
@@ -752,8 +809,13 @@ export default function PricingPage() {
                         </h3>
                       </div>
 
-                      <p className="text-[15px] text-white/50 mb-8 leading-relaxed min-h-[48px]">
+                      <p className="text-[15px] text-white/50 mb-6 leading-relaxed min-h-[48px]">
                         {plan.description}
+                      </p>
+
+                      {/* Value Statement (replaces fake savings) */}
+                      <p className="text-[13px] text-emerald-400/80 mb-6 pb-6 border-b border-white/[0.06]">
+                        {plan.valueStatement}
                       </p>
 
                       {/* Price */}
@@ -875,7 +937,88 @@ export default function PricingPage() {
       </section>
 
       {/* ================================================================== */}
-      {/* ROI CALCULATOR */}
+      {/* WHAT AUTHORIZATION REQUIRES (Honest Scope Section) */}
+      {/* ================================================================== */}
+      <section className="relative py-24 px-6 md:px-12">
+        <div className="max-w-[1000px] mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
+              Compliance Scope
+            </span>
+            <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
+              What authorization under the EU Space Act requires
+            </h2>
+            <p className="text-[17px] text-white/50 leading-relaxed max-w-[700px] mx-auto">
+              Each workstream requires specialized regulatory expertise. Caelex
+              automates the mapping, tracking, documentation, and monitoring
+              across all of them.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {authorizationWorkstreams.map((workstream, i) => {
+              const Icon = workstream.icon;
+              return (
+                <motion.div
+                  key={workstream.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <GlassCard className="p-6 h-full" hover={false}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Icon size={20} className="text-emerald-400" />
+                      </div>
+                      <h3 className="text-[15px] font-medium text-white">
+                        {workstream.title}
+                      </h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {workstream.items.map((item) => (
+                        <li
+                          key={item}
+                          className="text-[14px] text-white/50 flex items-start gap-2"
+                        >
+                          <span className="text-emerald-400/60 mt-1.5">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </GlassCard>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Context text */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-10 text-center"
+          >
+            <p className="text-[15px] text-white/40 leading-relaxed max-w-[800px] mx-auto">
+              Traditionally, operators hire consultants at €250–400/hour or
+              build internal compliance teams. Caelex automates the mapping,
+              tracking, documentation, and monitoring across all workstreams —
+              continuously.
+            </p>
+            <p className="text-[13px] text-white/30 mt-4">
+              Source: EU Space Act (COM/2025/335), Titles II–IV
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================================================================== */}
+      {/* YOUR ESTIMATE (User-Driven Comparison) */}
       {/* ================================================================== */}
       <section className="relative py-24 px-6 md:px-12">
         <div
@@ -894,114 +1037,163 @@ export default function PricingPage() {
             className="text-center mb-14"
           >
             <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-              ROI Calculator
+              Your Estimate
             </span>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
-              Calculate Your Savings
+              Already budgeting for compliance?
             </h2>
             <p className="text-[17px] text-white/50 leading-relaxed">
-              See how much you save compared to traditional regulatory
-              consultants.
+              Enter your own estimates to see how Caelex compares.
             </p>
           </motion.div>
 
           <GlassCard className="p-10" hover={false}>
             <div className="grid md:grid-cols-2 gap-12">
-              {/* Sliders */}
-              <div className="space-y-10">
+              {/* Input Fields */}
+              <div className="space-y-8">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-[16px] text-white/70">
-                      Number of Spacecraft
-                    </label>
-                    <span className="text-[22px] font-medium text-emerald-400">
-                      {spacecraftCount}
-                    </span>
-                  </div>
+                  <label className="block text-[15px] text-white/70 mb-3">
+                    Estimated consulting/legal hours for authorization
+                  </label>
                   <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={spacecraftCount}
-                    onChange={(e) =>
-                      setSpacecraftCount(parseInt(e.target.value))
-                    }
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer bg-white/10"
-                    style={{
-                      background: `linear-gradient(to right, #10B981 0%, #10B981 ${(spacecraftCount / 50) * 100}%, rgba(255,255,255,0.1) ${(spacecraftCount / 50) * 100}%, rgba(255,255,255,0.1) 100%)`,
-                    }}
+                    type="number"
+                    placeholder="e.g. 300"
+                    value={estimatedHours}
+                    onChange={(e) => setEstimatedHours(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-[16px] placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <div className="flex justify-between mt-2 text-[13px] text-white/30">
-                    <span>1</span>
-                    <span>50+</span>
-                  </div>
+                  <p className="text-[13px] text-white/40 mt-2">
+                    The authorization process spans 6+ months across multiple
+                    workstreams
+                  </p>
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-[16px] text-white/70">
-                      Jurisdictions Required
-                    </label>
-                    <span className="text-[22px] font-medium text-emerald-400">
-                      {jurisdictionCount}
-                    </span>
-                  </div>
+                  <label className="block text-[15px] text-white/70 mb-3">
+                    Average hourly rate of your regulatory counsel (€)
+                  </label>
                   <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={jurisdictionCount}
-                    onChange={(e) =>
-                      setJurisdictionCount(parseInt(e.target.value))
-                    }
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer bg-white/10"
-                    style={{
-                      background: `linear-gradient(to right, #10B981 0%, #10B981 ${(jurisdictionCount / 10) * 100}%, rgba(255,255,255,0.1) ${(jurisdictionCount / 10) * 100}%, rgba(255,255,255,0.1) 100%)`,
-                    }}
+                    type="number"
+                    placeholder="e.g. 300"
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-[16px] placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <div className="flex justify-between mt-2 text-[13px] text-white/30">
-                    <span>1</span>
-                    <span>10</span>
-                  </div>
+                  <p className="text-[13px] text-white/40 mt-2">
+                    Specialized space law: typically €250–400/h
+                  </p>
                 </div>
               </div>
 
-              {/* Results */}
+              {/* Results - Only show when both inputs have values */}
               <div className="space-y-6">
-                <div className="flex justify-between items-center py-4 border-b border-white/[0.08]">
-                  <span className="text-[16px] text-white/50">
-                    Traditional Consultant
-                  </span>
-                  <span className="text-[20px] text-white/60 line-through">
-                    €{consultantCost.toLocaleString("de-DE")}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-4 border-b border-white/[0.08]">
-                  <span className="text-[16px] text-white/50">
-                    CAELEX Professional (Annual)
-                  </span>
-                  <span className="text-[20px] font-medium text-emerald-400">
-                    €{caelexCost.toLocaleString("de-DE")}
-                  </span>
-                </div>
-                <div className="rounded-xl p-6 bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[16px] text-white/70">
-                      Your Annual Savings
-                    </span>
-                    <div className="text-right">
-                      <span className="text-[32px] font-medium text-emerald-400">
-                        €<AnimatedCounter target={savings} />
-                      </span>
-                      <span className="block text-[14px] text-emerald-400/80">
-                        ({savingsPercent}% savings)
-                      </span>
+                {hasEstimate ? (
+                  <>
+                    {/* Consulting Estimate */}
+                    <div className="py-4 border-b border-white/[0.08]">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[15px] text-white/60">
+                          Consulting estimate
+                        </span>
+                        <span className="text-[20px] text-white/70">
+                          €{consultingEstimate.toLocaleString("de-DE")}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-white/40">
+                        Based on your inputs — one-time engagement
+                      </p>
+                      <p className="text-[13px] text-white/40 mt-1">
+                        + Ongoing monitoring after initial authorization
+                      </p>
+                      <p className="text-[13px] text-white/40">
+                        + Re-engagement when regulations change
+                      </p>
                     </div>
+
+                    {/* Caelex */}
+                    <div className="py-4 border-b border-white/[0.08]">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[15px] text-white/60">
+                          Caelex Professional
+                        </span>
+                        <span className="text-[20px] font-medium text-emerald-400">
+                          €{caelexAnnual.toLocaleString("de-DE")}/year
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-white/40">
+                        Continuous — includes regulatory updates
+                      </p>
+                      <div className="mt-3 space-y-1">
+                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                          <Check size={14} /> Compliance mapping automated
+                        </p>
+                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                          <Check size={14} /> Document templates pre-built
+                        </p>
+                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                          <Check size={14} /> Regulatory changes tracked
+                          automatically
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Savings/Comparison Line */}
+                    <div className="rounded-xl p-5 bg-emerald-500/10 border border-emerald-500/20">
+                      {savings > 0 ? (
+                        <p className="text-[15px] text-emerald-400 leading-relaxed">
+                          Caelex costs{" "}
+                          <strong>
+                            €{savings.toLocaleString("de-DE")} less
+                          </strong>{" "}
+                          than your consulting estimate — and it&apos;s
+                          continuous, not one-time.
+                        </p>
+                      ) : (
+                        <p className="text-[15px] text-white/60 leading-relaxed">
+                          Caelex provides continuous automated compliance at a
+                          comparable cost to your consulting estimate — with
+                          ongoing monitoring included.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[15px] text-white/30 text-center">
+                      Enter your estimates to see the comparison
+                    </p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
+
+            {/* Fine Print */}
+            <p className="text-[13px] text-white/30 mt-8 pt-6 border-t border-white/[0.06] leading-relaxed">
+              This is a simple estimate based on your inputs. Caelex complements
+              but does not fully replace legal counsel — you may still need
+              specialized advice for NCA filings and specific regulatory
+              questions. Authorization fees to national competent authorities
+              are separate and not included in this comparison.
+            </p>
           </GlassCard>
+
+          {/* Credibility Anchor */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-8 text-center"
+          >
+            <p className="text-[13px] text-white/30 leading-relaxed max-w-[800px] mx-auto">
+              The EU Commission estimates total annual compliance costs from the
+              Space Act at €322.8M across the industry, with authorization
+              requirements costing ~€100,000 per product line in fees alone —
+              before consulting and preparation costs.
+            </p>
+            <p className="text-[12px] text-white/20 mt-2">
+              Source: EU Commission Impact Assessment, COM/2025/335
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -1224,25 +1416,26 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold mb-8 bg-red-500/15 border border-red-500/25 text-red-400">
-                <AlertTriangle size={16} />
-                Only {foundingSpotsLeft} Founding Member spots remaining
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold mb-8 bg-amber-500/15 border border-amber-500/25 text-amber-400">
+                <Clock size={16} />
+                Don&apos;t wait until 2029
               </div>
 
               <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
-                Lock in 30% off — forever
+                Start your compliance journey today
               </h2>
-              <p className="text-[18px] text-white/50 mb-12 max-w-[500px] mx-auto leading-relaxed">
-                Founding Members get lifetime pricing, priority support, and
-                direct influence on our product roadmap.
+              <p className="text-[18px] text-white/50 mb-12 max-w-[550px] mx-auto leading-relaxed">
+                The authorization process takes 6+ months. The earlier you start
+                mapping requirements and preparing documentation, the smoother
+                your path to compliance.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
                 <Link
-                  href="/contact?plan=professional&founding=true"
+                  href="/contact?plan=professional"
                   className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-emerald-500 text-white text-[16px] font-semibold transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
                 >
-                  Claim Founding Member Spot
+                  Start Free Trial
                   <ArrowRight size={20} />
                 </Link>
                 <Link
@@ -1263,16 +1456,16 @@ export default function PricingPage() {
       </section>
 
       {/* ================================================================== */}
-      {/* STATS FOOTER */}
+      {/* STATS FOOTER (Provable stats only) */}
       {/* ================================================================== */}
       <section className="relative py-20 px-6 md:px-12 border-t border-white/[0.06]">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
             <div>
               <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
-                <AnimatedCounter target={50} suffix="+" />
+                <AnimatedCounter target={119} />
               </div>
-              <div className="text-[15px] text-white/50">Active Operators</div>
+              <div className="text-[15px] text-white/50">Articles Mapped</div>
             </div>
             <div>
               <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
@@ -1282,15 +1475,19 @@ export default function PricingPage() {
             </div>
             <div>
               <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
-                <AnimatedCounter target={119} />
+                <AnimatedCounter target={47} />
               </div>
-              <div className="text-[15px] text-white/50">Articles Covered</div>
+              <div className="text-[15px] text-white/50">
+                Document Templates
+              </div>
             </div>
             <div>
               <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
-                <AnimatedCounter target={12} suffix="x" />
+                <AnimatedCounter target={8} />
               </div>
-              <div className="text-[15px] text-white/50">Average ROI</div>
+              <div className="text-[15px] text-white/50">
+                Compliance Modules
+              </div>
             </div>
           </div>
         </div>
