@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
+import { serverAnalytics } from "@/lib/analytics";
 import { generateUniqueSlug } from "@/lib/services/organization-service";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
@@ -90,6 +91,20 @@ export async function POST(request: Request) {
       email: result.user.email || "",
       provider: "credentials",
     });
+
+    // Analytics tracking
+    serverAnalytics.track(
+      "signup",
+      {
+        provider: "credentials",
+        plan: "FREE",
+      },
+      {
+        userId: result.user.id,
+        organizationId: result.org.id,
+        category: "conversion",
+      },
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

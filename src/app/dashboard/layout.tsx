@@ -11,6 +11,7 @@ import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraChatPanel from "@/components/astra/AstraChatPanel";
 import AstraFAB from "@/components/astra/AstraFAB";
+import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
 }) {
   const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useAnalyticsTracking();
 
   return (
     <OrganizationProvider>

@@ -20,6 +20,7 @@ import OutOfScopeResult from "./OutOfScopeResult";
 import ResultsDashboard from "@/components/results/ResultsDashboard";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { analytics } from "@/lib/analytics";
 
 const initialAnswers: AssessmentAnswers = {
   activityType: null,
@@ -81,6 +82,11 @@ export default function AssessmentWizard() {
 
         const data = await response.json();
         setComplianceResult(data.result);
+
+        // Track assessment completion
+        analytics.feature("eu_space_act", "assessment_completed", {
+          category: "conversion",
+        });
 
         // Store in localStorage for dashboard import
         try {

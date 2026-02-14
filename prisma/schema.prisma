@@ -2268,6 +2268,7 @@ model Organization {
   activities        Activity[]              // Collaboration: organization's activities
   complianceEvidence ComplianceEvidence[]   // Audit Center: org-scoped compliance evidence
   astraConversations AstraConversation[]    // ASTRA AI conversations
+  healthScore       CustomerHealthScore?    // CEO Analytics: customer health
 
   @@index([slug])
 }
@@ -3396,4 +3397,291 @@ model AstraMessage {
   @@index([conversationId])
   @@index([createdAt])
   @@index([conversationId, createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CEO ANALYTICS DASHBOARD
+// Privacy-first, self-hosted analytics for space/defense customers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Event-based tracking for all user actions
+model AnalyticsEvent {
+  id              String    @id @default(cuid())
+  userId          String?   // null for anonymous events (pre-login)
+  organizationId  String?   // null for user-level events
+  sessionId       String    // Browser session identifier
+
+  // Event classification
+  eventType       String    // page_view, feature_use, api_call, signup, login, etc.
+  eventCategory   String    @default("general") // navigation, engagement, conversion, error
+  eventData       Json?     // Flexible payload for event-specific data
+
+  // Context
+  path            String?   // URL path
+  referrer        String?   // Referrer URL
+  userAgent       String?   // Browser user agent
+  ipCountry       String?   // Country from IP (for geo analytics)
+
+  // Performance
+  durationMs      Int?      // For timed events (e.g., page load, feature use)
+
+  timestamp       DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([eventCategory])
+  @@index([timestamp])
+  @@index([userId, timestamp])
+  @@index([eventType, timestamp])
+}
+
+// Pre-aggregated daily metrics for fast dashboard loading
+model AnalyticsDailyAggregate {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date
+
+  // Metric identification
+  metricType      String    // dau, wau, mau, signups, revenue, churn, etc.
+  metricValue     Float
+
+  // Optional dimensional breakdown
+  dimension       String?   // plan, country, module, etc.
+  dimensionValue  String?   // e.g., "PROFESSIONAL", "DE", "cybersecurity"
+
+  // Comparison helpers
+  previousValue   Float?    // Value from previous period
+  changePercent   Float?    // Percentage change
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([date, metricType, dimension, dimensionValue])
+  @@index([date])
+  @@index([metricType])
+  @@index([date, metricType])
+}
+
+// Customer health scoring for churn prediction
+model CustomerHealthScore {
+  id              String       @id @default(cuid())
+  organizationId  String       @unique
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Overall score (0-100)
+  score           Int
+  trend           String       @default("stable") // improving, stable, declining
+  riskLevel       String       @default("low") // low, medium, high, critical
+
+  // Factor breakdown (stored as JSON for flexibility)
+  factors         Json         // { loginFrequency, featureBreadth, supportTickets, etc. }
+
+  // Key metrics
+  lastLoginAt     DateTime?
+  loginFrequency  Float?       // logins per week
+  activeFeatures  Int?         // number of features used in last 30 days
+  sessionsLast30  Int?         // session count
+  avgSessionMins  Float?       // average session duration
+
+  // Calculated at
+  calculatedAt    DateTime     @default(now())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([score])
+  @@index([riskLevel])
+  @@index([calculatedAt])
+}
+
+// Financial entries for revenue tracking (manual + Stripe)
+model FinancialEntry {
+  id              String    @id @default(cuid())
+
+  // Entry type
+  type            String    // revenue, expense, investment, refund
+  category        String    // subscription, one_time, consulting, hosting, payroll, etc.
+
+  // Amount
+  amount          Float     // Always positive, sign determined by type
+  currency        String    @default("EUR")
+
+  // Source & Reference
+  source          String    @default("manual") // stripe, manual, bank_import
+  externalId      String?   // Stripe payment ID, invoice ID, etc.
+
+  // Organization link (for revenue entries)
+  organizationId  String?
+
+  // Details
+  description     String?   @db.Text
+  date            DateTime  @db.Date
+
+  // For MRR calculations
+  isRecurring     Boolean   @default(false)
+  recurringPeriod String?   // monthly, yearly
+
+  // Audit
+  createdBy       String?   // User ID who created (for manual entries)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([date])
+  @@index([source])
+  @@index([organizationId])
+  @@index([date, type])
+}
+
+// Revenue metrics snapshot (calculated periodically)
+model RevenueSnapshot {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date @unique
+
+  // MRR/ARR
+  mrr             Float     // Monthly Recurring Revenue
+  arr             Float     // Annual Recurring Revenue
+  mrrGrowth       Float?    // MoM growth rate
+
+  // MRR Components
+  newMrr          Float     @default(0)        // From new customers
+  expansionMrr    Float     @default(0)        // From upgrades
+  contractionMrr  Float     @default(0)        // From downgrades
+  churnedMrr      Float     @default(0)        // From churns
+
+  // Customer metrics
+  totalCustomers  Int
+  newCustomers    Int       @default(0)
+  churnedCustomers Int      @default(0)
+
+  // Unit economics
+  arpu            Float?    // Average Revenue Per User
+  ltv             Float?    // Lifetime Value
+
+  // Cash position (manual input)
+  cashBalance     Float?
+  burnRate        Float?
+  runwayMonths    Float?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([date])
+}
+
+// Feature usage tracking for product analytics
+model FeatureUsageDaily {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date
+
+  // Feature identification
+  featureId       String    // e.g., "eu_space_act", "nis2", "document_vault"
+  featureName     String    // Display name
+  moduleCategory  String    // assessment, compliance, documents, etc.
+
+  // Usage metrics
+  uniqueUsers     Int       @default(0)
+  totalSessions   Int       @default(0)
+  totalActions    Int       @default(0)
+  avgDurationSecs Float?
+
+  // Engagement depth
+  completionRate  Float?    // For workflows: % who complete
+
+  createdAt       DateTime  @default(now())
+
+  @@unique([date, featureId])
+  @@index([date])
+  @@index([featureId])
+  @@index([moduleCategory])
+}
+
+// Acquisition/Marketing tracking
+model AcquisitionEvent {
+  id              String    @id @default(cuid())
+
+  // User journey
+  userId          String?   // Linked after signup
+  anonymousId     String    // Pre-signup tracking
+
+  // Acquisition source
+  source          String    // google, direct, referral, linkedin, etc.
+  medium          String?   // organic, paid, email, social
+  campaign        String?   // UTM campaign
+  content         String?   // UTM content
+  term            String?   // UTM term (for paid search)
+
+  // Landing
+  landingPage     String?
+  referrerUrl     String?
+
+  // Conversion tracking
+  eventType       String    // visit, signup, activation, conversion
+
+  // Geo
+  country         String?
+
+  timestamp       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([anonymousId])
+  @@index([source])
+  @@index([eventType])
+  @@index([timestamp])
+  @@index([source, medium, timestamp])
+}
+
+// System health metrics for infrastructure monitoring
+model SystemHealthMetric {
+  id              String    @id @default(cuid())
+  timestamp       DateTime  @default(now())
+
+  // Metric identification
+  metricName      String    // api_latency_p50, error_rate, uptime, etc.
+  service         String    @default("main") // main, api, database, etc.
+
+  // Value
+  value           Float
+  unit            String?   // ms, percent, count, etc.
+
+  // Context
+  endpoint        String?   // For API metrics
+  statusCode      Int?      // For HTTP metrics
+
+  @@index([timestamp])
+  @@index([metricName])
+  @@index([service])
+  @@index([timestamp, metricName])
+}
+
+// API endpoint performance tracking
+model ApiEndpointMetrics {
+  id              String    @id @default(cuid())
+  date            DateTime  @db.Date
+
+  // Endpoint identification
+  method          String    // GET, POST, etc.
+  path            String    // API path pattern (e.g., /api/dashboard/overview)
+
+  // Volume
+  totalCalls      Int       @default(0)
+  uniqueUsers     Int       @default(0)
+
+  // Performance (in milliseconds)
+  avgLatency      Float?
+  p50Latency      Float?
+  p95Latency      Float?
+  p99Latency      Float?
+
+  // Errors
+  errorCount      Int       @default(0)
+  errorRate       Float?    // percentage
+
+  createdAt       DateTime  @default(now())
+
+  @@unique([date, method, path])
+  @@index([date])
+  @@index([path])
+  @@index([errorRate])
 }

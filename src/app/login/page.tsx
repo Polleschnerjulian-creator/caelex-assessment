@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,6 +29,11 @@ export default function LoginPage() {
         setError("Invalid email or password");
         setLoading(false);
       } else {
+        analytics.track(
+          "login",
+          { provider: "credentials" },
+          { category: "conversion" },
+        );
         router.push("/dashboard");
       }
     } catch {

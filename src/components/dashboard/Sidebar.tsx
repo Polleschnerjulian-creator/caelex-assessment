@@ -31,6 +31,7 @@ import {
   Radio,
   AlertTriangle,
   Flag,
+  BarChart3,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -610,9 +611,12 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             </div>
           </div>
 
-          {/* Admin — only for cs@ahrensandco.de */}
-          {user?.email === "cs@ahrensandco.de" && (
+          {/* Admin — only for admin role users */}
+          {user?.role === "admin" && (
             <div className="mt-5">
+              <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+                Admin
+              </p>
               <div className="space-y-0.5">
                 <NavItem
                   href="/dashboard/admin"
@@ -620,6 +624,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   onClick={handleNavClick}
                 >
                   Admin Panel
+                </NavItem>
+                <NavItem
+                  href="/dashboard/admin/analytics"
+                  icon={<BarChart3 size={16} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                >
+                  Analytics
                 </NavItem>
               </div>
             </div>

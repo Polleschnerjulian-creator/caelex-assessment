@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe/client";
+import { serverAnalytics } from "@/lib/analytics";
 import {
   handleCheckoutComplete,
   handleInvoicePaid,
@@ -105,6 +106,26 @@ export async function POST(request: NextRequest) {
       default:
         // Ignore other events
         logger.info(`Unhandled event type: ${event.type}`);
+    }
+
+    // Track payment events for analytics
+    if (
+      [
+        "checkout.session.completed",
+        "invoice.paid",
+        "invoice.payment_failed",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+      ].includes(event.type)
+    ) {
+      serverAnalytics.track(
+        `stripe_${event.type.replace(/\./g, "_")}`,
+        {
+          stripeEventId: event.id,
+          eventType: event.type,
+        },
+        { category: "conversion" },
+      );
     }
   } catch (error) {
     logger.error(`Error handling webhook event ${event.type}:`, error);

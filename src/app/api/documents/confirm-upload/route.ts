@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { serverAnalytics } from "@/lib/analytics";
 import {
   fileExists,
   getFileMetadata,
@@ -186,6 +187,17 @@ export async function POST(request: NextRequest) {
         details: JSON.stringify({ version: 1, storageProvider: "R2" }),
       },
     });
+
+    // Track document upload
+    serverAnalytics.track(
+      "document_uploaded",
+      {
+        category: document.category,
+        mimeType: document.mimeType,
+        fileSize: document.fileSize,
+      },
+      { userId: session.user.id, category: "engagement" },
+    );
 
     return NextResponse.json({
       success: true,
