@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { additionalTerms } from "./additional-terms";
+import { moreTerms } from "./more-terms";
 
 export interface GlossaryTerm {
   slug: string;
@@ -1803,7 +1804,7 @@ Authorization applications must include:
 // ============================================================================
 
 // Combine base terms with additional terms
-const allTermsArray = [...glossaryTerms, ...additionalTerms];
+const allTermsArray = [...glossaryTerms, ...additionalTerms, ...moreTerms];
 
 export function getAllTerms(): GlossaryTerm[] {
   return allTermsArray.sort((a, b) => a.term.localeCompare(b.term));

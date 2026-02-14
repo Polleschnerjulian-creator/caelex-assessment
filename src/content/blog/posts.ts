@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { additionalPosts } from "./additional-posts";
+import { morePosts } from "./more-posts";
 
 export interface BlogPost {
   slug: string;
@@ -880,7 +881,7 @@ Begin your compliance journey now with Caelex's automated assessment.
 // ============================================================================
 
 export function getAllPosts(): BlogPost[] {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   return allPosts.sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
@@ -888,24 +889,24 @@ export function getAllPosts(): BlogPost[] {
 }
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   return allPosts.find((post) => post.slug === slug);
 }
 
 export function getFeaturedPosts(): BlogPost[] {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   return allPosts.filter((post) => post.featured);
 }
 
 export function getPostsByCategory(category: string): BlogPost[] {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   return allPosts.filter(
     (post) => post.category.toLowerCase() === category.toLowerCase(),
   );
 }
 
 export function getAllCategories(): string[] {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   return [...new Set(allPosts.map((post) => post.category))];
 }
 
@@ -913,7 +914,7 @@ export function getRelatedPosts(
   currentSlug: string,
   limit: number = 3,
 ): BlogPost[] {
-  const allPosts = [...blogPosts, ...additionalPosts];
+  const allPosts = [...blogPosts, ...additionalPosts, ...morePosts];
   const currentPost = getPostBySlug(currentSlug);
   if (!currentPost) return [];
 

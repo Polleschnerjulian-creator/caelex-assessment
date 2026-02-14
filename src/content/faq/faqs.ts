@@ -2,6 +2,8 @@
 // FAQ DATA - Comprehensive Space Compliance FAQs
 // ============================================================================
 
+import { additionalFaqs } from "./additional-faqs";
+
 export interface FAQ {
   id: string;
   question: string;
@@ -282,16 +284,18 @@ export const faqs: FAQ[] = [
 // HELPER FUNCTIONS
 // ============================================================================
 
+const allFaqs = [...faqs, ...additionalFaqs];
+
 export function getAllFaqs(): FAQ[] {
-  return faqs;
+  return allFaqs;
 }
 
 export function getFaqsByCategory(category: FAQ["category"]): FAQ[] {
-  return faqs.filter((faq) => faq.category === category);
+  return allFaqs.filter((faq) => faq.category === category);
 }
 
 export function getFaqById(id: string): FAQ | undefined {
-  return faqs.find((faq) => faq.id === id);
+  return allFaqs.find((faq) => faq.id === id);
 }
 
 export function getAllCategories(): FAQ["category"][] {
@@ -319,7 +323,7 @@ export function getCategoryLabel(category: FAQ["category"]): string {
 
 export function searchFaqs(query: string): FAQ[] {
   const lowerQuery = query.toLowerCase();
-  return faqs.filter(
+  return allFaqs.filter(
     (faq) =>
       faq.question.toLowerCase().includes(lowerQuery) ||
       faq.answer.toLowerCase().includes(lowerQuery),

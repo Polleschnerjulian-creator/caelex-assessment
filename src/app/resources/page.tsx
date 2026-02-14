@@ -17,6 +17,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { getAllPosts, getFeaturedPosts } from "@/content/blog/posts";
 import { getAllGuides } from "@/content/guides/guides";
 import { getAllTerms } from "@/content/glossary/terms";
+import { getAllFaqs } from "@/content/faq/faqs";
 
 export const metadata: Metadata = {
   title: "Resources | Space Compliance Knowledge Hub | Caelex",
@@ -24,59 +25,66 @@ export const metadata: Metadata = {
     "Access comprehensive space compliance resources: guides, blog articles, glossary, FAQ, and regulatory timelines. Everything you need to navigate EU Space Act, NIS2, and national space laws.",
 };
 
-const resourceCategories = [
-  {
-    title: "Compliance Guides",
-    description:
-      "In-depth guides on EU Space Act, NIS2, debris mitigation, and more",
-    href: "/guides",
-    icon: BookOpen,
-    color: "emerald",
-    stats: "3+ comprehensive guides",
-  },
-  {
-    title: "Blog",
-    description: "Latest insights, regulatory updates, and expert analysis",
-    href: "/blog",
-    icon: Newspaper,
-    color: "blue",
-    stats: "6+ articles",
-  },
-  {
-    title: "Glossary",
-    description: "Definitions for space compliance terminology and acronyms",
-    href: "/glossary",
-    icon: BookText,
-    color: "purple",
-    stats: "42+ terms",
-  },
-  {
-    title: "Compliance Modules",
-    description:
-      "Explore our 12 compliance modules for authorization, cybersecurity, and more",
-    href: "/modules",
-    icon: Layers,
-    color: "amber",
-    stats: "12 modules",
-  },
-  {
-    title: "Jurisdictions",
-    description: "Compare space regulations across European countries",
-    href: "/jurisdictions",
-    icon: Globe,
-    color: "cyan",
-    stats: "11 countries",
-  },
-  {
-    title: "FAQ",
-    description:
-      "Frequently asked questions about space compliance and our platform",
-    href: "/resources/faq",
-    icon: HelpCircle,
-    color: "rose",
-    stats: "Coming soon",
-  },
-];
+function getResourceCategories(
+  guidesCount: number,
+  postsCount: number,
+  termsCount: number,
+  faqsCount: number,
+) {
+  return [
+    {
+      title: "Compliance Guides",
+      description:
+        "In-depth guides on EU Space Act, NIS2, debris mitigation, and more",
+      href: "/guides",
+      icon: BookOpen,
+      color: "emerald",
+      stats: `${guidesCount} comprehensive guides`,
+    },
+    {
+      title: "Blog",
+      description: "Latest insights, regulatory updates, and expert analysis",
+      href: "/blog",
+      icon: Newspaper,
+      color: "blue",
+      stats: `${postsCount} articles`,
+    },
+    {
+      title: "Glossary",
+      description: "Definitions for space compliance terminology and acronyms",
+      href: "/glossary",
+      icon: BookText,
+      color: "purple",
+      stats: `${termsCount} terms`,
+    },
+    {
+      title: "Compliance Modules",
+      description:
+        "Explore our 12 compliance modules for authorization, cybersecurity, and more",
+      href: "/modules",
+      icon: Layers,
+      color: "amber",
+      stats: "12 modules",
+    },
+    {
+      title: "Jurisdictions",
+      description: "Compare space regulations across European countries",
+      href: "/jurisdictions",
+      icon: Globe,
+      color: "cyan",
+      stats: "11 countries",
+    },
+    {
+      title: "FAQ",
+      description:
+        "Frequently asked questions about space compliance and our platform",
+      href: "/resources/faq",
+      icon: HelpCircle,
+      color: "rose",
+      stats: `${faqsCount} questions`,
+    },
+  ];
+}
 
 const colorClasses: Record<
   string,
@@ -116,9 +124,17 @@ const colorClasses: Record<
 
 export default function ResourcesPage() {
   const featuredPosts = getFeaturedPosts().slice(0, 3);
-  const guides = getAllGuides().slice(0, 3);
+  const allGuides = getAllGuides();
+  const guides = allGuides.slice(0, 3);
   const terms = getAllTerms();
   const posts = getAllPosts();
+  const faqs = getAllFaqs();
+  const resourceCategories = getResourceCategories(
+    allGuides.length,
+    posts.length,
+    terms.length,
+    faqs.length,
+  );
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -148,7 +164,7 @@ export default function ResourcesPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
               <div className="text-[32px] font-medium text-white">
-                {guides.length}+
+                {allGuides.length}
               </div>
               <div className="text-[13px] text-white/40">
                 Comprehensive Guides
@@ -156,21 +172,21 @@ export default function ResourcesPage() {
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
               <div className="text-[32px] font-medium text-white">
-                {posts.length}+
+                {posts.length}
               </div>
               <div className="text-[13px] text-white/40">Blog Articles</div>
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
               <div className="text-[32px] font-medium text-white">
-                {terms.length}+
+                {terms.length}
               </div>
               <div className="text-[13px] text-white/40">Glossary Terms</div>
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[32px] font-medium text-white">12</div>
-              <div className="text-[13px] text-white/40">
-                Compliance Modules
+              <div className="text-[32px] font-medium text-white">
+                {faqs.length}
               </div>
+              <div className="text-[13px] text-white/40">FAQ Questions</div>
             </div>
           </div>
 

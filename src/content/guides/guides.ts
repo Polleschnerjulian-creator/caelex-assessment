@@ -2,6 +2,8 @@
 // PILLAR GUIDES DATA
 // ============================================================================
 
+import { additionalGuides } from "./additional-guides";
+
 export interface Guide {
   slug: string;
   title: string;
@@ -1109,13 +1111,15 @@ Start your debris mitigation assessment today.
 // HELPER FUNCTIONS
 // ============================================================================
 
+const allGuides = [...guides, ...additionalGuides];
+
 export function getAllGuides(): Guide[] {
-  return guides.sort(
+  return allGuides.sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 }
 
 export function getGuideBySlug(slug: string): Guide | undefined {
-  return guides.find((guide) => guide.slug === slug);
+  return allGuides.find((guide) => guide.slug === slug);
 }
