@@ -4,7 +4,7 @@ import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import { ArrowLeft } from "lucide-react";
 
-export default function PrivacyPage() {
+export default function PrivacyEnPage() {
   return (
     <main className="dark-section min-h-screen bg-black text-white">
       {/* Navigation */}
@@ -19,17 +19,17 @@ export default function PrivacyPage() {
             </Link>
             <div className="flex items-center gap-4">
               <Link
-                href="/legal/privacy-en"
+                href="/legal/privacy"
                 className="text-[12px] text-white/40 hover:text-white/60 transition-colors border border-white/10 rounded-full px-3 py-1"
               >
-                English Version
+                Deutsche Version
               </Link>
               <Link
                 href="/"
                 className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
               >
                 <ArrowLeft size={16} />
-                <span>Zurück</span>
+                <span>Back</span>
               </Link>
             </div>
           </div>
@@ -40,21 +40,21 @@ export default function PrivacyPage() {
       <div className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[800px] mx-auto">
           <h1 className="text-[32px] font-light tracking-[-0.02em] mb-4">
-            Datenschutzerklärung
+            Privacy Policy
           </h1>
           <p className="text-[13px] text-white/40 mb-8">
-            Stand: Februar 2026 · Caelex, Berlin, Deutschland
+            Effective: February 2026 · Caelex, Berlin, Germany
           </p>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-10">
             {/* Section 1 - Overview */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                1. Datenschutz auf einen Blick
+                1. Overview
               </h2>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                Verantwortliche Stelle
+                Data Controller
               </h3>
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] text-[14px] text-white/60">
                 <p>
@@ -64,10 +64,10 @@ export default function PrivacyPage() {
                   <br />
                   Am Maselakepark 37
                   <br />
-                  13587 Berlin, Deutschland
+                  13587 Berlin, Germany
                   <br />
                   <br />
-                  E-Mail:{" "}
+                  Privacy inquiries:{" "}
                   <a
                     href="mailto:privacy@caelex.eu"
                     className="text-emerald-400 hover:text-emerald-300"
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
                     privacy@caelex.eu
                   </a>
                   <br />
-                  Allgemein:{" "}
+                  General:{" "}
                   <a
                     href="mailto:cs@caelex.eu"
                     className="text-emerald-400 hover:text-emerald-300"
@@ -86,35 +86,31 @@ export default function PrivacyPage() {
               </div>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                Kurzübersicht der Datenverarbeitung
+                Summary of Data Processing
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Caelex ist eine Compliance-Plattform für den EU Space Act und
-                verwandte Weltraumregulierung. Wir verarbeiten personenbezogene
-                Daten ausschließlich zur Erbringung unserer Dienste, zur
-                Verbesserung der Plattform und zur Erfüllung gesetzlicher
-                Pflichten. Diese Datenschutzerklärung informiert Sie umfassend
-                über Art, Umfang und Zweck der Datenverarbeitung.
+                Caelex is a compliance platform for the EU Space Act and related
+                space regulation. We process personal data solely to provide our
+                services, improve the platform, and fulfill legal obligations.
+                This privacy policy provides comprehensive information about the
+                nature, scope, and purpose of data processing.
               </p>
 
               <div className="mt-4 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                 <p className="text-[13px] text-emerald-400 font-medium mb-2">
-                  Ihre Rechte auf einen Blick
+                  Your Rights at a Glance
                 </p>
                 <ul className="text-[13px] text-white/60 space-y-1">
+                  <li>• Access to your stored data (Art. 15 GDPR)</li>
+                  <li>• Rectification of inaccurate data (Art. 16 GDPR)</li>
+                  <li>• Erasure of your data (Art. 17 GDPR)</li>
+                  <li>• Restriction of processing (Art. 18 GDPR)</li>
+                  <li>• Data portability (Art. 20 GDPR)</li>
+                  <li>• Object to processing (Art. 21 GDPR)</li>
+                  <li>• Withdraw consent (Art. 7(3) GDPR)</li>
                   <li>
-                    • Auskunft über Ihre gespeicherten Daten (Art. 15 DSGVO)
-                  </li>
-                  <li>• Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
-                  <li>• Löschung Ihrer Daten (Art. 17 DSGVO)</li>
-                  <li>• Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
-                  <li>• Datenübertragbarkeit (Art. 20 DSGVO)</li>
-                  <li>• Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)</li>
-                  <li>
-                    • Widerruf erteilter Einwilligungen (Art. 7 Abs. 3 DSGVO)
-                  </li>
-                  <li>
-                    • Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO)
+                    • Lodge a complaint with supervisory authority (Art. 77
+                    GDPR)
                   </li>
                 </ul>
               </div>
@@ -123,100 +119,100 @@ export default function PrivacyPage() {
             {/* Section 2 - Data Collection */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                2. Datenerfassung auf dieser Website
+                2. Data Collection on This Website
               </h2>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                2.1 Automatisch erfasste Daten (Server-Logs)
+                2.1 Automatically Collected Data (Server Logs)
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Bei jedem Zugriff auf unsere Website werden automatisch
-                technische Daten erfasst:
+                When you access our website, technical data is automatically
+                collected:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
-                <li>IP-Adresse (anonymisiert nach 24 Stunden)</li>
-                <li>Datum und Uhrzeit des Zugriffs</li>
-                <li>Aufgerufene Seite/Ressource</li>
-                <li>Browser-Typ und -Version</li>
-                <li>Betriebssystem</li>
-                <li>Referrer-URL</li>
+                <li>IP address (anonymized after 24 hours)</li>
+                <li>Date and time of access</li>
+                <li>Accessed page/resource</li>
+                <li>Browser type and version</li>
+                <li>Operating system</li>
+                <li>Referrer URL</li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
-                6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Sicherheit
-                und Stabilität der Website).
+                <strong className="text-white/80">Legal basis:</strong> Art.
+                6(1)(f) GDPR (legitimate interest in website security and
+                stability).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> 14
-                Tage, danach automatische Löschung.
+                <strong className="text-white/80">Retention:</strong> 14 days,
+                then automatically deleted.
               </p>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                2.2 Registrierung und Kundenkonto
+                2.2 Registration and User Account
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Bei der Registrierung erfassen wir:
+                When registering, we collect:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
-                <li>E-Mail-Adresse (Pflichtfeld)</li>
+                <li>Email address (required)</li>
                 <li>Name (optional)</li>
-                <li>Unternehmen/Organisation (optional)</li>
-                <li>Passwort (bcrypt-gehasht mit 12 Runden)</li>
+                <li>Company/Organization (optional)</li>
+                <li>Password (bcrypt-hashed with 12 rounds)</li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
-                6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+                <strong className="text-white/80">Legal basis:</strong> Art.
+                6(1)(b) GDPR (contract performance).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> Bis
-                zur Löschung des Kontos plus gesetzliche Aufbewahrungsfristen.
+                <strong className="text-white/80">Retention:</strong> Until
+                account deletion plus statutory retention periods.
               </p>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                2.3 Compliance-Assessments
+                2.3 Compliance Assessments
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Bei der Nutzung unserer Assessment-Tools verarbeiten wir:
+                When using our assessment tools, we process:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
-                <li>Antworten auf Assessment-Fragen</li>
-                <li>Berechnete Compliance-Profile</li>
-                <li>Generierte Berichte und Empfehlungen</li>
-                <li>Zeitstempel und Versionierung</li>
+                <li>Responses to assessment questions</li>
+                <li>Calculated compliance profiles</li>
+                <li>Generated reports and recommendations</li>
+                <li>Timestamps and versioning</li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
-                6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+                <strong className="text-white/80">Legal basis:</strong> Art.
+                6(1)(b) GDPR (contract performance).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> Bis
-                zur Löschung durch den Nutzer oder Kontolöschung.
+                <strong className="text-white/80">Retention:</strong> Until
+                deletion by user or account deletion.
               </p>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                2.4 Kontaktformular und E-Mail
+                2.4 Contact Form and Email
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Bei Kontaktanfragen verarbeiten wir die von Ihnen mitgeteilten
-                Daten (Name, E-Mail, Nachricht) zur Bearbeitung Ihrer Anfrage.
+                When you contact us, we process the information you provide
+                (name, email, message) to handle your inquiry.
               </p>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
-                6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) oder Art. 6
-                Abs. 1 lit. f DSGVO (berechtigtes Interesse).
+                <strong className="text-white/80">Legal basis:</strong> Art.
+                6(1)(b) GDPR (pre-contractual measures) or Art. 6(1)(f) GDPR
+                (legitimate interest).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> 3
-                Jahre nach Abschluss der Anfrage.
+                <strong className="text-white/80">Retention:</strong> 3 years
+                after inquiry completion.
               </p>
             </section>
 
             {/* Section 3 - Third Party Services */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                3. Drittanbieter und Auftragsverarbeiter
+                3. Third-Party Services and Processors
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed mb-4">
-                Wir setzen folgende Dienstleister ein, die in unserem Auftrag
-                personenbezogene Daten verarbeiten. Mit allen Dienstleistern
-                bestehen Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO.
+                We use the following service providers who process personal data
+                on our behalf. Data Processing Agreements pursuant to Art. 28
+                GDPR are in place with all providers.
               </p>
 
               {/* Hosting */}
@@ -227,13 +223,13 @@ export default function PrivacyPage() {
                 <p className="text-[13px] text-white/60">
                   440 N Barranca Ave #4133, Covina, CA 91723, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  Website-Hosting, Content Delivery, Edge Functions
+                  <strong className="text-white/70">Purpose:</strong> Website
+                  hosting, content delivery, edge functions
                   <br />
-                  <strong className="text-white/70">Daten:</strong> IP-Adressen,
-                  Request-Daten, Logs
+                  <strong className="text-white/70">Data:</strong> IP addresses,
+                  request data, logs
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> EU-US
+                  <strong className="text-white/70">Safeguards:</strong> EU-US
                   Data Privacy Framework, SCCs
                   <br />
                   <a
@@ -242,7 +238,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -250,19 +246,19 @@ export default function PrivacyPage() {
               {/* Database */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Neon Inc. — Datenbank
+                  Neon Inc. — Database
                 </h4>
                 <p className="text-[13px] text-white/60">
                   San Francisco, CA, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  PostgreSQL-Datenbank für alle Anwendungsdaten
+                  <strong className="text-white/70">Purpose:</strong> PostgreSQL
+                  database for all application data
                   <br />
-                  <strong className="text-white/70">Daten:</strong> Alle in der
-                  Plattform gespeicherten Daten (verschlüsselt)
+                  <strong className="text-white/70">Data:</strong> All data
+                  stored in the platform (encrypted)
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> SOC 2
-                  Type II, SCCs, Verschlüsselung at-rest
+                  <strong className="text-white/70">Safeguards:</strong> SOC 2
+                  Type II, SCCs, encryption at rest
                   <br />
                   <a
                     href="https://neon.tech/privacy"
@@ -270,7 +266,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -278,27 +274,27 @@ export default function PrivacyPage() {
               {/* Payments */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Stripe Inc. — Zahlungsabwicklung
+                  Stripe Inc. — Payment Processing
                 </h4>
                 <p className="text-[13px] text-white/60">
                   354 Oyster Point Blvd, South San Francisco, CA 94080, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong> Verarbeitung
-                  von Zahlungen, Abonnementverwaltung
+                  <strong className="text-white/70">Purpose:</strong> Payment
+                  processing, subscription management
                   <br />
-                  <strong className="text-white/70">Daten:</strong> E-Mail,
-                  Name, Zahlungsinformationen, Rechnungsadresse
+                  <strong className="text-white/70">Data:</strong> Email, name,
+                  payment information, billing address
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> PCI DSS
+                  <strong className="text-white/70">Safeguards:</strong> PCI DSS
                   Level 1, EU-US DPF, SCCs
                   <br />
                   <a
-                    href="https://stripe.com/de/privacy"
+                    href="https://stripe.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -306,18 +302,18 @@ export default function PrivacyPage() {
               {/* Email */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Resend Inc. — E-Mail-Versand
+                  Resend Inc. — Email Delivery
                 </h4>
                 <p className="text-[13px] text-white/60">
                   San Francisco, CA, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  Transaktionale E-Mails, Benachrichtigungen
+                  <strong className="text-white/70">Purpose:</strong>{" "}
+                  Transactional emails, notifications
                   <br />
-                  <strong className="text-white/70">Daten:</strong>{" "}
-                  E-Mail-Adressen, E-Mail-Inhalte, Öffnungsraten
+                  <strong className="text-white/70">Data:</strong> Email
+                  addresses, email content, open rates
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> SCCs
+                  <strong className="text-white/70">Safeguards:</strong> SCCs
                   <br />
                   <a
                     href="https://resend.com/legal/privacy-policy"
@@ -325,7 +321,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -333,18 +329,18 @@ export default function PrivacyPage() {
               {/* File Storage */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Cloudflare Inc. — Dateispeicherung (R2)
+                  Cloudflare Inc. — File Storage (R2)
                 </h4>
                 <p className="text-[13px] text-white/60">
                   101 Townsend St, San Francisco, CA 94107, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong> Speicherung
-                  von hochgeladenen Dokumenten
+                  <strong className="text-white/70">Purpose:</strong> Storage of
+                  uploaded documents
                   <br />
-                  <strong className="text-white/70">Daten:</strong> Hochgeladene
-                  Dateien, Metadaten
+                  <strong className="text-white/70">Data:</strong> Uploaded
+                  files, metadata
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> ISO
+                  <strong className="text-white/70">Safeguards:</strong> ISO
                   27001, SOC 2, EU-US DPF, SCCs
                   <br />
                   <a
@@ -353,7 +349,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -366,13 +362,13 @@ export default function PrivacyPage() {
                 <p className="text-[13px] text-white/60">
                   San Francisco, CA, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  API-Rate-Limiting, Missbrauchsschutz
+                  <strong className="text-white/70">Purpose:</strong> API rate
+                  limiting, abuse protection
                   <br />
-                  <strong className="text-white/70">Daten:</strong>{" "}
-                  Anonymisierte Request-Identifier, Zähler
+                  <strong className="text-white/70">Data:</strong> Anonymized
+                  request identifiers, counters
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> SOC 2,
+                  <strong className="text-white/70">Safeguards:</strong> SOC 2,
                   SCCs
                   <br />
                   <a
@@ -381,7 +377,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -389,19 +385,18 @@ export default function PrivacyPage() {
               {/* Error Tracking */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Sentry (Functional Software Inc.) — Fehlerverfolgung
+                  Sentry (Functional Software Inc.) — Error Tracking
                 </h4>
                 <p className="text-[13px] text-white/60">
                   45 Fremont Street, San Francisco, CA 94105, USA
                   <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  Fehlererkennung, Performance-Monitoring (nur mit Einwilligung)
+                  <strong className="text-white/70">Purpose:</strong> Error
+                  detection, performance monitoring (consent required)
                   <br />
-                  <strong className="text-white/70">Daten:</strong>{" "}
-                  Fehlerberichte, Browser-Informationen, anonymisierte
-                  Session-Daten
+                  <strong className="text-white/70">Data:</strong> Error
+                  reports, browser information, anonymized session data
                   <br />
-                  <strong className="text-white/70">Garantien:</strong> SOC 2,
+                  <strong className="text-white/70">Safeguards:</strong> SOC 2,
                   SCCs
                   <br />
                   <a
@@ -410,7 +405,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -418,16 +413,16 @@ export default function PrivacyPage() {
               {/* Analytics */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                 <h4 className="text-[14px] font-medium text-white mb-2">
-                  Vercel Analytics — Nutzungsanalyse
+                  Vercel Analytics — Usage Analytics
                 </h4>
                 <p className="text-[13px] text-white/60">
-                  <strong className="text-white/70">Zweck:</strong> Anonyme
-                  Nutzungsstatistiken (nur mit Einwilligung)
+                  <strong className="text-white/70">Purpose:</strong> Anonymous
+                  usage statistics (consent required)
                   <br />
-                  <strong className="text-white/70">Daten:</strong> Aggregierte,
-                  anonymisierte Seitenaufrufe
+                  <strong className="text-white/70">Data:</strong> Aggregated,
+                  anonymized page views
                   <br />
-                  <strong className="text-white/70">Cookies:</strong> Keine
+                  <strong className="text-white/70">Cookies:</strong> None
                   (cookieless)
                   <br />
                   <a
@@ -436,7 +431,7 @@ export default function PrivacyPage() {
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
                   >
-                    Datenschutzerklärung →
+                    Privacy Policy →
                   </a>
                 </p>
               </div>
@@ -445,13 +440,13 @@ export default function PrivacyPage() {
             {/* Section 4 - International Transfers */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                4. Internationale Datenübermittlung
+                4. International Data Transfers
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Einige unserer Dienstleister haben ihren Sitz in den USA. Die
-                Übermittlung personenbezogener Daten in die USA erfolgt auf
-                Grundlage folgender Garantien:
+                Some of our service providers are located in the United States.
+                The transfer of personal data to the USA is based on the
+                following safeguards:
               </p>
 
               <div className="mt-4 space-y-3">
@@ -460,34 +455,31 @@ export default function PrivacyPage() {
                     EU-US Data Privacy Framework
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Für Dienstleister, die unter dem EU-US DPF zertifiziert sind
-                    (Vercel, Stripe, Cloudflare), besteht ein
-                    Angemessenheitsbeschluss der EU-Kommission gemäß Art. 45
-                    DSGVO.
+                    For providers certified under the EU-US DPF (Vercel, Stripe,
+                    Cloudflare), there is an adequacy decision by the EU
+                    Commission pursuant to Art. 45 GDPR.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Standardvertragsklauseln (SCCs)
+                    Standard Contractual Clauses (SCCs)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Zusätzlich oder alternativ zum DPF haben wir mit allen
-                    US-Dienstleistern die von der EU-Kommission genehmigten
-                    Standardvertragsklauseln abgeschlossen (Art. 46 Abs. 2 lit.
-                    c DSGVO).
+                    In addition to or as an alternative to the DPF, we have
+                    entered into the EU Commission-approved Standard Contractual
+                    Clauses with all US providers (Art. 46(2)(c) GDPR).
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Zusätzliche technische Maßnahmen
+                    Additional Technical Measures
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Alle Daten werden während der Übertragung (TLS 1.3) und im
-                    Ruhezustand (AES-256) verschlüsselt. Sensible Daten
-                    (Steuernummern, Bankdaten) werden zusätzlich mit AES-256-GCM
-                    und abgeleitetem Schlüssel verschlüsselt.
+                    All data is encrypted in transit (TLS 1.3) and at rest
+                    (AES-256). Sensitive data (tax numbers, bank details) is
+                    additionally encrypted with AES-256-GCM using derived keys.
                   </p>
                 </div>
               </div>
@@ -496,114 +488,114 @@ export default function PrivacyPage() {
             {/* Section 5 - AI and Automated Decision Making */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                5. KI und automatisierte Entscheidungsfindung
+                5. AI and Automated Decision-Making
               </h2>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                5.1 ASTRA AI-Assistent
+                5.1 ASTRA AI Assistant
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Unsere Plattform nutzt den KI-Assistenten "ASTRA" zur
-                Unterstützung bei Compliance-Fragen. ASTRA basiert auf Large
-                Language Models und verarbeitet Ihre Anfragen wie folgt:
+                Our platform uses the AI assistant "ASTRA" to support compliance
+                inquiries. ASTRA is based on Large Language Models and processes
+                your queries as follows:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
-                <li>Ihre Textanfragen werden an den KI-Dienst übermittelt</li>
+                <li>Your text queries are transmitted to the AI service</li>
                 <li>
-                  Antworten werden auf Basis der Eingabe und unserer
-                  Regulierungsdatenbank generiert
+                  Responses are generated based on the input and our regulatory
+                  database
                 </li>
-                <li>Konversationshistorie wird temporär gespeichert</li>
+                <li>Conversation history is temporarily stored</li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Wichtig:</strong> ASTRA trifft
-                keine rechtlich bindenden Entscheidungen. Alle Ausgaben sind als
-                Unterstützung zu verstehen und ersetzen keine Rechtsberatung.
+                <strong className="text-white/80">Important:</strong> ASTRA does
+                not make legally binding decisions. All outputs are intended as
+                support and do not replace legal advice.
               </p>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
-                5.2 Compliance-Assessment-Algorithmen
+                5.2 Compliance Assessment Algorithms
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Unsere Assessments verwenden regelbasierte Algorithmen zur
-                Bestimmung der Anwendbarkeit von Regulierungen. Diese
-                Algorithmen:
+                Our assessments use rule-based algorithms to determine
+                regulatory applicability. These algorithms:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
                 <li>
-                  Verarbeiten Ihre Antworten deterministisch (gleiche Eingabe =
-                  gleiches Ergebnis)
+                  Process your responses deterministically (same input = same
+                  result)
                 </li>
-                <li>Treffen keine eigenständigen Entscheidungen</li>
+                <li>Do not make independent decisions</li>
                 <li>
-                  Liefern Empfehlungen, keine verbindlichen rechtlichen
-                  Feststellungen
+                  Provide recommendations, not binding legal determinations
                 </li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
-                6 Abs. 1 lit. b DSGVO. Es findet keine automatisierte
-                Entscheidungsfindung im Sinne von Art. 22 DSGVO statt, da keine
-                Entscheidungen mit rechtlicher Wirkung getroffen werden.
+                <strong className="text-white/80">Legal basis:</strong> Art.
+                6(1)(b) GDPR. No automated decision-making within the meaning of
+                Art. 22 GDPR takes place, as no decisions with legal effect are
+                made.
               </p>
             </section>
 
             {/* Section 6 - Data Retention */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                6. Speicherdauer
+                6. Data Retention
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed mb-4">
-                Wir speichern personenbezogene Daten nur so lange, wie es für
-                die jeweiligen Zwecke erforderlich ist oder gesetzliche
-                Aufbewahrungspflichten bestehen.
+                We retain personal data only as long as necessary for the
+                respective purposes or as required by statutory retention
+                obligations.
               </p>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px] border-collapse">
                   <thead>
                     <tr className="text-left text-white/40 border-b border-white/[0.06]">
-                      <th className="py-3 pr-4">Datenkategorie</th>
-                      <th className="py-3 pr-4">Speicherdauer</th>
-                      <th className="py-3">Rechtsgrundlage</th>
+                      <th className="py-3 pr-4">Data Category</th>
+                      <th className="py-3 pr-4">Retention Period</th>
+                      <th className="py-3">Legal Basis</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/60">
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Kontodaten</td>
-                      <td className="py-3 pr-4">Bis Kontolöschung + 30 Tage</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. b DSGVO</td>
+                      <td className="py-3 pr-4">Account data</td>
+                      <td className="py-3 pr-4">
+                        Until account deletion + 30 days
+                      </td>
+                      <td className="py-3">Art. 6(1)(b) GDPR</td>
                     </tr>
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Assessment-Daten</td>
-                      <td className="py-3 pr-4">Bis Löschung durch Nutzer</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. b DSGVO</td>
+                      <td className="py-3 pr-4">Assessment data</td>
+                      <td className="py-3 pr-4">Until deletion by user</td>
+                      <td className="py-3">Art. 6(1)(b) GDPR</td>
                     </tr>
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Server-Logs</td>
-                      <td className="py-3 pr-4">14 Tage</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. f DSGVO</td>
+                      <td className="py-3 pr-4">Server logs</td>
+                      <td className="py-3 pr-4">14 days</td>
+                      <td className="py-3">Art. 6(1)(f) GDPR</td>
                     </tr>
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Rechnungsdaten</td>
-                      <td className="py-3 pr-4">10 Jahre (§ 147 AO)</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. c DSGVO</td>
+                      <td className="py-3 pr-4">Billing data</td>
+                      <td className="py-3 pr-4">10 years (tax law)</td>
+                      <td className="py-3">Art. 6(1)(c) GDPR</td>
                     </tr>
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Audit-Logs</td>
-                      <td className="py-3 pr-4">7 Jahre</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. f DSGVO</td>
+                      <td className="py-3 pr-4">Audit logs</td>
+                      <td className="py-3 pr-4">7 years</td>
+                      <td className="py-3">Art. 6(1)(f) GDPR</td>
                     </tr>
                     <tr className="border-b border-white/[0.06]">
-                      <td className="py-3 pr-4">Kontaktanfragen</td>
-                      <td className="py-3 pr-4">3 Jahre nach Abschluss</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. f DSGVO</td>
+                      <td className="py-3 pr-4">Contact inquiries</td>
+                      <td className="py-3 pr-4">3 years after completion</td>
+                      <td className="py-3">Art. 6(1)(f) GDPR</td>
                     </tr>
                     <tr>
-                      <td className="py-3 pr-4">Cookie-Einwilligung</td>
-                      <td className="py-3 pr-4">Unbegrenzt (localStorage)</td>
-                      <td className="py-3">Art. 6 Abs. 1 lit. c DSGVO</td>
+                      <td className="py-3 pr-4">Cookie consent</td>
+                      <td className="py-3 pr-4">Indefinite (localStorage)</td>
+                      <td className="py-3">Art. 6(1)(c) GDPR</td>
                     </tr>
                   </tbody>
                 </table>
@@ -613,48 +605,48 @@ export default function PrivacyPage() {
             {/* Section 7 - Security */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                7. Datensicherheit
+                7. Data Security
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed mb-4">
-                Wir setzen umfangreiche technische und organisatorische
-                Maßnahmen zum Schutz Ihrer Daten ein:
+                We implement comprehensive technical and organizational measures
+                to protect your data:
               </p>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Verschlüsselung
+                    Encryption
                   </h4>
                   <ul className="text-[13px] text-white/60 space-y-1">
-                    <li>• TLS 1.3 für alle Verbindungen</li>
-                    <li>• AES-256 für Daten im Ruhezustand</li>
-                    <li>• AES-256-GCM für sensible Felder</li>
-                    <li>• Bcrypt (12 Runden) für Passwörter</li>
+                    <li>• TLS 1.3 for all connections</li>
+                    <li>• AES-256 for data at rest</li>
+                    <li>• AES-256-GCM for sensitive fields</li>
+                    <li>• Bcrypt (12 rounds) for passwords</li>
                   </ul>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Zugriffsschutz
+                    Access Control
                   </h4>
                   <ul className="text-[13px] text-white/60 space-y-1">
-                    <li>• Rollenbasierte Zugriffskontrolle (RBAC)</li>
-                    <li>• Zwei-Faktor-Authentifizierung (optional)</li>
-                    <li>• Session-Management mit Timeout</li>
-                    <li>• Brute-Force-Schutz</li>
+                    <li>• Role-based access control (RBAC)</li>
+                    <li>• Two-factor authentication (optional)</li>
+                    <li>• Session management with timeout</li>
+                    <li>• Brute-force protection</li>
                   </ul>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Infrastruktur
+                    Infrastructure
                   </h4>
                   <ul className="text-[13px] text-white/60 space-y-1">
-                    <li>• ISO 27001 zertifizierte Rechenzentren</li>
-                    <li>• SOC 2 Type II Compliance</li>
-                    <li>• Regelmäßige Sicherheitsaudits</li>
-                    <li>• DDoS-Schutz</li>
+                    <li>• ISO 27001 certified data centers</li>
+                    <li>• SOC 2 Type II compliance</li>
+                    <li>• Regular security audits</li>
+                    <li>• DDoS protection</li>
                   </ul>
                 </div>
 
@@ -663,49 +655,50 @@ export default function PrivacyPage() {
                     Monitoring
                   </h4>
                   <ul className="text-[13px] text-white/60 space-y-1">
-                    <li>• Vollständiger Audit-Trail</li>
-                    <li>• Security-Event-Logging</li>
-                    <li>• Anomalie-Erkennung</li>
-                    <li>• Incident Response Plan</li>
+                    <li>• Complete audit trail</li>
+                    <li>• Security event logging</li>
+                    <li>• Anomaly detection</li>
+                    <li>• Incident response plan</li>
                   </ul>
                 </div>
               </div>
             </section>
 
-            {/* Section 8 - Data Breach */}
+            {/* Section 8 - Data Breaches */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                8. Datenpannen
+                8. Data Breaches
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Im Falle einer Verletzung des Schutzes personenbezogener Daten
-                (Datenpanne) handeln wir gemäß Art. 33 und 34 DSGVO:
+                In the event of a personal data breach, we act in accordance
+                with Art. 33 and 34 GDPR:
               </p>
 
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-3 space-y-2">
                 <li>
                   <strong className="text-white/80">
-                    Meldung an Aufsichtsbehörde:
+                    Notification to supervisory authority:
                   </strong>{" "}
-                  Innerhalb von 72 Stunden nach Bekanntwerden, sofern ein Risiko
-                  für Betroffene besteht
+                  Within 72 hours of becoming aware, if there is a risk to data
+                  subjects
                 </li>
                 <li>
                   <strong className="text-white/80">
-                    Benachrichtigung Betroffener:
+                    Notification to affected individuals:
                   </strong>{" "}
-                  Unverzüglich bei hohem Risiko, mit Beschreibung der Maßnahmen
+                  Without undue delay in case of high risk, with description of
+                  measures taken
                 </li>
                 <li>
-                  <strong className="text-white/80">Dokumentation:</strong> Alle
-                  Vorfälle werden dokumentiert, einschließlich Ursache,
-                  Auswirkung und ergriffener Maßnahmen
+                  <strong className="text-white/80">Documentation:</strong> All
+                  incidents are documented, including cause, impact, and
+                  remedial actions
                 </li>
               </ul>
 
               <p className="text-[14px] text-white/60 leading-relaxed mt-4">
-                Sicherheitsvorfälle können Sie melden an:{" "}
+                Report security incidents to:{" "}
                 <a
                   href="mailto:security@caelex.eu"
                   className="text-emerald-400 hover:text-emerald-300"
@@ -715,106 +708,104 @@ export default function PrivacyPage() {
               </p>
             </section>
 
-            {/* Section 9 - Rights */}
+            {/* Section 9 - Your Rights */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                9. Ihre Rechte im Detail
+                9. Your Rights in Detail
               </h2>
 
               <div className="space-y-4">
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Auskunftsrecht (Art. 15 DSGVO)
+                    Right of Access (Art. 15 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, eine Bestätigung darüber zu verlangen,
-                    ob wir Sie betreffende personenbezogene Daten verarbeiten,
-                    und gegebenenfalls Auskunft über diese Daten sowie eine
-                    Kopie zu erhalten.
+                    You have the right to obtain confirmation as to whether we
+                    process personal data concerning you, and to access such
+                    data and receive a copy.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Recht auf Berichtigung (Art. 16 DSGVO)
+                    Right to Rectification (Art. 16 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, unverzüglich die Berichtigung
-                    unrichtiger Daten sowie die Vervollständigung
-                    unvollständiger Daten zu verlangen.
+                    You have the right to obtain the rectification of inaccurate
+                    data and completion of incomplete data without undue delay.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Recht auf Löschung (Art. 17 DSGVO)
+                    Right to Erasure (Art. 17 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, die Löschung Ihrer Daten zu verlangen,
-                    sofern keine gesetzlichen Aufbewahrungspflichten oder
-                    berechtigten Interessen entgegenstehen. Sie können Ihr Konto
-                    jederzeit in den Einstellungen löschen.
+                    You have the right to obtain erasure of your data unless
+                    statutory retention obligations or legitimate interests
+                    prevent this. You can delete your account at any time in
+                    settings.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Recht auf Einschränkung (Art. 18 DSGVO)
+                    Right to Restriction (Art. 18 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, die Einschränkung der Verarbeitung zu
-                    verlangen, etwa wenn Sie die Richtigkeit der Daten
-                    bestreiten oder die Verarbeitung unrechtmäßig ist.
+                    You have the right to obtain restriction of processing, for
+                    example if you contest the accuracy of data or the
+                    processing is unlawful.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Recht auf Datenübertragbarkeit (Art. 20 DSGVO)
+                    Right to Data Portability (Art. 20 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, Ihre Daten in einem strukturierten,
-                    gängigen und maschinenlesbaren Format zu erhalten (JSON/CSV
-                    Export in den Kontoeinstellungen verfügbar).
+                    You have the right to receive your data in a structured,
+                    commonly used, machine-readable format (JSON/CSV export
+                    available in account settings).
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Widerspruchsrecht (Art. 21 DSGVO)
+                    Right to Object (Art. 21 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, aus Gründen, die sich aus Ihrer
-                    besonderen Situation ergeben, der Verarbeitung Ihrer Daten
-                    zu widersprechen, soweit diese auf berechtigtem Interesse
-                    basiert.
+                    You have the right to object to processing based on
+                    legitimate interest on grounds relating to your particular
+                    situation.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Widerruf der Einwilligung (Art. 7 Abs. 3 DSGVO)
+                    Right to Withdraw Consent (Art. 7(3) GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie können erteilte Einwilligungen (z.B. für Analytics)
-                    jederzeit widerrufen. Der Widerruf berührt nicht die
-                    Rechtmäßigkeit der bis dahin erfolgten Verarbeitung.
+                    You may withdraw consent (e.g., for analytics) at any time.
+                    Withdrawal does not affect the lawfulness of processing
+                    carried out prior to withdrawal.
                   </p>
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
                   <h4 className="text-[14px] font-medium text-white mb-2">
-                    Beschwerderecht (Art. 77 DSGVO)
+                    Right to Lodge a Complaint (Art. 77 GDPR)
                   </h4>
                   <p className="text-[13px] text-white/60">
-                    Sie haben das Recht, sich bei einer
-                    Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig ist:
+                    You have the right to lodge a complaint with a data
+                    protection supervisory authority. The competent authority
+                    is:
                     <br />
                     <br />
-                    Berliner Beauftragte für Datenschutz und
-                    Informationsfreiheit
+                    Berlin Commissioner for Data Protection and Freedom of
+                    Information
                     <br />
-                    Friedrichstr. 219, 10969 Berlin
+                    Friedrichstr. 219, 10969 Berlin, Germany
                     <br />
                     <a
                       href="mailto:mailbox@datenschutz-berlin.de"
@@ -828,34 +819,33 @@ export default function PrivacyPage() {
 
               <p className="text-[14px] text-white/60 leading-relaxed mt-6">
                 <strong className="text-white/80">
-                  So üben Sie Ihre Rechte aus:
+                  How to exercise your rights:
                 </strong>{" "}
-                Senden Sie eine E-Mail an{" "}
+                Send an email to{" "}
                 <a
                   href="mailto:privacy@caelex.eu"
                   className="text-emerald-400 hover:text-emerald-300"
                 >
                   privacy@caelex.eu
                 </a>{" "}
-                mit Angabe Ihres Anliegens. Wir werden Ihre Anfrage innerhalb
-                von 30 Tagen bearbeiten.
+                stating your request. We will respond within 30 days.
               </p>
             </section>
 
             {/* Section 10 - Cookies */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                10. Cookies und Tracking
+                10. Cookies and Tracking
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Detaillierte Informationen zu den von uns verwendeten Cookies
-                finden Sie in unserer{" "}
+                For detailed information about the cookies we use, please see
+                our{" "}
                 <Link
-                  href="/legal/cookies"
+                  href="/legal/cookies-en"
                   className="text-emerald-400 hover:text-emerald-300"
                 >
-                  Cookie-Richtlinie
+                  Cookie Policy
                 </Link>
                 .
               </p>
@@ -864,28 +854,28 @@ export default function PrivacyPage() {
             {/* Section 11 - B2B */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                11. Auftragsverarbeitung (B2B)
+                11. Data Processing for Business Customers
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Wenn Sie Caelex als Unternehmen nutzen und wir in Ihrem Auftrag
-                personenbezogene Daten verarbeiten (z.B. Daten Ihrer
-                Mitarbeiter), schließen wir auf Anfrage einen
-                Auftragsverarbeitungsvertrag (AVV) gemäß Art. 28 DSGVO ab.
+                If you use Caelex as a business and we process personal data on
+                your behalf (e.g., data of your employees), we will enter into a
+                Data Processing Agreement (DPA) pursuant to Art. 28 GDPR upon
+                request.
               </p>
 
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                Für Enterprise-Kunden bieten wir:
+                For Enterprise customers, we offer:
               </p>
               <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
-                <li>Individuellen AVV nach Ihren Anforderungen</li>
-                <li>Technische und organisatorische Maßnahmen (TOMs)</li>
-                <li>Liste aller Unterauftragsverarbeiter</li>
-                <li>Unterstützung bei Datenschutz-Folgenabschätzungen</li>
+                <li>Custom DPA tailored to your requirements</li>
+                <li>Technical and organizational measures (TOMs)</li>
+                <li>List of all sub-processors</li>
+                <li>Support with Data Protection Impact Assessments</li>
               </ul>
 
               <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                Kontakt:{" "}
+                Contact:{" "}
                 <a
                   href="mailto:legal@caelex.eu"
                   className="text-emerald-400 hover:text-emerald-300"
@@ -898,41 +888,40 @@ export default function PrivacyPage() {
             {/* Section 12 - Changes */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                12. Änderungen dieser Datenschutzerklärung
+                12. Changes to This Privacy Policy
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">
-                Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um
-                sie an geänderte Rechtslagen oder bei Änderungen des Dienstes
-                anzupassen. Die aktuelle Version ist stets auf dieser Seite
-                verfügbar. Bei wesentlichen Änderungen informieren wir
-                registrierte Nutzer per E-Mail.
+                We reserve the right to update this privacy policy to reflect
+                changes in law or our services. The current version is always
+                available on this page. Registered users will be notified of
+                material changes by email.
               </p>
             </section>
           </div>
 
           <div className="mt-12 pt-8 border-t border-white/[0.06]">
             <p className="text-[12px] text-white/30">
-              Stand: Februar 2026 · Version 2.0
+              Last updated: February 2026 · Version 2.0
             </p>
             <div className="flex gap-4 mt-4">
               <Link
-                href="/legal/privacy-en"
+                href="/legal/privacy"
                 className="text-[12px] text-emerald-400 hover:text-emerald-300"
               >
-                English Version →
+                Deutsche Version →
               </Link>
               <Link
-                href="/legal/cookies"
+                href="/legal/cookies-en"
                 className="text-[12px] text-white/40 hover:text-white/60"
               >
-                Cookie-Richtlinie
+                Cookie Policy
               </Link>
               <Link
-                href="/legal/terms"
+                href="/legal/terms-en"
                 className="text-[12px] text-white/40 hover:text-white/60"
               >
-                AGB
+                Terms of Service
               </Link>
             </div>
           </div>
