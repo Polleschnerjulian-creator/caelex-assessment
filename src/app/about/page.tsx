@@ -217,7 +217,7 @@ export default function AboutPage() {
               <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-6">
                 Building the compliance
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                <span className="text-emerald-400">
                   infrastructure for space
                 </span>
               </h1>

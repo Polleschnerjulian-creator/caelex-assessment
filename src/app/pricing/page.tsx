@@ -270,9 +270,7 @@ export default function PricingPage() {
             <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-6">
               Simple, transparent
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                pricing
-              </span>
+              <span className="text-emerald-400">pricing</span>
             </h1>
             <p className="text-[17px] md:text-[18px] text-white/50 max-w-[500px] mx-auto mb-10">
               Start for free and scale with your compliance needs. No hidden
@@ -346,7 +344,7 @@ export default function PricingPage() {
                 >
                   {plan.highlighted && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-black bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-1.5 rounded-full shadow-lg">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white bg-emerald-500 px-4 py-1.5 rounded-full shadow-lg">
                         <Sparkles size={12} />
                         Most Popular
                       </span>
@@ -409,7 +407,7 @@ export default function PricingPage() {
                         href={plan.ctaHref}
                         className={`w-full text-center py-3.5 rounded-xl text-[14px] font-medium transition-all duration-300 mb-6 ${
                           plan.highlighted
-                            ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
+                            ? "bg-emerald-500 text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
                             : "bg-white/[0.08] text-white hover:bg-white/[0.12] border border-white/[0.08]"
                         }`}
                       >
@@ -646,7 +644,7 @@ export default function PricingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[15px] font-medium transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 text-white text-[15px] font-medium transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
                 >
                   Start Free Assessment
                   <ArrowRight size={18} />
