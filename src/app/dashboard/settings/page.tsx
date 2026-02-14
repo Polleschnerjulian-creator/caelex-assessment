@@ -21,6 +21,7 @@ import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
 import { OrganizationCard } from "@/components/settings/OrganizationCard";
 import { MfaSetupCard } from "@/components/settings/MfaSetupCard";
 import { PasskeyManagementCard } from "@/components/settings/PasskeyManagementCard";
+import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
 import { useToast } from "@/components/ui/Toast";
 
 // ─── Types ───
@@ -528,6 +529,9 @@ export default function SettingsPage() {
 
         {/* Passkeys */}
         <PasskeyManagementCard />
+
+        {/* Delete Account (Art. 17 GDPR) */}
+        <DeleteAccountCard />
       </div>
     </div>
   );

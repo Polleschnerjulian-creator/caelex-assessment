@@ -138,6 +138,91 @@ export default function CookiePolicyPage() {
                       </td>
                       <td className="py-2">Unbegrenzt</td>
                     </tr>
+                    <tr>
+                      <td className="py-2 pr-4">caelex-onboarding-*</td>
+                      <td className="py-2 pr-4">
+                        Onboarding-Fortschritt und -Status
+                      </td>
+                      <td className="py-2">Unbegrenzt</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">caelex-pending-assessment</td>
+                      <td className="py-2 pr-4">
+                        Zwischenspeicherung von Assessment-Ergebnissen vor Login
+                      </td>
+                      <td className="py-2">Bis Login</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">
+                        caelex-pending-unified-assessment
+                      </td>
+                      <td className="py-2 pr-4">
+                        Unified Assessment-Daten vor Login
+                      </td>
+                      <td className="py-2">Bis Login</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">
+                        caelex-save-assessment-after-auth
+                      </td>
+                      <td className="py-2 pr-4">
+                        Flag für automatischen Assessment-Import nach Login
+                      </td>
+                      <td className="py-2">Bis Login</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">currentOrgId</td>
+                      <td className="py-2 pr-4">
+                        Aktuell ausgewählte Organisation
+                      </td>
+                      <td className="py-2">Sitzung</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">
+                        exportControlDisclaimerAcknowledged
+                      </td>
+                      <td className="py-2 pr-4">
+                        Bestätigung des Export Control Disclaimers
+                      </td>
+                      <td className="py-2">Unbegrenzt</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+                <strong className="text-white/80">Hinweis:</strong> Folgende
+                Daten werden nur lokal in Ihrem Browser gespeichert und niemals
+                an unsere Server übertragen:
+              </p>
+              <div className="mt-4 p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr className="text-left text-white/40">
+                      <th className="pb-2">Schlüssel</th>
+                      <th className="pb-2">Zweck</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/60">
+                    <tr>
+                      <td className="py-2 pr-4">caelex-demo-requests</td>
+                      <td className="py-2 pr-4">
+                        Lokale Speicherung von Demo-Anfragen (nur für
+                        Debug-Zwecke)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">caelex-newsletter-signups</td>
+                      <td className="py-2 pr-4">
+                        Lokale Speicherung von Newsletter-Anmeldungen
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">caelex-assessment-leads</td>
+                      <td className="py-2 pr-4">
+                        Lokale Speicherung von Assessment-Lead-Daten
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
