@@ -77,6 +77,12 @@ export default function Navigation() {
                 >
                   Resources
                 </Link>
+                <Link
+                  href="/pricing"
+                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                >
+                  Pricing
+                </Link>
 
                 {/* Auth + CTAs */}
                 <div className="hidden md:flex items-center gap-4">
