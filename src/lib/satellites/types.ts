@@ -108,7 +108,10 @@ export function classifyOrbit(
   return "HEO";
 }
 
-export function normalizeObjectType(raw: string): ObjectType {
+export function normalizeObjectType(
+  raw: string | null | undefined,
+): ObjectType {
+  if (!raw) return "UNKNOWN";
   const upper = raw.toUpperCase();
   if (upper === "PAYLOAD" || upper === "PAY") return "PAYLOAD";
   if (upper.includes("ROCKET") || upper === "R/B") return "ROCKET BODY";

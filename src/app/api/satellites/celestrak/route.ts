@@ -52,31 +52,31 @@ const ORBIT_TYPE_MAP: Record<string, string> = {
 
 function compactSatellite(gp: CelesTrakGPRecord): CompactSat {
   const objType = normalizeObjectType(gp.OBJECT_TYPE);
-  const orbitType = classifyOrbit(gp.APOAPSIS, gp.PERIAPSIS);
+  const orbitType = classifyOrbit(gp.APOAPSIS ?? 0, gp.PERIAPSIS ?? 0);
   return {
     i: gp.NORAD_CAT_ID,
-    n: gp.OBJECT_NAME,
-    c: gp.OBJECT_ID,
+    n: gp.OBJECT_NAME ?? "UNKNOWN",
+    c: gp.OBJECT_ID ?? "",
     t: OBJ_TYPE_MAP[objType] || "U",
-    cc: gp.COUNTRY_CODE,
+    cc: gp.COUNTRY_CODE ?? "",
     o: ORBIT_TYPE_MAP[orbitType] || "L",
-    in: gp.INCLINATION,
-    p: gp.PERIOD,
-    ap: gp.APOAPSIS,
-    pe: gp.PERIAPSIS,
-    e: gp.EPOCH,
-    mm: gp.MEAN_MOTION,
-    ec: gp.ECCENTRICITY,
-    ra: gp.RA_OF_ASC_NODE,
-    ar: gp.ARG_OF_PERICENTER,
-    ma: gp.MEAN_ANOMALY,
-    bs: gp.BSTAR,
-    md: gp.MEAN_MOTION_DOT,
-    mdd: gp.MEAN_MOTION_DDOT,
-    es: gp.ELEMENT_SET_NO,
-    re: gp.REV_AT_EPOCH,
-    ct: gp.CLASSIFICATION_TYPE,
-    et: gp.EPHEMERIS_TYPE,
+    in: gp.INCLINATION ?? 0,
+    p: gp.PERIOD ?? 0,
+    ap: gp.APOAPSIS ?? 0,
+    pe: gp.PERIAPSIS ?? 0,
+    e: gp.EPOCH ?? "",
+    mm: gp.MEAN_MOTION ?? 0,
+    ec: gp.ECCENTRICITY ?? 0,
+    ra: gp.RA_OF_ASC_NODE ?? 0,
+    ar: gp.ARG_OF_PERICENTER ?? 0,
+    ma: gp.MEAN_ANOMALY ?? 0,
+    bs: gp.BSTAR ?? 0,
+    md: gp.MEAN_MOTION_DOT ?? 0,
+    mdd: gp.MEAN_MOTION_DDOT ?? 0,
+    es: gp.ELEMENT_SET_NO ?? 0,
+    re: gp.REV_AT_EPOCH ?? 0,
+    ct: gp.CLASSIFICATION_TYPE ?? "U",
+    et: gp.EPHEMERIS_TYPE ?? 0,
   };
 }
 
