@@ -1,47 +1,100 @@
-import { NextResponse } from "next/server";
-import type {
-  CelesTrakGPRecord,
-  CelesTrakResponse,
-  SatelliteData,
-} from "@/lib/satellites/types";
+import type { CelesTrakGPRecord } from "@/lib/satellites/types";
 import { classifyOrbit, normalizeObjectType } from "@/lib/satellites/types";
 
-// In-memory cache with 2-hour TTL
-let cachedData: CelesTrakResponse | null = null;
+export const runtime = "edge";
+
+// Edge-compatible in-memory cache
+let cachedJson: string | null = null;
 let cachedAt = 0;
 const CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours
 
-function normalizeSatellite(gp: CelesTrakGPRecord): SatelliteData {
+// Compact satellite format — short keys to stay under response limits
+// Client expands these back to full SatelliteData in useSatelliteData hook
+interface CompactSat {
+  i: number; // noradId
+  n: string; // name
+  c: string; // cosparId
+  t: string; // objectType: P=PAYLOAD, R=ROCKET BODY, D=DEBRIS, U=UNKNOWN
+  cc: string; // countryCode
+  o: string; // orbitType: L=LEO, M=MEO, G=GEO, H=HEO
+  in: number; // inclination
+  p: number; // period
+  ap: number; // apoapsis
+  pe: number; // periapsis
+  e: string; // epoch
+  mm: number; // meanMotion
+  ec: number; // eccentricity
+  ra: number; // raOfAscNode
+  ar: number; // argOfPericenter
+  ma: number; // meanAnomaly
+  bs: number; // bstar
+  md: number; // meanMotionDot
+  mdd: number; // meanMotionDdot
+  es: number; // elementSetNo
+  re: number; // revAtEpoch
+  ct: string; // classificationType
+  et: number; // ephemerisType
+}
+
+const OBJ_TYPE_MAP: Record<string, string> = {
+  PAYLOAD: "P",
+  "ROCKET BODY": "R",
+  DEBRIS: "D",
+  UNKNOWN: "U",
+};
+
+const ORBIT_TYPE_MAP: Record<string, string> = {
+  LEO: "L",
+  MEO: "M",
+  GEO: "G",
+  HEO: "H",
+};
+
+function compactSatellite(gp: CelesTrakGPRecord): CompactSat {
+  const objType = normalizeObjectType(gp.OBJECT_TYPE);
+  const orbitType = classifyOrbit(gp.APOAPSIS, gp.PERIAPSIS);
   return {
-    noradId: gp.NORAD_CAT_ID,
-    name: gp.OBJECT_NAME,
-    cosparId: gp.OBJECT_ID,
-    objectType: normalizeObjectType(gp.OBJECT_TYPE),
-    countryCode: gp.COUNTRY_CODE,
-    orbitType: classifyOrbit(gp.APOAPSIS, gp.PERIAPSIS),
-    inclination: gp.INCLINATION,
-    period: gp.PERIOD,
-    apoapsis: gp.APOAPSIS,
-    periapsis: gp.PERIAPSIS,
-    epoch: gp.EPOCH,
-    meanMotion: gp.MEAN_MOTION,
-    eccentricity: gp.ECCENTRICITY,
-    raOfAscNode: gp.RA_OF_ASC_NODE,
-    argOfPericenter: gp.ARG_OF_PERICENTER,
-    meanAnomaly: gp.MEAN_ANOMALY,
-    bstar: gp.BSTAR,
-    meanMotionDot: gp.MEAN_MOTION_DOT,
-    meanMotionDdot: gp.MEAN_MOTION_DDOT,
-    elementSetNo: gp.ELEMENT_SET_NO,
-    revAtEpoch: gp.REV_AT_EPOCH,
-    classificationType: gp.CLASSIFICATION_TYPE,
-    ephemerisType: gp.EPHEMERIS_TYPE,
+    i: gp.NORAD_CAT_ID,
+    n: gp.OBJECT_NAME,
+    c: gp.OBJECT_ID,
+    t: OBJ_TYPE_MAP[objType] || "U",
+    cc: gp.COUNTRY_CODE,
+    o: ORBIT_TYPE_MAP[orbitType] || "L",
+    in: gp.INCLINATION,
+    p: gp.PERIOD,
+    ap: gp.APOAPSIS,
+    pe: gp.PERIAPSIS,
+    e: gp.EPOCH,
+    mm: gp.MEAN_MOTION,
+    ec: gp.ECCENTRICITY,
+    ra: gp.RA_OF_ASC_NODE,
+    ar: gp.ARG_OF_PERICENTER,
+    ma: gp.MEAN_ANOMALY,
+    bs: gp.BSTAR,
+    md: gp.MEAN_MOTION_DOT,
+    mdd: gp.MEAN_MOTION_DDOT,
+    es: gp.ELEMENT_SET_NO,
+    re: gp.REV_AT_EPOCH,
+    ct: gp.CLASSIFICATION_TYPE,
+    et: gp.EPHEMERIS_TYPE,
   };
 }
 
-function computeStats(satellites: SatelliteData[]): CelesTrakResponse["stats"] {
-  const stats = {
-    total: satellites.length,
+interface CompactStats {
+  total: number;
+  payloads: number;
+  rocketBodies: number;
+  debris: number;
+  unknown: number;
+  leo: number;
+  meo: number;
+  geo: number;
+  heo: number;
+}
+
+function computeStats(sats: CompactSat[]): CompactStats {
+  const stats: CompactStats = {
+    total: sats.length,
     payloads: 0,
     rocketBodies: 0,
     debris: 0,
@@ -51,21 +104,16 @@ function computeStats(satellites: SatelliteData[]): CelesTrakResponse["stats"] {
     geo: 0,
     heo: 0,
   };
-
-  for (const sat of satellites) {
-    // Object type
-    if (sat.objectType === "PAYLOAD") stats.payloads++;
-    else if (sat.objectType === "ROCKET BODY") stats.rocketBodies++;
-    else if (sat.objectType === "DEBRIS") stats.debris++;
+  for (const s of sats) {
+    if (s.t === "P") stats.payloads++;
+    else if (s.t === "R") stats.rocketBodies++;
+    else if (s.t === "D") stats.debris++;
     else stats.unknown++;
-
-    // Orbit type
-    if (sat.orbitType === "LEO") stats.leo++;
-    else if (sat.orbitType === "MEO") stats.meo++;
-    else if (sat.orbitType === "GEO") stats.geo++;
+    if (s.o === "L") stats.leo++;
+    else if (s.o === "M") stats.meo++;
+    else if (s.o === "G") stats.geo++;
     else stats.heo++;
   }
-
   return stats;
 }
 
@@ -73,9 +121,10 @@ export async function GET() {
   const now = Date.now();
 
   // Return cached data if fresh
-  if (cachedData && now - cachedAt < CACHE_TTL) {
-    return NextResponse.json(cachedData, {
+  if (cachedJson && now - cachedAt < CACHE_TTL) {
+    return new Response(cachedJson, {
       headers: {
+        "Content-Type": "application/json",
         "Cache-Control": "public, max-age=3600, s-maxage=7200",
         "X-Cache": "HIT",
       },
@@ -83,64 +132,72 @@ export async function GET() {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+
     const res = await fetch(
       "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json",
-      {
-        next: { revalidate: 7200 },
-        signal: AbortSignal.timeout(30000),
-      },
+      { signal: controller.signal },
     );
+    clearTimeout(timeout);
 
     if (!res.ok) {
-      // Stale-while-revalidate: return stale cache if CelesTrak is down
-      if (cachedData) {
-        return NextResponse.json(cachedData, {
+      if (cachedJson) {
+        return new Response(cachedJson, {
           headers: {
+            "Content-Type": "application/json",
             "Cache-Control": "public, max-age=3600, s-maxage=7200",
             "X-Cache": "STALE",
           },
         });
       }
-      return NextResponse.json(
-        { error: "Failed to fetch satellite data from CelesTrak" },
+      return Response.json(
+        {
+          error: `CelesTrak returned ${res.status}`,
+          satellites: [],
+          stats: null,
+        },
         { status: 502 },
       );
     }
 
     const gpData: CelesTrakGPRecord[] = await res.json();
-    const satellites = gpData.map(normalizeSatellite);
+    const satellites = gpData.map(compactSatellite);
     const stats = computeStats(satellites);
 
-    const response: CelesTrakResponse = {
+    const json = JSON.stringify({
       satellites,
       stats,
       cachedAt: new Date().toISOString(),
-    };
+      compact: true, // flag so client knows to expand
+    });
 
     // Update cache
-    cachedData = response;
+    cachedJson = json;
     cachedAt = now;
 
-    return NextResponse.json(response, {
+    return new Response(json, {
       headers: {
+        "Content-Type": "application/json",
         "Cache-Control": "public, max-age=3600, s-maxage=7200",
         "X-Cache": "MISS",
       },
     });
   } catch (error) {
-    // Return stale cache on network error
-    if (cachedData) {
-      return NextResponse.json(cachedData, {
+    if (cachedJson) {
+      return new Response(cachedJson, {
         headers: {
+          "Content-Type": "application/json",
           "Cache-Control": "public, max-age=3600, s-maxage=7200",
           "X-Cache": "STALE",
         },
       });
     }
 
-    console.error("CelesTrak fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch satellite data" },
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("CelesTrak fetch error:", message);
+    return Response.json(
+      { error: message, satellites: [], stats: null },
       { status: 502 },
     );
   }
