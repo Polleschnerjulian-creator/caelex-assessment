@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FileText, Eye, Download, Pencil, Loader2 } from "lucide-react";
 import { useState } from "react";
 import type { AstraDocumentMeta } from "@/lib/astra/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface AstraDocumentCardProps {
   meta: AstraDocumentMeta;
@@ -41,7 +42,7 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
     try {
       const response = await fetch(
         `/api/documents/generated/${documentId}/pdf`,
-        { method: "POST" },
+        { method: "POST", headers: { ...csrfHeaders() } },
       );
       if (response.ok) {
         const blob = await response.blob();

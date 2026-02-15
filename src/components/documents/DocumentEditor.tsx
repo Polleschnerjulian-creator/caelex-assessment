@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { ReportSection, ReportSectionContent } from "@/lib/pdf/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface DocumentEditorProps {
   sections: ReportSection[];
@@ -36,7 +37,7 @@ export function DocumentEditor({
     try {
       await fetch(`/api/documents/generated/${documentId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ editedContent: sections }),
       });
       setSaved(true);

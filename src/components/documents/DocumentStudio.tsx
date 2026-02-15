@@ -12,6 +12,7 @@ import { DocumentEditor } from "./DocumentEditor";
 import { DocumentExportPanel } from "./DocumentExportPanel";
 import type { ReportSection } from "@/lib/pdf/types";
 import type { DocumentGenerationType } from "@/lib/astra/document-generator/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 // ─── State ───
 
@@ -126,7 +127,7 @@ export default function DocumentStudio() {
     try {
       const response = await fetch("/api/documents/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           documentType: state.documentType,
           assessmentId: state.assessmentId,

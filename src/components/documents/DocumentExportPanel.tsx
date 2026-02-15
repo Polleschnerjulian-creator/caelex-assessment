@@ -10,6 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import type { ReportSection } from "@/lib/pdf/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface DocumentExportPanelProps {
   documentId: string;
@@ -34,7 +35,7 @@ export function DocumentExportPanel({
     try {
       const response = await fetch(
         `/api/documents/generated/${documentId}/pdf`,
-        { method: "POST" },
+        { method: "POST", headers: { ...csrfHeaders() } },
       );
 
       if (!response.ok) {
