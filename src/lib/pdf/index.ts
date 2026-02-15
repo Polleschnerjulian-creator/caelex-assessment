@@ -56,3 +56,9 @@ export {
   buildAuthorizationApplicationConfig,
   type AuthorizationApplicationData,
 } from "./reports/authorization-application";
+
+export {
+  ComplianceSummaryPDF,
+  buildComplianceSummaryConfig,
+  type ComplianceSummaryData,
+} from "./reports/compliance-summary";

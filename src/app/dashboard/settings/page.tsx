@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import {
   User,
   Shield,
@@ -15,6 +16,8 @@ import {
   LogOut,
   Globe,
   Clock,
+  Key,
+  ChevronRight,
 } from "lucide-react";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import { ThemeSettingsCard } from "@/components/settings/ThemeSettingsCard";
@@ -22,6 +25,7 @@ import { OrganizationCard } from "@/components/settings/OrganizationCard";
 import { MfaSetupCard } from "@/components/settings/MfaSetupCard";
 import { PasskeyManagementCard } from "@/components/settings/PasskeyManagementCard";
 import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
+import { LanguageSettingsCard } from "@/components/settings/LanguageSettingsCard";
 import { useToast } from "@/components/ui/Toast";
 
 // ─── Types ───
@@ -517,6 +521,32 @@ export default function SettingsPage() {
         <div className="mt-6">
           <ThemeSettingsCard />
         </div>
+
+        {/* Language */}
+        <LanguageSettingsCard />
+
+        {/* API Keys */}
+        <Link
+          href="/dashboard/settings/api-keys"
+          className="block bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
+                <Key className="w-5 h-5 text-slate-600 dark:text-white/70" />
+              </div>
+              <div>
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+                  API KEYS
+                </h2>
+                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+                  Manage API keys for programmatic access
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/50 transition-colors" />
+          </div>
+        </Link>
 
         {/* Organization */}
         <OrganizationCard />

@@ -87,7 +87,7 @@ export default function SupplierPortalPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="dark-section min-h-screen bg-[#0A0F1E] text-white flex items-center justify-center">
+      <div className="dark-section min-h-screen bg-[#0A0A0B] text-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-blue-400 animate-spin mx-auto mb-4" />
           <p className="text-white/70 text-sm">Validating access...</p>
@@ -99,7 +99,7 @@ export default function SupplierPortalPage() {
   // Invalid or expired token
   if (!validation?.valid) {
     return (
-      <div className="dark-section min-h-screen bg-[#0A0F1E] text-white flex items-center justify-center p-4">
+      <div className="dark-section min-h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
           {validation?.expired ? (
             <>
@@ -159,7 +159,7 @@ export default function SupplierPortalPage() {
 
   // Valid token - show form
   return (
-    <div className="dark-section min-h-screen bg-[#0A0F1E] text-white">
+    <div className="dark-section min-h-screen bg-[#0A0A0B] text-white">
       {/* Header */}
       <header className="border-b border-white/10 bg-white/[0.02]">
         <div className="max-w-4xl mx-auto px-4 py-4">

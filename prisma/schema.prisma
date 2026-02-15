@@ -23,6 +23,7 @@ model User {
   role                   String                  @default("user") // user, admin, auditor
   isActive               Boolean                 @default(true)
   theme                  String                  @default("system") // "light" | "dark" | "system"
+  language               String                  @default("en") // en, de, fr, es
   accounts               Account[]
   sessions               Session[]
   articleStatuses        ArticleStatus[]

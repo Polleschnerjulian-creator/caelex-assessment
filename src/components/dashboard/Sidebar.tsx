@@ -32,10 +32,12 @@ import {
   AlertTriangle,
   Flag,
   BarChart3,
+  FileSearch,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useAstra } from "@/components/astra/AstraProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getRequiredPlan, PRICING_TIERS } from "@/lib/stripe/pricing";
 
 interface NavItemProps {
@@ -269,6 +271,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { hasModuleAccess, isLoading } = useOrganization();
   const { openGeneral } = useAstra();
+  const { t } = useLanguage();
 
   // Determine which group has the active route
   const getActiveGroup = (): string | null => {
@@ -384,7 +387,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Overview Section */}
           <div className="mb-5">
             <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
-              Overview
+              {t("sidebar.overview")}
             </p>
             <div className="space-y-0.5">
               <NavItem
@@ -392,14 +395,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 icon={<LayoutDashboard size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                Dashboard
+                {t("sidebar.dashboard")}
               </NavItem>
               <NavItem
                 href="/dashboard/tracker"
                 icon={<ListChecks size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                Compliance Tracker
+                {t("sidebar.complianceTracker")}
               </NavItem>
             </div>
           </div>
@@ -407,12 +410,12 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Compliance Modules Section */}
           <div className="mb-5">
             <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
-              Compliance Modules
+              {t("sidebar.complianceModules")}
             </p>
 
             {/* EU Regulations Group */}
             <ModuleGroup
-              title="EU Regulations"
+              title={t("sidebar.euRegulations")}
               count={7}
               isExpanded={expandedGroups.eu}
               onToggle={() => toggleGroup("eu")}
@@ -488,7 +491,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* International Group */}
             <ModuleGroup
-              title="International"
+              title={t("sidebar.international")}
               count={2}
               isExpanded={expandedGroups.international}
               onToggle={() => toggleGroup("international")}
@@ -516,7 +519,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* US Regulations Group */}
             <ModuleGroup
-              title="US Regulations"
+              title={t("sidebar.usRegulations")}
               count={3}
               isExpanded={expandedGroups.us}
               onToggle={() => toggleGroup("us")}
@@ -558,7 +561,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* AI Agent Section */}
           <div className="mb-5">
             <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
-              AI Agent
+              {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
               <button
@@ -584,7 +587,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Resources Section */}
           <div>
             <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
-              Resources
+              {t("sidebar.resources")}
             </p>
             <div className="space-y-0.5">
               <NavItem
@@ -592,21 +595,21 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 icon={<FileText size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                Documents
+                {t("sidebar.documents")}
               </NavItem>
               <NavItem
                 href="/dashboard/audit-center"
                 icon={<ClipboardCheck size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                Audit Center
+                {t("sidebar.auditCenter")}
               </NavItem>
               <NavItem
                 href="/dashboard/timeline"
                 icon={<Clock size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                Timeline
+                {t("sidebar.timeline")}
               </NavItem>
             </div>
           </div>
@@ -615,7 +618,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {user?.role === "admin" && (
             <div className="mt-5">
               <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
-                Admin
+                {t("sidebar.admin")}
               </p>
               <div className="space-y-0.5">
                 <NavItem
@@ -623,14 +626,21 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   icon={<Crown size={16} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
-                  Admin Panel
+                  {t("sidebar.adminPanel")}
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/analytics"
                   icon={<BarChart3 size={16} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
-                  Analytics
+                  {t("sidebar.analytics")}
+                </NavItem>
+                <NavItem
+                  href="/dashboard/admin/audit"
+                  icon={<FileSearch size={16} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                >
+                  {t("sidebar.auditLogs")}
                 </NavItem>
               </div>
             </div>
@@ -644,7 +654,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             icon={<Settings size={16} strokeWidth={1.5} />}
             onClick={handleNavClick}
           >
-            Settings
+            {t("sidebar.settings")}
           </NavItem>
 
           <button
@@ -656,7 +666,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             "
           >
             <LogOut size={16} className="text-slate-500 dark:text-white/60" />
-            <span>Sign Out</span>
+            <span>{t("sidebar.signOut")}</span>
           </button>
         </div>
 

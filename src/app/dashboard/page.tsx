@@ -52,6 +52,10 @@ const Sparkline = dynamic(
   () => import("@/components/dashboard/charts/Sparkline"),
   { ssr: false },
 );
+const ComplianceScoreCard = dynamic(
+  () => import("@/components/dashboard/ComplianceScoreCard"),
+  { ssr: false },
+);
 
 // ─── Types ───
 
@@ -898,6 +902,9 @@ function DashboardContent() {
             Your compliance command center
           </motion.p>
         </div>
+
+        {/* Compliance Score Card */}
+        <ComplianceScoreCard />
 
         {/* ROW 1: KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
