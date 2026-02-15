@@ -6,7 +6,7 @@
  */
 
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import type { ReportSection } from "./types";
 
 // ─── Layout Constants (mm) ───
@@ -288,8 +288,8 @@ class DocumentPDFBuilder {
 
     this.checkPageBreak(20);
 
-    // Use jspdf-autotable
-    (this.doc as unknown as { autoTable: (opts: unknown) => void }).autoTable({
+    // Use jspdf-autotable (standalone function, not doc method)
+    autoTable(this.doc, {
       startY: this.y,
       head: head[0].length > 0 ? head : undefined,
       body,
@@ -310,14 +310,11 @@ class DocumentPDFBuilder {
       alternateRowStyles: {
         fillColor: [252, 252, 253],
       },
-      didDrawPage: () => {
-        // Update Y after table renders
-      },
     });
 
     // Get final Y position after autotable
     const finalY = (
-      this.doc as unknown as { lastAutoTable: { finalY: number } }
+      this.doc as unknown as { lastAutoTable?: { finalY: number } }
     ).lastAutoTable?.finalY;
     if (finalY) {
       this.y = finalY + 5;
