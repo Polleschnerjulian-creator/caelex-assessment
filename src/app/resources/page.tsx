@@ -44,7 +44,7 @@ function getResourceCategories(
       description: "Latest insights, regulatory updates, and expert analysis",
       href: "/blog",
       icon: Newspaper,
-      color: "blue",
+      color: "emerald",
       stats: `${postsCount} articles`,
     },
     {
@@ -52,7 +52,7 @@ function getResourceCategories(
       description: "Definitions for space compliance terminology and acronyms",
       href: "/glossary",
       icon: BookText,
-      color: "purple",
+      color: "emerald",
       stats: `${termsCount} terms`,
     },
     {
@@ -61,7 +61,7 @@ function getResourceCategories(
         "Explore our 12 compliance modules for authorization, cybersecurity, and more",
       href: "/modules",
       icon: Layers,
-      color: "amber",
+      color: "emerald",
       stats: "12 modules",
     },
     {
@@ -69,7 +69,7 @@ function getResourceCategories(
       description: "Compare space regulations across European countries",
       href: "/jurisdictions",
       icon: Globe,
-      color: "cyan",
+      color: "emerald",
       stats: "11 countries",
     },
     {
@@ -78,7 +78,7 @@ function getResourceCategories(
         "Frequently asked questions about space compliance and our platform",
       href: "/resources/faq",
       icon: HelpCircle,
-      color: "rose",
+      color: "emerald",
       stats: `${faqsCount} questions`,
     },
   ];
@@ -274,7 +274,7 @@ export default function ResourcesPage() {
               </h2>
               <Link
                 href="/blog"
-                className="text-[13px] text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                className="text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
                 View all articles <ArrowRight size={14} />
               </Link>
@@ -287,11 +287,11 @@ export default function ResourcesPage() {
                   className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
                 >
                   <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
                       {post.category}
                     </span>
                   </div>
-                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">
+                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
                     {post.title}
                   </h3>
                   <p className="text-[13px] text-white/40 line-clamp-2">
