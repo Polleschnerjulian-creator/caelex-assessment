@@ -10,6 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import type { ReportSection } from "@/lib/pdf/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 
 interface DocumentExportPanelProps {
   documentId: string;
@@ -30,18 +31,23 @@ export function DocumentExportPanel({
   const [downloaded, setDownloaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Suppress unused var lint — documentId kept for future server-side fallback
-  void documentId;
-
   const handleDownloadPDF = async () => {
     setDownloading(true);
     setError(null);
     try {
-      // Generate PDF entirely client-side — no server call needed
-      const { generateDocumentPDFBlob } =
-        await import("@/lib/pdf/client-generator");
-      const blob = await generateDocumentPDFBlob(title, sections);
+      const response = await fetch(
+        `/api/documents/generated/${documentId}/pdf`,
+        { method: "POST", headers: { ...csrfHeaders() } },
+      );
 
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          data?.error || `PDF generation failed (${response.status})`,
+        );
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -52,8 +58,8 @@ export function DocumentExportPanel({
       URL.revokeObjectURL(url);
       setDownloaded(true);
     } catch (err) {
-      console.error("PDF generation error:", err);
-      setError(err instanceof Error ? err.message : "PDF generation failed");
+      console.error("PDF download error:", err);
+      setError(err instanceof Error ? err.message : "PDF download failed");
     } finally {
       setDownloading(false);
     }

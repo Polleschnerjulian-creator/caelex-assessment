@@ -95,6 +95,21 @@ const nextConfig = {
     ],
   },
 
+  // Prevent Next.js from bundling @react-pdf packages server-side.
+  // v3.4.5 embeds react-reconciler v0.23.0 which breaks when Next.js
+  // resolves React via the "react-server" condition (missing __SECRET_INTERNALS).
+  // Using native Node.js require() resolves React via the "default" condition.
+  serverExternalPackages: [
+    "@react-pdf/renderer",
+    "@react-pdf/layout",
+    "@react-pdf/pdfkit",
+    "@react-pdf/font",
+    "@react-pdf/render",
+    "@react-pdf/stylesheet",
+    "@react-pdf/textkit",
+    "@react-pdf/primitives",
+  ],
+
   // Experimental features
   experimental: {
     // Type-safe server actions
