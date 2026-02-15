@@ -279,6 +279,7 @@
     "inclination": "Inclinación",
     "period": "Período orbital",
     "yourSpacecraft": "Tu nave espacial",
-    "manageSpacecraft": "Gestionar en registro"
+    "manageSpacecraft": "Gestionar en registro",
+    "noResults": "No se encontraron satélites. Prueba con otro nombre o ID NORAD."
   }
 }

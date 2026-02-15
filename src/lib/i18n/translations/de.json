@@ -279,6 +279,7 @@
     "inclination": "Inklination",
     "period": "Umlaufzeit",
     "yourSpacecraft": "Ihr Raumfahrzeug",
-    "manageSpacecraft": "In Registrierung verwalten"
+    "manageSpacecraft": "In Registrierung verwalten",
+    "noResults": "Keine Satelliten gefunden. Versuchen Sie einen anderen Namen oder eine andere NORAD-ID."
   }
 }

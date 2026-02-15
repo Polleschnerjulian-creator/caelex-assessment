@@ -279,6 +279,7 @@
     "inclination": "Inclinaison",
     "period": "Période orbitale",
     "yourSpacecraft": "Votre vaisseau",
-    "manageSpacecraft": "Gérer dans l'enregistrement"
+    "manageSpacecraft": "Gérer dans l'enregistrement",
+    "noResults": "Aucun satellite trouvé. Essayez un autre nom ou ID NORAD."
   }
 }
