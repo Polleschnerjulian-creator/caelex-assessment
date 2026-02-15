@@ -20,6 +20,18 @@ interface DocumentEditorProps {
   onBack: () => void;
 }
 
+/** Safely convert any value to a renderable string */
+function str(v: unknown): string {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
+}
+
 export function DocumentEditor({
   sections,
   onSectionsChange,
@@ -102,10 +114,11 @@ export function DocumentEditor({
                 className="text-slate-400 dark:text-white/40 flex-shrink-0"
               />
               <span className="text-sm font-medium text-slate-900 dark:text-white flex-1">
-                {section.title}
+                {str(section.title)}
               </span>
               <span className="text-[11px] text-slate-400 dark:text-white/30">
-                {section.content.length} blocks
+                {Array.isArray(section.content) ? section.content.length : 0}{" "}
+                blocks
               </span>
             </button>
 
@@ -113,24 +126,26 @@ export function DocumentEditor({
             {expandedSection === sectionIndex && (
               <div className="px-5 pb-5 border-t border-slate-100 dark:border-white/5">
                 <div className="pt-4 space-y-3">
-                  {section.content.map((block, blockIndex) => (
-                    <SectionContentBlock
-                      key={blockIndex}
-                      block={block}
-                      onChange={(newBlock) => {
-                        const newSections = [...sections];
-                        const newContent = [
-                          ...newSections[sectionIndex].content,
-                        ];
-                        newContent[blockIndex] = newBlock;
-                        newSections[sectionIndex] = {
-                          ...newSections[sectionIndex],
-                          content: newContent,
-                        };
-                        onSectionsChange(newSections);
-                      }}
-                    />
-                  ))}
+                  {(Array.isArray(section.content) ? section.content : []).map(
+                    (block, blockIndex) => (
+                      <SectionContentBlock
+                        key={blockIndex}
+                        block={block}
+                        onChange={(newBlock) => {
+                          const newSections = [...sections];
+                          const newContent = [
+                            ...newSections[sectionIndex].content,
+                          ];
+                          newContent[blockIndex] = newBlock;
+                          newSections[sectionIndex] = {
+                            ...newSections[sectionIndex],
+                            content: newContent,
+                          };
+                          onSectionsChange(newSections);
+                        }}
+                      />
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -168,21 +183,25 @@ function SectionContentBlock({
   block: ReportSectionContent;
   onChange: (block: ReportSectionContent) => void;
 }) {
+  if (!block || typeof block !== "object" || !block.type) {
+    return null;
+  }
+
   switch (block.type) {
     case "text":
       return (
         <textarea
-          value={block.value}
+          value={str(block.value)}
           onChange={(e) => onChange({ ...block, value: e.target.value })}
           className="w-full bg-transparent text-sm text-slate-700 dark:text-white/70 resize-none border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:border-emerald-500/30 rounded-lg px-3 py-2 transition-colors outline-none min-h-[60px]"
-          rows={Math.max(2, Math.ceil(block.value.length / 80))}
+          rows={Math.max(2, Math.ceil(str(block.value).length / 80))}
         />
       );
 
     case "heading":
       return (
         <input
-          value={block.value}
+          value={str(block.value)}
           onChange={(e) => onChange({ ...block, value: e.target.value })}
           className={`w-full bg-transparent font-medium border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:border-emerald-500/30 rounded-lg px-3 py-1.5 transition-colors outline-none ${
             block.level === 2
@@ -195,13 +214,13 @@ function SectionContentBlock({
     case "list":
       return (
         <div className="space-y-1 pl-4">
-          {block.items.map((item, i) => (
+          {(Array.isArray(block.items) ? block.items : []).map((item, i) => (
             <div key={i} className="flex items-start gap-2">
               <span className="text-xs text-slate-400 dark:text-white/30 mt-1.5 flex-shrink-0">
                 {block.ordered ? `${i + 1}.` : "\u2022"}
               </span>
               <input
-                value={item}
+                value={str(item)}
                 onChange={(e) => {
                   const newItems = [...block.items];
                   newItems[i] = e.target.value;
@@ -220,28 +239,30 @@ function SectionContentBlock({
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/[0.03]">
-                {block.headers.map((h, i) => (
-                  <th
-                    key={i}
-                    className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
-                  >
-                    {h}
-                  </th>
-                ))}
+                {(Array.isArray(block.headers) ? block.headers : []).map(
+                  (h, i) => (
+                    <th
+                      key={i}
+                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
+                    >
+                      {str(h)}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
-              {block.rows.map((row, ri) => (
+              {(Array.isArray(block.rows) ? block.rows : []).map((row, ri) => (
                 <tr
                   key={ri}
                   className="border-b border-slate-100 dark:border-white/5 last:border-0"
                 >
-                  {row.map((cell, ci) => (
+                  {(Array.isArray(row) ? row : []).map((cell, ci) => (
                     <td
                       key={ci}
                       className="px-3 py-2 text-slate-700 dark:text-white/60"
                     >
-                      {cell}
+                      {str(cell)}
                     </td>
                   ))}
                 </tr>
@@ -254,13 +275,13 @@ function SectionContentBlock({
     case "keyValue":
       return (
         <div className="space-y-1">
-          {block.items.map((item, i) => (
+          {(Array.isArray(block.items) ? block.items : []).map((item, i) => (
             <div key={i} className="flex items-start gap-2 text-sm">
               <span className="font-medium text-slate-700 dark:text-white/70 min-w-[120px]">
-                {item.key}:
+                {str(item?.key)}:
               </span>
               <span className="text-slate-600 dark:text-white/50">
-                {item.value}
+                {str(item?.value)}
               </span>
             </div>
           ))}
@@ -278,7 +299,7 @@ function SectionContentBlock({
                 : "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
           }`}
         >
-          {block.message}
+          {str(block.message)}
         </div>
       );
 

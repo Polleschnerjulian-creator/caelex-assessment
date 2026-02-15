@@ -284,7 +284,11 @@ export default function DocumentStudio() {
           {state.step === 5 && state.documentId && (
             <DocumentExportPanel
               documentId={state.documentId}
-              title={state.sections[0]?.title || "Document"}
+              title={
+                typeof state.sections[0]?.title === "string"
+                  ? state.sections[0].title
+                  : "Document"
+              }
               sections={state.sections}
               onBack={() => dispatch({ type: "PREV_STEP" })}
               onNewDocument={() => dispatch({ type: "RESET" })}

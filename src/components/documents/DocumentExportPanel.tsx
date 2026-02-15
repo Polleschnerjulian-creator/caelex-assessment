@@ -101,7 +101,7 @@ export function DocumentExportPanel({
                 <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 text-[10px] font-medium">
                   {i + 1}
                 </span>
-                {section.title}
+                {typeof section.title === "string" ? section.title : "Section"}
               </div>
             ))}
           </div>
