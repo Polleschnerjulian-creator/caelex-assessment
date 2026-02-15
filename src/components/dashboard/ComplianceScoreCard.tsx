@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, AlertTriangle, Loader2, TrendingUp } from "lucide-react";
+import {
+  Shield,
+  AlertTriangle,
+  Loader2,
+  TrendingUp,
+  HelpCircle,
+} from "lucide-react";
+import Link from "next/link";
 import DownloadReportButton from "./DownloadReportButton";
 
 interface ModuleScore {
@@ -126,6 +133,13 @@ export default function ComplianceScoreCard() {
         </div>
         <div className="flex items-center gap-3">
           <DownloadReportButton />
+          <Link
+            href="/dashboard/compliance-methodology"
+            className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors"
+          >
+            <HelpCircle className="w-3 h-3" />
+            <span>Methodology</span>
+          </Link>
           <div className="flex items-center gap-1 text-[11px] text-white/30">
             <TrendingUp className="w-3 h-3" />
             <span>Updated live</span>

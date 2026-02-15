@@ -9,34 +9,10 @@ export default function DownloadReportButton() {
   const handleDownload = async () => {
     setGenerating(true);
     try {
-      // Fetch compliance score data
-      const res = await fetch("/api/dashboard/compliance-score");
-      if (!res.ok) throw new Error("Failed to fetch compliance data");
-      const scoreData = await res.json();
+      const res = await fetch("/api/dashboard/compliance-score/pdf");
+      if (!res.ok) throw new Error("Failed to generate PDF");
 
-      // Dynamic import of PDF libraries
-      const [{ pdf }, { ComplianceSummaryPDF }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("@/lib/pdf/reports/compliance-summary"),
-      ]);
-
-      const reportData = {
-        reportNumber: `CSR-${Date.now().toString(36).toUpperCase()}`,
-        reportDate: new Date(),
-        organization: "My Organization",
-        generatedBy: "Caelex Platform",
-        overall: scoreData.overall,
-        grade: scoreData.grade,
-        status: scoreData.status,
-        breakdown: scoreData.breakdown,
-        recommendations: scoreData.recommendations || [],
-      };
-
-      const blob = await pdf(
-        ComplianceSummaryPDF({ data: reportData }),
-      ).toBlob();
-
-      // Download
+      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -46,7 +22,7 @@ export default function DownloadReportButton() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Error downloading PDF:", error);
     } finally {
       setGenerating(false);
     }
