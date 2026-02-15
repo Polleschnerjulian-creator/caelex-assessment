@@ -739,6 +739,101 @@ export const estimateComplianceCostTime: AstraToolDefinition = {
 
 // ─── All Tools Export ───
 
+// ─── NCA Portal Tools ───
+
+export const getNcaSubmissions: AstraToolDefinition = {
+  name: "get_nca_submissions",
+  description:
+    "Returns the user's NCA submissions with optional filtering by authority, status, or date range. Use when the user asks about submission status, pending submissions, or NCA communication history.",
+  input_schema: {
+    type: "object",
+    properties: {
+      ncaAuthority: {
+        type: "string",
+        description:
+          "Optional: Filter by NCA authority code (e.g., 'FR_CNES', 'DE_BMWK'). Omit for all authorities.",
+      },
+      status: {
+        type: "string",
+        description:
+          "Optional: Filter by status. Values: 'DRAFT', 'SUBMITTED', 'RECEIVED', 'UNDER_REVIEW', 'INFORMATION_REQUESTED', 'ACKNOWLEDGED', 'APPROVED', 'REJECTED', 'WITHDRAWN'.",
+        enum: [
+          "DRAFT",
+          "SUBMITTED",
+          "RECEIVED",
+          "UNDER_REVIEW",
+          "INFORMATION_REQUESTED",
+          "ACKNOWLEDGED",
+          "APPROVED",
+          "REJECTED",
+          "WITHDRAWN",
+        ],
+      },
+      activeOnly: {
+        type: "boolean",
+        description:
+          "If true, only return non-terminal submissions (excludes APPROVED, REJECTED, WITHDRAWN). Default: false.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const getSubmissionDetail: AstraToolDefinition = {
+  name: "get_submission_detail",
+  description:
+    "Returns detailed information about a specific NCA submission including its full timeline, correspondence history, and linked package. Use when the user asks about a specific submission or wants details about a particular NCA interaction.",
+  input_schema: {
+    type: "object",
+    properties: {
+      submissionId: {
+        type: "string",
+        description:
+          "The ID of the submission to retrieve. If not provided, will try to match by NCA authority.",
+      },
+      ncaAuthority: {
+        type: "string",
+        description:
+          "Optional: NCA authority code to find the most recent submission for that authority.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const checkPackageCompleteness: AstraToolDefinition = {
+  name: "check_package_completeness",
+  description:
+    "Analyzes document readiness for submission to a specific NCA. Returns which required documents are available, which are missing, and a completeness percentage. Use when the user asks if they're ready to submit to an NCA.",
+  input_schema: {
+    type: "object",
+    properties: {
+      ncaAuthority: {
+        type: "string",
+        description:
+          "The NCA authority to check package completeness for (e.g., 'FR_CNES', 'DE_BMWK').",
+      },
+    },
+    required: ["ncaAuthority"],
+  },
+};
+
+export const getNcaDeadlines: AstraToolDefinition = {
+  name: "get_nca_deadlines",
+  description:
+    "Returns upcoming deadlines related to NCA submissions including follow-up deadlines, SLA deadlines, and response timeouts. Use when the user asks about upcoming deadlines or what requires their attention.",
+  input_schema: {
+    type: "object",
+    properties: {
+      daysAhead: {
+        type: "number",
+        description: "Number of days to look ahead for deadlines. Default: 30.",
+      },
+    },
+    required: [],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -774,6 +869,12 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   assessRegulatoryImpact,
   suggestCompliancePath,
   estimateComplianceCostTime,
+
+  // NCA Portal Tools
+  getNcaSubmissions,
+  getSubmissionDetail,
+  checkPackageCompleteness,
+  getNcaDeadlines,
 ];
 
 // ─── Tool Name Lookup ───
@@ -823,5 +924,11 @@ export const TOOL_CATEGORIES = {
     "assess_regulatory_impact",
     "suggest_compliance_path",
     "estimate_compliance_cost_time",
+  ],
+  nca_portal: [
+    "get_nca_submissions",
+    "get_submission_detail",
+    "check_package_completeness",
+    "get_nca_deadlines",
   ],
 } as const;

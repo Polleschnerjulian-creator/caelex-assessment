@@ -63,7 +63,9 @@
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
     "missionControl": "Centre de mission",
-    "aiGenerate": "Génération IA"
+    "aiGenerate": "Génération IA",
+    "ncaPortal": "Portail ANC",
+    "new": "NOUVEAU"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -315,5 +317,41 @@
     "authorizationApplication": "Dossier de demande d'autorisation",
     "backToDocuments": "Retour aux documents",
     "generateDocument": "Générer le document"
+  },
+  "ncaPortal": {
+    "title": "Portail de soumission ANC",
+    "subtitle": "Gérer les soumissions réglementaires aux autorités nationales compétentes",
+    "activeSubmissions": "Soumissions actives",
+    "pendingFollowUps": "Suivis en attente",
+    "upcomingDeadlines": "Échéances à venir",
+    "avgResponseTime": "Temps de réponse moyen",
+    "days": "jours",
+    "pipeline": "Pipeline de soumission",
+    "draft": "Brouillon",
+    "submitted": "Soumis",
+    "underReview": "En cours d'examen",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "assemblePackage": "Assembler le dossier",
+    "newSubmission": "Nouvelle soumission",
+    "recentCorrespondence": "Correspondance récente",
+    "unread": "non lu(s)",
+    "noCorrespondence": "Pas encore de correspondance. Soumettez à une ANC pour commencer.",
+    "noSubmissions": "Pas encore de soumissions. Créez un dossier et soumettez-le.",
+    "selectNCA": "Sélectionner l'autorité cible",
+    "reviewPackage": "Examiner le dossier",
+    "confirmSubmit": "Confirmer et soumettre",
+    "packageCompleteness": "Complétude du dossier",
+    "requiredDocuments": "Documents requis",
+    "missingDocuments": "Documents manquants",
+    "submissionMethod": "Méthode de soumission",
+    "coverLetter": "Lettre d'accompagnement",
+    "logCommunication": "Enregistrer la communication",
+    "timeline": "Chronologie",
+    "submissionInfo": "Info soumission",
+    "actions": "Actions",
+    "priority": "Priorité",
+    "followUpRequired": "Suivi requis",
+    "slaDeadline": "Échéance SLA"
   }
 }

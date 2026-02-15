@@ -63,7 +63,9 @@
     "settings": "Einstellungen",
     "signOut": "Abmelden",
     "missionControl": "Missionskontrolle",
-    "aiGenerate": "KI-Generierung"
+    "aiGenerate": "KI-Generierung",
+    "ncaPortal": "NCA-Portal",
+    "new": "NEU"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -315,5 +317,41 @@
     "authorizationApplication": "Genehmigungsantragspaket",
     "backToDocuments": "Zurück zu Dokumenten",
     "generateDocument": "Dokument generieren"
+  },
+  "ncaPortal": {
+    "title": "NCA-Einreichungsportal",
+    "subtitle": "Behördliche Einreichungen an nationale zuständige Behörden verwalten",
+    "activeSubmissions": "Aktive Einreichungen",
+    "pendingFollowUps": "Ausstehende Nachverfolgungen",
+    "upcomingDeadlines": "Anstehende Fristen",
+    "avgResponseTime": "Durchschnittl. Antwortzeit",
+    "days": "Tage",
+    "pipeline": "Einreichungs-Pipeline",
+    "draft": "Entwurf",
+    "submitted": "Eingereicht",
+    "underReview": "In Prüfung",
+    "approved": "Genehmigt",
+    "rejected": "Abgelehnt",
+    "assemblePackage": "Paket zusammenstellen",
+    "newSubmission": "Neue Einreichung",
+    "recentCorrespondence": "Letzte Korrespondenz",
+    "unread": "ungelesen",
+    "noCorrespondence": "Noch keine Korrespondenz. Reichen Sie bei einer NCA ein, um zu beginnen.",
+    "noSubmissions": "Noch keine Einreichungen. Erstellen Sie ein Paket und reichen Sie es ein.",
+    "selectNCA": "Zielbehörde auswählen",
+    "reviewPackage": "Paket überprüfen",
+    "confirmSubmit": "Bestätigen & Einreichen",
+    "packageCompleteness": "Paketvollständigkeit",
+    "requiredDocuments": "Erforderliche Dokumente",
+    "missingDocuments": "Fehlende Dokumente",
+    "submissionMethod": "Einreichungsmethode",
+    "coverLetter": "Anschreiben",
+    "logCommunication": "Kommunikation protokollieren",
+    "timeline": "Zeitverlauf",
+    "submissionInfo": "Einreichungsinfo",
+    "actions": "Aktionen",
+    "priority": "Priorität",
+    "followUpRequired": "Nachverfolgung erforderlich",
+    "slaDeadline": "SLA-Frist"
   }
 }

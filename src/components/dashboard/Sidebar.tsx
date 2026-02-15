@@ -592,6 +592,18 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             </p>
             <div className="space-y-0.5">
               <NavItem
+                href="/dashboard/nca-portal"
+                icon={<Building2 size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={
+                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
+                }
+              >
+                {t("sidebar.ncaPortal") !== "sidebar.ncaPortal"
+                  ? t("sidebar.ncaPortal")
+                  : "NCA Portal"}
+              </NavItem>
+              <NavItem
                 href="/dashboard/documents"
                 icon={<FileText size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}

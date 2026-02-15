@@ -59,6 +59,7 @@ model User {
   spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
   astraConversations     AstraConversation[]     // ASTRA AI conversations
   generatedDocuments     GeneratedDocument[]     // AI-generated compliance documents
+  submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -1999,6 +2000,11 @@ enum NotificationType {
   // NIS2
   NIS2_DEADLINE_APPROACHING
   NIS2_ASSESSMENT_UPDATED
+
+  // NCA Portal
+  NCA_STATUS_CHANGED
+  NCA_RESPONSE_RECEIVED
+  NCA_FOLLOW_UP_REQUIRED
 }
 
 // ============================================
@@ -2165,6 +2171,14 @@ model NCASubmission {
   resends              NCASubmission[] @relation("SubmissionResends")
   resendCount       Int      @default(0)
 
+  // NCA Portal extensions
+  packageId            String?          // FK → SubmissionPackage
+  package              SubmissionPackage? @relation(fields: [packageId], references: [id])
+  estimatedResponseDate DateTime?
+  slaDeadline          DateTime?
+  priority             SubmissionPriority @default(NORMAL)
+  correspondence       NCACorrespondence[]
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -2174,6 +2188,9 @@ model NCASubmission {
   @@index([status])
   @@index([submittedAt])
   @@index([originalSubmissionId])
+  @@index([packageId])
+  @@index([priority])
+  @@index([slaDeadline])
 }
 
 enum NCAAuthority {
@@ -2224,6 +2241,93 @@ enum NCASubmissionStatus {
   WITHDRAWN         // Operator withdrew submission
 }
 
+enum SubmissionPriority {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum CorrespondenceDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageType {
+  EMAIL
+  LETTER
+  PORTAL_MSG
+  PHONE_CALL
+  MEETING_NOTE
+}
+
+// ============================================
+// NCA PORTAL: CORRESPONDENCE & PACKAGES
+// ============================================
+
+model NCACorrespondence {
+  id                String   @id @default(cuid())
+  submissionId      String
+  submission        NCASubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  direction         CorrespondenceDirection
+  messageType       MessageType
+  subject           String
+  content           String   @db.Text
+  attachments       Json?    // Array of { fileName, fileSize, fileUrl }
+
+  sentAt            DateTime?
+  sentBy            String?  // User ID or NCA contact name
+  receivedAt        DateTime?
+  ncaContactName    String?
+  ncaContactEmail   String?
+
+  isRead            Boolean  @default(false)
+  requiresResponse  Boolean  @default(false)
+  responseDeadline  DateTime?
+  respondedAt       DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([submissionId])
+  @@index([direction])
+  @@index([isRead])
+  @@index([requiresResponse])
+  @@index([responseDeadline])
+}
+
+model SubmissionPackage {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  ncaAuthority      NCAAuthority
+  packageName       String
+  description       String?  @db.Text
+
+  documents         Json     // Array of { sourceType, sourceId, documentType, title, status }
+  completenessScore Float    @default(0)
+  requiredDocuments Json     // Array of required document types for this NCA
+  missingDocuments  Json     // Array of missing document types
+
+  assembledAt       DateTime?
+  exportedAt        DateTime?
+  exportFormat      String?
+
+  // Link to submission when submitted
+  submissions       NCASubmission[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([ncaAuthority])
+}
+
 // ============================================
 // MULTI-TENANCY: ORGANIZATIONS
 // ============================================
@@ -2272,6 +2376,7 @@ model Organization {
   astraConversations AstraConversation[]    // ASTRA AI conversations
   generatedDocuments GeneratedDocument[]    // AI-generated compliance documents
   healthScore       CustomerHealthScore?    // CEO Analytics: customer health
+  submissionPackages SubmissionPackage[]    // NCA Portal: document packages
 
   @@index([slug])
 }

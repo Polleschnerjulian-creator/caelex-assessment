@@ -63,7 +63,9 @@
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
     "missionControl": "Control de misión",
-    "aiGenerate": "Generación IA"
+    "aiGenerate": "Generación IA",
+    "ncaPortal": "Portal ANC",
+    "new": "NUEVO"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -315,5 +317,41 @@
     "authorizationApplication": "Paquete de solicitud de autorización",
     "backToDocuments": "Volver a documentos",
     "generateDocument": "Generar documento"
+  },
+  "ncaPortal": {
+    "title": "Portal de envío ANC",
+    "subtitle": "Gestionar envíos regulatorios a las autoridades nacionales competentes",
+    "activeSubmissions": "Envíos activos",
+    "pendingFollowUps": "Seguimientos pendientes",
+    "upcomingDeadlines": "Plazos próximos",
+    "avgResponseTime": "Tiempo medio de respuesta",
+    "days": "días",
+    "pipeline": "Pipeline de envíos",
+    "draft": "Borrador",
+    "submitted": "Enviado",
+    "underReview": "En revisión",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "assemblePackage": "Preparar paquete",
+    "newSubmission": "Nuevo envío",
+    "recentCorrespondence": "Correspondencia reciente",
+    "unread": "sin leer",
+    "noCorrespondence": "Sin correspondencia aún. Envíe a una ANC para empezar.",
+    "noSubmissions": "Sin envíos aún. Cree un paquete y envíelo.",
+    "selectNCA": "Seleccionar autoridad objetivo",
+    "reviewPackage": "Revisar paquete",
+    "confirmSubmit": "Confirmar y enviar",
+    "packageCompleteness": "Completitud del paquete",
+    "requiredDocuments": "Documentos requeridos",
+    "missingDocuments": "Documentos faltantes",
+    "submissionMethod": "Método de envío",
+    "coverLetter": "Carta de presentación",
+    "logCommunication": "Registrar comunicación",
+    "timeline": "Cronología",
+    "submissionInfo": "Info de envío",
+    "actions": "Acciones",
+    "priority": "Prioridad",
+    "followUpRequired": "Seguimiento requerido",
+    "slaDeadline": "Plazo SLA"
   }
 }

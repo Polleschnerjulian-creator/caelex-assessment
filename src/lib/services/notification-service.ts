@@ -254,6 +254,26 @@ export const NOTIFICATION_CONFIG: Record<
     defaultSeverity: "INFO",
     emailSubjectPrefix: "[NIS2]",
   },
+
+  // NCA Portal
+  NCA_STATUS_CHANGED: {
+    label: "NCA Status Changed",
+    category: "nca",
+    defaultSeverity: "INFO",
+    emailSubjectPrefix: "[NCA Portal]",
+  },
+  NCA_RESPONSE_RECEIVED: {
+    label: "NCA Response Received",
+    category: "nca",
+    defaultSeverity: "WARNING",
+    emailSubjectPrefix: "[NCA Portal]",
+  },
+  NCA_FOLLOW_UP_REQUIRED: {
+    label: "NCA Follow-up Required",
+    category: "nca",
+    defaultSeverity: "WARNING",
+    emailSubjectPrefix: "[NCA Portal]",
+  },
 };
 
 export const NOTIFICATION_CATEGORIES = [
@@ -265,6 +285,7 @@ export const NOTIFICATION_CATEGORIES = [
   { id: "team", label: "Team Activity" },
   { id: "spacecraft", label: "Spacecraft Updates" },
   { id: "system", label: "System Notifications" },
+  { id: "nca", label: "NCA Submissions" },
 ];
 
 // ─── CRUD Operations ───

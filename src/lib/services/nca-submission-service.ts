@@ -9,6 +9,7 @@ import type {
   NCAAuthority,
   SubmissionMethod,
   NCASubmissionStatus,
+  SubmissionPriority,
   Prisma,
 } from "@prisma/client";
 
@@ -535,4 +536,56 @@ export function getNCAAuthorityLabel(authority: NCAAuthority): string {
 
 export function getNCAAuthorityCountry(authority: NCAAuthority): string {
   return NCA_AUTHORITY_INFO[authority]?.country || "Unknown";
+}
+
+// ─── Extended Functions (NCA Portal) ───
+
+const TERMINAL_STATUSES: NCASubmissionStatus[] = [
+  "APPROVED",
+  "REJECTED",
+  "WITHDRAWN",
+];
+
+export async function getActiveSubmissions(
+  userId: string,
+): Promise<NCASubmissionWithReport[]> {
+  const submissions = await prisma.nCASubmission.findMany({
+    where: {
+      userId,
+      status: { notIn: TERMINAL_STATUSES },
+    },
+    include: {
+      report: {
+        select: {
+          id: true,
+          reportType: true,
+          title: true,
+          status: true,
+          dueDate: true,
+        },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return submissions as NCASubmissionWithReport[];
+}
+
+export async function updatePriority(
+  id: string,
+  userId: string,
+  priority: SubmissionPriority,
+): Promise<NCASubmission> {
+  const submission = await prisma.nCASubmission.findFirst({
+    where: { id, userId },
+  });
+
+  if (!submission) {
+    throw new Error("Submission not found");
+  }
+
+  return prisma.nCASubmission.update({
+    where: { id },
+    data: { priority },
+  });
 }

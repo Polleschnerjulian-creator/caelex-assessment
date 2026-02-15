@@ -118,6 +118,22 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:docgen",
       }),
+
+      // NCA Portal: 30 requests per hour for browsing, 10 for package assembly
+      nca_portal: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:nca_portal",
+      }),
+
+      // NCA Package assembly: 10 per hour (creates DB records)
+      nca_package: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:nca_package",
+      }),
     }
   : null;
 
@@ -197,6 +213,8 @@ const fallbackLimiters = {
   sensitive: new InMemoryRateLimiter(5, 3600000),
   supplier: new InMemoryRateLimiter(30, 3600000),
   document_generation: new InMemoryRateLimiter(5, 3600000),
+  nca_portal: new InMemoryRateLimiter(30, 3600000),
+  nca_package: new InMemoryRateLimiter(10, 3600000),
 };
 
 // ─── Public API ───
@@ -209,7 +227,9 @@ export type RateLimitType =
   | "export"
   | "sensitive"
   | "supplier"
-  | "document_generation";
+  | "document_generation"
+  | "nca_portal"
+  | "nca_package";
 
 /**
  * Check rate limit for an identifier.

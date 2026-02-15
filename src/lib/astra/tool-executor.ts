@@ -1351,6 +1351,318 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
         "Estimates based on industry benchmarks. Actual costs may vary.",
     };
   },
+
+  // ─── NCA Portal Tools ───
+
+  get_nca_submissions: async (input, userContext) => {
+    const ncaAuthority = input.ncaAuthority as string | undefined;
+    const status = input.status as string | undefined;
+    const activeOnly = input.activeOnly as boolean | undefined;
+
+    const terminalStatuses = ["APPROVED", "REJECTED", "WITHDRAWN"];
+
+    const where: Record<string, unknown> = { userId: userContext.userId };
+    if (ncaAuthority) where.ncaAuthority = ncaAuthority;
+    if (status) where.status = status;
+    if (activeOnly) where.status = { notIn: terminalStatuses };
+
+    const submissions = await prisma.nCASubmission.findMany({
+      where,
+      include: {
+        report: { select: { title: true, reportType: true } },
+        _count: { select: { correspondence: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 20,
+    });
+
+    return {
+      totalFound: submissions.length,
+      submissions: submissions.map((s) => ({
+        id: s.id,
+        ncaAuthority: s.ncaAuthority,
+        ncaAuthorityName: s.ncaAuthorityName,
+        status: s.status,
+        priority: s.priority,
+        submittedAt: s.submittedAt.toISOString(),
+        ncaReference: s.ncaReference,
+        reportTitle: s.report.title,
+        correspondenceCount: s._count.correspondence,
+        followUpRequired: s.followUpRequired,
+        followUpDeadline: s.followUpDeadline?.toISOString() || null,
+        slaDeadline: s.slaDeadline?.toISOString() || null,
+      })),
+    };
+  },
+
+  get_submission_detail: async (input, userContext) => {
+    const submissionId = input.submissionId as string | undefined;
+    const ncaAuthority = input.ncaAuthority as string | undefined;
+
+    let submission;
+
+    if (submissionId) {
+      submission = await prisma.nCASubmission.findFirst({
+        where: { id: submissionId, userId: userContext.userId },
+        include: {
+          report: { select: { title: true, reportType: true, status: true } },
+          correspondence: {
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+          package: {
+            select: {
+              packageName: true,
+              completenessScore: true,
+              missingDocuments: true,
+            },
+          },
+        },
+      });
+    } else if (ncaAuthority) {
+      submission = await prisma.nCASubmission.findFirst({
+        where: {
+          ncaAuthority: ncaAuthority as never,
+          userId: userContext.userId,
+        },
+        include: {
+          report: { select: { title: true, reportType: true, status: true } },
+          correspondence: {
+            orderBy: { createdAt: "desc" },
+            take: 10,
+          },
+          package: {
+            select: {
+              packageName: true,
+              completenessScore: true,
+              missingDocuments: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+      });
+    }
+
+    if (!submission) {
+      return { found: false, message: "No matching submission found." };
+    }
+
+    // Parse status history
+    let statusHistory: Array<{
+      status: string;
+      timestamp: string;
+      notes?: string;
+    }> = [];
+    try {
+      statusHistory = JSON.parse((submission.statusHistory as string) || "[]");
+    } catch {
+      // ignore
+    }
+
+    return {
+      found: true,
+      submission: {
+        id: submission.id,
+        ncaAuthority: submission.ncaAuthority,
+        ncaAuthorityName: submission.ncaAuthorityName,
+        status: submission.status,
+        priority: submission.priority,
+        submittedAt: submission.submittedAt.toISOString(),
+        ncaReference: submission.ncaReference,
+        reportTitle: submission.report.title,
+        followUpRequired: submission.followUpRequired,
+        followUpDeadline: submission.followUpDeadline?.toISOString() || null,
+        slaDeadline: submission.slaDeadline?.toISOString() || null,
+        correspondenceCount: submission.correspondence.length,
+        recentCorrespondence: submission.correspondence
+          .slice(0, 5)
+          .map((c) => ({
+            direction: c.direction,
+            subject: c.subject,
+            date: c.createdAt.toISOString(),
+            requiresResponse: c.requiresResponse,
+          })),
+        statusHistory,
+        package: submission.package
+          ? {
+              name: submission.package.packageName,
+              completeness: submission.package.completenessScore,
+              missingDocuments: submission.package.missingDocuments,
+            }
+          : null,
+      },
+    };
+  },
+
+  check_package_completeness: async (input, userContext) => {
+    const ncaAuthority = input.ncaAuthority as string;
+
+    // Check if user has an org membership
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: userContext.userId },
+      select: { organizationId: true },
+    });
+
+    if (!membership) {
+      return {
+        error: "No organization found. Please join an organization first.",
+      };
+    }
+
+    // Import and use the assemblePackage function
+    const { assemblePackage } =
+      await import("@/lib/services/nca-portal-service");
+    const result = await assemblePackage(
+      userContext.userId,
+      membership.organizationId,
+      ncaAuthority as never,
+    );
+
+    return {
+      ncaAuthority,
+      completenessScore: result.completenessScore,
+      totalRequired: result.requiredDocuments.length,
+      totalFound:
+        result.requiredDocuments.length - result.missingDocuments.length,
+      missingDocuments: result.missingDocuments,
+      documents: result.documents.map((d) => ({
+        type: d.documentType,
+        title: d.title,
+        status: d.status,
+        source: d.sourceType,
+      })),
+      readyToSubmit: result.completenessScore >= 80,
+      recommendation:
+        result.completenessScore >= 80
+          ? "Your package is substantially complete. You can proceed with submission."
+          : `${result.missingDocuments.length} required document(s) missing. Complete these before submitting.`,
+    };
+  },
+
+  get_nca_deadlines: async (input, userContext) => {
+    const daysAhead = (input.daysAhead as number) || 30;
+    const now = new Date();
+    const futureDate = new Date(
+      now.getTime() + daysAhead * 24 * 60 * 60 * 1000,
+    );
+
+    const terminalStatuses = ["APPROVED", "REJECTED", "WITHDRAWN"];
+
+    // Query submissions with upcoming deadlines
+    const submissions = await prisma.nCASubmission.findMany({
+      where: {
+        userId: userContext.userId,
+        status: { notIn: terminalStatuses as never[] },
+        OR: [
+          { followUpDeadline: { gte: now, lte: futureDate } },
+          { slaDeadline: { gte: now, lte: futureDate } },
+        ],
+      },
+      select: {
+        id: true,
+        ncaAuthority: true,
+        ncaAuthorityName: true,
+        status: true,
+        followUpDeadline: true,
+        slaDeadline: true,
+        followUpRequired: true,
+      },
+      orderBy: { followUpDeadline: "asc" },
+    });
+
+    // Also check for overdue items
+    const overdueSubmissions = await prisma.nCASubmission.findMany({
+      where: {
+        userId: userContext.userId,
+        status: { notIn: terminalStatuses as never[] },
+        followUpRequired: true,
+        followUpDeadline: { lt: now },
+      },
+      select: {
+        id: true,
+        ncaAuthority: true,
+        ncaAuthorityName: true,
+        followUpDeadline: true,
+      },
+    });
+
+    // Check correspondence requiring response
+    const pendingResponses = await prisma.nCACorrespondence.findMany({
+      where: {
+        submission: { userId: userContext.userId },
+        requiresResponse: true,
+        respondedAt: null,
+      },
+      select: {
+        id: true,
+        subject: true,
+        responseDeadline: true,
+        submission: {
+          select: { ncaAuthorityName: true },
+        },
+      },
+      orderBy: { responseDeadline: "asc" },
+    });
+
+    const deadlines = [];
+
+    for (const sub of submissions) {
+      if (sub.followUpDeadline) {
+        const daysLeft = Math.ceil(
+          (sub.followUpDeadline.getTime() - now.getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+        deadlines.push({
+          type: "follow_up",
+          ncaAuthority: sub.ncaAuthorityName,
+          deadline: sub.followUpDeadline.toISOString(),
+          daysLeft,
+          submissionId: sub.id,
+          urgency:
+            daysLeft <= 3 ? "urgent" : daysLeft <= 7 ? "soon" : "upcoming",
+        });
+      }
+      if (sub.slaDeadline) {
+        const daysLeft = Math.ceil(
+          (sub.slaDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        deadlines.push({
+          type: "sla",
+          ncaAuthority: sub.ncaAuthorityName,
+          deadline: sub.slaDeadline.toISOString(),
+          daysLeft,
+          submissionId: sub.id,
+          urgency:
+            daysLeft <= 3 ? "urgent" : daysLeft <= 7 ? "soon" : "upcoming",
+        });
+      }
+    }
+
+    return {
+      upcomingDeadlines: deadlines,
+      overdueCount: overdueSubmissions.length,
+      overdue: overdueSubmissions.map((s) => ({
+        ncaAuthority: s.ncaAuthorityName,
+        deadline: s.followUpDeadline?.toISOString(),
+        daysOverdue: Math.ceil(
+          (now.getTime() - (s.followUpDeadline?.getTime() || now.getTime())) /
+            (1000 * 60 * 60 * 24),
+        ),
+        submissionId: s.id,
+      })),
+      pendingResponses: pendingResponses.map((r) => ({
+        subject: r.subject,
+        ncaAuthority: r.submission.ncaAuthorityName,
+        responseDeadline: r.responseDeadline?.toISOString() || null,
+      })),
+      summary:
+        overdueSubmissions.length > 0
+          ? `You have ${overdueSubmissions.length} overdue follow-up(s) requiring immediate attention.`
+          : deadlines.length > 0
+            ? `You have ${deadlines.length} upcoming deadline(s) in the next ${daysAhead} days.`
+            : "No upcoming NCA deadlines.",
+    };
+  },
 };
 
 // ─── Export ───

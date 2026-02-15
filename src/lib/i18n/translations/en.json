@@ -63,7 +63,9 @@
     "settings": "Settings",
     "signOut": "Sign Out",
     "missionControl": "Mission Control",
-    "aiGenerate": "AI Generate"
+    "aiGenerate": "AI Generate",
+    "ncaPortal": "NCA Portal",
+    "new": "NEW"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -315,5 +317,41 @@
     "authorizationApplication": "Authorization Application Package",
     "backToDocuments": "Back to Documents",
     "generateDocument": "Generate Document"
+  },
+  "ncaPortal": {
+    "title": "NCA Submission Portal",
+    "subtitle": "Manage regulatory submissions to National Competent Authorities",
+    "activeSubmissions": "Active Submissions",
+    "pendingFollowUps": "Pending Follow-ups",
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "avgResponseTime": "Avg Response Time",
+    "days": "days",
+    "pipeline": "Submission Pipeline",
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "assemblePackage": "Assemble Package",
+    "newSubmission": "New Submission",
+    "recentCorrespondence": "Recent Correspondence",
+    "unread": "unread",
+    "noCorrespondence": "No correspondence yet. Submit to an NCA to get started.",
+    "noSubmissions": "No submissions yet. Create a package and submit to get started.",
+    "selectNCA": "Select Target Authority",
+    "reviewPackage": "Review Package",
+    "confirmSubmit": "Confirm & Submit",
+    "packageCompleteness": "Package Completeness",
+    "requiredDocuments": "Required Documents",
+    "missingDocuments": "Missing Documents",
+    "submissionMethod": "Submission Method",
+    "coverLetter": "Cover Letter",
+    "logCommunication": "Log Communication",
+    "timeline": "Timeline",
+    "submissionInfo": "Submission Info",
+    "actions": "Actions",
+    "priority": "Priority",
+    "followUpRequired": "Follow-up Required",
+    "slaDeadline": "SLA Deadline"
   }
 }
