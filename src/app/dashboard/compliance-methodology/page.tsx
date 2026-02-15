@@ -284,7 +284,7 @@ export default function ComplianceMethodologyPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="p-6 lg:p-8 bg-[#0A0A0B] min-h-screen">
+    <div className="p-6 lg:p-8 min-h-screen">
       <div className="max-w-[900px]">
         {/* Back Link */}
         <Link
