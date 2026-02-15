@@ -63,6 +63,23 @@ export default function PrivacyEnPage() {
               </div>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+                Data Protection Officer
+              </h3>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                Pursuant to § 38 BDSG in conjunction with Art. 37 GDPR, the
+                appointment of a Data Protection Officer is currently not
+                mandatory for us. For all data protection inquiries, please
+                contact the data controller directly at{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-emerald-400 hover:text-emerald-300"
+                >
+                  privacy@caelex.eu
+                </a>
+                .
+              </p>
+
+              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
                 Summary of Data Processing
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">

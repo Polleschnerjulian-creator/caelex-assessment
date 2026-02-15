@@ -63,6 +63,23 @@ export default function PrivacyPage() {
               </div>
 
               <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+                Datenschutzbeauftragter
+              </h3>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                Gemäß § 38 BDSG i.V.m. Art. 37 DSGVO ist die Benennung eines
+                Datenschutzbeauftragten für uns derzeit nicht verpflichtend. Für
+                alle Fragen zum Datenschutz wenden Sie sich bitte direkt an die
+                oben genannte verantwortliche Stelle unter{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-emerald-400 hover:text-emerald-300"
+                >
+                  privacy@caelex.eu
+                </a>
+                .
+              </p>
+
+              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
                 Kurzübersicht der Datenverarbeitung
               </h3>
               <p className="text-[14px] text-white/60 leading-relaxed">
