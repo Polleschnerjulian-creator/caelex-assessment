@@ -10,7 +10,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import type { ReportSection } from "@/lib/pdf/types";
-import { csrfHeaders } from "@/lib/csrf-client";
 
 interface DocumentExportPanelProps {
   documentId: string;
@@ -35,19 +34,10 @@ export function DocumentExportPanel({
     setDownloading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `/api/documents/generated/${documentId}/pdf`,
-        { method: "POST", headers: { ...csrfHeaders() } },
-      );
+      // Client-side PDF generation using jsPDF (zero React dependency)
+      const { generateDocumentPDF } = await import("@/lib/pdf/jspdf-generator");
+      const blob = generateDocumentPDF(title, sections);
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(
-          data?.error || `PDF generation failed (${response.status})`,
-        );
-      }
-
-      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
