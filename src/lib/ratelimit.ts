@@ -110,6 +110,14 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:supplier",
       }),
+
+      // AI document generation: 5 per hour per user (expensive AI calls)
+      document_generation: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:docgen",
+      }),
     }
   : null;
 
@@ -188,6 +196,7 @@ const fallbackLimiters = {
   export: new InMemoryRateLimiter(20, 3600000),
   sensitive: new InMemoryRateLimiter(5, 3600000),
   supplier: new InMemoryRateLimiter(30, 3600000),
+  document_generation: new InMemoryRateLimiter(5, 3600000),
 };
 
 // ─── Public API ───
@@ -199,7 +208,8 @@ export type RateLimitType =
   | "assessment"
   | "export"
   | "sensitive"
-  | "supplier";
+  | "supplier"
+  | "document_generation";
 
 /**
  * Check rate limit for an identifier.

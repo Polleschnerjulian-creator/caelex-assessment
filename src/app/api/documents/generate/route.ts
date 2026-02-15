@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limit (reuse 'sensitive' tier: 5/hour)
+    // Rate limit (5 documents per hour per user)
     const rateLimitResult = await checkRateLimit(
-      "sensitive",
+      "document_generation",
       getIdentifier(request, userId),
     );
     if (!rateLimitResult.success) {
