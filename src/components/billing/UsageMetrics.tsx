@@ -58,14 +58,20 @@ export default function UsageMetrics({
           <div key={metric.label}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <metric.icon className="w-4 h-4 text-slate-400 dark:text-white/40" />
+                <metric.icon
+                  className="w-4 h-4 text-slate-400 dark:text-white/40"
+                  aria-hidden="true"
+                />
                 <span className="text-[13px] text-slate-600 dark:text-white/60">
                   {metric.label}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {metric.exceeded && (
-                  <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                  <AlertTriangle
+                    className="w-4 h-4 text-amber-500 dark:text-amber-400"
+                    aria-hidden="true"
+                  />
                 )}
                 <span
                   className={`text-[13px] font-medium ${
@@ -83,7 +89,16 @@ export default function UsageMetrics({
             </div>
 
             {/* Progress Bar */}
-            <div className="h-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
+            <div
+              className="h-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={metric.current}
+              aria-valuemin={0}
+              aria-valuemax={
+                metric.limit === "unlimited" ? undefined : metric.limit
+              }
+              aria-label={`${metric.label} usage: ${metric.current} of ${metric.limit === "unlimited" ? "unlimited" : metric.limit}`}
+            >
               {metric.limit !== "unlimited" && (
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${

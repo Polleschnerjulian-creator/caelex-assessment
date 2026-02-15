@@ -43,7 +43,11 @@ export function ThemeSettingsCard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        role="radiogroup"
+        aria-label="Theme selection"
+      >
         {THEME_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isSelected = theme === option.value;
@@ -52,6 +56,8 @@ export function ThemeSettingsCard() {
             <button
               key={option.value}
               onClick={() => setTheme(option.value)}
+              role="radio"
+              aria-checked={isSelected}
               className={`relative flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
                 isSelected
                   ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
@@ -60,7 +66,10 @@ export function ThemeSettingsCard() {
             >
               {/* Selected Checkmark */}
               {isSelected && (
-                <div className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                <div
+                  className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"
+                  aria-hidden="true"
+                >
                   <Check className="w-3 h-3 text-white" />
                 </div>
               )}
@@ -73,7 +82,7 @@ export function ThemeSettingsCard() {
                     : "bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white/60"
                 }`}
               >
-                <Icon className="w-6 h-6" />
+                <Icon className="w-6 h-6" aria-hidden="true" />
               </div>
 
               {/* Label */}
@@ -123,11 +132,12 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
       title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+      aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
     >
       {resolvedTheme === "dark" ? (
-        <Sun className="w-5 h-5 text-amber-500" />
+        <Sun className="w-5 h-5 text-amber-500" aria-hidden="true" />
       ) : (
-        <Moon className="w-5 h-5 text-slate-600" />
+        <Moon className="w-5 h-5 text-slate-600" aria-hidden="true" />
       )}
     </button>
   );

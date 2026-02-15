@@ -57,6 +57,7 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
     <Link
       href={href}
       onClick={onClick}
+      aria-current={isActive ? "page" : undefined}
       className={`
         group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px]
         transition-all duration-150
@@ -69,6 +70,7 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
     >
       {icon && (
         <span
+          aria-hidden="true"
           className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/60 group-hover:text-slate-700 dark:group-hover:text-white/60"}`}
         >
           {icon}
@@ -110,6 +112,10 @@ function CompactModuleItem({
     <Link
       href={targetHref}
       onClick={onClick}
+      aria-current={!locked && isActive ? "page" : undefined}
+      aria-label={
+        locked ? `${label} (requires ${requiredPlan} plan)` : undefined
+      }
       className={`
         group flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px]
         transition-all duration-150
@@ -123,6 +129,7 @@ function CompactModuleItem({
       `}
     >
       <span
+        aria-hidden="true"
         className={`w-3.5 h-3.5 flex-shrink-0 ${
           locked
             ? "text-slate-300 dark:text-white/20"
@@ -135,7 +142,7 @@ function CompactModuleItem({
       </span>
       <span className={`flex-1 ${locked ? "opacity-60" : ""}`}>{label}</span>
       {locked && (
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
             <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/20">
               {requiredPlan}
@@ -156,6 +163,7 @@ interface ModuleGroupProps {
   onToggle: () => void;
   children: React.ReactNode;
   hasActiveItem?: boolean;
+  groupId: string;
 }
 
 function ModuleGroup({
@@ -165,11 +173,16 @@ function ModuleGroup({
   onToggle,
   children,
   hasActiveItem,
+  groupId,
 }: ModuleGroupProps) {
+  const panelId = `module-group-${groupId}`;
+
   return (
     <div className="mb-1">
       <button
         onClick={onToggle}
+        aria-expanded={isExpanded}
+        aria-controls={panelId}
         className={`
           w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-wider
           transition-all duration-150
@@ -185,11 +198,13 @@ function ModuleGroup({
           animate={{ rotate: isExpanded ? 0 : -90 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="w-3.5 h-3.5 flex-shrink-0"
+          aria-hidden="true"
         >
           <ChevronDown size={14} strokeWidth={2} />
         </motion.span>
         <span className="flex-1 text-left">{title}</span>
         <span
+          aria-label={`${count} modules`}
           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -202,6 +217,9 @@ function ModuleGroup({
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            id={panelId}
+            role="group"
+            aria-label={title}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -351,6 +369,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <div
           className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
@@ -368,9 +387,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         {/* Mobile close button */}
         <button
           onClick={onClose}
+          aria-label="Close navigation menu"
           className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
-          <X size={20} />
+          <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header */}
@@ -384,7 +404,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
+        <nav
+          aria-label="Main navigation"
+          className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar"
+        >
           {/* Overview Section */}
           <div className="mb-5">
             <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
@@ -421,6 +444,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               isExpanded={expandedGroups.eu}
               onToggle={() => toggleGroup("eu")}
               hasActiveItem={activeGroup === "eu"}
+              groupId="eu"
             >
               <CompactModuleItem
                 href="/dashboard/modules/authorization"
@@ -497,6 +521,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               isExpanded={expandedGroups.international}
               onToggle={() => toggleGroup("international")}
               hasActiveItem={activeGroup === "international"}
+              groupId="international"
             >
               <CompactModuleItem
                 href="/dashboard/modules/copuos"
@@ -525,6 +550,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               isExpanded={expandedGroups.us}
               onToggle={() => toggleGroup("us")}
               hasActiveItem={activeGroup === "us"}
+              groupId="us"
             >
               <CompactModuleItem
                 href="/dashboard/modules/us-regulatory"
@@ -574,7 +600,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   text-slate-800 dark:text-cyan-400/80 hover:text-slate-900 dark:hover:text-cyan-300
                   hover:bg-slate-100 dark:hover:bg-cyan-500/[0.06] transition-all duration-150"
               >
-                <span className="w-4 h-4 flex-shrink-0 text-cyan-500 dark:text-cyan-400">
+                <span
+                  className="w-4 h-4 flex-shrink-0 text-cyan-500 dark:text-cyan-400"
+                  aria-hidden="true"
+                >
                   <Zap size={16} strokeWidth={1.5} />
                 </span>
                 <span className="flex-1">ASTRA</span>
@@ -695,7 +724,11 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               transition-all duration-150
             "
           >
-            <LogOut size={16} className="text-slate-500 dark:text-white/60" />
+            <LogOut
+              size={16}
+              className="text-slate-500 dark:text-white/60"
+              aria-hidden="true"
+            />
             <span>{t("sidebar.signOut")}</span>
           </button>
         </div>
@@ -709,7 +742,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={user.image}
-                  alt=""
+                  alt={user?.name ? `${user.name}'s avatar` : "User avatar"}
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (

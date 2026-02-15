@@ -54,7 +54,14 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
               {result.applicableCount} of {result.totalArticles}
             </span>
           </div>
-          <div className="h-[4px] bg-white/[0.12] rounded-full overflow-hidden">
+          <div
+            className="h-[4px] bg-white/[0.12] rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={result.applicablePercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Articles with obligations: ${result.applicablePercentage}%`}
+          >
             <motion.div
               className="h-full bg-white/70 rounded-full"
               initial={{ width: 0 }}
@@ -105,7 +112,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
         {result.regime === "light" && (
           <div className="mt-4 p-4 bg-white/[0.04] border border-white/[0.15] rounded-lg">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <div
+                className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"
+                aria-hidden="true"
+              >
                 <Check size={12} className="text-white" />
               </div>
               <div>
@@ -124,7 +134,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
         {result.isThirdCountry && (
           <div className="mt-4 p-4 bg-white/[0.04] border border-white/[0.15] rounded-lg">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <div
+                className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"
+                aria-hidden="true"
+              >
                 <span className="text-white text-[10px] font-bold">!</span>
               </div>
               <div>

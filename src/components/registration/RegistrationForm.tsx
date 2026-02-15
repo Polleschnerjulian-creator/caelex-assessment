@@ -244,13 +244,21 @@ export default function RegistrationForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="registration-form-title"
+    >
       <div className="bg-navy-900 border border-navy-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-navy-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2
+                id="registration-form-title"
+                className="text-xl font-semibold text-white"
+              >
                 New URSO Registration
               </h2>
               <p className="text-sm text-slate-400 mt-1">
@@ -259,20 +267,29 @@ export default function RegistrationForm({
             </div>
             <button
               onClick={onClose}
+              aria-label="Close dialog"
               className="p-2 text-slate-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
           {/* Progress bar */}
-          <div className="flex gap-2 mt-4">
+          <div
+            className="flex gap-2 mt-4"
+            role="progressbar"
+            aria-valuenow={step}
+            aria-valuemin={1}
+            aria-valuemax={4}
+            aria-label={`Registration step ${step} of 4`}
+          >
             {[1, 2, 3, 4].map((s) => (
               <div
                 key={s}
                 className={`flex-1 h-1 rounded-full transition-colors ${
                   s <= step ? "bg-blue-500" : "bg-navy-700"
                 }`}
+                aria-hidden="true"
               />
             ))}
           </div>
@@ -281,7 +298,10 @@ export default function RegistrationForm({
         {/* Form Content */}
         <div className="p-6 space-y-6">
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+            <div
+              role="alert"
+              className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"
+            >
               {error}
             </div>
           )}
@@ -318,7 +338,7 @@ export default function RegistrationForm({
             onClick={step > 1 ? prevStep : onClose}
             className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             {step > 1 ? "Back" : "Cancel"}
           </button>
 
@@ -328,7 +348,7 @@ export default function RegistrationForm({
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Next
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           ) : (
             <button
@@ -336,7 +356,12 @@ export default function RegistrationForm({
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
+              {saving && (
+                <RefreshCw
+                  className="w-4 h-4 animate-spin"
+                  aria-hidden="true"
+                />
+              )}
               Create Registration
             </button>
           )}
@@ -381,12 +406,17 @@ function Step1BasicInfo({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-spacecraft"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Linked Spacecraft *
         </label>
         <select
+          id="reg-spacecraft"
           value={formData.spacecraftId}
           onChange={(e) => onSpacecraftSelect(e.target.value)}
+          aria-required="true"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           <option value="">Select spacecraft...</option>
@@ -399,25 +429,35 @@ function Step1BasicInfo({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-object-name"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Object Name *
         </label>
         <input
+          id="reg-object-name"
           type="text"
           value={formData.objectName}
           onChange={(e) => onUpdate("objectName", e.target.value)}
+          aria-required="true"
           placeholder="e.g., EUMETSAT Meteosat-12"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-object-type"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Object Type *
         </label>
         <select
+          id="reg-object-type"
           value={formData.objectType}
           onChange={(e) => onUpdate("objectType", e.target.value)}
+          aria-required="true"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {OBJECT_TYPES.map((type) => (
@@ -429,25 +469,35 @@ function Step1BasicInfo({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-owner-operator"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Owner/Operator *
         </label>
         <input
+          id="reg-owner-operator"
           type="text"
           value={formData.ownerOperator}
           onChange={(e) => onUpdate("ownerOperator", e.target.value)}
+          aria-required="true"
           placeholder="e.g., European Space Agency"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-state-of-registry"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           State of Registry *
         </label>
         <select
+          id="reg-state-of-registry"
           value={formData.stateOfRegistry}
           onChange={(e) => onUpdate("stateOfRegistry", e.target.value)}
+          aria-required="true"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {EU_COUNTRIES.map((country) => (
@@ -476,10 +526,14 @@ function Step2LaunchInfo({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-launch-date"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Launch Date
         </label>
         <input
+          id="reg-launch-date"
           type="date"
           value={formData.launchDate}
           onChange={(e) => onUpdate("launchDate", e.target.value)}
@@ -488,10 +542,14 @@ function Step2LaunchInfo({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-launch-site"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Launch Site
         </label>
         <input
+          id="reg-launch-site"
           type="text"
           value={formData.launchSite}
           onChange={(e) => onUpdate("launchSite", e.target.value)}
@@ -501,10 +559,14 @@ function Step2LaunchInfo({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-launch-vehicle"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Launch Vehicle
         </label>
         <input
+          id="reg-launch-vehicle"
           type="text"
           value={formData.launchVehicle}
           onChange={(e) => onUpdate("launchVehicle", e.target.value)}
@@ -514,10 +576,14 @@ function Step2LaunchInfo({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-launch-state"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Launch State (ISO Country Code)
         </label>
         <select
+          id="reg-launch-state"
           value={formData.launchState}
           onChange={(e) => onUpdate("launchState", e.target.value)}
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
@@ -551,12 +617,17 @@ function Step3OrbitalParams({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-orbital-regime"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           Orbital Regime *
         </label>
         <select
+          id="reg-orbital-regime"
           value={formData.orbitalRegime}
           onChange={(e) => onUpdate("orbitalRegime", e.target.value)}
+          aria-required="true"
           className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {ORBITAL_REGIMES.map((regime) => (
@@ -569,10 +640,14 @@ function Step3OrbitalParams({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label
+            htmlFor="reg-perigee"
+            className="block text-sm font-medium text-slate-300 mb-1"
+          >
             Perigee (km)
           </label>
           <input
+            id="reg-perigee"
             type="number"
             value={formData.perigee}
             onChange={(e) => onUpdate("perigee", e.target.value)}
@@ -581,10 +656,14 @@ function Step3OrbitalParams({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label
+            htmlFor="reg-apogee"
+            className="block text-sm font-medium text-slate-300 mb-1"
+          >
             Apogee (km)
           </label>
           <input
+            id="reg-apogee"
             type="number"
             value={formData.apogee}
             onChange={(e) => onUpdate("apogee", e.target.value)}
@@ -596,10 +675,14 @@ function Step3OrbitalParams({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label
+            htmlFor="reg-inclination"
+            className="block text-sm font-medium text-slate-300 mb-1"
+          >
             Inclination (degrees)
           </label>
           <input
+            id="reg-inclination"
             type="number"
             step="0.1"
             value={formData.inclination}
@@ -609,10 +692,14 @@ function Step3OrbitalParams({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label
+            htmlFor="reg-period"
+            className="block text-sm font-medium text-slate-300 mb-1"
+          >
             Period (minutes)
           </label>
           <input
+            id="reg-period"
             type="number"
             step="0.1"
             value={formData.period}
@@ -625,10 +712,14 @@ function Step3OrbitalParams({
 
       {formData.orbitalRegime === "GEO" && (
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label
+            htmlFor="reg-node-longitude"
+            className="block text-sm font-medium text-slate-300 mb-1"
+          >
             Node Longitude (degrees)
           </label>
           <input
+            id="reg-node-longitude"
             type="number"
             step="0.1"
             value={formData.nodeLongitude}
@@ -658,11 +749,15 @@ function Step4Identifiers({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-cospar-id"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           International Designator (COSPAR ID)
         </label>
         <div className="flex gap-2">
           <input
+            id="reg-cospar-id"
             type="text"
             value={formData.internationalDesignator}
             onChange={(e) =>
@@ -676,8 +771,9 @@ function Step4Identifiers({
             onClick={onGenerateCOSPAR}
             className="flex items-center gap-2 px-3 py-2 bg-navy-700 text-slate-300 rounded-lg hover:bg-navy-600 transition-colors"
             title="Generate suggestion"
+            aria-label="Generate COSPAR ID suggestion"
           >
-            <Wand2 className="w-4 h-4" />
+            <Wand2 className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
         <p className="text-xs text-slate-500 mt-1">
@@ -686,10 +782,14 @@ function Step4Identifiers({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-norad"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           NORAD Catalog Number
         </label>
         <input
+          id="reg-norad"
           type="text"
           value={formData.noradCatalogNumber}
           onChange={(e) => onUpdate("noradCatalogNumber", e.target.value)}
@@ -702,10 +802,14 @@ function Step4Identifiers({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">
+        <label
+          htmlFor="reg-general-function"
+          className="block text-sm font-medium text-slate-300 mb-1"
+        >
           General Function / Mission Description
         </label>
         <textarea
+          id="reg-general-function"
           value={formData.generalFunction}
           onChange={(e) => onUpdate("generalFunction", e.target.value)}
           placeholder="Describe the general function and purpose of the space object..."

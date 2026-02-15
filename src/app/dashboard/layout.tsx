@@ -48,7 +48,7 @@ export default function DashboardLayout({
                 {/* Main content */}
                 <div className="flex flex-col min-h-screen">
                   <TopBar onMenuClick={() => setSidebarOpen(true)} />
-                  <main className="flex-1 p-6 lg:p-8">
+                  <main id="main-content" className="flex-1 p-6 lg:p-8">
                     <div className="max-w-[1400px] mx-auto">
                       <ErrorBoundary>{children}</ErrorBoundary>
                     </div>

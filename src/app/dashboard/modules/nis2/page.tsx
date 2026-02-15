@@ -454,7 +454,7 @@ function OutOfScopeCard({
       className="text-center py-8"
     >
       <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
-        <AlertTriangle className="w-8 h-8 text-amber-400" />
+        <AlertTriangle className="w-8 h-8 text-amber-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
         {message}
@@ -638,7 +638,7 @@ function NIS2Wizard({
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            <ShieldCheck className="w-4 h-4 text-cyan-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -667,6 +667,11 @@ function NIS2Wizard({
             width: `${(currentStep / totalSteps) * 100}%`,
           }}
           transition={{ duration: 0.3, ease: "easeOut" }}
+          role="progressbar"
+          aria-valuenow={Math.round((currentStep / totalSteps) * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Assessment progress"
         />
       </div>
 
@@ -750,8 +755,14 @@ function NIS2Wizard({
 
         {/* Error */}
         {error && (
-          <div className="mt-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center gap-3 max-w-xl mx-auto">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+          <div
+            role="alert"
+            className="mt-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center gap-3 max-w-xl mx-auto"
+          >
+            <AlertCircle
+              className="w-4 h-4 text-red-400 flex-shrink-0"
+              aria-hidden="true"
+            />
             <p className="text-xs text-red-400">{error}</p>
           </div>
         )}
@@ -770,7 +781,7 @@ function NIS2Wizard({
 
           <div className="flex items-center gap-2">
             {/* Step dots */}
-            <div className="flex items-center gap-1.5 mr-4">
+            <div className="flex items-center gap-1.5 mr-4" aria-hidden="true">
               {NIS2_WIZARD_QUESTIONS.map((_, i) => (
                 <div
                   key={i}
@@ -854,8 +865,16 @@ export default function NIS2ModulePage() {
   if (loading) {
     return (
       <FeatureGate module="nis2">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/40" />
+        <div
+          className="flex items-center justify-center min-h-[400px]"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2
+            className="w-6 h-6 animate-spin text-slate-400 dark:text-white/40"
+            aria-hidden="true"
+          />
+          <span className="sr-only">Loading NIS2 assessments...</span>
         </div>
       </FeatureGate>
     );
@@ -869,7 +888,10 @@ export default function NIS2ModulePage() {
           <div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-cyan-400" />
+                <ShieldCheck
+                  className="w-5 h-5 text-cyan-400"
+                  aria-hidden="true"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -905,8 +927,14 @@ export default function NIS2ModulePage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <div
+            role="alert"
+            className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3"
+          >
+            <AlertCircle
+              className="w-5 h-5 text-red-400 flex-shrink-0"
+              aria-hidden="true"
+            />
             <p className="text-sm text-red-400">{error}</p>
           </div>
         )}
@@ -931,7 +959,10 @@ export default function NIS2ModulePage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-12 text-center"
           >
-            <ShieldCheck className="w-12 h-12 text-cyan-400/40 mx-auto mb-4" />
+            <ShieldCheck
+              className="w-12 h-12 text-cyan-400/40 mx-auto mb-4"
+              aria-hidden="true"
+            />
             <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
               No NIS2 assessments yet
             </h3>
@@ -1045,7 +1076,10 @@ export default function NIS2ModulePage() {
                           </div>
                         )}
 
-                      <ChevronRight className="w-4 h-4 text-slate-300 dark:text-white/20" />
+                      <ChevronRight
+                        className="w-4 h-4 text-slate-300 dark:text-white/20"
+                        aria-hidden="true"
+                      />
                     </div>
                   </div>
                 </motion.a>

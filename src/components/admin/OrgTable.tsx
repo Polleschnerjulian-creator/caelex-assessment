@@ -91,7 +91,10 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
 
   if (organizations.length === 0) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
+      <div
+        className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
+        role="status"
+      >
         <p className="text-[14px] text-slate-500 dark:text-white/50">
           No organizations found matching your filters.
         </p>
@@ -102,25 +105,43 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
   return (
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full" aria-label="Organizations">
           <thead>
             <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Organization
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Owner
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Plan
               </th>
-              <th className="text-center px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-center px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Members
               </th>
-              <th className="text-center px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-center px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Spacecraft
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Created
               </th>
             </tr>
@@ -143,6 +164,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                         <Building2
                           size={14}
                           className="text-slate-500 dark:text-white/50"
+                          aria-hidden="true"
                         />
                       </div>
                       <div className="min-w-0">
@@ -174,6 +196,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <select
+                        aria-label={`Plan for ${org.name}`}
                         value={org.plan}
                         onChange={(e) =>
                           updateOrgPlan(
@@ -205,6 +228,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                       <Users
                         size={13}
                         className="text-slate-400 dark:text-white/40"
+                        aria-hidden="true"
                       />
                       <span className="text-[13px] text-slate-700 dark:text-white/80">
                         {org._count.members}
@@ -221,6 +245,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                       <Rocket
                         size={13}
                         className="text-slate-400 dark:text-white/40"
+                        aria-hidden="true"
                       />
                       <span className="text-[13px] text-slate-700 dark:text-white/80">
                         {org._count.spacecraft}
@@ -233,13 +258,16 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
 
                   {/* Created */}
                   <td className="px-4 py-3.5">
-                    <p className="text-[12px] text-slate-500 dark:text-white/50">
+                    <time
+                      dateTime={org.createdAt}
+                      className="text-[12px] text-slate-500 dark:text-white/50"
+                    >
                       {new Date(org.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
-                    </p>
+                    </time>
                   </td>
                 </tr>
               );

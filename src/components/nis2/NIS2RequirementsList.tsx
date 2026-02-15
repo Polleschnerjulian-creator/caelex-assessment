@@ -172,13 +172,21 @@ export default function NIS2RequirementsList({
             >
               <button
                 onClick={() => toggleCategory(category)}
+                aria-expanded={isExpanded}
+                aria-label={`${CATEGORY_LABELS[category] || category}: ${reqs.length} requirements`}
                 className="w-full flex items-center justify-between p-4 hover:bg-white/[0.03] transition-colors text-left"
               >
                 <div className="flex items-center gap-3">
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-white/40" />
+                    <ChevronDown
+                      className="w-4 h-4 text-white/40"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-white/40" />
+                    <ChevronRight
+                      className="w-4 h-4 text-white/40"
+                      aria-hidden="true"
+                    />
                   )}
                   <div>
                     <div className="text-sm font-medium text-white">
@@ -194,7 +202,7 @@ export default function NIS2RequirementsList({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5" aria-hidden="true">
                   {reqs.map((r) => {
                     const config = severityConfig[r.severity];
                     return (
@@ -228,6 +236,7 @@ export default function NIS2RequirementsList({
                           >
                             <SeverityIcon
                               className={`w-4 h-4 ${config.color} flex-shrink-0 mt-0.5`}
+                              aria-hidden="true"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="text-sm text-white">

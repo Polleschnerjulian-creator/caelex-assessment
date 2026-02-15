@@ -224,7 +224,7 @@ function RegistrationPageContent() {
 
   if (loading && !organizationId) {
     return (
-      <div className="p-6 animate-pulse">
+      <div className="p-6 animate-pulse" role="status" aria-live="polite">
         <div className="h-8 bg-white/[0.03] rounded w-1/3 mb-6"></div>
         <div className="grid grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
@@ -232,6 +232,7 @@ function RegistrationPageContent() {
           ))}
         </div>
         <div className="h-96 bg-white/[0.03] rounded-xl"></div>
+        <span className="sr-only">Loading registration data...</span>
       </div>
     );
   }
@@ -242,7 +243,10 @@ function RegistrationPageContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Satellite className="w-7 h-7 text-emerald-400" />
+            <Satellite
+              className="w-7 h-7 text-emerald-400"
+              aria-hidden="true"
+            />
             URSO Registration
           </h1>
           <p className="text-slate-400 mt-1">
@@ -254,14 +258,14 @@ function RegistrationPageContent() {
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2 bg-white/[0.06] text-slate-300 rounded-lg hover:bg-white/[0.08] transition-colors"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
             Export for UNOOSA
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4" aria-hidden="true" />
             New Registration
           </button>
         </div>
@@ -298,8 +302,15 @@ function RegistrationPageContent() {
       {/* Filters */}
       <div className="flex items-center gap-4 bg-white/[0.03] border border-white/10 rounded-xl p-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <label htmlFor="registration-search" className="sr-only">
+            Search registrations
+          </label>
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+            aria-hidden="true"
+          />
           <input
+            id="registration-search"
             type="text"
             placeholder="Search by name, COSPAR ID, or spacecraft..."
             value={searchQuery}
@@ -308,8 +319,12 @@ function RegistrationPageContent() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-500" />
+          <Filter className="w-4 h-4 text-slate-500" aria-hidden="true" />
+          <label htmlFor="registration-status-filter" className="sr-only">
+            Filter by status
+          </label>
           <select
+            id="registration-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 bg-zinc-900 border border-white/15 rounded-lg text-white focus:outline-none focus:border-emerald-500"
@@ -325,16 +340,19 @@ function RegistrationPageContent() {
         <button
           onClick={fetchRegistrations}
           className="p-2 text-slate-400 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors"
-          title="Refresh"
+          aria-label="Refresh registrations"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
 
       {/* Registrations List */}
       {filteredRegistrations.length === 0 ? (
         <div className="text-center py-16 bg-white/[0.03]/50 border border-white/10 rounded-xl">
-          <Orbit className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+          <Orbit
+            className="w-16 h-16 text-slate-600 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-xl font-medium text-white mb-2">
             No registrations found
           </h3>
@@ -427,7 +445,7 @@ function StatCard({
           <p className="text-2xl font-bold text-white mt-1">{value}</p>
         </div>
         <div className={`p-3 rounded-lg ${colors[color]}`}>
-          <Icon className="w-5 h-5" />
+          <Icon className="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -469,9 +487,22 @@ function RegistrationDetailModal({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-zinc-900 rounded-xl p-8">
-          <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
+      <div
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        role="dialog"
+        aria-label="Loading registration details"
+        aria-modal="true"
+      >
+        <div
+          className="bg-zinc-900 rounded-xl p-8"
+          role="status"
+          aria-live="polite"
+        >
+          <RefreshCw
+            className="w-8 h-8 text-emerald-400 animate-spin"
+            aria-hidden="true"
+          />
+          <span className="sr-only">Loading registration details...</span>
         </div>
       </div>
     );
@@ -486,7 +517,12 @@ function RegistrationDetailModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 border border-white/10 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-label="Registration details"
+        aria-modal="true"
+        className="bg-zinc-900 border border-white/10 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
         <div className="p-6 border-b border-white/10">
           <div className="flex items-start justify-between">
             <div>
@@ -570,7 +606,7 @@ function RegistrationDetailModal({
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 Submit to URSO
               </button>
             )}

@@ -134,7 +134,10 @@ export default function NotificationPreferencesCard({
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
-          <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Bell
+            className="w-5 h-5 text-blue-600 dark:text-blue-400"
+            aria-hidden="true"
+          />
         </div>
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
@@ -186,15 +189,24 @@ export default function NotificationPreferencesCard({
 
       {/* Notification Method */}
       <div className="mb-6">
-        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3">
-          <Mail className="w-4 h-4" />
+        <label
+          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+          id="notif-method-label"
+        >
+          <Mail className="w-4 h-4" aria-hidden="true" />
           Notification Method
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+          role="radiogroup"
+          aria-labelledby="notif-method-label"
+        >
           {notificationMethods.map((method) => (
             <button
               key={method.value}
               type="button"
+              role="radio"
+              aria-checked={preferences.notificationMethod === method.value}
               onClick={() =>
                 setPreferences((prev) => ({
                   ...prev,
@@ -220,11 +232,15 @@ export default function NotificationPreferencesCard({
 
       {/* Reminder Days */}
       <div className="mb-6">
-        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3">
-          <Clock className="w-4 h-4" />
+        <label
+          htmlFor="notif-reminder-days"
+          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+        >
+          <Clock className="w-4 h-4" aria-hidden="true" />
           Default Reminder Advance
         </label>
         <select
+          id="notif-reminder-days"
           value={preferences.reminderDaysAdvance}
           onChange={(e) =>
             setPreferences((prev) => ({
@@ -247,11 +263,15 @@ export default function NotificationPreferencesCard({
 
       {/* Designated Contact Email */}
       <div className="mb-6">
-        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3">
-          <Mail className="w-4 h-4" />
+        <label
+          htmlFor="notif-email"
+          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+        >
+          <Mail className="w-4 h-4" aria-hidden="true" />
           Notification Email
         </label>
         <input
+          id="notif-email"
           type="email"
           value={preferences.designatedContactEmail || ""}
           onChange={(e) =>
@@ -270,11 +290,15 @@ export default function NotificationPreferencesCard({
 
       {/* Language */}
       <div className="mb-6">
-        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3">
-          <Globe className="w-4 h-4" />
+        <label
+          htmlFor="notif-language"
+          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+        >
+          <Globe className="w-4 h-4" aria-hidden="true" />
           Communication Language
         </label>
         <select
+          id="notif-language"
           value={preferences.communicationLanguage}
           onChange={(e) =>
             setPreferences((prev) => ({
@@ -294,16 +318,28 @@ export default function NotificationPreferencesCard({
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+        <div
+          role="alert"
+          className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2"
+        >
+          <AlertCircle
+            className="w-4 h-4 text-red-400 flex-shrink-0"
+            aria-hidden="true"
+          />
           <p className="text-[13px] text-red-400">{error}</p>
         </div>
       )}
 
       {/* Success Message */}
       {success && (
-        <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+        <div
+          role="status"
+          className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center gap-2"
+        >
+          <CheckCircle2
+            className="w-4 h-4 text-green-400 flex-shrink-0"
+            aria-hidden="true"
+          />
           <p className="text-[13px] text-green-400">
             Preferences saved successfully
           </p>

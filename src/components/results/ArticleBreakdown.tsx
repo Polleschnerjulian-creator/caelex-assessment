@@ -138,16 +138,17 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
         {articles.length > 5 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
             className="w-full px-4 py-3 bg-white/[0.03] border-t border-white/[0.08] flex items-center justify-center gap-2 text-[13px] text-white/70 hover:text-white transition-colors"
           >
             {isExpanded ? (
               <>
-                <ChevronUp className="w-4 h-4" />
+                <ChevronUp className="w-4 h-4" aria-hidden="true" />
                 Show less
               </>
             ) : (
               <>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-4 h-4" aria-hidden="true" />
                 Show all {articles.length} articles
               </>
             )}
@@ -164,7 +165,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white/60 hover:text-white transition-colors"
         >
           View full regulation on EUR-Lex
-          <ExternalLink className="w-3 h-3" />
+          <ExternalLink className="w-3 h-3" aria-hidden="true" />
         </a>
       </div>
     </motion.div>

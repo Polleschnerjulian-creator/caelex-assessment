@@ -77,7 +77,7 @@ export function DocumentEditor({
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/70 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors disabled:opacity-50"
         >
-          <Save size={14} />
+          <Save size={14} aria-hidden="true" />
           {saving ? "Saving..." : saved ? "Saved" : "Save Edits"}
         </button>
       </div>
@@ -96,22 +96,27 @@ export function DocumentEditor({
                   expandedSection === sectionIndex ? null : sectionIndex,
                 )
               }
+              aria-expanded={expandedSection === sectionIndex}
+              aria-label={`Section: ${str(section.title)}`}
               className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
             >
               {expandedSection === sectionIndex ? (
                 <ChevronDown
                   size={16}
                   className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                  aria-hidden="true"
                 />
               ) : (
                 <ChevronRight
                   size={16}
                   className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                  aria-hidden="true"
                 />
               )}
               <FileText
                 size={14}
                 className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                aria-hidden="true"
               />
               <span className="text-sm font-medium text-slate-900 dark:text-white flex-1">
                 {str(section.title)}
@@ -159,7 +164,7 @@ export function DocumentEditor({
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
           New Document
         </button>
         <button
@@ -167,7 +172,7 @@ export function DocumentEditor({
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
         >
           Export
-          <ArrowRight size={16} />
+          <ArrowRight size={16} aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -193,6 +198,7 @@ function SectionContentBlock({
         <textarea
           value={str(block.value)}
           onChange={(e) => onChange({ ...block, value: e.target.value })}
+          aria-label="Text block content"
           className="w-full bg-transparent text-sm text-slate-700 dark:text-white/70 resize-none border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:border-emerald-500/30 rounded-lg px-3 py-2 transition-colors outline-none min-h-[60px]"
           rows={Math.max(2, Math.ceil(str(block.value).length / 80))}
         />
@@ -203,6 +209,7 @@ function SectionContentBlock({
         <input
           value={str(block.value)}
           onChange={(e) => onChange({ ...block, value: e.target.value })}
+          aria-label="Heading text"
           className={`w-full bg-transparent font-medium border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:border-emerald-500/30 rounded-lg px-3 py-1.5 transition-colors outline-none ${
             block.level === 2
               ? "text-base text-slate-900 dark:text-white"
@@ -221,6 +228,7 @@ function SectionContentBlock({
               </span>
               <input
                 value={str(item)}
+                aria-label={`List item ${i + 1}`}
                 onChange={(e) => {
                   const newItems = [...block.items];
                   newItems[i] = e.target.value;
@@ -236,12 +244,13 @@ function SectionContentBlock({
     case "table":
       return (
         <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10">
-          <table className="w-full text-xs">
+          <table className="w-full text-xs" aria-label="Data table">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/[0.03]">
                 {(Array.isArray(block.headers) ? block.headers : []).map(
                   (h, i) => (
                     <th
+                      scope="col"
                       key={i}
                       className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
                     >
@@ -291,6 +300,7 @@ function SectionContentBlock({
     case "alert":
       return (
         <div
+          role="alert"
           className={`px-4 py-3 rounded-lg text-sm ${
             block.severity === "warning"
               ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20"

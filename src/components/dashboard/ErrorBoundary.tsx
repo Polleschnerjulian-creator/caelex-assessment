@@ -38,13 +38,17 @@ export default class ErrorBoundary extends React.Component<
       const isDev = process.env.NODE_ENV === "development";
 
       return (
-        <div className="flex items-center justify-center min-h-[400px] p-8">
+        <div
+          className="flex items-center justify-center min-h-[400px] p-8"
+          role="alert"
+        >
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 max-w-md w-full text-center">
             <div className="flex items-center justify-center mb-5">
               <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl">
                 <AlertTriangle
                   size={28}
                   className="text-red-500 dark:text-red-400"
+                  aria-hidden="true"
                 />
               </div>
             </div>

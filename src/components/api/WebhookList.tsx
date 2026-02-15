@@ -145,9 +145,18 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-10 bg-navy-800 rounded w-1/4"></div>
-        <div className="h-32 bg-navy-800 rounded"></div>
+      <div
+        className="animate-pulse space-y-4"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <span className="sr-only">Loading webhooks...</span>
+        <div
+          className="h-10 bg-navy-800 rounded w-1/4"
+          aria-hidden="true"
+        ></div>
+        <div className="h-32 bg-navy-800 rounded" aria-hidden="true"></div>
       </div>
     );
   }
@@ -201,8 +210,14 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
 
       {/* Webhooks List */}
       {webhooks.length === 0 ? (
-        <div className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl">
-          <Webhook className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <div
+          className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl"
+          role="status"
+        >
+          <Webhook
+            className="w-12 h-12 text-slate-600 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-lg font-medium text-white mb-2">
             No webhooks yet
           </h3>
@@ -325,6 +340,9 @@ function WebhookCard({
                   Paused
                 </span>
               )}
+              <span className="sr-only">
+                Status: {webhook.isActive ? "Active" : "Paused"}
+              </span>
             </div>
 
             <p className="text-sm text-slate-400 truncate mb-3">
@@ -375,34 +393,38 @@ function WebhookCard({
             <button
               onClick={onTest}
               className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
-              title="Send test event"
+              aria-label={`Send test event for ${webhook.name}`}
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4" aria-hidden="true" />
             </button>
             <button
               onClick={onToggleActive}
               className="p-2 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded transition-colors"
-              title={webhook.isActive ? "Pause webhook" : "Activate webhook"}
+              aria-label={
+                webhook.isActive
+                  ? `Pause webhook ${webhook.name}`
+                  : `Activate webhook ${webhook.name}`
+              }
             >
               {webhook.isActive ? (
-                <Pause className="w-4 h-4" />
+                <Pause className="w-4 h-4" aria-hidden="true" />
               ) : (
-                <Play className="w-4 h-4" />
+                <Play className="w-4 h-4" aria-hidden="true" />
               )}
             </button>
             <button
               onClick={onEdit}
               className="p-2 text-slate-400 hover:text-white hover:bg-navy-700 rounded transition-colors"
-              title="Edit webhook"
+              aria-label={`Edit webhook ${webhook.name}`}
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="w-4 h-4" aria-hidden="true" />
             </button>
             <button
               onClick={onDelete}
               className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-              title="Delete webhook"
+              aria-label={`Delete webhook ${webhook.name}`}
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -410,16 +432,17 @@ function WebhookCard({
         {/* Expand/Collapse */}
         <button
           onClick={onToggleExpand}
+          aria-expanded={expanded}
           className="flex items-center gap-1 text-xs text-slate-400 hover:text-white mt-2"
         >
           {expanded ? (
             <>
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-4 h-4" aria-hidden="true" />
               Hide delivery history
             </>
           ) : (
             <>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-4 h-4" aria-hidden="true" />
               Show delivery history
             </>
           )}
@@ -448,11 +471,33 @@ function WebhookCard({
                 >
                   <div className="flex items-center gap-3">
                     {delivery.status === "DELIVERED" ? (
-                      <Check className="w-4 h-4 text-green-400" />
+                      <>
+                        <Check
+                          className="w-4 h-4 text-green-400"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">Delivered:</span>
+                      </>
                     ) : delivery.status === "FAILED" ? (
-                      <X className="w-4 h-4 text-red-400" />
+                      <>
+                        <X
+                          className="w-4 h-4 text-red-400"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">Failed:</span>
+                      </>
                     ) : (
-                      <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />
+                      <>
+                        <RefreshCw
+                          className="w-4 h-4 text-amber-400 animate-spin"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">
+                          {delivery.status === "RETRYING"
+                            ? "Retrying:"
+                            : "Pending:"}
+                        </span>
+                      </>
                     )}
                     <span className="text-slate-300">{delivery.event}</span>
                   </div>
@@ -472,7 +517,9 @@ function WebhookCard({
                     {delivery.responseTimeMs && (
                       <span>{delivery.responseTimeMs}ms</span>
                     )}
-                    <span>{new Date(delivery.createdAt).toLocaleString()}</span>
+                    <time dateTime={delivery.createdAt}>
+                      {new Date(delivery.createdAt).toLocaleString()}
+                    </time>
                   </div>
                 </div>
               ))}

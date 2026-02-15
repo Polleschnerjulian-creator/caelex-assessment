@@ -182,13 +182,19 @@ export function OrganizationSettings({
 
       {/* Error/Success Messages */}
       {saveError && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+        <div
+          role="alert"
+          className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400"
+        >
           {saveError}
         </div>
       )}
 
       {saveSuccess && (
-        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm text-emerald-400">
+        <div
+          role="status"
+          className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm text-emerald-400"
+        >
           Settings saved successfully
         </div>
       )}
@@ -196,15 +202,19 @@ export function OrganizationSettings({
       {/* General Settings */}
       <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center gap-2">
-          <Building2 size={18} className="text-blue-400" />
+          <Building2 size={18} className="text-blue-400" aria-hidden="true" />
           <h3 className="text-sm font-medium text-white">General</h3>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-name"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Organization Name
             </label>
             <input
+              id="org-name"
               type="text"
               value={formData.name}
               onChange={(e) =>
@@ -216,12 +226,16 @@ export function OrganizationSettings({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-slug"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               URL Slug
             </label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-white/50">/org/</span>
               <input
+                id="org-slug"
                 type="text"
                 value={organization.slug}
                 disabled
@@ -238,15 +252,19 @@ export function OrganizationSettings({
       {/* Branding */}
       <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center gap-2">
-          <Palette size={18} className="text-purple-400" />
+          <Palette size={18} className="text-purple-400" aria-hidden="true" />
           <h3 className="text-sm font-medium text-white">Branding</h3>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-logo-url"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Logo URL
             </label>
             <input
+              id="org-logo-url"
               type="url"
               value={formData.logoUrl}
               onChange={(e) =>
@@ -259,7 +277,10 @@ export function OrganizationSettings({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-primary-color"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Primary Color
             </label>
             <div className="flex items-center gap-3">
@@ -268,6 +289,7 @@ export function OrganizationSettings({
                 style={{ backgroundColor: formData.primaryColor }}
               />
               <input
+                id="org-primary-color"
                 type="text"
                 value={formData.primaryColor}
                 onChange={(e) =>
@@ -286,6 +308,8 @@ export function OrganizationSettings({
                       setFormData({ ...formData, primaryColor: color })
                     }
                     disabled={!canEdit}
+                    aria-label={`Select color ${color}`}
+                    aria-pressed={formData.primaryColor === color}
                     className={`w-6 h-6 rounded ${
                       formData.primaryColor === color
                         ? "ring-2 ring-white ring-offset-2 ring-offset-slate-900"
@@ -303,15 +327,19 @@ export function OrganizationSettings({
       {/* Regional Settings */}
       <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center gap-2">
-          <Globe size={18} className="text-emerald-400" />
+          <Globe size={18} className="text-emerald-400" aria-hidden="true" />
           <h3 className="text-sm font-medium text-white">Regional</h3>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-timezone"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Timezone
             </label>
             <select
+              id="org-timezone"
               value={formData.timezone}
               onChange={(e) =>
                 setFormData({ ...formData, timezone: e.target.value })
@@ -332,10 +360,14 @@ export function OrganizationSettings({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-default-language"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Default Language
             </label>
             <select
+              id="org-default-language"
               value={formData.defaultLanguage}
               onChange={(e) =>
                 setFormData({ ...formData, defaultLanguage: e.target.value })
@@ -360,15 +392,19 @@ export function OrganizationSettings({
       {/* Billing */}
       <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center gap-2">
-          <Receipt size={18} className="text-amber-400" />
+          <Receipt size={18} className="text-amber-400" aria-hidden="true" />
           <h3 className="text-sm font-medium text-white">Billing</h3>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-billing-email"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               Billing Email
             </label>
             <input
+              id="org-billing-email"
               type="email"
               value={formData.billingEmail}
               onChange={(e) =>
@@ -381,10 +417,14 @@ export function OrganizationSettings({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label
+              htmlFor="org-vat-number"
+              className="block text-sm font-medium text-white/70 mb-1.5"
+            >
               VAT Number
             </label>
             <input
+              id="org-vat-number"
               type="text"
               value={formData.vatNumber}
               onChange={(e) =>

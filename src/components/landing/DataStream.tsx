@@ -15,7 +15,10 @@ const fragments = [
 
 export default function DataStream() {
   return (
-    <section className="relative h-[30vh] bg-black overflow-hidden">
+    <section
+      className="relative h-[30vh] bg-black overflow-hidden"
+      aria-hidden="true"
+    >
       {/* Top fade gradient */}
       <div
         className="absolute inset-x-0 top-0 h-[30%] z-10 pointer-events-none"

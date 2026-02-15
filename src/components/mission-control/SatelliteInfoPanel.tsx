@@ -64,9 +64,10 @@ export default function SatelliteInfoPanel({
         </div>
         <button
           onClick={onClose}
+          aria-label="Close satellite info"
           className="text-white/40 hover:text-white/70 transition-colors mt-0.5"
         >
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </button>
       </div>
 
@@ -88,7 +89,7 @@ export default function SatelliteInfoPanel({
               href="/dashboard/modules/registration"
               className="flex items-center gap-2 text-[12px] text-emerald-400 hover:text-emerald-300 transition-colors"
             >
-              <ExternalLink size={12} />
+              <ExternalLink size={12} aria-hidden="true" />
               {t("missionControl.manageSpacecraft")}
             </Link>
           </div>

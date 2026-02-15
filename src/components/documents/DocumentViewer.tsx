@@ -106,9 +106,17 @@ export default function DocumentViewer({
   const renderPreview = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-full">
+        <div
+          className="flex items-center justify-center h-full"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400 dark:text-white/40 mx-auto mb-3" />
+            <Loader2
+              className="w-8 h-8 animate-spin text-slate-400 dark:text-white/40 mx-auto mb-3"
+              aria-hidden="true"
+            />
             <p className="text-slate-600 dark:text-white/60">
               Loading document...
             </p>
@@ -119,9 +127,12 @@ export default function DocumentViewer({
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-full" role="alert">
           <div className="text-center">
-            <File className="w-12 h-12 text-slate-400 dark:text-white/30 mx-auto mb-3" />
+            <File
+              className="w-12 h-12 text-slate-400 dark:text-white/30 mx-auto mb-3"
+              aria-hidden="true"
+            />
             <p className="text-slate-600 dark:text-white/60 mb-2">{error}</p>
             <button
               onClick={handleDownload}
@@ -212,6 +223,9 @@ export default function DocumentViewer({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Document viewer: ${fileName}`}
         className={`bg-white dark:bg-[#0a0a0b] rounded-xl shadow-2xl flex flex-col ${
           isFullscreen
             ? "w-full h-full rounded-none"
@@ -222,11 +236,14 @@ export default function DocumentViewer({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3">
             {isPdf ? (
-              <FileText className="w-5 h-5 text-red-500" />
+              <FileText className="w-5 h-5 text-red-500" aria-hidden="true" />
             ) : isImage ? (
-              <ImageIcon className="w-5 h-5 text-blue-500" />
+              <ImageIcon className="w-5 h-5 text-blue-500" aria-hidden="true" />
             ) : (
-              <File className="w-5 h-5 text-slate-400 dark:text-white/40" />
+              <File
+                className="w-5 h-5 text-slate-400 dark:text-white/40"
+                aria-hidden="true"
+              />
             )}
             <div>
               <h3 className="font-medium text-slate-900 dark:text-white">
@@ -244,9 +261,9 @@ export default function DocumentViewer({
                 <button
                   onClick={handleZoomOut}
                   className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
-                  title="Zoom Out"
+                  aria-label="Zoom out"
                 >
-                  <ZoomOut size={18} />
+                  <ZoomOut size={18} aria-hidden="true" />
                 </button>
                 <span className="text-sm text-slate-600 dark:text-white/60 min-w-[60px] text-center">
                   {Math.round(scale * 100)}%
@@ -254,9 +271,9 @@ export default function DocumentViewer({
                 <button
                   onClick={handleZoomIn}
                   className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
-                  title="Zoom In"
+                  aria-label="Zoom in"
                 >
-                  <ZoomIn size={18} />
+                  <ZoomIn size={18} aria-hidden="true" />
                 </button>
                 <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-2" />
               </>
@@ -265,25 +282,25 @@ export default function DocumentViewer({
             <button
               onClick={toggleFullscreen}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
-              title="Toggle Fullscreen"
+              aria-label="Toggle fullscreen"
             >
-              <Maximize2 size={18} />
+              <Maximize2 size={18} aria-hidden="true" />
             </button>
 
             <button
               onClick={handleDownload}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
-              title="Download"
+              aria-label="Download"
             >
-              <Download size={18} />
+              <Download size={18} aria-hidden="true" />
             </button>
 
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
-              title="Close"
+              aria-label="Close"
             >
-              <X size={18} />
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -295,13 +312,17 @@ export default function DocumentViewer({
 
         {/* Footer with pagination (PDF only) */}
         {isPdf && numPages > 0 && (
-          <div className="flex items-center justify-center gap-4 px-6 py-3 border-t border-slate-200 dark:border-white/10">
+          <nav
+            aria-label="PDF page navigation"
+            className="flex items-center justify-center gap-4 px-6 py-3 border-t border-slate-200 dark:border-white/10"
+          >
             <button
               onClick={handlePrevPage}
               disabled={currentPage <= 1}
+              aria-label="Previous page"
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={18} aria-hidden="true" />
             </button>
             <span className="text-sm text-slate-600 dark:text-white/60">
               Page {currentPage} of {numPages}
@@ -309,11 +330,12 @@ export default function DocumentViewer({
             <button
               onClick={handleNextPage}
               disabled={currentPage >= numPages}
+              aria-label="Next page"
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={18} aria-hidden="true" />
             </button>
-          </div>
+          </nav>
         )}
       </div>
     </div>

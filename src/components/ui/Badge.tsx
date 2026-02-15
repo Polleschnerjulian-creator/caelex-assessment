@@ -80,7 +80,12 @@ export function Badge({
         ${className}
       `}
     >
-      {dot && <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />}
+      {dot && (
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${style.dot}`}
+          aria-hidden="true"
+        />
+      )}
       {children}
     </span>
   );

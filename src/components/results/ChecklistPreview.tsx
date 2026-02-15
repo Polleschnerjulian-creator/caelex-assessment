@@ -55,7 +55,7 @@ export default function ChecklistPreview({
               transition={{ delay: 0.3 + index * 0.05 }}
               className="p-4 flex items-start gap-4"
             >
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
                 <Circle className="w-4 h-4 text-white/40" />
               </div>
               <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ export default function ChecklistPreview({
             onClick={onDownloadClick}
             className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-5 py-2 rounded-full hover:bg-white/90 transition-all"
           >
-            <FileDown size={14} />
+            <FileDown size={14} aria-hidden="true" />
             Download PDF Report
           </button>
         </div>

@@ -74,6 +74,9 @@ export default function SubmissionActions({
       <div className="relative">
         <button
           onClick={() => setShowPriority(!showPriority)}
+          aria-expanded={showPriority}
+          aria-haspopup="listbox"
+          aria-label={`Priority: ${currentPriority}`}
           className="w-full flex items-center justify-between px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-navy-600 transition-colors"
         >
           <span>
@@ -87,13 +90,19 @@ export default function SubmissionActions({
               {currentPriority}
             </span>
           </span>
-          <ChevronDown size={14} />
+          <ChevronDown size={14} aria-hidden="true" />
         </button>
         {showPriority && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg shadow-lg z-10 overflow-hidden">
+          <div
+            role="listbox"
+            aria-label="Priority options"
+            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg shadow-lg z-10 overflow-hidden"
+          >
             {PRIORITY_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
+                role="option"
+                aria-selected={opt.value === currentPriority}
                 onClick={() => handlePriorityChange(opt.value)}
                 disabled={isUpdating}
                 className={`

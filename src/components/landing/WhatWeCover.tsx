@@ -89,9 +89,13 @@ export default function WhatWeCover() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="relative py-24 md:py-32 overflow-hidden">
+    <section
+      ref={ref}
+      className="relative py-24 md:py-32 overflow-hidden"
+      aria-label="What we cover"
+    >
       {/* Background Image */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <Image
           src="/images/what-we-cover-bg.png"
           alt=""
@@ -102,10 +106,16 @@ export default function WhatWeCover() {
       </div>
 
       {/* Top gradient for smooth transition from Hero */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent pointer-events-none" />
+      <div
+        className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
 
       {/* Content */}
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
@@ -142,7 +152,10 @@ export default function WhatWeCover() {
               >
                 {/* Category Header */}
                 <div className="flex items-center gap-2.5 mb-5">
-                  <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${colors.dot}`}
+                    aria-hidden="true"
+                  />
                   <h3
                     className={`text-[13px] font-medium uppercase tracking-wider ${colors.title}`}
                   >
@@ -170,6 +183,7 @@ export default function WhatWeCover() {
                       {/* Inner glow effect */}
                       <div
                         className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        aria-hidden="true"
                         style={{
                           background:
                             "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%)",

@@ -83,7 +83,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-[100] space-y-2 pointer-events-none">
+      <div
+        className="fixed bottom-4 right-4 z-[100] space-y-2 pointer-events-none"
+        role="region"
+        aria-label="Notifications"
+        aria-live="polite"
+      >
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <motion.div
@@ -93,6 +98,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              role={toast.type === "error" ? "alert" : "status"}
               className={`
                 pointer-events-auto
                 flex items-start gap-3
@@ -103,7 +109,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 ${styles[toast.type]}
               `}
             >
-              <div className="flex-shrink-0 mt-0.5">{icons[toast.type]}</div>
+              <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
+                {icons[toast.type]}
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-medium text-white">
                   {toast.title}
@@ -116,9 +124,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
+                aria-label="Dismiss notification"
                 className="flex-shrink-0 text-white/60 hover:text-white/70 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </motion.div>
           ))}

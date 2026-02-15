@@ -9,9 +9,11 @@ interface LogoProps {
 export function CaelexIcon({
   size = 24,
   className = "",
+  "aria-hidden": ariaHidden,
 }: {
   size?: number;
   className?: string;
+  "aria-hidden"?: boolean | "true" | "false";
 }) {
   // Scale factor based on size (designed at 64px base)
   const scale = size / 64;
@@ -25,6 +27,7 @@ export function CaelexIcon({
       height={size}
       className={className}
       fill="none"
+      aria-hidden={ariaHidden ?? "true"}
     >
       <path
         d="M 32 12 L 32 36"

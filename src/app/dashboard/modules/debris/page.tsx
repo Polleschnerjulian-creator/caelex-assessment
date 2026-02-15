@@ -353,7 +353,7 @@ function DebrisPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-100 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-100 dark:bg-white/[0.05] rounded w-1/2" />
@@ -366,6 +366,7 @@ function DebrisPageContent() {
             ))}
           </div>
         </div>
+        <span className="sr-only">Loading debris assessment...</span>
       </div>
     );
   }
@@ -425,10 +426,18 @@ function DebrisPageContent() {
 
       {/* Stepper */}
       <div className="mb-8">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          role="tablist"
+          aria-label="Debris assessment steps"
+        >
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
+                role="tab"
+                aria-selected={activeStep === index}
+                aria-controls={`tabpanel-${step.id}`}
+                id={`tab-${step.id}`}
                 onClick={() => setActiveStep(index)}
                 disabled={index > 0 && !selectedAssessment}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
@@ -448,7 +457,11 @@ function DebrisPageContent() {
                         : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
                   }`}
                 >
-                  {activeStep > index ? <CheckCircle2 size={12} /> : index + 1}
+                  {activeStep > index ? (
+                    <CheckCircle2 size={12} aria-hidden="true" />
+                  ) : (
+                    index + 1
+                  )}
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
@@ -465,6 +478,7 @@ function DebrisPageContent() {
                 <ChevronRight
                   size={16}
                   className="text-slate-300 dark:text-white/10 mx-1"
+                  aria-hidden="true"
                 />
               )}
             </div>
@@ -818,6 +832,7 @@ function DebrisPageContent() {
                         <AlertTriangle
                           size={16}
                           className="text-amber-400 mt-0.5"
+                          aria-hidden="true"
                         />
                         <p className="text-[13px] text-amber-400/80">
                           {warning}
@@ -936,6 +951,11 @@ function DebrisPageContent() {
                       }}
                       transition={{ duration: 0.5, ease: "easeOut" }}
                       className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                      role="progressbar"
+                      aria-valuenow={selectedAssessment.complianceScore || 0}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Compliance score"
                     />
                   </div>
                 </div>
@@ -991,6 +1011,7 @@ function DebrisPageContent() {
                                     e.target.value as RequirementStatus,
                                   )
                                 }
+                                aria-label={`Compliance status for ${req.title}`}
                                 className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statusInfo.color}`}
                               >
                                 <option value="not_assessed">

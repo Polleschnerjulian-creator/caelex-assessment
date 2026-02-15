@@ -72,6 +72,7 @@ export default function SubmissionCard({
   return (
     <Link
       href={`/dashboard/nca-portal/submissions/${id}`}
+      aria-label={`Submission to ${ncaAuthorityName}${reportTitle ? `: ${reportTitle}` : ""}, Priority: ${priority}, ${daysInStatus} days in status${isUrgent ? ", Urgent" : ""}`}
       className={`
         block bg-white dark:bg-navy-800/50 border rounded-lg p-3
         hover:border-blue-500/30 transition-all duration-150 cursor-pointer group
@@ -88,6 +89,7 @@ export default function SubmissionCard({
         <ChevronRight
           size={14}
           className="text-slate-400 dark:text-white/30 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+          aria-hidden="true"
         />
       </div>
 
@@ -105,19 +107,27 @@ export default function SubmissionCard({
         </span>
 
         <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-          <Clock size={10} />
+          <Clock size={10} aria-hidden="true" />
           {daysInStatus}d
         </span>
 
         {correspondenceCount > 0 && (
           <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-            <MessageSquare size={10} />
+            <MessageSquare size={10} aria-hidden="true" />
+            <span className="sr-only">Messages:</span>
             {correspondenceCount}
           </span>
         )}
 
         {isUrgent && (
-          <AlertTriangle size={12} className="text-red-400 ml-auto" />
+          <>
+            <AlertTriangle
+              size={12}
+              className="text-red-400 ml-auto"
+              aria-hidden="true"
+            />
+            <span className="sr-only">Urgent</span>
+          </>
         )}
       </div>
     </Link>

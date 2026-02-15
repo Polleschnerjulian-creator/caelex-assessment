@@ -91,9 +91,13 @@ export default function RegulatoryCoverage() {
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   return (
-    <section ref={ref} className="relative bg-black py-24 md:py-32">
+    <section
+      ref={ref}
+      className="relative bg-black py-24 md:py-32"
+      aria-label="Regulatory coverage"
+    >
       {/* Section Label */}
-      <div className="absolute top-8 right-6 md:right-12">
+      <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
         <span className="font-mono text-[11px] text-white/30">02 / 14</span>
       </div>
 
@@ -135,7 +139,11 @@ export default function RegulatoryCoverage() {
                 {/* Icon & Title */}
                 <div className="flex items-start gap-4 mb-6">
                   <div className={`p-3 rounded-xl ${colors.bg}`}>
-                    <Icon size={24} className={colors.text} />
+                    <Icon
+                      size={24}
+                      className={colors.text}
+                      aria-hidden="true"
+                    />
                   </div>
                   <div>
                     <h3 className="text-[18px] font-medium text-white mb-1">
@@ -170,6 +178,7 @@ export default function RegulatoryCoverage() {
                     >
                       <span
                         className={`w-1 h-1 rounded-full ${colors.bg} ${colors.text}`}
+                        aria-hidden="true"
                       />
                       {feature}
                     </li>
@@ -193,14 +202,20 @@ export default function RegulatoryCoverage() {
               Total Requirements
             </div>
           </div>
-          <div className="w-px h-8 bg-white/10 hidden sm:block" />
+          <div
+            className="w-px h-8 bg-white/10 hidden sm:block"
+            aria-hidden="true"
+          />
           <div>
             <div className="text-[28px] font-light text-white">8</div>
             <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
               Compliance Modules
             </div>
           </div>
-          <div className="w-px h-8 bg-white/10 hidden sm:block" />
+          <div
+            className="w-px h-8 bg-white/10 hidden sm:block"
+            aria-hidden="true"
+          />
           <div>
             <div className="text-[28px] font-light text-white">2030</div>
             <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">

@@ -172,9 +172,16 @@ export default function SpaceLawAssessmentWizard() {
   // Calculating state
   if (isCalculating) {
     return (
-      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+      <div
+        className="landing-page min-h-screen bg-black text-white flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <div className="text-center">
-          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <div
+            className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"
+            aria-hidden="true"
+          />
           <p className="text-[13px] text-white/60">
             Analyzing national space law requirements...
           </p>
@@ -188,7 +195,9 @@ export default function SpaceLawAssessmentWizard() {
     return (
       <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-[14px] mb-6">{calculationError}</p>
+          <p className="text-red-400 text-[14px] mb-6" role="alert">
+            {calculationError}
+          </p>
           <button
             onClick={handleRestart}
             className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
@@ -228,7 +237,7 @@ export default function SpaceLawAssessmentWizard() {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
               >
-                <ArrowLeft size={14} />
+                <ArrowLeft size={14} aria-hidden="true" />
                 <span>Back</span>
               </motion.button>
             ) : (
@@ -242,7 +251,7 @@ export default function SpaceLawAssessmentWizard() {
                   href="/assessment"
                   className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={14} aria-hidden="true" />
                   <span>All assessments</span>
                 </Link>
               </motion.div>

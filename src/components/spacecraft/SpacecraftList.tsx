@@ -151,9 +151,11 @@ export function SpacecraftList({
           <Search
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            aria-hidden="true"
           />
           <input
             type="text"
+            aria-label="Search spacecraft"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, COSPAR, or NORAD ID..."
@@ -162,6 +164,7 @@ export function SpacecraftList({
         </form>
 
         <select
+          aria-label="Filter by status"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50"
@@ -190,6 +193,7 @@ export function SpacecraftList({
         </select>
 
         <select
+          aria-label="Filter by orbit type"
           value={orbitFilter}
           onChange={(e) => setOrbitFilter(e.target.value)}
           className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50"
@@ -211,14 +215,31 @@ export function SpacecraftList({
 
       {/* List */}
       {isLoading ? (
-        <div className="space-y-3">
+        <div
+          className="space-y-3"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span className="sr-only">Loading spacecraft...</span>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse" />
+            <div
+              key={i}
+              className="h-20 bg-white/5 rounded-xl animate-pulse"
+              aria-hidden="true"
+            />
           ))}
         </div>
       ) : filteredSpacecraft.length === 0 ? (
-        <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
-          <Satellite size={48} className="mx-auto mb-4 text-white/20" />
+        <div
+          className="text-center py-12 bg-white/5 rounded-xl border border-white/10"
+          role="status"
+        >
+          <Satellite
+            size={48}
+            className="mx-auto mb-4 text-white/20"
+            aria-hidden="true"
+          />
           <h3 className="text-lg font-medium text-white mb-2">
             No Spacecraft Found
           </h3>
@@ -246,7 +267,10 @@ export function SpacecraftList({
                 className="p-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors"
               >
                 {/* Icon */}
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <div
+                  className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"
+                  aria-hidden="true"
+                >
                   <Satellite size={20} className="text-blue-400" />
                 </div>
 
@@ -288,9 +312,12 @@ export function SpacecraftList({
                     onClick={() =>
                       setMenuOpen(menuOpen === sc.id ? null : sc.id)
                     }
+                    aria-expanded={menuOpen === sc.id}
+                    aria-haspopup="true"
+                    aria-label={`Actions for ${sc.name}`}
                     className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
                   >
-                    <MoreVertical size={16} />
+                    <MoreVertical size={16} aria-hidden="true" />
                   </button>
 
                   {menuOpen === sc.id && (

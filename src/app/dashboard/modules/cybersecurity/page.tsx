@@ -452,7 +452,7 @@ function CybersecurityPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -465,6 +465,7 @@ function CybersecurityPageContent() {
             ))}
           </div>
         </div>
+        <span className="sr-only">Loading cybersecurity assessment...</span>
       </div>
     );
   }
@@ -551,10 +552,18 @@ function CybersecurityPageContent() {
 
       {/* Stepper */}
       <div className="mb-8">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          role="tablist"
+          aria-label="Cybersecurity assessment steps"
+        >
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
+                role="tab"
+                aria-selected={activeStep === index}
+                aria-controls={`tabpanel-${step.id}`}
+                id={`tab-${step.id}`}
                 onClick={() => setActiveStep(index)}
                 disabled={index > 0 && !selectedAssessment}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
@@ -574,7 +583,11 @@ function CybersecurityPageContent() {
                         : "bg-white/[0.05] text-white/70"
                   }`}
                 >
-                  {activeStep > index ? <CheckCircle2 size={12} /> : index + 1}
+                  {activeStep > index ? (
+                    <CheckCircle2 size={12} aria-hidden="true" />
+                  ) : (
+                    index + 1
+                  )}
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
@@ -588,7 +601,11 @@ function CybersecurityPageContent() {
                 </div>
               </button>
               {index < STEPS.length - 1 && (
-                <ChevronRight size={16} className="text-white/10 mx-1" />
+                <ChevronRight
+                  size={16}
+                  className="text-white/10 mx-1"
+                  aria-hidden="true"
+                />
               )}
             </div>
           ))}
@@ -1153,6 +1170,11 @@ function CybersecurityPageContent() {
                         width: `${selectedAssessment.maturityScore || 0}%`,
                       }}
                       transition={{ duration: 0.5, ease: "easeOut" }}
+                      role="progressbar"
+                      aria-valuenow={selectedAssessment.maturityScore || 0}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Security maturity score"
                       className={`h-full rounded-full ${
                         maturityInfo.color === "red"
                           ? "bg-red-500"
@@ -1290,6 +1312,7 @@ function CybersecurityPageContent() {
                                       e.target.value as RequirementStatus,
                                     )
                                   }
+                                  aria-label={`Compliance status for ${req.title}`}
                                   className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statConfig.color === "green" ? "text-green-400" : statConfig.color === "yellow" ? "text-yellow-400" : statConfig.color === "red" ? "text-red-400" : "text-white/60"}`}
                                 >
                                   <option value="not_assessed">
@@ -1320,12 +1343,14 @@ function CybersecurityPageContent() {
                               {/* Expand/collapse button */}
                               <button
                                 onClick={() => toggleExpanded(req.id)}
+                                aria-expanded={isExpanded}
+                                aria-controls={`details-${req.id}`}
                                 className="flex items-center gap-1 text-[11px] text-white/70 hover:text-white/70 transition-colors"
                               >
                                 {isExpanded ? (
-                                  <ChevronUp size={14} />
+                                  <ChevronUp size={14} aria-hidden="true" />
                                 ) : (
-                                  <ChevronDown size={14} />
+                                  <ChevronDown size={14} aria-hidden="true" />
                                 )}
                                 {isExpanded ? "Hide details" : "Show details"}
                               </button>

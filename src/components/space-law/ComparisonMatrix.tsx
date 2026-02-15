@@ -67,13 +67,18 @@ const SCORE_UNFILLED = "bg-white/[0.08]";
 function ScoreDots({ score }: { score: number }) {
   const color = SCORE_COLORS[score] ?? SCORE_COLORS[1];
   return (
-    <div className="inline-flex items-center gap-0.5 ml-2 shrink-0">
+    <div
+      className="inline-flex items-center gap-0.5 ml-2 shrink-0"
+      role="img"
+      aria-label={`Score: ${score} out of 5`}
+    >
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}
           className={`block w-1.5 h-1.5 rounded-full ${
             i < score ? color : SCORE_UNFILLED
           }`}
+          aria-hidden="true"
         />
       ))}
     </div>
@@ -124,14 +129,21 @@ function DesktopTable({
   return (
     <div className="hidden md:block overflow-x-auto">
       <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden">
-        <table className="w-full text-left">
+        <table
+          className="w-full text-left"
+          aria-label="Jurisdiction comparison matrix"
+        >
           <thead>
             <tr className="bg-white/[0.04]">
-              <th className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-[11px] font-mono uppercase tracking-[0.15em] text-white/40 border-b border-white/[0.08] min-w-[200px]">
+              <th
+                scope="col"
+                className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-[11px] font-mono uppercase tracking-[0.15em] text-white/40 border-b border-white/[0.08] min-w-[200px]"
+              >
                 Criterion
               </th>
               {jurisdictions.map((j) => (
                 <th
+                  scope="col"
                   key={j.countryCode}
                   className="px-4 py-3.5 text-center border-b border-white/[0.08] min-w-[150px]"
                 >
@@ -190,7 +202,7 @@ function GroupRows({
           className="px-5 py-2.5 bg-white/[0.02] border-b border-white/[0.06]"
         >
           <div className="flex items-center gap-2 text-white/50">
-            {group.icon}
+            <span aria-hidden="true">{group.icon}</span>
             <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
               {group.label}
             </span>
@@ -210,7 +222,10 @@ function GroupRows({
               isEvenRow ? "bg-transparent" : "bg-white/[0.015]"
             } hover:bg-white/[0.04] transition-colors duration-150`}
           >
-            <td className="sticky left-0 z-10 px-5 py-3 border-b border-white/[0.06]">
+            <th
+              scope="row"
+              className="sticky left-0 z-10 px-5 py-3 border-b border-white/[0.06] text-left font-normal"
+            >
               <div
                 className={`${
                   isEvenRow ? "bg-[#0A0F1E]" : "bg-[#0c1122]"
@@ -220,7 +235,7 @@ function GroupRows({
                   {criterion.label}
                 </span>
               </div>
-            </td>
+            </th>
             {jurisdictions.map((j) => {
               const val = criterion.jurisdictionValues[j.countryCode];
               return (
@@ -268,7 +283,7 @@ function MobileCards({
         <div key={group.category} className="space-y-2">
           {/* Category header */}
           <div className="flex items-center gap-2 text-white/50 px-1 pt-3 pb-1">
-            {group.icon}
+            <span aria-hidden="true">{group.icon}</span>
             <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
               {group.label}
             </span>

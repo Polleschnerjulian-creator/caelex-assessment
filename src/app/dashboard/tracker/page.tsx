@@ -298,7 +298,7 @@ export default function TrackerPage() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -310,6 +310,7 @@ export default function TrackerPage() {
               />
             ))}
           </div>
+          <span className="sr-only">Loading compliance tracker...</span>
         </div>
       </div>
     );
@@ -335,7 +336,7 @@ export default function TrackerPage() {
             onClick={handleExport}
             className="flex items-center gap-2 border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 font-mono text-[11px] px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all"
           >
-            <Download size={13} />
+            <Download size={13} aria-hidden="true" />
             Export
           </button>
         </div>
@@ -393,8 +394,13 @@ export default function TrackerPage() {
             <Search
               size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/60"
+              aria-hidden="true"
             />
+            <label htmlFor="article-search" className="sr-only">
+              Search articles
+            </label>
             <input
+              id="article-search"
               type="text"
               placeholder="Search articles..."
               value={search}
@@ -431,7 +437,11 @@ export default function TrackerPage() {
           </div>
 
           {/* Status Filter */}
+          <label htmlFor="status-filter" className="sr-only">
+            Filter by status
+          </label>
           <select
+            id="status-filter"
             value={statusFilter}
             onChange={(e) =>
               setStatusFilter(e.target.value as ArticleStatusType | "all")
@@ -450,8 +460,15 @@ export default function TrackerPage() {
           <div className="flex-1" />
 
           {/* View Toggle */}
-          <div className="flex border border-slate-200 dark:border-white/12 rounded-lg overflow-hidden">
+          <div
+            className="flex border border-slate-200 dark:border-white/12 rounded-lg overflow-hidden"
+            role="tablist"
+            aria-label="View mode"
+          >
             <button
+              role="tab"
+              aria-selected={viewMode === "articles"}
+              aria-controls="view-articles"
               onClick={() => setViewMode("articles")}
               className={`px-4 py-2 font-mono text-[11px] transition-all ${
                 viewMode === "articles"
@@ -462,6 +479,9 @@ export default function TrackerPage() {
               Articles
             </button>
             <button
+              role="tab"
+              aria-selected={viewMode === "checklist"}
+              aria-controls="view-checklist"
               onClick={() => setViewMode("checklist")}
               className={`px-4 py-2 font-mono text-[11px] transition-all ${
                 viewMode === "checklist"
@@ -482,17 +502,20 @@ export default function TrackerPage() {
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroupCollapse(group)}
+                  aria-expanded={!collapsedGroups.has(group)}
                   className="flex items-center gap-3 mb-4 mt-8 w-full text-left"
                 >
                   {collapsedGroups.has(group) ? (
                     <ChevronRight
                       size={14}
                       className="text-slate-500 dark:text-white/60"
+                      aria-hidden="true"
                     />
                   ) : (
                     <ChevronDown
                       size={14}
                       className="text-slate-500 dark:text-white/60"
+                      aria-hidden="true"
                     />
                   )}
                   <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/60">
@@ -524,12 +547,17 @@ export default function TrackerPage() {
                           {/* Collapsed Row */}
                           <button
                             onClick={() => toggleArticleExpand(article.id)}
+                            aria-expanded={isExpanded}
                             className="w-full px-5 py-4 flex items-center gap-4 text-left"
                           >
                             {/* Status Dot */}
                             <div
                               className={`w-3 h-3 rounded-full border ${colors.dot}`}
+                              aria-hidden="true"
                             />
+                            <span className="sr-only">
+                              Status: {status.replace(/_/g, " ")}
+                            </span>
 
                             {/* Article Number */}
                             <span className="font-mono text-[12px] text-slate-600 dark:text-white/70 w-[60px]">
@@ -561,11 +589,13 @@ export default function TrackerPage() {
                               <ChevronDown
                                 size={16}
                                 className="text-slate-400 dark:text-white/30"
+                                aria-hidden="true"
                               />
                             ) : (
                               <ChevronRight
                                 size={16}
                                 className="text-slate-400 dark:text-white/30"
+                                aria-hidden="true"
                               />
                             )}
                           </button>

@@ -243,7 +243,10 @@ export function MfaSetupCard() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-          <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <Shield
+            className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
+            aria-hidden="true"
+          />
         </div>
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
@@ -350,12 +353,17 @@ export function MfaSetupCard() {
             </div>
 
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label
+                htmlFor="mfa-disable-password"
+                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+              >
                 Password
               </label>
               <input
+                id="mfa-disable-password"
                 type="password"
                 value={disablePassword}
+                aria-required="true"
                 onChange={(e) => {
                   setDisablePassword(e.target.value);
                   setError(null);
@@ -366,7 +374,10 @@ export function MfaSetupCard() {
             </div>
 
             {error && (
-              <p className="text-[13px] text-red-500 dark:text-red-400">
+              <p
+                role="alert"
+                className="text-[13px] text-red-500 dark:text-red-400"
+              >
                 {error}
               </p>
             )}
@@ -410,14 +421,19 @@ export function MfaSetupCard() {
             </p>
 
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label
+                htmlFor="mfa-regenerate-code"
+                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+              >
                 Authenticator Code
               </label>
               <input
+                id="mfa-regenerate-code"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
                 value={regenerateCode}
+                aria-required="true"
                 onChange={(e) => {
                   setRegenerateCode(e.target.value.replace(/\D/g, ""));
                   setError(null);
@@ -428,7 +444,10 @@ export function MfaSetupCard() {
             </div>
 
             {error && (
-              <p className="text-[13px] text-red-500 dark:text-red-400">
+              <p
+                role="alert"
+                className="text-[13px] text-red-500 dark:text-red-400"
+              >
                 {error}
               </p>
             )}
@@ -505,6 +524,11 @@ export function MfaSetupCard() {
                       <button
                         onClick={copySecret}
                         className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                        aria-label={
+                          secretCopied
+                            ? "Secret copied"
+                            : "Copy secret to clipboard"
+                        }
                       >
                         {secretCopied ? (
                           <Check className="w-4 h-4 text-emerald-500" />
@@ -535,11 +559,16 @@ export function MfaSetupCard() {
                 </div>
 
                 <div>
+                  <label htmlFor="mfa-verification-code" className="sr-only">
+                    Enter 6-digit verification code
+                  </label>
                   <input
+                    id="mfa-verification-code"
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
                     value={verificationCode}
+                    aria-required="true"
                     onChange={(e) => {
                       setVerificationCode(e.target.value.replace(/\D/g, ""));
                       setError(null);
@@ -550,7 +579,10 @@ export function MfaSetupCard() {
                 </div>
 
                 {error && (
-                  <p className="text-[13px] text-red-500 dark:text-red-400 text-center">
+                  <p
+                    role="alert"
+                    className="text-[13px] text-red-500 dark:text-red-400 text-center"
+                  >
                     {error}
                   </p>
                 )}

@@ -426,8 +426,16 @@ function EnvironmentalPageContent() {
 
   if (loading && assessments.length === 0) {
     return (
-      <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-500 dark:text-white/60" />
+      <div
+        className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2
+          className="w-8 h-8 animate-spin text-slate-500 dark:text-white/60"
+          aria-hidden="true"
+        />
+        <span className="sr-only">Loading environmental assessment...</span>
       </div>
     );
   }
@@ -451,7 +459,11 @@ function EnvironmentalPageContent() {
 
         {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2"
+            role="tablist"
+            aria-label="Environmental assessment steps"
+          >
             {steps.map((step, index) => {
               const info = stepInfo[step];
               const isActive = step === currentStep;
@@ -463,6 +475,10 @@ function EnvironmentalPageContent() {
                   <button
                     onClick={() => isClickable && goToStep(step)}
                     disabled={!isClickable}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls={`panel-${step}`}
+                    id={`tab-${step}`}
                     className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
                       isActive
                         ? "bg-emerald-500/20 border border-emerald-500/30"
@@ -481,7 +497,7 @@ function EnvironmentalPageContent() {
                       }`}
                     >
                       {isCompleted ? (
-                        <CheckCircle className="w-4 h-4" />
+                        <CheckCircle className="w-4 h-4" aria-hidden="true" />
                       ) : (
                         info.number
                       )}
@@ -493,7 +509,10 @@ function EnvironmentalPageContent() {
                     </span>
                   </button>
                   {index < steps.length - 1 && (
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-white/10 mx-1" />
+                    <ChevronRight
+                      className="w-4 h-4 text-slate-300 dark:text-white/10 mx-1"
+                      aria-hidden="true"
+                    />
                   )}
                 </div>
               );
@@ -503,8 +522,14 @@ function EnvironmentalPageContent() {
 
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
+          <div
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3"
+            role="alert"
+          >
+            <AlertTriangle
+              className="w-5 h-5 text-red-400"
+              aria-hidden="true"
+            />
             <p className="text-[13px] text-red-400">{error}</p>
             <button
               onClick={() => setError(null)}
@@ -957,7 +982,10 @@ function MissionProfileStep({
                 {propellantProfiles[
                   formData.spacecraftPropellant as PropellantType
                 ].toxicityClass === "very_high" && (
-                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <AlertTriangle
+                    className="w-4 h-4 text-red-400"
+                    aria-hidden="true"
+                  />
                 )}
                 <p className="text-[12px] text-slate-500 dark:text-white/60">
                   {
@@ -1057,7 +1085,10 @@ function MissionProfileStep({
         </div>
         {(formData.isSmallEnterprise || formData.isResearchEducation) && (
           <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-start gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5" />
+            <CheckCircle
+              className="w-4 h-4 text-emerald-400 mt-0.5"
+              aria-hidden="true"
+            />
             <p className="text-[12px] text-emerald-300">
               You may qualify for the Simplified Regime: Screening LCA is
               sufficient until 2032.
@@ -1074,11 +1105,11 @@ function MissionProfileStep({
           className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50"
         >
           {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
           ) : (
             <>
               {isEdit ? "Update & Calculate" : "Create Assessment"}
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </>
           )}
         </button>
@@ -1107,7 +1138,10 @@ function CalculatorStep({
       {/* Calculate Button or Results */}
       {!result && !assessment.totalGWP ? (
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
-          <Leaf className="w-12 h-12 text-emerald-400/30 mx-auto mb-4" />
+          <Leaf
+            className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-[16px] font-medium text-slate-900 dark:text-white mb-2">
             Ready to Calculate
           </h3>
@@ -1122,12 +1156,12 @@ function CalculatorStep({
           >
             {calculating ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                 Calculating...
               </>
             ) : (
               <>
-                <BarChart3 className="w-5 h-5" />
+                <BarChart3 className="w-5 h-5" aria-hidden="true" />
                 Calculate Environmental Footprint
               </>
             )}
@@ -1148,6 +1182,7 @@ function CalculatorStep({
               >
                 <RefreshCw
                   className={`w-3.5 h-3.5 ${calculating ? "animate-spin" : ""}`}
+                  aria-hidden="true"
                 />
                 Recalculate
               </button>
@@ -1200,7 +1235,7 @@ function CalculatorStep({
 
             {assessment.isSimplifiedAssessment && (
               <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-                <Info className="w-4 h-4 text-emerald-400" />
+                <Info className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                 <p className="text-[12px] text-emerald-300">
                   Screening LCA - Simplified assessment based on industry
                   averages
@@ -1231,6 +1266,7 @@ function CalculatorStep({
                     >
                       <Icon
                         className={`w-5 h-5 ${isHotspot ? "text-orange-400" : "text-slate-600 dark:text-white/70"}`}
+                        aria-hidden="true"
                       />
                     </div>
                     <div className="flex-1">
@@ -1249,7 +1285,14 @@ function CalculatorStep({
                           {formatEmissions(phase.gwpKgCO2eq)}
                         </p>
                       </div>
-                      <div className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden">
+                      <div
+                        className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={phase.percentOfTotal}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${getPhaseLabel(phase.phase as any)} contribution`}
+                      >
                         <div
                           className={`h-full rounded-full transition-all ${
                             isHotspot ? "bg-orange-500" : "bg-emerald-500"
@@ -1271,7 +1314,10 @@ function CalculatorStep({
           {result?.recommendations && result.recommendations.length > 0 && (
             <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-[15px] font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <TrendingDown className="w-5 h-5 text-emerald-400" />
+                <TrendingDown
+                  className="w-5 h-5 text-emerald-400"
+                  aria-hidden="true"
+                />
                 Improvement Recommendations
               </h3>
               <div className="space-y-3">
@@ -1300,7 +1346,7 @@ function CalculatorStep({
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white/60 text-[13px]"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
         </button>
         <button
@@ -1309,7 +1355,7 @@ function CalculatorStep({
           className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[13px] font-medium transition-colors disabled:opacity-50"
         >
           Continue to Supplier Data
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -1342,7 +1388,7 @@ function SuppliersStep({
     <div className="space-y-6">
       {/* Info Card */}
       <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-emerald-400 mt-0.5" />
+        <Info className="w-5 h-5 text-emerald-400 mt-0.5" aria-hidden="true" />
         <div>
           <p className="text-[13px] text-emerald-300 font-medium mb-1">
             Article 99: Supply Chain Data Collection
@@ -1357,7 +1403,10 @@ function SuppliersStep({
       {/* Suppliers List or Empty State */}
       {suppliers.length === 0 ? (
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
-          <Users className="w-12 h-12 text-slate-300 dark:text-white/10 mx-auto mb-4" />
+          <Users
+            className="w-12 h-12 text-slate-300 dark:text-white/10 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-[16px] font-medium text-slate-900 dark:text-white mb-2">
             No Supplier Requests Yet
           </h3>
@@ -1371,10 +1420,10 @@ function SuppliersStep({
             className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[14px] font-medium transition-colors disabled:opacity-50"
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
             ) : (
               <>
-                <Plus className="w-5 h-5" />
+                <Plus className="w-5 h-5" aria-hidden="true" />
                 Generate Default Requests
               </>
             )}
@@ -1390,7 +1439,7 @@ function SuppliersStep({
               onClick={onGenerateDefaults}
               className="flex items-center gap-1.5 text-[12px] text-emerald-400 hover:text-emerald-300"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4" aria-hidden="true" />
               Add More
             </button>
           </div>
@@ -1423,6 +1472,7 @@ function SuppliersStep({
                       onChange={(e) =>
                         onUpdateStatus(supplier.id, e.target.value)
                       }
+                      aria-label={`Status for ${supplier.supplierName}`}
                       className={`px-2 py-1 rounded text-[11px] font-medium border-0 cursor-pointer ${statusColors[supplier.status]}`}
                     >
                       <option value="pending">Pending</option>
@@ -1455,7 +1505,7 @@ function SuppliersStep({
 
                   {supplier.status === "pending" && (
                     <button className="mt-3 flex items-center gap-1.5 text-[12px] text-emerald-400 hover:text-emerald-300">
-                      <Mail className="w-3.5 h-3.5" />
+                      <Mail className="w-3.5 h-3.5" aria-hidden="true" />
                       Send Request Email
                     </button>
                   )}
@@ -1497,7 +1547,7 @@ function SuppliersStep({
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 text-[13px]"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
         </button>
         <button
@@ -1505,7 +1555,7 @@ function SuppliersStep({
           className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[13px] font-medium transition-colors"
         >
           Continue to Report
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -1529,7 +1579,10 @@ function ReportStep({
     return (
       <div className="space-y-6">
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
-          <FileText className="w-12 h-12 text-emerald-400/30 mx-auto mb-4" />
+          <FileText
+            className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-[16px] font-medium text-slate-900 dark:text-white mb-2">
             Generate EFD Report
           </h3>
@@ -1545,12 +1598,12 @@ function ReportStep({
           >
             {generating ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                 Generating Report...
               </>
             ) : (
               <>
-                <FileText className="w-5 h-5" />
+                <FileText className="w-5 h-5" aria-hidden="true" />
                 Generate EFD Report
               </>
             )}
@@ -1567,7 +1620,7 @@ function ReportStep({
             onClick={onBack}
             className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 text-[13px]"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             Back
           </button>
         </div>
@@ -1582,7 +1635,10 @@ function ReportStep({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-emerald-400" />
+              <FileText
+                className="w-5 h-5 text-emerald-400"
+                aria-hidden="true"
+              />
             </div>
             <div>
               <h3 className="text-[16px] font-medium text-slate-900 dark:text-white">
@@ -1594,7 +1650,7 @@ function ReportStep({
             </div>
           </div>
           <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200 dark:hover:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-[13px] text-slate-600 dark:text-white/70">
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
             Download PDF
           </button>
         </div>
@@ -1763,6 +1819,7 @@ function ReportStep({
                   return (
                     <Icon
                       className={`w-5 h-5 ${phase.isHotspot ? "text-orange-400" : "text-slate-600 dark:text-white/70"}`}
+                      aria-hidden="true"
                     />
                   );
                 })()}
@@ -1783,7 +1840,14 @@ function ReportStep({
                     {phase.gwpFormatted}
                   </p>
                 </div>
-                <div className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden">
+                <div
+                  className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={phase.percentOfTotal}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${phase.phaseName} contribution`}
+                >
                   <div
                     className={`h-full rounded-full ${phase.isHotspot ? "bg-orange-500" : "bg-emerald-500"}`}
                     style={{ width: `${phase.percentOfTotal}%` }}
@@ -1802,7 +1866,10 @@ function ReportStep({
       {report.recommendations.length > 0 && (
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
           <h3 className="text-[15px] font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <TrendingDown className="w-5 h-5 text-emerald-400" />
+            <TrendingDown
+              className="w-5 h-5 text-emerald-400"
+              aria-hidden="true"
+            />
             Improvement Recommendations
           </h3>
           <div className="space-y-3">
@@ -1831,7 +1898,7 @@ function ReportStep({
 
         {report.regulatoryCompliance.isSimplifiedAssessment && (
           <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-            <Info className="w-4 h-4 text-emerald-400" />
+            <Info className="w-4 h-4 text-emerald-400" aria-hidden="true" />
             <p className="text-[12px] text-emerald-300">
               Simplified Regime applies: Screening LCA is sufficient until 2032
             </p>
@@ -1877,7 +1944,7 @@ function ReportStep({
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 text-[13px]"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
         </button>
 
@@ -1889,11 +1956,12 @@ function ReportStep({
           >
             <RefreshCw
               className={`w-4 h-4 ${generating ? "animate-spin" : ""}`}
+              aria-hidden="true"
             />
             Regenerate
           </button>
           <button className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[13px] font-medium transition-colors">
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
             Export EFD Report
           </button>
         </div>

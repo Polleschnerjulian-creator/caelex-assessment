@@ -50,6 +50,33 @@ export function OrganizationSwitcher({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Escape key to close and focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = dropdownRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   async function fetchOrganizations() {
     try {
       const response = await fetch("/api/organizations");
@@ -122,7 +149,7 @@ export function OrganizationSwitcher({
         href="/dashboard/organization/new"
         className="mx-3 flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white/70 hover:text-white"
       >
-        <Plus size={16} />
+        <Plus size={16} aria-hidden="true" />
         <span className="text-sm">Create Organization</span>
       </Link>
     );
@@ -132,6 +159,14 @@ export function OrganizationSwitcher({
     <div className="px-3 relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls="org-switcher-dropdown"
+        aria-label={
+          selectedOrg
+            ? `Organization: ${selectedOrg.name}`
+            : "Select organization"
+        }
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
       >
         {/* Org Avatar */}
@@ -166,18 +201,28 @@ export function OrganizationSwitcher({
         {/* Chevron */}
         <ChevronDown
           size={16}
+          aria-hidden="true"
           className={`text-white/50 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute left-3 right-3 top-full mt-1 bg-slate-800 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div
+          id="org-switcher-dropdown"
+          className="absolute left-3 right-3 top-full mt-1 bg-slate-800 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
+        >
           {/* Organization List */}
-          <div className="max-h-64 overflow-y-auto py-1">
+          <div
+            className="max-h-64 overflow-y-auto py-1"
+            role="listbox"
+            aria-label="Organizations"
+          >
             {organizations.map((org) => (
               <button
                 key={org.id}
+                role="option"
+                aria-selected={selectedOrg?.id === org.id}
                 onClick={() => handleSelectOrg(org)}
                 className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 transition-colors"
               >
@@ -214,7 +259,11 @@ export function OrganizationSwitcher({
 
                 {/* Check if selected */}
                 {selectedOrg?.id === org.id && (
-                  <Check size={16} className="text-emerald-400" />
+                  <Check
+                    size={16}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />
                 )}
               </button>
             ))}
@@ -230,7 +279,7 @@ export function OrganizationSwitcher({
               className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
-              <Settings size={14} />
+              <Settings size={14} aria-hidden="true" />
               <span>Organization Settings</span>
             </Link>
             <Link
@@ -238,7 +287,7 @@ export function OrganizationSwitcher({
               className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
               onClick={() => setIsOpen(false)}
             >
-              <Plus size={14} />
+              <Plus size={14} aria-hidden="true" />
               <span>Create Organization</span>
             </Link>
           </div>

@@ -80,10 +80,16 @@ const stats = [
 
 export default function Stats() {
   return (
-    <section className="bg-black py-[120px] lg:py-[200px]">
+    <section
+      className="bg-black py-[120px] lg:py-[200px]"
+      aria-label="Key statistics"
+    >
       <div className="max-w-[900px] mx-auto px-6 md:px-8 text-center">
         {/* Top divider */}
-        <div className="w-[200px] h-px bg-white/[0.04] mx-auto mb-20" />
+        <div
+          className="w-[200px] h-px bg-white/[0.04] mx-auto mb-20"
+          aria-hidden="true"
+        />
 
         {/* Stats grid */}
         <ScrollReveal>
@@ -95,7 +101,10 @@ export default function Stats() {
               >
                 {/* Vertical divider between stats on desktop */}
                 {index > 0 && (
-                  <div className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 h-8 w-px bg-white/[0.06]" />
+                  <div
+                    className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 h-8 w-px bg-white/[0.06]"
+                    aria-hidden="true"
+                  />
                 )}
                 <AnimatedStat
                   value={stat.value}
@@ -108,7 +117,10 @@ export default function Stats() {
         </ScrollReveal>
 
         {/* Bottom divider */}
-        <div className="w-[200px] h-px bg-white/[0.04] mx-auto mt-20" />
+        <div
+          className="w-[200px] h-px bg-white/[0.04] mx-auto mt-20"
+          aria-hidden="true"
+        />
       </div>
     </section>
   );

@@ -48,6 +48,19 @@ export default function NCAInfoCard({
   return (
     <div
       onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-pressed={onClick ? selected : undefined}
       className={`
         p-4 rounded-xl border transition-all duration-150
         ${onClick ? "cursor-pointer" : ""}
@@ -83,26 +96,29 @@ export default function NCAInfoCard({
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
               >
-                <Globe size={10} />
+                <Globe size={10} aria-hidden="true" />
                 Portal
               </a>
             )}
             {email && (
               <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                <Mail size={10} />
+                <Mail size={10} aria-hidden="true" />
                 {email}
               </span>
             )}
             {!portalUrl && !email && (
               <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                <Building2 size={10} />
+                <Building2 size={10} aria-hidden="true" />
                 Contact via official channels
               </span>
             )}
           </div>
         </div>
         {selected && (
-          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+          <div
+            className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0"
+            aria-hidden="true"
+          >
             <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3 text-white">
               <path
                 d="M13.333 4L6 11.333 2.667 8"

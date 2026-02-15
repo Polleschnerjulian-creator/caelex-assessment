@@ -72,7 +72,10 @@ export default function NIS2IncidentTimeline({
       {/* Timeline */}
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-6 top-8 bottom-8 w-px bg-white/[0.1]" />
+        <div
+          className="absolute left-6 top-8 bottom-8 w-px bg-white/[0.1]"
+          aria-hidden="true"
+        />
 
         <div className="space-y-4">
           {steps.map((step, index) => {
@@ -88,7 +91,7 @@ export default function NIS2IncidentTimeline({
                 className="relative flex items-start gap-4 pl-0"
               >
                 {/* Dot on timeline */}
-                <div className="relative z-10 flex-shrink-0">
+                <div className="relative z-10 flex-shrink-0" aria-hidden="true">
                   <div
                     className={`w-12 h-12 rounded-xl ${step.bgColor} border ${step.borderColor} flex items-center justify-center`}
                   >

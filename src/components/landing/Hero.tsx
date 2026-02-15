@@ -21,9 +21,12 @@ const MODULES = [
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden">
+    <section
+      className="relative min-h-screen bg-black overflow-hidden"
+      aria-label="Hero"
+    >
       {/* Background Image */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <Image
           src="/images/hero-planet.png"
           alt=""
@@ -35,11 +38,20 @@ export default function Hero() {
       </div>
 
       {/* Dark overlay - lighter */}
-      <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+      <div
+        className="absolute inset-0 bg-black/25 pointer-events-none"
+        aria-hidden="true"
+      />
 
       {/* Gradient overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20 pointer-events-none" />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20 pointer-events-none"
+        aria-hidden="true"
+      />
 
       {/* Main content container - aligned with nav (px-6 md:px-12) */}
       <div className="relative z-10 min-h-screen flex flex-col justify-end pb-12 md:pb-16">
@@ -97,19 +109,27 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="pt-8 border-t border-white/[0.12]"
           >
-            <div className="flex flex-wrap gap-x-3 gap-y-2 md:gap-x-4">
+            <ul
+              className="flex flex-wrap gap-x-3 gap-y-2 md:gap-x-4"
+              aria-label="Compliance modules covered"
+            >
               {MODULES.map((module, i) => (
-                <span
+                <li
                   key={module}
-                  className="text-[13px] md:text-[14px] text-white/60 whitespace-nowrap font-medium"
+                  className="text-[13px] md:text-[14px] text-white/60 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
-                    <span className="ml-3 md:ml-4 text-white/30">·</span>
+                    <span
+                      className="ml-3 md:ml-4 text-white/30"
+                      aria-hidden="true"
+                    >
+                      ·
+                    </span>
                   )}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </motion.div>
         </div>
       </div>
@@ -117,6 +137,7 @@ export default function Hero() {
       {/* Subtle vignette effect */}
       <div
         className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
         style={{
           background:
             "radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.25) 100%)",

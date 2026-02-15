@@ -58,13 +58,18 @@ export default function Lifecycle() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-20 md:py-28 bg-black">
+    <section
+      ref={ref}
+      className="relative py-20 md:py-28 bg-black"
+      aria-label="Compliance lifecycle"
+    >
       {/* Section number */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">06 / 12</span>
       </motion.div>
@@ -103,7 +108,11 @@ export default function Lifecycle() {
                     {/* Icon + tag row */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="p-2.5 rounded-lg bg-white/[0.04]">
-                        <Icon size={16} className="text-white/50" />
+                        <Icon
+                          size={16}
+                          className="text-white/50"
+                          aria-hidden="true"
+                        />
                       </div>
                       <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-1 rounded-full">
                         {step.tag}
@@ -112,7 +121,10 @@ export default function Lifecycle() {
 
                     {/* Step number + title */}
                     <div className="mb-3">
-                      <span className="font-mono text-[10px] text-white/20 block mb-1">
+                      <span
+                        className="font-mono text-[10px] text-white/20 block mb-1"
+                        aria-hidden="true"
+                      >
                         {step.number}
                       </span>
                       <h3 className="text-[16px] font-medium text-white tracking-[-0.01em]">
@@ -148,7 +160,10 @@ export default function Lifecycle() {
               >
                 <div className="flex gap-4">
                   {/* Timeline dot + line */}
-                  <div className="flex flex-col items-center pt-1">
+                  <div
+                    className="flex flex-col items-center pt-1"
+                    aria-hidden="true"
+                  >
                     <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
                       <Icon size={14} className="text-white/50" />
                     </div>

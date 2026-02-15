@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import { AlertCircle } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,19 +10,38 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, className = "", ...props }, ref) => {
+  ({ label, error, hint, className = "", id: externalId, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = externalId || generatedId;
+    const errorId = error ? `${inputId}-error` : undefined;
+    const hintId = hint && !error ? `${inputId}-hint` : undefined;
+    const describedBy =
+      [errorId, hintId].filter(Boolean).join(" ") || undefined;
+
     return (
       <div className="space-y-1.5">
         {label && (
-          <label className="block text-[13px] font-medium text-slate-700 dark:text-white/80">
+          <label
+            htmlFor={inputId}
+            className="block text-[13px] font-medium text-slate-700 dark:text-white/80"
+          >
             {label}
             {props.required && (
-              <span className="text-red-500 dark:text-red-400 ml-1">*</span>
+              <span
+                className="text-red-500 dark:text-red-400 ml-1"
+                aria-hidden="true"
+              >
+                *
+              </span>
             )}
           </label>
         )}
         <input
           ref={ref}
+          id={inputId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          aria-required={props.required}
           className={`
             w-full px-4 py-2.5
             bg-white dark:bg-white/[0.06]
@@ -43,13 +62,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {hint && !error && (
-          <p className="text-[12px] text-slate-600 dark:text-white/70">
+          <p
+            id={hintId}
+            className="text-[12px] text-slate-600 dark:text-white/70"
+          >
             {hint}
           </p>
         )}
         {error && (
-          <p className="text-[12px] text-red-600 dark:text-red-400 flex items-center gap-1.5">
-            <AlertCircle className="w-3.5 h-3.5" />
+          <p
+            id={errorId}
+            className="text-[12px] text-red-600 dark:text-red-400 flex items-center gap-1.5"
+            role="alert"
+          >
+            <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
             {error}
           </p>
         )}

@@ -139,6 +139,8 @@ export default function SupplierDataForm({
     <button
       type="button"
       onClick={() => toggleSection(section)}
+      aria-expanded={expandedSections[section]}
+      aria-controls={`section-${section}`}
       className="w-full flex items-center justify-between py-3 text-left"
     >
       <span className="text-white font-medium">
@@ -146,9 +148,9 @@ export default function SupplierDataForm({
         {required && <span className="text-red-400 ml-1">*</span>}
       </span>
       {expandedSections[section] ? (
-        <ChevronUp className="w-5 h-5 text-white/40" />
+        <ChevronUp className="w-5 h-5 text-white/40" aria-hidden="true" />
       ) : (
-        <ChevronDown className="w-5 h-5 text-white/40" />
+        <ChevronDown className="w-5 h-5 text-white/40" aria-hidden="true" />
       )}
     </button>
   );
@@ -165,7 +167,7 @@ export default function SupplierDataForm({
           />
         </div>
         {expandedSections.manufacturing && (
-          <div className="p-6">
+          <div className="p-6" id="section-manufacturing">
             <LCADataFields
               formData={formData}
               updateField={updateField}
@@ -185,7 +187,7 @@ export default function SupplierDataForm({
           />
         </div>
         {expandedSections.materials && (
-          <div className="p-6">
+          <div className="p-6" id="section-materials">
             <LCADataFields
               formData={formData}
               updateField={updateField}
@@ -201,7 +203,7 @@ export default function SupplierDataForm({
           <SectionHeader title="Transport & Logistics" section="transport" />
         </div>
         {expandedSections.transport && (
-          <div className="p-6">
+          <div className="p-6" id="section-transport">
             <LCADataFields
               formData={formData}
               updateField={updateField}
@@ -221,7 +223,7 @@ export default function SupplierDataForm({
           />
         </div>
         {expandedSections.component && (
-          <div className="p-6">
+          <div className="p-6" id="section-component">
             <ComponentDataFields
               componentType={componentType}
               formData={formData}
@@ -240,7 +242,7 @@ export default function SupplierDataForm({
           />
         </div>
         {expandedSections.certifications && (
-          <div className="p-6">
+          <div className="p-6" id="section-certifications">
             <LCADataFields
               formData={formData}
               updateField={updateField}
@@ -256,7 +258,7 @@ export default function SupplierDataForm({
           <SectionHeader title="Additional Information" section="additional" />
         </div>
         {expandedSections.additional && (
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4" id="section-additional">
             <div>
               <label className="block text-sm text-white/70 mb-2">
                 Additional Notes or Comments
@@ -290,8 +292,14 @@ export default function SupplierDataForm({
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <div
+          className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3"
+          role="alert"
+        >
+          <AlertCircle
+            className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <div>
             <p className="text-red-400 font-medium">Submission Error</p>
             <p className="text-red-400/80 text-sm mt-1">{error}</p>
@@ -307,7 +315,7 @@ export default function SupplierDataForm({
       >
         {submitting ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
             Submitting Data...
           </>
         ) : (

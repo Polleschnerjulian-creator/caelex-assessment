@@ -119,7 +119,10 @@ export default function JurisdictionCard({
       {/* Applicability warning */}
       {!isApplicable && (
         <div className="flex items-start gap-2.5 p-3 mb-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <AlertTriangle
+            className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <p className="text-sm text-amber-400/90 leading-relaxed">
             {applicabilityReason}
           </p>
@@ -136,7 +139,14 @@ export default function JurisdictionCard({
             {favorabilityScore}/100
           </span>
         </div>
-        <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+        <div
+          className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden"
+          role="progressbar"
+          aria-valuenow={favorabilityScore}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Favorability score: ${favorabilityScore} out of 100`}
+        >
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${favorabilityScore}%` }}
@@ -155,7 +165,7 @@ export default function JurisdictionCard({
         {/* Timeline */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            <Clock className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Timeline
             </span>
@@ -168,7 +178,10 @@ export default function JurisdictionCard({
         {/* Cost */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <FileText className="w-3.5 h-3.5 text-blue-400" />
+            <FileText
+              className="w-3.5 h-3.5 text-blue-400"
+              aria-hidden="true"
+            />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Estimated Cost
             </span>
@@ -181,7 +194,7 @@ export default function JurisdictionCard({
         {/* Insurance */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <Shield className="w-3.5 h-3.5 text-blue-400" />
+            <Shield className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Insurance
             </span>
@@ -203,7 +216,7 @@ export default function JurisdictionCard({
         {/* Debris */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <Orbit className="w-3.5 h-3.5 text-blue-400" />
+            <Orbit className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Debris Mitigation
             </span>
@@ -225,7 +238,10 @@ export default function JurisdictionCard({
         {/* Requirements */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+            <TrendingUp
+              className="w-3.5 h-3.5 text-blue-400"
+              aria-hidden="true"
+            />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Requirements
             </span>
@@ -242,7 +258,7 @@ export default function JurisdictionCard({
         {/* Indemnification */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
-            <Shield className="w-3.5 h-3.5 text-blue-400" />
+            <Shield className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
               Gov. Indemnification
             </span>
@@ -273,7 +289,7 @@ export default function JurisdictionCard({
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
             >
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-3 h-3" aria-hidden="true" />
               <span>Website</span>
             </a>
           )}
@@ -282,7 +298,7 @@ export default function JurisdictionCard({
               href={`mailto:${authority.contactEmail}`}
               className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
             >
-              <Mail className="w-3 h-3" />
+              <Mail className="w-3 h-3" aria-hidden="true" />
               <span>{authority.contactEmail}</span>
             </a>
           )}

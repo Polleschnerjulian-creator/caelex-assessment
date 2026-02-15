@@ -309,9 +309,16 @@ export default function UnifiedAssessmentWizard() {
   // Calculating state
   if (isCalculating) {
     return (
-      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+      <div
+        className="landing-page min-h-screen bg-black text-white flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <div className="text-center">
-          <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6" />
+          <div
+            className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6"
+            aria-hidden="true"
+          />
           <p className="text-[15px] text-white/70 mb-2">
             Generating your compliance profile...
           </p>
@@ -328,7 +335,9 @@ export default function UnifiedAssessmentWizard() {
     return (
       <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-[14px] mb-6">{calculationError}</p>
+          <p className="text-red-400 text-[14px] mb-6" role="alert">
+            {calculationError}
+          </p>
           <button
             onClick={handleRestart}
             className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
@@ -383,7 +392,7 @@ export default function UnifiedAssessmentWizard() {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
               >
-                <ArrowLeft size={14} />
+                <ArrowLeft size={14} aria-hidden="true" />
                 <span>Back</span>
               </motion.button>
             ) : (
@@ -397,7 +406,7 @@ export default function UnifiedAssessmentWizard() {
                   href="/assessment"
                   className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={14} aria-hidden="true" />
                   <span>All assessments</span>
                 </Link>
               </motion.div>
@@ -421,7 +430,14 @@ export default function UnifiedAssessmentWizard() {
           </div>
 
           {/* Overall progress bar */}
-          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+          <div
+            className="h-1 bg-white/[0.06] rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={state.currentStep}
+            aria-valuemin={0}
+            aria-valuemax={totalSteps}
+            aria-label={`Assessment progress: Step ${state.currentStep} of ${totalSteps}`}
+          >
             <motion.div
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
               initial={{ width: 0 }}
@@ -467,6 +483,8 @@ export default function UnifiedAssessmentWizard() {
               exit="exit"
               transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               className="w-full"
+              aria-live="polite"
+              aria-atomic="true"
             >
               {/* Question header */}
               <div className="mb-8 text-center max-w-2xl mx-auto">
@@ -494,11 +512,21 @@ export default function UnifiedAssessmentWizard() {
               {/* Text input */}
               {currentQuestion.type === "text" && (
                 <div className="max-w-xl mx-auto">
+                  <label
+                    htmlFor={`question-${currentQuestion.id}`}
+                    className="sr-only"
+                  >
+                    {currentQuestion.title}
+                  </label>
                   <input
                     type="text"
+                    id={`question-${currentQuestion.id}`}
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     placeholder="Enter your answer..."
+                    aria-required={
+                      currentQuestion.required ? "true" : undefined
+                    }
                     className="w-full px-5 py-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                     style={{
                       boxShadow:
@@ -513,7 +541,7 @@ export default function UnifiedAssessmentWizard() {
                       {currentQuestion.required && !textInput
                         ? "Skip"
                         : "Continue"}
-                      <ArrowRight size={16} />
+                      <ArrowRight size={16} aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -522,6 +550,8 @@ export default function UnifiedAssessmentWizard() {
               {/* Single select */}
               {currentQuestion.type === "single" && currentQuestion.options && (
                 <div
+                  role="radiogroup"
+                  aria-label={currentQuestion.title}
                   className={`grid gap-3 max-w-3xl mx-auto ${
                     currentQuestion.options.length > 6
                       ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
@@ -539,7 +569,15 @@ export default function UnifiedAssessmentWizard() {
                     return (
                       <motion.button
                         key={option.id}
+                        role="radio"
+                        aria-checked={false}
                         onClick={() => handleSelect(option.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleSelect(option.value);
+                          }
+                        }}
                         whileTap={{ scale: 0.98 }}
                         className="p-4 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
                         style={{
@@ -551,10 +589,13 @@ export default function UnifiedAssessmentWizard() {
                           {(flag || IconComponent) && (
                             <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                               {flag ? (
-                                <span className="text-xl">{flag}</span>
+                                <span className="text-xl" aria-hidden="true">
+                                  {flag}
+                                </span>
                               ) : IconComponent ? (
                                 <IconComponent
                                   size={18}
+                                  aria-hidden="true"
                                   className="text-white/70 group-hover:text-emerald-400 transition-colors"
                                 />
                               ) : null}
@@ -572,6 +613,7 @@ export default function UnifiedAssessmentWizard() {
                           </div>
                           <ArrowRight
                             size={16}
+                            aria-hidden="true"
                             className="text-white/20 group-hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5"
                           />
                         </div>
@@ -584,7 +626,11 @@ export default function UnifiedAssessmentWizard() {
               {/* Boolean select */}
               {currentQuestion.type === "boolean" &&
                 currentQuestion.options && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  <div
+                    role="radiogroup"
+                    aria-label={currentQuestion.title}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto"
+                  >
                     {currentQuestion.options.map((option) => {
                       const IconComponent = option.icon
                         ? getIcon(option.icon)
@@ -593,7 +639,15 @@ export default function UnifiedAssessmentWizard() {
                       return (
                         <motion.button
                           key={option.id}
+                          role="radio"
+                          aria-checked={false}
                           onClick={() => handleSelect(option.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleSelect(option.value);
+                            }
+                          }}
                           whileTap={{ scale: 0.98 }}
                           className="p-5 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
                           style={{
@@ -606,6 +660,7 @@ export default function UnifiedAssessmentWizard() {
                               <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                                 <IconComponent
                                   size={22}
+                                  aria-hidden="true"
                                   className="text-white/70 group-hover:text-emerald-400 transition-colors"
                                 />
                               </div>
@@ -634,6 +689,7 @@ export default function UnifiedAssessmentWizard() {
                   <div className="flex justify-center mb-6">
                     <div
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+                      aria-live="polite"
                       style={{
                         boxShadow:
                           "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -647,6 +703,8 @@ export default function UnifiedAssessmentWizard() {
                   </div>
 
                   <div
+                    role="group"
+                    aria-label={currentQuestion.title}
                     className={`grid gap-3 max-w-3xl mx-auto ${
                       currentQuestion.options.length > 6
                         ? "grid-cols-1 sm:grid-cols-2"
@@ -669,9 +727,19 @@ export default function UnifiedAssessmentWizard() {
                       return (
                         <motion.button
                           key={option.id}
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          aria-disabled={isDisabled}
+                          aria-label={`${option.label}${option.description ? `: ${option.description}` : ""}`}
                           onClick={() =>
                             !isDisabled && handleMultiToggle(option.value)
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              if (!isDisabled) handleMultiToggle(option.value);
+                            }
+                          }}
                           whileTap={!isDisabled ? { scale: 0.98 } : undefined}
                           className={`
                             p-4 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px]
@@ -699,10 +767,13 @@ export default function UnifiedAssessmentWizard() {
                                 }`}
                               >
                                 {flag ? (
-                                  <span className="text-xl">{flag}</span>
+                                  <span className="text-xl" aria-hidden="true">
+                                    {flag}
+                                  </span>
                                 ) : IconComponent ? (
                                   <IconComponent
                                     size={18}
+                                    aria-hidden="true"
                                     className={
                                       isSelected
                                         ? "text-emerald-400"
@@ -738,7 +809,11 @@ export default function UnifiedAssessmentWizard() {
                                   initial={{ scale: 0 }}
                                   animate={{ scale: 1 }}
                                 >
-                                  <Check size={12} className="text-white" />
+                                  <Check
+                                    size={12}
+                                    className="text-white"
+                                    aria-hidden="true"
+                                  />
                                 </motion.div>
                               )}
                             </div>
@@ -776,7 +851,7 @@ export default function UnifiedAssessmentWizard() {
                       `}
                     >
                       Continue
-                      <ArrowRight size={16} />
+                      <ArrowRight size={16} aria-hidden="true" />
                     </motion.button>
                   </div>
                 </>

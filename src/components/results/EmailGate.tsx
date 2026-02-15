@@ -75,12 +75,16 @@ export default function EmailGate({
               <div className="relative px-6 pt-6 pb-4">
                 <button
                   onClick={onClose}
+                  aria-label="Close dialog"
                   className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/[0.08]"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
 
-                <div className="w-12 h-12 rounded-xl bg-white/[0.08] flex items-center justify-center mb-4">
+                <div
+                  className="w-12 h-12 rounded-xl bg-white/[0.08] flex items-center justify-center mb-4"
+                  aria-hidden="true"
+                >
                   <FileDown className="w-6 h-6 text-white/80" />
                 </div>
 
@@ -104,7 +108,10 @@ export default function EmailGate({
                     Email <span className="text-white/70">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <Mail
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      aria-hidden="true"
+                    />
                     <input
                       type="email"
                       required
@@ -130,7 +137,10 @@ export default function EmailGate({
                     Company <span className="text-white/40">(optional)</span>
                   </label>
                   <div className="relative">
-                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <Building
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      aria-hidden="true"
+                    />
                     <input
                       type="text"
                       value={company}
@@ -147,7 +157,10 @@ export default function EmailGate({
                     Role <span className="text-white/40">(optional)</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <User
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      aria-hidden="true"
+                    />
                     <input
                       type="text"
                       value={role}
@@ -174,7 +187,13 @@ export default function EmailGate({
                           : "border-white/[0.25] bg-transparent"
                       }`}
                     >
-                      {subscribe && <Check size={12} className="text-black" />}
+                      {subscribe && (
+                        <Check
+                          size={12}
+                          className="text-black"
+                          aria-hidden="true"
+                        />
+                      )}
                     </div>
                   </div>
                   <span className="text-[13px] text-white/70 group-hover:text-white transition-colors">
@@ -190,12 +209,15 @@ export default function EmailGate({
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      <div
+                        className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"
+                        aria-hidden="true"
+                      />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <FileDown size={14} />
+                      <FileDown size={14} aria-hidden="true" />
                       Download Report
                     </>
                   )}

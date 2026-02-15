@@ -41,7 +41,10 @@ export default function SuccessConfirmation({
         <div className="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
           {/* Success Icon */}
           <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-8 h-8 text-green-400" />
+            <CheckCircle2
+              className="w-8 h-8 text-green-400"
+              aria-hidden="true"
+            />
           </div>
 
           {/* Title */}
@@ -100,7 +103,7 @@ export default function SuccessConfirmation({
               onClick={handleDownloadReceipt}
               className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4" aria-hidden="true" />
               Download Submission Receipt
             </button>
           </div>

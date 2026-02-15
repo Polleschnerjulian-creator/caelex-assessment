@@ -249,9 +249,10 @@ function SupervisionPageContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-live="polite">
         <div className="h-8 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded w-1/3 animate-pulse" />
         <div className="h-64 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
+        <span className="sr-only">Loading supervision data...</span>
       </div>
     );
   }
@@ -278,7 +279,11 @@ function SupervisionPageContent() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <Building2 size={18} className="text-emerald-400" />
+                  <Building2
+                    size={18}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -296,7 +301,11 @@ function SupervisionPageContent() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-500/10">
-                  <AlertTriangle size={18} className="text-red-400" />
+                  <AlertTriangle
+                    size={18}
+                    className="text-red-400"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -314,7 +323,11 @@ function SupervisionPageContent() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10">
-                  <FileText size={18} className="text-amber-400" />
+                  <FileText
+                    size={18}
+                    className="text-amber-400"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -332,7 +345,11 @@ function SupervisionPageContent() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <Calendar size={18} className="text-emerald-400" />
+                  <Calendar
+                    size={18}
+                    className="text-emerald-400"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -349,10 +366,18 @@ function SupervisionPageContent() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
+      <div
+        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        role="tablist"
+        aria-label="Supervision steps"
+      >
         {steps.map((step, index) => (
           <button
             key={step.id}
+            role="tab"
+            aria-selected={activeStep === step.id}
+            aria-controls={`tabpanel-${step.id}`}
+            id={`tab-${step.id}`}
             onClick={() => setActiveStep(step.id)}
             className={`
               flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg
@@ -371,13 +396,13 @@ function SupervisionPageContent() {
             `}
             >
               {config && index < steps.findIndex((s) => s.id === activeStep) ? (
-                <Check size={12} />
+                <Check size={12} aria-hidden="true" />
               ) : (
                 index + 1
               )}
             </span>
             <span className="hidden md:inline">{step.label}</span>
-            {step.icon}
+            <span aria-hidden="true">{step.icon}</span>
           </button>
         ))}
       </div>
@@ -494,7 +519,8 @@ function SupervisionPageContent() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-emerald-400 text-sm mt-3 hover:underline"
                       >
-                        Visit Website <ExternalLink size={12} />
+                        Visit Website{" "}
+                        <ExternalLink size={12} aria-hidden="true" />
                       </a>
                     </div>
                   )}
@@ -729,7 +755,12 @@ function SupervisionPageContent() {
                 {/* Incident Form Modal */}
                 {showIncidentForm && (
                   <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div
+                      role="dialog"
+                      aria-label="Log new incident"
+                      aria-modal="true"
+                      className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                    >
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                         Log New Incident
                       </h3>
@@ -883,6 +914,7 @@ function SupervisionPageContent() {
                     <Shield
                       size={48}
                       className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                      aria-hidden="true"
                     />
                     <p className="text-slate-500 dark:text-white/60">
                       No incidents logged
@@ -938,7 +970,8 @@ function SupervisionPageContent() {
                         {incident.reportedToNCA && (
                           <div className="mt-2 pt-2 border-t border-slate-200 dark:border-white/5">
                             <span className="text-xs text-emerald-400 flex items-center gap-1">
-                              <Check size={12} /> Reported to NCA
+                              <Check size={12} aria-hidden="true" /> Reported to
+                              NCA
                             </span>
                           </div>
                         )}
@@ -978,6 +1011,7 @@ function SupervisionPageContent() {
                     <Calendar
                       size={48}
                       className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                      aria-hidden="true"
                     />
                     <p className="text-slate-500 dark:text-white/60">
                       No upcoming events

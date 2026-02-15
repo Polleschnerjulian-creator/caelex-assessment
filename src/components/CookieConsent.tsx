@@ -83,7 +83,9 @@ function Toggle({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-medium text-white/90">{label}</span>
-          {disabled && <Lock size={12} className="text-white/30" />}
+          {disabled && (
+            <Lock size={12} className="text-white/30" aria-hidden="true" />
+          )}
         </div>
         <p className="text-[12px] text-white/50 mt-0.5 leading-relaxed">
           {description}
@@ -181,6 +183,7 @@ export default function CookieConsent() {
     <>
       {/* Full-screen backdrop - blocks interaction */}
       <div
+        aria-hidden="true"
         className={`fixed inset-0 z-[9998] transition-opacity duration-500 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
@@ -193,6 +196,9 @@ export default function CookieConsent() {
 
       {/* Cookie Banner */}
       <div
+        role="dialog"
+        aria-label="Privacy settings"
+        aria-modal="true"
         className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[720px] transition-all duration-500 ease-out ${
           isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}
@@ -249,6 +255,7 @@ export default function CookieConsent() {
                     size={20}
                     className="text-[#00796B]"
                     strokeWidth={1.5}
+                    aria-hidden="true"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -272,13 +279,15 @@ export default function CookieConsent() {
               <div className="flex items-center gap-2.5 flex-shrink-0 ml-0 md:ml-0">
                 <button
                   onClick={() => setShowDetails(!showDetails)}
+                  aria-expanded={showDetails}
+                  aria-controls="cookie-details"
                   className="flex items-center gap-1.5 py-2.5 px-4 text-white/50 text-[13px] font-medium hover:text-white/70 transition-all rounded-lg hover:bg-white/[0.04]"
                 >
                   Customize
                   {showDetails ? (
-                    <ChevronUp size={14} />
+                    <ChevronUp size={14} aria-hidden="true" />
                   ) : (
-                    <ChevronDown size={14} />
+                    <ChevronDown size={14} aria-hidden="true" />
                   )}
                 </button>
                 <button
@@ -307,6 +316,7 @@ export default function CookieConsent() {
 
             {/* Expandable details */}
             <div
+              id="cookie-details"
               className={`overflow-hidden transition-all duration-300 ease-out ${
                 showDetails ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
               }`}

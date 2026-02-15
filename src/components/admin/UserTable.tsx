@@ -125,7 +125,10 @@ export default function UserTable({ users, onRefresh }: Props) {
 
   if (users.length === 0) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
+      <div
+        className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
+        role="status"
+      >
         <p className="text-[14px] text-slate-500 dark:text-white/50">
           No users found matching your filters.
         </p>
@@ -136,25 +139,43 @@ export default function UserTable({ users, onRefresh }: Props) {
   return (
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full" aria-label="Users">
           <thead>
             <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 User
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Organization
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Plan
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Role
               </th>
-              <th className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Status
               </th>
-              <th className="text-right px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+              <th
+                scope="col"
+                className="text-right px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+              >
                 Actions
               </th>
             </tr>
@@ -210,6 +231,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                     {orgId && orgPlan ? (
                       <div className="flex items-center gap-1.5">
                         <select
+                          aria-label={`Plan for ${orgName}`}
                           value={orgPlan}
                           onChange={(e) => updateOrgPlan(orgId, e.target.value)}
                           disabled={loadingId === orgId}
@@ -234,6 +256,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                   {/* Role */}
                   <td className="px-4 py-3.5">
                     <select
+                      aria-label={`Role for ${user.name || user.email}`}
                       value={user.role}
                       onChange={(e) => updateUserRole(user.id, e.target.value)}
                       disabled={loadingId === user.id}
@@ -249,12 +272,12 @@ export default function UserTable({ users, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     {user.isActive ? (
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-[11px] font-medium">
-                        <User size={11} />
+                        <User size={11} aria-hidden="true" />
                         Active
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/40 rounded-full text-[11px] font-medium">
-                        <UserX size={11} />
+                        <UserX size={11} aria-hidden="true" />
                         Inactive
                       </span>
                     )}

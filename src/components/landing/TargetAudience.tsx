@@ -76,7 +76,11 @@ export default function TargetAudience() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-24 md:py-32 bg-black">
+    <section
+      ref={ref}
+      className="relative py-24 md:py-32 bg-black"
+      aria-label="Target audience - operator types"
+    >
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
@@ -112,7 +116,11 @@ export default function TargetAudience() {
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <Icon size={18} className="text-emerald-400" />
+                    <Icon
+                      size={18}
+                      className="text-emerald-400"
+                      aria-hidden="true"
+                    />
                   </div>
                   <span className="font-mono text-[11px] text-emerald-400/70 bg-emerald-500/10 px-2 py-0.5 rounded">
                     {audience.code}

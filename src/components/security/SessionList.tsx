@@ -207,8 +207,9 @@ export function SessionList() {
             onClick={fetchSessions}
             className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Refresh"
+            aria-label="Refresh sessions"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={16} aria-hidden="true" />
           </button>
           {sessions.length > 1 && (
             <button
@@ -228,7 +229,10 @@ export function SessionList() {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+        <div
+          role="alert"
+          className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400"
+        >
           {error}
         </div>
       )}

@@ -203,9 +203,16 @@ export default function AssessmentWizard() {
   // Calculating state (server API call in progress)
   if (isCalculating) {
     return (
-      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+      <div
+        className="landing-page min-h-screen bg-black text-white flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <div className="text-center">
-          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <div
+            className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"
+            aria-hidden="true"
+          />
           <p className="text-[13px] text-white/60">
             Calculating your compliance profile...
           </p>
@@ -219,7 +226,9 @@ export default function AssessmentWizard() {
     return (
       <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-[14px] mb-6">{calculationError}</p>
+          <p className="text-red-400 text-[14px] mb-6" role="alert">
+            {calculationError}
+          </p>
           <button
             onClick={handleRestart}
             className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
@@ -285,7 +294,7 @@ export default function AssessmentWizard() {
                 onClick={handleBack}
                 className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
               >
-                <ArrowLeft size={14} />
+                <ArrowLeft size={14} aria-hidden="true" />
                 <span>Back</span>
               </motion.button>
             ) : (
@@ -299,7 +308,7 @@ export default function AssessmentWizard() {
                   href="/"
                   className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
                 >
-                  <Home size={14} />
+                  <Home size={14} aria-hidden="true" />
                   <span>Home</span>
                 </Link>
               </motion.div>
@@ -362,7 +371,11 @@ export default function AssessmentWizard() {
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <Check size={14} className="text-emerald-400" />
+                      <Check
+                        size={14}
+                        className="text-emerald-400"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div>
                       <p className="text-[14px] text-emerald-400 font-medium">

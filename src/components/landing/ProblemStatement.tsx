@@ -11,6 +11,7 @@ export default function ProblemStatement() {
     <section
       ref={ref}
       className="relative min-h-[70vh] flex items-center justify-center px-6 md:px-12 py-32 bg-black"
+      aria-label="Problem statement"
     >
       {/* Section number */}
       <motion.div
@@ -18,13 +19,14 @@ export default function ProblemStatement() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">02 / 12</span>
       </motion.div>
 
       <div className="max-w-[1000px] mx-auto">
         {/* Large statement */}
-        <motion.p
+        <motion.h2
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, delay: 0.2 }}
@@ -37,7 +39,7 @@ export default function ProblemStatement() {
             mandates to environmental footprint declarations — understanding
             what applies to your mission is no longer optional.
           </span>
-        </motion.p>
+        </motion.h2>
 
         {/* Subtle divider */}
         <motion.div

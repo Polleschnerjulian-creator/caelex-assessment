@@ -25,9 +25,10 @@ export default function AstraFAB() {
                  transition-all duration-200 hover:scale-105
                  focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
                  focus:ring-offset-[#0A0A0B]"
-      aria-label="Open ASTRA AI Assistant"
+      aria-label="Open ASTRA AI assistant"
+      aria-expanded={false}
     >
-      <Sparkles className="w-5 h-5" />
+      <Sparkles className="w-5 h-5" aria-hidden="true" />
       <span className="hidden sm:inline">Ask ASTRA</span>
     </button>
   );

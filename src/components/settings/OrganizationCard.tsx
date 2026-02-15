@@ -292,10 +292,14 @@ export function OrganizationCard() {
 
         {/* Organization Name */}
         <div>
-          <label className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5">
+          <label
+            htmlFor="org-create-name"
+            className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5"
+          >
             Organization Name
           </label>
           <input
+            id="org-create-name"
             type="text"
             value={orgName}
             onChange={(e) => {
@@ -313,7 +317,10 @@ export function OrganizationCard() {
 
         {/* URL Slug */}
         <div>
-          <label className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5">
+          <label
+            htmlFor="org-create-slug"
+            className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5"
+          >
             URL Slug{" "}
             <span className="font-normal text-slate-400 dark:text-white/30">
               (optional)
@@ -324,6 +331,7 @@ export function OrganizationCard() {
               /org/
             </span>
             <input
+              id="org-create-slug"
               type="text"
               value={orgSlug}
               onChange={(e) => {
@@ -344,8 +352,14 @@ export function OrganizationCard() {
 
         {/* Error */}
         {createError && (
-          <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+          <div
+            role="alert"
+            className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg"
+          >
+            <AlertTriangle
+              className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <p className="text-[13px] text-red-700 dark:text-red-400">
               {createError}
             </p>
@@ -394,10 +408,14 @@ export function OrganizationCard() {
           <>
             {/* Token Input */}
             <div>
-              <label className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5">
+              <label
+                htmlFor="org-invite-token"
+                className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5"
+              >
                 Invitation Token or Link
               </label>
               <input
+                id="org-invite-token"
                 type="text"
                 value={inviteToken}
                 onChange={(e) => {
@@ -415,8 +433,14 @@ export function OrganizationCard() {
 
             {/* Error */}
             {joinError && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div
+                role="alert"
+                className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg"
+              >
+                <AlertTriangle
+                  className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
                 <p className="text-[13px] text-red-700 dark:text-red-400">
                   {joinError}
                 </p>
@@ -494,8 +518,14 @@ export function OrganizationCard() {
 
             {/* Error */}
             {joinError && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div
+                role="alert"
+                className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg"
+              >
+                <AlertTriangle
+                  className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
                 <p className="text-[13px] text-red-700 dark:text-red-400">
                   {joinError}
                 </p>
@@ -625,7 +655,10 @@ export function OrganizationCard() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
-          <Building2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <Building2
+            className="w-5 h-5 text-purple-600 dark:text-purple-400"
+            aria-hidden="true"
+          />
         </div>
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">

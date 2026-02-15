@@ -281,9 +281,10 @@ function DocumentsPageContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-live="polite">
         <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
         <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
+        <span className="sr-only">Loading document vault...</span>
       </div>
     );
   }
@@ -400,10 +401,17 @@ function DocumentsPageContent() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
+      <div
+        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        role="tablist"
+        aria-label="Document views"
+      >
         {steps.map((step) => (
           <button
             key={step.id}
+            role="tab"
+            aria-selected={activeStep === step.id}
+            aria-controls={`tabpanel-${step.id}`}
             onClick={() => setActiveStep(step.id)}
             className={`
               flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg
@@ -415,7 +423,7 @@ function DocumentsPageContent() {
               }
             `}
           >
-            {step.icon}
+            <span aria-hidden="true">{step.icon}</span>
             <span className="hidden md:inline">{step.label}</span>
           </button>
         ))}
@@ -439,8 +447,13 @@ function DocumentsPageContent() {
                   <Search
                     size={16}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40"
+                    aria-hidden="true"
                   />
+                  <label htmlFor="doc-search" className="sr-only">
+                    Search documents
+                  </label>
                   <input
+                    id="doc-search"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -448,7 +461,11 @@ function DocumentsPageContent() {
                     className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
+                <label htmlFor="doc-category-filter" className="sr-only">
+                  Filter by category
+                </label>
                 <select
+                  id="doc-category-filter"
                   value={selectedCategory || ""}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
                   className="bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
@@ -540,21 +557,23 @@ function DocumentsPageContent() {
                               <button
                                 onClick={() => setViewingDocument(doc)}
                                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
-                                title="View document"
+                                aria-label={`View ${doc.name}`}
                               >
                                 <Eye
                                   size={14}
                                   className="text-slate-400 dark:text-white/40"
+                                  aria-hidden="true"
                                 />
                               </button>
                               <button
                                 onClick={() => handleDownload(doc)}
                                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded transition-colors"
-                                title="Download document"
+                                aria-label={`Download ${doc.name}`}
                               >
                                 <Download
                                   size={14}
                                   className="text-slate-400 dark:text-white/40"
+                                  aria-hidden="true"
                                 />
                               </button>
                             </div>
@@ -1017,16 +1036,26 @@ function DocumentsPageContent() {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div
+            role="dialog"
+            aria-label="Upload document"
+            aria-modal="true"
+            className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Upload Document
               </h3>
               <button
                 onClick={() => setShowUploadModal(false)}
+                aria-label="Close dialog"
                 className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg transition-colors"
               >
-                <X size={16} className="text-slate-500 dark:text-white/60" />
+                <X
+                  size={16}
+                  className="text-slate-500 dark:text-white/60"
+                  aria-hidden="true"
+                />
               </button>
             </div>
 

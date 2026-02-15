@@ -254,7 +254,10 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+        <div
+          role="alert"
+          className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400"
+        >
           {error}
         </div>
       )}
@@ -425,8 +428,9 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                       <button
                         onClick={() => handleRemoveDomain(domain)}
                         className="p-1 text-white/30 hover:text-red-400 transition-colors"
+                        aria-label={`Remove domain ${domain}`}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={14} aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -435,7 +439,11 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
 
               {/* Add Domain */}
               <div className="flex gap-2">
+                <label htmlFor="sso-new-domain" className="sr-only">
+                  Add domain
+                </label>
                 <input
+                  id="sso-new-domain"
                   type="text"
                   value={newDomain}
                   onChange={(e) => setNewDomain(e.target.value)}
@@ -445,9 +453,10 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                 <button
                   onClick={handleAddDomain}
                   disabled={!newDomain.trim()}
+                  aria-label="Add domain"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white rounded-lg text-sm transition-colors"
                 >
-                  <Plus size={16} />
+                  <Plus size={16} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -464,10 +473,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
           <div className="p-6 space-y-6">
             {/* Provider Selection */}
             <div>
-              <label className="block text-sm text-white/70 mb-2">
+              <label
+                htmlFor="sso-provider"
+                className="block text-sm text-white/70 mb-2"
+              >
                 SSO Provider
               </label>
               <select
+                id="sso-provider"
                 value={formData.provider}
                 onChange={(e) =>
                   setFormData({ ...formData, provider: e.target.value })
@@ -490,10 +503,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
             {isSAML && (
               <>
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">
+                  <label
+                    htmlFor="sso-entity-id"
+                    className="block text-sm text-white/70 mb-2"
+                  >
                     Entity ID (IdP Issuer)
                   </label>
                   <input
+                    id="sso-entity-id"
                     type="text"
                     value={formData.entityId}
                     onChange={(e) =>
@@ -504,10 +521,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">
+                  <label
+                    htmlFor="sso-url"
+                    className="block text-sm text-white/70 mb-2"
+                  >
                     SSO URL (IdP Single Sign-On URL)
                   </label>
                   <input
+                    id="sso-url"
                     type="url"
                     value={formData.ssoUrl}
                     onChange={(e) =>
@@ -518,10 +539,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">
+                  <label
+                    htmlFor="sso-certificate"
+                    className="block text-sm text-white/70 mb-2"
+                  >
                     X.509 Certificate
                   </label>
                   <textarea
+                    id="sso-certificate"
                     value={formData.certificate}
                     onChange={(e) =>
                       setFormData({ ...formData, certificate: e.target.value })
@@ -538,10 +563,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
             {isOIDC && (
               <>
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">
+                  <label
+                    htmlFor="sso-client-id"
+                    className="block text-sm text-white/70 mb-2"
+                  >
                     Client ID
                   </label>
                   <input
+                    id="sso-client-id"
                     type="text"
                     value={formData.clientId}
                     onChange={(e) =>
@@ -552,10 +581,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">
+                  <label
+                    htmlFor="sso-client-secret"
+                    className="block text-sm text-white/70 mb-2"
+                  >
                     Client Secret
                   </label>
                   <input
+                    id="sso-client-secret"
                     type="password"
                     value={formData.clientSecret}
                     onChange={(e) =>
@@ -567,10 +600,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                 </div>
                 {formData.provider !== "GOOGLE_WORKSPACE" && (
                   <div>
-                    <label className="block text-sm text-white/70 mb-2">
+                    <label
+                      htmlFor="sso-issuer-url"
+                      className="block text-sm text-white/70 mb-2"
+                    >
                       Issuer URL
                     </label>
                     <input
+                      id="sso-issuer-url"
                       type="url"
                       value={formData.issuerUrl}
                       onChange={(e) =>
@@ -607,10 +644,14 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
               </label>
 
               <div>
-                <label className="block text-sm text-white/70 mb-2">
+                <label
+                  htmlFor="sso-default-role"
+                  className="block text-sm text-white/70 mb-2"
+                >
                   Default Role for New Users
                 </label>
                 <select
+                  id="sso-default-role"
                   value={formData.defaultRole}
                   onChange={(e) =>
                     setFormData({ ...formData, defaultRole: e.target.value })

@@ -45,7 +45,7 @@ export default function SubscriptionCard({
     if (isPastDue) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-full text-[11px] font-medium">
-          <AlertTriangle className="w-3.5 h-3.5" />
+          <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
           Payment Failed
         </span>
       );
@@ -53,7 +53,7 @@ export default function SubscriptionCard({
     if (isCanceled) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full text-[11px] font-medium">
-          <AlertTriangle className="w-3.5 h-3.5" />
+          <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
           Canceling
         </span>
       );
@@ -61,7 +61,7 @@ export default function SubscriptionCard({
     if (isTrial) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-[11px] font-medium">
-          <Calendar className="w-3.5 h-3.5" />
+          <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
           Trial
         </span>
       );
@@ -69,7 +69,7 @@ export default function SubscriptionCard({
     if (isActive) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-600 dark:text-green-400 rounded-full text-[11px] font-medium">
-          <CheckCircle className="w-3.5 h-3.5" />
+          <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
           Active
         </span>
       );

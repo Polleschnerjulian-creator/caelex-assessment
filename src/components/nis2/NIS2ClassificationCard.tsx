@@ -66,6 +66,7 @@ export default function NIS2ClassificationCard({
         <div className="flex items-center gap-3">
           <div
             className={`w-12 h-12 rounded-xl ${config.badgeBg} flex items-center justify-center`}
+            aria-hidden="true"
           >
             <IconComponent className={`w-6 h-6 ${config.color}`} />
           </div>
@@ -89,7 +90,10 @@ export default function NIS2ClassificationCard({
       {/* Reason */}
       <div className="bg-white/[0.04] rounded-xl p-4 mb-4">
         <div className="flex items-start gap-2">
-          <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+          <Info
+            className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <p className="text-sm text-white/70 leading-relaxed">{reason}</p>
         </div>
       </div>

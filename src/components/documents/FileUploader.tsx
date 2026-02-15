@@ -278,6 +278,7 @@ export default function FileUploader({
             onChange={handleInputChange}
             accept={ALLOWED_TYPES.join(",")}
             className="hidden"
+            aria-label="Choose file to upload"
           />
 
           <div className="flex flex-col items-center gap-3">
@@ -358,6 +359,11 @@ export default function FileUploader({
                 status === "success" ? "bg-emerald-500" : "bg-blue-500"
               }`}
               style={{ width: `${progress}%` }}
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Upload progress"
             />
           </div>
         </div>
@@ -365,8 +371,14 @@ export default function FileUploader({
 
       {/* Error */}
       {(error || status === "error") && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+        <div
+          role="alert"
+          className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20"
+        >
+          <AlertCircle
+            className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <div>
             <p className="text-sm font-medium text-red-800 dark:text-red-300">
               Upload failed

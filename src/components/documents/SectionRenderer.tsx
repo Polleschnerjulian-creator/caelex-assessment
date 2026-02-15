@@ -56,12 +56,13 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
     case "table":
       return (
         <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 mb-3">
-          <table className="w-full text-xs">
+          <table className="w-full text-xs" aria-label="Data table">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/[0.03]">
                 {(Array.isArray(block.headers) ? block.headers : []).map(
                   (h, i) => (
                     <th
+                      scope="col"
                       key={i}
                       className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
                     >

@@ -25,8 +25,16 @@ export default function GlobeWidget() {
         {/* Globe - 2/3 width */}
         <div className="lg:col-span-2 relative h-[280px] bg-[#050508]">
           {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-white/20 animate-spin" />
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2
+                className="w-6 h-6 text-white/20 animate-spin"
+                aria-hidden="true"
+              />
+              <span className="sr-only">Loading satellite data...</span>
             </div>
           ) : (
             <GlobeScene
@@ -61,7 +69,10 @@ export default function GlobeWidget() {
         {/* Fleet Status - 1/3 width */}
         <div className="p-5 border-t lg:border-t-0 lg:border-l border-white/10">
           <div className="flex items-center gap-2 mb-4">
-            <Satellite className="w-4 h-4 text-emerald-400" />
+            <Satellite
+              className="w-4 h-4 text-emerald-400"
+              aria-hidden="true"
+            />
             <h3 className="text-[12px] font-mono uppercase tracking-wider text-white/50">
               {t("missionControl.fleetStatus")}
             </h3>
@@ -113,7 +124,10 @@ export default function GlobeWidget() {
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[12px] text-white/70 hover:text-white transition-all group"
           >
             {t("missionControl.openMissionControl")}
-            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            <ChevronRight
+              className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
+              aria-hidden="true"
+            />
           </Link>
         </div>
       </div>

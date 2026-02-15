@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,6 +36,8 @@ export default function OnboardingOverlay() {
   const [importSuccess, setImportSuccess] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   // Determine visibility on mount
   useEffect(() => {
@@ -63,6 +65,59 @@ export default function OnboardingOverlay() {
       }
     }
   }, [session, sessionStatus, organization, orgLoading]);
+
+  // Focus trap and Escape key handling
+  useEffect(() => {
+    if (!visible || closing) return;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement;
+
+    // Focus the first focusable element in the dialog
+    const focusFirstElement = () => {
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable?.length) {
+        focusable[0].focus();
+      }
+    };
+    // Delay to allow animation to render
+    const timer = setTimeout(focusFirstElement, 100);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setClosing(true);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(STORAGE_KEY, "true");
+        }
+        setTimeout(() => {
+          setVisible(false);
+          setClosing(false);
+        }, 400);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [visible, closing]);
 
   const handleComplete = useCallback(() => {
     setClosing(true);
@@ -156,10 +211,17 @@ export default function OnboardingOverlay() {
           className="fixed inset-0 z-[200] flex items-center justify-center p-4"
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            aria-hidden="true"
+          />
 
           {/* Card */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="onboarding-title"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -203,11 +265,17 @@ export default function OnboardingOverlay() {
                     className="text-center"
                   >
                     {/* Icon */}
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
+                    <div
+                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      aria-hidden="true"
+                    >
                       <CaelexIcon size={32} className="text-emerald-500" />
                     </div>
 
-                    <h2 className="text-[22px] font-semibold text-slate-900 dark:text-white mb-2">
+                    <h2
+                      id="onboarding-title"
+                      className="text-[22px] font-semibold text-slate-900 dark:text-white mb-2"
+                    >
                       Welcome to Caelex
                       {firstName !== "there" ? `, ${firstName}` : ""}
                     </h2>
@@ -245,7 +313,7 @@ export default function OnboardingOverlay() {
                       "
                     >
                       Get Started
-                      <ArrowRight size={16} />
+                      <ArrowRight size={16} aria-hidden="true" />
                     </button>
                   </motion.div>
                 )}
@@ -260,7 +328,10 @@ export default function OnboardingOverlay() {
                     transition={{ duration: 0.25 }}
                   >
                     {/* Icon */}
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
+                    <div
+                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      aria-hidden="true"
+                    >
                       <Download
                         size={28}
                         strokeWidth={1.5}
@@ -269,7 +340,10 @@ export default function OnboardingOverlay() {
                     </div>
 
                     <div className="text-center mb-6">
-                      <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2">
+                      <h2
+                        id="onboarding-title"
+                        className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2"
+                      >
                         Assessment Results Found
                       </h2>
                       <p className="text-[14px] text-slate-600 dark:text-white/60">
@@ -339,7 +413,7 @@ export default function OnboardingOverlay() {
                             hover:bg-slate-50 dark:hover:bg-white/[0.03]
                           "
                         >
-                          <SkipForward size={14} />
+                          <SkipForward size={14} aria-hidden="true" />
                           Skip for now
                         </button>
                       </div>
@@ -357,7 +431,10 @@ export default function OnboardingOverlay() {
                     transition={{ duration: 0.25 }}
                   >
                     {/* Icon */}
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
+                    <div
+                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      aria-hidden="true"
+                    >
                       <Sparkles
                         size={28}
                         strokeWidth={1.5}
@@ -366,7 +443,10 @@ export default function OnboardingOverlay() {
                     </div>
 
                     <div className="text-center mb-6">
-                      <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2">
+                      <h2
+                        id="onboarding-title"
+                        className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2"
+                      >
                         Your workspace is ready!
                       </h2>
                       <p className="text-[14px] text-slate-600 dark:text-white/60">
@@ -390,7 +470,10 @@ export default function OnboardingOverlay() {
                           transition-all duration-200 text-left
                         "
                       >
-                        <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                        <div
+                          className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center flex-shrink-0"
+                          aria-hidden="true"
+                        >
                           <FileCheck
                             size={18}
                             strokeWidth={1.5}
@@ -407,6 +490,7 @@ export default function OnboardingOverlay() {
                         </div>
                         <ArrowRight
                           size={14}
+                          aria-hidden="true"
                           className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
                         />
                       </button>
@@ -425,7 +509,10 @@ export default function OnboardingOverlay() {
                           transition-all duration-200 text-left
                         "
                       >
-                        <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/15 flex items-center justify-center flex-shrink-0">
+                        <div
+                          className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/15 flex items-center justify-center flex-shrink-0"
+                          aria-hidden="true"
+                        >
                           <Upload
                             size={18}
                             strokeWidth={1.5}
@@ -442,6 +529,7 @@ export default function OnboardingOverlay() {
                         </div>
                         <ArrowRight
                           size={14}
+                          aria-hidden="true"
                           className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
                         />
                       </button>
@@ -458,7 +546,10 @@ export default function OnboardingOverlay() {
                           transition-all duration-200 text-left
                         "
                       >
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/15 flex items-center justify-center flex-shrink-0">
+                        <div
+                          className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/15 flex items-center justify-center flex-shrink-0"
+                          aria-hidden="true"
+                        >
                           <CalendarClock
                             size={18}
                             strokeWidth={1.5}
@@ -475,6 +566,7 @@ export default function OnboardingOverlay() {
                         </div>
                         <ArrowRight
                           size={14}
+                          aria-hidden="true"
                           className="text-slate-300 dark:text-white/15 group-hover:text-emerald-500 transition-colors flex-shrink-0"
                         />
                       </button>
@@ -490,7 +582,7 @@ export default function OnboardingOverlay() {
                         shadow-sm shadow-emerald-500/20
                       "
                     >
-                      <LayoutDashboard size={16} />
+                      <LayoutDashboard size={16} aria-hidden="true" />
                       Go to Dashboard
                     </button>
                   </motion.div>

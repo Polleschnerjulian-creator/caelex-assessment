@@ -168,10 +168,16 @@ export default function EvidencePanel({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 py-2">
+      <div
+        className="flex items-center gap-2 py-2"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
         <Loader2
           size={12}
           className="animate-spin text-slate-400 dark:text-white/30"
+          aria-hidden="true"
         />
         <span className="text-[10px] text-slate-400 dark:text-white/25">
           Loading evidence...
@@ -184,7 +190,7 @@ export default function EvidencePanel({
     <div className="pt-3 border-t border-slate-200 dark:border-white/[0.06]">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Shield size={12} className="text-blue-400/60" />
+          <Shield size={12} className="text-blue-400/60" aria-hidden="true" />
           <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
             Compliance Evidence ({evidence.length})
           </span>
@@ -199,11 +205,22 @@ export default function EvidencePanel({
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2 mb-2 flex items-center gap-2">
-          <AlertCircle size={10} className="text-red-400 flex-shrink-0" />
+        <div
+          role="alert"
+          className="bg-red-500/10 border border-red-500/20 rounded-lg p-2 mb-2 flex items-center gap-2"
+        >
+          <AlertCircle
+            size={10}
+            className="text-red-400 flex-shrink-0"
+            aria-hidden="true"
+          />
           <span className="text-[10px] text-red-400">{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto">
-            <X size={10} className="text-red-400" />
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto"
+            aria-label="Dismiss error"
+          >
+            <X size={10} className="text-red-400" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -220,6 +237,7 @@ export default function EvidencePanel({
             <div className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-3 space-y-2">
               <input
                 type="text"
+                aria-label="Evidence title"
                 placeholder="Evidence title (e.g., 'ISO 27001 Certificate 2025')"
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
@@ -227,6 +245,7 @@ export default function EvidencePanel({
               />
               <div className="flex gap-2">
                 <select
+                  aria-label="Evidence type"
                   value={formType}
                   onChange={(e) => setFormType(e.target.value)}
                   className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-slate-700 dark:text-white/60 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
@@ -239,6 +258,7 @@ export default function EvidencePanel({
                 </select>
                 <input
                   type="text"
+                  aria-label="Evidence description"
                   placeholder="Description (optional)"
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
@@ -266,11 +286,11 @@ export default function EvidencePanel({
 
       {/* Evidence list */}
       {evidence.length > 0 && (
-        <div className="space-y-1.5">
+        <ul className="space-y-1.5" aria-label="Evidence items">
           {evidence.map((ev) => {
             const sc = statusColors[ev.status] || statusColors.DRAFT;
             return (
-              <div
+              <li
                 key={ev.id}
                 className="flex items-center justify-between bg-slate-50/60 dark:bg-white/[0.015] rounded-lg px-3 py-2 border border-slate-100/80 dark:border-white/[0.04] group"
               >
@@ -278,6 +298,7 @@ export default function EvidencePanel({
                   <FileText
                     size={12}
                     className="text-slate-400 dark:text-white/25 flex-shrink-0"
+                    aria-hidden="true"
                   />
                   <span className="text-[11px] text-slate-700 dark:text-white/60 truncate">
                     {ev.title}
@@ -292,12 +313,13 @@ export default function EvidencePanel({
                   </span>
                   {ev.documents.length > 0 && (
                     <span className="text-[9px] text-slate-400 dark:text-white/20 flex items-center gap-0.5 flex-shrink-0">
-                      <Paperclip size={8} />
+                      <Paperclip size={8} aria-hidden="true" />
+                      <span className="sr-only">Attachments:</span>
                       {ev.documents.length}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                   {ev.status === "DRAFT" && (
                     <button
                       onClick={() => handleStatusChange(ev.id, "SUBMITTED")}
@@ -321,14 +343,17 @@ export default function EvidencePanel({
                     Remove
                   </button>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
       {evidence.length === 0 && !showAddForm && (
-        <p className="text-[10px] text-slate-400 dark:text-white/20 italic">
+        <p
+          className="text-[10px] text-slate-400 dark:text-white/20 italic"
+          role="status"
+        >
           No evidence attached yet
         </p>
       )}

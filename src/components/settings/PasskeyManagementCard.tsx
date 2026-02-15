@@ -249,10 +249,14 @@ export function PasskeyManagementCard() {
             className="space-y-4 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-white/10"
           >
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label
+                htmlFor="passkey-device-name"
+                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+              >
                 Device Name (optional)
               </label>
               <input
+                id="passkey-device-name"
                 type="text"
                 value={newDeviceName}
                 onChange={(e) => setNewDeviceName(e.target.value)}
@@ -324,7 +328,14 @@ export function PasskeyManagementCard() {
                     <div className="flex-1 min-w-0">
                       {editingId === passkey.id ? (
                         <div className="flex items-center gap-2">
+                          <label
+                            htmlFor={`passkey-rename-${passkey.id}`}
+                            className="sr-only"
+                          >
+                            Rename passkey
+                          </label>
                           <input
+                            id={`passkey-rename-${passkey.id}`}
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
@@ -341,8 +352,12 @@ export function PasskeyManagementCard() {
                           <button
                             onClick={() => renamePasskey(passkey.id)}
                             className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10"
+                            aria-label="Confirm rename"
                           >
-                            <Check className="w-4 h-4 text-emerald-500" />
+                            <Check
+                              className="w-4 h-4 text-emerald-500"
+                              aria-hidden="true"
+                            />
                           </button>
                           <button
                             onClick={() => {
@@ -350,8 +365,12 @@ export function PasskeyManagementCard() {
                               setEditName("");
                             }}
                             className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10"
+                            aria-label="Cancel rename"
                           >
-                            <X className="w-4 h-4 text-slate-400" />
+                            <X
+                              className="w-4 h-4 text-slate-400"
+                              aria-hidden="true"
+                            />
                           </button>
                         </div>
                       ) : (
@@ -377,14 +396,16 @@ export function PasskeyManagementCard() {
                           }}
                           className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                           title="Rename"
+                          aria-label={`Rename passkey ${passkey.deviceName || "Unnamed Passkey"}`}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => deletePasskey(passkey.id)}
                           disabled={deletingId === passkey.id}
                           className="p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
                           title="Remove"
+                          aria-label={`Remove passkey ${passkey.deviceName || "Unnamed Passkey"}`}
                         >
                           {deletingId === passkey.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

@@ -43,6 +43,7 @@ export default function Navigation() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
         className="dark-section fixed top-0 left-0 right-0 z-50"
+        aria-label="Main navigation"
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
@@ -58,6 +59,7 @@ export default function Navigation() {
               <Link
                 href="/"
                 className="transition-opacity duration-300 hover:opacity-70"
+                aria-label="Caelex — Go to homepage"
               >
                 <Logo size={28} className="text-white" />
               </Link>
@@ -112,8 +114,13 @@ export default function Navigation() {
                   className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
                   aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
                 >
-                  {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                  {mobileOpen ? (
+                    <X size={20} aria-hidden="true" />
+                  ) : (
+                    <Menu size={20} aria-hidden="true" />
+                  )}
                 </button>
               </div>
             </div>
@@ -130,11 +137,16 @@ export default function Navigation() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-40 md:hidden"
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation menu"
           >
             {/* Backdrop */}
             <div
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
             />
 
             {/* Menu Content */}
@@ -144,6 +156,8 @@ export default function Navigation() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, delay: 0.05 }}
               className="relative mt-20 mx-6 p-6 rounded-2xl bg-[#111] border border-white/[0.08]"
+              role="navigation"
+              aria-label="Mobile navigation"
             >
               <div className="flex flex-col gap-1">
                 {/* Primary CTAs */}

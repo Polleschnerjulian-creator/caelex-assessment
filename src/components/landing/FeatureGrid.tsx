@@ -61,13 +61,18 @@ export default function FeatureGrid() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-32 md:py-40 bg-black">
+    <section
+      ref={ref}
+      className="relative py-32 md:py-40 bg-black"
+      aria-label="Platform capabilities"
+    >
       {/* Section number */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">08 / 12</span>
       </motion.div>
@@ -104,7 +109,11 @@ export default function FeatureGrid() {
               >
                 {/* Icon */}
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
-                  <Icon size={18} className="text-white/50" />
+                  <Icon
+                    size={18}
+                    className="text-white/50"
+                    aria-hidden="true"
+                  />
                 </div>
 
                 {/* Title */}

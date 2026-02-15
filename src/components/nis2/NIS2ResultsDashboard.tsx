@@ -75,7 +75,7 @@ export default function NIS2ResultsDashboard({
             href="/assessment"
             className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={14} aria-hidden="true" />
             <span>All assessments</span>
           </Link>
           <div className="flex items-center gap-4">
@@ -86,7 +86,7 @@ export default function NIS2ResultsDashboard({
               onClick={onRestart}
               className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white transition-colors"
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={12} aria-hidden="true" />
               Restart
             </button>
           </div>
@@ -194,7 +194,7 @@ export default function NIS2ResultsDashboard({
                 className="flex items-center gap-2 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white rounded-lg text-sm transition-colors"
               >
                 Assess EU Space Act
-                <ExternalLink size={14} />
+                <ExternalLink size={14} aria-hidden="true" />
               </Link>
             </div>
           </motion.div>

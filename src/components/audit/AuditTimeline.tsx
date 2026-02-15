@@ -200,9 +200,19 @@ export function AuditTimeline({
     return (
       <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-slate-200 mb-4">{title}</h3>
-        <div className="space-y-4">
+        <div
+          className="space-y-4"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span className="sr-only">Loading recent activity...</span>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex gap-4 animate-pulse">
+            <div
+              key={i}
+              className="flex gap-4 animate-pulse"
+              aria-hidden="true"
+            >
               <div className="w-10 h-10 rounded-full bg-navy-700" />
               <div className="flex-1">
                 <div className="h-4 w-48 bg-navy-700 rounded mb-2" />
@@ -220,7 +230,7 @@ export function AuditTimeline({
       {/* Header */}
       <div className="p-4 border-b border-navy-700 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-blue-400" />
+          <Activity className="w-5 h-5 text-blue-400" aria-hidden="true" />
           {title}
         </h3>
         {showViewAll && events.length > maxItems && (
@@ -236,14 +246,20 @@ export function AuditTimeline({
       {/* Timeline */}
       <div className="p-4">
         {events.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <div className="text-center py-8" role="status">
+            <Clock
+              className="w-12 h-12 text-slate-600 mx-auto mb-3"
+              aria-hidden="true"
+            />
             <p className="text-slate-400">No recent activity</p>
           </div>
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-5 top-0 bottom-0 w-px bg-navy-600" />
+            <div
+              className="absolute left-5 top-0 bottom-0 w-px bg-navy-600"
+              aria-hidden="true"
+            />
 
             {/* Events */}
             <div className="space-y-4">
@@ -256,6 +272,7 @@ export function AuditTimeline({
                     {/* Icon */}
                     <div
                       className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${colors.bg} border ${colors.border}`}
+                      aria-hidden="true"
                     >
                       <Icon className={`w-4 h-4 ${colors.text}`} />
                     </div>
@@ -273,12 +290,18 @@ export function AuditTimeline({
                             </p>
                           )}
                         </div>
-                        <span className="text-xs text-slate-500 whitespace-nowrap">
+                        <time
+                          dateTime={event.timestamp}
+                          className="text-xs text-slate-500 whitespace-nowrap"
+                        >
                           {formatTime(event.timestamp)}
-                        </span>
+                        </time>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className="w-4 h-4 rounded-full bg-navy-600 flex items-center justify-center">
+                        <div
+                          className="w-4 h-4 rounded-full bg-navy-600 flex items-center justify-center"
+                          aria-hidden="true"
+                        >
                           <User className="w-2.5 h-2.5 text-slate-500" />
                         </div>
                         <span className="text-xs text-slate-500">
@@ -295,16 +318,17 @@ export function AuditTimeline({
             {events.length > maxItems && (
               <button
                 onClick={() => setExpanded(!expanded)}
+                aria-expanded={expanded}
                 className="w-full mt-4 py-2 flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors"
               >
                 {expanded ? (
                   <>
-                    <ChevronUp className="w-4 h-4" />
+                    <ChevronUp className="w-4 h-4" aria-hidden="true" />
                     Show less
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-4 h-4" aria-hidden="true" />
                     Show {events.length - maxItems} more
                   </>
                 )}

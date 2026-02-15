@@ -155,6 +155,7 @@ export default function Modules() {
       ref={ref}
       id="modules"
       className="relative py-32 bg-black overflow-hidden"
+      aria-label="Compliance modules"
     >
       {/* Section header */}
       <div className="px-6 md:px-12 mb-16">
@@ -166,7 +167,10 @@ export default function Modules() {
             className="flex items-end justify-between"
           >
             <div>
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4">
+              <span
+                className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4"
+                aria-hidden="true"
+              >
                 07 / 14 — Platform
               </span>
               <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-light tracking-[-0.02em] text-white">
@@ -228,6 +232,7 @@ export default function Modules() {
                         <Icon
                           size={18}
                           className={isNIS2 ? "text-cyan-400" : "text-white/60"}
+                          aria-hidden="true"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -241,7 +246,10 @@ export default function Modules() {
                             ALL
                           </span>
                         )}
-                        <span className="font-mono text-[11px] text-white/20">
+                        <span
+                          className="font-mono text-[11px] text-white/20"
+                          aria-hidden="true"
+                        >
                           {module.id}
                         </span>
                       </div>
@@ -290,6 +298,7 @@ export default function Modules() {
                               className={`w-1 h-1 rounded-full ${
                                 isNIS2 ? "bg-cyan-400/40" : "bg-white/20"
                               }`}
+                              aria-hidden="true"
                             />
                             {feature}
                           </div>

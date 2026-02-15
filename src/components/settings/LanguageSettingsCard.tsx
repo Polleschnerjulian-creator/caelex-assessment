@@ -11,7 +11,10 @@ export function LanguageSettingsCard() {
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-          <Globe className="w-5 h-5 text-slate-600 dark:text-white/70" />
+          <Globe
+            className="w-5 h-5 text-slate-600 dark:text-white/70"
+            aria-hidden="true"
+          />
         </div>
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
@@ -23,12 +26,18 @@ export function LanguageSettingsCard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+        role="radiogroup"
+        aria-label="Language selection"
+      >
         {(Object.entries(LANGUAGES) as [Language, string][]).map(
           ([code, label]) => (
             <button
               key={code}
               onClick={() => setLanguage(code)}
+              role="radio"
+              aria-checked={language === code}
               className={`
                 px-4 py-3 rounded-lg border text-[13px] font-medium transition-all text-center
                 ${

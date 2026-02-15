@@ -21,7 +21,7 @@ export default function SpaceLawRecommendations({
     >
       {/* Section header */}
       <div className="flex items-center gap-3 mb-2">
-        <Lightbulb className="w-4 h-4 text-blue-400" />
+        <Lightbulb className="w-4 h-4 text-blue-400" aria-hidden="true" />
         <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
           Recommendations
         </span>
@@ -49,7 +49,7 @@ export default function SpaceLawRecommendations({
                 </p>
               </div>
               {index < recommendations.length - 1 && (
-                <div className="h-px bg-white/[0.06] ml-5" />
+                <div className="h-px bg-white/[0.06] ml-5" aria-hidden="true" />
               )}
             </motion.div>
           ))}
@@ -73,7 +73,7 @@ export default function SpaceLawRecommendations({
             className="inline-flex items-center gap-1.5 text-[13px] text-blue-400 hover:text-blue-300 transition-colors"
           >
             <span>Explore Caelex Platform</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </Link>
         </motion.div>
       </div>

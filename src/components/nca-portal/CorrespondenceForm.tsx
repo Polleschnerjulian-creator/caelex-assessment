@@ -71,27 +71,40 @@ export default function CorrespondenceForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="correspondence-form-title"
+    >
       <div className="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-navy-700">
-          <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+          <h3
+            id="correspondence-form-title"
+            className="text-sm font-medium text-slate-900 dark:text-white"
+          >
             Log Communication
           </h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded transition-colors"
           >
-            <X size={16} />
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              <label
+                htmlFor="corr-direction"
+                className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+              >
                 Direction
               </label>
               <select
+                id="corr-direction"
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
@@ -104,10 +117,14 @@ export default function CorrespondenceForm({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              <label
+                htmlFor="corr-type"
+                className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+              >
                 Type
               </label>
               <select
+                id="corr-type"
                 value={messageType}
                 onChange={(e) => setMessageType(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
@@ -122,39 +139,53 @@ export default function CorrespondenceForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+            <label
+              htmlFor="corr-subject"
+              className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+            >
               Subject
             </label>
             <input
+              id="corr-subject"
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject of the communication"
               className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
               required
+              aria-required="true"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+            <label
+              htmlFor="corr-content"
+              className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+            >
               Content
             </label>
             <textarea
+              id="corr-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Content or summary of the communication"
               rows={4}
               className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
               required
+              aria-required="true"
             />
           </div>
 
           {direction === "INBOUND" && (
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              <label
+                htmlFor="corr-nca-contact"
+                className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1"
+              >
                 NCA Contact Name
               </label>
               <input
+                id="corr-nca-contact"
                 type="text"
                 value={ncaContactName}
                 onChange={(e) => setNcaContactName(e.target.value)}
@@ -182,6 +213,7 @@ export default function CorrespondenceForm({
                 type="date"
                 value={responseDeadline}
                 onChange={(e) => setResponseDeadline(e.target.value)}
+                aria-label="Response deadline"
                 className="px-3 py-1.5 text-xs bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
               />
             )}
@@ -200,7 +232,7 @@ export default function CorrespondenceForm({
               disabled={isSubmitting || !subject.trim() || !content.trim()}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50"
             >
-              <Send size={14} />
+              <Send size={14} aria-hidden="true" />
               {isSubmitting ? "Saving..." : "Save Entry"}
             </button>
           </div>

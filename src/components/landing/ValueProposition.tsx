@@ -58,7 +58,11 @@ export default function ValueProposition() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-32 md:py-40 bg-black">
+    <section
+      ref={ref}
+      className="relative py-32 md:py-40 bg-black"
+      aria-label="Why Caelex"
+    >
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
@@ -103,7 +107,11 @@ export default function ValueProposition() {
                     className="flex gap-5"
                   >
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-500/[0.08] border border-red-500/[0.12] flex items-center justify-center">
-                      <Icon size={18} className="text-red-400/60" />
+                      <Icon
+                        size={18}
+                        className="text-red-400/60"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div>
                       <h3 className="text-[15px] font-medium text-white/90 mb-2">
@@ -143,7 +151,11 @@ export default function ValueProposition() {
                     className="flex gap-5"
                   >
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500/[0.08] border border-blue-500/[0.12] flex items-center justify-center">
-                      <Icon size={18} className="text-blue-400/60" />
+                      <Icon
+                        size={18}
+                        className="text-blue-400/60"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div>
                       <h3 className="text-[15px] font-medium text-white/90 mb-2">

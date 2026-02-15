@@ -73,7 +73,7 @@ export default function NIS2CrosswalkView({
           </p>
         </div>
         <div className="flex items-center gap-1.5 text-blue-400">
-          <Layers className="w-4 h-4" />
+          <Layers className="w-4 h-4" aria-hidden="true" />
         </div>
       </div>
 
@@ -101,7 +101,7 @@ export default function NIS2CrosswalkView({
         </div>
         <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3 text-center">
           <div className="flex items-center justify-center gap-1">
-            <Zap className="w-4 h-4 text-amber-400" />
+            <Zap className="w-4 h-4 text-amber-400" aria-hidden="true" />
             <span className="text-xl font-mono font-bold text-white">
               {Math.round(
                 ((singleImpl.length + partialOverlap.length * 0.5) /
@@ -149,7 +149,10 @@ export default function NIS2CrosswalkView({
               </div>
 
               {/* Arrow */}
-              <ArrowRight className={`w-4 h-4 ${config.color} flex-shrink-0`} />
+              <ArrowRight
+                className={`w-4 h-4 ${config.color} flex-shrink-0`}
+                aria-hidden="true"
+              />
 
               {/* EU Space Act side */}
               <div className="flex-1 min-w-0">

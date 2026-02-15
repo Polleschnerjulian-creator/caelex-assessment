@@ -10,7 +10,10 @@ const paragraphs = [
 
 export default function Problem() {
   return (
-    <section className="bg-black py-[120px] lg:py-[200px]">
+    <section
+      className="bg-black py-[120px] lg:py-[200px]"
+      aria-label="The challenge"
+    >
       <div className="max-w-[1000px] mx-auto px-6 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20">
           {/* Left Column */}

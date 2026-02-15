@@ -235,7 +235,10 @@ export default function AssessmentResultsGate({
           className="text-center mb-10"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
+            <CheckCircle
+              className="w-4 h-4 text-emerald-400"
+              aria-hidden="true"
+            />
             <span className="text-[13px] text-emerald-400 font-medium">
               Assessment Complete
             </span>
@@ -266,7 +269,10 @@ export default function AssessmentResultsGate({
               {/* Blur overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10 flex items-end justify-center pb-8">
                 <div className="text-center">
-                  <Lock className="w-8 h-8 text-white/40 mx-auto mb-3" />
+                  <Lock
+                    className="w-8 h-8 text-white/40 mx-auto mb-3"
+                    aria-hidden="true"
+                  />
                   <p className="text-[14px] text-white/60 mb-1">
                     Sign in to unlock full results
                   </p>
@@ -336,7 +342,10 @@ export default function AssessmentResultsGate({
             {/* What's included */}
             <div className="mt-6 p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
               <h4 className="text-[13px] font-medium text-white mb-4 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <Sparkles
+                  className="w-4 h-4 text-emerald-400"
+                  aria-hidden="true"
+                />
                 Free Tier Includes
               </h4>
               <div className="space-y-3">
@@ -351,7 +360,10 @@ export default function AssessmentResultsGate({
                     key={feature}
                     className="flex items-center gap-2.5 text-[13px] text-white/50"
                   >
-                    <CheckCircle className="w-4 h-4 text-emerald-500/70" />
+                    <CheckCircle
+                      className="w-4 h-4 text-emerald-500/70"
+                      aria-hidden="true"
+                    />
                     {feature}
                   </div>
                 ))}
@@ -404,34 +416,51 @@ export default function AssessmentResultsGate({
                 {authMode === "signup" && (
                   <>
                     <div>
-                      <label className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2">
+                      <label
+                        htmlFor="gate-name"
+                        className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                      >
                         Full Name
                       </label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                        <User
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
+                          aria-hidden="true"
+                        />
                         <input
                           type="text"
+                          id="gate-name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                           placeholder="John Doe"
                           required
+                          aria-required="true"
+                          autoComplete="name"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2">
+                      <label
+                        htmlFor="gate-organization"
+                        className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                      >
                         Organization
                       </label>
                       <div className="relative">
-                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                        <Building2
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
+                          aria-hidden="true"
+                        />
                         <input
                           type="text"
+                          id="gate-organization"
                           value={organization}
                           onChange={(e) => setOrganization(e.target.value)}
                           className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                           placeholder="Company name (optional)"
+                          autoComplete="organization"
                         />
                       </div>
                     </div>
@@ -439,30 +468,46 @@ export default function AssessmentResultsGate({
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="gate-email"
+                    className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                  >
                     Email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <Mail
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
+                      aria-hidden="true"
+                    />
                     <input
                       type="email"
+                      id="gate-email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                       placeholder="you@company.com"
                       required
+                      aria-required="true"
+                      autoComplete="email"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="gate-password"
+                    className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                  >
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <Lock
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
+                      aria-hidden="true"
+                    />
                     <input
                       type="password"
+                      id="gate-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
@@ -472,6 +517,12 @@ export default function AssessmentResultsGate({
                           : "••••••••"
                       }
                       required
+                      aria-required="true"
+                      autoComplete={
+                        authMode === "signup"
+                          ? "new-password"
+                          : "current-password"
+                      }
                     />
                   </div>
                   {authMode === "signup" && (
@@ -482,7 +533,10 @@ export default function AssessmentResultsGate({
                 </div>
 
                 {error && (
-                  <p className="text-red-400 text-[13px] bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
+                  <p
+                    className="text-red-400 text-[13px] bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5"
+                    role="alert"
+                  >
                     {error}
                   </p>
                 )}
@@ -554,7 +608,7 @@ export default function AssessmentResultsGate({
 
               {/* Security note */}
               <p className="text-center text-[11px] text-white/30 mt-6 flex items-center justify-center gap-1.5">
-                <Shield className="w-3 h-3" />
+                <Shield className="w-3 h-3" aria-hidden="true" />
                 Your data is encrypted and secure
               </p>
             </div>

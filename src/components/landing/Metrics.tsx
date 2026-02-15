@@ -89,6 +89,7 @@ export default function Metrics() {
     <section
       ref={ref}
       className="relative py-32 md:py-40 px-6 md:px-12 bg-black"
+      aria-label="EU Space Act regulation metrics"
     >
       {/* Section number */}
       <motion.div
@@ -96,6 +97,7 @@ export default function Metrics() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">11 / 12</span>
       </motion.div>

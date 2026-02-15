@@ -79,7 +79,7 @@ export default function CommentSection({
     <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-white/10 flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-white/70" />
+        <MessageSquare className="w-5 h-5 text-white/70" aria-hidden="true" />
         <h3 className="font-medium text-white">Comments ({comments.length})</h3>
       </div>
 
@@ -88,7 +88,7 @@ export default function CommentSection({
         <form onSubmit={handleSubmit}>
           {replyingTo && (
             <div className="mb-2 flex items-center gap-2 text-xs text-white/50">
-              <Reply className="w-3 h-3" />
+              <Reply className="w-3 h-3" aria-hidden="true" />
               <span>Replying to comment</span>
               <button
                 type="button"
@@ -100,7 +100,10 @@ export default function CommentSection({
             </div>
           )}
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+            <div
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0"
+              aria-hidden="true"
+            >
               <UserIcon className="w-4 h-4 text-white/50" />
             </div>
             <div className="flex-1">
@@ -122,9 +125,12 @@ export default function CommentSection({
                   className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   {isSubmitting ? (
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span
+                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <Send className="w-4 h-4" aria-hidden="true" />
                   )}
                   {replyingTo ? "Reply" : "Comment"}
                 </button>
@@ -137,12 +143,19 @@ export default function CommentSection({
       {/* Comments list */}
       <div className="divide-y divide-white/5">
         {isLoading && comments.length === 0 ? (
-          <div className="p-8 text-center">
-            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+          <div className="p-8 text-center" role="status" aria-live="polite">
+            <div
+              className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"
+              aria-hidden="true"
+            />
+            <span className="sr-only">Loading comments...</span>
           </div>
         ) : comments.length === 0 ? (
-          <div className="p-8 text-center text-white/40">
-            <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
+          <div className="p-8 text-center text-white/40" role="status">
+            <MessageSquare
+              className="w-10 h-10 mx-auto mb-2 opacity-50"
+              aria-hidden="true"
+            />
             <p>No comments yet</p>
             <p className="text-xs mt-1">Be the first to comment</p>
           </div>
@@ -371,7 +384,7 @@ function CommentItem({
               {comment.author.name || comment.author.email?.split("@")[0]}
             </span>
             <span className="text-xs text-white/40 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+              <Clock className="w-3 h-3" aria-hidden="true" />
               {timeAgo}
             </span>
             {comment.isEdited && (
@@ -429,9 +442,11 @@ function CommentItem({
                 <div className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
+                    aria-label="Comment options"
+                    aria-expanded={showMenu}
                     className="flex items-center gap-1 text-xs text-white/40 hover:text-white/70"
                   >
-                    <MoreHorizontal className="w-3 h-3" />
+                    <MoreHorizontal className="w-3 h-3" aria-hidden="true" />
                   </button>
 
                   {showMenu && (

@@ -111,9 +111,10 @@ export default function SubmissionDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-live="polite">
         <div className="h-8 bg-slate-200 dark:bg-navy-700 rounded animate-pulse w-48" />
         <div className="h-64 bg-slate-200 dark:bg-navy-700 rounded-xl animate-pulse" />
+        <span className="sr-only">Loading submission details...</span>
       </div>
     );
   }
@@ -155,9 +156,10 @@ export default function SubmissionDetailPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push("/dashboard/nca-portal")}
+          aria-label="Back to NCA portal"
           className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-semibold text-slate-900 dark:text-white">

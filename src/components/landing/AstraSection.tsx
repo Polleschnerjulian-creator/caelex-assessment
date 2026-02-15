@@ -74,16 +74,24 @@ export default function AstraSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="relative py-24 md:py-32 overflow-hidden">
+    <section
+      ref={ref}
+      className="relative py-24 md:py-32 overflow-hidden"
+      aria-label="ASTRA AI compliance agent"
+    >
       {/* Background glow effect */}
       <div
         className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
         style={{
           background:
             "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 70%)",
         }}
       />
-      <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+      <div
+        className="absolute inset-0 bg-black/40 pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
@@ -132,7 +140,10 @@ export default function AstraSection() {
               {/* Chat Header */}
               <div className="px-5 py-4 border-b border-white/[0.06] flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <div
+                    className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                    aria-hidden="true"
+                  />
                   <span className="text-[13px] font-medium text-emerald-400">
                     ASTRA
                   </span>
@@ -163,7 +174,10 @@ export default function AstraSection() {
                     <div className="flex justify-start">
                       <div className="max-w-[85%]">
                         <div className="flex items-center gap-2 mb-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <div
+                            className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                            aria-hidden="true"
+                          />
                           <span className="text-[10px] font-medium text-emerald-400/70 uppercase tracking-wider">
                             ASTRA
                           </span>
@@ -188,12 +202,16 @@ export default function AstraSection() {
                   <span className="text-[13px] text-white/30 flex-1">
                     Ask ASTRA anything about space compliance...
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <div
+                    className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center"
+                    aria-hidden="true"
+                  >
                     <svg
                       className="w-4 h-4 text-emerald-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -228,7 +246,9 @@ export default function AstraSection() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl">{cap.icon}</span>
+                  <span className="text-xl" aria-hidden="true">
+                    {cap.icon}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-[14px] font-medium text-white">

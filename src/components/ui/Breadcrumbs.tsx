@@ -28,12 +28,16 @@ export function Breadcrumbs({
         <>
           <Link
             href="/dashboard"
+            aria-label="Dashboard home"
             className="text-white/70 hover:text-white transition-colors p-1 -ml-1 rounded"
           >
-            <Home className="w-4 h-4" />
+            <Home className="w-4 h-4" aria-hidden="true" />
           </Link>
           {items.length > 0 && (
-            <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
+            <ChevronRight
+              className="w-4 h-4 text-white/30 flex-shrink-0"
+              aria-hidden="true"
+            />
           )}
         </>
       )}
@@ -57,13 +61,17 @@ export function Breadcrumbs({
                   isLast ? "text-white/80 font-medium" : "text-white/70"
                 }`}
                 title={item.label}
+                {...(isLast ? { "aria-current": "page" as const } : {})}
               >
                 {item.label}
               </span>
             )}
 
             {!isLast && (
-              <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
+              <ChevronRight
+                className="w-4 h-4 text-white/30 flex-shrink-0"
+                aria-hidden="true"
+              />
             )}
           </div>
         );

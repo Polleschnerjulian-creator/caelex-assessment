@@ -29,6 +29,7 @@ export default function TrustBar() {
     <section
       ref={ref}
       className="relative bg-black py-8 border-y border-white/[0.04]"
+      aria-label="Trust indicators"
     >
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         <motion.div
@@ -47,7 +48,7 @@ export default function TrustBar() {
                 transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
                 className="flex items-center gap-2.5"
               >
-                <Icon size={14} className="text-white/25" />
+                <Icon size={14} className="text-white/25" aria-hidden="true" />
                 <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5">
                   <span className="font-mono text-[12px] sm:text-[11px] text-white/45 tracking-wide">
                     {item.label}

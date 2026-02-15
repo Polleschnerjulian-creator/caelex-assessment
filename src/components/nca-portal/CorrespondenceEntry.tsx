@@ -67,6 +67,7 @@ export default function CorrespondenceEntry({
         }
         ${!isRead && isInbound ? "ring-1 ring-blue-400/30" : ""}
       `}
+      aria-label={`${isInbound ? "Inbound" : "Outbound"} ${messageType.toLowerCase().replace(/_/g, " ")}: ${subject}`}
     >
       <div
         className={`
@@ -79,6 +80,7 @@ export default function CorrespondenceEntry({
           className={
             isInbound ? "text-blue-400" : "text-slate-500 dark:text-slate-400"
           }
+          aria-hidden="true"
         />
       </div>
 
@@ -88,22 +90,35 @@ export default function CorrespondenceEntry({
             <DirectionIcon
               size={12}
               className={isInbound ? "text-blue-400" : "text-slate-400"}
+              aria-hidden="true"
             />
+            <span className="sr-only">
+              {isInbound ? "Inbound" : "Outbound"}:
+            </span>
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {subject}
             </span>
             {!isRead && isInbound && (
-              <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+              <>
+                <span
+                  className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">(Unread)</span>
+              </>
             )}
           </div>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+          <time
+            dateTime={createdAt}
+            className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0"
+          >
             {new Date(createdAt).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })}
-          </span>
+          </time>
         </div>
 
         {ncaContactName && isInbound && (
@@ -123,7 +138,11 @@ export default function CorrespondenceEntry({
               ${isOverdue ? "text-red-400" : "text-amber-400"}
             `}
           >
-            {isOverdue ? <AlertCircle size={10} /> : <Clock size={10} />}
+            {isOverdue ? (
+              <AlertCircle size={10} aria-hidden="true" />
+            ) : (
+              <Clock size={10} aria-hidden="true" />
+            )}
             {isOverdue
               ? "Response overdue"
               : responseDeadline

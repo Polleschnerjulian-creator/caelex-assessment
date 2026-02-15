@@ -77,7 +77,7 @@ export default function EUSpaceActCrossRef({
       {/* Section Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <ArrowRight className="h-4 w-4 text-blue-400" />
+          <ArrowRight className="h-4 w-4 text-blue-400" aria-hidden="true" />
           <h3 className="text-xs font-mono uppercase tracking-widest text-white/40">
             EU Space Act Cross-Reference
           </h3>
@@ -128,7 +128,7 @@ export default function EUSpaceActCrossRef({
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${config.badgeClass}`}
                 >
-                  <BadgeIcon className="h-3 w-3" />
+                  <BadgeIcon className="h-3 w-3" aria-hidden="true" />
                   {config.label}
                 </span>
               </div>
@@ -146,7 +146,10 @@ export default function EUSpaceActCrossRef({
                       key={idx}
                       className="flex items-start gap-2 text-sm text-white/40"
                     >
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-white/30" />
+                      <span
+                        className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-white/30"
+                        aria-hidden="true"
+                      />
                       <span>{change}</span>
                     </li>
                   ))}

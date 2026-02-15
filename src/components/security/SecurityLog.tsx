@@ -213,8 +213,9 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             }}
             className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Refresh"
+            aria-label="Refresh security logs"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -255,15 +256,20 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
         <div className="bg-white/5 rounded-xl border border-white/10 p-4">
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-white/50 mb-1.5">
+              <label
+                htmlFor="seclog-search"
+                className="block text-xs text-white/50 mb-1.5"
+              >
                 Search
               </label>
               <div className="relative">
                 <Search
                   size={14}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
+                  aria-hidden="true"
                 />
                 <input
+                  id="seclog-search"
                   type="text"
                   value={filter.search}
                   onChange={(e) =>
@@ -275,10 +281,14 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
               </div>
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5">
+              <label
+                htmlFor="seclog-risk-level"
+                className="block text-xs text-white/50 mb-1.5"
+              >
                 Risk Level
               </label>
               <select
+                id="seclog-risk-level"
                 value={filter.riskLevel}
                 onChange={(e) =>
                   setFilter({ ...filter, riskLevel: e.target.value })
@@ -303,10 +313,14 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-white/50 mb-1.5">
+              <label
+                htmlFor="seclog-event-type"
+                className="block text-xs text-white/50 mb-1.5"
+              >
                 Event Type
               </label>
               <select
+                id="seclog-event-type"
                 value={filter.event}
                 onChange={(e) =>
                   setFilter({ ...filter, event: e.target.value })
@@ -358,6 +372,16 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
                   <div
                     className="flex items-start gap-3 cursor-pointer"
                     onClick={() => setExpandedLog(isExpanded ? null : log.id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    aria-label={`${EVENT_LABELS[log.event] || log.event}: ${log.description}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setExpandedLog(isExpanded ? null : log.id);
+                      }
+                    }}
                   >
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${riskConfig.bgColor}`}

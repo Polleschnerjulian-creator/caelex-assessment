@@ -65,6 +65,7 @@ export default function OptionCard({
           >
             <IconComponent
               size={20}
+              aria-hidden="true"
               className={isSelected ? "text-emerald-400" : "text-white/70"}
             />
           </div>
@@ -93,7 +94,7 @@ export default function OptionCard({
         >
           {isSelected && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-              <Check size={12} className="text-white" />
+              <Check size={12} className="text-white" aria-hidden="true" />
             </motion.div>
           )}
         </div>

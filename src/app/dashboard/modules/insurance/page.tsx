@@ -416,7 +416,7 @@ function InsurancePageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -429,6 +429,7 @@ function InsurancePageContent() {
             ))}
           </div>
         </div>
+        <span className="sr-only">Loading insurance assessment...</span>
       </div>
     );
   }
@@ -461,6 +462,7 @@ function InsurancePageContent() {
                 setSelectedAssessment(assessment || null);
                 setReport(null);
               }}
+              aria-label="Select insurance assessment"
               className="bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
             >
               {assessments.map((a) => (
@@ -476,7 +478,7 @@ function InsurancePageContent() {
           onClick={() => setShowNewAssessment(true)}
           className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg font-medium text-[13px] hover:bg-slate-800 dark:hover:bg-white/90 transition-all"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4" aria-hidden="true" />
           New Assessment
         </button>
       </div>
@@ -484,7 +486,11 @@ function InsurancePageContent() {
       {/* Step Navigation */}
       {selectedAssessment && (
         <div className="mb-8">
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2"
+            role="tablist"
+            aria-label="Insurance assessment steps"
+          >
             {STEPS.map((step, index) => {
               const StepIcon = step.icon;
               const isActive = currentStep === step.id;
@@ -494,6 +500,10 @@ function InsurancePageContent() {
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => setCurrentStep(step.id)}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls={`panel-step-${step.id}`}
+                    id={`tab-step-${step.id}`}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
                         ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
@@ -509,7 +519,11 @@ function InsurancePageContent() {
                             : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
                       }`}
                     >
-                      {isCompleted ? <CheckCircle2 size={12} /> : step.id}
+                      {isCompleted ? (
+                        <CheckCircle2 size={12} aria-hidden="true" />
+                      ) : (
+                        step.id
+                      )}
                     </div>
                     <div className="text-left hidden lg:block">
                       <p
@@ -523,6 +537,7 @@ function InsurancePageContent() {
                     <ChevronRight
                       size={16}
                       className="text-slate-300 dark:text-white/10 mx-1"
+                      aria-hidden="true"
                     />
                   )}
                 </div>
@@ -542,7 +557,10 @@ function InsurancePageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
           >
-            <Shield className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4" />
+            <Shield
+              className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4"
+              aria-hidden="true"
+            />
             <h2 className="text-xl font-semibold mb-2">
               No Insurance Assessments
             </h2>
@@ -553,7 +571,7 @@ function InsurancePageContent() {
               onClick={() => setShowNewAssessment(true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5" aria-hidden="true" />
               Create Assessment
             </button>
           </motion.div>
@@ -570,7 +588,10 @@ function InsurancePageContent() {
               >
                 <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-emerald-400" />
+                    <Building2
+                      className="w-5 h-5 text-emerald-400"
+                      aria-hidden="true"
+                    />
                     Organization & Mission Profile
                   </h2>
 
@@ -811,7 +832,10 @@ function InsurancePageContent() {
                 {nationalReqs && (
                   <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-amber-400" />
+                      <MapPin
+                        className="w-5 h-5 text-amber-400"
+                        aria-hidden="true"
+                      />
                       {nationalReqs.flag} {nationalReqs.country} Insurance
                       Requirements
                     </h2>
@@ -883,7 +907,10 @@ function InsurancePageContent() {
                               key={i}
                               className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
                             >
-                              <Info className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <Info
+                                className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                                aria-hidden="true"
+                              />
                               {note}
                             </li>
                           ))}
@@ -899,7 +926,7 @@ function InsurancePageContent() {
                     className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
                   >
                     Continue to Coverage Calculator
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </motion.div>
@@ -917,7 +944,10 @@ function InsurancePageContent() {
                 {tplRequirement && (
                   <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-red-400" />
+                      <Shield
+                        className="w-5 h-5 text-red-400"
+                        aria-hidden="true"
+                      />
                       Third-Party Liability Requirement
                     </h2>
 
@@ -957,7 +987,10 @@ function InsurancePageContent() {
                               key={i}
                               className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
                             >
-                              <Info className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <Info
+                                className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                                aria-hidden="true"
+                              />
                               {note}
                             </li>
                           ))}
@@ -969,7 +1002,10 @@ function InsurancePageContent() {
 
                 <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-emerald-400" />
+                    <FileText
+                      className="w-5 h-5 text-emerald-400"
+                      aria-hidden="true"
+                    />
                     Required Insurance Coverage
                   </h2>
 
@@ -1010,7 +1046,10 @@ function InsurancePageContent() {
                 {premiumEstimate && (
                   <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-green-400" />
+                      <DollarSign
+                        className="w-5 h-5 text-green-400"
+                        aria-hidden="true"
+                      />
                       Premium Estimate
                     </h2>
 
@@ -1053,7 +1092,7 @@ function InsurancePageContent() {
                     onClick={() => setCurrentStep(1)}
                     className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
                   </button>
                   <button
@@ -1061,7 +1100,7 @@ function InsurancePageContent() {
                     className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
                   >
                     Continue to Policy Tracker
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </motion.div>
@@ -1079,14 +1118,24 @@ function InsurancePageContent() {
                 <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
+                      <CheckCircle2
+                        className="w-5 h-5 text-green-400"
+                        aria-hidden="true"
+                      />
                       Insurance Compliance Score
                     </h2>
                     <div className="text-3xl font-bold">
                       {selectedAssessment.complianceScore || 0}%
                     </div>
                   </div>
-                  <div className="w-full bg-slate-200 dark:bg-white/[0.05] rounded-full h-3">
+                  <div
+                    className="w-full bg-slate-200 dark:bg-white/[0.05] rounded-full h-3"
+                    role="progressbar"
+                    aria-valuenow={selectedAssessment.complianceScore || 0}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Insurance compliance score"
+                  >
                     <div
                       className={`h-3 rounded-full transition-all ${
                         (selectedAssessment.complianceScore || 0) >= 80
@@ -1152,6 +1201,7 @@ function InsurancePageContent() {
                                   status: e.target.value,
                                 })
                               }
+                              aria-label={`Policy status for ${typeDef?.name || policy.insuranceType}`}
                               className={`bg-white dark:bg-white/[0.04] border rounded-lg px-3 py-1.5 text-sm ${
                                 statusConfig?.color === "green"
                                   ? "border-green-500/30 text-green-400"
@@ -1264,7 +1314,7 @@ function InsurancePageContent() {
                     onClick={() => setCurrentStep(2)}
                     className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
                   </button>
                   <button
@@ -1273,7 +1323,7 @@ function InsurancePageContent() {
                     className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-[13px] transition-all"
                   >
                     {isSaving ? "Generating..." : "Generate Report"}
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </motion.div>
@@ -1404,7 +1454,10 @@ function InsurancePageContent() {
                                 key={i}
                                 className="flex items-start gap-3 text-slate-600 dark:text-white/70"
                               >
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                                <CheckCircle2
+                                  className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0"
+                                  aria-hidden="true"
+                                />
                                 {rec}
                               </li>
                             ),
@@ -1415,7 +1468,10 @@ function InsurancePageContent() {
                   </>
                 ) : (
                   <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
-                    <FileText className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4" />
+                    <FileText
+                      className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4"
+                      aria-hidden="true"
+                    />
                     <h2 className="text-xl font-semibold mb-2">
                       No Report Generated
                     </h2>
@@ -1427,7 +1483,7 @@ function InsurancePageContent() {
                       onClick={() => setCurrentStep(3)}
                       className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                       Go to Policy Tracker
                     </button>
                   </div>
@@ -1438,7 +1494,7 @@ function InsurancePageContent() {
                     onClick={() => setCurrentStep(3)}
                     className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
                   </button>
                   <div className="flex items-center gap-3">
@@ -1448,7 +1504,7 @@ function InsurancePageContent() {
                         disabled={downloadingPdf}
                         className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-[13px] transition-all disabled:opacity-50"
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4" aria-hidden="true" />
                         {downloadingPdf ? "Generating..." : "Download PDF"}
                       </button>
                     )}
@@ -1457,7 +1513,7 @@ function InsurancePageContent() {
                         onClick={() => deleteAssessment(selectedAssessment.id)}
                         className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 font-medium transition-colors"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-5 h-5" aria-hidden="true" />
                         Delete Assessment
                       </button>
                     )}
@@ -1485,6 +1541,9 @@ function InsurancePageContent() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/10 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-label="New Insurance Assessment"
+              aria-modal="true"
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">
@@ -1492,9 +1551,10 @@ function InsurancePageContent() {
                 </h2>
                 <button
                   onClick={() => setShowNewAssessment(false)}
+                  aria-label="Close dialog"
                   className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
 

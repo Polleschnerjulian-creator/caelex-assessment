@@ -214,12 +214,23 @@ function DashboardTab() {
               key={i}
               className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 md:px-4 py-3"
             >
-              <Icon size={14} className="text-white/30 flex-shrink-0" />
+              <Icon
+                size={14}
+                className="text-white/30 flex-shrink-0"
+                aria-hidden="true"
+              />
               <span className="text-[12px] md:text-[13px] text-white/60 flex-1 min-w-0 truncate">
                 {mod.name}
               </span>
               <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
-                <div className="w-24 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className="w-24 h-1.5 bg-white/[0.06] rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label={`${mod.name} progress`}
+                  aria-valuenow={mod.progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
                   <div
                     className="h-full bg-blue-500/60 rounded-full"
                     style={{ width: `${mod.progress}%` }}
@@ -258,7 +269,11 @@ function DocumentsTab() {
               className="flex items-center justify-between bg-white/[0.02] border border-white/[0.04] rounded-lg px-4 py-3"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <FolderOpen size={14} className="text-white/25 flex-shrink-0" />
+                <FolderOpen
+                  size={14}
+                  className="text-white/25 flex-shrink-0"
+                  aria-hidden="true"
+                />
                 <div className="min-w-0">
                   <p className="text-[12px] text-white/60 truncate">
                     {doc.name}
@@ -324,6 +339,7 @@ function TrackerTab() {
               <StatusIcon
                 size={14}
                 className={`${statusConfig.color} flex-shrink-0`}
+                aria-hidden="true"
               />
               <span className="font-mono text-[11px] text-white/40 w-12 flex-shrink-0">
                 {article.number}
@@ -361,6 +377,7 @@ export default function PlatformPreview() {
       ref={ref}
       id="platform"
       className="relative py-32 md:py-40 bg-black overflow-hidden"
+      aria-label="Platform preview"
     >
       {/* Section number */}
       <motion.div
@@ -368,6 +385,7 @@ export default function PlatformPreview() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">05 / 12</span>
       </motion.div>
@@ -410,21 +428,30 @@ export default function PlatformPreview() {
               }}
             >
               {/* Tab bar */}
-              <div className="flex items-center gap-1 px-4 md:px-6 pt-4 pb-3 border-b border-white/[0.06]">
+              <div
+                className="flex items-center gap-1 px-4 md:px-6 pt-4 pb-3 border-b border-white/[0.06]"
+                role="tablist"
+                aria-label="Platform views"
+              >
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      aria-controls={`tabpanel-${tab.id}`}
+                      id={`tab-${tab.id}`}
                       className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
                         activeTab === tab.id
                           ? "bg-white/[0.08] text-white"
                           : "text-white/35 hover:text-white/60 hover:bg-white/[0.03]"
                       }`}
                     >
-                      <Icon size={13} />
+                      <Icon size={13} aria-hidden="true" />
                       <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="sm:hidden sr-only">{tab.label}</span>
                     </button>
                   );
                 })}
@@ -439,18 +466,27 @@ export default function PlatformPreview() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
                   className="min-h-[320px] md:min-h-[380px]"
+                  role="tabpanel"
+                  id={`tabpanel-${activeTab}`}
+                  aria-labelledby={`tab-${activeTab}`}
                 >
                   <ActiveComponent />
                 </motion.div>
               </AnimatePresence>
 
               {/* Bottom fade gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+              <div
+                className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"
+                aria-hidden="true"
+              />
             </div>
           </div>
 
           {/* Glow effect behind the card */}
-          <div className="absolute -inset-10 bg-blue-500/[0.03] rounded-full blur-3xl pointer-events-none -z-10" />
+          <div
+            className="absolute -inset-10 bg-blue-500/[0.03] rounded-full blur-3xl pointer-events-none -z-10"
+            aria-hidden="true"
+          />
         </motion.div>
       </div>
     </section>

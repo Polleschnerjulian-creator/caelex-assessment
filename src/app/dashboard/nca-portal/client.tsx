@@ -80,7 +80,7 @@ export default function NCAPortalClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 size={22} className="text-blue-400" />
+            <Building2 size={22} className="text-blue-400" aria-hidden="true" />
             NCA Submission Portal
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -91,9 +91,14 @@ export default function NCAPortalClient() {
           <button
             onClick={loadData}
             disabled={isLoading}
+            aria-label="Refresh portal data"
             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
           >
-            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+            <RefreshCw
+              size={16}
+              className={isLoading ? "animate-spin" : ""}
+              aria-hidden="true"
+            />
           </button>
           <Link
             href="/dashboard/nca-portal/packages/new"
@@ -114,13 +119,18 @@ export default function NCAPortalClient() {
 
       {/* Stats Bar */}
       {isLoading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          role="status"
+          aria-live="polite"
+        >
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4 h-20 animate-pulse"
             />
           ))}
+          <span className="sr-only">Loading portal statistics...</span>
         </div>
       ) : dashboard ? (
         <PortalStats
@@ -196,11 +206,18 @@ export default function NCAPortalClient() {
                   </p>
                 </div>
                 {!entry.isRead && (
-                  <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                  <>
+                    <div
+                      className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">Unread</span>
+                  </>
                 )}
                 <ArrowRight
                   size={14}
                   className="text-slate-300 dark:text-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-hidden="true"
                 />
               </Link>
             ))}

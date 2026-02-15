@@ -45,6 +45,8 @@ export default function QuestionStep({
         exit="exit"
         transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
         className="w-full"
+        aria-live="polite"
+        aria-atomic="true"
       >
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">

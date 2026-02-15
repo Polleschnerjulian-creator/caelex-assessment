@@ -39,6 +39,11 @@ export default function PackageCompletenessBar({
       )}
       <div
         className={`w-full ${heightClass} bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden`}
+        role="progressbar"
+        aria-valuenow={score}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Package completeness: ${score}%`}
       >
         <div
           className={`${heightClass} ${getColor(score)} rounded-full transition-all duration-500`}

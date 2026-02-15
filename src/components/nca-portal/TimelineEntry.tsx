@@ -77,8 +77,8 @@ export default function TimelineEntry({
   };
 
   return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center">
+    <div className="flex gap-3" role="listitem">
+      <div className="flex flex-col items-center" aria-hidden="true">
         <div
           className={`w-8 h-8 rounded-lg border ${getBorderColor()} bg-white dark:bg-navy-800 flex items-center justify-center flex-shrink-0`}
         >
@@ -92,15 +92,18 @@ export default function TimelineEntry({
           <p className="text-sm font-medium text-slate-900 dark:text-white">
             {title}
           </p>
-          <div className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0">
-            <Clock size={10} />
+          <time
+            dateTime={timestamp}
+            className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0"
+          >
+            <Clock size={10} aria-hidden="true" />
             {new Date(timestamp).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })}
-          </div>
+          </time>
         </div>
         {description && (
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-3">
@@ -109,7 +112,7 @@ export default function TimelineEntry({
         )}
         {metadata?.requiresResponse === true && (
           <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-amber-400 font-medium">
-            <AlertCircle size={10} />
+            <AlertCircle size={10} aria-hidden="true" />
             Response required
           </span>
         )}

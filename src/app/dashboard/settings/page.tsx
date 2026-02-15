@@ -342,12 +342,17 @@ function SecurityCard() {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  aria-label={
+                    showCurrentPassword
+                      ? "Hide current password"
+                      : "Show current password"
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
                 >
                   {showCurrentPassword ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-4 h-4" aria-hidden="true" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                   )}
                 </button>
               </div>
@@ -372,12 +377,15 @@ function SecurityCard() {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
+                  aria-label={
+                    showNewPassword ? "Hide new password" : "Show new password"
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
                 >
                   {showNewPassword ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-4 h-4" aria-hidden="true" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                   )}
                 </button>
               </div>
@@ -405,7 +413,10 @@ function SecurityCard() {
 
             {/* Password Error */}
             {passwordError && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div
+                role="alert"
+                className="p-3 rounded-lg bg-red-500/10 border border-red-500/30"
+              >
                 <p className="text-[13px] text-red-500 dark:text-red-400">
                   {passwordError}
                 </p>
@@ -505,7 +516,10 @@ export default function SettingsPage() {
                 {t("settings.accountStatus")}
               </p>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-[12px] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400" />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400"
+                  aria-hidden="true"
+                />
                 {t("settings.active")}
               </span>
             </div>
@@ -542,7 +556,10 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/50 transition-colors" />
+            <ChevronRight
+              className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/50 transition-colors"
+              aria-hidden="true"
+            />
           </div>
         </Link>
 

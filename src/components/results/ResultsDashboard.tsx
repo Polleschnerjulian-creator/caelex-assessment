@@ -82,14 +82,14 @@ export default function ResultsDashboard({
             href="/"
             className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={14} aria-hidden="true" />
             <span>Home</span>
           </Link>
           <button
             onClick={onRestart}
             className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={14} aria-hidden="true" />
             <span>Start over</span>
           </button>
         </motion.div>
@@ -162,7 +162,7 @@ export default function ResultsDashboard({
               onClick={handleDownloadClick}
               className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
             >
-              <FileDown size={14} />
+              <FileDown size={14} aria-hidden="true" />
               Get the Full Report
             </button>
           </div>
@@ -185,9 +185,17 @@ export default function ResultsDashboard({
 
       {/* Loading overlay for PDF generation */}
       {isGeneratingPDF && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <div className="bg-white/[0.08] border border-white/[0.15] rounded-xl p-8 text-center">
-            <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4" />
+            <div
+              className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4"
+              aria-hidden="true"
+            />
             <p className="text-[14px] text-white/80">
               Generating your report...
             </p>

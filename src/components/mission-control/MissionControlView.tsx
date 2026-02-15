@@ -128,9 +128,16 @@ export default function MissionControlView() {
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-64px)] bg-[#0A0A0B] flex items-center justify-center">
+      <div
+        className="h-[calc(100vh-64px)] bg-[#0A0A0B] flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-white/20 animate-spin mx-auto mb-3" />
+          <Loader2
+            className="w-8 h-8 text-white/20 animate-spin mx-auto mb-3"
+            aria-hidden="true"
+          />
           <p className="text-[12px] text-white/40 font-mono">
             {t("missionControl.loadingSatellites")}
           </p>
@@ -163,9 +170,16 @@ export default function MissionControlView() {
           {/* Search with dropdown */}
           <div className="flex-1 max-w-md pointer-events-auto relative">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30"
+                aria-hidden="true"
+              />
+              <label htmlFor="satellite-search" className="sr-only">
+                Search satellites
+              </label>
               <input
                 ref={searchRef}
+                id="satellite-search"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -244,7 +258,7 @@ export default function MissionControlView() {
                 : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-white/70"
             }`}
           >
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={14} aria-hidden="true" />
             {t("missionControl.filters")}
           </button>
         </div>

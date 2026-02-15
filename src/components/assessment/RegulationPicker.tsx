@@ -26,7 +26,7 @@ export default function RegulationPicker() {
             href="/"
             className="text-white/50 hover:text-emerald-400 transition-colors duration-300 text-[13px] flex items-center gap-2"
           >
-            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" aria-hidden="true" />
             Back to home
           </Link>
           <div className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em]">

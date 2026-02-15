@@ -120,6 +120,33 @@ export default function NotificationCenter() {
     }
   }, [isOpen]);
 
+  // Escape key to close and focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   // Mark single as read
   const markRead = async (id: string) => {
     setActionLoading(id);
@@ -195,11 +222,18 @@ export default function NotificationCenter() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/80 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04]"
-        aria-label={t("notifications.notifications")}
+        aria-label={`${t("notifications.notifications")}${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-controls="notification-panel"
       >
-        <Bell size={18} />
+        <Bell size={18} aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-red-500 rounded-full text-[9px] font-medium text-white px-1">
+          <span
+            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-red-500 rounded-full text-[9px] font-medium text-white px-1"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -207,7 +241,12 @@ export default function NotificationCenter() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[380px] bg-[#0A0A0B] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div
+          id="notification-panel"
+          role="dialog"
+          aria-label={t("notifications.notifications")}
+          className="absolute right-0 top-full mt-2 w-[380px] bg-[#0A0A0B] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <h3 className="text-[14px] font-medium text-white">
@@ -221,18 +260,23 @@ export default function NotificationCenter() {
                   className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 disabled:opacity-50"
                 >
                   {actionLoading === "all" ? (
-                    <Loader2 size={12} className="animate-spin" />
+                    <Loader2
+                      size={12}
+                      className="animate-spin"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <CheckCheck size={12} />
+                    <CheckCheck size={12} aria-hidden="true" />
                   )}
                   {t("notifications.markAllRead")}
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
+                aria-label="Close"
                 className="text-white/40 hover:text-white/60 p-0.5"
               >
-                <X size={14} />
+                <X size={14} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -241,11 +285,18 @@ export default function NotificationCenter() {
           <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-5 h-5 text-white/30 animate-spin" />
+                <Loader2
+                  className="w-5 h-5 text-white/30 animate-spin"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Loading notifications</span>
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-6">
-                <Bell className="w-8 h-8 text-white/20 mb-3" />
+                <Bell
+                  className="w-8 h-8 text-white/20 mb-3"
+                  aria-hidden="true"
+                />
                 <p className="text-[13px] text-white/50">
                   {t("notifications.noNotifications")}
                 </p>
@@ -290,12 +341,17 @@ export default function NotificationCenter() {
                               onClick={() => markRead(n.id)}
                               disabled={actionLoading === n.id}
                               className="p-1 text-white/30 hover:text-emerald-400 transition-colors"
+                              aria-label={t("notifications.markAsRead")}
                               title={t("notifications.markAsRead")}
                             >
                               {actionLoading === n.id ? (
-                                <Loader2 size={12} className="animate-spin" />
+                                <Loader2
+                                  size={12}
+                                  className="animate-spin"
+                                  aria-hidden="true"
+                                />
                               ) : (
-                                <Check size={12} />
+                                <Check size={12} aria-hidden="true" />
                               )}
                             </button>
                           )}
@@ -303,9 +359,10 @@ export default function NotificationCenter() {
                             onClick={() => dismiss(n.id)}
                             disabled={actionLoading === n.id}
                             className="p-1 text-white/30 hover:text-red-400 transition-colors"
+                            aria-label={t("notifications.dismiss")}
                             title={t("notifications.dismiss")}
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={12} aria-hidden="true" />
                           </button>
                         </div>
                       </div>

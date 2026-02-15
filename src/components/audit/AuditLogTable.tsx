@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import {
   FileText,
   Search,
@@ -141,7 +141,7 @@ export function AuditLogTable({
       <div className="p-4 border-b border-navy-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
-            <FileText className="w-5 h-5" />
+            <FileText className="w-5 h-5" aria-hidden="true" />
             Audit Log
           </h3>
           <span className="text-sm text-slate-400">
@@ -153,9 +153,13 @@ export function AuditLogTable({
         <div className="flex flex-wrap gap-3">
           {/* Search */}
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+              aria-hidden="true"
+            />
             <input
               type="text"
+              aria-label="Search audit logs"
               placeholder="Search audit logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -166,8 +170,12 @@ export function AuditLogTable({
 
           {/* Action Filter */}
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Filter
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+              aria-hidden="true"
+            />
             <select
+              aria-label="Filter by action"
               value={selectedAction}
               onChange={(e) => {
                 setSelectedAction(e.target.value);
@@ -186,8 +194,12 @@ export function AuditLogTable({
 
           {/* Entity Type Filter */}
           <div className="relative">
-            <Activity className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Activity
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+              aria-hidden="true"
+            />
             <select
+              aria-label="Filter by entity type"
               value={selectedEntityType}
               onChange={(e) => {
                 setSelectedEntityType(e.target.value);
@@ -209,56 +221,87 @@ export function AuditLogTable({
       {/* Table */}
       <div className="overflow-x-auto">
         {isLoading ? (
-          <div className="p-8 text-center">
+          <div
+            className="p-8 text-center"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto" />
             <p className="text-slate-400 mt-3">Loading audit logs...</p>
           </div>
         ) : logs.length === 0 ? (
-          <div className="p-8 text-center">
-            <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+          <div className="p-8 text-center" role="status">
+            <FileText
+              className="w-12 h-12 text-slate-600 mx-auto mb-3"
+              aria-hidden="true"
+            />
             <p className="text-slate-400">No audit logs found</p>
           </div>
         ) : (
-          <table className="w-full">
+          <table className="w-full" aria-label="Audit log entries">
             <thead className="bg-navy-900/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
+                >
                   Timestamp
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
+                >
                   User
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
+                >
                   Action
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
+                >
                   Entity
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
+                >
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider w-12">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider w-12"
+                >
                   Details
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-700">
               {logs.map((log) => (
-                <>
-                  <tr
-                    key={log.id}
-                    className="hover:bg-navy-700/30 transition-colors"
-                  >
+                <Fragment key={log.id}>
+                  <tr className="hover:bg-navy-700/30 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-slate-300">
-                        <Clock className="w-4 h-4 text-slate-500" />
-                        {formatDate(log.timestamp)}
+                        <Clock
+                          className="w-4 h-4 text-slate-500"
+                          aria-hidden="true"
+                        />
+                        <time dateTime={log.timestamp}>
+                          {formatDate(log.timestamp)}
+                        </time>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-navy-600 flex items-center justify-center">
-                          <User className="w-3 h-3 text-slate-400" />
+                          <User
+                            className="w-3 h-3 text-slate-400"
+                            aria-hidden="true"
+                          />
                         </div>
                         <span className="text-sm text-slate-300">
                           {log.user.name || log.user.email.split("@")[0]}
@@ -292,18 +335,30 @@ export function AuditLogTable({
                         onClick={() =>
                           setExpandedRow(expandedRow === log.id ? null : log.id)
                         }
+                        aria-expanded={expandedRow === log.id}
+                        aria-label={
+                          expandedRow === log.id
+                            ? "Collapse details"
+                            : "Expand details"
+                        }
                         className="p-1 hover:bg-navy-600 rounded transition-colors"
                       >
                         {expandedRow === log.id ? (
-                          <ChevronUp className="w-4 h-4 text-slate-400" />
+                          <ChevronUp
+                            className="w-4 h-4 text-slate-400"
+                            aria-hidden="true"
+                          />
                         ) : (
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                          <ChevronDown
+                            className="w-4 h-4 text-slate-400"
+                            aria-hidden="true"
+                          />
                         )}
                       </button>
                     </td>
                   </tr>
                   {expandedRow === log.id && (
-                    <tr key={`${log.id}-expanded`} className="bg-navy-900/30">
+                    <tr className="bg-navy-900/30">
                       <td colSpan={6} className="px-4 py-4">
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -372,7 +427,7 @@ export function AuditLogTable({
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -381,7 +436,10 @@ export function AuditLogTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-navy-700 flex items-center justify-between">
+        <nav
+          aria-label="Pagination"
+          className="px-4 py-3 border-t border-navy-700 flex items-center justify-between"
+        >
           <div className="text-sm text-slate-400">
             Showing {currentOffset + 1} -{" "}
             {Math.min(currentOffset + pageSize, total)} of{" "}
@@ -397,7 +455,10 @@ export function AuditLogTable({
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-slate-400">
+            <span
+              className="px-3 py-1 text-sm text-slate-400"
+              aria-current="page"
+            >
               Page {currentPage} of {totalPages}
             </span>
             <button
@@ -408,7 +469,7 @@ export function AuditLogTable({
               Next
             </button>
           </div>
-        </div>
+        </nav>
       )}
     </div>
   );

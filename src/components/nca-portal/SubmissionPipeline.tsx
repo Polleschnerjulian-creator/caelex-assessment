@@ -47,7 +47,10 @@ export default function SubmissionPipeline({
 
   if (!hasAnySubmissions) {
     return (
-      <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-8 text-center">
+      <div
+        className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-8 text-center"
+        role="status"
+      >
         <p className="text-slate-500 dark:text-slate-400 text-sm">
           No submissions yet. Create a package and submit to get started.
         </p>
@@ -64,9 +67,17 @@ export default function SubmissionPipeline({
         {PIPELINE_COLUMNS.map((column) => {
           const items = mergedPipeline[column.key] || [];
           return (
-            <div key={column.key} className="flex flex-col">
+            <div
+              key={column.key}
+              className="flex flex-col"
+              role="region"
+              aria-label={`${column.label} submissions: ${items.length}`}
+            >
               <div className="flex items-center gap-2 mb-3">
-                <div className={`w-2 h-2 rounded-full ${column.color}`} />
+                <div
+                  className={`w-2 h-2 rounded-full ${column.color}`}
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   {column.label}
                 </span>

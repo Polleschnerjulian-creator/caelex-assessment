@@ -31,6 +31,8 @@ export default function AstraChatPanel() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -44,15 +46,43 @@ export default function AstraChatPanel() {
     }
   }, [isOpen]);
 
-  // Escape key handler
+  // Save previously focused element and restore on close
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        close();
+    if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement;
+    }
+    return () => {
+      if (!isOpen && previouslyFocusedRef.current) {
+        previouslyFocusedRef.current.focus();
       }
     };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen]);
+
+  // Escape key handler and focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        close();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, close]);
 
   const handleSend = useCallback(() => {
@@ -117,6 +147,9 @@ export default function AstraChatPanel() {
 
           {/* Panel */}
           <motion.div
+            ref={panelRef}
+            role="complementary"
+            aria-label="ASTRA AI assistant"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -132,7 +165,10 @@ export default function AstraChatPanel() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-14 border-b border-white/10 bg-white/[0.02] backdrop-blur-sm flex-shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
+                <div
+                  className="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center"
+                  aria-hidden="true"
+                >
                   <Zap size={14} className="text-cyan-400" />
                 </div>
                 <div>
@@ -152,8 +188,9 @@ export default function AstraChatPanel() {
                   <div
                     className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.02] text-white/30"
                     title={`Conversation: ${conversationId.slice(0, 8)}...`}
+                    aria-label={`Conversation: ${conversationId.slice(0, 8)}`}
                   >
-                    <MessageSquare size={12} />
+                    <MessageSquare size={12} aria-hidden="true" />
                   </div>
                 )}
                 {/* New Chat button */}
@@ -161,17 +198,19 @@ export default function AstraChatPanel() {
                   <button
                     onClick={resetChat}
                     className="p-2 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+                    aria-label="Start new chat"
                     title="Start new chat"
                   >
-                    <RotateCcw size={14} />
+                    <RotateCcw size={14} aria-hidden="true" />
                   </button>
                 )}
                 {/* Close button */}
                 <button
                   onClick={close}
+                  aria-label="Close ASTRA panel"
                   className="p-2 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
                 >
-                  <X size={16} />
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -186,15 +225,20 @@ export default function AstraChatPanel() {
                   className="overflow-hidden"
                 >
                   <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle size={14} className="text-red-400" />
+                    <div className="flex items-center gap-2" role="alert">
+                      <AlertCircle
+                        size={14}
+                        className="text-red-400"
+                        aria-hidden="true"
+                      />
                       <span className="text-[11px] text-red-400">{error}</span>
                     </div>
                     <button
                       onClick={clearError}
+                      aria-label="Dismiss error"
                       className="p-1 rounded hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors"
                     >
-                      <X size={12} />
+                      <X size={12} aria-hidden="true" />
                     </button>
                   </div>
                 </motion.div>
@@ -209,8 +253,15 @@ export default function AstraChatPanel() {
 
               {/* Typing indicator */}
               {isTyping && (
-                <div className="flex gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                <div
+                  className="flex gap-2.5"
+                  aria-label="ASTRA is typing"
+                  role="status"
+                >
+                  <div
+                    className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0"
+                    aria-hidden="true"
+                  >
                     <Zap size={13} className="text-cyan-400" />
                   </div>
                   <div className="bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-cyan-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
@@ -238,7 +289,11 @@ export default function AstraChatPanel() {
             {/* Input Bar */}
             <div className="flex-shrink-0 px-4 py-3 border-t border-white/10 bg-white/[0.01]">
               <div className="flex items-center gap-2">
+                <label htmlFor="astra-chat-input" className="sr-only">
+                  Ask about regulations
+                </label>
                 <input
+                  id="astra-chat-input"
                   ref={inputRef}
                   type="text"
                   value={input}
@@ -251,9 +306,10 @@ export default function AstraChatPanel() {
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isTyping}
+                  aria-label="Send message"
                   className="p-2.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  <Send size={14} />
+                  <Send size={14} aria-hidden="true" />
                 </button>
               </div>
               <div className="flex items-center justify-between mt-1.5">

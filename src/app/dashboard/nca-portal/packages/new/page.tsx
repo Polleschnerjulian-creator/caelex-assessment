@@ -178,13 +178,14 @@ export default function PackageBuilderPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => (step > 0 ? setStep(step - 1) : router.back())}
+          aria-label="Go back"
           className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div>
           <h1 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Package size={20} className="text-blue-400" />
+            <Package size={20} className="text-blue-400" aria-hidden="true" />
             Assemble Submission Package
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">

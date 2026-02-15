@@ -32,7 +32,7 @@ export default function NIS2ComplianceMatrix({
       className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
     >
       <div className="flex items-center gap-2 mb-6">
-        <Grid3X3 className="w-5 h-5 text-blue-400" />
+        <Grid3X3 className="w-5 h-5 text-blue-400" aria-hidden="true" />
         <h3 className="text-lg font-semibold text-white">
           Compliance Overview
         </h3>
@@ -78,9 +78,15 @@ export default function NIS2ComplianceMatrix({
           <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               {registrationRequired ? (
-                <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                <CheckCircle2
+                  className="w-4 h-4 text-amber-400"
+                  aria-hidden="true"
+                />
               ) : (
-                <MinusCircle className="w-4 h-4 text-slate-400" />
+                <MinusCircle
+                  className="w-4 h-4 text-slate-400"
+                  aria-hidden="true"
+                />
               )}
               <span className="text-sm text-white font-medium">
                 Registration{" "}
@@ -119,7 +125,10 @@ export default function NIS2ComplianceMatrix({
                 key={i}
                 className="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg"
               >
-                <Circle className="w-2 h-2 text-blue-400 fill-blue-400 flex-shrink-0" />
+                <Circle
+                  className="w-2 h-2 text-blue-400 fill-blue-400 flex-shrink-0"
+                  aria-hidden="true"
+                />
                 <span className="font-mono text-sm text-blue-400 w-28 flex-shrink-0">
                   {date.date}
                 </span>

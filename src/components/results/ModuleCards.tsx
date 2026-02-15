@@ -96,6 +96,7 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center ${style.badge}`}
+                      aria-hidden="true"
                     >
                       {IconComponent && <IconComponent className="w-4 h-4" />}
                     </div>

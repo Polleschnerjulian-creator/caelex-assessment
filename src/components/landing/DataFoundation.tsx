@@ -13,7 +13,10 @@ const dataPoints = [
 
 export default function DataFoundation() {
   return (
-    <section className="bg-black py-[120px] lg:py-[200px]">
+    <section
+      className="bg-black py-[120px] lg:py-[200px]"
+      aria-label="Data source"
+    >
       <div className="max-w-[600px] mx-auto px-6 md:px-8 text-center">
         {/* Label */}
         <ScrollReveal>

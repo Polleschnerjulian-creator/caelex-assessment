@@ -20,9 +20,12 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         {/* Mobile hamburger */}
         <button
           onClick={onMenuClick}
+          aria-label="Open navigation menu"
+          aria-expanded={false}
+          aria-controls="sidebar-nav"
           className="lg:hidden text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/60 transition-colors"
         >
-          <Menu size={20} />
+          <Menu size={20} aria-hidden="true" />
         </button>
 
         {/* Page title */}

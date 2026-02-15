@@ -41,6 +41,9 @@ export default function PricingTable({
         </span>
         <button
           onClick={() => setIsYearly(!isYearly)}
+          role="switch"
+          aria-checked={isYearly}
+          aria-label="Toggle yearly billing"
           className={`relative w-12 h-6 rounded-full transition-colors ${
             isYearly ? "bg-emerald-500" : "bg-slate-200 dark:bg-white/[0.1]"
           }`}
@@ -140,20 +143,29 @@ export default function PricingTable({
               {/* Features */}
               <ul className="space-y-2.5 mb-6">
                 <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                  <Check
+                    className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>
                     {formatFeatureValue(config.features.users)}{" "}
                     {config.features.users === 1 ? "user" : "users"}
                   </span>
                 </li>
                 <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                  <Check
+                    className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>
                     {formatFeatureValue(config.features.spacecraft)} spacecraft
                   </span>
                 </li>
                 <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                  <Check
+                    className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>
                     {config.features.modules === "all"
                       ? "All modules"
@@ -163,7 +175,10 @@ export default function PricingTable({
                 {(config.features.storage === "unlimited" ||
                   config.features.storage > 0) && (
                   <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                    <Check
+                      className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>
                       {formatFeatureValue(config.features.storage)}{" "}
                       {config.features.storage !== "unlimited" && "GB"} storage
@@ -172,18 +187,27 @@ export default function PricingTable({
                 )}
                 {config.features.api && (
                   <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                    <Check
+                      className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>API access</span>
                   </li>
                 )}
                 {config.features.sso && (
                   <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                    <Check
+                      className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>SSO integration</span>
                   </li>
                 )}
                 <li className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-white/60">
-                  <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                  <Check
+                    className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span className="capitalize">
                     {config.features.support} support
                   </span>

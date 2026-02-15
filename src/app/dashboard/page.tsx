@@ -307,8 +307,16 @@ function KPICard({
         </div>
         {trend && trendValue && (
           <div className={`flex items-center gap-1 ${trendColor}`}>
-            <TrendIcon className="w-3.5 h-3.5" />
+            <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
             <span className="text-[11px] font-mono">{trendValue}</span>
+            <span className="sr-only">
+              Trend:{" "}
+              {trend === "up"
+                ? "increasing"
+                : trend === "down"
+                  ? "decreasing"
+                  : "stable"}
+            </span>
           </div>
         )}
       </div>
@@ -388,6 +396,7 @@ function DeadlineItem({
   return (
     <div className="flex items-center gap-3 py-2">
       <div
+        aria-hidden="true"
         className={`w-2 h-2 rounded-full ${
           deadline.priority === "critical"
             ? "bg-red-500"
@@ -427,12 +436,14 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
     <div className="flex flex-col items-center">
       <div
         className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
+        title={`${module}: ${risk} risk`}
       >
         <span className="text-[10px] font-mono text-white/90 font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
       <span className="text-[9px] text-white/40">{module}</span>
+      <span className="sr-only">{risk} risk</span>
     </div>
   );
 }
@@ -489,7 +500,10 @@ function ActivityItem({
 
   return (
     <div className="flex items-start gap-3 py-3 border-b border-white/5 last:border-0">
-      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+      <div
+        className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0"
+        aria-hidden="true"
+      >
         <Icon className="w-4 h-4 text-white/50" />
       </div>
       <div className="flex-1 min-w-0">
@@ -816,7 +830,12 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8 min-h-screen">
+      <div
+        className="p-6 lg:p-8 min-h-screen"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading dashboard"
+      >
         <div className="animate-pulse space-y-6 max-w-[1400px]">
           <div className="h-8 bg-white/5 rounded w-1/3" />
           <div className="h-4 bg-white/5 rounded w-1/2" />
@@ -830,6 +849,7 @@ function DashboardContent() {
               <div key={i} className="h-[340px] bg-white/5 rounded-xl" />
             ))}
           </div>
+          <span className="sr-only">Loading dashboard data...</span>
         </div>
       </div>
     );
@@ -846,16 +866,23 @@ function DashboardContent() {
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-4 right-4 z-50"
           >
-            <div className="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 flex items-center gap-3 shadow-xl backdrop-blur-sm">
-              <CheckCircle className="w-5 h-5 text-green-400" />
+            <div
+              role="status"
+              className="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 flex items-center gap-3 shadow-xl backdrop-blur-sm"
+            >
+              <CheckCircle
+                className="w-5 h-5 text-green-400"
+                aria-hidden="true"
+              />
               <span className="text-[14px] text-white font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
                 onClick={() => setShowSuccessToast(false)}
+                aria-label="Dismiss notification"
                 className="text-white/50 hover:text-white/80"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
           </motion.div>
@@ -871,7 +898,10 @@ function DashboardContent() {
             className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5"
           >
             <div className="flex items-start gap-4">
-              <ClipboardList className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <ClipboardList
+                className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0"
+                aria-hidden="true"
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="text-[14px] font-medium text-white mb-1">
                   {t("dashboard.assessmentResultsAvailable")}
@@ -895,9 +925,10 @@ function DashboardContent() {
                 </button>
                 <button
                   onClick={handleDismissPendingAssessment}
+                  aria-label="Dismiss assessment notification"
                   className="text-emerald-400 hover:text-emerald-300 p-1"
                 >
-                  <X size={16} />
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -987,7 +1018,7 @@ function DashboardContent() {
                 href="/assessment"
                 className="bg-emerald-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
               >
-                <PlayCircle size={16} />
+                <PlayCircle size={16} aria-hidden="true" />
                 {t("dashboard.runAssessmentAction")}
               </Link>
               <button
@@ -1042,7 +1073,8 @@ function DashboardContent() {
                 href="/dashboard/audit-center"
                 className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
-                {t("common.viewAll")} <ChevronRight className="w-3 h-3" />
+                {t("common.viewAll")}{" "}
+                <ChevronRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             }
           />
@@ -1113,6 +1145,7 @@ function DashboardContent() {
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
                     <div
+                      aria-hidden="true"
                       className={`w-2.5 h-2.5 rounded ${
                         i === 0
                           ? "bg-red-500"
@@ -1176,6 +1209,9 @@ function DashboardContent() {
               onClick={() => setShowImportModal(false)}
             >
               <motion.div
+                role="dialog"
+                aria-label={t("dashboard.selectOperatorType")}
+                aria-modal="true"
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
@@ -1188,7 +1224,11 @@ function DashboardContent() {
                 <p className="text-[13px] text-white/60 mb-6">
                   {t("dashboard.selectOperatorDescription")}
                 </p>
+                <label htmlFor="operator-type-select" className="sr-only">
+                  {t("dashboard.selectOperatorType")}
+                </label>
                 <select
+                  id="operator-type-select"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-emerald-500/50"
@@ -1233,7 +1273,11 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 lg:p-8 min-h-screen">
+        <div
+          className="p-6 lg:p-8 min-h-screen"
+          role="status"
+          aria-live="polite"
+        >
           <div className="animate-pulse space-y-6 max-w-[1400px]">
             <div className="h-8 bg-white/5 rounded w-1/3" />
             <div className="h-4 bg-white/5 rounded w-1/2" />
@@ -1242,6 +1286,7 @@ export default function DashboardPage() {
                 <div key={i} className="h-32 bg-white/5 rounded-xl" />
               ))}
             </div>
+            <span className="sr-only">Loading dashboard...</span>
           </div>
         </div>
       }

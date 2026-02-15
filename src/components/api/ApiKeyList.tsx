@@ -95,9 +95,18 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-10 bg-navy-800 rounded w-1/4"></div>
-        <div className="h-32 bg-navy-800 rounded"></div>
+      <div
+        className="animate-pulse space-y-4"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <span className="sr-only">Loading API keys...</span>
+        <div
+          className="h-10 bg-navy-800 rounded w-1/4"
+          aria-hidden="true"
+        ></div>
+        <div className="h-32 bg-navy-800 rounded" aria-hidden="true"></div>
       </div>
     );
   }
@@ -126,7 +135,10 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
       {newKeySecret && (
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div className="flex-1">
               <h3 className="font-medium text-amber-500">
                 Save your API key now
@@ -141,12 +153,23 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
                 </code>
                 <button
                   onClick={() => copyToClipboard(newKeySecret, "new")}
+                  aria-label={
+                    copiedKeyId === "new"
+                      ? "Copied to clipboard"
+                      : "Copy API key to clipboard"
+                  }
                   className="px-3 py-2 bg-navy-700 rounded hover:bg-navy-600 transition-colors"
                 >
                   {copiedKeyId === "new" ? (
-                    <Check className="w-4 h-4 text-green-500" />
+                    <Check
+                      className="w-4 h-4 text-green-500"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <Copy className="w-4 h-4 text-slate-400" />
+                    <Copy
+                      className="w-4 h-4 text-slate-400"
+                      aria-hidden="true"
+                    />
                   )}
                 </button>
               </div>
@@ -163,8 +186,14 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
 
       {/* Keys List */}
       {keys.length === 0 ? (
-        <div className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl">
-          <Key className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <div
+          className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl"
+          role="status"
+        >
+          <Key
+            className="w-12 h-12 text-slate-600 mx-auto mb-4"
+            aria-hidden="true"
+          />
           <h3 className="text-lg font-medium text-white mb-2">
             No API keys yet
           </h3>
@@ -237,6 +266,9 @@ function ApiKeyCard({
                 Revoked
               </span>
             )}
+            <span className="sr-only">
+              Status: {apiKey.isActive ? "Active" : "Revoked"}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 mb-3">
@@ -245,22 +277,26 @@ function ApiKeyCard({
             </code>
             <button
               onClick={() => setShowMasked(!showMasked)}
+              aria-label={showMasked ? "Hide API key" : "Show API key"}
               className="p-1 text-slate-500 hover:text-slate-300"
             >
               {showMasked ? (
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="w-4 h-4" aria-hidden="true" />
               ) : (
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4" aria-hidden="true" />
               )}
             </button>
             <button
               onClick={() => onCopy(apiKey.maskedKey)}
+              aria-label={
+                copied ? "Copied to clipboard" : "Copy API key to clipboard"
+              }
               className="p-1 text-slate-500 hover:text-slate-300"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
+                <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
               ) : (
-                <Copy className="w-4 h-4" />
+                <Copy className="w-4 h-4" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -278,17 +314,26 @@ function ApiKeyCard({
 
           <div className="flex items-center gap-4 text-xs text-slate-500">
             <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Created {new Date(apiKey.createdAt).toLocaleDateString()}
+              <Clock className="w-3 h-3" aria-hidden="true" />
+              Created{" "}
+              <time dateTime={apiKey.createdAt}>
+                {new Date(apiKey.createdAt).toLocaleDateString()}
+              </time>
             </span>
             {apiKey.lastUsedAt && (
               <span>
-                Last used {new Date(apiKey.lastUsedAt).toLocaleDateString()}
+                Last used{" "}
+                <time dateTime={apiKey.lastUsedAt}>
+                  {new Date(apiKey.lastUsedAt).toLocaleDateString()}
+                </time>
               </span>
             )}
             {apiKey.expiresAt && (
               <span className="text-amber-500">
-                Expires {new Date(apiKey.expiresAt).toLocaleDateString()}
+                Expires{" "}
+                <time dateTime={apiKey.expiresAt}>
+                  {new Date(apiKey.expiresAt).toLocaleDateString()}
+                </time>
               </span>
             )}
             <span>{apiKey.rateLimit} req/hour</span>
@@ -299,9 +344,9 @@ function ApiKeyCard({
           <button
             onClick={onRevoke}
             className="p-2 text-red-400 hover:bg-red-500/10 rounded transition-colors"
-            title="Revoke key"
+            aria-label={`Revoke API key ${apiKey.name}`}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
       </div>

@@ -54,9 +54,10 @@ export default function FilterPanel({
         </h3>
         <button
           onClick={onClose}
+          aria-label="Close filters"
           className="text-white/40 hover:text-white/70 transition-colors"
         >
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </button>
       </div>
 
@@ -121,6 +122,8 @@ export default function FilterPanel({
         <div>
           <button
             onClick={onFleetOnlyToggle}
+            role="switch"
+            aria-checked={fleetOnly}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[12px] transition-all border ${
               fleetOnly
                 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
@@ -132,6 +135,7 @@ export default function FilterPanel({
               className={`w-8 h-4 rounded-full transition-all ${
                 fleetOnly ? "bg-emerald-500" : "bg-white/10"
               } flex items-center`}
+              aria-hidden="true"
             >
               <div
                 className={`w-3 h-3 rounded-full bg-white transition-transform ${

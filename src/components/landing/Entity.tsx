@@ -95,7 +95,11 @@ function DataStream({ text, index, total }: DataStreamProps) {
 // NO MOUSE INTERACTION - Entity is autonomous
 export default function Entity() {
   return (
-    <div className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] lg:w-[700px] lg:h-[700px]">
+    <div
+      className="relative w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] lg:w-[700px] lg:h-[700px]"
+      role="img"
+      aria-label="Decorative 3D visualization of the EU Space Act regulatory framework, showing articles organized as orbiting data nodes within a rotating particle cube structure"
+    >
       {/* Inline styles for orbit animations */}
       <style jsx>{`
         @keyframes orbit0 {
@@ -171,6 +175,7 @@ export default function Entity() {
       {/* AURA — Massive ambient glow behind everything */}
       <div
         className="absolute pointer-events-none"
+        aria-hidden="true"
         style={{
           inset: "-300px",
           background: `
@@ -183,13 +188,14 @@ export default function Entity() {
       />
 
       {/* Three.js Canvas — Autonomous particle cube */}
-      <div className="absolute inset-0 z-10">
+      <div className="absolute inset-0 z-10" aria-hidden="true">
         <EntityScene />
       </div>
 
       {/* DATA STREAMS — Orbiting text fragments (very subtle) */}
       <div
         className="absolute inset-0 pointer-events-none z-20"
+        aria-hidden="true"
         style={{ perspective: "1000px" }}
       >
         {DATA_FRAGMENTS.map((text, index) => (
@@ -203,7 +209,10 @@ export default function Entity() {
       </div>
 
       {/* ENERGY PULSES — Expanding rings */}
-      <div className="absolute inset-0 pointer-events-none z-20">
+      <div
+        className="absolute inset-0 pointer-events-none z-20"
+        aria-hidden="true"
+      >
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
@@ -220,6 +229,7 @@ export default function Entity() {
       {/* SCAN LINE — Horizontal sweeping line */}
       <div
         className="absolute left-1/2 top-1/2 w-[50%] h-[1px] pointer-events-none z-20"
+        aria-hidden="true"
         style={{
           background:
             "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",

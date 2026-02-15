@@ -83,6 +83,8 @@ export default function MultiSelectQuestionStep({
         exit="exit"
         transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
         className="w-full"
+        aria-live="polite"
+        aria-atomic="true"
       >
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
@@ -135,6 +137,8 @@ export default function MultiSelectQuestionStep({
                 key={option.id}
                 role="checkbox"
                 aria-checked={isSelected}
+                aria-disabled={isDisabled}
+                aria-label={`${option.label}${option.description ? `: ${option.description}` : ""}`}
                 tabIndex={0}
                 onClick={() => !isDisabled && toggleOption(option.value)}
                 onKeyDown={(e) => {
@@ -169,10 +173,13 @@ export default function MultiSelectQuestionStep({
                     `}
                   >
                     {flag ? (
-                      <span className="text-xl">{flag}</span>
+                      <span className="text-xl" aria-hidden="true">
+                        {flag}
+                      </span>
                     ) : IconComponent ? (
                       <IconComponent
                         size={18}
+                        aria-hidden="true"
                         className={
                           isSelected ? "text-emerald-400" : "text-white/70"
                         }
@@ -203,7 +210,11 @@ export default function MultiSelectQuestionStep({
                   >
                     {isSelected && (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                        <Check size={12} className="text-white" />
+                        <Check
+                          size={12}
+                          className="text-white"
+                          aria-hidden="true"
+                        />
                       </motion.div>
                     )}
                   </div>
@@ -233,7 +244,7 @@ export default function MultiSelectQuestionStep({
             `}
           >
             Continue
-            <ArrowRight size={16} />
+            <ArrowRight size={16} aria-hidden="true" />
           </motion.button>
         </div>
       </motion.div>

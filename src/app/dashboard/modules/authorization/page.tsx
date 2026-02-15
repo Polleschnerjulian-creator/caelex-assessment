@@ -281,7 +281,7 @@ function AuthorizationPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -294,6 +294,7 @@ function AuthorizationPageContent() {
             ))}
           </div>
         </div>
+        <span className="sr-only">Loading authorization workflow...</span>
       </div>
     );
   }
@@ -315,10 +316,18 @@ function AuthorizationPageContent() {
 
       {/* Stepper */}
       <div className="mb-8">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          role="tablist"
+          aria-label="Authorization workflow steps"
+        >
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
+                role="tab"
+                aria-selected={activeStep === index}
+                aria-controls={`tabpanel-${step.id}`}
+                id={`tab-${step.id}`}
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
@@ -335,7 +344,11 @@ function AuthorizationPageContent() {
                         : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
                   }`}
                 >
-                  {activeStep > index ? <CheckCircle2 size={12} /> : index + 1}
+                  {activeStep > index ? (
+                    <CheckCircle2 size={12} aria-hidden="true" />
+                  ) : (
+                    index + 1
+                  )}
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
@@ -352,6 +365,7 @@ function AuthorizationPageContent() {
                 <ChevronRight
                   size={16}
                   className="text-slate-300 dark:text-white/10 mx-1"
+                  aria-hidden="true"
                 />
               )}
             </div>
@@ -402,7 +416,11 @@ function AuthorizationPageContent() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <Building2 size={18} className="text-white/60" />
+                          <Building2
+                            size={18}
+                            className="text-white/60"
+                            aria-hidden="true"
+                          />
                           <span className="text-[15px] font-medium text-white">
                             {workflow.primaryNCAName}
                           </span>
@@ -424,11 +442,11 @@ function AuthorizationPageContent() {
                         </div>
                         <div className="flex items-center gap-4 text-[12px] text-white/70">
                           <span className="flex items-center gap-1.5">
-                            <Globe size={12} />
+                            <Globe size={12} aria-hidden="true" />
                             {workflow.pathway.replace(/_/g, " ")}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <FileCheck size={12} />
+                            <FileCheck size={12} aria-hidden="true" />
                             {
                               workflow.documents.filter(
                                 (d) =>
@@ -440,7 +458,11 @@ function AuthorizationPageContent() {
                           </span>
                         </div>
                       </div>
-                      <ChevronRight size={18} className="text-white/60" />
+                      <ChevronRight
+                        size={18}
+                        className="text-white/60"
+                        aria-hidden="true"
+                      />
                     </div>
                   </button>
                 ))}
@@ -590,7 +612,11 @@ function AuthorizationPageContent() {
                   >
                     <div className="flex items-start gap-4">
                       <div className="p-3 rounded-xl bg-white/[0.05]">
-                        <Building2 size={24} className="text-white/60" />
+                        <Building2
+                          size={24}
+                          className="text-white/60"
+                          aria-hidden="true"
+                        />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-[15px] font-medium text-white mb-1">
@@ -617,6 +643,7 @@ function AuthorizationPageContent() {
                                   <ChevronRight
                                     size={12}
                                     className="mt-0.5 text-white/60"
+                                    aria-hidden="true"
                                   />
                                   {req}
                                 </li>
@@ -627,13 +654,13 @@ function AuthorizationPageContent() {
                         {/* Timeline & Articles */}
                         <div className="flex items-center gap-6 text-[12px]">
                           <div className="flex items-center gap-2 text-white/70">
-                            <Clock size={14} />
+                            <Clock size={14} aria-hidden="true" />
                             <span>
                               Est. {ncaDetermination.estimatedTimeline}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-white/70">
-                            <FileText size={14} />
+                            <FileText size={14} aria-hidden="true" />
                             <span>
                               Art.{" "}
                               {ncaDetermination.relevantArticles.join(", ")}
@@ -646,7 +673,7 @@ function AuthorizationPageContent() {
                               rel="noopener noreferrer"
                               className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300"
                             >
-                              <ExternalLink size={12} />
+                              <ExternalLink size={12} aria-hidden="true" />
                               Website
                             </a>
                           )}
@@ -659,6 +686,7 @@ function AuthorizationPageContent() {
                               <Info
                                 size={14}
                                 className="text-amber-400/60 mt-0.5"
+                                aria-hidden="true"
                               />
                               <p className="text-[12px] text-white/60">
                                 {ncaDetermination.notes}
@@ -682,7 +710,11 @@ function AuthorizationPageContent() {
                                 key={nca.id}
                                 className="flex items-center gap-2 px-3 py-2 bg-white/[0.04] rounded-lg"
                               >
-                                <MapPin size={12} className="text-white/70" />
+                                <MapPin
+                                  size={12}
+                                  className="text-white/70"
+                                  aria-hidden="true"
+                                />
                                 <span className="text-[12px] text-white/70">
                                   {nca.name}
                                 </span>
@@ -733,7 +765,11 @@ function AuthorizationPageContent() {
           >
             {!selectedWorkflow ? (
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
+                <AlertCircle
+                  size={32}
+                  className="mx-auto text-white/60 mb-3"
+                  aria-hidden="true"
+                />
                 <p className="text-[14px] text-white/60 mb-4">
                   No workflow selected. Start by determining your NCA.
                 </p>
@@ -770,6 +806,11 @@ function AuthorizationPageContent() {
                       animate={{ width: `${progress.percent}%` }}
                       transition={{ duration: 0.5, ease: "easeOut" }}
                       className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
+                      role="progressbar"
+                      aria-valuenow={progress.percent}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Document completion progress"
                     />
                   </div>
                 </div>
@@ -829,6 +870,7 @@ function AuthorizationPageContent() {
                                 onChange={(e) =>
                                   updateDocumentStatus(doc.id, e.target.value)
                                 }
+                                aria-label={`Status for ${doc.name}`}
                                 className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statusInfo?.color || "text-white/70"}`}
                               >
                                 <option value="not_started">Not Started</option>
@@ -908,7 +950,11 @@ function AuthorizationPageContent() {
                     days until 01 January 2030
                   </p>
                 </div>
-                <Calendar size={48} className="text-white/10" />
+                <Calendar
+                  size={48}
+                  className="text-white/10"
+                  aria-hidden="true"
+                />
               </div>
             </div>
 
@@ -1031,7 +1077,11 @@ function AuthorizationPageContent() {
           >
             {!selectedWorkflow ? (
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
+                <AlertCircle
+                  size={32}
+                  className="mx-auto text-white/60 mb-3"
+                  aria-hidden="true"
+                />
                 <p className="text-[14px] text-white/60 mb-4">
                   No workflow selected. Start by determining your NCA.
                 </p>
@@ -1161,7 +1211,7 @@ function AuthorizationPageContent() {
                     disabled={downloadingPdf}
                     className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-lg font-medium text-[13px] transition-all disabled:opacity-50"
                   >
-                    <Download size={14} />
+                    <Download size={14} aria-hidden="true" />
                     {downloadingPdf
                       ? "Generating..."
                       : "Download Application PDF"}

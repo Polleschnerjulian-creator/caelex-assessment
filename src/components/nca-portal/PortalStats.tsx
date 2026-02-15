@@ -67,6 +67,7 @@ export default function PortalStats({
             <div className="flex items-center gap-3">
               <div
                 className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}
+                aria-hidden="true"
               >
                 <Icon size={20} className={stat.color} />
               </div>

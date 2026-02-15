@@ -784,9 +784,10 @@ function TimelinePageContent() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" role="status" aria-live="polite">
         <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3 animate-pulse" />
         <div className="h-64 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse" />
+        <span className="sr-only">Loading timeline data...</span>
       </div>
     );
   }
@@ -903,10 +904,17 @@ function TimelinePageContent() {
       )}
 
       {/* Step Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
+      <div
+        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        role="tablist"
+        aria-label="Timeline views"
+      >
         {steps.map((step) => (
           <button
             key={step.id}
+            role="tab"
+            aria-selected={activeStep === step.id}
+            aria-controls={`tabpanel-${step.id}`}
             onClick={() => setActiveStep(step.id)}
             className={`
               flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg
@@ -918,7 +926,7 @@ function TimelinePageContent() {
               }
             `}
           >
-            {step.icon}
+            <span aria-hidden="true">{step.icon}</span>
             <span className="hidden md:inline">{step.label}</span>
           </button>
         ))}
@@ -999,11 +1007,13 @@ function TimelinePageContent() {
                       onClick={() =>
                         setSelectedFilter(selectedFilter ? null : "filter")
                       }
+                      aria-label="Filter deadlines"
                       className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                     >
                       <Filter
                         size={16}
                         className="text-slate-500 dark:text-white/60"
+                        aria-hidden="true"
                       />
                     </button>
                   </CardHeader>
@@ -1121,11 +1131,13 @@ function TimelinePageContent() {
                         ),
                       )
                     }
+                    aria-label="Previous month"
                     className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                   >
                     <ChevronLeft
                       size={16}
                       className="text-slate-500 dark:text-white/60"
+                      aria-hidden="true"
                     />
                   </button>
                   <button
@@ -1142,11 +1154,13 @@ function TimelinePageContent() {
                         ),
                       )
                     }
+                    aria-label="Next month"
                     className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
                   >
                     <ChevronRight
                       size={16}
                       className="text-slate-500 dark:text-white/60"
+                      aria-hidden="true"
                     />
                   </button>
                 </div>
@@ -1280,16 +1294,26 @@ function TimelinePageContent() {
       {/* Add Deadline Modal */}
       {showDeadlineForm && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div
+            role="dialog"
+            aria-label="Add new deadline"
+            aria-modal="true"
+            className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Add New Deadline
               </h3>
               <button
                 onClick={() => setShowDeadlineForm(false)}
+                aria-label="Close dialog"
                 className="p-2 hover:bg-slate-200 dark:bg-white/5 rounded-lg transition-colors"
               >
-                <X size={16} className="text-slate-500 dark:text-white/60" />
+                <X
+                  size={16}
+                  className="text-slate-500 dark:text-white/60"
+                  aria-hidden="true"
+                />
               </button>
             </div>
 

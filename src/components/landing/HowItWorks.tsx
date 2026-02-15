@@ -37,6 +37,7 @@ export default function HowItWorks() {
     <section
       ref={ref}
       className="relative py-24 md:py-32 overflow-hidden bg-black"
+      aria-label="How it works"
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
@@ -58,7 +59,10 @@ export default function HowItWorks() {
         {/* Steps Grid */}
         <div className="relative">
           {/* Connector Line - Desktop only */}
-          <div className="hidden lg:block absolute top-[80px] left-[16.67%] right-[16.67%] h-px">
+          <div
+            className="hidden lg:block absolute top-[80px] left-[16.67%] right-[16.67%] h-px"
+            aria-hidden="true"
+          >
             <div className="w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             {/* Chevrons */}
             <div className="absolute top-1/2 left-1/3 -translate-y-1/2 -translate-x-1/2">
@@ -80,7 +84,10 @@ export default function HowItWorks() {
                 className="relative"
               >
                 {/* Large Ghost Number */}
-                <div className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/[0.04] leading-none select-none pointer-events-none z-0">
+                <div
+                  className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/[0.04] leading-none select-none pointer-events-none z-0"
+                  aria-hidden="true"
+                >
                   {step.number}
                 </div>
 

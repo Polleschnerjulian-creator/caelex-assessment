@@ -31,7 +31,10 @@ const cards = [
 
 export default function WhatYouGet() {
   return (
-    <section className="bg-black py-[120px] lg:py-[200px]">
+    <section
+      className="bg-black py-[120px] lg:py-[200px]"
+      aria-label="Your compliance report"
+    >
       <div className="max-w-[1000px] mx-auto px-6 md:px-8">
         {/* Header */}
         <ScrollReveal>
@@ -49,7 +52,10 @@ export default function WhatYouGet() {
             <ScrollReveal key={index} delay={index * 0.1}>
               <div className="relative bg-white/[0.015] border border-white/10 rounded-lg p-8 overflow-hidden hover:border-white/[0.1] hover:bg-white/[0.025] transition-all duration-500">
                 {/* Corner number */}
-                <span className="absolute top-4 right-4 font-mono text-[10px] text-white/10">
+                <span
+                  className="absolute top-4 right-4 font-mono text-[10px] text-white/10"
+                  aria-hidden="true"
+                >
                   {card.number}
                 </span>
 

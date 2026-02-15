@@ -76,9 +76,13 @@ export default function JurisdictionCompare() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section ref={ref} className="relative bg-black py-24 md:py-32">
+    <section
+      ref={ref}
+      className="relative bg-black py-24 md:py-32"
+      aria-label="Jurisdiction comparison"
+    >
       {/* Section Label */}
-      <div className="absolute top-8 right-6 md:right-12">
+      <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
         <span className="font-mono text-[11px] text-white/30">03 / 14</span>
       </div>
 
@@ -121,7 +125,9 @@ export default function JurisdictionCompare() {
             >
               {/* Flag & Name */}
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl">{jurisdiction.flag}</span>
+                <span className="text-2xl" aria-hidden="true">
+                  {jurisdiction.flag}
+                </span>
                 <div>
                   <div className="text-[15px] font-medium text-white">
                     {jurisdiction.name}
@@ -136,7 +142,7 @@ export default function JurisdictionCompare() {
               <div className="space-y-2 text-[12px]">
                 <div className="flex items-center justify-between">
                   <span className="text-white/40 flex items-center gap-1.5">
-                    <Clock size={12} />
+                    <Clock size={12} aria-hidden="true" />
                     Processing
                   </span>
                   <span className="text-white/70">
@@ -145,7 +151,7 @@ export default function JurisdictionCompare() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white/40 flex items-center gap-1.5">
-                    <Euro size={12} />
+                    <Euro size={12} aria-hidden="true" />
                     Min Insurance
                   </span>
                   <span className="text-white/70">
@@ -154,7 +160,7 @@ export default function JurisdictionCompare() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white/40 flex items-center gap-1.5">
-                    <Globe size={12} />
+                    <Globe size={12} aria-hidden="true" />
                     Language
                   </span>
                   <span className="text-white/70">{jurisdiction.language}</span>
@@ -171,7 +177,14 @@ export default function JurisdictionCompare() {
                     {jurisdiction.favorability}%
                   </span>
                 </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-1 bg-white/10 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label={`${jurisdiction.name} favorability`}
+                  aria-valuenow={jurisdiction.favorability}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
                   <motion.div
                     initial={{ width: 0 }}
                     animate={
@@ -212,7 +225,7 @@ export default function JurisdictionCompare() {
             className="inline-flex items-center gap-2 text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors"
           >
             <span>Compare all 10 jurisdictions</span>
-            <ChevronRight size={14} />
+            <ChevronRight size={14} aria-hidden="true" />
           </Link>
         </motion.div>
       </div>

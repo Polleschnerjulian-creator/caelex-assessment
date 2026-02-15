@@ -88,13 +88,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           ${className}
         `}
         disabled={disabled || loading}
+        aria-busy={loading || undefined}
+        aria-disabled={disabled || loading || undefined}
         {...props}
       >
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
         ) : icon ? (
-          <span className="flex-shrink-0">{icon}</span>
+          <span className="flex-shrink-0" aria-hidden="true">
+            {icon}
+          </span>
         ) : null}
+        {loading && <span className="sr-only">Loading</span>}
         <span>{children}</span>
       </motion.button>
     );

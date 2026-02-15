@@ -20,6 +20,7 @@ export default function FinalCTA() {
     <section
       ref={ref}
       className="relative min-h-[70vh] flex items-center justify-center px-6 md:px-12 py-32 bg-black"
+      aria-label="Get started"
     >
       {/* Section number */}
       <motion.div
@@ -27,6 +28,7 @@ export default function FinalCTA() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
+        aria-hidden="true"
       >
         <span className="font-mono text-[11px] text-white/30">12 / 12</span>
       </motion.div>
@@ -66,7 +68,11 @@ export default function FinalCTA() {
               key={i}
               className="flex items-center gap-2 text-[13px] text-white/40"
             >
-              <CheckCircle2 size={14} className="text-white/25" />
+              <CheckCircle2
+                size={14}
+                className="text-white/25"
+                aria-hidden="true"
+              />
               <span>{benefit}</span>
             </div>
           ))}
@@ -88,6 +94,7 @@ export default function FinalCTA() {
               <ArrowRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden="true"
               />
             </Link>
             <Link
@@ -98,6 +105,7 @@ export default function FinalCTA() {
               <ArrowRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden="true"
               />
             </Link>
           </div>

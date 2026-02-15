@@ -85,18 +85,27 @@ export function InviteMemberDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="invite-dialog-title"
+    >
       <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-xl shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h2 className="text-lg font-semibold text-white">
+          <h2
+            id="invite-dialog-title"
+            className="text-lg font-semibold text-white"
+          >
             Invite Team Member
           </h2>
           <button
             onClick={handleClose}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
@@ -118,11 +127,15 @@ export function InviteMemberDialog({
               </div>
 
               <div>
-                <label className="block text-sm text-white/70 mb-2">
+                <label
+                  htmlFor="invite-link"
+                  className="block text-sm text-white/70 mb-2"
+                >
                   Invitation Link
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="invite-link"
                     type="text"
                     readOnly
                     value={inviteUrl}
@@ -180,7 +193,10 @@ export function InviteMemberDialog({
             // Form state
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
+                <div
+                  role="alert"
+                  className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400"
+                >
                   {error}
                 </div>
               )}
