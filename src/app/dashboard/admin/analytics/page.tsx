@@ -1851,7 +1851,7 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="border-b border-white/[0.06] bg-[#0E0E10]/80 backdrop-blur-xl sticky top-0 z-20">
+      <div className="border-b border-white/[0.06] bg-[#131316]/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
