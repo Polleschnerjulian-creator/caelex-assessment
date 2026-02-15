@@ -15,6 +15,7 @@ import {
   Leaf,
   BarChart3,
 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const modules = [
   {
@@ -280,6 +281,8 @@ function SectionCard({
 }
 
 export default function ComplianceMethodologyPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="p-6 lg:p-8 bg-[#0A0A0B] min-h-screen">
       <div className="max-w-[900px]">
@@ -289,7 +292,7 @@ export default function ComplianceMethodologyPage() {
           className="inline-flex items-center gap-2 text-[13px] text-white/50 hover:text-white/70 mb-6 transition-colors"
         >
           <ArrowLeft size={14} />
-          Back to Dashboard
+          {t("methodology.backToDashboard")}
         </Link>
 
         {/* Header */}
@@ -303,14 +306,11 @@ export default function ComplianceMethodologyPage() {
               <Shield className="w-5 h-5 text-emerald-400" />
             </div>
             <h1 className="text-[28px] font-medium text-white">
-              Compliance Score Methodology
+              {t("methodology.title")}
             </h1>
           </div>
           <p className="text-[15px] text-white/60 leading-relaxed max-w-[700px]">
-            Your compliance score is calculated transparently based on your
-            actual compliance data. This page explains exactly how every point
-            is earned, how modules are weighted, and how your final grade is
-            determined.
+            {t("methodology.description")}
           </p>
         </motion.div>
 
@@ -318,33 +318,22 @@ export default function ComplianceMethodologyPage() {
         <SectionCard delay={1}>
           <h2 className="text-[18px] font-medium text-white mb-4 flex items-center gap-2">
             <Info size={18} className="text-emerald-400" />
-            How It Works
+            {t("methodology.howItWorks")}
           </h2>
           <div className="space-y-4 text-[14px] text-white/70 leading-relaxed">
-            <p>
-              Your compliance score is a weighted aggregate of{" "}
-              <strong className="text-white">6 compliance modules</strong>, each
-              scored 0–100 based on concrete, measurable factors. Each
-              module&apos;s score is multiplied by its weight, then all weighted
-              scores are summed to produce your overall score (0–100).
-            </p>
+            <p>{t("methodology.howItWorksP1")}</p>
             <div className="bg-white/[0.03] border border-white/5 rounded-lg p-4 font-mono text-[13px] text-emerald-400">
               Overall Score = (Auth × 0.25) + (Debris × 0.20) + (Cyber × 0.20) +
               (Insurance × 0.15) + (Environmental × 0.10) + (Reporting × 0.10)
             </div>
-            <p>
-              Scores are calculated <strong className="text-white">live</strong>{" "}
-              from your actual data — there is no manual input or subjective
-              assessment. When you update a workflow, upload a document, or
-              configure your modules, your score updates automatically.
-            </p>
+            <p>{t("methodology.howItWorksP2")}</p>
           </div>
         </SectionCard>
 
         {/* Grade Scale */}
         <SectionCard delay={2}>
           <h2 className="text-[18px] font-medium text-white mb-4">
-            Grade Scale
+            {t("methodology.gradeScale")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
             {grades.map((g) => (
@@ -360,11 +349,25 @@ export default function ComplianceMethodologyPage() {
                   </span>
                 </div>
                 <p className="text-[12px] font-medium text-white mb-0.5">
-                  {g.label}
+                  {t(
+                    `methodology.grade${g.grade}` as
+                      | "methodology.gradeA"
+                      | "methodology.gradeB"
+                      | "methodology.gradeC"
+                      | "methodology.gradeD"
+                      | "methodology.gradeF",
+                  )}
                 </p>
                 <p className="text-[11px] text-white/40">{g.range}</p>
                 <p className="text-[10px] text-white/30 mt-1">
-                  {g.description}
+                  {t(
+                    `methodology.grade${g.grade}Desc` as
+                      | "methodology.gradeADesc"
+                      | "methodology.gradeBDesc"
+                      | "methodology.gradeCDesc"
+                      | "methodology.gradeDDesc"
+                      | "methodology.gradeFDesc",
+                  )}
                 </p>
               </div>
             ))}
@@ -375,16 +378,10 @@ export default function ComplianceMethodologyPage() {
         <SectionCard delay={3}>
           <h2 className="text-[18px] font-medium text-white mb-3 flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-400" />
-            Critical Factors
+            {t("methodology.criticalFactors")}
           </h2>
           <p className="text-[14px] text-white/60 mb-4 leading-relaxed">
-            Some factors are marked as{" "}
-            <strong className="text-amber-400">critical</strong>. If any
-            critical factor scores zero points, your overall status is
-            automatically set to{" "}
-            <strong className="text-red-400">Non-Compliant</strong> regardless
-            of your total score. This ensures that fundamental regulatory
-            requirements cannot be bypassed by scoring well in other areas.
+            {t("methodology.criticalFactorsDesc")}
           </p>
         </SectionCard>
 
@@ -396,7 +393,7 @@ export default function ComplianceMethodologyPage() {
           className="mb-6"
         >
           <h2 className="text-[18px] font-medium text-white mb-5">
-            Module Breakdown
+            {t("methodology.moduleBreakdown")}
           </h2>
 
           <div className="space-y-4">
@@ -426,7 +423,7 @@ export default function ComplianceMethodologyPage() {
                           {mod.name}
                         </h3>
                         <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
-                          {mod.weight}% weight
+                          {t("methodology.weight", { percent: mod.weight })}
                         </span>
                         <span className="text-[11px] font-mono text-white/30">
                           {mod.articles}
@@ -444,13 +441,13 @@ export default function ComplianceMethodologyPage() {
                       <thead>
                         <tr className="border-b border-white/5">
                           <th className="text-left text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2">
-                            Scoring Factor
+                            {t("methodology.scoringFactor")}
                           </th>
                           <th className="text-center text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
-                            Max Points
+                            {t("methodology.maxPoints")}
                           </th>
                           <th className="text-center text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
-                            Critical
+                            {t("common.critical")}
                           </th>
                         </tr>
                       </thead>
@@ -477,11 +474,11 @@ export default function ComplianceMethodologyPage() {
                               {factor.critical ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                                   <AlertTriangle size={10} />
-                                  Yes
+                                  {t("common.yes")}
                                 </span>
                               ) : (
                                 <span className="text-[10px] text-white/20">
-                                  No
+                                  {t("common.no")}
                                 </span>
                               )}
                             </td>
@@ -491,7 +488,7 @@ export default function ComplianceMethodologyPage() {
                       <tfoot>
                         <tr className="border-t border-white/10">
                           <td className="pt-2 text-[12px] text-white/50 font-medium">
-                            Total
+                            {t("common.total")}
                           </td>
                           <td className="pt-2 text-center text-[13px] font-mono text-white/70 font-medium">
                             {totalPoints}
@@ -511,35 +508,33 @@ export default function ComplianceMethodologyPage() {
         <SectionCard delay={12}>
           <h2 className="text-[18px] font-medium text-white mb-3 flex items-center gap-2">
             <CheckCircle2 size={18} className="text-emerald-400" />
-            How Recommendations Work
+            {t("methodology.howRecommendationsWork")}
           </h2>
           <p className="text-[14px] text-white/60 leading-relaxed">
-            Recommendations are generated automatically from gap analysis. For
-            each scoring factor where you haven&apos;t earned maximum points,
-            the system generates a prioritized action item:
+            {t("methodology.recommendationsP1")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {[
               {
-                level: "Critical",
+                level: t("common.critical"),
                 color: "bg-red-500/20 text-red-400 border-red-500/30",
-                rule: "Critical factor at 0 points",
+                rule: t("methodology.priorityCriticalDesc"),
               },
               {
-                level: "High",
+                level: t("common.high"),
                 color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-                rule: "Critical factor or >50% missing",
+                rule: t("methodology.priorityHighDesc"),
               },
               {
-                level: "Medium",
+                level: t("common.medium"),
                 color:
                   "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-                rule: ">25% of points missing",
+                rule: t("methodology.priorityMediumDesc"),
               },
               {
-                level: "Low",
+                level: t("common.low"),
                 color: "bg-white/10 text-white/50 border-white/10",
-                rule: "<25% of points missing",
+                rule: t("methodology.priorityLowDesc"),
               },
             ].map((p) => (
               <div
@@ -556,12 +551,10 @@ export default function ComplianceMethodologyPage() {
         {/* Data Sources */}
         <SectionCard delay={13}>
           <h2 className="text-[18px] font-medium text-white mb-3">
-            Data Sources
+            {t("methodology.dataSources")}
           </h2>
           <p className="text-[14px] text-white/60 leading-relaxed mb-4">
-            All scores are derived from data you have entered into the platform.
-            No external data sources or third-party assessments are used. The
-            scoring system evaluates:
+            {t("methodology.dataSourcesDesc")}
           </p>
           <ul className="space-y-2 text-[13px] text-white/60">
             <li className="flex items-start gap-2">
@@ -569,43 +562,42 @@ export default function ComplianceMethodologyPage() {
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Authorization workflow status and document uploads
+              {t("methodology.dsAssessments")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Module assessment completion (debris, cybersecurity, insurance,
-              environmental)
+              {t("methodology.dsDocuments")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Incident reports and resolution status
+              {t("methodology.dsArticleTracker")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Supervision configuration and reporting history
+              {t("methodology.dsWorkflows")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Insurance policy status and coverage amounts
+              {t("methodology.dsIncidents")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
                 className="text-emerald-400 mt-0.5 flex-shrink-0"
               />
-              Supplier data request responses for environmental footprint
+              {t("methodology.dsTimeline")}
             </li>
           </ul>
         </SectionCard>
@@ -613,13 +605,10 @@ export default function ComplianceMethodologyPage() {
         {/* Disclaimer */}
         <div className="bg-white/[0.02] border border-white/5 rounded-lg p-4 mb-8">
           <p className="text-[11px] text-white/30 leading-relaxed">
-            <strong className="text-white/50">Disclaimer:</strong> The
-            compliance score is a self-assessment tool based on data provided by
-            your organization. It does not constitute a formal regulatory audit
-            or certification. For official compliance verification, consult your
-            designated National Competent Authority (NCA). Scoring weights are
-            based on regulatory emphasis in the EU Space Act (COM(2025) 335) and
-            may be adjusted as implementing regulations are published.
+            <strong className="text-white/50">
+              {t("methodology.disclaimer")}:
+            </strong>{" "}
+            {t("methodology.disclaimerText")}
           </p>
         </div>
       </div>

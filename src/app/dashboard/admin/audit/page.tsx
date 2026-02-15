@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Shield, Loader2 } from "lucide-react";
 import AuditLogTable from "@/components/audit/AuditLogTable";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface AuditLogEntry {
   id: string;
@@ -24,6 +25,7 @@ interface AuditLogEntry {
 const PAGE_SIZE = 50;
 
 export default function AdminAuditPage() {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -89,9 +91,11 @@ export default function AdminAuditPage() {
               <Shield className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-[24px] font-medium text-white">Audit Logs</h1>
+              <h1 className="text-[24px] font-medium text-white">
+                {t("audit.auditLogs")}
+              </h1>
               <p className="text-[14px] text-white/60">
-                Complete audit trail across all users and actions
+                {t("audit.completeAuditTrail")}
               </p>
             </div>
           </div>

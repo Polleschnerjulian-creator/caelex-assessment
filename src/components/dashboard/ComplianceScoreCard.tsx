@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DownloadReportButton from "./DownloadReportButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface ModuleScore {
   score: number;
@@ -51,13 +52,13 @@ const gradeRingColors: Record<string, string> = {
   F: "text-red-500",
 };
 
-const moduleLabels: Record<string, string> = {
-  authorization: "Authorization",
-  debris: "Debris Mitigation",
-  cybersecurity: "Cybersecurity",
-  insurance: "Insurance",
-  environmental: "Environmental",
-  reporting: "Reporting",
+const moduleKeyMap: Record<string, string> = {
+  authorization: "modules.authorization",
+  debris: "modules.debris",
+  cybersecurity: "modules.cybersecurity",
+  insurance: "modules.insurance",
+  environmental: "modules.environmental",
+  reporting: "modules.reporting",
 };
 
 const statusBarColors: Record<string, string> = {
@@ -75,6 +76,7 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function ComplianceScoreCard() {
+  const { t } = useLanguage();
   const [data, setData] = useState<ComplianceScoreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -113,7 +115,7 @@ export default function ComplianceScoreCard() {
   }
 
   if (error || !data) {
-    return null; // Silently hide on error
+    return null;
   }
 
   const topRecommendations = data.recommendations.slice(0, 3);
@@ -128,7 +130,7 @@ export default function ComplianceScoreCard() {
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-emerald-400" />
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
-            Compliance Score
+            {t("dashboard.complianceScore")}
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -138,11 +140,11 @@ export default function ComplianceScoreCard() {
             className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors"
           >
             <HelpCircle className="w-3 h-3" />
-            <span>Methodology</span>
+            <span>{t("dashboard.methodology")}</span>
           </Link>
           <div className="flex items-center gap-1 text-[11px] text-white/30">
             <TrendingUp className="w-3 h-3" />
-            <span>Updated live</span>
+            <span>{t("dashboard.updatedLive")}</span>
           </div>
         </div>
       </div>
@@ -151,7 +153,6 @@ export default function ComplianceScoreCard() {
         {/* Left: Grade + Score */}
         <div className="flex items-center gap-5">
           <div className="relative">
-            {/* Grade circle */}
             <div
               className={`w-20 h-20 rounded-full bg-gradient-to-br ${gradeColors[data.grade]} flex items-center justify-center shadow-lg`}
             >
@@ -159,7 +160,6 @@ export default function ComplianceScoreCard() {
                 {data.grade}
               </span>
             </div>
-            {/* Score ring */}
             <svg
               className={`absolute inset-0 w-20 h-20 -rotate-90 ${gradeRingColors[data.grade]}`}
             >
@@ -180,7 +180,9 @@ export default function ComplianceScoreCard() {
             <p className="text-[36px] font-mono font-semibold text-white leading-none">
               {data.overall}
             </p>
-            <p className="text-[11px] text-white/50 mt-1">out of 100</p>
+            <p className="text-[11px] text-white/50 mt-1">
+              {t("dashboard.outOf100")}
+            </p>
           </div>
         </div>
 
@@ -189,7 +191,7 @@ export default function ComplianceScoreCard() {
           {Object.entries(data.breakdown).map(([key, mod]) => (
             <div key={key} className="flex items-center gap-3">
               <span className="text-[11px] text-white/50 w-24 truncate">
-                {moduleLabels[key] || key}
+                {t(moduleKeyMap[key] || `modules.${key}`)}
               </span>
               <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                 <div
@@ -207,7 +209,7 @@ export default function ComplianceScoreCard() {
         {/* Right: Top Recommendations */}
         <div>
           <p className="text-[10px] font-medium uppercase tracking-wider text-white/40 mb-2">
-            Top Recommendations
+            {t("dashboard.topRecommendations")}
           </p>
           {topRecommendations.length > 0 ? (
             <div className="space-y-2">
@@ -219,7 +221,7 @@ export default function ComplianceScoreCard() {
                   <span
                     className={`shrink-0 mt-0.5 text-[8px] font-mono uppercase px-1.5 py-0.5 rounded border ${priorityColors[rec.priority]}`}
                   >
-                    {rec.priority}
+                    {t(`common.${rec.priority}`)}
                   </span>
                   <span className="text-white/60">{rec.action}</span>
                 </div>
@@ -228,7 +230,7 @@ export default function ComplianceScoreCard() {
           ) : (
             <div className="flex items-center gap-2 text-[11px] text-emerald-400/70">
               <AlertTriangle className="w-3 h-3" />
-              <span>All modules on track</span>
+              <span>{t("dashboard.allOnTrack")}</span>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bell, Check, CheckCheck, X, Trash2, Loader2 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface NotificationItem {
   id: string;
@@ -20,29 +21,6 @@ interface NotificationItem {
   };
 }
 
-function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days === 1) return "Yesterday";
-  return `${days}d ago`;
-}
-
-function getDateGroup(dateStr: string): string {
-  const date = new Date(dateStr);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return "Earlier";
-}
-
 const severityBorder: Record<string, string> = {
   INFO: "border-l-emerald-500",
   WARNING: "border-l-amber-500",
@@ -51,12 +29,44 @@ const severityBorder: Record<string, string> = {
 };
 
 export default function NotificationCenter() {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const formatRelativeTime = useCallback(
+    (dateStr: string): string => {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      if (mins < 1) return t("common.justNow");
+      if (mins < 60) return t("common.minutesAgo", { count: mins });
+      if (hours < 24) return t("common.hoursAgo", { count: hours });
+      if (days === 1) return t("notifications.yesterday");
+      return t("common.daysAgo", { count: days });
+    },
+    [t],
+  );
+
+  const getDateGroup = useCallback(
+    (dateStr: string): string => {
+      const date = new Date(dateStr);
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (date.toDateString() === today.toDateString())
+        return t("notifications.today");
+      if (date.toDateString() === yesterday.toDateString())
+        return t("notifications.yesterday");
+      return t("notifications.earlier");
+    },
+    [t],
+  );
 
   // Fetch unread count (poll every 30s)
   const fetchUnreadCount = useCallback(async () => {
@@ -173,7 +183,11 @@ export default function NotificationCenter() {
     },
     {},
   );
-  const groupOrder = ["Today", "Yesterday", "Earlier"];
+  const groupOrder = [
+    t("notifications.today"),
+    t("notifications.yesterday"),
+    t("notifications.earlier"),
+  ];
 
   return (
     <div className="relative" ref={panelRef}>
@@ -181,7 +195,7 @@ export default function NotificationCenter() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/80 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04]"
-        aria-label="Notifications"
+        aria-label={t("notifications.notifications")}
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -197,7 +211,7 @@ export default function NotificationCenter() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <h3 className="text-[14px] font-medium text-white">
-              Notifications
+              {t("notifications.notifications")}
             </h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
@@ -211,7 +225,7 @@ export default function NotificationCenter() {
                   ) : (
                     <CheckCheck size={12} />
                   )}
-                  Mark all read
+                  {t("notifications.markAllRead")}
                 </button>
               )}
               <button
@@ -233,7 +247,7 @@ export default function NotificationCenter() {
               <div className="flex flex-col items-center justify-center py-12 px-6">
                 <Bell className="w-8 h-8 text-white/20 mb-3" />
                 <p className="text-[13px] text-white/50">
-                  No notifications yet
+                  {t("notifications.noNotifications")}
                 </p>
               </div>
             ) : (
@@ -276,7 +290,7 @@ export default function NotificationCenter() {
                               onClick={() => markRead(n.id)}
                               disabled={actionLoading === n.id}
                               className="p-1 text-white/30 hover:text-emerald-400 transition-colors"
-                              title="Mark as read"
+                              title={t("notifications.markAsRead")}
                             >
                               {actionLoading === n.id ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -289,7 +303,7 @@ export default function NotificationCenter() {
                             onClick={() => dismiss(n.id)}
                             disabled={actionLoading === n.id}
                             className="p-1 text-white/30 hover:text-red-400 transition-colors"
-                            title="Dismiss"
+                            title={t("notifications.dismiss")}
                           >
                             <Trash2 size={12} />
                           </button>

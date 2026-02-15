@@ -424,7 +424,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/authorization"
                 icon={<FileCheck size={14} strokeWidth={1.5} />}
-                label="Authorization"
+                label={t("modules.authorization")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/authorization")}
                 requiredPlan={getRequiredPlanLabel(
@@ -434,7 +434,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/cybersecurity"
                 icon={<Shield size={14} strokeWidth={1.5} />}
-                label="Cybersecurity"
+                label={t("modules.cybersecurity")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/cybersecurity")}
                 requiredPlan={getRequiredPlanLabel(
@@ -444,7 +444,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/nis2"
                 icon={<ShieldCheck size={14} strokeWidth={1.5} />}
-                label="NIS2 Directive"
+                label={t("modules.nis2")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/nis2")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/nis2")}
@@ -452,7 +452,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/debris"
                 icon={<Trash2 size={14} strokeWidth={1.5} />}
-                label="Debris Mitigation"
+                label={t("modules.debris")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/debris")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/debris")}
@@ -460,7 +460,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/environmental"
                 icon={<Leaf size={14} strokeWidth={1.5} />}
-                label="Environmental"
+                label={t("modules.environmental")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/environmental")}
                 requiredPlan={getRequiredPlanLabel(
@@ -470,7 +470,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/insurance"
                 icon={<Scale size={14} strokeWidth={1.5} />}
-                label="Insurance"
+                label={t("modules.insurance")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/insurance")}
                 requiredPlan={getRequiredPlanLabel(
@@ -480,7 +480,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/supervision"
                 icon={<Eye size={14} strokeWidth={1.5} />}
-                label="Supervision"
+                label={t("modules.supervision")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/supervision")}
                 requiredPlan={getRequiredPlanLabel(
@@ -500,7 +500,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/copuos"
                 icon={<Globe size={14} strokeWidth={1.5} />}
-                label="COPUOS/IADC"
+                label={t("modules.copuos")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/copuos")}
                 requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
@@ -508,7 +508,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/uk-space"
                 icon={<Building2 size={14} strokeWidth={1.5} />}
-                label="UK Space Act"
+                label={t("modules.ukSpace")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/uk-space")}
                 requiredPlan={getRequiredPlanLabel(
@@ -528,7 +528,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/us-regulatory"
                 icon={<Flag size={14} strokeWidth={1.5} />}
-                label="US Regulatory"
+                label={t("modules.usRegulatory")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/us-regulatory")}
                 requiredPlan={getRequiredPlanLabel(
@@ -538,7 +538,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/export-control"
                 icon={<AlertTriangle size={14} strokeWidth={1.5} />}
-                label="Export Control"
+                label={t("modules.exportControl")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/export-control")}
                 requiredPlan={getRequiredPlanLabel(
@@ -548,7 +548,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               <CompactModuleItem
                 href="/dashboard/modules/spectrum"
                 icon={<Radio size={14} strokeWidth={1.5} />}
-                label="Spectrum & ITU"
+                label={t("modules.spectrum")}
                 onClick={handleNavClick}
                 locked={isModuleLocked("/dashboard/modules/spectrum")}
                 requiredPlan={getRequiredPlanLabel(
@@ -692,7 +692,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-medium text-slate-900 dark:text-white truncate">
-                {user?.name || "User"}
+                {user?.name || t("common.user")}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-white/70 truncate">
                 {user?.email || ""}

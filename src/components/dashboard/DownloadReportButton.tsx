@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { FileDown, Loader2 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function DownloadReportButton() {
+  const { t } = useLanguage();
   const [generating, setGenerating] = useState(false);
 
   const handleDownload = async () => {
@@ -39,7 +41,7 @@ export default function DownloadReportButton() {
       ) : (
         <FileDown size={14} />
       )}
-      {generating ? "Generating..." : "Export PDF"}
+      {generating ? t("common.generating") : t("dashboard.exportPdf")}
     </button>
   );
 }

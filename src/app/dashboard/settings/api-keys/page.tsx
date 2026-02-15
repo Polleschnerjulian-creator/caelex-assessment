@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   Key,
   Plus,
@@ -35,6 +36,7 @@ interface ScopeOption {
 
 export default function ApiKeysPage() {
   const { organization } = useOrganization();
+  const { t } = useLanguage();
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [scopes, setScopes] = useState<ScopeOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,9 +163,7 @@ export default function ApiKeysPage() {
         <div className="max-w-[800px]">
           <div className="text-center py-16">
             <Key className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-[14px] text-white/50">
-              Join an organization to manage API keys.
-            </p>
+            <p className="text-[14px] text-white/50">{t("apiKeys.joinOrg")}</p>
           </div>
         </div>
       </div>
@@ -177,10 +177,10 @@ export default function ApiKeysPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
-              API Keys
+              {t("apiKeys.title")}
             </h1>
             <p className="text-[14px] text-slate-600 dark:text-white/60">
-              Manage API keys for programmatic access
+              {t("apiKeys.description")}
             </p>
           </div>
           <button
@@ -188,7 +188,7 @@ export default function ApiKeysPage() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-medium transition-colors"
           >
             <Plus size={16} />
-            Create Key
+            {t("apiKeys.createKey")}
           </button>
         </div>
 
@@ -199,11 +199,10 @@ export default function ApiKeysPage() {
               <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-[14px] font-medium text-white mb-1">
-                  Save your API key now
+                  {t("apiKeys.saveKeyNow")}
                 </p>
                 <p className="text-[12px] text-white/60 mb-3">
-                  This is the only time you will see the full key. Store it
-                  securely.
+                  {t("apiKeys.saveKeyWarning")}
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-black/30 rounded-lg px-4 py-2.5 text-[13px] font-mono text-emerald-400 overflow-x-auto">
@@ -240,9 +239,11 @@ export default function ApiKeysPage() {
           ) : keys.length === 0 ? (
             <div className="text-center py-16 px-6">
               <Key className="w-8 h-8 text-white/20 mx-auto mb-3" />
-              <p className="text-[14px] text-white/50 mb-1">No API keys yet</p>
+              <p className="text-[14px] text-white/50 mb-1">
+                {t("apiKeys.noKeysYet")}
+              </p>
               <p className="text-[12px] text-white/30">
-                Create a key to access the Caelex API programmatically.
+                {t("apiKeys.noKeysDescription")}
               </p>
             </div>
           ) : (
@@ -250,19 +251,19 @@ export default function ApiKeysPage() {
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/10">
                   <th className="text-left text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/40 px-5 py-3">
-                    Name
+                    {t("apiKeys.name")}
                   </th>
                   <th className="text-left text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/40 px-5 py-3">
-                    Key
+                    {t("apiKeys.key")}
                   </th>
                   <th className="text-left text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/40 px-5 py-3">
-                    Scopes
+                    {t("apiKeys.scopes")}
                   </th>
                   <th className="text-left text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/40 px-5 py-3">
-                    Last Used
+                    {t("apiKeys.lastUsed")}
                   </th>
                   <th className="text-right text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/40 px-5 py-3">
-                    Actions
+                    {t("common.actions")}
                   </th>
                 </tr>
               </thead>
@@ -285,7 +286,7 @@ export default function ApiKeysPage() {
                         </span>
                         {!key.isActive && (
                           <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
-                            REVOKED
+                            {t("apiKeys.revoked")}
                           </span>
                         )}
                       </div>
@@ -316,7 +317,7 @@ export default function ApiKeysPage() {
                       <span className="text-[12px] text-white/40">
                         {key.lastUsedAt
                           ? new Date(key.lastUsedAt).toLocaleDateString()
-                          : "Never"}
+                          : t("common.never")}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
@@ -327,7 +328,7 @@ export default function ApiKeysPage() {
                               onClick={() => handleRotate(key.id)}
                               disabled={actionLoading === key.id}
                               className="p-1.5 rounded-md text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
-                              title="Rotate"
+                              title={t("apiKeys.rotate")}
                             >
                               {actionLoading === key.id ? (
                                 <Loader2 size={14} className="animate-spin" />
@@ -339,7 +340,7 @@ export default function ApiKeysPage() {
                               onClick={() => handleRevoke(key.id)}
                               disabled={actionLoading === key.id}
                               className="p-1.5 rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                              title="Revoke"
+                              title={t("apiKeys.revoke")}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -365,22 +366,22 @@ export default function ApiKeysPage() {
               className="bg-[#0A0A0B] border border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
             >
               <h2 className="text-[18px] font-medium text-white mb-1">
-                Create API Key
+                {t("apiKeys.createApiKey")}
               </h2>
               <p className="text-[13px] text-white/60 mb-6">
-                Generate a new key for programmatic API access.
+                {t("apiKeys.createApiKeyDescription")}
               </p>
 
               {/* Name */}
               <div className="mb-4">
                 <label className="text-[12px] text-white/60 mb-1.5 block">
-                  Key Name
+                  {t("apiKeys.keyName")}
                 </label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="e.g. Production API"
+                  placeholder={t("apiKeys.keyNamePlaceholder")}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
@@ -388,7 +389,7 @@ export default function ApiKeysPage() {
               {/* Scopes */}
               <div className="mb-4">
                 <label className="text-[12px] text-white/60 mb-1.5 block">
-                  Scopes
+                  {t("apiKeys.scopes")}
                 </label>
                 <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
                   {scopes.map((s) => (
@@ -418,7 +419,7 @@ export default function ApiKeysPage() {
               {/* Rate Limit */}
               <div className="mb-6">
                 <label className="text-[12px] text-white/60 mb-1.5 block">
-                  Rate Limit (requests/hour)
+                  {t("apiKeys.rateLimit")}
                 </label>
                 <input
                   type="number"
@@ -436,7 +437,7 @@ export default function ApiKeysPage() {
                   onClick={() => setShowCreate(false)}
                   className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition-all"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={handleCreate}
@@ -444,7 +445,7 @@ export default function ApiKeysPage() {
                   className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {creating && <Loader2 size={14} className="animate-spin" />}
-                  {creating ? "Creating..." : "Create Key"}
+                  {creating ? t("common.creating") : t("apiKeys.createKey")}
                 </button>
               </div>
             </div>

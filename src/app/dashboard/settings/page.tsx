@@ -27,6 +27,7 @@ import { PasskeyManagementCard } from "@/components/settings/PasskeyManagementCa
 import { DeleteAccountCard } from "@/components/settings/DeleteAccountCard";
 import { LanguageSettingsCard } from "@/components/settings/LanguageSettingsCard";
 import { useToast } from "@/components/ui/Toast";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ───
 
@@ -52,6 +53,7 @@ interface SessionInfo {
 
 function SecurityCard() {
   const toast = useToast();
+  const { t } = useLanguage();
 
   // Sessions state
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
@@ -90,11 +92,11 @@ function SecurityCard() {
         }
       }
     } catch {
-      toast.error("Failed to load sessions");
+      toast.error(t("settings.failedRevokeSessions"));
     } finally {
       setSessionsLoading(false);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     fetchSessions();
@@ -112,15 +114,15 @@ function SecurityCard() {
       if (res.ok) {
         const data = await res.json();
         toast.success(
-          "Sessions revoked",
-          `${data.revokedCount || 0} session(s) have been revoked.`,
+          t("settings.sessionsRevoked"),
+          t("settings.sessionsRevokedCount", { count: data.revokedCount || 0 }),
         );
         fetchSessions();
       } else {
-        toast.error("Failed to revoke sessions");
+        toast.error(t("settings.failedRevokeSessions"));
       }
     } catch {
-      toast.error("Failed to revoke sessions");
+      toast.error(t("settings.failedRevokeSessions"));
     } finally {
       setRevokingAll(false);
     }
@@ -130,25 +132,23 @@ function SecurityCard() {
     setPasswordError(null);
 
     if (!currentPassword) {
-      setPasswordError("Current password is required.");
+      setPasswordError(t("settings.currentPasswordRequired"));
       return;
     }
     if (!newPassword) {
-      setPasswordError("New password is required.");
+      setPasswordError(t("settings.newPasswordRequired"));
       return;
     }
     if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters.");
+      setPasswordError(t("settings.passwordMinLength"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError("New passwords do not match.");
+      setPasswordError(t("settings.passwordMismatch"));
       return;
     }
     if (currentPassword === newPassword) {
-      setPasswordError(
-        "New password must be different from your current password.",
-      );
+      setPasswordError(t("settings.passwordSameAsCurrent"));
       return;
     }
 
@@ -162,22 +162,20 @@ function SecurityCard() {
 
       if (res.ok) {
         toast.success(
-          "Password changed",
-          "Your password has been updated successfully.",
+          t("settings.passwordChanged"),
+          t("settings.passwordUpdatedSuccess"),
         );
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
         const data = await res.json().catch(() => ({}));
-        setPasswordError(
-          data.error || "Failed to change password. Please try again.",
-        );
+        setPasswordError(data.error || t("settings.errorChangePassword"));
       }
     } catch {
       toast.success(
-        "Password changed",
-        "Your password has been updated successfully.",
+        t("settings.passwordChanged"),
+        t("settings.passwordUpdatedSuccess"),
       );
       setCurrentPassword("");
       setNewPassword("");
@@ -195,10 +193,10 @@ function SecurityCard() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return t("common.justNow");
+    if (diffMins < 60) return t("common.minutesAgo", { count: diffMins });
+    if (diffHours < 24) return t("common.hoursAgo", { count: diffHours });
+    if (diffDays < 7) return t("common.daysAgo", { count: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -218,10 +216,10 @@ function SecurityCard() {
         </div>
         <div>
           <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-            SECURITY
+            {t("settings.security")}
           </h2>
           <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
-            Session management and password settings
+            {t("settings.sessionManagement")}
           </p>
         </div>
       </div>
@@ -230,7 +228,7 @@ function SecurityCard() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[14px] font-medium text-slate-900 dark:text-white">
-            Active Sessions
+            {t("settings.activeSessions")}
           </h3>
           {sessions.length > 0 && (
             <button
@@ -243,7 +241,7 @@ function SecurityCard() {
               ) : (
                 <LogOut className="w-3.5 h-3.5" />
               )}
-              Revoke All Sessions
+              {t("settings.revokeAllSessions")}
             </button>
           )}
         </div>
@@ -255,7 +253,7 @@ function SecurityCard() {
         ) : sessions.length === 0 ? (
           <div className="py-6 text-center">
             <p className="text-[13px] text-slate-500 dark:text-white/40">
-              No active sessions found.
+              {t("settings.noActiveSessions")}
             </p>
           </div>
         ) : (
@@ -294,7 +292,7 @@ function SecurityCard() {
                 </div>
                 {s.isCurrent && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-[11px] font-medium flex-shrink-0">
-                    Current
+                    {t("common.current")}
                   </span>
                 )}
               </div>
@@ -310,7 +308,7 @@ function SecurityCard() {
       <div>
         <h3 className="text-[14px] font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <KeyRound className="w-4 h-4 text-slate-500 dark:text-white/50" />
-          Password
+          {t("settings.password")}
         </h3>
 
         {isOAuthOnly === null || sessionsLoading ? (
@@ -320,8 +318,7 @@ function SecurityCard() {
         ) : isOAuthOnly ? (
           <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5">
             <p className="text-[13px] text-slate-600 dark:text-white/60">
-              You&apos;re signed in with Google. Password management is handled
-              by your Google account.
+              {t("settings.oauthNotice")}
             </p>
           </div>
         ) : (
@@ -329,7 +326,7 @@ function SecurityCard() {
             {/* Current Password */}
             <div>
               <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
-                Current Password
+                {t("settings.currentPassword")}
               </label>
               <div className="relative">
                 <input
@@ -339,7 +336,7 @@ function SecurityCard() {
                     setCurrentPassword(e.target.value);
                     setPasswordError(null);
                   }}
-                  placeholder="Enter current password"
+                  placeholder={t("settings.enterCurrentPassword")}
                   className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
@@ -359,7 +356,7 @@ function SecurityCard() {
             {/* New Password */}
             <div>
               <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
-                New Password
+                {t("settings.newPassword")}
               </label>
               <div className="relative">
                 <input
@@ -369,7 +366,7 @@ function SecurityCard() {
                     setNewPassword(e.target.value);
                     setPasswordError(null);
                   }}
-                  placeholder="Enter new password"
+                  placeholder={t("settings.enterNewPassword")}
                   className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
@@ -385,14 +382,14 @@ function SecurityCard() {
                 </button>
               </div>
               <p className="text-[11px] text-slate-400 dark:text-white/30 mt-1.5">
-                Minimum 8 characters
+                {t("settings.minChars")}
               </p>
             </div>
 
             {/* Confirm Password */}
             <div>
               <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
-                Confirm New Password
+                {t("settings.confirmNewPassword")}
               </label>
               <input
                 type="password"
@@ -401,7 +398,7 @@ function SecurityCard() {
                   setConfirmPassword(e.target.value);
                   setPasswordError(null);
                 }}
-                placeholder="Confirm new password"
+                placeholder={t("settings.confirmNewPasswordPlaceholder")}
                 className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
             </div>
@@ -424,12 +421,12 @@ function SecurityCard() {
               {changingPassword ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Changing...
+                  {t("common.changing")}
                 </>
               ) : (
                 <>
                   <KeyRound className="w-4 h-4" />
-                  Change Password
+                  {t("settings.changePassword")}
                 </>
               )}
             </button>
@@ -444,6 +441,7 @@ function SecurityCard() {
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const { t } = useLanguage();
 
   return (
     <div className="p-6 lg:p-8">
@@ -451,10 +449,10 @@ export default function SettingsPage() {
         {/* Page Header */}
         <div className="mb-10">
           <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-2">
-            Account Settings
+            {t("settings.accountSettings")}
           </h1>
           <p className="text-[14px] text-slate-600 dark:text-white/70">
-            Manage your account, organization, and notification preferences
+            {t("settings.manageAccount")}
           </p>
         </div>
 
@@ -466,10 +464,10 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-                ACCOUNT
+                {t("settings.account")}
               </h2>
               <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
-                Your personal account information
+                {t("settings.personalInfo")}
               </p>
             </div>
           </div>
@@ -477,7 +475,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-                Name
+                {t("settings.name")}
               </p>
               <p className="text-[15px] text-slate-900 dark:text-white">
                 {session?.user?.name || "—"}
@@ -486,7 +484,7 @@ export default function SettingsPage() {
 
             <div>
               <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-                Email
+                {t("settings.email")}
               </p>
               <p className="text-[15px] text-slate-900 dark:text-white">
                 {session?.user?.email || "—"}
@@ -495,20 +493,20 @@ export default function SettingsPage() {
 
             <div>
               <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-                Role
+                {t("settings.role")}
               </p>
               <p className="text-[15px] text-slate-900 dark:text-white capitalize">
-                {(session?.user as { role?: string })?.role || "User"}
+                {(session?.user as { role?: string })?.role || t("common.user")}
               </p>
             </div>
 
             <div>
               <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
-                Account Status
+                {t("settings.accountStatus")}
               </p>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-[12px] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400" />
-                Active
+                {t("settings.active")}
               </span>
             </div>
           </div>
@@ -537,10 +535,10 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-                  API KEYS
+                  {t("settings.apiKeys")}
                 </h2>
                 <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
-                  Manage API keys for programmatic access
+                  {t("settings.manageApiKeys")}
                 </p>
               </div>
             </div>

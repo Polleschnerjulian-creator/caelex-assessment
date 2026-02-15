@@ -30,6 +30,7 @@ import {
 import { articles } from "@/data/articles";
 import { modules } from "@/data/modules";
 import dynamic from "next/dynamic";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // Dynamic imports for chart components (to avoid SSR issues with Recharts)
 const ComplianceDonutChart = dynamic(
@@ -357,7 +358,13 @@ function EmptyState({
   );
 }
 
-function DeadlineItem({ deadline }: { deadline: Deadline }) {
+function DeadlineItem({
+  deadline,
+  t,
+}: {
+  deadline: Deadline;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}) {
   const priorityColors = {
     critical: "bg-red-500/20 text-red-400 border-red-500/30",
     high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
@@ -385,13 +392,15 @@ function DeadlineItem({ deadline }: { deadline: Deadline }) {
       <div className="flex-1 min-w-0">
         <p className="text-[12px] text-white/80 truncate">{deadline.title}</p>
         <p className="text-[10px] text-white/40">
-          {daysUntil > 0 ? `${daysUntil} days` : "Overdue"}
+          {daysUntil > 0
+            ? t("common.days", { count: daysUntil })
+            : t("common.overdue")}
         </p>
       </div>
       <span
         className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
       >
-        {deadline.priority}
+        {t(`common.${deadline.priority}`)}
       </span>
     </div>
   );
@@ -491,6 +500,7 @@ function ActivityItem({
 function DashboardContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [articleStatuses, setArticleStatuses] = useState<
     Record<string, ArticleStatusData>
   >({});
@@ -830,7 +840,7 @@ function DashboardContent() {
             <div className="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-3 flex items-center gap-3 shadow-xl backdrop-blur-sm">
               <CheckCircle className="w-5 h-5 text-green-400" />
               <span className="text-[14px] text-white font-medium">
-                Assessment imported successfully!
+                {t("dashboard.assessmentImported")}
               </span>
               <button
                 onClick={() => setShowSuccessToast(false)}
@@ -855,11 +865,10 @@ function DashboardContent() {
               <ClipboardList className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="text-[14px] font-medium text-white mb-1">
-                  Assessment results available
+                  {t("dashboard.assessmentResultsAvailable")}
                 </h3>
                 <p className="text-[13px] text-white/60">
-                  Import your compliance assessment to populate your dashboard
-                  automatically.
+                  {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -871,7 +880,9 @@ function DashboardContent() {
                   {importing ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : null}
-                  {importing ? "Importing..." : "Import Assessment"}
+                  {importing
+                    ? t("common.importing")
+                    : t("dashboard.importAssessment")}
                 </button>
                 <button
                   onClick={handleDismissPendingAssessment}
@@ -891,7 +902,7 @@ function DashboardContent() {
             animate={{ opacity: 1, y: 0 }}
             className="text-[28px] font-medium text-white mb-1"
           >
-            Welcome back, {firstName}
+            {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -899,7 +910,7 @@ function DashboardContent() {
             transition={{ delay: 0.1 }}
             className="text-[14px] text-white/60"
           >
-            Your compliance command center
+            {t("dashboard.commandCenter")}
           </motion.p>
         </div>
 
@@ -910,7 +921,7 @@ function DashboardContent() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <KPICard
             value={`${progressPercent}%`}
-            label="Overall Compliance"
+            label={t("dashboard.overallCompliance")}
             trend={progressPercent > 0 ? "up" : "neutral"}
             trendValue={progressPercent > 0 ? "+5%" : "—"}
             sparklineData={
@@ -923,7 +934,7 @@ function DashboardContent() {
           />
           <KPICard
             value={hasData ? stats.applicable : "52"}
-            label="Applicable Articles"
+            label={t("dashboard.applicableArticles")}
             trend="neutral"
             sparklineData={[45, 48, 50, 51, 52, 52]}
             sparklineColor={CHART_COLORS.emerald}
@@ -931,7 +942,7 @@ function DashboardContent() {
           />
           <KPICard
             value={documentCount}
-            label="Documents Uploaded"
+            label={t("dashboard.documentsUploaded")}
             trend={documentCount > 0 ? "up" : "neutral"}
             trendValue={documentCount > 0 ? "+3" : "—"}
             sparklineData={[0, 2, 5, 8, 12, documentCount]}
@@ -940,9 +951,9 @@ function DashboardContent() {
           />
           <KPICard
             value={daysUntilEnforcement}
-            label="Days to 2030"
+            label={t("dashboard.daysTo2030")}
             trend="down"
-            trendValue="-1 daily"
+            trendValue={t("dashboard.dailyTrend")}
             sparklineData={[1500, 1480, 1460, 1440, 1425, daysUntilEnforcement]}
             sparklineColor={CHART_COLORS.amber}
             delay={3}
@@ -957,11 +968,10 @@ function DashboardContent() {
             className="bg-white/5 border border-dashed border-white/20 rounded-xl p-10 text-center mb-8"
           >
             <h2 className="text-[16px] font-medium text-white mb-2">
-              Import your assessment results
+              {t("dashboard.importResults")}
             </h2>
             <p className="text-[13px] text-white/60 mb-6 max-w-md mx-auto">
-              Run the free assessment to determine which articles apply to your
-              operation and see real metrics.
+              {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
               <Link
@@ -969,13 +979,13 @@ function DashboardContent() {
                 className="bg-emerald-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
               >
                 <PlayCircle size={16} />
-                Run Assessment
+                {t("dashboard.runAssessmentAction")}
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
                 className="border border-white/20 text-white/70 font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-white/5 transition-all"
               >
-                I already ran it
+                {t("dashboard.alreadyRanIt")}
               </button>
             </div>
           </motion.div>
@@ -984,7 +994,7 @@ function DashboardContent() {
         {/* ROW 2: Compliance Overview + Module Progress */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <GlassCard className="p-6">
-            <SectionHeader title="Compliance Overview" />
+            <SectionHeader title={t("dashboard.complianceOverview")} />
             <ComplianceDonutChart
               data={complianceSegments}
               totalScore={hasData ? progressPercent : 48}
@@ -993,7 +1003,7 @@ function DashboardContent() {
           </GlassCard>
 
           <GlassCard className="p-6">
-            <SectionHeader title="Module Progress" />
+            <SectionHeader title={t("dashboard.moduleProgress")} />
             <ModuleProgressChart data={moduleChartData} isDemo={!hasData} />
           </GlassCard>
         </div>
@@ -1001,7 +1011,7 @@ function DashboardContent() {
         {/* ROW 3: Timeline + Radar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <GlassCard className="p-6">
-            <SectionHeader title="Compliance Timeline" />
+            <SectionHeader title={t("dashboard.complianceTimeline")} />
             <ComplianceTimelineChart
               data={DEMO_TIMELINE_DATA}
               isDemo={!hasData}
@@ -1009,7 +1019,7 @@ function DashboardContent() {
           </GlassCard>
 
           <GlassCard className="p-6">
-            <SectionHeader title="Regulatory Coverage" />
+            <SectionHeader title={t("dashboard.regulatoryCoverage")} />
             <RegulatoryRadarChart data={radarData} isDemo={!hasData} />
           </GlassCard>
         </div>
@@ -1017,13 +1027,13 @@ function DashboardContent() {
         {/* ROW 4: Recent Activity */}
         <GlassCard className="p-6 mb-8">
           <SectionHeader
-            title="Recent Activity"
+            title={t("dashboard.recentActivity")}
             action={
               <Link
                 href="/dashboard/audit-center"
                 className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
-                View all <ChevronRight className="w-3 h-3" />
+                {t("common.viewAll")} <ChevronRight className="w-3 h-3" />
               </Link>
             }
           />
@@ -1036,14 +1046,14 @@ function DashboardContent() {
           ) : (
             <EmptyState
               icon={BarChart3}
-              title="No activity yet"
-              description="Start your first assessment to see activity here"
+              title={t("dashboard.noActivityYet")}
+              description={t("dashboard.startAssessment")}
               action={
                 <Link
                   href="/assessment"
                   className="text-[12px] text-emerald-400 hover:text-emerald-300"
                 >
-                  Run Assessment
+                  {t("dashboard.runAssessmentAction")}
                 </Link>
               }
             />
@@ -1054,22 +1064,22 @@ function DashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Upcoming Deadlines */}
           <GlassCard className="p-5">
-            <SectionHeader title="Upcoming Deadlines" />
+            <SectionHeader title={t("dashboard.upcomingDeadlines")} />
             <div className="space-y-1">
               {DEMO_DEADLINES.slice(0, 5).map((deadline) => (
-                <DeadlineItem key={deadline.id} deadline={deadline} />
+                <DeadlineItem key={deadline.id} deadline={deadline} t={t} />
               ))}
             </div>
             {!hasData && (
               <p className="text-[10px] text-amber-400/70 mt-3 text-center">
-                Sample deadlines
+                {t("dashboard.sampleDeadlines")}
               </p>
             )}
           </GlassCard>
 
           {/* Risk Heatmap */}
           <GlassCard className="p-5">
-            <SectionHeader title="Risk Heatmap" />
+            <SectionHeader title={t("dashboard.riskHeatmap")} />
             <div className="grid grid-cols-4 gap-3 mt-2">
               {DEMO_RISK_HEATMAP.map((item, i) => (
                 <RiskHeatmapCell
@@ -1080,52 +1090,56 @@ function DashboardContent() {
               ))}
             </div>
             <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-white/5">
-              {["Critical", "High", "Medium", "Low"].map((level, i) => (
-                <div key={level} className="flex items-center gap-1.5">
-                  <div
-                    className={`w-2.5 h-2.5 rounded ${
-                      i === 0
-                        ? "bg-red-500"
-                        : i === 1
-                          ? "bg-red-500/60"
-                          : i === 2
-                            ? "bg-amber-500/60"
-                            : "bg-green-500/60"
-                    }`}
-                  />
-                  <span className="text-[9px] text-white/40">{level}</span>
-                </div>
-              ))}
+              {(["critical", "high", "medium", "low"] as const).map(
+                (level, i) => (
+                  <div key={level} className="flex items-center gap-1.5">
+                    <div
+                      className={`w-2.5 h-2.5 rounded ${
+                        i === 0
+                          ? "bg-red-500"
+                          : i === 1
+                            ? "bg-red-500/60"
+                            : i === 2
+                              ? "bg-amber-500/60"
+                              : "bg-green-500/60"
+                      }`}
+                    />
+                    <span className="text-[9px] text-white/40">
+                      {t(`common.${level}`)}
+                    </span>
+                  </div>
+                ),
+              )}
             </div>
             {!hasData && (
               <p className="text-[10px] text-amber-400/70 mt-2 text-center">
-                Sample data
+                {t("dashboard.sampleData")}
               </p>
             )}
           </GlassCard>
 
           {/* Quick Actions */}
           <GlassCard className="p-5">
-            <SectionHeader title="Quick Actions" />
+            <SectionHeader title={t("dashboard.quickActions")} />
             <div className="grid grid-cols-2 gap-3 mt-1">
               <QuickActionButton
                 icon={Zap}
-                label="Run Assessment"
+                label={t("dashboard.runAssessmentAction")}
                 href="/assessment"
               />
               <QuickActionButton
                 icon={FileUp}
-                label="Upload Doc"
+                label={t("dashboard.uploadDoc")}
                 href="/dashboard/documents"
               />
               <QuickActionButton
                 icon={FileBarChart}
-                label="Generate Report"
+                label={t("dashboard.generateReport")}
                 href="/dashboard/tracker"
               />
               <QuickActionButton
                 icon={CalendarDays}
-                label="View Timeline"
+                label={t("dashboard.viewTimeline")}
                 href="/dashboard/timeline"
               />
             </div>
@@ -1150,37 +1164,39 @@ function DashboardContent() {
                 className="bg-[#0A0A0B] border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
                 <h2 className="text-[18px] font-medium text-white mb-2">
-                  Select Operator Type
+                  {t("dashboard.selectOperatorType")}
                 </h2>
                 <p className="text-[13px] text-white/60 mb-6">
-                  Choose your operator type to import applicable articles.
+                  {t("dashboard.selectOperatorDescription")}
                 </p>
                 <select
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-emerald-500/50"
                 >
-                  <option value="">Select operator type...</option>
-                  <option value="SCO">EU Spacecraft Operator</option>
-                  <option value="LO">EU Launch Operator</option>
-                  <option value="LSO">EU Launch Site Operator</option>
-                  <option value="TCO">Third Country Operator</option>
-                  <option value="ISOS">In-Space Services Provider</option>
-                  <option value="PDP">Primary Data Provider</option>
+                  <option value="">
+                    {t("dashboard.selectOperatorPlaceholder")}
+                  </option>
+                  <option value="SCO">{t("dashboard.operatorSCO")}</option>
+                  <option value="LO">{t("dashboard.operatorLO")}</option>
+                  <option value="LSO">{t("dashboard.operatorLSO")}</option>
+                  <option value="TCO">{t("dashboard.operatorTCO")}</option>
+                  <option value="ISOS">{t("dashboard.operatorISOS")}</option>
+                  <option value="PDP">{t("dashboard.operatorPDP")}</option>
                 </select>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
                     className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition-all"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                   <button
                     onClick={handleImport}
                     disabled={!selectedOperator || importing}
                     className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-emerald-600 transition-all disabled:opacity-50"
                   >
-                    {importing ? "Importing..." : "Import"}
+                    {importing ? t("common.importing") : t("common.import")}
                   </button>
                 </div>
               </motion.div>
