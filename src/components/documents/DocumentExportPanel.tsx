@@ -29,9 +29,11 @@ export function DocumentExportPanel({
 }: DocumentExportPanelProps) {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDownloadPDF = async () => {
     setDownloading(true);
+    setError(null);
     try {
       const response = await fetch(
         `/api/documents/generated/${documentId}/pdf`,
@@ -39,7 +41,10 @@ export function DocumentExportPanel({
       );
 
       if (!response.ok) {
-        throw new Error("PDF generation failed");
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          data?.error || `PDF generation failed (${response.status})`,
+        );
       }
 
       const blob = await response.blob();
@@ -52,8 +57,9 @@ export function DocumentExportPanel({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setDownloaded(true);
-    } catch (error) {
-      console.error("PDF download error:", error);
+    } catch (err) {
+      console.error("PDF download error:", err);
+      setError(err instanceof Error ? err.message : "PDF download failed");
     } finally {
       setDownloading(false);
     }
@@ -123,6 +129,10 @@ export function DocumentExportPanel({
               </>
             )}
           </button>
+
+          {error && (
+            <p className="text-xs text-red-500 mt-2 text-center">{error}</p>
+          )}
         </div>
 
         {/* Actions */}
