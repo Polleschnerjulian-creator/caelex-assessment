@@ -33,6 +33,7 @@ import {
   Flag,
   BarChart3,
   FileSearch,
+  Orbit,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -610,6 +611,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 {t("sidebar.timeline")}
+              </NavItem>
+              <NavItem
+                href="/dashboard/mission-control"
+                icon={<Orbit size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                {t("sidebar.missionControl")}
               </NavItem>
             </div>
           </div>

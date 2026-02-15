@@ -61,7 +61,8 @@
     "analytics": "Analytics",
     "auditLogs": "Audit Logs",
     "settings": "Settings",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "missionControl": "Mission Control"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -250,5 +251,34 @@
     "dsTimeline": "Timeline deadlines — upcoming regulatory deadlines and milestone completion",
     "disclaimer": "Disclaimer",
     "disclaimerText": "Compliance scores are calculated based on self-assessment data provided by the organization and do not constitute a formal regulatory audit or legal opinion. Scores are indicative and intended to support internal compliance management. For official compliance certification, consult with your designated National Competent Authority (NCA) or legal advisor."
+  },
+  "missionControl": {
+    "title": "Mission Control",
+    "tracked": "Tracked",
+    "payloads": "Payloads",
+    "debris": "Debris",
+    "rocketBodies": "Rocket Bodies",
+    "yourFleet": "Your Fleet",
+    "fleetStatus": "Fleet Status",
+    "noFleetYet": "No spacecraft registered yet",
+    "more": "more",
+    "openMissionControl": "Open Mission Control",
+    "loadingSatellites": "Loading satellite data...",
+    "searchPlaceholder": "Search by name, NORAD ID, or COSPAR ID...",
+    "filters": "Filters",
+    "orbitType": "Orbit Type",
+    "objectType": "Object Type",
+    "showFleetOnly": "Show fleet only",
+    "showing": "Showing",
+    "objects": "objects",
+    "noradId": "NORAD ID",
+    "cosparId": "COSPAR ID",
+    "country": "Country",
+    "type": "Type",
+    "altitude": "Altitude",
+    "inclination": "Inclination",
+    "period": "Orbital Period",
+    "yourSpacecraft": "Your Spacecraft",
+    "manageSpacecraft": "Manage in Registration"
   }
 }

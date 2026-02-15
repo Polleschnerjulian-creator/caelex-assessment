@@ -61,7 +61,8 @@
     "analytics": "Análisis",
     "auditLogs": "Registros de auditoría",
     "settings": "Configuración",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "missionControl": "Control de misión"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -250,5 +251,34 @@
     "dsTimeline": "Plazos del cronograma: próximos plazos regulatorios y cumplimiento de hitos",
     "disclaimer": "Aviso legal",
     "disclaimerText": "Las puntuaciones de cumplimiento se calculan en función de los datos de autoevaluación proporcionados por la organización y no constituyen una auditoría regulatoria formal ni una opinión jurídica. Las puntuaciones son indicativas y están destinadas a apoyar la gestión interna del cumplimiento. Para la certificación oficial de cumplimiento, consulte con su Autoridad Nacional Competente (ANC) designada o con su asesor jurídico."
+  },
+  "missionControl": {
+    "title": "Control de misión",
+    "tracked": "Rastreados",
+    "payloads": "Cargas útiles",
+    "debris": "Escombros",
+    "rocketBodies": "Cuerpos de cohete",
+    "yourFleet": "Tu flota",
+    "fleetStatus": "Estado de la flota",
+    "noFleetYet": "Aún no hay naves registradas",
+    "more": "más",
+    "openMissionControl": "Abrir control de misión",
+    "loadingSatellites": "Cargando datos de satélites...",
+    "searchPlaceholder": "Buscar por nombre, ID NORAD o ID COSPAR...",
+    "filters": "Filtros",
+    "orbitType": "Tipo de órbita",
+    "objectType": "Tipo de objeto",
+    "showFleetOnly": "Mostrar solo la flota",
+    "showing": "Mostrando",
+    "objects": "objetos",
+    "noradId": "ID NORAD",
+    "cosparId": "ID COSPAR",
+    "country": "País",
+    "type": "Tipo",
+    "altitude": "Altitud",
+    "inclination": "Inclinación",
+    "period": "Período orbital",
+    "yourSpacecraft": "Tu nave espacial",
+    "manageSpacecraft": "Gestionar en registro"
   }
 }

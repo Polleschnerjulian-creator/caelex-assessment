@@ -57,6 +57,15 @@ const ComplianceScoreCard = dynamic(
   () => import("@/components/dashboard/ComplianceScoreCard"),
   { ssr: false },
 );
+const GlobeWidget = dynamic(
+  () => import("@/components/mission-control/GlobeWidget"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[280px] bg-white/5 rounded-xl animate-pulse" />
+    ),
+  },
+);
 
 // ─── Types ───
 
@@ -1060,7 +1069,17 @@ function DashboardContent() {
           )}
         </GlassCard>
 
-        {/* ROW 5: Deadlines, Risk Heatmap, Quick Actions */}
+        {/* ROW 5: 3D Mission Globe */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+              {t("missionControl.title")}
+            </h2>
+          </div>
+          <GlobeWidget />
+        </div>
+
+        {/* ROW 6: Deadlines, Risk Heatmap, Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Upcoming Deadlines */}
           <GlassCard className="p-5">
