@@ -836,21 +836,57 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
     };
   },
 
-  generate_compliance_report: async (input) => {
+  generate_compliance_report: async (input, userContext) => {
     const reportType = input.reportType as string;
     const language = (input.language as string) || "en";
 
-    // In a real implementation, this would trigger PDF generation
+    // Map report types to document generation types
+    const typeMap: Record<string, string> = {
+      gap_analysis: "CYBERSECURITY_FRAMEWORK",
+      nis2_status: "NIS2_ASSESSMENT",
+    };
+
+    const documentType = typeMap[reportType];
+    if (documentType) {
+      try {
+        const { startBackgroundGeneration } =
+          await import("./document-generator");
+        const documentId = await startBackgroundGeneration({
+          userId: userContext.userId,
+          organizationId: userContext.organizationId,
+          organizationName: userContext.organizationName,
+          documentType: documentType as
+            | "CYBERSECURITY_FRAMEWORK"
+            | "NIS2_ASSESSMENT",
+          language,
+        });
+
+        return {
+          status: "generating",
+          documentId,
+          reportType,
+          language,
+          viewUrl: "/dashboard/documents/generate",
+          message: `Your ${reportType} report is being generated. You can view it in the Document Studio.`,
+          estimatedTime: "30-60 seconds",
+        };
+      } catch (error) {
+        return {
+          error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+      }
+    }
+
     return {
-      status: "queued",
+      status: "generating",
       reportType,
       language,
-      message: `${reportType} report generation has been queued. You will receive a notification when it's ready.`,
-      estimatedTime: "2-5 minutes",
+      viewUrl: "/dashboard/documents/generate",
+      message: `Open the Document Studio to generate your ${reportType} report.`,
     };
   },
 
-  generate_authorization_application: async (input) => {
+  generate_authorization_application: async (input, userContext) => {
     const jurisdiction = input.jurisdiction as string;
     const applicationType = input.applicationType as string;
 
@@ -859,30 +895,170 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       return { error: `Unknown jurisdiction: ${jurisdiction}` };
     }
 
-    return {
-      status: "queued",
-      jurisdiction,
-      jurisdictionName: jurisdictionProfile.countryName,
-      ncaName: jurisdictionProfile.ncaName,
-      applicationType,
-      message: `Authorization application for ${jurisdictionProfile.ncaName} has been queued for generation.`,
-      estimatedTime: "5-10 minutes",
-      notes: [
-        `Language requirements: ${jurisdictionProfile.languageRequirements.join(", ")}`,
-        `Processing time: ${jurisdictionProfile.processingTimeDays.standard} days`,
-      ],
-    };
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "AUTHORIZATION_APPLICATION",
+      });
+
+      return {
+        status: "generating",
+        documentId,
+        jurisdiction,
+        jurisdictionName: jurisdictionProfile.countryName,
+        ncaName: jurisdictionProfile.ncaName,
+        applicationType,
+        viewUrl: "/dashboard/documents/generate",
+        message: `Authorization application for ${jurisdictionProfile.ncaName} is being generated. View it in the Document Studio.`,
+        estimatedTime: "30-60 seconds",
+        notes: [
+          `Language requirements: ${jurisdictionProfile.languageRequirements.join(", ")}`,
+          `Processing time: ${jurisdictionProfile.processingTimeDays.standard} days`,
+        ],
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
   },
 
-  generate_debris_mitigation_plan: async (input) => {
-    const format = input.format as string;
+  generate_debris_mitigation_plan: async (input, userContext) => {
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "DEBRIS_MITIGATION_PLAN",
+      });
 
-    return {
-      status: "queued",
-      format,
-      message: `Debris mitigation plan (${format} format) has been queued for generation.`,
-      estimatedTime: "5-10 minutes",
-    };
+      return {
+        status: "generating",
+        documentId,
+        format: input.format,
+        viewUrl: "/dashboard/documents/generate",
+        message: `Your debris mitigation plan is being generated. View it in the Document Studio.`,
+        estimatedTime: "30-60 seconds",
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
+  },
+
+  generate_cybersecurity_framework: async (input, userContext) => {
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "CYBERSECURITY_FRAMEWORK",
+        language: (input.language as string) || "en",
+      });
+
+      return {
+        status: "generating",
+        documentId,
+        viewUrl: "/dashboard/documents/generate",
+        message:
+          "Your cybersecurity framework document is being generated. View it in the Document Studio.",
+        estimatedTime: "30-60 seconds",
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
+  },
+
+  generate_environmental_report: async (input, userContext) => {
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "ENVIRONMENTAL_FOOTPRINT",
+        language: (input.language as string) || "en",
+      });
+
+      return {
+        status: "generating",
+        documentId,
+        viewUrl: "/dashboard/documents/generate",
+        message:
+          "Your environmental footprint declaration is being generated. View it in the Document Studio.",
+        estimatedTime: "30-60 seconds",
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
+  },
+
+  generate_insurance_report: async (input, userContext) => {
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "INSURANCE_COMPLIANCE",
+        language: (input.language as string) || "en",
+      });
+
+      return {
+        status: "generating",
+        documentId,
+        viewUrl: "/dashboard/documents/generate",
+        message:
+          "Your insurance compliance report is being generated. View it in the Document Studio.",
+        estimatedTime: "30-60 seconds",
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
+  },
+
+  generate_nis2_report: async (input, userContext) => {
+    try {
+      const { startBackgroundGeneration } =
+        await import("./document-generator");
+      const documentId = await startBackgroundGeneration({
+        userId: userContext.userId,
+        organizationId: userContext.organizationId,
+        organizationName: userContext.organizationName,
+        documentType: "NIS2_ASSESSMENT",
+        language: (input.language as string) || "en",
+      });
+
+      return {
+        status: "generating",
+        documentId,
+        viewUrl: "/dashboard/documents/generate",
+        message:
+          "Your NIS2 compliance assessment is being generated. View it in the Document Studio.",
+        estimatedTime: "30-60 seconds",
+      };
+    } catch (error) {
+      return {
+        error: `Failed to start generation: ${error instanceof Error ? error.message : "Unknown error"}`,
+      };
+    }
   },
 
   // ─── Knowledge Tools ───

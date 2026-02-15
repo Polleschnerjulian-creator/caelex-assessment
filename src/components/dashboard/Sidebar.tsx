@@ -599,6 +599,16 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 {t("sidebar.documents")}
               </NavItem>
               <NavItem
+                href="/dashboard/documents/generate"
+                icon={<Zap size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge="AI"
+              >
+                {t("sidebar.aiGenerate") !== "sidebar.aiGenerate"
+                  ? t("sidebar.aiGenerate")
+                  : "AI Generate"}
+              </NavItem>
+              <NavItem
                 href="/dashboard/audit-center"
                 icon={<ClipboardCheck size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}

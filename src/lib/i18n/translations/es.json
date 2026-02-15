@@ -62,7 +62,8 @@
     "auditLogs": "Registros de auditoría",
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
-    "missionControl": "Control de misión"
+    "missionControl": "Control de misión",
+    "aiGenerate": "Generación IA"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -281,5 +282,38 @@
     "yourSpacecraft": "Tu nave espacial",
     "manageSpacecraft": "Gestionar en registro",
     "noResults": "No se encontraron satélites. Prueba con otro nombre o ID NORAD."
+  },
+  "documentStudio": {
+    "title": "Estudio de Documentos IA",
+    "subtitle": "Generar documentos de cumplimiento listos para presentación NCA",
+    "selectType": "Seleccionar tipo de documento",
+    "selectTypeDesc": "Elija el tipo de documento de cumplimiento a generar",
+    "reviewData": "Revisar y configurar",
+    "generating": "Generando documento",
+    "generatingDesc": "Esto suele tardar entre 30 y 60 segundos",
+    "reviewEdit": "Revisar y editar",
+    "export": "Exportar documento",
+    "downloadPdf": "Descargar PDF",
+    "newDocument": "Nuevo documento",
+    "generationComplete": "Documento generado",
+    "generationFailed": "Error en la generación",
+    "retry": "Reintentar",
+    "saveEdits": "Guardar cambios",
+    "saved": "Guardado",
+    "documentDetails": "Detalles del documento",
+    "generationSettings": "Configuración de generación",
+    "documentLanguage": "Idioma del documento",
+    "assessmentData": "Datos de evaluación",
+    "dataAvailable": "Datos de evaluación disponibles",
+    "dataMissing": "No se encontró evaluación",
+    "estimatedPages": "Páginas estimadas",
+    "debrisMitigationPlan": "Plan de mitigación de residuos",
+    "cybersecurityFramework": "Marco de ciberseguridad",
+    "environmentalFootprint": "Declaración de huella ambiental",
+    "insuranceCompliance": "Informe de cumplimiento de seguros",
+    "nis2Assessment": "Evaluación de cumplimiento NIS2",
+    "authorizationApplication": "Paquete de solicitud de autorización",
+    "backToDocuments": "Volver a documentos",
+    "generateDocument": "Generar documento"
   }
 }

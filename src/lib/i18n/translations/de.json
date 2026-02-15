@@ -62,7 +62,8 @@
     "auditLogs": "Audit-Protokolle",
     "settings": "Einstellungen",
     "signOut": "Abmelden",
-    "missionControl": "Missionskontrolle"
+    "missionControl": "Missionskontrolle",
+    "aiGenerate": "KI-Generierung"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -281,5 +282,38 @@
     "yourSpacecraft": "Ihr Raumfahrzeug",
     "manageSpacecraft": "In Registrierung verwalten",
     "noResults": "Keine Satelliten gefunden. Versuchen Sie einen anderen Namen oder eine andere NORAD-ID."
+  },
+  "documentStudio": {
+    "title": "KI-Dokumentenstudio",
+    "subtitle": "NCA-konforme Compliance-Dokumente generieren",
+    "selectType": "Dokumenttyp wählen",
+    "selectTypeDesc": "Wählen Sie den Typ des zu generierenden Compliance-Dokuments",
+    "reviewData": "Überprüfen & Konfigurieren",
+    "generating": "Dokument wird generiert",
+    "generatingDesc": "Dies dauert in der Regel 30-60 Sekunden",
+    "reviewEdit": "Überprüfen & Bearbeiten",
+    "export": "Dokument exportieren",
+    "downloadPdf": "PDF herunterladen",
+    "newDocument": "Neues Dokument",
+    "generationComplete": "Dokument generiert",
+    "generationFailed": "Generierung fehlgeschlagen",
+    "retry": "Erneut versuchen",
+    "saveEdits": "Änderungen speichern",
+    "saved": "Gespeichert",
+    "documentDetails": "Dokumentdetails",
+    "generationSettings": "Generierungseinstellungen",
+    "documentLanguage": "Dokumentsprache",
+    "assessmentData": "Bewertungsdaten",
+    "dataAvailable": "Bewertungsdaten verfügbar",
+    "dataMissing": "Keine Bewertung gefunden",
+    "estimatedPages": "Geschätzte Seitenzahl",
+    "debrisMitigationPlan": "Debris-Minderungsplan",
+    "cybersecurityFramework": "Cybersicherheits-Framework",
+    "environmentalFootprint": "Umwelt-Fußabdruck-Erklärung",
+    "insuranceCompliance": "Versicherungs-Compliance-Bericht",
+    "nis2Assessment": "NIS2-Compliance-Bewertung",
+    "authorizationApplication": "Genehmigungsantragspaket",
+    "backToDocuments": "Zurück zu Dokumenten",
+    "generateDocument": "Dokument generieren"
   }
 }

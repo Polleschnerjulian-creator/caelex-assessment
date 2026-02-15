@@ -58,6 +58,7 @@ model User {
   exportControlAssessments ExportControlAssessment[] // ITAR/EAR Export Control assessments
   spectrumAssessments    SpectrumAssessment[]    // Spectrum/ITU Compliance assessments
   astraConversations     AstraConversation[]     // ASTRA AI conversations
+  generatedDocuments     GeneratedDocument[]     // AI-generated compliance documents
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -2269,6 +2270,7 @@ model Organization {
   activities        Activity[]              // Collaboration: organization's activities
   complianceEvidence ComplianceEvidence[]   // Audit Center: org-scoped compliance evidence
   astraConversations AstraConversation[]    // ASTRA AI conversations
+  generatedDocuments GeneratedDocument[]    // AI-generated compliance documents
   healthScore       CustomerHealthScore?    // CEO Analytics: customer health
 
   @@index([slug])
@@ -3685,4 +3687,61 @@ model ApiEndpointMetrics {
   @@index([date])
   @@index([path])
   @@index([errorRate])
+}
+
+// ============================================
+// AI DOCUMENT GENERATION
+// ============================================
+
+enum DocumentGenerationType {
+  DEBRIS_MITIGATION_PLAN
+  CYBERSECURITY_FRAMEWORK
+  ENVIRONMENTAL_FOOTPRINT
+  INSURANCE_COMPLIANCE
+  NIS2_ASSESSMENT
+  AUTHORIZATION_APPLICATION
+}
+
+enum DocumentGenerationStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+model GeneratedDocument {
+  id               String                   @id @default(cuid())
+  userId           String
+  organizationId   String
+  documentType     DocumentGenerationType
+  title            String
+  language         String                   @default("en")
+  assessmentId     String?
+  assessmentType   String?
+  status           DocumentGenerationStatus @default(PENDING)
+  content          Json?                    // ReportSection[] as JSON
+  rawContent       String?                  @db.Text
+  modelUsed        String?
+  inputTokens      Int?
+  outputTokens     Int?
+  generationTimeMs Int?
+  promptVersion    String?
+  editedContent    Json?
+  isEdited         Boolean                  @default(false)
+  pdfGenerated     Boolean                  @default(false)
+  pdfGeneratedAt   DateTime?
+  version          Int                      @default(1)
+  parentId         String?
+  parent           GeneratedDocument?       @relation("DocumentVersions", fields: [parentId], references: [id])
+  versions         GeneratedDocument[]      @relation("DocumentVersions")
+  error            String?                  @db.Text
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization     Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([documentType])
+  @@index([userId, documentType])
 }

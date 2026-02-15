@@ -1,6 +1,8 @@
 "use client";
 
-import { FileText, Eye, Download, Pencil, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FileText, Eye, Download, Pencil, Loader2 } from "lucide-react";
+import { useState } from "react";
 import type { AstraDocumentMeta } from "@/lib/astra/types";
 
 interface AstraDocumentCardProps {
@@ -17,13 +19,51 @@ const statusLabels: Record<string, { label: string; color: string }> = {
   final: { label: "Final", color: "text-emerald-400 bg-emerald-500/10" },
 };
 
-function handlePhase2Click() {
-  // In Phase 2, this would trigger actual document actions
-  alert("Feature verfuegbar ab Phase 2.");
-}
-
 export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
+  const router = useRouter();
   const status = statusLabels[meta.status] || statusLabels.draft;
+  const [downloading, setDownloading] = useState(false);
+
+  const documentId = (meta as AstraDocumentMeta & { documentId?: string })
+    .documentId;
+
+  const handleView = () => {
+    if (documentId) {
+      router.push(`/dashboard/documents/generate?view=${documentId}`);
+    } else {
+      router.push("/dashboard/documents/generate");
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!documentId) return;
+    setDownloading(true);
+    try {
+      const response = await fetch(
+        `/api/documents/generated/${documentId}/pdf`,
+        { method: "POST" },
+      );
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${meta.documentTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      // Silent failure
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleEdit = () => {
+    router.push("/dashboard/documents/generate");
+  };
 
   return (
     <div className="bg-white/[0.04] border border-white/10 rounded-lg p-4 my-2">
@@ -53,14 +93,14 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/30">Seiten:</span>
+          <span className="text-[10px] text-white/30">Pages:</span>
           <span className="text-[10px] text-white/60">
-            ~{meta.estimatedPages} (geschaetzt)
+            ~{meta.estimatedPages} (estimated)
           </span>
         </div>
         {meta.articlesReferenced.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-white/30">Referenzen:</span>
+            <span className="text-[10px] text-white/30">References:</span>
             <span className="text-[10px] text-white/60">
               {meta.articlesReferenced.join(", ")}
             </span>
@@ -71,35 +111,31 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
       {/* Action Buttons */}
       <div className="flex items-center gap-2">
         <button
-          onClick={handlePhase2Click}
+          onClick={handleView}
           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors"
         >
           <Eye size={10} />
-          Preview
+          View
         </button>
         <button
-          onClick={handlePhase2Click}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors"
+          onClick={handleDownload}
+          disabled={downloading || !documentId}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors disabled:opacity-40"
         >
-          <Download size={10} />
+          {downloading ? (
+            <Loader2 size={10} className="animate-spin" />
+          ) : (
+            <Download size={10} />
+          )}
           Download
         </button>
         <button
-          onClick={handlePhase2Click}
+          onClick={handleEdit}
           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors"
         >
           <Pencil size={10} />
           Edit
         </button>
-      </div>
-
-      {/* Framework Mode Notice */}
-      <div className="mt-3 flex items-start gap-1.5 text-[9px] text-amber-400/60">
-        <AlertTriangle size={10} className="mt-0.5 flex-shrink-0" />
-        <span>
-          Framework-Modus: Dokument ist ein Placeholder. Echte Generierung ab
-          Phase 2.
-        </span>
       </div>
     </div>
   );

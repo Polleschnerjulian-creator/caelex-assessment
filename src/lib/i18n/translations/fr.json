@@ -62,7 +62,8 @@
     "auditLogs": "Journaux d'audit",
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
-    "missionControl": "Centre de mission"
+    "missionControl": "Centre de mission",
+    "aiGenerate": "Génération IA"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -281,5 +282,38 @@
     "yourSpacecraft": "Votre vaisseau",
     "manageSpacecraft": "Gérer dans l'enregistrement",
     "noResults": "Aucun satellite trouvé. Essayez un autre nom ou ID NORAD."
+  },
+  "documentStudio": {
+    "title": "Studio de Documents IA",
+    "subtitle": "Générer des documents de conformité prêts pour soumission NCA",
+    "selectType": "Sélectionner le type de document",
+    "selectTypeDesc": "Choisissez le type de document de conformité à générer",
+    "reviewData": "Vérifier & Configurer",
+    "generating": "Génération du document",
+    "generatingDesc": "Cela prend généralement 30 à 60 secondes",
+    "reviewEdit": "Vérifier & Modifier",
+    "export": "Exporter le document",
+    "downloadPdf": "Télécharger PDF",
+    "newDocument": "Nouveau document",
+    "generationComplete": "Document généré",
+    "generationFailed": "Échec de la génération",
+    "retry": "Réessayer",
+    "saveEdits": "Enregistrer les modifications",
+    "saved": "Enregistré",
+    "documentDetails": "Détails du document",
+    "generationSettings": "Paramètres de génération",
+    "documentLanguage": "Langue du document",
+    "assessmentData": "Données d'évaluation",
+    "dataAvailable": "Données d'évaluation disponibles",
+    "dataMissing": "Aucune évaluation trouvée",
+    "estimatedPages": "Pages estimées",
+    "debrisMitigationPlan": "Plan d'atténuation des débris",
+    "cybersecurityFramework": "Cadre de cybersécurité",
+    "environmentalFootprint": "Déclaration d'empreinte environnementale",
+    "insuranceCompliance": "Rapport de conformité d'assurance",
+    "nis2Assessment": "Évaluation de conformité NIS2",
+    "authorizationApplication": "Dossier de demande d'autorisation",
+    "backToDocuments": "Retour aux documents",
+    "generateDocument": "Générer le document"
   }
 }

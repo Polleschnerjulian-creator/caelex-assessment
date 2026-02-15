@@ -442,6 +442,74 @@ export const generateDebrisMitigationPlan: AstraToolDefinition = {
   },
 };
 
+export const generateCybersecurityFramework: AstraToolDefinition = {
+  name: "generate_cybersecurity_framework",
+  description:
+    "Triggers generation of a comprehensive cybersecurity framework document compliant with EU Space Act Art. 27-30 and aligned with NIST CSF/ISO 27001.",
+  input_schema: {
+    type: "object",
+    properties: {
+      language: {
+        type: "string",
+        description: "Document language.",
+        enum: ["en", "de", "fr", "es"],
+      },
+    },
+    required: [],
+  },
+};
+
+export const generateEnvironmentalReport: AstraToolDefinition = {
+  name: "generate_environmental_report",
+  description:
+    "Triggers generation of an Environmental Footprint Declaration (EFD) per EU Space Act Art. 44-46 with lifecycle assessment data.",
+  input_schema: {
+    type: "object",
+    properties: {
+      language: {
+        type: "string",
+        description: "Document language.",
+        enum: ["en", "de", "fr", "es"],
+      },
+    },
+    required: [],
+  },
+};
+
+export const generateInsuranceReport: AstraToolDefinition = {
+  name: "generate_insurance_report",
+  description:
+    "Triggers generation of an insurance compliance report analyzing TPL requirements and coverage status per EU Space Act Art. 47-50.",
+  input_schema: {
+    type: "object",
+    properties: {
+      language: {
+        type: "string",
+        description: "Document language.",
+        enum: ["en", "de", "fr", "es"],
+      },
+    },
+    required: [],
+  },
+};
+
+export const generateNIS2Report: AstraToolDefinition = {
+  name: "generate_nis2_report",
+  description:
+    "Triggers generation of a NIS2 compliance assessment report covering entity classification, requirement status, and gap analysis per NIS2 Directive.",
+  input_schema: {
+    type: "object",
+    properties: {
+      language: {
+        type: "string",
+        description: "Document language.",
+        enum: ["en", "de", "fr", "es"],
+      },
+    },
+    required: [],
+  },
+};
+
 // ─── Knowledge Tools ───
 
 export const searchRegulation: AstraToolDefinition = {
@@ -691,6 +759,10 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   generateComplianceReport,
   generateAuthorizationApplication,
   generateDebrisMitigationPlan,
+  generateCybersecurityFramework,
+  generateEnvironmentalReport,
+  generateInsuranceReport,
+  generateNIS2Report,
 
   // Knowledge Tools
   searchRegulation,
@@ -736,6 +808,10 @@ export const TOOL_CATEGORIES = {
     "generate_compliance_report",
     "generate_authorization_application",
     "generate_debris_mitigation_plan",
+    "generate_cybersecurity_framework",
+    "generate_environmental_report",
+    "generate_insurance_report",
+    "generate_nis2_report",
   ],
   knowledge: [
     "search_regulation",

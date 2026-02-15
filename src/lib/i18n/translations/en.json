@@ -62,7 +62,8 @@
     "auditLogs": "Audit Logs",
     "settings": "Settings",
     "signOut": "Sign Out",
-    "missionControl": "Mission Control"
+    "missionControl": "Mission Control",
+    "aiGenerate": "AI Generate"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -281,5 +282,38 @@
     "yourSpacecraft": "Your Spacecraft",
     "manageSpacecraft": "Manage in Registration",
     "noResults": "No satellites found. Try a different name or NORAD ID."
+  },
+  "documentStudio": {
+    "title": "AI Document Studio",
+    "subtitle": "Generate NCA-submission-ready compliance documents",
+    "selectType": "Select Document Type",
+    "selectTypeDesc": "Choose the type of compliance document to generate",
+    "reviewData": "Review & Configure",
+    "generating": "Generating Document",
+    "generatingDesc": "This typically takes 30-60 seconds",
+    "reviewEdit": "Review & Edit",
+    "export": "Export Document",
+    "downloadPdf": "Download PDF",
+    "newDocument": "New Document",
+    "generationComplete": "Document Generated",
+    "generationFailed": "Generation Failed",
+    "retry": "Retry",
+    "saveEdits": "Save Edits",
+    "saved": "Saved",
+    "documentDetails": "Document Details",
+    "generationSettings": "Generation Settings",
+    "documentLanguage": "Document Language",
+    "assessmentData": "Assessment Data",
+    "dataAvailable": "Assessment data available",
+    "dataMissing": "No assessment found",
+    "estimatedPages": "Estimated Pages",
+    "debrisMitigationPlan": "Debris Mitigation Plan",
+    "cybersecurityFramework": "Cybersecurity Framework",
+    "environmentalFootprint": "Environmental Footprint Declaration",
+    "insuranceCompliance": "Insurance Compliance Report",
+    "nis2Assessment": "NIS2 Compliance Assessment",
+    "authorizationApplication": "Authorization Application Package",
+    "backToDocuments": "Back to Documents",
+    "generateDocument": "Generate Document"
   }
 }
