@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { safeJsonParseArray } from "@/lib/validations";
+import { decrypt, isEncrypted } from "@/lib/encryption";
 import {
   getApplicableRequirements,
   isEligibleForSimplifiedRegime,
@@ -43,7 +44,27 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ assessment });
+    // Decrypt sensitive fields in requirements
+    const decryptedRequirements = await Promise.all(
+      assessment.requirements.map(async (req) => ({
+        ...req,
+        notes:
+          req.notes && isEncrypted(req.notes)
+            ? await decrypt(req.notes)
+            : req.notes,
+        evidenceNotes:
+          req.evidenceNotes && isEncrypted(req.evidenceNotes)
+            ? await decrypt(req.evidenceNotes)
+            : req.evidenceNotes,
+      })),
+    );
+
+    return NextResponse.json({
+      assessment: {
+        ...assessment,
+        requirements: decryptedRequirements,
+      },
+    });
   } catch (error) {
     console.error("Error fetching cybersecurity assessment:", error);
     return NextResponse.json(
@@ -234,7 +255,27 @@ export async function PATCH(
       userAgent,
     });
 
-    return NextResponse.json({ assessment: updated });
+    // Decrypt sensitive fields in requirements for response
+    const decryptedUpdatedRequirements = await Promise.all(
+      updated.requirements.map(async (req) => ({
+        ...req,
+        notes:
+          req.notes && isEncrypted(req.notes)
+            ? await decrypt(req.notes)
+            : req.notes,
+        evidenceNotes:
+          req.evidenceNotes && isEncrypted(req.evidenceNotes)
+            ? await decrypt(req.evidenceNotes)
+            : req.evidenceNotes,
+      })),
+    );
+
+    return NextResponse.json({
+      assessment: {
+        ...updated,
+        requirements: decryptedUpdatedRequirements,
+      },
+    });
   } catch (error) {
     console.error("Error updating cybersecurity assessment:", error);
     return NextResponse.json(

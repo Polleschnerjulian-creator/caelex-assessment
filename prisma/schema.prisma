@@ -61,6 +61,7 @@ model User {
   generatedDocuments     GeneratedDocument[]     // AI-generated compliance documents
   submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
   consents               UserConsent[]           // GDPR consent records
+  breachReports          BreachReport[]          // GDPR Art. 33/34 breach reports
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -2006,6 +2007,11 @@ enum NotificationType {
   NCA_STATUS_CHANGED
   NCA_RESPONSE_RECEIVED
   NCA_FOLLOW_UP_REQUIRED
+
+  // GDPR Breach Notification
+  BREACH_REPORTED
+  BREACH_ESCALATED
+  BREACH_AUTHORITY_DEADLINE
 }
 
 // ============================================
@@ -2378,6 +2384,7 @@ model Organization {
   generatedDocuments GeneratedDocument[]    // AI-generated compliance documents
   healthScore       CustomerHealthScore?    // CEO Analytics: customer health
   submissionPackages SubmissionPackage[]    // NCA Portal: document packages
+  breachReports      BreachReport[]        // GDPR Art. 33/34 breach reports
 
   @@index([slug])
 }
@@ -3871,4 +3878,61 @@ model UserConsent {
   @@unique([userId, consentType])
   @@index([userId])
   @@index([consentType])
+}
+
+// ─── GDPR Breach Notification (Art. 33/34) ───
+
+enum BreachSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BreachStatus {
+  DETECTED
+  INVESTIGATING
+  CONTAINED
+  RESOLVED
+  CLOSED
+}
+
+model BreachReport {
+  id                   String          @id @default(cuid())
+  reportedById         String
+  reportedBy           User            @relation(fields: [reportedById], references: [id], onDelete: Cascade)
+  organizationId       String?
+  organization         Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  // Classification
+  severity             BreachSeverity  @default(MEDIUM)
+  status               BreachStatus    @default(DETECTED)
+
+  // Description
+  title                String
+  description          String          @db.Text
+  affectedDataTypes    String          // e.g. "personal data, email addresses"
+  affectedDataSubjects Int             @default(0) // estimated number of affected individuals
+
+  // Timeline
+  discoveredAt         DateTime
+  reportedAt           DateTime        @default(now())
+  containedAt          DateTime?
+  resolvedAt           DateTime?
+
+  // Notifications (GDPR Art. 33: authority within 72h, Art. 34: subjects without undue delay)
+  authorityNotifiedAt  DateTime?
+  subjectsNotifiedAt   DateTime?
+
+  // Action log
+  notes                Json?           // Timeline of actions taken: [{ timestamp, action, by }]
+
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([status])
+  @@index([severity])
+  @@index([organizationId])
+  @@index([reportedById])
+  @@index([discoveredAt])
 }

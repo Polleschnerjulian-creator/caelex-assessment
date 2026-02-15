@@ -305,6 +305,10 @@ export const ENCRYPTED_FIELDS: Record<string, string[]> = {
   Organization: ["vatNumber", "bankAccount", "taxId"],
   InsuranceAssessment: ["policyNumber"],
   EnvironmentalAssessment: ["internalNotes"],
+  Incident: ["description", "rootCause", "impactAssessment", "lessonsLearned"],
+  CybersecurityRequirementStatus: ["notes", "evidenceNotes"],
+  NIS2RequirementStatus: ["notes", "evidenceNotes"],
+  SupervisionReport: ["content", "rejectionReason"],
 };
 
 /**

@@ -274,6 +274,26 @@ export const NOTIFICATION_CONFIG: Record<
     defaultSeverity: "WARNING",
     emailSubjectPrefix: "[NCA Portal]",
   },
+
+  // GDPR Breach Notification
+  BREACH_REPORTED: {
+    label: "Breach Reported",
+    category: "breach",
+    defaultSeverity: "CRITICAL",
+    emailSubjectPrefix: "[BREACH]",
+  },
+  BREACH_ESCALATED: {
+    label: "Breach Escalated",
+    category: "breach",
+    defaultSeverity: "CRITICAL",
+    emailSubjectPrefix: "[URGENT BREACH]",
+  },
+  BREACH_AUTHORITY_DEADLINE: {
+    label: "Breach Authority Notification Deadline",
+    category: "breach",
+    defaultSeverity: "URGENT",
+    emailSubjectPrefix: "[BREACH DEADLINE]",
+  },
 };
 
 export const NOTIFICATION_CATEGORIES = [
@@ -286,6 +306,7 @@ export const NOTIFICATION_CATEGORIES = [
   { id: "spacecraft", label: "Spacecraft Updates" },
   { id: "system", label: "System Notifications" },
   { id: "nca", label: "NCA Submissions" },
+  { id: "breach", label: "GDPR Breach Notifications" },
 ];
 
 // ─── CRUD Operations ───

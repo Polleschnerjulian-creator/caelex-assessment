@@ -6,6 +6,7 @@
  * 1. Follow-up deadlines within 3 days → NCA_DEADLINE_APPROACHING
  * 2. Overdue follow-ups → NCA_FOLLOW_UP_REQUIRED
  * 3. Submissions in SUBMITTED for >14 days with no update → reminder
+ * 4. GDPR breach reports approaching 72h authority notification deadline
  */
 
 import { NextResponse } from "next/server";
@@ -14,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/lib/services/notification-service";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import { processBreachEscalations } from "@/lib/services/breach-notification-service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -237,19 +239,39 @@ export async function GET(req: Request) {
     logger.info("Starting NCA deadline monitoring...");
 
     const result = await processNCADeadlines();
+
+    // 5. GDPR breach escalation check (Art. 33 — 72h authority notification)
+    let breachResult = { escalated: 0, errors: [] as string[] };
+    try {
+      breachResult = await processBreachEscalations();
+      if (breachResult.escalated > 0) {
+        logger.warn("GDPR breach escalations processed", {
+          escalated: breachResult.escalated,
+        });
+      }
+    } catch (err) {
+      logger.error("Breach escalation processing failed", err);
+      breachResult.errors.push(
+        `Breach escalation failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
     const duration = Date.now() - startTime;
+    const allErrors = [...result.errors, ...breachResult.errors];
 
     logger.info("NCA deadline monitoring complete:", {
       notificationsSent: result.notificationsSent,
-      errors: result.errors.length,
+      breachEscalations: breachResult.escalated,
+      errors: allErrors.length,
       duration: `${duration}ms`,
     });
 
     return NextResponse.json({
       success: true,
       notificationsSent: result.notificationsSent,
-      errorCount: result.errors.length,
-      errors: result.errors.slice(0, 10),
+      breachEscalations: breachResult.escalated,
+      errorCount: allErrors.length,
+      errors: allErrors.slice(0, 10),
       duration: `${duration}ms`,
       processedAt: new Date().toISOString(),
     });

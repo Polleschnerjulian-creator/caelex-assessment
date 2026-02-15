@@ -7,6 +7,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
+import { encrypt } from "@/lib/encryption";
 
 /**
  * Incident categories with their NCA notification requirements
@@ -380,6 +381,9 @@ export async function createIncident(
     // Get classification info
     const classification = INCIDENT_CLASSIFICATION[input.category];
 
+    // Encrypt sensitive fields
+    const encryptedDescription = await encrypt(input.description);
+
     // Create incident with assets
     const incident = await prisma.incident.create({
       data: {
@@ -389,7 +393,7 @@ export async function createIncident(
         severity,
         status: "detected",
         title: input.title,
-        description: input.description,
+        description: encryptedDescription,
         detectedAt,
         detectedBy: input.detectedBy,
         detectionMethod: input.detectionMethod,
@@ -491,9 +495,27 @@ export async function updateIncidentStatus(
       return { success: false, error: "Incident not found" };
     }
 
+    // Encrypt sensitive text fields if provided
+    const encryptedAdditionalData = { ...additionalData };
+    if (encryptedAdditionalData.rootCause) {
+      encryptedAdditionalData.rootCause = await encrypt(
+        encryptedAdditionalData.rootCause,
+      );
+    }
+    if (encryptedAdditionalData.impactAssessment) {
+      encryptedAdditionalData.impactAssessment = await encrypt(
+        encryptedAdditionalData.impactAssessment,
+      );
+    }
+    if (encryptedAdditionalData.lessonsLearned) {
+      encryptedAdditionalData.lessonsLearned = await encrypt(
+        encryptedAdditionalData.lessonsLearned,
+      );
+    }
+
     const updateData: Record<string, unknown> = {
       status,
-      ...additionalData,
+      ...encryptedAdditionalData,
     };
 
     // Set timestamps based on status

@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { decrypt, isEncrypted } from "@/lib/encryption";
 import {
   calculateNIS2Compliance,
   classifyNIS2Entity,
@@ -99,6 +100,21 @@ export async function GET(
       // If requirements data file fails to load, return without enrichment
     }
 
+    // Decrypt sensitive fields in requirements
+    const decryptedRequirements = await Promise.all(
+      assessment.requirements.map(async (req) => ({
+        ...req,
+        notes:
+          req.notes && isEncrypted(req.notes)
+            ? await decrypt(req.notes)
+            : req.notes,
+        evidenceNotes:
+          req.evidenceNotes && isEncrypted(req.evidenceNotes)
+            ? await decrypt(req.evidenceNotes)
+            : req.evidenceNotes,
+      })),
+    );
+
     // Generate smart recommendations & gap analysis
     let recommendations = null;
     try {
@@ -113,7 +129,7 @@ export async function GET(
           entityClassification: assessment.entityClassification,
           subSector: assessment.subSector,
         },
-        assessment.requirements.map((r) => ({
+        decryptedRequirements.map((r) => ({
           requirementId: r.requirementId,
           status: r.status,
           notes: r.notes,
@@ -124,7 +140,16 @@ export async function GET(
       console.error("Error generating recommendations:", recError);
     }
 
-    return NextResponse.json({ assessment, requirementMeta, recommendations });
+    const decryptedAssessment = {
+      ...assessment,
+      requirements: decryptedRequirements,
+    };
+
+    return NextResponse.json({
+      assessment: decryptedAssessment,
+      requirementMeta,
+      recommendations,
+    });
   } catch (error) {
     console.error("Error fetching NIS2 assessment:", error);
     const message =
@@ -364,7 +389,27 @@ export async function PATCH(
       userAgent,
     });
 
-    return NextResponse.json({ assessment: updated });
+    // Decrypt sensitive fields in requirements for response
+    const decryptedUpdatedRequirements = await Promise.all(
+      updated.requirements.map(async (req) => ({
+        ...req,
+        notes:
+          req.notes && isEncrypted(req.notes)
+            ? await decrypt(req.notes)
+            : req.notes,
+        evidenceNotes:
+          req.evidenceNotes && isEncrypted(req.evidenceNotes)
+            ? await decrypt(req.evidenceNotes)
+            : req.evidenceNotes,
+      })),
+    );
+
+    return NextResponse.json({
+      assessment: {
+        ...updated,
+        requirements: decryptedUpdatedRequirements,
+      },
+    });
   } catch (error) {
     console.error("Error updating NIS2 assessment:", error);
     return NextResponse.json(

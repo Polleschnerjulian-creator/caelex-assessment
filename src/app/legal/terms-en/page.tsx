@@ -503,10 +503,48 @@ export default function TermsEnPage() {
               </p>
             </section>
 
-            {/* Section 16 - Final Provisions */}
+            {/* Section 16 - Consumer Protection */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                16. Final Provisions
+                16. Consumer Protection (B2C)
+              </h2>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                (1) The following provisions apply exclusively to customers who
+                are consumers within the meaning of § 13 BGB (German Civil Code)
+                — natural persons entering into the contract for purposes that
+                are predominantly outside their trade, business, or profession.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (2) To the extent that provisions of these Terms are invalid
+                vis-à-vis consumers pursuant to §§ 305-310 BGB, the remaining
+                provisions shall remain unaffected. In particular, statutory
+                provisions regarding warranty rights (§§ 434 et seq. BGB), right
+                of withdrawal (§§ 312g, 355 et seq. BGB, see § 6a), and
+                limitations of liability apply without restriction.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (3) The jurisdiction clause in § 17(2) of these Terms does not
+                apply to consumers. For consumers, the statutory rules of
+                jurisdiction apply.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (4) The limitations of liability in § 9 apply to consumers only
+                to the extent they do not conflict with mandatory consumer
+                protection law. Claims under product liability law (ProdHaftG)
+                and for injury to life, body, or health remain unaffected in all
+                cases.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (5) For entrepreneurs within the meaning of § 14 BGB, the
+                general provisions of these Terms apply without the restrictions
+                of this section.
+              </p>
+            </section>
+
+            {/* Section 17 - Final Provisions */}
+            <section>
+              <h2 className="text-[18px] font-medium text-white mb-4">
+                17. Final Provisions
               </h2>
               <p className="text-[14px] text-white/60 leading-relaxed">
                 (1) These Terms are governed by the laws of the Federal Republic
@@ -535,7 +573,7 @@ export default function TermsEnPage() {
             {/* Section 17 - Contact */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                17. Contact
+                18. Contact
               </h2>
               <p className="text-[14px] text-white/60 leading-relaxed">
                 Caelex

@@ -539,7 +539,46 @@ export default function TermsPage() {
             {/* § 16 */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                § 16 Schlussbestimmungen
+                § 16 Verbraucherschutz (B2C)
+              </h2>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                (1) Die nachfolgenden Bestimmungen gelten ausschließlich für
+                Kunden, die Verbraucher im Sinne des § 13 BGB sind (natürliche
+                Person, die den Vertrag zu Zwecken abschließt, die überwiegend
+                weder ihrer gewerblichen noch ihrer selbständigen beruflichen
+                Tätigkeit zugerechnet werden können).
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (2) Soweit Bestimmungen dieser AGB gemäß §§ 305-310 BGB
+                gegenüber Verbrauchern unwirksam sind, bleiben die übrigen
+                Bestimmungen unberührt. Insbesondere gelten die gesetzlichen
+                Regelungen zu Gewährleistungsrechten (§§ 434 ff. BGB),
+                Widerrufsrecht (§§ 312g, 355 ff. BGB, siehe § 6a) und
+                Haftungsbeschränkungen uneingeschränkt.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (3) Der Gerichtsstand gemäß § 17(2) dieser AGB gilt nicht für
+                Verbraucher. Für Verbraucher gelten die gesetzlichen
+                Zuständigkeitsregelungen.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (4) Die Haftungsbeschränkungen in § 9 gelten gegenüber
+                Verbrauchern nur insoweit, als sie nicht gegen zwingendes
+                Verbraucherrecht verstoßen. Ansprüche aus der Produkthaftung
+                (ProdHaftG) und bei Verletzung von Leben, Körper und Gesundheit
+                bleiben in jedem Fall unberührt.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (5) Für Unternehmer im Sinne des § 14 BGB gelten die allgemeinen
+                Bestimmungen dieser AGB ohne die Einschränkungen dieses
+                Paragraphen.
+              </p>
+            </section>
+
+            {/* § 17 */}
+            <section>
+              <h2 className="text-[18px] font-medium text-white mb-4">
+                § 17 Schlussbestimmungen
               </h2>
               <p className="text-[14px] text-white/60 leading-relaxed">
                 (1) Es gilt das Recht der Bundesrepublik Deutschland unter
@@ -567,7 +606,7 @@ export default function TermsPage() {
             {/* § 17 */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                § 17 Kontakt
+                § 18 Kontakt
               </h2>
               <p className="text-[14px] text-white/60 leading-relaxed">
                 Caelex

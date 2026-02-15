@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
 // GET /api/supervision/incidents/[id] - Get incident details
 export async function GET(
@@ -41,7 +42,28 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ incident });
+    // Decrypt sensitive fields
+    const decryptedIncident = {
+      ...incident,
+      description:
+        incident.description && isEncrypted(incident.description)
+          ? await decrypt(incident.description)
+          : incident.description,
+      rootCause:
+        incident.rootCause && isEncrypted(incident.rootCause)
+          ? await decrypt(incident.rootCause)
+          : incident.rootCause,
+      impactAssessment:
+        incident.impactAssessment && isEncrypted(incident.impactAssessment)
+          ? await decrypt(incident.impactAssessment)
+          : incident.impactAssessment,
+      lessonsLearned:
+        incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+          ? await decrypt(incident.lessonsLearned)
+          : incident.lessonsLearned,
+    };
+
+    return NextResponse.json({ incident: decryptedIncident });
   } catch (error) {
     console.error("Error fetching incident:", error);
     return NextResponse.json(
@@ -107,9 +129,12 @@ export async function PATCH(
 
     if (status !== undefined) updateData.status = status;
     if (severity !== undefined) updateData.severity = severity;
-    if (rootCause !== undefined) updateData.rootCause = rootCause;
+    if (rootCause !== undefined)
+      updateData.rootCause = rootCause ? await encrypt(rootCause) : rootCause;
     if (impactAssessment !== undefined)
-      updateData.impactAssessment = impactAssessment;
+      updateData.impactAssessment = impactAssessment
+        ? await encrypt(impactAssessment)
+        : impactAssessment;
     if (immediateActions !== undefined)
       updateData.immediateActions = immediateActions;
     if (containmentMeasures !== undefined)
@@ -117,7 +142,9 @@ export async function PATCH(
     if (resolutionSteps !== undefined)
       updateData.resolutionSteps = resolutionSteps;
     if (lessonsLearned !== undefined)
-      updateData.lessonsLearned = lessonsLearned;
+      updateData.lessonsLearned = lessonsLearned
+        ? await encrypt(lessonsLearned)
+        : lessonsLearned;
     if (containedAt !== undefined)
       updateData.containedAt = containedAt ? new Date(containedAt) : null;
     if (resolvedAt !== undefined)
@@ -156,7 +183,31 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ success: true, incident });
+    // Decrypt sensitive fields for response
+    const decryptedUpdatedIncident = {
+      ...incident,
+      description:
+        incident.description && isEncrypted(incident.description)
+          ? await decrypt(incident.description)
+          : incident.description,
+      rootCause:
+        incident.rootCause && isEncrypted(incident.rootCause)
+          ? await decrypt(incident.rootCause)
+          : incident.rootCause,
+      impactAssessment:
+        incident.impactAssessment && isEncrypted(incident.impactAssessment)
+          ? await decrypt(incident.impactAssessment)
+          : incident.impactAssessment,
+      lessonsLearned:
+        incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+          ? await decrypt(incident.lessonsLearned)
+          : incident.lessonsLearned,
+    };
+
+    return NextResponse.json({
+      success: true,
+      incident: decryptedUpdatedIncident,
+    });
   } catch (error) {
     console.error("Error updating incident:", error);
     return NextResponse.json(

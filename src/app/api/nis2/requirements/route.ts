@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
 const VALID_STATUSES = [
   "not_assessed",
@@ -58,7 +59,22 @@ export async function GET(request: NextRequest) {
       orderBy: { requirementId: "asc" },
     });
 
-    return NextResponse.json({ requirements });
+    // Decrypt sensitive fields
+    const decryptedRequirements = await Promise.all(
+      requirements.map(async (req) => ({
+        ...req,
+        notes:
+          req.notes && isEncrypted(req.notes)
+            ? await decrypt(req.notes)
+            : req.notes,
+        evidenceNotes:
+          req.evidenceNotes && isEncrypted(req.evidenceNotes)
+            ? await decrypt(req.evidenceNotes)
+            : req.evidenceNotes,
+      })),
+    );
+
+    return NextResponse.json({ requirements: decryptedRequirements });
   } catch (error) {
     console.error("Error fetching NIS2 requirements:", error);
     return NextResponse.json(
@@ -140,11 +156,20 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // Encrypt sensitive text fields before storage
+    const encryptedNotes =
+      notes !== undefined && notes !== null ? await encrypt(notes) : notes;
+    const encryptedEvidenceNotes =
+      evidenceNotes !== undefined && evidenceNotes !== null
+        ? await encrypt(evidenceNotes)
+        : evidenceNotes;
+
     // Build update data
     const updateData: Record<string, unknown> = {};
     if (status !== undefined) updateData.status = status;
-    if (notes !== undefined) updateData.notes = notes;
-    if (evidenceNotes !== undefined) updateData.evidenceNotes = evidenceNotes;
+    if (notes !== undefined) updateData.notes = encryptedNotes;
+    if (evidenceNotes !== undefined)
+      updateData.evidenceNotes = encryptedEvidenceNotes;
     if (targetDate !== undefined)
       updateData.targetDate = targetDate ? new Date(targetDate) : null;
 
@@ -188,7 +213,20 @@ export async function PATCH(request: Request) {
       userAgent,
     });
 
-    return NextResponse.json({ requirement: updated });
+    // Decrypt sensitive fields for response
+    const decryptedUpdated = {
+      ...updated,
+      notes:
+        updated.notes && isEncrypted(updated.notes)
+          ? await decrypt(updated.notes)
+          : updated.notes,
+      evidenceNotes:
+        updated.evidenceNotes && isEncrypted(updated.evidenceNotes)
+          ? await decrypt(updated.evidenceNotes)
+          : updated.evidenceNotes,
+    };
+
+    return NextResponse.json({ requirement: decryptedUpdated });
   } catch (error) {
     console.error("Error updating NIS2 requirement:", error);
     return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
 // GET /api/supervision/reports - List reports
 export async function GET(req: Request) {
@@ -36,7 +37,22 @@ export async function GET(req: Request) {
       prisma.supervisionReport.count({ where }),
     ]);
 
-    return NextResponse.json({ reports, total });
+    // Decrypt sensitive fields
+    const decryptedReports = await Promise.all(
+      reports.map(async (report) => ({
+        ...report,
+        content:
+          report.content && isEncrypted(report.content)
+            ? await decrypt(report.content)
+            : report.content,
+        rejectionReason:
+          report.rejectionReason && isEncrypted(report.rejectionReason)
+            ? await decrypt(report.rejectionReason)
+            : report.rejectionReason,
+      })),
+    );
+
+    return NextResponse.json({ reports: decryptedReports, total });
   } catch (error) {
     console.error("Error fetching reports:", error);
     return NextResponse.json(
@@ -75,6 +91,12 @@ export async function POST(req: Request) {
       );
     }
 
+    // Encrypt content before storage
+    const contentString = content ? JSON.stringify(content) : null;
+    const encryptedContent = contentString
+      ? await encrypt(contentString)
+      : null;
+
     const report = await prisma.supervisionReport.create({
       data: {
         supervisionId: config.id,
@@ -82,12 +104,18 @@ export async function POST(req: Request) {
         reportPeriod,
         title,
         dueDate: new Date(dueDate),
-        content: content ? JSON.stringify(content) : null,
+        content: encryptedContent,
         status: "draft",
       },
     });
 
-    return NextResponse.json({ success: true, report });
+    return NextResponse.json({
+      success: true,
+      report: {
+        ...report,
+        content: contentString, // Return plaintext, not encrypted
+      },
+    });
   } catch (error) {
     console.error("Error creating report:", error);
     return NextResponse.json(

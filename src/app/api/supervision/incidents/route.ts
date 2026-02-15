@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import {
   INCIDENT_CLASSIFICATION,
   calculateSeverity,
@@ -52,24 +53,48 @@ export async function GET(req: Request) {
       prisma.incident.count({ where }),
     ]);
 
-    // Add computed fields
-    const incidentsWithDeadlines = incidents.map((incident) => {
-      const classification =
-        INCIDENT_CLASSIFICATION[incident.category as IncidentCategory];
-      const ncaDeadline = calculateNCADeadline(
-        incident.category as IncidentCategory,
-        incident.detectedAt,
-      );
-      const isOverdue = !incident.reportedToNCA && new Date() > ncaDeadline;
+    // Add computed fields and decrypt sensitive fields
+    const incidentsWithDeadlines = await Promise.all(
+      incidents.map(async (incident) => {
+        const classification =
+          INCIDENT_CLASSIFICATION[incident.category as IncidentCategory];
+        const ncaDeadline = calculateNCADeadline(
+          incident.category as IncidentCategory,
+          incident.detectedAt,
+        );
+        const isOverdue = !incident.reportedToNCA && new Date() > ncaDeadline;
 
-      return {
-        ...incident,
-        ncaDeadline,
-        ncaDeadlineHours: classification?.ncaDeadlineHours || 72,
-        isOverdue,
-        requiresNCANotification: incident.requiresNCANotification,
-      };
-    });
+        // Decrypt sensitive fields
+        const decryptedDescription =
+          incident.description && isEncrypted(incident.description)
+            ? await decrypt(incident.description)
+            : incident.description;
+        const decryptedRootCause =
+          incident.rootCause && isEncrypted(incident.rootCause)
+            ? await decrypt(incident.rootCause)
+            : incident.rootCause;
+        const decryptedImpactAssessment =
+          incident.impactAssessment && isEncrypted(incident.impactAssessment)
+            ? await decrypt(incident.impactAssessment)
+            : incident.impactAssessment;
+        const decryptedLessonsLearned =
+          incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+            ? await decrypt(incident.lessonsLearned)
+            : incident.lessonsLearned;
+
+        return {
+          ...incident,
+          description: decryptedDescription,
+          rootCause: decryptedRootCause,
+          impactAssessment: decryptedImpactAssessment,
+          lessonsLearned: decryptedLessonsLearned,
+          ncaDeadline,
+          ncaDeadlineHours: classification?.ncaDeadlineHours || 72,
+          isOverdue,
+          requiresNCANotification: incident.requiresNCANotification,
+        };
+      }),
+    );
 
     return NextResponse.json({ incidents: incidentsWithDeadlines, total });
   } catch (error) {
@@ -161,6 +186,12 @@ export async function POST(req: Request) {
     const detectionTime = new Date(detectedAt);
     const ncaDeadline = calculateNCADeadline(incidentCategory, detectionTime);
 
+    // Encrypt sensitive fields before storage
+    const encryptedDescription = await encrypt(description);
+    const encryptedImpactAssessment = impactAssessment
+      ? await encrypt(impactAssessment)
+      : undefined;
+
     // Create incident with auto-classification
     const incident = await prisma.incident.create({
       data: {
@@ -170,12 +201,12 @@ export async function POST(req: Request) {
         severity,
         status: "detected",
         title,
-        description,
+        description: encryptedDescription,
         detectedAt: detectionTime,
         detectedBy,
         detectionMethod: detectionMethod || "manual",
         immediateActions: immediateActions || [],
-        impactAssessment,
+        impactAssessment: encryptedImpactAssessment,
         requiresNCANotification: classification.requiresNCANotification,
         affectedAssets: affectedAssets?.length
           ? {
@@ -242,6 +273,8 @@ export async function POST(req: Request) {
       success: true,
       incident: {
         ...incident,
+        description, // Return plaintext, not encrypted
+        impactAssessment: impactAssessment || null, // Return plaintext, not encrypted
         ncaDeadline,
         ncaDeadlineHours: classification.ncaDeadlineHours,
         autoClassified: !providedSeverity,

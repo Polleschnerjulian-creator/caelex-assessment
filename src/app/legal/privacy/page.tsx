@@ -926,10 +926,57 @@ export default function PrivacyPage() {
               </p>
             </section>
 
-            {/* Section 12 - Changes */}
+            {/* Section 12 - DPIA */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                12. Änderungen dieser Datenschutzerklärung
+                12. Datenschutz-Folgenabschätzung (DSFA)
+              </h2>
+
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                Gemäß Art. 35 DSGVO führen wir Datenschutz-Folgenabschätzungen
+                (DSFA) durch, wenn eine Form der Verarbeitung voraussichtlich
+                ein hohes Risiko für die Rechte und Freiheiten natürlicher
+                Personen zur Folge hat. Dies betrifft insbesondere:
+              </p>
+              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+                <li>
+                  Einsatz von KI-gestützten Systemen (ASTRA
+                  Compliance-Assistent)
+                </li>
+                <li>
+                  Verarbeitung von Compliance-Daten, die Rückschlüsse auf die
+                  Geschäftstätigkeit ermöglichen
+                </li>
+                <li>
+                  Systematische Bewertung persönlicher Aspekte
+                  (Compliance-Scoring)
+                </li>
+              </ul>
+
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                Unsere DSFAs umfassen eine systematische Beschreibung der
+                Verarbeitungsvorgänge, eine Bewertung der Notwendigkeit und
+                Verhältnismäßigkeit sowie eine Bewertung der Risiken für die
+                Rechte und Freiheiten der betroffenen Personen und die zur
+                Bewältigung der Risiken geplanten Abhilfemaßnahmen.
+              </p>
+
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                Für B2B-Kunden stellen wir auf Anfrage Zusammenfassungen
+                relevanter DSFAs zur Verfügung. Kontakt:{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-emerald-400 hover:text-emerald-300"
+                >
+                  privacy@caelex.eu
+                </a>
+              </p>
+            </section>
+
+            {/* Section 13 - Changes */}
+            <section>
+              <h2 className="text-[20px] font-medium text-white mb-6">
+                13. Änderungen dieser Datenschutzerklärung
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">

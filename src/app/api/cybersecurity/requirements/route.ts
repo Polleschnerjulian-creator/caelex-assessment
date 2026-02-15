@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { safeJsonParseArray } from "@/lib/validations";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import {
   cybersecurityRequirements,
   getApplicableRequirements,
@@ -77,20 +78,41 @@ export async function GET(request: Request) {
     // Get applicable requirements
     const applicable = getApplicableRequirements(profile);
 
-    // Merge with status data
-    const requirementsWithStatus = applicable.map((req) => {
-      const statusRecord = assessment.requirements.find(
-        (r) => r.requirementId === req.id,
-      );
-      return {
-        ...req,
-        status: statusRecord?.status || "not_assessed",
-        notes: statusRecord?.notes || null,
-        evidenceNotes: statusRecord?.evidenceNotes || null,
-        targetDate: statusRecord?.targetDate || null,
-        statusId: statusRecord?.id || null,
-      };
-    });
+    // Merge with status data and decrypt sensitive fields
+    const requirementsWithStatus = await Promise.all(
+      applicable.map(async (req) => {
+        const statusRecord = assessment.requirements.find(
+          (r) => r.requirementId === req.id,
+        );
+
+        // Decrypt notes and evidenceNotes if encrypted
+        let notes = statusRecord?.notes || null;
+        let evidenceNotes = statusRecord?.evidenceNotes || null;
+        if (notes && isEncrypted(notes)) {
+          try {
+            notes = await decrypt(notes);
+          } catch {
+            // Keep encrypted value if decryption fails
+          }
+        }
+        if (evidenceNotes && isEncrypted(evidenceNotes)) {
+          try {
+            evidenceNotes = await decrypt(evidenceNotes);
+          } catch {
+            // Keep encrypted value if decryption fails
+          }
+        }
+
+        return {
+          ...req,
+          status: statusRecord?.status || "not_assessed",
+          notes,
+          evidenceNotes,
+          targetDate: statusRecord?.targetDate || null,
+          statusId: statusRecord?.id || null,
+        };
+      }),
+    );
 
     return NextResponse.json({
       requirements: requirementsWithStatus,
@@ -165,6 +187,14 @@ export async function PATCH(request: Request) {
       },
     });
 
+    // Encrypt sensitive text fields before storage
+    const encryptedNotes =
+      notes !== undefined && notes !== null ? await encrypt(notes) : notes;
+    const encryptedEvidenceNotes =
+      evidenceNotes !== undefined && evidenceNotes !== null
+        ? await encrypt(evidenceNotes)
+        : evidenceNotes;
+
     // Upsert requirement status
     const updated = await prisma.cybersecurityRequirementStatus.upsert({
       where: {
@@ -175,16 +205,16 @@ export async function PATCH(request: Request) {
       },
       update: {
         status: status ?? undefined,
-        notes: notes ?? undefined,
-        evidenceNotes: evidenceNotes ?? undefined,
+        notes: encryptedNotes ?? undefined,
+        evidenceNotes: encryptedEvidenceNotes ?? undefined,
         targetDate: targetDate ? new Date(targetDate) : undefined,
       },
       create: {
         assessmentId,
         requirementId,
         status: status || "not_assessed",
-        notes,
-        evidenceNotes,
+        notes: encryptedNotes,
+        evidenceNotes: encryptedEvidenceNotes,
         targetDate: targetDate ? new Date(targetDate) : null,
       },
     });
@@ -251,8 +281,21 @@ export async function PATCH(request: Request) {
       });
     }
 
+    // Decrypt sensitive fields for response
+    const decryptedUpdated = {
+      ...updated,
+      notes:
+        updated.notes && isEncrypted(updated.notes)
+          ? await decrypt(updated.notes)
+          : updated.notes,
+      evidenceNotes:
+        updated.evidenceNotes && isEncrypted(updated.evidenceNotes)
+          ? await decrypt(updated.evidenceNotes)
+          : updated.evidenceNotes,
+    };
+
     return NextResponse.json({
-      requirementStatus: updated,
+      requirementStatus: decryptedUpdated,
       maturityScore,
     });
   } catch (error) {

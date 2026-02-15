@@ -6,6 +6,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import {
@@ -207,6 +208,24 @@ async function generateIncidentReport(
   const organization =
     incident.supervision.user.organization || "Unknown Organization";
 
+  // Decrypt sensitive fields
+  const decryptedDescription =
+    incident.description && isEncrypted(incident.description)
+      ? await decrypt(incident.description)
+      : incident.description;
+  const decryptedRootCause =
+    incident.rootCause && isEncrypted(incident.rootCause)
+      ? await decrypt(incident.rootCause)
+      : incident.rootCause;
+  const decryptedImpactAssessment =
+    incident.impactAssessment && isEncrypted(incident.impactAssessment)
+      ? await decrypt(incident.impactAssessment)
+      : incident.impactAssessment;
+  const decryptedLessonsLearned =
+    incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+      ? await decrypt(incident.lessonsLearned)
+      : incident.lessonsLearned;
+
   // Build report data
   const reportData: NCAIncidentReportData = {
     incidentNumber: incident.incidentNumber,
@@ -229,11 +248,11 @@ async function generateIncidentReport(
     containedAt: incident.containedAt || undefined,
     resolvedAt: incident.resolvedAt || undefined,
 
-    description: incident.description,
+    description: decryptedDescription,
     rootCause: includeResolutionDetails
-      ? incident.rootCause || undefined
+      ? decryptedRootCause || undefined
       : undefined,
-    impactAssessment: incident.impactAssessment || undefined,
+    impactAssessment: decryptedImpactAssessment || undefined,
 
     affectedAssets: incident.affectedAssets.map((aa) => ({
       name: aa.assetName,
@@ -247,7 +266,7 @@ async function generateIncidentReport(
       ? incident.resolutionSteps || []
       : [],
     lessonsLearned: includeResolutionDetails
-      ? incident.lessonsLearned || undefined
+      ? decryptedLessonsLearned || undefined
       : undefined,
 
     requiresNCANotification: incident.requiresNCANotification,

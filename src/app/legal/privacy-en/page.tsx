@@ -916,10 +916,52 @@ export default function PrivacyEnPage() {
               </p>
             </section>
 
-            {/* Section 12 - Changes */}
+            {/* Section 12 - DPIA */}
             <section>
               <h2 className="text-[20px] font-medium text-white mb-6">
-                12. Changes to This Privacy Policy
+                12. Data Protection Impact Assessment (DPIA)
+              </h2>
+
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                Pursuant to Art. 35 GDPR, we conduct Data Protection Impact
+                Assessments (DPIAs) when a type of processing is likely to
+                result in a high risk to the rights and freedoms of natural
+                persons. This applies in particular to:
+              </p>
+              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+                <li>Use of AI-powered systems (ASTRA Compliance Assistant)</li>
+                <li>
+                  Processing of compliance data that may reveal business
+                  activities
+                </li>
+                <li>
+                  Systematic evaluation of personal aspects (compliance scoring)
+                </li>
+              </ul>
+
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                Our DPIAs include a systematic description of processing
+                operations, an assessment of necessity and proportionality, an
+                assessment of risks to the rights and freedoms of data subjects,
+                and the measures envisaged to address those risks.
+              </p>
+
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                For B2B customers, we provide summaries of relevant DPIAs upon
+                request. Contact:{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-emerald-400 hover:text-emerald-300"
+                >
+                  privacy@caelex.eu
+                </a>
+              </p>
+            </section>
+
+            {/* Section 13 - Changes */}
+            <section>
+              <h2 className="text-[20px] font-medium text-white mb-6">
+                13. Changes to This Privacy Policy
               </h2>
 
               <p className="text-[14px] text-white/60 leading-relaxed">

@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { decrypt, isEncrypted } from "@/lib/encryption";
 import {
   calculateNIS2Compliance,
   classifyNIS2Entity,
@@ -36,7 +37,27 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ assessments });
+    // Decrypt sensitive fields in requirements
+    const decryptedAssessments = await Promise.all(
+      assessments.map(async (assessment) => ({
+        ...assessment,
+        requirements: await Promise.all(
+          assessment.requirements.map(async (req) => ({
+            ...req,
+            notes:
+              req.notes && isEncrypted(req.notes)
+                ? await decrypt(req.notes)
+                : req.notes,
+            evidenceNotes:
+              req.evidenceNotes && isEncrypted(req.evidenceNotes)
+                ? await decrypt(req.evidenceNotes)
+                : req.evidenceNotes,
+          })),
+        ),
+      })),
+    );
+
+    return NextResponse.json({ assessments: decryptedAssessments });
   } catch (error) {
     console.error("Error fetching NIS2 assessments:", error);
     const message =
@@ -226,8 +247,28 @@ export async function POST(request: Request) {
       userAgent,
     });
 
+    // Decrypt sensitive fields in requirements for response
+    const decryptedAssessment = assessmentWithRequirements
+      ? {
+          ...assessmentWithRequirements,
+          requirements: await Promise.all(
+            assessmentWithRequirements.requirements.map(async (req) => ({
+              ...req,
+              notes:
+                req.notes && isEncrypted(req.notes)
+                  ? await decrypt(req.notes)
+                  : req.notes,
+              evidenceNotes:
+                req.evidenceNotes && isEncrypted(req.evidenceNotes)
+                  ? await decrypt(req.evidenceNotes)
+                  : req.evidenceNotes,
+            })),
+          ),
+        }
+      : null;
+
     return NextResponse.json({
-      assessment: assessmentWithRequirements,
+      assessment: decryptedAssessment,
       entityClassification: classification.classification,
       classificationReason: classification.reason,
       applicableRequirements: complianceResult.applicableRequirements.map(

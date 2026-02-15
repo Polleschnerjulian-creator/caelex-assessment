@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import { INCIDENT_CLASSIFICATION, type IncidentCategory } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 
@@ -57,6 +58,24 @@ export async function POST(
     const category = incident.category as IncidentCategory;
     const classification = INCIDENT_CLASSIFICATION[category];
 
+    // Decrypt sensitive fields for report content
+    const decryptedDescription =
+      incident.description && isEncrypted(incident.description)
+        ? await decrypt(incident.description)
+        : incident.description;
+    const decryptedRootCause =
+      incident.rootCause && isEncrypted(incident.rootCause)
+        ? await decrypt(incident.rootCause)
+        : incident.rootCause;
+    const decryptedImpactAssessment =
+      incident.impactAssessment && isEncrypted(incident.impactAssessment)
+        ? await decrypt(incident.impactAssessment)
+        : incident.impactAssessment;
+    const decryptedLessonsLearned =
+      incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+        ? await decrypt(incident.lessonsLearned)
+        : incident.lessonsLearned;
+
     // Build report content
     const reportContent = {
       // Header Information
@@ -89,9 +108,9 @@ export async function POST(
 
       // Description
       description: {
-        summary: incident.description,
-        rootCause: incident.rootCause,
-        impactAssessment: incident.impactAssessment,
+        summary: decryptedDescription,
+        rootCause: decryptedRootCause,
+        impactAssessment: decryptedImpactAssessment,
       },
 
       // Affected Assets
@@ -106,7 +125,7 @@ export async function POST(
         immediateActions: incident.immediateActions,
         containmentMeasures: incident.containmentMeasures,
         resolutionSteps: incident.resolutionSteps,
-        lessonsLearned: incident.lessonsLearned,
+        lessonsLearned: decryptedLessonsLearned,
       },
 
       // Attachments (metadata only)
@@ -146,6 +165,9 @@ export async function POST(
       },
     });
 
+    // Encrypt report content before storage
+    const encryptedContent = await encrypt(JSON.stringify(reportContent));
+
     let report;
     if (existingReport) {
       // Update existing report
@@ -153,7 +175,7 @@ export async function POST(
         where: { id: existingReport.id },
         data: {
           title: `Incident Report: ${incident.incidentNumber}`,
-          content: JSON.stringify(reportContent),
+          content: encryptedContent,
           status: "ready",
           updatedAt: new Date(),
         },
@@ -170,7 +192,7 @@ export async function POST(
           supervisionId: incident.supervisionId,
           reportType: "incident",
           title: `Incident Report: ${incident.incidentNumber}`,
-          content: JSON.stringify(reportContent),
+          content: encryptedContent,
           status: "ready",
           dueDate: ncaDeadline,
           ncaReferenceNumber: incident.incidentNumber,
@@ -273,10 +295,14 @@ export async function GET(
       });
     }
 
-    // Parse content
+    // Decrypt and parse content
     let content = null;
     try {
-      content = report.content ? JSON.parse(report.content) : null;
+      let rawContent = report.content;
+      if (rawContent && isEncrypted(rawContent)) {
+        rawContent = await decrypt(rawContent);
+      }
+      content = rawContent ? JSON.parse(rawContent) : null;
     } catch {
       content = null;
     }
