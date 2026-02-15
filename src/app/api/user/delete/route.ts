@@ -133,9 +133,23 @@ export async function DELETE(req: Request) {
       timestamp: new Date().toISOString(),
     });
 
-    // Delete user (cascading will handle most relations)
-    // Some relations might need manual cleanup
+    // Delete user — anonymize audit logs first (GDPR Art. 5(1)(e): 7-year retention)
+    // AuditLog uses onDelete: SetNull so userId becomes null on user deletion.
+    // We additionally store a pseudonymized identifier for traceability.
     await prisma.$transaction(async (tx) => {
+      // Anonymize audit logs — nullify userId, preserve logs for 7-year retention (GDPR Art. 5(1)(e))
+      // AuditLog.onDelete is SetNull, but we explicitly nullify here within the transaction
+      await tx.auditLog.updateMany({
+        where: { userId },
+        data: { userId: null },
+      });
+
+      // Anonymize analytics events (nullable userId)
+      await tx.analyticsEvent.updateMany({
+        where: { userId },
+        data: { userId: null },
+      });
+
       // Delete organizations where user is sole member
       const soloOrgs = await tx.organizationMember.findMany({
         where: {
@@ -158,7 +172,8 @@ export async function DELETE(req: Request) {
         });
       }
 
-      // Delete the user (cascading will handle the rest)
+      // Delete the user (cascading handles remaining relations;
+      // AuditLog.userId is already nulled, SecurityAuditLog uses SetNull)
       await tx.user.delete({
         where: { id: userId },
       });

@@ -223,6 +223,42 @@ export default function TermsEnPage() {
               </p>
             </section>
 
+            {/* § 6a */}
+            <section>
+              <h2 className="text-[18px] font-medium text-white mb-4">
+                § 6a Right of Withdrawal and Exceptions
+              </h2>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                (1) Consumers are generally entitled to a 14-day right of
+                withdrawal pursuant to §§ 312g, 355 BGB (German Civil Code).
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (2) The right of withdrawal expires pursuant to § 356(5) BGB for
+                contracts for the supply of digital content not supplied on a
+                tangible medium, if the provider has begun performance of the
+                contract after the consumer has expressly consented to the
+                provider beginning performance before expiry of the withdrawal
+                period, and the consumer has confirmed awareness that such
+                consent results in loss of the right of withdrawal.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (3) Paid subscriptions and API access are activated immediately
+                upon payment. By registering for a paid service, the consumer
+                expressly consents to the immediate commencement of the service
+                and confirms awareness of the resulting loss of the right of
+                withdrawal.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (4) The free assessment tool may be discontinued at any time
+                without reason. There is no entitlement to continued provision
+                of free services.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (5) The right to ordinary termination pursuant to § 12 of these
+                Terms remains unaffected.
+              </p>
+            </section>
+
             {/* Section 7 - Availability and SLA */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">

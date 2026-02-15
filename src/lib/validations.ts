@@ -98,6 +98,11 @@ export const RegisterSchema = z.object({
     .max(200, "Organization name too long")
     .optional()
     .transform((v) => (v ? sanitizeString(v) : undefined)),
+
+  acceptTerms: z.boolean().refine((v) => v === true, {
+    message: "You must accept the terms and privacy policy",
+  }),
+  acceptAnalytics: z.boolean().optional().default(false),
 });
 
 /**

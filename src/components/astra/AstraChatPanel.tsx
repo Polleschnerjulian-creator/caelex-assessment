@@ -9,6 +9,7 @@ import {
   RotateCcw,
   MessageSquare,
   AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { useAstra } from "./AstraProvider";
 import AstraMessageBubble from "./AstraMessageBubble";
@@ -29,6 +30,10 @@ export default function AstraChatPanel() {
   } = useAstra();
 
   const [input, setInput] = useState("");
+  const [astraConsented, setAstraConsented] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("caelex-astra-consent") === "true";
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -97,6 +102,12 @@ export default function AstraChatPanel() {
       handleSend();
     }
   };
+
+  const handleAcceptAstraConsent = useCallback(() => {
+    localStorage.setItem("caelex-astra-consent", "true");
+    setAstraConsented(true);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
 
   // Check if there are user messages (for showing reset button)
   const hasUserMessages = messages.some((m) => m.role === "user");
@@ -247,43 +258,96 @@ export default function AstraChatPanel() {
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 custom-scrollbar">
-              {messages.map((msg) => (
-                <AstraMessageBubble key={msg.id} message={msg} />
-              ))}
-
-              {/* Typing indicator */}
-              {isTyping && (
-                <div
-                  className="flex gap-2.5"
-                  aria-label="ASTRA is typing"
-                  role="status"
-                >
-                  <div
-                    className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0"
-                    aria-hidden="true"
+              {!astraConsented ? (
+                /* ASTRA Consent Notice */
+                <div className="flex flex-col items-center justify-center h-full px-4">
+                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4">
+                    <ShieldCheck size={24} className="text-cyan-400" />
+                  </div>
+                  <h3 className="text-[15px] font-medium text-white mb-2">
+                    ASTRA AI Einwilligung
+                  </h3>
+                  <p className="text-[12px] text-white/50 text-center leading-relaxed mb-4 max-w-[320px]">
+                    ASTRA verwendet Ihre Compliance-Daten, um kontextbezogene
+                    regulatorische Beratung zu liefern. Ihre Eingaben werden
+                    verarbeitet, aber nicht zum Trainieren von KI-Modellen
+                    verwendet.
+                  </p>
+                  <ul className="text-[11px] text-white/40 space-y-1.5 mb-6 max-w-[300px]">
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                      <span>
+                        Gesprachsdaten werden verschlusselt gespeichert
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                      <span>Keine Weitergabe an Dritte</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">&#x2022;</span>
+                      <span>Einwilligung jederzeit widerrufbar</span>
+                    </li>
+                  </ul>
+                  <button
+                    onClick={handleAcceptAstraConsent}
+                    className="px-6 py-2.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 text-[13px] font-medium transition-colors"
                   >
-                    <Zap size={13} className="text-cyan-400" />
-                  </div>
-                  <div className="bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-cyan-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <span
-                        className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <span
-                        className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                  </div>
+                    Einverstanden &mdash; ASTRA aktivieren
+                  </button>
+                  <p className="text-[10px] text-white/20 mt-3 text-center max-w-[280px]">
+                    Siehe unsere{" "}
+                    <a
+                      href="/legal/privacy"
+                      target="_blank"
+                      className="text-cyan-500/60 hover:text-cyan-400 underline"
+                    >
+                      Datenschutzerkl&auml;rung
+                    </a>{" "}
+                    fur Details zur Datenverarbeitung.
+                  </p>
                 </div>
-              )}
+              ) : (
+                <>
+                  {messages.map((msg) => (
+                    <AstraMessageBubble key={msg.id} message={msg} />
+                  ))}
 
-              <div ref={messagesEndRef} />
+                  {/* Typing indicator */}
+                  {isTyping && (
+                    <div
+                      className="flex gap-2.5"
+                      aria-label="ASTRA is typing"
+                      role="status"
+                    >
+                      <div
+                        className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0"
+                        aria-hidden="true"
+                      >
+                        <Zap size={13} className="text-cyan-400" />
+                      </div>
+                      <div className="bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-cyan-500/40 rounded-tr-xl rounded-br-xl rounded-bl-xl px-4 py-3">
+                        <div className="flex gap-1">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </>
+              )}
             </div>
 
             {/* Input Bar */}
@@ -299,13 +363,17 @@ export default function AstraChatPanel() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask about regulations..."
-                  disabled={isTyping}
+                  placeholder={
+                    astraConsented
+                      ? "Ask about regulations..."
+                      : "Bitte erst Einwilligung erteilen..."
+                  }
+                  disabled={isTyping || !astraConsented}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3.5 py-2.5 text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-500/20 disabled:opacity-50 transition-all"
                 />
                 <button
                   onClick={handleSend}
-                  disabled={!input.trim() || isTyping}
+                  disabled={!input.trim() || isTyping || !astraConsented}
                   aria-label="Send message"
                   className="p-2.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >

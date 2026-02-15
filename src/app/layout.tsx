@@ -142,7 +142,6 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <OrganizationJsonLd />
         <WebSiteJsonLd />

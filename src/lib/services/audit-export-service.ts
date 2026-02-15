@@ -315,8 +315,8 @@ export async function exportAuditLogsEnhanced(
 
     const rows = logs.map((log) => [
       log.timestamp.toISOString(),
-      log.user.name || "",
-      log.user.email,
+      log.user?.name || "",
+      log.user?.email || "",
       log.action,
       log.entityType,
       log.entityId,
@@ -351,7 +351,7 @@ export async function exportAuditLogsEnhanced(
       totalRecords: logs.length,
       logs: logs.map((log) => ({
         timestamp: log.timestamp.toISOString(),
-        user: log.user.name || log.user.email,
+        user: log.user?.name || log.user?.email || "Deleted User",
         action: log.action,
         entityType: log.entityType,
         entityId: log.entityId,

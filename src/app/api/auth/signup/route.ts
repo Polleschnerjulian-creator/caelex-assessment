@@ -22,7 +22,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password, organization } = validation.data;
+    const { name, email, password, organization, acceptAnalytics } =
+      validation.data;
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
@@ -80,6 +81,46 @@ export async function POST(request: Request) {
           stripeCustomerId: null,
           currentPeriodStart: new Date(),
         },
+      });
+
+      // 5. Record consent (GDPR Art. 7)
+      const ipAddress =
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+      const userAgent = request.headers.get("user-agent") || "unknown";
+
+      await tx.userConsent.createMany({
+        data: [
+          {
+            userId: user.id,
+            consentType: "terms",
+            granted: true,
+            version: "2026-02",
+            ipAddress,
+            userAgent,
+          },
+          {
+            userId: user.id,
+            consentType: "privacy",
+            granted: true,
+            version: "2026-02",
+            ipAddress,
+            userAgent,
+          },
+          ...(acceptAnalytics
+            ? [
+                {
+                  userId: user.id,
+                  consentType: "analytics",
+                  granted: true,
+                  version: "2026-02",
+                  ipAddress,
+                  userAgent,
+                },
+              ]
+            : []),
+        ],
       });
 
       return { user, org };

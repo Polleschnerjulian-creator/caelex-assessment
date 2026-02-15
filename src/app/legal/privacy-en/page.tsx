@@ -412,6 +412,41 @@ export default function PrivacyEnPage() {
                   </a>
                 </p>
               </div>
+
+              {/* AI Service */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  Anthropic PBC — AI Assistant (ASTRA)
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  548 Market St, San Francisco, CA 94104, USA
+                  <br />
+                  <strong className="text-white/70">Purpose:</strong> AI-powered
+                  compliance assistant (ASTRA) — answering questions about
+                  regulatory requirements
+                  <br />
+                  <strong className="text-white/70">Data:</strong> User text
+                  queries, compliance module context (no personal data unless
+                  entered by user)
+                  <br />
+                  <strong className="text-white/70">Safeguards:</strong> SCCs,
+                  Zero Data Retention Policy (API requests are not used for
+                  training purposes)
+                  <br />
+                  <strong className="text-white/70">Note:</strong> Use of ASTRA
+                  is voluntary. Data is only transmitted when actively using the
+                  AI assistant.
+                  <br />
+                  <a
+                    href="https://www.anthropic.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Privacy Policy →
+                  </a>
+                </p>
+              </div>
             </section>
 
             {/* Section 4 - International Transfers */}
@@ -445,7 +480,9 @@ export default function PrivacyEnPage() {
                   <p className="text-[13px] text-white/60">
                     In addition to or as an alternative to the DPF, we have
                     entered into the EU Commission-approved Standard Contractual
-                    Clauses with all US providers (Art. 46(2)(c) GDPR).
+                    Clauses with all US providers (Art. 46(2)(c) GDPR). This
+                    includes in particular Anthropic PBC, whose services are
+                    safeguarded via SCCs and a Zero Data Retention Policy.
                   </p>
                 </div>
 

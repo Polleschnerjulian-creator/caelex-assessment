@@ -293,7 +293,7 @@ export async function exportAuditLogs(
 
     const rows = logs.map((log) => [
       log.timestamp.toISOString(),
-      log.user.name || log.user.email || "Unknown",
+      log.user?.name || log.user?.email || "Unknown",
       log.action,
       log.entityType,
       log.entityId,

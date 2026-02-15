@@ -417,6 +417,41 @@ export default function PrivacyPage() {
                   </a>
                 </p>
               </div>
+
+              {/* KI-Dienst */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  Anthropic PBC — KI-Assistent (ASTRA)
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  548 Market St, San Francisco, CA 94104, USA
+                  <br />
+                  <strong className="text-white/70">Zweck:</strong>{" "}
+                  KI-gestützter Compliance-Assistent (ASTRA) — Beantwortung von
+                  Fragen zu regulatorischen Anforderungen
+                  <br />
+                  <strong className="text-white/70">Daten:</strong> Textanfragen
+                  der Nutzer, Kontext aus Compliance-Modulen (keine
+                  personenbezogenen Daten, sofern nicht vom Nutzer eingegeben)
+                  <br />
+                  <strong className="text-white/70">Garantien:</strong> SCCs,
+                  Zero Data Retention Policy (API-Anfragen werden nicht für
+                  Trainingszwecke verwendet)
+                  <br />
+                  <strong className="text-white/70">Hinweis:</strong> Die
+                  Nutzung von ASTRA ist freiwillig. Daten werden nur bei aktiver
+                  Nutzung des KI-Assistenten übermittelt.
+                  <br />
+                  <a
+                    href="https://www.anthropic.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Datenschutzerklärung →
+                  </a>
+                </p>
+              </div>
             </section>
 
             {/* Section 4 - International Transfers */}
@@ -452,7 +487,9 @@ export default function PrivacyPage() {
                     Zusätzlich oder alternativ zum DPF haben wir mit allen
                     US-Dienstleistern die von der EU-Kommission genehmigten
                     Standardvertragsklauseln abgeschlossen (Art. 46 Abs. 2 lit.
-                    c DSGVO).
+                    c DSGVO). Dies umfasst insbesondere Anthropic PBC, deren
+                    Dienste über SCCs und eine Zero Data Retention Policy
+                    abgesichert sind.
                   </p>
                 </div>
 

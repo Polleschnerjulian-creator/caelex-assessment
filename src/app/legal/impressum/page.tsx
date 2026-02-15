@@ -11,10 +11,11 @@ export default function ImpressumPage() {
           <div className="prose prose-invert prose-sm max-w-none space-y-8">
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                Angaben gemäß § 5 TMG
+                Angaben gemäß § 5 DDG
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
                 <p>Julian Polleschner</p>
+                <p>Einzelunternehmer</p>
                 <p>Am Maselakepark 37</p>
                 <p>13587 Berlin</p>
                 <p>Deutschland</p>
@@ -27,12 +28,25 @@ export default function ImpressumPage() {
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
                 <p>E-Mail: cs@caelex.eu</p>
+                <p>Telefon: +49 30 12087953</p>
               </div>
             </section>
 
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">
-                Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+                Umsatzsteuer
+              </h2>
+              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
+                <p>
+                  Gemäß § 19 UStG wird keine Umsatzsteuer erhoben
+                  (Kleinunternehmerregelung).
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-[18px] font-medium text-white mb-4">
+                Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
                 <p>Julian Polleschner</p>

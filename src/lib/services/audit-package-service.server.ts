@@ -287,7 +287,7 @@ export async function generateAuditPackageData(
   // Build audit trail sample
   const auditTrailSample = recentAuditLogs.map((log) => ({
     timestamp: log.timestamp.toISOString().replace("T", " ").slice(0, 19),
-    user: log.user.name || log.user.email || "Unknown",
+    user: log.user?.name || log.user?.email || "Unknown",
     action: log.action,
     entityType: log.entityType,
     description: log.description,

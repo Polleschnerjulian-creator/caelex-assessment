@@ -13,7 +13,7 @@ import { logger } from "./logger";
  * The hash covers all meaningful fields + the previous hash to form a chain.
  */
 export function computeEntryHash(entry: {
-  userId: string;
+  userId: string | null;
   action: string;
   entityType: string;
   entityId: string;

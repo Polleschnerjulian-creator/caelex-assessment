@@ -236,6 +236,44 @@ export default function TermsPage() {
               </p>
             </section>
 
+            {/* § 6a */}
+            <section>
+              <h2 className="text-[18px] font-medium text-white mb-4">
+                § 6a Widerrufsrecht und Ausnahmen
+              </h2>
+              <p className="text-[14px] text-white/60 leading-relaxed">
+                (1) Verbrauchern steht grundsätzlich ein Widerrufsrecht von 14
+                Tagen gemäß §§ 312g, 355 BGB zu.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (2) Das Widerrufsrecht erlischt gemäß § 356 Abs. 5 BGB bei
+                Verträgen über die Lieferung digitaler Inhalte, die nicht auf
+                einem körperlichen Datenträger geliefert werden, wenn der
+                Unternehmer mit der Ausführung des Vertrags begonnen hat,
+                nachdem der Verbraucher ausdrücklich zugestimmt hat, dass der
+                Unternehmer vor Ablauf der Widerrufsfrist mit der Ausführung
+                beginnt, und der Verbraucher seine Kenntnis davon bestätigt hat,
+                dass er durch seine Zustimmung mit Beginn der Ausführung sein
+                Widerrufsrecht verliert.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (3) Kostenpflichtige Abonnements und API-Zugänge werden
+                unmittelbar nach Zahlungseingang freigeschaltet. Mit der
+                Registrierung für einen kostenpflichtigen Dienst stimmt der
+                Verbraucher ausdrücklich dem sofortigen Beginn der Leistung zu
+                und bestätigt seine Kenntnis vom Verlust des Widerrufsrechts.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (4) Das kostenlose Assessment-Tool kann jederzeit ohne Angabe
+                von Gründen eingestellt werden. Es besteht kein Anspruch auf
+                fortlaufende Bereitstellung kostenloser Dienste.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (5) Unberührt bleibt das Recht zur ordentlichen Kündigung gemäß
+                § 12 dieser AGB.
+              </p>
+            </section>
+
             {/* § 7 */}
             <section>
               <h2 className="text-[18px] font-medium text-white mb-4">

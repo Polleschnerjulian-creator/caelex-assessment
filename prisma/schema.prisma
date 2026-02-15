@@ -60,6 +60,7 @@ model User {
   astraConversations     AstraConversation[]     // ASTRA AI conversations
   generatedDocuments     GeneratedDocument[]     // AI-generated compliance documents
   submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
+  consents               UserConsent[]           // GDPR consent records
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -225,8 +226,8 @@ model AuthorizationDocument {
 
 model AuditLog {
   id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // What happened
   action        String   // 'article_status_changed', 'document_uploaded', 'checklist_completed', etc.
@@ -3849,4 +3850,25 @@ model GeneratedDocument {
   @@index([organizationId])
   @@index([documentType])
   @@index([userId, documentType])
+}
+
+// ─── Consent Records (GDPR Art. 7) ───
+
+model UserConsent {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  consentType String    // 'terms', 'privacy', 'analytics', 'marketing', 'astra'
+  granted     Boolean   @default(false)
+  version     String?   // Version of policy consented to
+  ipAddress   String?
+  userAgent   String?
+
+  grantedAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  @@unique([userId, consentType])
+  @@index([userId])
+  @@index([consentType])
 }

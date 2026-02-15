@@ -11,6 +11,8 @@ export default function SignupPage() {
   const [organization, setOrganization] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptAnalytics, setAcceptAnalytics] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +47,14 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, organization }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          organization,
+          acceptTerms,
+          acceptAnalytics,
+        }),
       });
 
       const data = await res.json();
@@ -157,6 +166,49 @@ export default function SignupPage() {
               Min. 12 characters, uppercase, lowercase, number, special
               character
             </p>
+          </div>
+
+          {/* Consent checkboxes */}
+          <div className="space-y-3">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/20"
+                required
+              />
+              <span className="text-[13px] text-slate-600 dark:text-white/60">
+                Ich akzeptiere die{" "}
+                <a
+                  href="/legal/terms"
+                  target="_blank"
+                  className="text-emerald-500 hover:text-emerald-400 underline"
+                >
+                  AGB
+                </a>{" "}
+                und die{" "}
+                <a
+                  href="/legal/privacy"
+                  target="_blank"
+                  className="text-emerald-500 hover:text-emerald-400 underline"
+                >
+                  Datenschutzerkl&auml;rung
+                </a>{" "}
+                *
+              </span>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptAnalytics}
+                onChange={(e) => setAcceptAnalytics(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/20"
+              />
+              <span className="text-[13px] text-slate-600 dark:text-white/60">
+                Ich stimme der anonymisierten Nutzungsanalyse zu (optional)
+              </span>
+            </label>
           </div>
 
           {error && (
