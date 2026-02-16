@@ -7,18 +7,16 @@ import type { DocumentGenerationType } from "@/lib/astra/document-generator/type
 import { DOCUMENT_TYPE_META } from "@/lib/astra/document-generator/types";
 import type { StreamProgress } from "./DocumentStudio";
 
-// ─── Radial Layout Constants ───
+// ─── Radial Layout Constants (viewBox 500x500) ───
 
-const CX = 200;
-const CY = 200;
-const RING_R = 130;
-const HUB_R = 48;
-const INNER_TICK_R = 88;
-const INNER_ACCENT_R = 68;
-const OUTER_R1 = RING_R + 12;
-const OUTER_R2 = RING_R + 22;
+const CX = 250;
+const CY = 250;
+const RING_R = 155;
+const HUB_R = 52;
+const INNER_TICK_R = 108;
+const INNER_ACCENT_R = 82;
 
-// Regulation data fragments for ambient text
+// Regulation data fragments
 const DATA_FRAGMENTS = [
   "§12.3",
   "Art.7(2)",
@@ -57,24 +55,15 @@ export function GenerationProgress({
 }: GenerationProgressProps) {
   const meta = documentType ? DOCUMENT_TYPE_META[documentType] : null;
 
-  // Calculate progress percentage from real stream data
   const getProgress = (): number => {
     if (!streamProgress) return 0;
-
     if (streamProgress.phase === "preparing") return 5;
     if (streamProgress.phase === "finalizing") return 95;
-
-    // During streaming: 10% base + up to 85% from sections
     const completed = streamProgress.sections.filter((s) => s.completed).length;
     const total = streamProgress.sections.length;
     if (total === 0) return 10;
-
     const estimatedTotal = getEstimatedSections(documentType);
-    const progressBase = 10;
-    const progressRange = 85;
-    const sectionProgress = Math.min(completed / estimatedTotal, 1);
-
-    return Math.round(progressBase + progressRange * sectionProgress);
+    return Math.round(10 + 85 * Math.min(completed / estimatedTotal, 1));
   };
 
   const progress = getProgress();
@@ -100,57 +89,99 @@ export function GenerationProgress({
     const x = CX + RING_R * Math.cos(angle);
     const y = CY + RING_R * Math.sin(angle);
     const section = sections[i];
+    // Curved arc control point — alternating curve direction
+    const curveDir = i % 2 === 0 ? 1 : -1;
+    const perpAngle = angle + Math.PI / 2;
+    const cpx = (CX + x) / 2 + 28 * curveDir * Math.cos(perpAngle);
+    const cpy = (CY + y) / 2 + 28 * curveDir * Math.sin(perpAngle);
     return {
       x,
       y,
       angle,
+      cpx,
+      cpy,
+      arcPath: `M${CX},${CY} Q${cpx.toFixed(1)},${cpy.toFixed(1)} ${x.toFixed(1)},${y.toFixed(1)}`,
       completed: section?.completed ?? false,
       active: i === activeIndex,
       title: section?.title ?? "",
     };
   });
 
+  // Progress arc (circular indicator around hub)
+  const progressCircumference = 2 * Math.PI * (HUB_R + 7);
+  const progressDashOffset = progressCircumference * (1 - progress / 100);
+
   // Stable random ambient particles
   const ambientParticles = useMemo(
     () =>
-      Array.from({ length: 28 }, (_, i) => ({
-        x: 20 + ((i * 137.5) % 360),
-        y: 20 + ((i * 97.3 + 50) % 360),
-        r: 0.6 + (((i * 31) % 10) / 10) * 1.4,
+      Array.from({ length: 35 }, (_, i) => ({
+        x: 15 + ((i * 137.5) % 470),
+        y: 15 + ((i * 97.3 + 50) % 470),
+        r: 0.5 + (((i * 31) % 10) / 10) * 1.5,
         duration: 5 + ((i * 7) % 12),
-        dx: (((i * 53) % 100) / 100 - 0.5) * 60,
-        dy: (((i * 71) % 100) / 100 - 0.5) * 60,
+        dx: (((i * 53) % 100) / 100 - 0.5) * 70,
+        dy: (((i * 71) % 100) / 100 - 0.5) * 70,
         delay: ((i * 43) % 100) / 20,
       })),
     [],
   );
 
-  // Inner tick marks (24 ticks around INNER_TICK_R)
+  // Starfield — tiny static dots
+  const starfield = useMemo(
+    () =>
+      Array.from({ length: 50 }, (_, i) => ({
+        x: 5 + ((i * 173.7 + 23) % 490),
+        y: 5 + ((i * 121.3 + 67) % 490),
+        r: 0.3 + (((i * 19) % 8) / 8) * 0.5,
+        opacity: 0.04 + (((i * 37) % 10) / 10) * 0.08,
+      })),
+    [],
+  );
+
+  // Inner tick marks
   const ticks = useMemo(
     () =>
-      Array.from({ length: 24 }, (_, i) => {
-        const a = ((2 * Math.PI) / 24) * i;
+      Array.from({ length: 36 }, (_, i) => {
+        const a = ((2 * Math.PI) / 36) * i;
+        const len = i % 3 === 0 ? 5 : 2.5;
         return {
-          x1: CX + (INNER_TICK_R - 3) * Math.cos(a),
-          y1: CY + (INNER_TICK_R - 3) * Math.sin(a),
-          x2: CX + (INNER_TICK_R + 3) * Math.cos(a),
-          y2: CY + (INNER_TICK_R + 3) * Math.sin(a),
+          x1: CX + (INNER_TICK_R - len) * Math.cos(a),
+          y1: CY + (INNER_TICK_R - len) * Math.sin(a),
+          x2: CX + (INNER_TICK_R + len) * Math.cos(a),
+          y2: CY + (INNER_TICK_R + len) * Math.sin(a),
+          major: i % 3 === 0,
         };
       }),
     [],
   );
 
-  // Data text fragment positions (orbit around inner ring)
+  // Data text positions
   const dataTextNodes = useMemo(
     () =>
       DATA_FRAGMENTS.map((text, i) => {
         const a = ((2 * Math.PI) / DATA_FRAGMENTS.length) * i;
-        const r = INNER_TICK_R + 2 + ((i * 17) % 20);
+        const r = INNER_TICK_R + 5 + ((i * 17) % 22);
         return {
           text,
           x: CX + r * Math.cos(a),
           y: CY + r * Math.sin(a),
-          opacity: 0.08 + ((i * 13) % 10) / 100,
+          opacity: 0.06 + ((i * 13) % 10) / 80,
+        };
+      }),
+    [],
+  );
+
+  // Orbital particles (small dots on orbital paths)
+  const orbitalDots = useMemo(
+    () =>
+      Array.from({ length: 10 }, (_, i) => {
+        const a = ((2 * Math.PI) / 10) * i;
+        const r = i < 5 ? RING_R + 18 : INNER_ACCENT_R - 8;
+        return {
+          x: CX + r * Math.cos(a),
+          y: CY + r * Math.sin(a),
+          r: i < 5 ? 1.2 : 0.8,
+          ring: i < 5 ? "outer" : "inner",
         };
       }),
     [],
@@ -158,69 +189,136 @@ export function GenerationProgress({
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         {status === "generating" && (
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center gap-5"
+            className="flex flex-col items-center gap-4"
           >
             {/* ── Radial Visualization ── */}
-            <div className="relative w-full aspect-square max-w-[480px] mx-auto">
-              {/* Background glow — stronger */}
+            <div
+              className="relative w-full aspect-square max-w-[600px] mx-auto"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, rgba(16,185,129,0.025) 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+              }}
+            >
+              {/* Background glows */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-3/4 h-3/4 rounded-full bg-emerald-500/[0.07] blur-[80px]" />
+                <div className="w-4/5 h-4/5 rounded-full bg-emerald-500/[0.06] blur-[100px]" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-1/2 h-1/2 rounded-full bg-emerald-400/[0.05] blur-[40px]" />
+                <div className="w-1/2 h-1/2 rounded-full bg-cyan-500/[0.04] blur-[60px]" />
               </div>
 
               {/* SVG layer */}
               <svg
-                viewBox="0 0 400 400"
+                viewBox="0 0 500 500"
                 className="w-full h-full"
                 fill="none"
                 overflow="visible"
               >
                 <defs>
                   <radialGradient id="gen-hub-glow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                    <stop offset="60%" stopColor="#10b981" stopOpacity="0.05" />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                    <stop offset="50%" stopColor="#10b981" stopOpacity="0.06" />
                     <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
                   </radialGradient>
                   <linearGradient id="scanBeam" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
                     <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
                   </linearGradient>
+                  <linearGradient
+                    id="progressStroke"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#06b6d4" />
+                  </linearGradient>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feGaussianBlur stdDeviation="4" result="blur" />
                     <feMerge>
-                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="blur" />
                       <feMergeNode in="SourceGraphic" />
                     </feMerge>
                   </filter>
                   <filter id="softGlow">
-                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+                    <feGaussianBlur stdDeviation="2" result="blur" />
                     <feMerge>
-                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter id="bigGlow">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
                       <feMergeNode in="SourceGraphic" />
                     </feMerge>
                   </filter>
                 </defs>
 
-                {/* ═══ Layer 1: Ambient floating particles ═══ */}
+                {/* ═══ Corner brackets (HUD frame) ═══ */}
+                <path
+                  d="M40,18 L18,18 L18,40"
+                  stroke="rgba(16,185,129,0.12)"
+                  strokeWidth={1}
+                />
+                <path
+                  d="M460,18 L482,18 L482,40"
+                  stroke="rgba(16,185,129,0.12)"
+                  strokeWidth={1}
+                />
+                <path
+                  d="M18,460 L18,482 L40,482"
+                  stroke="rgba(16,185,129,0.12)"
+                  strokeWidth={1}
+                />
+                <path
+                  d="M482,460 L482,482 L460,482"
+                  stroke="rgba(16,185,129,0.12)"
+                  strokeWidth={1}
+                />
+                {/* Corner accent dots */}
+                <circle cx={18} cy={18} r={1.5} fill="rgba(16,185,129,0.15)" />
+                <circle cx={482} cy={18} r={1.5} fill="rgba(16,185,129,0.15)" />
+                <circle cx={18} cy={482} r={1.5} fill="rgba(16,185,129,0.15)" />
+                <circle
+                  cx={482}
+                  cy={482}
+                  r={1.5}
+                  fill="rgba(16,185,129,0.15)"
+                />
+
+                {/* ═══ Starfield (static tiny dots) ═══ */}
+                {starfield.map((s, i) => (
+                  <circle
+                    key={`star-${i}`}
+                    cx={s.x}
+                    cy={s.y}
+                    r={s.r}
+                    fill={`rgba(255,255,255,${s.opacity})`}
+                  />
+                ))}
+
+                {/* ═══ Ambient floating particles ═══ */}
                 {ambientParticles.map((p, i) => (
                   <motion.circle
                     key={`amb-${i}`}
                     cx={p.x}
                     cy={p.y}
                     r={p.r}
-                    fill="#10b981"
+                    fill={i % 4 === 0 ? "#06b6d4" : "#10b981"}
                     animate={{
                       cx: [p.x, p.x + p.dx, p.x],
                       cy: [p.y, p.y + p.dy, p.y],
-                      opacity: [0.06, 0.2, 0.06],
+                      opacity: [0.05, 0.25, 0.05],
                     }}
                     transition={{
                       duration: p.duration,
@@ -231,7 +329,7 @@ export function GenerationProgress({
                   />
                 ))}
 
-                {/* ═══ Layer 2: Ripple waves from center ═══ */}
+                {/* ═══ Ripple waves ═══ */}
                 {[0, 1, 2].map((i) => (
                   <motion.circle
                     key={`ripple-${i}`}
@@ -239,15 +337,15 @@ export function GenerationProgress({
                     cy={CY}
                     r={HUB_R}
                     fill="none"
-                    stroke="#10b981"
-                    strokeWidth={0.8}
+                    stroke={i === 1 ? "#06b6d4" : "#10b981"}
+                    strokeWidth={0.6}
                     animate={{
-                      scale: [1, (RING_R * 1.15) / HUB_R],
+                      scale: [1, (RING_R * 1.2) / HUB_R],
                       opacity: [0.2, 0],
                     }}
                     transition={{
-                      duration: 3.5,
-                      delay: i * 1.15,
+                      duration: 4,
+                      delay: i * 1.3,
                       repeat: Infinity,
                       ease: "easeOut",
                     }}
@@ -255,53 +353,53 @@ export function GenerationProgress({
                   />
                 ))}
 
-                {/* ═══ Layer 3: Outer ring 2 (r=OUTER_R2) — very slow CW ═══ */}
+                {/* ═══ Outer orbital ring 2 (r+26) ═══ */}
                 <motion.circle
                   cx={CX}
                   cy={CY}
-                  r={OUTER_R2}
+                  r={RING_R + 26}
                   stroke="rgba(16,185,129,0.04)"
                   strokeWidth={0.5}
-                  strokeDasharray="2 12"
+                  strokeDasharray="2 14"
                   fill="none"
                   animate={{ rotate: 360 }}
                   transition={{
-                    duration: 60,
+                    duration: 55,
                     repeat: Infinity,
                     ease: "linear",
                   }}
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 />
 
-                {/* ═══ Layer 4: Outer ring 1 (r=OUTER_R1) — slow CCW ═══ */}
+                {/* ═══ Outer orbital ring 1 (r+14) ═══ */}
                 <motion.circle
                   cx={CX}
                   cy={CY}
-                  r={OUTER_R1}
+                  r={RING_R + 14}
                   stroke="rgba(16,185,129,0.06)"
                   strokeWidth={0.5}
-                  strokeDasharray="4 8"
+                  strokeDasharray="5 8"
                   fill="none"
                   animate={{ rotate: -360 }}
                   transition={{
-                    duration: 35,
+                    duration: 30,
                     repeat: Infinity,
                     ease: "linear",
                   }}
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 />
 
-                {/* ═══ Layer 5: Main ring baseline ═══ */}
+                {/* ═══ Main ring baseline ═══ */}
                 <circle
                   cx={CX}
                   cy={CY}
                   r={RING_R}
-                  stroke="rgba(16,185,129,0.05)"
+                  stroke="rgba(16,185,129,0.06)"
                   strokeWidth={0.5}
                   fill="none"
                 />
 
-                {/* ═══ Layer 6: Scanning ring + beam — preparing phase ═══ */}
+                {/* ═══ Scanning ring + radar beam — preparing ═══ */}
                 {phase === "preparing" && (
                   <>
                     <motion.circle
@@ -310,8 +408,8 @@ export function GenerationProgress({
                       r={RING_R}
                       stroke="#10b981"
                       strokeWidth={1.5}
-                      strokeDasharray="14 10"
-                      strokeOpacity={0.3}
+                      strokeDasharray="16 10"
+                      strokeOpacity={0.35}
                       fill="none"
                       animate={{ rotate: 360 }}
                       transition={{
@@ -321,14 +419,14 @@ export function GenerationProgress({
                       }}
                       style={{ transformOrigin: `${CX}px ${CY}px` }}
                     />
-                    {/* Radar scan beam */}
+                    {/* Radar beam */}
                     <motion.line
                       x1={CX}
                       y1={CY}
                       x2={CX}
-                      y2={CY - RING_R - 8}
+                      y2={CY - RING_R - 10}
                       stroke="url(#scanBeam)"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       animate={{ rotate: 360 }}
                       transition={{
                         duration: 2.5,
@@ -337,14 +435,31 @@ export function GenerationProgress({
                       }}
                       style={{ transformOrigin: `${CX}px ${CY}px` }}
                     />
-                    {/* Scan sweep cone */}
+                    {/* Sweep cone */}
                     <motion.path
-                      d={`M${CX},${CY} L${CX - 20},${CY - RING_R - 5} A${RING_R + 5},${RING_R + 5} 0 0,1 ${CX + 20},${CY - RING_R - 5} Z`}
+                      d={`M${CX},${CY} L${CX - 25},${CY - RING_R - 8} A${RING_R + 8},${RING_R + 8} 0 0,1 ${CX + 25},${CY - RING_R - 8} Z`}
                       fill="#10b981"
-                      fillOpacity={0.04}
+                      fillOpacity={0.05}
                       animate={{ rotate: 360 }}
                       transition={{
                         duration: 2.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      style={{ transformOrigin: `${CX}px ${CY}px` }}
+                    />
+                    {/* Second beam (offset) */}
+                    <motion.line
+                      x1={CX}
+                      y1={CY}
+                      x2={CX}
+                      y2={CY - RING_R - 10}
+                      stroke="url(#scanBeam)"
+                      strokeWidth={1.5}
+                      strokeOpacity={0.4}
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 4,
                         repeat: Infinity,
                         ease: "linear",
                       }}
@@ -353,7 +468,7 @@ export function GenerationProgress({
                   </>
                 )}
 
-                {/* ═══ Layer 7: Inner tick ring (rotating CCW) ═══ */}
+                {/* ═══ Inner tick ring ═══ */}
                 <motion.g
                   animate={{ rotate: -360 }}
                   transition={{
@@ -378,13 +493,17 @@ export function GenerationProgress({
                       y1={t.y1}
                       x2={t.x2}
                       y2={t.y2}
-                      stroke="rgba(16,185,129,0.1)"
-                      strokeWidth={i % 6 === 0 ? 1 : 0.5}
+                      stroke={
+                        t.major
+                          ? "rgba(16,185,129,0.15)"
+                          : "rgba(16,185,129,0.07)"
+                      }
+                      strokeWidth={t.major ? 1 : 0.5}
                     />
                   ))}
                 </motion.g>
 
-                {/* ═══ Layer 8: Inner accent ring (rotating CW) ═══ */}
+                {/* ═══ Inner accent ring ═══ */}
                 <motion.circle
                   cx={CX}
                   cy={CY}
@@ -395,18 +514,18 @@ export function GenerationProgress({
                   fill="none"
                   animate={{ rotate: 360 }}
                   transition={{
-                    duration: 25,
+                    duration: 22,
                     repeat: Infinity,
                     ease: "linear",
                   }}
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 />
 
-                {/* ═══ Layer 9: Data text fragments (slowly rotating) ═══ */}
+                {/* ═══ Data text fragments ═══ */}
                 <motion.g
                   animate={{ rotate: 360 }}
                   transition={{
-                    duration: 45,
+                    duration: 50,
                     repeat: Infinity,
                     ease: "linear",
                   }}
@@ -417,13 +536,13 @@ export function GenerationProgress({
                       key={`dt-${i}`}
                       x={d.x}
                       y={d.y}
-                      fill="#10b981"
-                      fontSize={6}
+                      fill={i % 3 === 0 ? "#06b6d4" : "#10b981"}
+                      fontSize={6.5}
                       fontFamily="monospace"
                       textAnchor="middle"
                       dominantBaseline="central"
                       animate={{
-                        opacity: [d.opacity, d.opacity * 2.5, d.opacity],
+                        opacity: [d.opacity, d.opacity * 3, d.opacity],
                       }}
                       transition={{
                         duration: 3 + (i % 4),
@@ -437,7 +556,67 @@ export function GenerationProgress({
                   ))}
                 </motion.g>
 
-                {/* ═══ Layer 10: Cross-connections between adjacent completed nodes ═══ */}
+                {/* ═══ Orbital dot particles ═══ */}
+                <motion.g
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 15,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                >
+                  {orbitalDots
+                    .filter((d) => d.ring === "outer")
+                    .map((d, i) => (
+                      <motion.circle
+                        key={`od-o-${i}`}
+                        cx={d.x}
+                        cy={d.y}
+                        r={d.r}
+                        fill="#10b981"
+                        animate={{
+                          opacity: [0.15, 0.5, 0.15],
+                        }}
+                        transition={{
+                          duration: 2,
+                          delay: i * 0.4,
+                          repeat: Infinity,
+                        }}
+                      />
+                    ))}
+                </motion.g>
+                <motion.g
+                  animate={{ rotate: -360 }}
+                  transition={{
+                    duration: 12,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                >
+                  {orbitalDots
+                    .filter((d) => d.ring === "inner")
+                    .map((d, i) => (
+                      <motion.circle
+                        key={`od-i-${i}`}
+                        cx={d.x}
+                        cy={d.y}
+                        r={d.r}
+                        fill="#06b6d4"
+                        animate={{
+                          opacity: [0.1, 0.4, 0.1],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          delay: i * 0.3,
+                          repeat: Infinity,
+                        }}
+                      />
+                    ))}
+                </motion.g>
+
+                {/* ═══ Cross-connections between completed ═══ */}
                 {nodes.map((node, i) => {
                   const next = nodes[(i + 1) % nodes.length];
                   if (node.completed && next.completed) {
@@ -448,45 +627,45 @@ export function GenerationProgress({
                         y1={node.y}
                         x2={next.x}
                         y2={next.y}
-                        stroke="rgba(16,185,129,0.12)"
+                        stroke="rgba(16,185,129,0.15)"
                         strokeWidth={0.5}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.4 }}
+                        transition={{ duration: 0.5 }}
                       />
                     );
                   }
                   return null;
                 })}
 
-                {/* ═══ Layer 11: Arcs hub → nodes ═══ */}
+                {/* ═══ Curved arcs: hub → nodes ═══ */}
                 {nodes.map((node, i) => (
                   <g key={`arc-${i}`}>
                     <motion.path
-                      d={`M${CX},${CY} L${node.x.toFixed(1)},${node.y.toFixed(1)}`}
+                      d={node.arcPath}
                       stroke={
                         node.completed
                           ? "rgba(16,185,129,0.3)"
                           : node.active
                             ? "rgba(16,185,129,0.5)"
-                            : "rgba(255,255,255,0.03)"
+                            : "rgba(255,255,255,0.025)"
                       }
                       strokeWidth={
-                        node.active ? 1.5 : node.completed ? 0.8 : 0.3
+                        node.active ? 1.8 : node.completed ? 0.8 : 0.3
                       }
                       initial={{ pathLength: 0 }}
                       animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: i * 0.04 }}
+                      transition={{ duration: 0.6, delay: i * 0.04 }}
                     />
-                    {/* Animated dash on active arc */}
+                    {/* Glowing animated dash on active */}
                     {node.active && (
                       <motion.path
-                        d={`M${CX},${CY} L${node.x.toFixed(1)},${node.y.toFixed(1)}`}
+                        d={node.arcPath}
                         stroke="#10b981"
-                        strokeWidth={1.5}
-                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        strokeDasharray="6 5"
                         filter="url(#softGlow)"
-                        animate={{ strokeDashoffset: [0, -20] }}
+                        animate={{ strokeDashoffset: [0, -22] }}
                         transition={{
                           duration: 0.6,
                           repeat: Infinity,
@@ -494,24 +673,32 @@ export function GenerationProgress({
                         }}
                       />
                     )}
+                    {/* Completed arc glow */}
+                    {node.completed && (
+                      <path
+                        d={node.arcPath}
+                        stroke="rgba(16,185,129,0.08)"
+                        strokeWidth={4}
+                      />
+                    )}
                   </g>
                 ))}
 
-                {/* ═══ Layer 12: Data stream particles on arcs ═══ */}
+                {/* ═══ Stream particles on arcs ═══ */}
                 {nodes.map((node, i) => {
                   if (!node.completed && !node.active) return null;
-                  const count = node.active ? 5 : 2;
-                  const speed = node.active ? 1.2 : 2.2;
+                  const count = node.active ? 6 : 2;
+                  const speed = node.active ? 1.0 : 2.5;
                   return Array.from({ length: count }, (_, p) => (
                     <motion.circle
-                      key={`stream-${i}-${p}`}
-                      r={node.active ? 2.5 : 1.2}
-                      fill="#10b981"
+                      key={`s-${i}-${p}`}
+                      r={node.active ? 2.5 : 1}
+                      fill={p % 3 === 0 ? "#06b6d4" : "#10b981"}
                       filter={node.active ? "url(#softGlow)" : undefined}
                       animate={{
-                        cx: [node.x, CX],
-                        cy: [node.y, CY],
-                        opacity: [0, node.active ? 0.9 : 0.35, 0],
+                        cx: [node.x, node.cpx, CX],
+                        cy: [node.y, node.cpy, CY],
+                        opacity: [0, node.active ? 0.9 : 0.3, 0],
                       }}
                       transition={{
                         duration: speed,
@@ -523,23 +710,23 @@ export function GenerationProgress({
                   ));
                 })}
 
-                {/* Reverse particles: hub → active node (data out) */}
+                {/* Reverse particles: hub → active (cyan) */}
                 {nodes.map(
                   (node, i) =>
                     node.active &&
-                    [0, 1].map((p) => (
+                    [0, 1, 2].map((p) => (
                       <motion.circle
                         key={`rev-${i}-${p}`}
                         r={1.5}
                         fill="#06b6d4"
                         animate={{
-                          cx: [CX, node.x],
-                          cy: [CY, node.y],
-                          opacity: [0, 0.6, 0],
+                          cx: [CX, node.cpx, node.x],
+                          cy: [CY, node.cpy, node.y],
+                          opacity: [0, 0.7, 0],
                         }}
                         transition={{
-                          duration: 2,
-                          delay: p * 1,
+                          duration: 1.8,
+                          delay: p * 0.6,
                           repeat: Infinity,
                           ease: "linear",
                         }}
@@ -547,15 +734,40 @@ export function GenerationProgress({
                     )),
                 )}
 
-                {/* ═══ Layer 13: Hub glow ═══ */}
+                {/* ═══ Hub glow ═══ */}
                 <circle
                   cx={CX}
                   cy={CY}
-                  r={HUB_R + 30}
+                  r={HUB_R + 35}
                   fill="url(#gen-hub-glow)"
                 />
 
-                {/* ═══ Layer 14: Hub circle ═══ */}
+                {/* ═══ Hub progress arc ═══ */}
+                <motion.circle
+                  cx={CX}
+                  cy={CY}
+                  r={HUB_R + 7}
+                  stroke="url(#progressStroke)"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  fill="none"
+                  filter="url(#softGlow)"
+                  strokeDasharray={progressCircumference}
+                  animate={{ strokeDashoffset: progressDashOffset }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  transform={`rotate(-90 ${CX} ${CY})`}
+                />
+                {/* Progress arc track */}
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r={HUB_R + 7}
+                  stroke="rgba(16,185,129,0.06)"
+                  strokeWidth={3}
+                  fill="none"
+                />
+
+                {/* ═══ Hub circle ═══ */}
                 <circle
                   cx={CX}
                   cy={CY}
@@ -569,14 +781,14 @@ export function GenerationProgress({
                 <motion.circle
                   cx={CX}
                   cy={CY}
-                  r={HUB_R + 5}
-                  stroke="rgba(16,185,129,0.15)"
-                  strokeWidth={1}
+                  r={HUB_R + 13}
+                  stroke="rgba(16,185,129,0.1)"
+                  strokeWidth={0.8}
                   strokeDasharray="6 3"
                   fill="none"
                   animate={{ rotate: -360 }}
                   transition={{
-                    duration: 12,
+                    duration: 10,
                     repeat: Infinity,
                     ease: "linear",
                   }}
@@ -587,14 +799,14 @@ export function GenerationProgress({
                 <motion.circle
                   cx={CX}
                   cy={CY}
-                  r={HUB_R + 9}
-                  stroke="rgba(16,185,129,0.08)"
+                  r={HUB_R + 17}
+                  stroke="rgba(6,182,212,0.06)"
                   strokeWidth={0.5}
                   strokeDasharray="3 5"
                   fill="none"
                   animate={{ rotate: 360 }}
                   transition={{
-                    duration: 8,
+                    duration: 7,
                     repeat: Infinity,
                     ease: "linear",
                   }}
@@ -608,10 +820,10 @@ export function GenerationProgress({
                   r={HUB_R}
                   fill="none"
                   stroke="#10b981"
-                  strokeWidth={1}
+                  strokeWidth={1.5}
                   animate={{
-                    scale: [1, 1.15, 1],
-                    opacity: [0.15, 0.35, 0.15],
+                    scale: [1, 1.18, 1],
+                    opacity: [0.1, 0.35, 0.1],
                   }}
                   transition={{
                     duration: 2,
@@ -621,31 +833,29 @@ export function GenerationProgress({
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 />
 
-                {/* ═══ Layer 15: Section nodes ═══ */}
+                {/* ═══ Section nodes ═══ */}
                 {nodes.map((node, i) => {
                   if (node.completed) {
                     return (
                       <g key={`n-${i}`}>
-                        {/* Completed glow halo */}
+                        {/* Glow halo */}
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={14}
+                          r={18}
                           fill="rgba(16,185,129,0.06)"
-                          animate={{
-                            opacity: [0.06, 0.12, 0.06],
-                          }}
+                          animate={{ opacity: [0.04, 0.12, 0.04] }}
                           transition={{
                             duration: 2,
                             delay: i * 0.2,
                             repeat: Infinity,
                           }}
                         />
-                        {/* Completed: solid emerald with spring pop */}
+                        {/* Solid dot */}
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={9}
+                          r={10}
                           fill="#10b981"
                           filter="url(#softGlow)"
                           initial={{ scale: 0 }}
@@ -661,9 +871,9 @@ export function GenerationProgress({
                         />
                         {/* Checkmark */}
                         <motion.path
-                          d={`M${node.x - 3.5},${node.y + 0.5} L${node.x - 0.5},${node.y + 3.5} L${node.x + 4},${node.y - 2.5}`}
+                          d={`M${node.x - 4},${node.y + 0.5} L${node.x - 1},${node.y + 4} L${node.x + 4.5},${node.y - 3}`}
                           stroke="white"
-                          strokeWidth={1.8}
+                          strokeWidth={2}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           fill="none"
@@ -678,42 +888,49 @@ export function GenerationProgress({
                   if (node.active) {
                     const cos = Math.cos(node.angle);
                     const sin = Math.sin(node.angle);
-                    const lx = node.x + 24 * cos;
-                    const ly = node.y + 24 * sin;
-                    const anchor =
-                      cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
-                    const baseline =
-                      sin > 0.3 ? "hanging" : sin < -0.3 ? "auto" : "central";
-                    const label =
-                      node.title.length > 24
-                        ? node.title.slice(0, 24) + "\u2026"
-                        : node.title;
+                    // Foreign object label position
+                    const foW = 150;
+                    const foH = 28;
+                    const labelDist = 24;
+                    const foX =
+                      cos > 0.3
+                        ? node.x + labelDist
+                        : cos < -0.3
+                          ? node.x - labelDist - foW
+                          : node.x - foW / 2;
+                    const foY =
+                      sin > 0.3
+                        ? node.y + labelDist
+                        : sin < -0.3
+                          ? node.y - labelDist - foH
+                          : node.y - foH / 2;
+
                     return (
                       <g key={`n-${i}`}>
                         {/* Outer pulse glow */}
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={22}
-                          fill="rgba(16,185,129,0.05)"
+                          r={28}
+                          fill="rgba(16,185,129,0.04)"
                           animate={{
                             scale: [1, 1.5, 1],
-                            opacity: [0.15, 0.03, 0.15],
+                            opacity: [0.12, 0.02, 0.12],
                           }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                           style={{
                             transformOrigin: `${node.x}px ${node.y}px`,
                           }}
                         />
-                        {/* Inner pulse glow */}
+                        {/* Mid pulse */}
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={16}
-                          fill="rgba(16,185,129,0.1)"
+                          r={18}
+                          fill="rgba(16,185,129,0.08)"
                           animate={{
                             scale: [1, 1.3, 1],
-                            opacity: [0.25, 0.08, 0.25],
+                            opacity: [0.2, 0.05, 0.2],
                           }}
                           transition={{
                             duration: 1.5,
@@ -728,58 +945,70 @@ export function GenerationProgress({
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={10}
+                          r={12}
                           fill="rgba(16,185,129,0.2)"
                           stroke="#10b981"
                           strokeWidth={2}
                           filter="url(#glow)"
-                          animate={{ scale: [1, 1.12, 1] }}
+                          animate={{ scale: [1, 1.1, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                           style={{
                             transformOrigin: `${node.x}px ${node.y}px`,
                           }}
                         />
-                        {/* Active dot inner */}
+                        {/* Inner bright dot */}
                         <motion.circle
                           cx={node.x}
                           cy={node.y}
-                          r={4}
+                          r={5}
                           fill="#10b981"
-                          animate={{ opacity: [0.8, 1, 0.8] }}
+                          filter="url(#softGlow)"
+                          animate={{ opacity: [0.7, 1, 0.7] }}
                           transition={{ duration: 1, repeat: Infinity }}
                         />
-                        {/* Section title label */}
-                        {label && (
-                          <text
-                            x={lx}
-                            y={ly}
-                            fill="#10b981"
-                            fontSize={9.5}
-                            fontWeight={600}
-                            textAnchor={anchor}
-                            dominantBaseline={baseline}
-                            filter="url(#softGlow)"
+                        {/* Label card via foreignObject */}
+                        {node.title && (
+                          <foreignObject
+                            x={foX}
+                            y={foY}
+                            width={foW}
+                            height={foH}
                           >
-                            {label}
-                          </text>
+                            <div
+                              style={{
+                                background: "rgba(16,185,129,0.08)",
+                                border: "1px solid rgba(16,185,129,0.2)",
+                                borderRadius: "6px",
+                                padding: "3px 10px",
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#10b981",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                backdropFilter: "blur(4px)",
+                                fontFamily: "inherit",
+                              }}
+                            >
+                              {node.title}
+                            </div>
+                          </foreignObject>
                         )}
                       </g>
                     );
                   }
 
-                  // Pending: dim dot with subtle pulse
+                  // Pending node
                   return (
                     <motion.circle
                       key={`n-${i}`}
                       cx={node.x}
                       cy={node.y}
-                      r={4}
-                      fill="rgba(255,255,255,0.06)"
+                      r={4.5}
+                      fill="rgba(255,255,255,0.05)"
                       stroke="rgba(255,255,255,0.04)"
                       strokeWidth={1}
-                      animate={{
-                        opacity: [0.4, 0.7, 0.4],
-                      }}
+                      animate={{ opacity: [0.4, 0.7, 0.4] }}
                       transition={{
                         duration: 2,
                         delay: i * 0.15,
@@ -790,45 +1019,44 @@ export function GenerationProgress({
                   );
                 })}
 
-                {/* ═══ Layer 16: Finalizing burst ═══ */}
+                {/* ═══ Finalizing effects ═══ */}
                 {phase === "finalizing" && (
                   <>
-                    {[0, 1].map((i) => (
+                    {[0, 1, 2].map((i) => (
                       <motion.circle
-                        key={`final-${i}`}
+                        key={`fburst-${i}`}
                         cx={CX}
                         cy={CY}
                         r={RING_R}
                         fill="none"
-                        stroke="#10b981"
+                        stroke={i === 1 ? "#06b6d4" : "#10b981"}
                         strokeWidth={1.5}
                         animate={{
-                          scale: [HUB_R / RING_R, 1.15],
+                          scale: [HUB_R / RING_R, 1.2],
                           opacity: [0.4, 0],
                         }}
                         transition={{
                           duration: 1.5,
-                          delay: i * 0.75,
+                          delay: i * 0.5,
                           repeat: Infinity,
                         }}
                         style={{ transformOrigin: `${CX}px ${CY}px` }}
                       />
                     ))}
-                    {/* All nodes pulse in finalizing */}
                     {nodes.map((node, i) => (
                       <motion.circle
                         key={`fp-${i}`}
                         cx={node.x}
                         cy={node.y}
-                        r={12}
-                        fill="rgba(16,185,129,0.08)"
+                        r={14}
+                        fill="rgba(16,185,129,0.06)"
                         animate={{
-                          scale: [1, 1.6, 1],
-                          opacity: [0.15, 0.03, 0.15],
+                          scale: [1, 1.8, 1],
+                          opacity: [0.12, 0.02, 0.12],
                         }}
                         transition={{
-                          duration: 1.2,
-                          delay: i * 0.1,
+                          duration: 1,
+                          delay: i * 0.08,
                           repeat: Infinity,
                         }}
                         style={{
@@ -840,25 +1068,25 @@ export function GenerationProgress({
                 )}
               </svg>
 
-              {/* Center hub text overlay (HTML for crisp rendering) */}
+              {/* Center hub text (HTML overlay) */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex flex-col items-center">
-                  <Zap size={18} className="text-emerald-400 mb-1.5" />
-                  <span className="text-3xl font-bold text-white tabular-nums leading-none">
+                  <Zap size={20} className="text-emerald-400 mb-1.5" />
+                  <span className="text-4xl font-bold text-white tabular-nums leading-none">
                     {progress}%
                   </span>
-                  <span className="text-[10px] text-emerald-400/70 font-semibold tracking-widest uppercase mt-2">
+                  <span className="text-[10px] text-emerald-400/70 font-semibold tracking-[0.2em] uppercase mt-2">
                     {phaseLabel}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Document type label */}
+            {/* Document type */}
             <p className="text-sm font-medium text-white/50">{meta?.title}</p>
 
-            {/* Overall progress bar */}
-            <div className="w-full max-w-xs">
+            {/* Progress bar */}
+            <div className="w-full max-w-sm">
               <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                 <motion.div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-500"
