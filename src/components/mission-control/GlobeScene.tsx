@@ -5,12 +5,19 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import EarthMesh from "./EarthMesh";
 import SatellitePoints from "./SatellitePoints";
+import FleetLabels from "./FleetLabels";
 import OrbitPath from "./OrbitPath";
-import type { SatelliteData, OrbitType } from "@/lib/satellites/types";
+import type {
+  SatelliteData,
+  FleetSpacecraft,
+  OrbitType,
+} from "@/lib/satellites/types";
 
 interface GlobeSceneProps {
   satellites: SatelliteData[];
   fleetNoradIds: Set<number>;
+  fleet?: FleetSpacecraft[];
+  satelliteMap?: Map<number, SatelliteData>;
   selectedSatellite?: SatelliteData | null;
   onSatelliteClick?: (noradId: number) => void;
   compact?: boolean;
@@ -25,6 +32,8 @@ interface GlobeSceneProps {
 function SceneContent({
   satellites,
   fleetNoradIds,
+  fleet,
+  satelliteMap,
   selectedSatellite,
   onSatelliteClick,
   compact = false,
@@ -46,6 +55,10 @@ function SceneContent({
         onSatelliteClick={onSatelliteClick}
         filters={filters}
       />
+
+      {fleet && satelliteMap && fleet.length > 0 && !compact && (
+        <FleetLabels fleet={fleet} satelliteMap={satelliteMap} />
+      )}
 
       {selectedSatellite && (
         <OrbitPath

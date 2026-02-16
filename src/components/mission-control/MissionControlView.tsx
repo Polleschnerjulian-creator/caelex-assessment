@@ -2,23 +2,40 @@
 
 import { useState, useMemo, useCallback, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  Loader2,
+  Plus,
+  Satellite,
+} from "lucide-react";
 import { useSatelliteData } from "./hooks/useSatelliteData";
 import GlobeScene from "./GlobeScene";
 import StatsBar from "./StatsBar";
 import FilterPanel from "./FilterPanel";
 import SatelliteInfoPanel from "./SatelliteInfoPanel";
+import { SpacecraftForm } from "@/components/spacecraft/SpacecraftForm";
+import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { SatelliteData, OrbitType } from "@/lib/satellites/types";
 
 const MAX_SEARCH_RESULTS = 8;
 
 export default function MissionControlView() {
-  const { satellites, fleet, fleetNoradIds, isLoading, stats, satelliteMap } =
-    useSatelliteData();
+  const {
+    satellites,
+    fleet,
+    fleetNoradIds,
+    isLoading,
+    stats,
+    satelliteMap,
+    refetch,
+  } = useSatelliteData();
   const { t } = useLanguage();
+  const { organization } = useOrganization();
 
   const [selectedNoradId, setSelectedNoradId] = useState<number | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -153,6 +170,8 @@ export default function MissionControlView() {
         <GlobeScene
           satellites={satellites}
           fleetNoradIds={fleetNoradIds}
+          fleet={fleet}
+          satelliteMap={satelliteMap}
           selectedSatellite={selectedSatellite}
           onSatelliteClick={handleSatelliteClick}
           autoRotate={!selectedNoradId}
@@ -249,6 +268,25 @@ export default function MissionControlView() {
               )}
           </div>
 
+          {/* Fleet badge */}
+          {fleet.length > 0 && (
+            <button
+              onClick={handleFleetOnlyToggle}
+              className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono transition-all border ${
+                fleetOnly
+                  ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
+                  : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-emerald-400"
+              }`}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <Satellite size={12} aria-hidden="true" />
+              {fleet.length} {fleet.length === 1 ? "spacecraft" : "spacecraft"}
+            </button>
+          )}
+
           {/* Filter button */}
           <button
             onClick={() => setShowFilters((p) => !p)}
@@ -291,6 +329,28 @@ export default function MissionControlView() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Add Spacecraft FAB */}
+      {organization && (
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="absolute bottom-16 right-4 z-20 flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-900/40 transition-all hover:scale-105 text-[12px] font-medium"
+          title="Add spacecraft"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">Add Spacecraft</span>
+        </button>
+      )}
+
+      {/* SpacecraftForm modal */}
+      {organization && (
+        <SpacecraftForm
+          isOpen={showAddForm}
+          onClose={() => setShowAddForm(false)}
+          organizationId={organization.id}
+          onSuccess={refetch}
+        />
+      )}
 
       {/* Bottom stats bar */}
       <StatsBar stats={stats} fleetCount={fleet.length} t={t} />

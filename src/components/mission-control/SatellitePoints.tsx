@@ -12,9 +12,12 @@ const EARTH_RADIUS_KM = 6371;
 const vertexShader = `
   attribute float size;
   attribute vec3 customColor;
+  attribute float isFleet;
   varying vec3 vColor;
+  varying float vIsFleet;
   void main() {
     vColor = customColor;
+    vIsFleet = isFleet;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_PointSize = size * (400.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
@@ -22,12 +25,23 @@ const vertexShader = `
 `;
 
 const fragmentShader = `
+  uniform float uTime;
   varying vec3 vColor;
+  varying float vIsFleet;
   void main() {
     float dist = length(gl_PointCoord - vec2(0.5));
     if (dist > 0.5) discard;
-    float alpha = (1.0 - smoothstep(0.1, 0.5, dist)) * 0.85;
-    gl_FragColor = vec4(vColor, alpha);
+
+    if (vIsFleet > 0.5) {
+      // Fleet satellite: solid inner core + pulsing outer glow
+      float core = 1.0 - smoothstep(0.0, 0.2, dist);
+      float glow = (1.0 - smoothstep(0.15, 0.5, dist)) * (sin(uTime * 3.0) * 0.3 + 0.5);
+      float alpha = max(core, glow);
+      gl_FragColor = vec4(vColor, alpha);
+    } else {
+      float alpha = (1.0 - smoothstep(0.1, 0.5, dist)) * 0.85;
+      gl_FragColor = vec4(vColor, alpha);
+    }
   }
 `;
 
@@ -50,7 +64,7 @@ function getColor(sat: SatelliteData, isFleet: boolean): THREE.Color {
 }
 
 function getSize(sat: SatelliteData, isFleet: boolean): number {
-  if (isFleet) return 0.018;
+  if (isFleet) return 0.05;
   if (sat.objectType === "PAYLOAD") return 0.006;
   if (sat.objectType === "DEBRIS") return 0.003;
   return 0.004; // rocket body / unknown
@@ -153,18 +167,20 @@ export default function SatellitePoints({
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
+    const fleetFlags = new Float32Array(count);
     const idIndex: number[] = [];
 
     for (let i = 0; i < count; i++) {
       const sat = filteredSatellites[i];
-      const isFleet = fleetNoradIds.has(sat.noradId);
-      const color = getColor(sat, isFleet);
-      const size = getSize(sat, isFleet);
+      const fleet = fleetNoradIds.has(sat.noradId);
+      const color = getColor(sat, fleet);
+      const size = getSize(sat, fleet);
 
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
       sizes[i] = size;
+      fleetFlags[i] = fleet ? 1.0 : 0.0;
       idIndex.push(sat.noradId);
 
       // Initial position: spread based on orbit altitude
@@ -181,6 +197,7 @@ export default function SatellitePoints({
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setAttribute("customColor", new THREE.BufferAttribute(colors, 3));
     geo.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute("isFleet", new THREE.BufferAttribute(fleetFlags, 1));
 
     return { geometry: geo, noradIdIndex: idIndex };
   }, [filteredSatellites, fleetNoradIds]);
@@ -188,7 +205,9 @@ export default function SatellitePoints({
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        uniforms: {},
+        uniforms: {
+          uTime: { value: 0.0 },
+        },
         vertexShader,
         fragmentShader,
         transparent: true,
@@ -199,9 +218,12 @@ export default function SatellitePoints({
   );
 
   // SGP4 propagation in useFrame
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!pointsRef.current) return;
     frameCounter.current++;
+
+    // Update time uniform for pulsing glow
+    material.uniforms.uTime.value += delta;
 
     // Throttle: widget updates every 60 frames, full mode every frame
     const updateInterval = compact ? 60 : 1;
