@@ -8,34 +8,51 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="bg-[#0A0A0B] text-white min-h-screen flex items-center justify-center">
-      <div className="text-center max-w-lg px-6">
-        <p className="text-blue-500 text-sm font-semibold uppercase tracking-wider mb-4">
-          Error 404
-        </p>
-        <h1 className="text-5xl font-bold mb-4 text-[#F8FAFC]">
+    <div className="bg-[#0A0A0B] text-white min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Subtle grid background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
+
+      {/* Glow effect */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-500/5 rounded-full blur-[128px]" />
+
+      <div className="relative text-center max-w-lg px-6">
+        {/* Large 404 watermark */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12rem] font-black text-white/[0.02] select-none pointer-events-none leading-none">
+          404
+        </div>
+
+        <div className="inline-flex items-center gap-2 border border-green-500/20 bg-green-500/5 rounded-full px-4 py-1.5 mb-6">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-green-400 text-xs font-medium uppercase tracking-wider">
+            Signal Lost
+          </span>
+        </div>
+
+        <h1 className="text-6xl font-bold mb-4 text-[#F8FAFC] tracking-tight">
           Page Not Found
         </h1>
-        <p className="text-[#94A3B8] text-lg mb-8 leading-relaxed">
-          The page you are looking for does not exist or has been moved. Try one
-          of the links below to get back on track.
+
+        <p className="text-[#94A3B8] text-lg mb-10 leading-relaxed">
+          The page you are looking for does not exist or has been moved.
+          Navigate back to a known frequency.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/"
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-6 py-3 font-medium transition-colors duration-200"
+            className="bg-green-500 hover:bg-green-600 text-black font-semibold rounded-lg px-6 py-3 transition-colors duration-200 w-full sm:w-auto"
           >
             Go Home
           </Link>
           <Link
             href="/assessment"
-            className="border border-[#334155] hover:border-[#94A3B8] text-[#E2E8F0] rounded-lg px-6 py-3 font-medium transition-colors duration-200"
+            className="border border-[#334155] hover:border-green-500/50 text-[#E2E8F0] rounded-lg px-6 py-3 font-medium transition-colors duration-200 w-full sm:w-auto"
           >
             Start Assessment
           </Link>
           <Link
             href="/resources"
-            className="border border-[#334155] hover:border-[#94A3B8] text-[#E2E8F0] rounded-lg px-6 py-3 font-medium transition-colors duration-200"
+            className="border border-[#334155] hover:border-green-500/50 text-[#E2E8F0] rounded-lg px-6 py-3 font-medium transition-colors duration-200 w-full sm:w-auto"
           >
             Resources
           </Link>
