@@ -17,11 +17,12 @@ import type {
   DocumentGenerationResult,
   DocumentStreamEvent,
 } from "./types";
-import { DOCUMENT_TYPE_META as DOC_META } from "./types";
+import { DOCUMENT_TYPE_META as DOC_META, DOCUMENT_SECTIONS } from "./types";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-5-20250929";
 const MAX_TOKENS = 16384;
+const MAX_TOKENS_PER_SECTION = 2048;
 const PROMPT_VERSION = "v1.0";
 
 let anthropicClient: Anthropic | null = null;
@@ -467,4 +468,150 @@ export async function startBackgroundGeneration(
   });
 
   return doc.id;
+}
+
+// ─── Chunked (Section-by-Section) Generation ───
+// Each section is a separate API call, fitting within Vercel's 60s limit.
+
+/**
+ * Initialize a chunked document generation.
+ * Creates the DB record, collects data, stores prompt context.
+ * Returns the documentId and section list for the client to iterate.
+ */
+export async function initChunkedGeneration(
+  params: DocumentGenerationParams,
+): Promise<{
+  documentId: string;
+  sections: Array<{ title: string; number: number }>;
+}> {
+  const meta = DOC_META[params.documentType];
+  const language = params.language || "en";
+
+  // Collect assessment data
+  const dataBundle = await collectAssessmentData(
+    params.userId,
+    params.organizationId,
+    params.documentType,
+    params.assessmentId,
+  );
+
+  // Build prompt
+  const { systemPrompt, userMessage } = buildPrompt(dataBundle, language);
+
+  // Create document record — store prompt context in rawContent for later use
+  const doc = await prisma.generatedDocument.create({
+    data: {
+      userId: params.userId,
+      organizationId: params.organizationId,
+      documentType: params.documentType,
+      title: meta.title,
+      language,
+      assessmentId: params.assessmentId,
+      status: "GENERATING",
+      promptVersion: PROMPT_VERSION,
+      rawContent: JSON.stringify({ systemPrompt, userMessage }),
+      content: [], // will accumulate sections
+    },
+  });
+
+  const sections = DOCUMENT_SECTIONS[params.documentType];
+
+  return { documentId: doc.id, sections };
+}
+
+/**
+ * Generate a single section for an existing chunked document.
+ * Loads the stored prompt context, calls Claude for just one section,
+ * and saves the result to the document record.
+ */
+export async function generateDocumentSection(
+  documentId: string,
+  sectionIndex: number,
+  sectionTitle: string,
+  sectionNumber: number,
+): Promise<{ content: string; inputTokens: number; outputTokens: number }> {
+  const client = getAnthropicClient();
+  if (!client) {
+    throw new Error("ANTHROPIC_API_KEY not configured");
+  }
+
+  // Load stored prompt context
+  const doc = await prisma.generatedDocument.findUniqueOrThrow({
+    where: { id: documentId },
+    select: { rawContent: true },
+  });
+
+  if (!doc.rawContent) {
+    throw new Error("Document prompt context not found");
+  }
+
+  const { systemPrompt, userMessage } = JSON.parse(doc.rawContent) as {
+    systemPrompt: string;
+    userMessage: string;
+  };
+
+  // Build section-specific prompt
+  const sectionPrompt = `${userMessage}\n\n---\n\nCRITICAL: Generate ONLY section ${sectionNumber}: "${sectionTitle}". Start directly with "## SECTION: ${sectionTitle}" and produce comprehensive, detailed, world-class content for this section ONLY. Do not include any other sections. Use the maximum available output length for this one section.`;
+
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: MAX_TOKENS_PER_SECTION,
+    system: systemPrompt,
+    messages: [{ role: "user", content: sectionPrompt }],
+  });
+
+  const content =
+    response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
+      .join("\n") || "";
+
+  return {
+    content,
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+  };
+}
+
+/**
+ * Finalize a chunked document generation.
+ * Assembles all section content, parses to structured format, marks as COMPLETED.
+ */
+export async function finalizeChunkedGeneration(
+  documentId: string,
+  userId: string,
+  sectionContents: string[],
+  totalInputTokens: number,
+  totalOutputTokens: number,
+  generationTimeMs: number,
+): Promise<void> {
+  const fullContent = sectionContents.join("\n\n");
+  const sections = parseMarkdownToSections(fullContent);
+
+  await prisma.generatedDocument.update({
+    where: { id: documentId },
+    data: {
+      status: "COMPLETED",
+      content: JSON.parse(JSON.stringify(sections)),
+      rawContent: fullContent,
+      modelUsed: MODEL,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      generationTimeMs,
+    },
+  });
+
+  await logAuditEvent({
+    action: "DOCUMENT_GENERATED",
+    userId,
+    entityType: "GeneratedDocument",
+    entityId: documentId,
+    metadata: {
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      generationTimeMs,
+      sectionCount: sections.length,
+      chunked: true,
+    },
+  });
 }

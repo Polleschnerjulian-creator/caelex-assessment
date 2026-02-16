@@ -236,6 +236,81 @@ export type AssessmentDataBundle =
   | { type: "NIS2_ASSESSMENT"; data: NIS2DataBundle }
   | { type: "AUTHORIZATION_APPLICATION"; data: AuthorizationDataBundle };
 
+// ─── Document Sections (for chunked generation) ───
+
+export const DOCUMENT_SECTIONS: Record<
+  DocumentGenerationType,
+  Array<{ title: string; number: number }>
+> = {
+  DEBRIS_MITIGATION_PLAN: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Mission Overview", number: 2 },
+    { title: "Spacecraft Description", number: 3 },
+    { title: "Orbital Lifetime & 25-Year Rule Analysis", number: 4 },
+    { title: "Collision Avoidance Strategy", number: 5 },
+    { title: "End-of-Life Disposal Plan", number: 6 },
+    { title: "Fragmentation Prevention & Passivation", number: 7 },
+    { title: "Trackability & Identification", number: 8 },
+    { title: "Light & Radio Pollution Mitigation", number: 9 },
+    { title: "Supply Chain & Manufacturing Compliance", number: 10 },
+    { title: "Compliance Verification Matrix", number: 11 },
+    { title: "Gap Analysis & Remediation Roadmap", number: 12 },
+  ],
+  CYBERSECURITY_FRAMEWORK: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Organization Security Profile", number: 2 },
+    { title: "Threat Landscape & Risk Assessment", number: 3 },
+    { title: "Security Architecture", number: 4 },
+    { title: "Implementation Status by Requirement Area", number: 5 },
+    { title: "Maturity Assessment", number: 6 },
+    { title: "Compliance Verification Matrix", number: 7 },
+    { title: "Implementation Roadmap & Recommendations", number: 8 },
+  ],
+  ENVIRONMENTAL_FOOTPRINT: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Mission & Spacecraft Profile", number: 2 },
+    { title: "Launch Phase Environmental Impact", number: 3 },
+    { title: "Orbital Operations Impact", number: 4 },
+    { title: "End-of-Life & Deorbit Impact", number: 5 },
+    { title: "Lifecycle Assessment Summary", number: 6 },
+    { title: "Mitigation Measures & Recommendations", number: 7 },
+    { title: "Compliance Verification Matrix", number: 8 },
+  ],
+  INSURANCE_COMPLIANCE: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Operator & Mission Risk Profile", number: 2 },
+    { title: "Third-Party Liability Analysis", number: 3 },
+    { title: "Insurance Coverage Assessment", number: 4 },
+    { title: "Policy Gap Analysis", number: 5 },
+    { title: "Jurisdictional Requirements", number: 6 },
+    { title: "Compliance Verification Matrix", number: 7 },
+    { title: "Recommendations & Action Plan", number: 8 },
+  ],
+  NIS2_ASSESSMENT: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Entity Classification Analysis", number: 2 },
+    { title: "Applicable Regulatory Framework", number: 3 },
+    { title: "Implementation Status by Measure Category", number: 4 },
+    { title: "Incident Reporting Readiness", number: 5 },
+    { title: "Cross-Regulation Synergies", number: 6 },
+    { title: "Governance & Accountability", number: 7 },
+    { title: "Compliance Verification Matrix", number: 8 },
+    { title: "Risk-Prioritized Remediation Roadmap", number: 9 },
+  ],
+  AUTHORIZATION_APPLICATION: [
+    { title: "Executive Summary", number: 1 },
+    { title: "Applicant & Organization Profile", number: 2 },
+    { title: "Mission Description & Technical Parameters", number: 3 },
+    { title: "Compliance Status Overview", number: 4 },
+    { title: "Safety & Risk Assessment", number: 5 },
+    { title: "Debris Mitigation Summary", number: 6 },
+    { title: "Insurance & Liability Coverage", number: 7 },
+    { title: "Supporting Documentation Index", number: 8 },
+    { title: "Compliance Verification Matrix", number: 9 },
+    { title: "Remediation & Implementation Plan", number: 10 },
+  ],
+};
+
 // ─── Document Type Metadata ───
 
 export const DOCUMENT_TYPE_META: Record<
