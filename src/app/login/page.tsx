@@ -5,7 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { analytics } from "@/lib/analytics";
-import { Shield, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,13 +62,8 @@ export default function LoginPage() {
 
         {/* Content */}
         <div className="relative z-10 max-w-md px-12">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-green-400" />
-            </div>
-            <span className="text-white text-xl font-semibold tracking-tight">
-              Caelex
-            </span>
+          <div className="mb-8">
+            <Logo size={28} className="text-white" />
           </div>
 
           <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
@@ -104,11 +100,8 @@ export default function LoginPage() {
 
         <div className="max-w-[400px] w-full">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-10">
-            <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-green-400" />
-            </div>
-            <span className="text-white text-lg font-semibold">Caelex</span>
+          <div className="lg:hidden mb-10">
+            <Logo size={24} className="text-white" />
           </div>
 
           {/* Header */}
