@@ -375,5 +375,59 @@
     "nis2Classifier": "Clasificador NIS2",
     "copyEmbed": "Copiar código",
     "copied": "¡Copiado!"
+  },
+  "referrals": {
+    "title": "Programa de referidos",
+    "description": "Invite a colegas y gane recompensas cuando se suscriban",
+    "yourLink": "Su enlace de referido",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "¡Enlace copiado!",
+    "inviteByEmail": "Invitar por correo",
+    "sendInvite": "Enviar invitación",
+    "inviteSent": "¡Invitación enviada!",
+    "stats": "Estadísticas de referidos",
+    "totalInvites": "Invitaciones totales",
+    "signedUp": "Registrados",
+    "converted": "Convertidos",
+    "pending": "Pendientes",
+    "history": "Historial de referidos",
+    "status": "Estado",
+    "date": "Fecha",
+    "noReferrals": "Sin referidos aún. ¡Comparta su enlace para comenzar!"
+  },
+  "upgrade": {
+    "title": "Mejorar su plan",
+    "currentPlan": "Plan actual",
+    "recommended": "Recomendado",
+    "upgradeNow": "Mejorar ahora",
+    "maybeLater": "Quizás después",
+    "unlockFeature": "Desbloquear {feature}",
+    "accessModule": "Acceder al módulo {module}",
+    "unlockMore": "Desbloquear más funciones",
+    "whatYouGet": "Lo que obtiene con {plan}:",
+    "teamMembers": "{count} miembros del equipo",
+    "spacecraft": "{count} naves espaciales",
+    "allModules": "Todos los módulos de cumplimiento",
+    "modules": "{count} módulos",
+    "storage": "{amount} de almacenamiento",
+    "support": "Soporte {level}",
+    "apiAccess": "Acceso API",
+    "ssoIntegration": "Integración SSO",
+    "limitReached": "Ha alcanzado su límite de {resource} ({current}/{max}).",
+    "approachingLimit": "Está usando {current} de {max} {resource} ({percent}%).",
+    "upgradeForMore": "Mejorar para más"
+  },
+  "newsletter": {
+    "subscribed": "¡Suscripción al boletín exitosa!",
+    "alreadySubscribed": "Ya está suscrito.",
+    "unsubscribed": "Desuscripción exitosa.",
+    "invalidEmail": "Ingrese una dirección de correo válida.",
+    "error": "Algo salió mal. Inténtelo de nuevo."
+  },
+  "demo": {
+    "submitted": "¡Solicitud de demo enviada! Nos pondremos en contacto pronto.",
+    "error": "Error al enviar la solicitud. Inténtelo de nuevo.",
+    "formTitle": "Solicitar una demo",
+    "formDescription": "Vea cómo Caelex puede ayudar a su organización con el cumplimiento"
   }
 }

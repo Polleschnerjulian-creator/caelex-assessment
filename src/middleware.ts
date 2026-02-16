@@ -192,6 +192,8 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/astra/", // ASTRA has session auth + rate limiting, CSRF exempt
   "/api/public/", // Public API endpoints use rate limiting, not CSRF
   "/api/widget/", // Widget config API uses session auth
+  "/api/newsletter/", // Public newsletter subscribe/unsubscribe
+  "/api/demo/", // Public demo request form
 ];
 
 function validateOrigin(req: NextRequest): boolean {

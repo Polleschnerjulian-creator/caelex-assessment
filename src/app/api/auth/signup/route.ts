@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
 import { serverAnalytics } from "@/lib/analytics";
 import { generateUniqueSlug } from "@/lib/services/organization-service";
+import { trackReferralSignup } from "@/lib/services/referral-service";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { RegisterSchema, formatZodErrors } from "@/lib/validations";
@@ -129,6 +130,17 @@ export async function POST(request: Request) {
 
       return { user, org };
     });
+
+    // Track referral if ref code present
+    const url = new URL(request.url);
+    const refCode = url.searchParams.get("ref");
+    if (refCode) {
+      try {
+        await trackReferralSignup(refCode, result.user.id);
+      } catch {
+        // Non-critical: don't fail signup if referral tracking fails
+      }
+    }
 
     // Track signup event
     await trackSignup({

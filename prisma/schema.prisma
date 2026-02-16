@@ -62,6 +62,14 @@ model User {
   submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
   consents               UserConsent[]           // GDPR consent records
   breachReports          BreachReport[]          // GDPR Art. 33/34 breach reports
+  referralsGiven         Referral[]              @relation("referrals_given")
+  referralsReceived      Referral[]              @relation("referrals_received")
+
+  // Re-engagement & Onboarding Email Tracking
+  lastReengagementStage  Int                     @default(0)
+  lastReengagementAt     DateTime?
+  onboardingEmailStage   Int                     @default(0)
+  onboardingEmailAt      DateTime?
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -2386,6 +2394,7 @@ model Organization {
   submissionPackages SubmissionPackage[]    // NCA Portal: document packages
   breachReports      BreachReport[]        // GDPR Art. 33/34 breach reports
   widgetConfigs      WidgetConfig[]        // Embeddable widget configurations
+  churnInterventions ChurnIntervention[]   // Churn intervention tracking
 
   @@index([slug])
 }
@@ -3968,4 +3977,110 @@ model BreachReport {
   @@index([organizationId])
   @@index([reportedById])
   @@index([discoveredAt])
+}
+
+// ============================================
+// CUSTOMER RETENTION & ACQUISITION
+// ============================================
+
+// ─── Referral System ───
+
+enum ReferralStatus {
+  PENDING
+  SIGNED_UP
+  CONVERTED
+  EXPIRED
+}
+
+model Referral {
+  id              String         @id @default(cuid())
+  referrerUserId  String
+  referrer        User           @relation("referrals_given", fields: [referrerUserId], references: [id], onDelete: Cascade)
+  referredEmail   String
+  referredUserId  String?
+  referredUser    User?          @relation("referrals_received", fields: [referredUserId], references: [id], onDelete: SetNull)
+  code            String         @unique
+  status          ReferralStatus @default(PENDING)
+  rewardGranted   Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  convertedAt     DateTime?
+
+  @@index([referrerUserId])
+  @@index([referredEmail])
+  @@index([code])
+  @@index([status])
+}
+
+// ─── Churn Intervention ───
+
+enum InterventionStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CHURNED
+}
+
+model ChurnIntervention {
+  id              String             @id @default(cuid())
+  organizationId  String
+  organization    Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  triggerReason   String
+  healthScore     Int
+  previousScore   Int?
+  status          InterventionStatus @default(PENDING)
+  actionTaken     String?            @db.Text
+  resolvedAt      DateTime?
+  createdAt       DateTime           @default(now())
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─── Newsletter Subscriptions ───
+
+enum NewsletterStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model NewsletterSubscription {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  status          NewsletterStatus @default(ACTIVE)
+  source          String           @default("footer")
+  subscribedAt    DateTime         @default(now())
+  unsubscribedAt  DateTime?
+
+  @@index([status])
+  @@index([email])
+}
+
+// ─── Demo Requests ───
+
+enum DemoStatus {
+  NEW
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  NO_RESPONSE
+}
+
+model DemoRequest {
+  id              String     @id @default(cuid())
+  name            String
+  email           String
+  company         String?
+  role            String?
+  message         String?    @db.Text
+  source          String     @default("website")
+  status          DemoStatus @default(NEW)
+  followUpAt      DateTime?
+  respondedAt     DateTime?
+  notes           String?    @db.Text
+  createdAt       DateTime   @default(now())
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
 }

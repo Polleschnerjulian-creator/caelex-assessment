@@ -69,33 +69,35 @@ export default function DemoPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || submitting) return;
 
     setSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Store in localStorage for now (you can replace with actual API)
     try {
-      const demos = JSON.parse(
-        localStorage.getItem("caelex-demo-requests") || "[]",
-      );
-      demos.push({
-        email,
-        name,
-        company,
-        timestamp: new Date().toISOString(),
+      const res = await fetch("/api/demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, company }),
       });
-      localStorage.setItem("caelex-demo-requests", JSON.stringify(demos));
-    } catch {
-      // localStorage may be unavailable
-    }
 
-    setSubmitted(true);
-    setSubmitting(false);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Something went wrong. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -257,6 +259,12 @@ export default function DemoPage() {
                             )}
                           </button>
                         </form>
+
+                        {error && (
+                          <p className="text-[12px] text-red-400 text-center mt-3">
+                            {error}
+                          </p>
+                        )}
 
                         <p className="text-[11px] text-white/30 text-center mt-4">
                           By submitting, you agree to our{" "}

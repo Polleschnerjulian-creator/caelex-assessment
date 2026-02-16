@@ -375,5 +375,59 @@
     "nis2Classifier": "NIS2-Klassifikator",
     "copyEmbed": "Einbettungscode kopieren",
     "copied": "Kopiert!"
+  },
+  "referrals": {
+    "title": "Empfehlungsprogramm",
+    "description": "Laden Sie Kollegen ein und erhalten Sie Belohnungen bei Abonnement",
+    "yourLink": "Ihr Empfehlungslink",
+    "copyLink": "Link kopieren",
+    "linkCopied": "Link kopiert!",
+    "inviteByEmail": "Per E-Mail einladen",
+    "sendInvite": "Einladung senden",
+    "inviteSent": "Einladung gesendet!",
+    "stats": "Empfehlungsstatistik",
+    "totalInvites": "Einladungen gesamt",
+    "signedUp": "Registriert",
+    "converted": "Konvertiert",
+    "pending": "Ausstehend",
+    "history": "Empfehlungsverlauf",
+    "status": "Status",
+    "date": "Datum",
+    "noReferrals": "Noch keine Empfehlungen. Teilen Sie Ihren Link!"
+  },
+  "upgrade": {
+    "title": "Plan upgraden",
+    "currentPlan": "Aktueller Plan",
+    "recommended": "Empfohlen",
+    "upgradeNow": "Jetzt upgraden",
+    "maybeLater": "Vielleicht später",
+    "unlockFeature": "{feature} freischalten",
+    "accessModule": "Zugang zum {module}-Modul",
+    "unlockMore": "Weitere Funktionen freischalten",
+    "whatYouGet": "Das erhalten Sie mit {plan}:",
+    "teamMembers": "{count} Teammitglieder",
+    "spacecraft": "{count} Raumfahrzeuge",
+    "allModules": "Alle Compliance-Module",
+    "modules": "{count} Module",
+    "storage": "{amount} Speicher",
+    "support": "{level} Support",
+    "apiAccess": "API-Zugang",
+    "ssoIntegration": "SSO-Integration",
+    "limitReached": "Sie haben Ihr {resource}-Limit erreicht ({current}/{max}).",
+    "approachingLimit": "Sie nutzen {current} von {max} {resource} ({percent}%).",
+    "upgradeForMore": "Für mehr upgraden"
+  },
+  "newsletter": {
+    "subscribed": "Erfolgreich für den Newsletter angemeldet!",
+    "alreadySubscribed": "Sie sind bereits angemeldet.",
+    "unsubscribed": "Erfolgreich abgemeldet.",
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "demo": {
+    "submitted": "Demo-Anfrage eingereicht! Wir melden uns in Kürze.",
+    "error": "Demo-Anfrage konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "formTitle": "Demo anfordern",
+    "formDescription": "Erfahren Sie, wie Caelex Ihrer Organisation bei der Compliance hilft"
   }
 }

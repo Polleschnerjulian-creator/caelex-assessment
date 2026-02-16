@@ -375,5 +375,59 @@
     "nis2Classifier": "NIS2 Classifier",
     "copyEmbed": "Copy embed code",
     "copied": "Copied!"
+  },
+  "referrals": {
+    "title": "Referral Program",
+    "description": "Invite colleagues and earn rewards when they subscribe",
+    "yourLink": "Your Referral Link",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!",
+    "inviteByEmail": "Invite by Email",
+    "sendInvite": "Send Invite",
+    "inviteSent": "Invitation sent!",
+    "stats": "Referral Stats",
+    "totalInvites": "Total Invites",
+    "signedUp": "Signed Up",
+    "converted": "Converted",
+    "pending": "Pending",
+    "history": "Referral History",
+    "status": "Status",
+    "date": "Date",
+    "noReferrals": "No referrals yet. Share your link to get started!"
+  },
+  "upgrade": {
+    "title": "Upgrade Your Plan",
+    "currentPlan": "Current Plan",
+    "recommended": "Recommended",
+    "upgradeNow": "Upgrade Now",
+    "maybeLater": "Maybe Later",
+    "unlockFeature": "Unlock {feature}",
+    "accessModule": "Access the {module} module",
+    "unlockMore": "Unlock more features",
+    "whatYouGet": "What you get with {plan}:",
+    "teamMembers": "{count} team members",
+    "spacecraft": "{count} spacecraft",
+    "allModules": "All compliance modules",
+    "modules": "{count} modules",
+    "storage": "{amount} storage",
+    "support": "{level} support",
+    "apiAccess": "API access",
+    "ssoIntegration": "SSO integration",
+    "limitReached": "You've reached your {resource} limit ({current}/{max}).",
+    "approachingLimit": "You're using {current} of {max} {resource} ({percent}%).",
+    "upgradeForMore": "Upgrade for more"
+  },
+  "newsletter": {
+    "subscribed": "Successfully subscribed to newsletter!",
+    "alreadySubscribed": "You're already subscribed.",
+    "unsubscribed": "Successfully unsubscribed.",
+    "invalidEmail": "Please enter a valid email address.",
+    "error": "Something went wrong. Please try again."
+  },
+  "demo": {
+    "submitted": "Demo request submitted! We'll be in touch soon.",
+    "error": "Failed to submit demo request. Please try again.",
+    "formTitle": "Request a Demo",
+    "formDescription": "See how Caelex can help your organization achieve compliance"
   }
 }

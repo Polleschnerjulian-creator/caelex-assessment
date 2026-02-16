@@ -20,16 +20,16 @@ import type {
 import { prisma } from "@/lib/prisma";
 import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 
-// Configuration
+// Configuration (lazy to avoid build-time errors when env vars aren't set)
 const rpName = "Caelex";
-const rpID =
-  process.env.WEBAUTHN_RP_ID ||
-  (process.env.NODE_ENV === "production"
-    ? (() => {
-        throw new Error("WEBAUTHN_RP_ID is required in production");
-      })()
-    : "localhost");
-const origin = process.env.WEBAUTHN_ORIGIN || `https://${rpID}`;
+function getRpID(): string {
+  if (process.env.WEBAUTHN_RP_ID) return process.env.WEBAUTHN_RP_ID;
+  if (process.env.NODE_ENV !== "production") return "localhost";
+  throw new Error("WEBAUTHN_RP_ID is required in production");
+}
+function getOrigin(): string {
+  return process.env.WEBAUTHN_ORIGIN || `https://${getRpID()}`;
+}
 
 // Challenge tokens are HMAC-signed and stateless — no server-side storage needed.
 // This works correctly across serverless instances (Vercel, etc.).
@@ -58,7 +58,7 @@ export async function generatePasskeyRegistrationOptions(
 
   const options = await generateRegistrationOptions({
     rpName,
-    rpID,
+    rpID: getRpID(),
     userID: Buffer.from(userId),
     userName: userEmail,
     userDisplayName: userName || userEmail,
@@ -109,8 +109,8 @@ export async function verifyPasskeyRegistration(
     verification = await verifyRegistrationResponse({
       response,
       expectedChallenge,
-      expectedOrigin: origin,
-      expectedRPID: rpID,
+      expectedOrigin: getOrigin(),
+      expectedRPID: getRpID(),
     });
   } catch (error) {
     console.error(
@@ -192,7 +192,7 @@ export async function generatePasskeyAuthenticationOptions(
   }
 
   const options = await generateAuthenticationOptions({
-    rpID,
+    rpID: getRpID(),
     userVerification: "preferred",
     allowCredentials:
       allowCredentials.length > 0 ? allowCredentials : undefined,
@@ -253,8 +253,8 @@ export async function verifyPasskeyAuthentication(
     verification = await verifyAuthenticationResponse({
       response,
       expectedChallenge: tokenData.challenge,
-      expectedOrigin: origin,
-      expectedRPID: rpID,
+      expectedOrigin: getOrigin(),
+      expectedRPID: getRpID(),
       credential: {
         id: credential.credentialId,
         publicKey: credentialPublicKey,

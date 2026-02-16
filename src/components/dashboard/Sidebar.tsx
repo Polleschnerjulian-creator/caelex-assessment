@@ -35,12 +35,18 @@ import {
   FileSearch,
   Orbit,
   Code2,
+  Gift,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useAstra } from "@/components/astra/AstraProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { getRequiredPlan, PRICING_TIERS } from "@/lib/stripe/pricing";
+import {
+  getRequiredPlan,
+  PRICING_TIERS,
+  type PlanType,
+} from "@/lib/stripe/pricing";
+import UpgradePrompt from "@/components/dashboard/UpgradePrompt";
 
 interface NavItemProps {
   href: string;
@@ -289,9 +295,11 @@ interface SidebarProps {
 
 export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { hasModuleAccess, isLoading } = useOrganization();
+  const { hasModuleAccess, isLoading, organization } = useOrganization();
   const { openGeneral } = useAstra();
   const { t } = useLanguage();
+  const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
+  const [upgradeModule, setUpgradeModule] = useState<string | undefined>();
 
   // Determine which group has the active route
   const getActiveGroup = (): string | null => {
@@ -725,6 +733,15 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               ? t("sidebar.widget")
               : "Widget"}
           </NavItem>
+          <NavItem
+            href="/dashboard/settings/referrals"
+            icon={<Gift size={16} strokeWidth={1.5} />}
+            onClick={handleNavClick}
+          >
+            {t("sidebar.referrals") !== "sidebar.referrals"
+              ? t("sidebar.referrals")
+              : "Referrals"}
+          </NavItem>
 
           <button
             onClick={handleLogout}
@@ -774,6 +791,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePrompt
+        isOpen={upgradePromptOpen}
+        onClose={() => setUpgradePromptOpen(false)}
+        moduleName={upgradeModule}
+        currentPlan={(organization?.plan || "FREE") as PlanType}
+      />
     </>
   );
 }

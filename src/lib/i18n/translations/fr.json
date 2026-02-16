@@ -375,5 +375,59 @@
     "nis2Classifier": "Classificateur NIS2",
     "copyEmbed": "Copier le code",
     "copied": "Copié !"
+  },
+  "referrals": {
+    "title": "Programme de parrainage",
+    "description": "Invitez des collègues et gagnez des récompenses à leur abonnement",
+    "yourLink": "Votre lien de parrainage",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié !",
+    "inviteByEmail": "Inviter par e-mail",
+    "sendInvite": "Envoyer l'invitation",
+    "inviteSent": "Invitation envoyée !",
+    "stats": "Statistiques de parrainage",
+    "totalInvites": "Invitations totales",
+    "signedUp": "Inscrits",
+    "converted": "Convertis",
+    "pending": "En attente",
+    "history": "Historique de parrainage",
+    "status": "Statut",
+    "date": "Date",
+    "noReferrals": "Aucun parrainage. Partagez votre lien pour commencer !"
+  },
+  "upgrade": {
+    "title": "Mettre à niveau votre plan",
+    "currentPlan": "Plan actuel",
+    "recommended": "Recommandé",
+    "upgradeNow": "Mettre à niveau",
+    "maybeLater": "Peut-être plus tard",
+    "unlockFeature": "Débloquer {feature}",
+    "accessModule": "Accéder au module {module}",
+    "unlockMore": "Débloquer plus de fonctionnalités",
+    "whatYouGet": "Ce que vous obtenez avec {plan} :",
+    "teamMembers": "{count} membres d'équipe",
+    "spacecraft": "{count} engins spatiaux",
+    "allModules": "Tous les modules de conformité",
+    "modules": "{count} modules",
+    "storage": "{amount} de stockage",
+    "support": "Support {level}",
+    "apiAccess": "Accès API",
+    "ssoIntegration": "Intégration SSO",
+    "limitReached": "Vous avez atteint votre limite de {resource} ({current}/{max}).",
+    "approachingLimit": "Vous utilisez {current} sur {max} {resource} ({percent}%).",
+    "upgradeForMore": "Mettre à niveau pour plus"
+  },
+  "newsletter": {
+    "subscribed": "Inscription à la newsletter réussie !",
+    "alreadySubscribed": "Vous êtes déjà inscrit.",
+    "unsubscribed": "Désinscription réussie.",
+    "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
+    "error": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "demo": {
+    "submitted": "Demande de démo envoyée ! Nous vous contacterons bientôt.",
+    "error": "Échec de l'envoi de la demande. Veuillez réessayer.",
+    "formTitle": "Demander une démo",
+    "formDescription": "Découvrez comment Caelex peut aider votre organisation"
   }
 }

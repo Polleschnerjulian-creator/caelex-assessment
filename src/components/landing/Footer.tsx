@@ -80,7 +80,7 @@ export default function Footer() {
   const [subscribing, setSubscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || subscribing) return;
 
@@ -92,26 +92,26 @@ export default function Footer() {
     setError(null);
     setSubscribing(true);
 
-    setTimeout(() => {
-      try {
-        const signups = JSON.parse(
-          localStorage.getItem("caelex-newsletter-signups") || "[]",
-        );
-        signups.push({
-          email,
-          consentGiven: true,
-          consentTimestamp: new Date().toISOString(),
-        });
-        localStorage.setItem(
-          "caelex-newsletter-signups",
-          JSON.stringify(signups),
-        );
-      } catch {
-        // localStorage may be unavailable
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "footer" }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Something went wrong. Please try again.");
+        setSubscribing(false);
+        return;
       }
+
       setSubscribed(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
       setSubscribing(false);
-    }, 800);
+    }
   };
 
   return (
