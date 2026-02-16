@@ -82,16 +82,14 @@ ${requirementSections}
 
 ## Required Sections
 
-Generate the following sections in order:
+Generate the following sections in order. Focus on substantive analysis using the provided data — do NOT create blank template fields or list fields as "not provided". Where data is available, provide detailed regulatory analysis. Where data is missing, provide regulatory context on what's required and why, without listing empty fields.
 
-1. **Executive Summary** — Overview of the operator, mission, and debris mitigation approach
-2. **Mission Overview** — Orbit parameters, mission objectives, operational timeline
-3. **Spacecraft Description** — Technical specifications, propulsion, sensors, materials
-4. **Collision Avoidance Strategy** — CA procedures, conjunction assessment, maneuver protocols (Art. 33)
-5. **End-of-Life Disposal Plan** — Deorbit method, timeline, success probability analysis (Art. 34)
-6. **Fragmentation Prevention** — Energy source passivation, stored energy management (Art. 35)
-7. **Passivation Measures** — Battery, propellant, and pressurized system passivation procedures
-8. **25-Year Rule Analysis** — Post-mission orbital lifetime calculation and compliance (IADC guideline)
-9. **Compliance Verification Matrix** — Table mapping each requirement to compliance status with evidence
-10. **Certification Statement** — Formal statement of plan completeness and accuracy`;
+1. **Executive Summary** — Overview of the operator, mission, debris mitigation approach, and overall compliance posture. Highlight key strengths and gaps based on the requirement assessment data above.
+2. **Mission Overview** — Orbit parameters, mission objectives, constellation design, operational timeline. Analyze orbital environment risks specific to this altitude and orbit type.
+3. **Spacecraft Description** — Focus on the technical capabilities relevant to debris mitigation: propulsion system analysis, maneuverability assessment, passivation capabilities. Only describe what is known — do not list every possible spacecraft parameter.
+4. **Collision Avoidance Strategy** — Based on the operator's CA service provider and maneuverability data, analyze the collision avoidance approach against Art. 33 requirements. Include conjunction assessment procedures and maneuver decision criteria.
+5. **End-of-Life Disposal Plan** — Analyze the deorbit strategy against Art. 34 requirements. Calculate or discuss post-mission orbital lifetime based on the altitude and deorbit timeline. Assess compliance with the 5-year (EU Space Act) and 25-year (IADC) rules.
+6. **Fragmentation Prevention & Passivation** — Analyze passivation capabilities against Art. 35-36. Discuss energy source management based on the propulsion data provided.
+7. **Compliance Verification Matrix** — Table mapping each assessed requirement to its compliance status, with the detailed sub-question responses incorporated as evidence. Only include requirements that have been assessed.
+8. **Gap Analysis & Recommendations** — Based on non-compliant and partially compliant requirements, provide a prioritized action plan with regulatory deadlines.`;
 }

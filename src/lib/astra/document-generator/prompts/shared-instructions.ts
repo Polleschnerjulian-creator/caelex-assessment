@@ -27,9 +27,17 @@ Use these markers to structure the document:
 - **Lists:** Use \`- item\` for unordered or \`1. item\` for ordered lists
 - **Dividers:** Use \`---\` to separate logical blocks within a section
 
+## Data Handling Rules
+
+- Focus on ANALYSIS and REGULATORY INTERPRETATION of the provided data — do not create blank template fields
+- Where data is provided, use it to generate substantive compliance analysis with specific article references
+- Where data is NOT provided, do NOT list it as "Data not yet provided". Instead, either skip that field entirely or provide a brief regulatory note on why it matters (e.g., "Art. 32(1) requires trackability features — operator should document radar cross-section and reflector specifications")
+- Never fabricate specific numbers, dates, or measurements. You MAY make reasonable inferences based on the provided data (e.g., if orbit is 720 km LEO, you can discuss the 25-year rule implications)
+- The document should read as a professional compliance analysis, NOT as a form with empty fields
+- Maximize the ratio of substantive content to placeholder text — aim for at least 80% real analysis
+
 ## Important Rules
 
-- Never invent data. If assessment data is missing for a field, state "Data not yet provided — to be completed by operator"
 - Always reference the specific articles that mandate each requirement
 - Include compliance status where requirement data is available
 - Generate content in the requested language, but keep regulation article references in their original form (e.g., "Art. 67 EU Space Act" remains in English/original even in German documents)

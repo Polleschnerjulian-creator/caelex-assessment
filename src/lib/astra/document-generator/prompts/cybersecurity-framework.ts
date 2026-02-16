@@ -68,15 +68,13 @@ ${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.req
 
 ## Required Sections
 
-Generate the following sections in order:
+Generate the following sections in order. Focus on substantive analysis using the provided data — do NOT create blank template fields. Where sub-question responses are available, use them as evidence for compliance analysis.
 
-1. **Executive Summary** — Overview of the organization's cybersecurity posture and framework objectives
-2. **Organization Security Profile** — Current security capabilities, team, certifications, maturity level
-3. **Security Architecture** — Space segment, ground segment, and link security architecture overview
-4. **Risk Assessment** — Threat landscape for space operations, risk categories, impact analysis
-5. **Implementation Plan** — 8-phase roadmap: (1) Governance, (2) Asset Management, (3) Access Control, (4) Network Security, (5) Data Protection, (6) Incident Response, (7) Supply Chain, (8) Monitoring & Audit
-6. **Gap Analysis** — Current vs. target state for each requirement area, incorporating detailed sub-question responses where available
-7. **Maturity Assessment** — Current maturity level per NIST CSF domain with target levels
-8. **Compliance Matrix** — Table mapping requirements to implementation status, responsible parties, and timelines
-9. **Recommendations** — Prioritized improvement actions with estimated effort and impact`;
+1. **Executive Summary** — Overview of the organization's cybersecurity posture, maturity level, key strengths, and critical gaps. Include compliance score context.
+2. **Organization Security Profile** — Analyze current security capabilities based on the provided data: team size, certifications, existing plans. Assess readiness against EU Space Act Art. 27-30.
+3. **Risk Assessment** — Based on the space segment complexity, data sensitivity, and satellite count, analyze the threat landscape and risk categories specific to this operator.
+4. **Implementation Status & Gap Analysis** — For each assessed requirement, provide compliance analysis incorporating the detailed sub-question responses as evidence. Group by compliance status (compliant, partial, non-compliant). Focus on what IS and ISN'T in place.
+5. **Maturity Assessment** — Based on the assessment responses, evaluate maturity across key domains. Identify areas closest to compliance and furthest from target.
+6. **Compliance Matrix** — Table mapping assessed requirements to implementation status with evidence from sub-question responses. Only include requirements that have been assessed.
+7. **Recommendations** — Prioritized improvement actions based on gap analysis. Include effort estimates and regulatory deadlines. Focus on highest-impact items first.`;
 }

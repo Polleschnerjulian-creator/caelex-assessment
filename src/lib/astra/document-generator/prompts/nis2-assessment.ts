@@ -67,14 +67,13 @@ ${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.req
 
 ## Required Sections
 
-Generate the following sections in order:
+Generate the following sections in order. Focus on substantive analysis using the provided data — do NOT create blank template fields. Where sub-question responses are available, use them as evidence for compliance analysis.
 
-1. **Executive Summary** — Overview of NIS2 applicability, classification, and compliance status
-2. **Entity Classification** — Detailed analysis of essential/important/out-of-scope classification per Art. 3, including sector and size criteria
-3. **Applicable Requirements** — Full list of NIS2 requirements applicable to this entity type, referencing Art. 21(2)(a)-(j)
-4. **Implementation Status** — Current implementation status per requirement area with evidence references, incorporating detailed sub-question responses where available
-5. **Gap Analysis** — Detailed gap analysis identifying non-compliant and partially compliant areas with remediation priorities
-6. **Incident Reporting Readiness** — Assessment of Art. 23 incident reporting capability: 24h early warning, 72h notification, 1-month final report
-7. **Cross-Regulation Overlap** — Analysis of overlapping requirements between NIS2 and EU Space Act cybersecurity provisions, highlighting efficiency opportunities
-8. **Recommendations** — Prioritized implementation roadmap with effort estimates and compliance deadlines`;
+1. **Executive Summary** — Overview of NIS2 applicability, entity classification, compliance score, and key findings. Highlight critical gaps and strengths.
+2. **Entity Classification** — Detailed analysis of essential/important/out-of-scope classification per Art. 3, using the provided sector, size, and classification data. Explain the implications.
+3. **Implementation Status & Gap Analysis** — For each assessed requirement area (Art. 21(2)(a)-(j)), provide compliance analysis incorporating the detailed sub-question responses as evidence. Group findings by compliance status. Focus on what IS and ISN'T in place — do not list requirements that haven't been assessed.
+4. **Incident Reporting Readiness** — Based on the reporting-related requirement responses, assess Art. 23 capability: 24h early warning, 72h notification, 1-month final report. Identify specific gaps.
+5. **Cross-Regulation Overlap** — Analyze the ${a.euSpaceActOverlapCount || 0} overlapping requirements between NIS2 and EU Space Act, highlighting where single implementation efforts can satisfy both frameworks.
+6. **Compliance Matrix** — Table mapping assessed requirements to status with evidence from sub-question responses. Include article references and severity levels.
+7. **Recommendations** — Prioritized implementation roadmap based on gap analysis. Start with critical severity items, then major, then minor. Include effort estimates and deadlines.`;
 }
