@@ -1,4 +1,25 @@
 import Link from "next/link";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...genMeta({
+    title: "Datenschutzerklärung",
+    description:
+      "Datenschutzerklärung von Caelex. Erfahren Sie, wie wir Ihre personenbezogenen Daten verarbeiten, schützen und welche Rechte Sie gemäß DSGVO haben.",
+    path: "/legal/privacy",
+    keywords: [
+      "Datenschutz",
+      "DSGVO",
+      "Caelex privacy",
+      "space compliance Datenschutz",
+    ],
+  }),
+  alternates: {
+    canonical: "https://caelex.eu/legal/privacy",
+    languages: { de: "/legal/privacy", en: "/legal/privacy-en" },
+  },
+};
 
 export default function PrivacyPage() {
   return (

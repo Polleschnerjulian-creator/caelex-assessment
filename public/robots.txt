@@ -7,13 +7,13 @@ Allow: /assessment
 Allow: /resources
 Allow: /about
 Allow: /pricing
+Allow: /legal/
 Disallow: /api/
 Disallow: /dashboard/
 Disallow: /caelex-eu-space-act-engine.json
 Disallow: /login
 Disallow: /signup
-Disallow: /legal/
-Crawl-delay: 10
+Crawl-delay: 2
 
 # Block AI training crawlers
 User-agent: GPTBot
@@ -38,4 +38,4 @@ User-agent: ClaudeBot
 Disallow: /
 
 # Sitemap
-# Sitemap: https://www.caelex.eu/sitemap.xml
+Sitemap: https://www.caelex.eu/sitemap.xml

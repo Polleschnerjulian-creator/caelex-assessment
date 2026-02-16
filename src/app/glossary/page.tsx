@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600;
+
 const categoryColors: Record<string, string> = {
   regulation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   operator: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",

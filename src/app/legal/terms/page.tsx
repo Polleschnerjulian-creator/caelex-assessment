@@ -1,4 +1,25 @@
 import Link from "next/link";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...genMeta({
+    title: "Allgemeine Geschäftsbedingungen",
+    description:
+      "AGB von Caelex. Nutzungsbedingungen für die Space-Compliance-Plattform, einschließlich Vertragsschluss, Leistungsbeschreibung, Haftung und Widerrufsrecht.",
+    path: "/legal/terms",
+    keywords: [
+      "AGB",
+      "Nutzungsbedingungen",
+      "Caelex terms",
+      "space compliance AGB",
+    ],
+  }),
+  alternates: {
+    canonical: "https://caelex.eu/legal/terms",
+    languages: { de: "/legal/terms", en: "/legal/terms-en" },
+  },
+};
 
 export default function TermsPage() {
   return (

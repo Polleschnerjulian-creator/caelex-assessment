@@ -195,7 +195,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Legal pages
+  // Legal pages (with DE + EN variants where applicable)
   const legalPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/legal/impressum`,
@@ -210,7 +210,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
     {
+      url: `${baseUrl}/legal/privacy-en`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
       url: `${baseUrl}/legal/terms`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/legal/terms-en`,
       lastModified: now,
       changeFrequency: "yearly" as const,
       priority: 0.3,
@@ -220,6 +232,62 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "yearly" as const,
       priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/legal/cookies-en`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+  ];
+
+  // Assessment wizard pages
+  const assessmentPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/assessment/eu-space-act`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/assessment/nis2`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/assessment/space-law`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
+  ];
+
+  // Additional standalone pages
+  const additionalPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/login`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.2,
+    },
+    {
+      url: `${baseUrl}/signup`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/careers`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/docs/api`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     },
   ];
 
@@ -233,5 +301,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...comparePages,
     ...resourcePages,
     ...legalPages,
+    ...assessmentPages,
+    ...additionalPages,
   ];
 }

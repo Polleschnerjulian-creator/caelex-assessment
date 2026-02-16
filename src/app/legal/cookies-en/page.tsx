@@ -1,4 +1,25 @@
 import Link from "next/link";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...genMeta({
+    title: "Cookie Policy",
+    description:
+      "Caelex Cookie Policy. Learn what cookies we use, why we need them, and how you can manage your cookie preferences on our space compliance platform.",
+    path: "/legal/cookies-en",
+    keywords: [
+      "cookie policy",
+      "Caelex cookies",
+      "space compliance cookies",
+      "cookie settings",
+    ],
+  }),
+  alternates: {
+    canonical: "https://caelex.eu/legal/cookies-en",
+    languages: { de: "/legal/cookies", en: "/legal/cookies-en" },
+  },
+};
 
 export default function CookiePolicyEnPage() {
   return (

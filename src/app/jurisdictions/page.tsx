@@ -6,6 +6,8 @@ import { pageMetadata, jurisdictionMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata.jurisdictions;
 
+export const revalidate = 3600;
+
 // Country flag emojis
 const countryFlags: Record<string, string> = {
   germany: "DE",

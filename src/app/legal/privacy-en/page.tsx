@@ -1,4 +1,25 @@
 import Link from "next/link";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...genMeta({
+    title: "Privacy Policy",
+    description:
+      "Caelex Privacy Policy. Learn how we process and protect your personal data, your GDPR rights, and our data handling practices for space compliance services.",
+    path: "/legal/privacy-en",
+    keywords: [
+      "privacy policy",
+      "GDPR",
+      "Caelex data protection",
+      "space compliance privacy",
+    ],
+  }),
+  alternates: {
+    canonical: "https://caelex.eu/legal/privacy-en",
+    languages: { de: "/legal/privacy", en: "/legal/privacy-en" },
+  },
+};
 
 export default function PrivacyEnPage() {
   return (

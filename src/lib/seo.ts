@@ -101,7 +101,6 @@ export function generateMetadata({
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
-      apple: "/apple-touch-icon.png",
     },
     manifest: "/site.webmanifest",
     other: {

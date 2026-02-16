@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600;
+
 function FAQPageJsonLd({ faqs }: { faqs: FAQ[] }) {
   const jsonLd = {
     "@context": "https://schema.org",

@@ -1,32 +1,5 @@
 import { siteConfig } from "@/lib/seo";
-
-// Blog posts data - in production, this would come from a CMS or database
-const blogPosts = [
-  {
-    slug: "eu-space-act-explained",
-    title: "What is the EU Space Act? Everything You Need to Know",
-    description:
-      "A comprehensive guide to the EU Space Act, covering authorization requirements, compliance timelines, and what it means for space operators.",
-    publishedAt: "2025-01-15T10:00:00Z",
-    category: "EU Space Act",
-  },
-  {
-    slug: "nis2-space-operators",
-    title: "How NIS2 Affects Space Operators",
-    description:
-      "Understanding NIS2 cybersecurity requirements for space operators, including essential entity classification and compliance obligations.",
-    publishedAt: "2025-01-14T10:00:00Z",
-    category: "NIS2",
-  },
-  {
-    slug: "space-debris-iadc-vs-iso",
-    title: "IADC Guidelines vs ISO 24113: Space Debris Standards Compared",
-    description:
-      "A detailed comparison of IADC Space Debris Mitigation Guidelines and ISO 24113 for satellite operators.",
-    publishedAt: "2025-01-13T10:00:00Z",
-    category: "Debris Mitigation",
-  },
-];
+import { getAllPosts } from "@/content/blog/posts";
 
 function escapeXml(text: string): string {
   return text
@@ -39,8 +12,9 @@ function escapeXml(text: string): string {
 
 function generateRssFeed(): string {
   const baseUrl = siteConfig.url;
+  const posts = getAllPosts();
 
-  const items = blogPosts
+  const items = posts
     .map(
       (post) => `
     <item>
@@ -50,7 +24,7 @@ function generateRssFeed(): string {
       <description>${escapeXml(post.description)}</description>
       <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>
       <category>${escapeXml(post.category)}</category>
-      <author>${siteConfig.email} (${siteConfig.name})</author>
+      <author>${siteConfig.email} (${post.author})</author>
     </item>`,
     )
     .join("");

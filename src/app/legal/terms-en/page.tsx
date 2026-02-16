@@ -1,4 +1,25 @@
 import Link from "next/link";
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...genMeta({
+    title: "Terms of Service",
+    description:
+      "Caelex Terms of Service. Usage terms for the space compliance platform, including contract formation, service description, liability, and cancellation rights.",
+    path: "/legal/terms-en",
+    keywords: [
+      "terms of service",
+      "Caelex terms",
+      "space compliance terms",
+      "SaaS terms",
+    ],
+  }),
+  alternates: {
+    canonical: "https://caelex.eu/legal/terms-en",
+    languages: { de: "/legal/terms", en: "/legal/terms-en" },
+  },
+};
 
 export default function TermsEnPage() {
   return (

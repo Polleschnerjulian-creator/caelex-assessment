@@ -11,6 +11,8 @@ import {
 
 export const metadata: Metadata = pageMetadata.blog;
 
+export const revalidate = 3600;
+
 export default function BlogPage() {
   const posts = getAllPosts();
   const featuredPosts = getFeaturedPosts();
@@ -65,30 +67,31 @@ export default function BlogPage() {
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {featuredPosts.slice(0, 2).map((post) => (
-                  <Link
-                    key={post.slug}
-                    href={`/blog/${post.slug}`}
-                    className="group p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
-                  >
-                    <div className="flex items-center gap-3 text-[12px] text-emerald-400/70 mb-4">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20">
-                        {post.category}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {post.readingTime} min read
-                      </span>
-                    </div>
-                    <h3 className="text-[20px] font-medium text-white mb-3 group-hover:text-emerald-400 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-[14px] text-white/50 leading-relaxed mb-4 line-clamp-2">
-                      {post.description}
-                    </p>
-                    <div className="flex items-center gap-1 text-[13px] text-emerald-400">
-                      Read article <ArrowRight size={14} />
-                    </div>
-                  </Link>
+                  <article key={post.slug}>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="group block p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
+                    >
+                      <div className="flex items-center gap-3 text-[12px] text-emerald-400/70 mb-4">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20">
+                          {post.category}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />
+                          {post.readingTime} min read
+                        </span>
+                      </div>
+                      <h3 className="text-[20px] font-medium text-white mb-3 group-hover:text-emerald-400 transition-colors">
+                        {post.title}
+                      </h3>
+                      <p className="text-[14px] text-white/50 leading-relaxed mb-4 line-clamp-2">
+                        {post.description}
+                      </p>
+                      <div className="flex items-center gap-1 text-[13px] text-emerald-400">
+                        Read article <ArrowRight size={14} />
+                      </div>
+                    </Link>
+                  </article>
                 ))}
               </div>
             </section>
@@ -101,40 +104,44 @@ export default function BlogPage() {
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}`}
-                  className="group p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
-                >
-                  <div className="flex items-center gap-3 text-[11px] text-white/40 mb-3">
-                    <span className="px-2 py-0.5 rounded-full bg-white/[0.08]">
-                      {post.category}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock size={10} />
-                      {post.readingTime} min
-                    </span>
-                  </div>
-                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-[13px] text-white/40 leading-relaxed line-clamp-2 mb-4">
-                    {post.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/30 flex items-center gap-1">
-                      <Calendar size={10} />
-                      {new Date(post.publishedAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <span className="text-[12px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                      Read <ArrowRight size={12} />
-                    </span>
-                  </div>
-                </Link>
+                <article key={post.slug}>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="group block p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-3 text-[11px] text-white/40 mb-3">
+                      <span className="px-2 py-0.5 rounded-full bg-white/[0.08]">
+                        {post.category}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={10} />
+                        {post.readingTime} min
+                      </span>
+                    </div>
+                    <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-[13px] text-white/40 leading-relaxed line-clamp-2 mb-4">
+                      {post.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-white/30 flex items-center gap-1">
+                        <Calendar size={10} />
+                        {new Date(post.publishedAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                      <span className="text-[12px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        Read <ArrowRight size={12} />
+                      </span>
+                    </div>
+                  </Link>
+                </article>
               ))}
             </div>
           </section>

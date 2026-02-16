@@ -7,6 +7,8 @@ import { getAllGuides } from "@/content/guides/guides";
 
 export const metadata: Metadata = pageMetadata.guides;
 
+export const revalidate = 3600;
+
 export default function GuidesPage() {
   const guides = getAllGuides();
 

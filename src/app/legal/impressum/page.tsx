@@ -1,3 +1,19 @@
+import { generateMetadata as genMeta } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = genMeta({
+  title: "Impressum",
+  description:
+    "Legal notice (Impressum) for Caelex — space compliance platform operated by Julian Polleschner, Berlin, Germany. Contact details and legal information per § 5 DDG.",
+  path: "/legal/impressum",
+  keywords: [
+    "Impressum",
+    "Caelex legal notice",
+    "space compliance company Berlin",
+  ],
+  noIndex: true,
+});
+
 export default function ImpressumPage() {
   return (
     <main className="dark-section min-h-screen bg-black text-white">

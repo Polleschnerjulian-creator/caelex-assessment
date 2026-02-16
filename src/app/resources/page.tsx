@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     "Access comprehensive space compliance resources: guides, blog articles, glossary, FAQ, and regulatory timelines. Everything you need to navigate EU Space Act, NIS2, and national space laws.",
 };
 
+export const revalidate = 3600;
+
 function getResourceCategories(
   guidesCount: number,
   postsCount: number,

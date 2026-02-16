@@ -21,6 +21,8 @@ import { pageMetadata, moduleMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata.modules;
 
+export const revalidate = 3600;
+
 const moduleIcons: Record<string, LucideIcon> = {
   authorization: Shield,
   cybersecurity: Lock,
