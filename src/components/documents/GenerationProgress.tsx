@@ -1,132 +1,60 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   Database,
-  Scale,
-  GitCompareArrows,
-  PenTool,
-  SearchCheck,
-  Sparkles,
+  FileText,
   CheckCircle2,
   XCircle,
   RefreshCw,
   Zap,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import type { DocumentGenerationType } from "@/lib/astra/document-generator/types";
 import { DOCUMENT_TYPE_META } from "@/lib/astra/document-generator/types";
+import type { StreamProgress } from "./DocumentStudio";
 
 interface GenerationProgressProps {
   status: "idle" | "generating" | "completed" | "error";
   errorMessage: string | null;
   documentType: DocumentGenerationType | null;
+  streamProgress: StreamProgress | null;
   onRetry: () => void;
 }
-
-// ASTRA work phases — shown sequentially during generation
-const GENERATION_PHASES = [
-  {
-    icon: Database,
-    title: "Collecting Assessment Data",
-    subtitle: "Scanning compliance modules for relevant data points...",
-    duration: 4000,
-  },
-  {
-    icon: Scale,
-    title: "Analyzing Regulatory Framework",
-    subtitle:
-      "Cross-referencing EU Space Act articles and NIS2 requirements...",
-    duration: 6000,
-  },
-  {
-    icon: GitCompareArrows,
-    title: "Evaluating Compliance Status",
-    subtitle: "Mapping assessment results against regulatory thresholds...",
-    duration: 5000,
-  },
-  {
-    icon: PenTool,
-    title: "Drafting Document Sections",
-    subtitle: "Generating structured content for each section...",
-    duration: 15000,
-  },
-  {
-    icon: SearchCheck,
-    title: "Reviewing & Validating Content",
-    subtitle: "Checking regulatory accuracy and cross-references...",
-    duration: 8000,
-  },
-  {
-    icon: Sparkles,
-    title: "Finalizing Document",
-    subtitle: "Formatting structure and preparing for review...",
-    duration: 6000,
-  },
-];
 
 export function GenerationProgress({
   status,
   errorMessage,
   documentType,
+  streamProgress,
   onRetry,
 }: GenerationProgressProps) {
   const meta = documentType ? DOCUMENT_TYPE_META[documentType] : null;
-  const [currentPhase, setCurrentPhase] = useState(0);
-  const [phaseProgress, setPhaseProgress] = useState(0);
-  const [animationDone, setAnimationDone] = useState(false);
 
-  // Advance through phases during generation
-  useEffect(() => {
-    if (status !== "generating") {
-      setCurrentPhase(0);
-      setPhaseProgress(0);
-      setAnimationDone(false);
-      return;
-    }
+  // Calculate progress percentage from real stream data
+  const getProgress = (): number => {
+    if (!streamProgress) return 0;
 
-    let phaseIndex = 0;
-    let animFrame: number;
-    let startTime = Date.now();
+    if (streamProgress.phase === "preparing") return 5;
+    if (streamProgress.phase === "finalizing") return 95;
 
-    const tick = () => {
-      if (phaseIndex >= GENERATION_PHASES.length) return;
+    // During streaming: 10% base + up to 85% from sections
+    const completed = streamProgress.sections.filter((s) => s.completed).length;
+    const total = streamProgress.sections.length;
+    if (total === 0) return 10;
 
-      const elapsed = Date.now() - startTime;
-      const phaseDuration = GENERATION_PHASES[phaseIndex].duration;
-      const progress = Math.min(elapsed / phaseDuration, 1);
+    // Estimate total sections based on document type (from prompt structure)
+    const estimatedTotal = getEstimatedSections(documentType);
+    const progressBase = 10;
+    const progressRange = 85;
+    const sectionProgress = Math.min(completed / estimatedTotal, 1);
 
-      setPhaseProgress(progress);
+    return Math.round(progressBase + progressRange * sectionProgress);
+  };
 
-      if (progress >= 1) {
-        if (phaseIndex < GENERATION_PHASES.length - 1) {
-          phaseIndex++;
-          setCurrentPhase(phaseIndex);
-          startTime = Date.now();
-        } else {
-          setAnimationDone(true);
-        }
-      }
-
-      animFrame = requestAnimationFrame(tick);
-    };
-
-    animFrame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animFrame);
-  }, [status]);
-
-  // Calculate overall progress
-  const totalDuration = GENERATION_PHASES.reduce(
-    (sum, p) => sum + p.duration,
-    0,
-  );
-  const completedDuration = GENERATION_PHASES.slice(0, currentPhase).reduce(
-    (sum, p) => sum + p.duration,
-    0,
-  );
-  const currentPhaseDuration = GENERATION_PHASES[currentPhase]?.duration ?? 0;
-  const overallProgress =
-    (completedDuration + currentPhaseDuration * phaseProgress) / totalDuration;
+  const progress = getProgress();
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -161,105 +89,51 @@ export function GenerationProgress({
 
             {/* Phase list */}
             <div className="w-full space-y-1">
-              {GENERATION_PHASES.map((phase, index) => {
-                const isActive = currentPhase === index;
-                const isCompleted = currentPhase > index;
-                const isPending = currentPhase < index;
-                const Icon = phase.icon;
+              {/* Phase 1: Collecting Data */}
+              <PhaseRow
+                icon={Database}
+                title="Collecting Assessment Data"
+                subtitle="Scanning compliance modules for relevant data points..."
+                isActive={streamProgress?.phase === "preparing"}
+                isCompleted={
+                  streamProgress?.phase === "streaming" ||
+                  streamProgress?.phase === "finalizing"
+                }
+              />
 
-                return (
-                  <motion.div
+              {/* Phase 2: Streaming sections */}
+              {streamProgress &&
+                streamProgress.phase !== "preparing" &&
+                streamProgress.sections.map((section, index) => (
+                  <PhaseRow
                     key={index}
-                    initial={false}
-                    animate={{
-                      opacity: isPending ? 0.35 : 1,
-                      height: isActive ? "auto" : "auto",
-                    }}
-                    className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
-                      isActive
-                        ? "bg-emerald-500/[0.06] border border-emerald-500/20"
-                        : isCompleted
-                          ? "bg-emerald-500/[0.03]"
-                          : ""
-                    }`}
-                  >
-                    {/* Icon / status */}
-                    <div className="mt-0.5 shrink-0">
-                      {isCompleted ? (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 15,
-                          }}
-                        >
-                          <CheckCircle2
-                            size={18}
-                            className="text-emerald-500"
-                          />
-                        </motion.div>
-                      ) : isActive ? (
-                        <motion.div
-                          animate={{ rotate: [0, 5, -5, 0] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          <Icon size={18} className="text-emerald-400" />
-                        </motion.div>
-                      ) : (
-                        <Icon
-                          size={18}
-                          className="text-slate-400 dark:text-white/25"
-                        />
-                      )}
-                    </div>
+                    icon={FileText}
+                    title={section.title}
+                    isActive={
+                      !section.completed && streamProgress.phase === "streaming"
+                    }
+                    isCompleted={section.completed}
+                  />
+                ))}
 
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium ${
-                          isActive
-                            ? "text-emerald-700 dark:text-emerald-400"
-                            : isCompleted
-                              ? "text-slate-600 dark:text-white/60"
-                              : "text-slate-400 dark:text-white/25"
-                        }`}
-                      >
-                        {phase.title}
-                      </p>
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.p
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="text-xs text-slate-500 dark:text-white/40 mt-0.5"
-                          >
-                            {phase.subtitle}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
+              {/* Placeholder when still preparing */}
+              {streamProgress?.phase === "preparing" && (
+                <PhaseRow
+                  icon={FileText}
+                  title="Generating document sections..."
+                  isPending
+                />
+              )}
 
-                    {/* Phase progress indicator */}
-                    {isActive && (
-                      <motion.div
-                        className="mt-1.5 shrink-0"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
-                        <div className="w-8 h-1.5 rounded-full bg-emerald-500/20 overflow-hidden">
-                          <motion.div
-                            className="h-full rounded-full bg-emerald-500"
-                            style={{ width: `${phaseProgress * 100}%` }}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                );
-              })}
+              {/* Phase 3: Finalizing */}
+              {streamProgress?.phase === "finalizing" && (
+                <PhaseRow
+                  icon={Sparkles}
+                  title="Finalizing Document"
+                  subtitle="Saving and preparing for review..."
+                  isActive
+                />
+              )}
             </div>
 
             {/* Overall progress bar */}
@@ -269,38 +143,17 @@ export function GenerationProgress({
                   Overall Progress
                 </span>
                 <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                  {Math.round(overallProgress * 100)}%
+                  {progress}%
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/[0.06] overflow-hidden">
                 <motion.div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
-                  style={{ width: `${overallProgress * 100}%` }}
-                  transition={{ duration: 0.3 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
             </div>
-
-            {/* Show when animation finishes but API is still working */}
-            {animationDone && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-white/40"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  <RefreshCw size={12} />
-                </motion.div>
-                ASTRA is still processing — this may take a moment...
-              </motion.div>
-            )}
           </motion.div>
         )}
 
@@ -353,4 +206,109 @@ export function GenerationProgress({
       </div>
     </div>
   );
+}
+
+// ─── Phase Row ───
+
+function PhaseRow({
+  icon: Icon,
+  title,
+  subtitle,
+  isActive,
+  isCompleted,
+  isPending,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  isActive?: boolean;
+  isCompleted?: boolean;
+  isPending?: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
+      transition={{ duration: 0.25 }}
+      className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
+        isActive
+          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
+          : isCompleted
+            ? "bg-emerald-500/[0.03]"
+            : ""
+      }`}
+    >
+      {/* Icon / status */}
+      <div className="mt-0.5 shrink-0">
+        {isCompleted ? (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+          >
+            <CheckCircle2 size={18} className="text-emerald-500" />
+          </motion.div>
+        ) : isActive ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          >
+            <Loader2 size={18} className="text-emerald-400" />
+          </motion.div>
+        ) : (
+          <Icon size={18} className="text-slate-400 dark:text-white/25" />
+        )}
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <p
+          className={`text-sm font-medium ${
+            isActive
+              ? "text-emerald-700 dark:text-emerald-400"
+              : isCompleted
+                ? "text-slate-600 dark:text-white/60"
+                : "text-slate-400 dark:text-white/25"
+          }`}
+        >
+          {title}
+        </p>
+        <AnimatePresence>
+          {isActive && subtitle && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="text-xs text-slate-500 dark:text-white/40 mt-0.5"
+            >
+              {subtitle}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Section Count Estimates ───
+
+function getEstimatedSections(
+  documentType: DocumentGenerationType | null,
+): number {
+  switch (documentType) {
+    case "DEBRIS_MITIGATION_PLAN":
+      return 12;
+    case "CYBERSECURITY_FRAMEWORK":
+      return 8;
+    case "NIS2_ASSESSMENT":
+      return 9;
+    case "ENVIRONMENTAL_FOOTPRINT":
+      return 8;
+    case "INSURANCE_COMPLIANCE":
+      return 8;
+    case "AUTHORIZATION_APPLICATION":
+      return 10;
+    default:
+      return 8;
+  }
 }

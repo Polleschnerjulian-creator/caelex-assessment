@@ -17,6 +17,16 @@ import { csrfHeaders } from "@/lib/csrf-client";
 
 // ─── State ───
 
+export interface StreamSection {
+  title: string;
+  completed: boolean;
+}
+
+export interface StreamProgress {
+  phase: "preparing" | "streaming" | "finalizing";
+  sections: StreamSection[];
+}
+
 interface StudioState {
   step: number;
   documentType: DocumentGenerationType | null;
@@ -27,6 +37,7 @@ interface StudioState {
   documentId: string | null;
   generationStatus: "idle" | "generating" | "completed" | "error";
   errorMessage: string | null;
+  streamProgress: StreamProgress | null;
 }
 
 type StudioAction =
@@ -42,6 +53,9 @@ type StudioAction =
     }
   | { type: "GENERATION_ERROR"; message: string }
   | { type: "UPDATE_SECTIONS"; sections: ReportSection[] }
+  | { type: "STREAM_SECTION_START"; title: string }
+  | { type: "STREAM_SECTION_COMPLETE" }
+  | { type: "STREAM_FINALIZING" }
   | { type: "NEXT_STEP" }
   | { type: "PREV_STEP" }
   | { type: "GO_TO_STEP"; step: number }
@@ -57,6 +71,7 @@ const initialState: StudioState = {
   documentId: null,
   generationStatus: "idle",
   errorMessage: null,
+  streamProgress: null,
 };
 
 function studioReducer(state: StudioState, action: StudioAction): StudioState {
@@ -73,6 +88,7 @@ function studioReducer(state: StudioState, action: StudioAction): StudioState {
         step: 3,
         generationStatus: "generating",
         errorMessage: null,
+        streamProgress: { phase: "preparing", sections: [] },
       };
     case "GENERATION_COMPLETE":
       return {
@@ -81,6 +97,7 @@ function studioReducer(state: StudioState, action: StudioAction): StudioState {
         rawContent: action.rawContent,
         documentId: action.documentId,
         generationStatus: "completed",
+        streamProgress: null,
         step: 4,
       };
     case "GENERATION_ERROR":
@@ -88,6 +105,49 @@ function studioReducer(state: StudioState, action: StudioAction): StudioState {
         ...state,
         generationStatus: "error",
         errorMessage: action.message,
+        streamProgress: null,
+      };
+    case "STREAM_SECTION_START":
+      return {
+        ...state,
+        streamProgress: {
+          phase: "streaming",
+          sections: [
+            ...(state.streamProgress?.sections.map((s) => ({
+              ...s,
+              completed: true,
+            })) ?? []),
+            { title: action.title, completed: false },
+          ],
+        },
+      };
+    case "STREAM_SECTION_COMPLETE":
+      return {
+        ...state,
+        streamProgress: state.streamProgress
+          ? {
+              ...state.streamProgress,
+              sections: state.streamProgress.sections.map((s, i) =>
+                i === state.streamProgress!.sections.length - 1
+                  ? { ...s, completed: true }
+                  : s,
+              ),
+            }
+          : null,
+      };
+    case "STREAM_FINALIZING":
+      return {
+        ...state,
+        streamProgress: state.streamProgress
+          ? {
+              ...state.streamProgress,
+              phase: "finalizing",
+              sections: state.streamProgress.sections.map((s) => ({
+                ...s,
+                completed: true,
+              })),
+            }
+          : null,
       };
     case "UPDATE_SECTIONS":
       return { ...state, sections: action.sections };
@@ -200,7 +260,16 @@ export default function DocumentStudio() {
 
             if (event.type === "generation_start") {
               documentId = event.documentId;
+            } else if (event.type === "section_start") {
+              dispatch({
+                type: "STREAM_SECTION_START",
+                title:
+                  event.title || `Section ${(event.sectionIndex ?? 0) + 1}`,
+              });
+            } else if (event.type === "section_complete") {
+              dispatch({ type: "STREAM_SECTION_COMPLETE" });
             } else if (event.type === "generation_complete") {
+              dispatch({ type: "STREAM_FINALIZING" });
               documentId = event.documentId || documentId;
               // Fetch the completed document (sections are saved in DB)
               const docRes = await fetch(
@@ -371,6 +440,7 @@ export default function DocumentStudio() {
               status={state.generationStatus}
               errorMessage={state.errorMessage}
               documentType={state.documentType}
+              streamProgress={state.streamProgress}
               onRetry={handleGenerate}
             />
           )}
