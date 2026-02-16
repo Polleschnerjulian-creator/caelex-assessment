@@ -17,6 +17,7 @@
 
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import * as Sentry from "@sentry/nextjs";
@@ -233,6 +234,16 @@ const authResult = isAuthConfigured
                     access_type: "offline",
                   },
                 },
+              }),
+            ]
+          : []),
+
+        // Apple OAuth
+        ...(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
+          ? [
+              Apple({
+                clientId: process.env.AUTH_APPLE_ID,
+                clientSecret: process.env.AUTH_APPLE_SECRET,
               }),
             ]
           : []),
