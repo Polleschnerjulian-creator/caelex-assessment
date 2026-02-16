@@ -8,6 +8,7 @@
 import { NextRequest } from "next/server";
 import { withApiAuth, apiSuccess, apiError, ApiContext } from "@/lib/api-auth";
 import { loadSpaceActDataFromDisk } from "@/lib/engine.server";
+import { withCache } from "@/lib/cache.server";
 import type { Article, OperatorAbbreviation } from "@/lib/types";
 
 function flattenAllArticles(
@@ -49,10 +50,7 @@ export const GET = withApiAuth(
     ) as OperatorAbbreviation | null;
     const complianceType = url.searchParams.get("complianceType");
 
-    const data = loadSpaceActDataFromDisk();
-    let articles = flattenAllArticles(data);
-
-    // Filter by operator type
+    // Validate operator type early (before cache check)
     if (operatorType) {
       const validTypes: OperatorAbbreviation[] = [
         "SCO",
@@ -70,33 +68,57 @@ export const GET = withApiAuth(
           400,
         );
       }
-      articles = articles.filter(
-        (a) =>
-          a.applies_to.includes("ALL") || a.applies_to.includes(operatorType),
-      );
     }
 
-    // Filter by compliance type
-    if (complianceType) {
-      articles = articles.filter((a) => a.compliance_type === complianceType);
-    }
+    // Build cache key from query parameters
+    const cacheKey = `articles:page=${page}:limit=${limit}:operator=${operatorType || "none"}:compliance=${complianceType || "none"}`;
 
-    const total = articles.length;
-    const totalPages = Math.ceil(total / limit);
-    const offset = (page - 1) * limit;
-    const paginatedArticles = articles.slice(offset, offset + limit);
+    const result = await withCache(
+      cacheKey,
+      async () => {
+        const data = loadSpaceActDataFromDisk();
+        let articles = flattenAllArticles(data);
 
-    // Redact sensitive fields
-    const redacted = paginatedArticles.map((a) => ({
-      number: a.number,
-      title: a.title,
-      compliance_type: a.compliance_type,
-      applies_to: a.applies_to,
-      excludes: a.excludes,
-    }));
+        // Filter by operator type
+        if (operatorType) {
+          articles = articles.filter(
+            (a) =>
+              a.applies_to.includes("ALL") ||
+              a.applies_to.includes(operatorType),
+          );
+        }
 
-    return apiSuccess(redacted, 200, {
-      pagination: { page, limit, total, totalPages },
+        // Filter by compliance type
+        if (complianceType) {
+          articles = articles.filter(
+            (a) => a.compliance_type === complianceType,
+          );
+        }
+
+        const total = articles.length;
+        const totalPages = Math.ceil(total / limit);
+        const offset = (page - 1) * limit;
+        const paginatedArticles = articles.slice(offset, offset + limit);
+
+        // Redact sensitive fields
+        const redacted = paginatedArticles.map((a) => ({
+          number: a.number,
+          title: a.title,
+          compliance_type: a.compliance_type,
+          applies_to: a.applies_to,
+          excludes: a.excludes,
+        }));
+
+        return {
+          articles: redacted,
+          pagination: { page, limit, total, totalPages },
+        };
+      },
+      600, // 10 minutes TTL
+    );
+
+    return apiSuccess(result.articles, 200, {
+      pagination: result.pagination,
       timestamp: new Date().toISOString(),
     });
   },

@@ -6,27 +6,34 @@
 
 import { NextResponse } from "next/server";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
+import { withCache } from "@/lib/cache.server";
 
 export async function GET() {
   try {
-    const summaries = Array.from(JURISDICTION_DATA.values()).map((j) => ({
-      countryCode: j.countryCode,
-      countryName: j.countryName,
-      flagEmoji: j.flagEmoji,
-      legislation: {
-        name: j.legislation.name,
-        status: j.legislation.status,
-        yearEnacted: j.legislation.yearEnacted,
+    const summaries = await withCache(
+      "jurisdictions:summary",
+      async () => {
+        return Array.from(JURISDICTION_DATA.values()).map((j) => ({
+          countryCode: j.countryCode,
+          countryName: j.countryName,
+          flagEmoji: j.flagEmoji,
+          legislation: {
+            name: j.legislation.name,
+            status: j.legislation.status,
+            yearEnacted: j.legislation.yearEnacted,
+          },
+          authority: {
+            name: j.licensingAuthority.name,
+            website: j.licensingAuthority.website,
+          },
+          requirementCount: j.licensingRequirements.length,
+          timeline: j.timeline.typicalProcessingWeeks,
+          insuranceMandatory: j.insuranceLiability.mandatoryInsurance,
+          euSpaceActRelationship: j.euSpaceActCrossRef.relationship,
+        }));
       },
-      authority: {
-        name: j.licensingAuthority.name,
-        website: j.licensingAuthority.website,
-      },
-      requirementCount: j.licensingRequirements.length,
-      timeline: j.timeline.typicalProcessingWeeks,
-      insuranceMandatory: j.insuranceLiability.mandatoryInsurance,
-      euSpaceActRelationship: j.euSpaceActCrossRef.relationship,
-    }));
+      3600, // 1 hour TTL
+    );
 
     return NextResponse.json(
       { jurisdictions: summaries },
