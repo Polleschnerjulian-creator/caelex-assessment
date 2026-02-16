@@ -77,6 +77,7 @@ export async function GET(request: Request) {
         status: statusRecord?.status || "not_assessed",
         notes: statusRecord?.notes || null,
         evidenceNotes: statusRecord?.evidenceNotes || null,
+        responses: (statusRecord?.responses as Record<string, unknown>) || null,
         statusId: statusRecord?.id || null,
       };
     });
@@ -111,7 +112,14 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { assessmentId, requirementId, status, notes, evidenceNotes } = body;
+    const {
+      assessmentId,
+      requirementId,
+      status,
+      notes,
+      evidenceNotes,
+      responses,
+    } = body;
 
     if (!assessmentId || !requirementId) {
       return NextResponse.json(
@@ -159,6 +167,7 @@ export async function PUT(request: Request) {
         status: status ?? undefined,
         notes: notes ?? undefined,
         evidenceNotes: evidenceNotes ?? undefined,
+        responses: responses !== undefined ? responses : undefined,
       },
       create: {
         assessmentId,
@@ -166,6 +175,7 @@ export async function PUT(request: Request) {
         status: status || "not_assessed",
         notes,
         evidenceNotes,
+        responses: responses || undefined,
       },
     });
 

@@ -2,7 +2,37 @@
  * Debris Mitigation Plan Prompt
  */
 
+import { debrisRequirements } from "@/data/debris-requirements";
 import type { DebrisDataBundle } from "../types";
+
+function formatResponses(
+  requirementId: string,
+  responses: Record<string, unknown> | null | undefined,
+): string {
+  if (!responses) return "";
+
+  const req = debrisRequirements.find((r) => r.id === requirementId);
+  if (!req?.assessmentFields) return "";
+
+  const lines: string[] = [];
+  for (const field of req.assessmentFields) {
+    const val = responses[field.id];
+    if (val === null || val === undefined || val === "") continue;
+
+    let display: string;
+    if (field.type === "boolean") {
+      display = val ? "Yes" : "No";
+    } else if (field.type === "select" && field.options) {
+      const opt = field.options.find((o) => o.value === val);
+      display = opt ? opt.label : String(val);
+    } else {
+      display = `${val}${field.unit ? ` ${field.unit}` : ""}`;
+    }
+    lines.push(`- ${field.label}: ${display}`);
+  }
+
+  return lines.length > 0 ? `\n${lines.join("\n")}` : "";
+}
 
 export function buildDebrisPrompt(data: DebrisDataBundle): string {
   const a = data.assessment;
@@ -10,6 +40,19 @@ export function buildDebrisPrompt(data: DebrisDataBundle): string {
     (r) => r.status === "compliant",
   ).length;
   const reqTotal = data.requirements.length;
+
+  const requirementSections = data.requirements
+    .map((r) => {
+      const reqDef = debrisRequirements.find((d) => d.id === r.requirementId);
+      const title = reqDef?.title || r.requirementId;
+      const articleRef = reqDef?.articleRef || "";
+      const status = r.status.toUpperCase().replace("_", "-");
+      const responsesText = formatResponses(r.requirementId, r.responses);
+      const notes = r.notes ? `\n- Notes: ${r.notes}` : "";
+
+      return `### ${title} (${articleRef}) — ${status}${responsesText}${notes}`;
+    })
+    .join("\n\n");
 
   return `Generate a comprehensive Debris Mitigation Plan for NCA submission. This plan must comply with EU Space Act Art. 31-37, IADC Space Debris Mitigation Guidelines, and ISO 24113:2019.
 
@@ -33,7 +76,9 @@ export function buildDebrisPrompt(data: DebrisDataBundle): string {
 
 ${data.spacecraft.length > 0 ? `## Registered Spacecraft\n${data.spacecraft.map((s) => `- ${s.name}${s.noradId ? ` (NORAD: ${s.noradId})` : ""}${s.type ? ` — ${s.type}` : ""}`).join("\n")}` : ""}
 
-${data.requirements.length > 0 ? `## Requirement Compliance Matrix\n${data.requirements.map((r) => `- ${r.requirementId}: ${r.status}${r.notes ? ` — ${r.notes}` : ""}`).join("\n")}` : ""}
+## Detailed Requirement Assessment
+
+${requirementSections}
 
 ## Required Sections
 

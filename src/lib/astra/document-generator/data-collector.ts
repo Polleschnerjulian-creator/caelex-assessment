@@ -80,7 +80,12 @@ async function collectDebrisData(
     orderBy: { updatedAt: "desc" },
     include: {
       requirements: {
-        select: { requirementId: true, status: true, notes: true },
+        select: {
+          requirementId: true,
+          status: true,
+          notes: true,
+          responses: true,
+        },
       },
     },
   });
@@ -108,7 +113,12 @@ async function collectDebrisData(
       caServiceProvider: assessment.caServiceProvider,
       complianceScore: assessment.complianceScore,
     },
-    requirements: assessment.requirements,
+    requirements: assessment.requirements.map((r) => ({
+      requirementId: r.requirementId,
+      status: r.status,
+      notes: r.notes,
+      responses: (r.responses as Record<string, unknown>) || null,
+    })),
     spacecraft: spacecraft.map((s) => ({
       name: s.name,
       noradId: s.noradId,

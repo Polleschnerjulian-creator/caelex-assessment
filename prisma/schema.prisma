@@ -313,6 +313,7 @@ model DebrisRequirementStatus {
   status        String   @default("not_assessed") // compliant, non_compliant, not_assessed, not_applicable
   notes         String?  @db.Text
   evidenceNotes String?  @db.Text
+  responses     Json?    // structured sub-question responses { fieldId: value }
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

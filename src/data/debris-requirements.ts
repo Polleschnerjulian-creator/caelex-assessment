@@ -34,6 +34,23 @@ export type RequirementStatus =
   | "not_assessed"
   | "not_applicable";
 
+export interface AssessmentField {
+  id: string;
+  label: string;
+  type: "text" | "number" | "select" | "boolean" | "date";
+  options?: { value: string; label: string }[];
+  unit?: string;
+  placeholder?: string;
+  required?: boolean;
+  helpText?: string;
+}
+
+export interface ComplianceRule {
+  requiredTrue?: string[];
+  requiredNotEmpty?: string[];
+  numberThresholds?: Record<string, { min?: number; max?: number }>;
+}
+
 export interface DebrisMissionProfile {
   // Orbit
   orbitType: OrbitType;
@@ -74,6 +91,8 @@ export interface DebrisRequirement {
   evidenceRequired: string[];
   isoReference?: string;
   severity: "critical" | "major" | "minor";
+  assessmentFields?: AssessmentField[];
+  complianceRule?: ComplianceRule;
 }
 
 export const debrisRequirements: DebrisRequirement[] = [
@@ -100,6 +119,47 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Space Surveillance registration confirmation",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "radarCrossSection",
+        label: "Minimum radar cross-section",
+        type: "number",
+        unit: "m²",
+        placeholder: "e.g., 0.15",
+        helpText: "Typically >0.01 m² for LEO radar detectability",
+      },
+      {
+        id: "hasRadarReflectors",
+        label: "Equipped with radar reflectors?",
+        type: "boolean",
+      },
+      {
+        id: "trackingProvider",
+        label: "Primary tracking provider",
+        type: "select",
+        options: [
+          { value: "EUSST", label: "EUSST" },
+          { value: "18SDS", label: "18th SDS" },
+          { value: "LeoLabs", label: "LeoLabs" },
+          { value: "ExoAnalytic", label: "ExoAnalytic" },
+          { value: "Other", label: "Other" },
+        ],
+      },
+      {
+        id: "ssnRegistered",
+        label: "Registered with Space Surveillance Network?",
+        type: "boolean",
+      },
+      {
+        id: "opticalTrackingFeasible",
+        label: "Optical tracking feasibility confirmed?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["ssnRegistered"],
+      requiredNotEmpty: ["trackingProvider"],
+    },
   },
   {
     id: "collision_avoidance_service",
@@ -124,6 +184,54 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Operations procedures for conjunction handling",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "caProvider",
+        label: "CA service provider",
+        type: "select",
+        options: [
+          { value: "EUSST", label: "EUSST" },
+          { value: "LeoLabs", label: "LeoLabs" },
+          { value: "ExoAnalytic", label: "ExoAnalytic" },
+          { value: "Slingshot", label: "Slingshot Aerospace" },
+          { value: "18SDS", label: "18th SDS" },
+          { value: "Other", label: "Other" },
+        ],
+      },
+      {
+        id: "contractStatus",
+        label: "Contract status",
+        type: "select",
+        options: [
+          { value: "active", label: "Active" },
+          { value: "pending", label: "Pending" },
+          { value: "planned", label: "Planned" },
+          { value: "none", label: "None" },
+        ],
+      },
+      {
+        id: "coveragePeriod",
+        label: "Coverage period",
+        type: "text",
+        placeholder: "e.g., launch to deorbit",
+      },
+      {
+        id: "has24x7Capability",
+        label: "24/7 conjunction alert reception capability?",
+        type: "boolean",
+      },
+      {
+        id: "caResponseTimeHours",
+        label: "Max response time to CA alert",
+        type: "number",
+        unit: "hours",
+        placeholder: "e.g., 8",
+      },
+    ],
+    complianceRule: {
+      requiredNotEmpty: ["caProvider", "contractStatus"],
+      requiredTrue: ["has24x7Capability"],
+    },
   },
   {
     id: "maneuverability",
@@ -150,6 +258,53 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Response time analysis",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "propulsionType",
+        label: "Propulsion type",
+        type: "select",
+        options: [
+          { value: "chemical", label: "Chemical" },
+          { value: "electric", label: "Electric" },
+          { value: "cold_gas", label: "Cold gas" },
+          { value: "hybrid", label: "Hybrid" },
+        ],
+      },
+      {
+        id: "totalDeltaV",
+        label: "Total delta-V budget",
+        type: "number",
+        unit: "m/s",
+        placeholder: "e.g., 150",
+      },
+      {
+        id: "caReserveDeltaV",
+        label: "Delta-V reserved for collision avoidance",
+        type: "number",
+        unit: "m/s",
+        placeholder: "e.g., 30",
+      },
+      {
+        id: "expectedCAPerYear",
+        label: "Expected CA maneuvers per year",
+        type: "number",
+        placeholder: "e.g., 3",
+      },
+      {
+        id: "minResponseTimeHours",
+        label: "Minimum CA maneuver response time",
+        type: "number",
+        unit: "hours",
+        placeholder: "e.g., 6",
+      },
+    ],
+    complianceRule: {
+      requiredNotEmpty: ["propulsionType"],
+      numberThresholds: {
+        totalDeltaV: { min: 1 },
+        caReserveDeltaV: { min: 0.1 },
+      },
+    },
   },
   {
     id: "debris_mitigation_plan",
@@ -174,6 +329,47 @@ export const debrisRequirements: DebrisRequirement[] = [
     ],
     isoReference: "ISO 24113:2019",
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "planDocumentExists",
+        label: "DMP document prepared?",
+        type: "boolean",
+      },
+      {
+        id: "iso24113Compliant",
+        label: "Follows ISO 24113:2019 structure?",
+        type: "boolean",
+      },
+      {
+        id: "coversCAProcedures",
+        label: "Covers collision avoidance procedures?",
+        type: "boolean",
+      },
+      {
+        id: "coversEOLDisposal",
+        label: "Covers end-of-life disposal?",
+        type: "boolean",
+      },
+      {
+        id: "coversFragmentation",
+        label: "Covers fragmentation avoidance?",
+        type: "boolean",
+      },
+      {
+        id: "coversPassivation",
+        label: "Covers passivation procedures?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "planDocumentExists",
+        "coversCAProcedures",
+        "coversEOLDisposal",
+        "coversFragmentation",
+        "coversPassivation",
+      ],
+    },
   },
   {
     id: "fragmentation_avoidance",
@@ -198,6 +394,44 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Battery safety analysis",
     ],
     severity: "major",
+    assessmentFields: [
+      {
+        id: "pressurizedVesselCount",
+        label: "Number of pressurized vessels",
+        type: "number",
+        placeholder: "e.g., 2",
+      },
+      {
+        id: "batteryType",
+        label: "Battery type",
+        type: "select",
+        options: [
+          { value: "li_ion", label: "Li-Ion" },
+          { value: "ni_cd", label: "Ni-Cd" },
+          { value: "ni_mh", label: "Ni-MH" },
+          { value: "other", label: "Other" },
+        ],
+      },
+      {
+        id: "thermalRunawayMitigation",
+        label: "Thermal runaway mitigation measures?",
+        type: "boolean",
+      },
+      {
+        id: "propellantTankMitigation",
+        label: "Propellant tank rupture mitigation?",
+        type: "boolean",
+      },
+      {
+        id: "intentionalBreakupPlanned",
+        label: "Any intentional fragmentation planned?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["thermalRunawayMitigation", "propellantTankMitigation"],
+      requiredNotEmpty: ["batteryType"],
+    },
   },
   {
     id: "light_pollution",
@@ -225,6 +459,38 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Coordination with astronomical community (if applicable)",
     ],
     severity: "major",
+    assessmentFields: [
+      {
+        id: "expectedMagnitude",
+        label: "Expected visual magnitude",
+        type: "number",
+        placeholder: "e.g., 7.5",
+        helpText: "Must be ≥7 (not visible to naked eye)",
+      },
+      {
+        id: "hasAntiReflectiveCoating",
+        label: "Anti-reflective coatings applied?",
+        type: "boolean",
+      },
+      {
+        id: "hasSunVisor",
+        label: "Sun visor or brightness mitigation?",
+        type: "boolean",
+      },
+      {
+        id: "astronomyCommunityCoordinated",
+        label: "Coordinated with astronomical community?",
+        type: "boolean",
+      },
+      {
+        id: "rfiMitigation",
+        label: "Radio frequency interference mitigation?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      numberThresholds: { expectedMagnitude: { min: 7 } },
+    },
   },
   {
     id: "large_constellation_management",
@@ -250,6 +516,42 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Reliability analysis for deorbit systems",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "automatedCASystem",
+        label: "Automated CA decision system?",
+        type: "boolean",
+      },
+      {
+        id: "constellationCoordination",
+        label: "Inter-satellite maneuver coordination?",
+        type: "boolean",
+      },
+      {
+        id: "realTimeTracking",
+        label: "Real-time tracking of all elements?",
+        type: "boolean",
+      },
+      {
+        id: "systemReliabilityPercent",
+        label: "Critical system reliability target",
+        type: "number",
+        unit: "%",
+        placeholder: "e.g., 99.5",
+      },
+      {
+        id: "deconflictionProcedure",
+        label: "Maneuver deconfliction procedures?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "automatedCASystem",
+        "realTimeTracking",
+        "deconflictionProcedure",
+      ],
+    },
   },
   {
     id: "large_constellation_disposal",
@@ -276,6 +578,40 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Financial provisions for ADR",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "targetDisposalSuccessRate",
+        label: "Target disposal success rate",
+        type: "number",
+        unit: "%",
+        placeholder: "e.g., 95",
+        helpText: "Should be >95% for large constellations",
+      },
+      {
+        id: "redundantDeorbitSystems",
+        label: "Redundant deorbit systems?",
+        type: "boolean",
+      },
+      {
+        id: "failedSatProcedure",
+        label: "Failed satellite handling procedure?",
+        type: "boolean",
+      },
+      {
+        id: "adrProvisionPlanned",
+        label: "ADR service contracted/planned?",
+        type: "boolean",
+      },
+      {
+        id: "decommissioningFund",
+        label: "Financial provisions for ADR?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["failedSatProcedure"],
+      numberThresholds: { targetDisposalSuccessRate: { min: 95 } },
+    },
   },
   {
     id: "end_of_life_leo",
@@ -302,6 +638,56 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Reentry casualty risk analysis (if controlled)",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "predictedLifetimeYears",
+        label: "Post-mission orbital lifetime",
+        type: "number",
+        unit: "years",
+        placeholder: "e.g., 4",
+      },
+      {
+        id: "analysisToolUsed",
+        label: "Orbital lifetime analysis tool",
+        type: "select",
+        options: [
+          { value: "DRAMA", label: "DRAMA" },
+          { value: "STK", label: "STK" },
+          { value: "GMAT", label: "GMAT" },
+          { value: "Other", label: "Other" },
+        ],
+      },
+      {
+        id: "complianceStandard",
+        label: "Target compliance standard",
+        type: "select",
+        options: [
+          { value: "25_year", label: "25-year rule" },
+          { value: "5_year", label: "5-year best practice" },
+        ],
+      },
+      {
+        id: "eolDeltaVBudget",
+        label: "Delta-V for EOL maneuver",
+        type: "number",
+        unit: "m/s",
+        placeholder: "e.g., 50",
+      },
+      {
+        id: "controlledReentry",
+        label: "Controlled reentry planned?",
+        type: "boolean",
+      },
+      {
+        id: "casualtyRiskAnalysis",
+        label: "Reentry casualty risk analysis?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredNotEmpty: ["analysisToolUsed", "complianceStandard"],
+      numberThresholds: { predictedLifetimeYears: { max: 25 } },
+    },
   },
   {
     id: "end_of_life_geo",
@@ -326,6 +712,37 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Graveyard orbit parameters",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "graveyardAltitudeAboveGEO",
+        label: "Graveyard orbit altitude above GEO",
+        type: "number",
+        unit: "km",
+        placeholder: "e.g., 300",
+        helpText: "Minimum 300km above GEO",
+      },
+      {
+        id: "reorbitDeltaV",
+        label: "Delta-V for re-orbit maneuver",
+        type: "number",
+        unit: "m/s",
+        placeholder: "e.g., 11",
+      },
+      {
+        id: "propellantReserved",
+        label: "EOL propellant reserved?",
+        type: "boolean",
+      },
+      {
+        id: "postReorbitPassivation",
+        label: "Post-transfer passivation planned?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["propellantReserved"],
+      numberThresholds: { graveyardAltitudeAboveGEO: { min: 300 } },
+    },
   },
   {
     id: "end_of_life_meo",
@@ -350,6 +767,38 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Propellant budget for disposal",
     ],
     severity: "critical",
+    assessmentFields: [
+      {
+        id: "disposalStrategy",
+        label: "Disposal strategy",
+        type: "select",
+        options: [
+          { value: "leo_region", label: "LEO disposal region" },
+          { value: "disposal_orbit", label: "Dedicated disposal orbit" },
+          { value: "stable_orbit", label: "Long-term stable orbit" },
+          { value: "other", label: "Other" },
+        ],
+      },
+      {
+        id: "disposalOrbitAnalysis",
+        label: "Disposal orbit analysis completed?",
+        type: "boolean",
+      },
+      {
+        id: "longTermStabilityStudy",
+        label: "Long-term orbit stability study done?",
+        type: "boolean",
+      },
+      {
+        id: "iadcGuidelinesConsulted",
+        label: "IADC MEO guidelines consulted?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredNotEmpty: ["disposalStrategy"],
+      requiredTrue: ["disposalOrbitAnalysis"],
+    },
   },
   {
     id: "passivation",
@@ -375,6 +824,49 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Passivation sequence timeline",
     ],
     severity: "major",
+    assessmentFields: [
+      {
+        id: "propellantDepletionPlanned",
+        label: "Propellant depletion/venting planned?",
+        type: "boolean",
+      },
+      {
+        id: "batteryDischargeMethod",
+        label: "Battery discharge method",
+        type: "select",
+        options: [
+          { value: "controlled", label: "Controlled discharge" },
+          { value: "passive", label: "Passive discharge" },
+          { value: "none", label: "None" },
+        ],
+      },
+      {
+        id: "reactionWheelDespin",
+        label: "Reaction wheel de-spin planned?",
+        type: "boolean",
+      },
+      {
+        id: "solarArrayDisconnect",
+        label: "Solar array disconnect capability?",
+        type: "boolean",
+      },
+      {
+        id: "energySourceInventory",
+        label: "Energy source inventory documented?",
+        type: "boolean",
+      },
+      {
+        id: "passivationSequenceHours",
+        label: "Passivation sequence duration",
+        type: "number",
+        unit: "hours",
+        placeholder: "e.g., 24",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["energySourceInventory"],
+      requiredNotEmpty: ["batteryDischargeMethod"],
+    },
   },
   {
     id: "supply_chain_compliance",
@@ -399,6 +891,31 @@ export const debrisRequirements: DebrisRequirement[] = [
       "Contract clauses referencing EU Space Act",
     ],
     severity: "minor",
+    assessmentFields: [
+      {
+        id: "contractsIncludeCompliance",
+        label: "EU Space Act clauses in contracts?",
+        type: "boolean",
+      },
+      {
+        id: "supplierDocsReceived",
+        label: "Debris compliance docs from manufacturers?",
+        type: "boolean",
+      },
+      {
+        id: "iso24113CertifiedSuppliers",
+        label: "Key suppliers ISO 24113 certified?",
+        type: "boolean",
+      },
+      {
+        id: "supplierAuditConducted",
+        label: "Critical supplier audit completed?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["contractsIncludeCompliance", "supplierDocsReceived"],
+    },
   },
   {
     id: "on_orbit_servicing",
@@ -422,6 +939,31 @@ export const debrisRequirements: DebrisRequirement[] = [
       "ADR compatibility assessment",
     ],
     severity: "minor",
+    assessmentFields: [
+      {
+        id: "hasGrappleFixture",
+        label: "Grapple fixture or docking interface?",
+        type: "boolean",
+      },
+      {
+        id: "hasRefuelingPort",
+        label: "Standardized refueling port?",
+        type: "boolean",
+      },
+      {
+        id: "propulsionAccessible",
+        label: "Accessible propulsion for servicing?",
+        type: "boolean",
+      },
+      {
+        id: "adrCompatibilityAssessed",
+        label: "ADR compatibility assessment done?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["adrCompatibilityAssessed"],
+    },
   },
 ];
 

@@ -8,6 +8,7 @@ import {
   Rocket,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   AlertCircle,
   AlertTriangle,
   Info,
@@ -20,9 +21,12 @@ import {
   Shield,
   Zap,
   Target,
+  Sparkles,
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
+import AssessmentFieldForm from "@/components/debris/AssessmentFieldForm";
+import { suggestComplianceStatus } from "@/lib/compliance/debris-auto-assess";
 import { csrfHeaders } from "@/lib/csrf-client";
 import {
   debrisRequirements,
@@ -67,12 +71,14 @@ interface RequirementStatusRecord {
   status: string;
   notes: string | null;
   evidenceNotes: string | null;
+  responses: Record<string, unknown> | null;
 }
 
 interface RequirementWithStatus extends DebrisRequirement {
   status: RequirementStatus;
   notes: string | null;
   evidenceNotes: string | null;
+  responses: Record<string, unknown> | null;
   statusId: string | null;
 }
 
@@ -120,6 +126,17 @@ function DebrisPageContent() {
   const [caServiceProvider, setCaServiceProvider] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Expandable card state
+  const [expandedRequirement, setExpandedRequirement] = useState<string | null>(
+    null,
+  );
+  const [requirementResponses, setRequirementResponses] = useState<
+    Record<string, Record<string, unknown>>
+  >({});
+  const [saveTimers, setSaveTimers] = useState<Record<string, NodeJS.Timeout>>(
+    {},
+  );
+
   // Generated plan state
   const [generatedPlan, setGeneratedPlan] = useState<Record<
     string,
@@ -159,6 +176,14 @@ function DebrisPageContent() {
       if (res.ok) {
         const data = await res.json();
         setRequirements(data.requirements);
+        // Initialize local responses from persisted data
+        const initial: Record<string, Record<string, unknown>> = {};
+        for (const req of data.requirements) {
+          if (req.responses) {
+            initial[req.id] = req.responses;
+          }
+        }
+        setRequirementResponses(initial);
       }
     } catch (error) {
       console.error("Error fetching requirements:", error);
@@ -239,6 +264,58 @@ function DebrisPageContent() {
       // Revert on error
       fetchRequirements(selectedAssessment.id);
     }
+  };
+
+  const saveResponses = useCallback(
+    async (requirementId: string, responses: Record<string, unknown>) => {
+      if (!selectedAssessment) return;
+      try {
+        await fetch("/api/debris/requirements", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            assessmentId: selectedAssessment.id,
+            requirementId,
+            responses,
+          }),
+        });
+      } catch (error) {
+        console.error("Error saving responses:", error);
+      }
+    },
+    [selectedAssessment],
+  );
+
+  const handleFieldChange = useCallback(
+    (requirementId: string, fieldId: string, value: unknown) => {
+      setRequirementResponses((prev) => {
+        const updated = { ...prev[requirementId], [fieldId]: value };
+        const next = { ...prev, [requirementId]: updated };
+
+        // Debounced save
+        if (saveTimers[requirementId]) {
+          clearTimeout(saveTimers[requirementId]);
+        }
+        const timer = setTimeout(() => {
+          saveResponses(requirementId, updated);
+        }, 500);
+        setSaveTimers((t) => ({ ...t, [requirementId]: timer }));
+
+        return next;
+      });
+    },
+    [saveTimers, saveResponses],
+  );
+
+  const getFieldCompletionCount = (
+    requirementId: string,
+    totalFields: number,
+  ) => {
+    const resp = requirementResponses[requirementId];
+    if (!resp) return 0;
+    return Object.values(resp).filter(
+      (v) => v !== null && v !== undefined && v !== "",
+    ).length;
   };
 
   const generatePlan = async () => {
@@ -939,134 +1016,254 @@ function DebrisPageContent() {
                   {requirements.map((req) => {
                     const statusInfo = requirementStatusConfig[req.status];
                     const sevInfo = severityConfig[req.severity];
+                    const isExpanded = expandedRequirement === req.id;
+                    const fields = req.assessmentFields || [];
+                    const responses = requirementResponses[req.id] || {};
+                    const completedFields = getFieldCompletionCount(
+                      req.id,
+                      fields.length,
+                    );
+                    const suggested = suggestComplianceStatus(
+                      req.complianceRule,
+                      responses,
+                    );
 
                     return (
                       <div
                         key={req.id}
-                        className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-white/10 rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/[0.08] transition-all"
+                        className={`bg-white dark:bg-white/[0.015] border rounded-xl transition-all ${
+                          isExpanded
+                            ? "border-slate-300 dark:border-white/[0.12]"
+                            : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/[0.08]"
+                        }`}
                       >
-                        <div className="flex items-start gap-4">
-                          <div
-                            className={`p-2.5 rounded-lg ${sevInfo.bgColor}`}
-                          >
-                            {req.severity === "critical" ? (
-                              <Shield size={18} className={sevInfo.color} />
-                            ) : req.severity === "major" ? (
-                              <Zap size={18} className={sevInfo.color} />
-                            ) : (
-                              <Info size={18} className={sevInfo.color} />
-                            )}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-mono text-[11px] text-slate-600 dark:text-white/70">
-                                    {req.articleRef}
-                                  </span>
-                                  <h3 className="text-[14px] font-medium text-slate-900 dark:text-white">
-                                    {req.title}
-                                  </h3>
-                                  <span
-                                    className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${sevInfo.bgColor} ${sevInfo.color}`}
-                                  >
-                                    {req.severity}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Status selector */}
-                              <select
-                                value={req.status}
-                                onChange={(e) =>
-                                  updateRequirementStatus(
-                                    req.id,
-                                    e.target.value as RequirementStatus,
-                                  )
-                                }
-                                aria-label={`Compliance status for ${req.title}`}
-                                className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statusInfo.color}`}
-                              >
-                                <option value="not_assessed">
-                                  Not Assessed
-                                </option>
-                                <option value="compliant">Compliant</option>
-                                <option value="non_compliant">
-                                  Non-Compliant
-                                </option>
-                                <option value="not_applicable">N/A</option>
-                              </select>
+                        {/* Card header — clickable */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedRequirement(isExpanded ? null : req.id)
+                          }
+                          className="w-full p-5 text-left"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div
+                              className={`p-2.5 rounded-lg ${sevInfo.bgColor}`}
+                            >
+                              {req.severity === "critical" ? (
+                                <Shield size={18} className={sevInfo.color} />
+                              ) : req.severity === "major" ? (
+                                <Zap size={18} className={sevInfo.color} />
+                              ) : (
+                                <Info size={18} className={sevInfo.color} />
+                              )}
                             </div>
 
-                            {/* Question */}
-                            <p className="text-[13px] text-slate-600 dark:text-white/70 mb-3">
-                              {req.complianceQuestion}
-                            </p>
-
-                            {/* Tips (collapsed) */}
-                            {req.status !== "compliant" &&
-                              req.tips.length > 0 && (
-                                <div className="mt-3 p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
-                                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/60 mb-2">
-                                    Tips
-                                  </p>
-                                  <ul className="space-y-1">
-                                    {req.tips.slice(0, 2).map((tip, i) => (
-                                      <li
-                                        key={i}
-                                        className="text-[11px] text-slate-600 dark:text-white/70 flex items-start gap-2"
-                                      >
-                                        <span className="text-slate-300 dark:text-white/10">
-                                          •
-                                        </span>
-                                        {tip}
-                                      </li>
-                                    ))}
-                                  </ul>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-mono text-[11px] text-slate-600 dark:text-white/70">
+                                      {req.articleRef}
+                                    </span>
+                                    <h3 className="text-[14px] font-medium text-slate-900 dark:text-white">
+                                      {req.title}
+                                    </h3>
+                                    <span
+                                      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${sevInfo.bgColor} ${sevInfo.color}`}
+                                    >
+                                      {req.severity}
+                                    </span>
+                                  </div>
+                                  {/* Collapsed summary */}
+                                  {!isExpanded && fields.length > 0 && (
+                                    <p className="text-[11px] text-slate-500 dark:text-white/40 mt-1">
+                                      {completedFields}/{fields.length} fields
+                                      completed
+                                    </p>
+                                  )}
                                 </div>
-                              )}
 
-                            {/* Evidence required */}
-                            {req.status === "compliant" &&
-                              req.evidenceRequired.length > 0 && (
-                                <div className="mt-3 p-3 bg-green-500/5 rounded-lg border border-green-500/10">
-                                  <p className="text-[10px] uppercase tracking-wider text-green-400/40 mb-2">
-                                    Evidence Required
-                                  </p>
-                                  <ul className="space-y-1">
-                                    {req.evidenceRequired.map((ev, i) => (
-                                      <li
-                                        key={i}
-                                        className="text-[11px] text-green-400/60 flex items-start gap-2"
-                                      >
-                                        <CheckCircle2
-                                          size={10}
-                                          className="mt-0.5"
-                                        />
-                                        {ev}
-                                      </li>
-                                    ))}
-                                  </ul>
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <span
+                                    className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg ${statusInfo.bgColor} ${statusInfo.color}`}
+                                  >
+                                    {statusInfo.label}
+                                  </span>
+                                  <motion.div
+                                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <ChevronDown
+                                      size={16}
+                                      className="text-slate-400 dark:text-white/30"
+                                    />
+                                  </motion.div>
                                 </div>
-                              )}
-
-                            {/* Compliance Evidence */}
-                            <EvidencePanel
-                              regulationType="DEBRIS"
-                              requirementId={req.id}
-                            />
-
-                            {/* ASTRA AI Agent */}
-                            <AstraButton
-                              articleId={req.id}
-                              articleRef={req.articleRef}
-                              title={req.title}
-                              severity={req.severity}
-                              regulationType="DEBRIS"
-                            />
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        </button>
+
+                        {/* Expanded content */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-5 pb-5 space-y-4">
+                                {/* Divider */}
+                                <div className="border-t border-slate-100 dark:border-white/[0.05]" />
+
+                                {/* Question */}
+                                <p className="text-[13px] text-slate-600 dark:text-white/70">
+                                  {req.complianceQuestion}
+                                </p>
+
+                                {/* Sub-question form */}
+                                {fields.length > 0 && (
+                                  <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/40 mb-3">
+                                      Assessment Details
+                                    </p>
+                                    <AssessmentFieldForm
+                                      fields={fields}
+                                      values={responses}
+                                      onChange={(fieldId, value) =>
+                                        handleFieldChange(
+                                          req.id,
+                                          fieldId,
+                                          value,
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Auto-suggested status */}
+                                {suggested && suggested !== req.status && (
+                                  <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                                    <Sparkles
+                                      size={14}
+                                      className="text-blue-400"
+                                    />
+                                    <span className="text-[12px] text-blue-400/80">
+                                      ASTRA suggests:{" "}
+                                      <span className="font-medium capitalize">
+                                        {requirementStatusConfig[suggested]
+                                          ?.label || suggested}
+                                      </span>
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateRequirementStatus(
+                                          req.id,
+                                          suggested,
+                                        )
+                                      }
+                                      className="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-md hover:bg-blue-500/20 transition-colors"
+                                    >
+                                      Accept
+                                    </button>
+                                  </div>
+                                )}
+
+                                {/* Manual override */}
+                                <div className="flex items-center gap-3">
+                                  <label className="text-[11px] text-slate-500 dark:text-white/40">
+                                    Status:
+                                  </label>
+                                  <select
+                                    value={req.status}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      updateRequirementStatus(
+                                        req.id,
+                                        e.target.value as RequirementStatus,
+                                      );
+                                    }}
+                                    aria-label={`Compliance status for ${req.title}`}
+                                    className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] focus:outline-none ${statusInfo.color}`}
+                                  >
+                                    <option value="not_assessed">
+                                      Not Assessed
+                                    </option>
+                                    <option value="compliant">Compliant</option>
+                                    <option value="non_compliant">
+                                      Non-Compliant
+                                    </option>
+                                    <option value="not_applicable">N/A</option>
+                                  </select>
+                                </div>
+
+                                {/* Tips */}
+                                {req.status !== "compliant" &&
+                                  req.tips.length > 0 && (
+                                    <div className="p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                                      <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/60 mb-2">
+                                        Tips
+                                      </p>
+                                      <ul className="space-y-1">
+                                        {req.tips.map((tip, i) => (
+                                          <li
+                                            key={i}
+                                            className="text-[11px] text-slate-600 dark:text-white/70 flex items-start gap-2"
+                                          >
+                                            <span className="text-slate-300 dark:text-white/10">
+                                              •
+                                            </span>
+                                            {tip}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                {/* Evidence required */}
+                                {req.evidenceRequired.length > 0 && (
+                                  <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/10">
+                                    <p className="text-[10px] uppercase tracking-wider text-green-400/40 mb-2">
+                                      Evidence Required
+                                    </p>
+                                    <ul className="space-y-1">
+                                      {req.evidenceRequired.map((ev, i) => (
+                                        <li
+                                          key={i}
+                                          className="text-[11px] text-green-400/60 flex items-start gap-2"
+                                        >
+                                          <CheckCircle2
+                                            size={10}
+                                            className="mt-0.5"
+                                          />
+                                          {ev}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {/* Compliance Evidence */}
+                                <EvidencePanel
+                                  regulationType="DEBRIS"
+                                  requirementId={req.id}
+                                />
+
+                                {/* ASTRA AI Agent */}
+                                <AstraButton
+                                  articleId={req.id}
+                                  articleRef={req.articleRef}
+                                  title={req.title}
+                                  severity={req.severity}
+                                  regulationType="DEBRIS"
+                                />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
                   })}

@@ -79,6 +79,7 @@ export interface DebrisDataBundle {
     requirementId: string;
     status: string;
     notes?: string | null;
+    responses?: Record<string, unknown> | null;
   }>;
   spacecraft: Array<{
     name: string;
