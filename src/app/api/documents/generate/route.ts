@@ -125,7 +125,9 @@ export async function POST(request: NextRequest) {
             }
             controller.close();
           } catch (error) {
-            const errorMsg = getSafeErrorMessage(error, "Generation failed");
+            // Show actual error to our own client (not an external API consumer)
+            const errorMsg =
+              error instanceof Error ? error.message : "Generation failed";
             const data = `data: ${JSON.stringify({ type: "error", message: errorMsg })}\n\n`;
             controller.enqueue(encoder.encode(data));
             controller.close();

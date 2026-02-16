@@ -255,60 +255,34 @@ export default function DocumentStudio() {
           const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
           if (!dataLine) continue;
 
+          let event;
           try {
-            const event = JSON.parse(dataLine.slice(6));
-
-            if (event.type === "generation_start") {
-              documentId = event.documentId;
-            } else if (event.type === "section_start") {
-              dispatch({
-                type: "STREAM_SECTION_START",
-                title:
-                  event.title || `Section ${(event.sectionIndex ?? 0) + 1}`,
-              });
-            } else if (event.type === "section_complete") {
-              dispatch({ type: "STREAM_SECTION_COMPLETE" });
-            } else if (event.type === "generation_complete") {
-              dispatch({ type: "STREAM_FINALIZING" });
-              documentId = event.documentId || documentId;
-              // Fetch the completed document (sections are saved in DB)
-              const docRes = await fetch(
-                `/api/documents/generated/${documentId}`,
-              );
-              if (!docRes.ok)
-                throw new Error("Failed to load generated document");
-              const doc = await docRes.json();
-
-              dispatch({
-                type: "GENERATION_COMPLETE",
-                sections: doc.content || [],
-                rawContent: "",
-                documentId: doc.id,
-              });
-              return;
-            } else if (event.type === "error") {
-              throw new Error(event.message || "Generation failed");
-            }
-          } catch (parseError) {
-            // Re-throw generation errors, ignore JSON parse errors
-            if (
-              parseError instanceof Error &&
-              parseError.message !== "Generation failed" &&
-              !parseError.message.startsWith("Failed to") &&
-              parseError instanceof SyntaxError === false
-            ) {
-              throw parseError;
-            }
+            event = JSON.parse(dataLine.slice(6));
+          } catch {
+            // Ignore malformed JSON chunks
+            continue;
           }
-        }
-      }
 
-      // Stream ended — try to fetch document as fallback
-      if (documentId) {
-        const docRes = await fetch(`/api/documents/generated/${documentId}`);
-        if (docRes.ok) {
-          const doc = await docRes.json();
-          if (doc.status === "COMPLETED") {
+          if (event.type === "generation_start") {
+            documentId = event.documentId;
+          } else if (event.type === "section_start") {
+            dispatch({
+              type: "STREAM_SECTION_START",
+              title: event.title || `Section ${(event.sectionIndex ?? 0) + 1}`,
+            });
+          } else if (event.type === "section_complete") {
+            dispatch({ type: "STREAM_SECTION_COMPLETE" });
+          } else if (event.type === "generation_complete") {
+            dispatch({ type: "STREAM_FINALIZING" });
+            documentId = event.documentId || documentId;
+            // Fetch the completed document (sections are saved in DB)
+            const docRes = await fetch(
+              `/api/documents/generated/${documentId}`,
+            );
+            if (!docRes.ok)
+              throw new Error("Failed to load generated document");
+            const doc = await docRes.json();
+
             dispatch({
               type: "GENERATION_COMPLETE",
               sections: doc.content || [],
@@ -316,14 +290,42 @@ export default function DocumentStudio() {
               documentId: doc.id,
             });
             return;
-          }
-          if (doc.status === "FAILED") {
-            throw new Error(doc.error || "Generation failed");
+          } else if (event.type === "error") {
+            throw new Error(event.message || "Generation failed");
           }
         }
       }
 
-      throw new Error("Generation failed unexpectedly. Please try again.");
+      // Stream ended without generation_complete — poll DB as fallback
+      if (documentId) {
+        // Retry a few times in case the server is still saving
+        for (let attempt = 0; attempt < 5; attempt++) {
+          if (attempt > 0) {
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+          const docRes = await fetch(`/api/documents/generated/${documentId}`);
+          if (docRes.ok) {
+            const doc = await docRes.json();
+            if (doc.status === "COMPLETED") {
+              dispatch({
+                type: "GENERATION_COMPLETE",
+                sections: doc.content || [],
+                rawContent: "",
+                documentId: doc.id,
+              });
+              return;
+            }
+            if (doc.status === "FAILED") {
+              throw new Error(doc.error || "Generation failed");
+            }
+            // Still GENERATING or PENDING — keep polling
+          }
+        }
+      }
+
+      throw new Error(
+        "Generation timed out. The server may still be processing — please check your documents list or try again.",
+      );
     } catch (error) {
       dispatch({
         type: "GENERATION_ERROR",
