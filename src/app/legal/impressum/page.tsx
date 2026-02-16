@@ -44,7 +44,7 @@ export default function ImpressumPage() {
               </h2>
               <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
                 <p>E-Mail: cs@caelex.eu</p>
-                <p>Telefon: +49 30 12087953</p>
+                <p>Telefon: +49 1636726480</p>
               </div>
             </section>
 
