@@ -145,7 +145,8 @@ export default function DocumentStudio() {
     dispatch({ type: "START_GENERATION" });
 
     try {
-      // Start async generation — returns immediately with document ID
+      // Use streaming — keeps HTTP connection alive via Anthropic token stream,
+      // preventing Vercel serverless timeout (504)
       const response = await fetch("/api/documents/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
@@ -153,7 +154,7 @@ export default function DocumentStudio() {
           documentType: state.documentType,
           assessmentId: state.assessmentId,
           language: state.language,
-          async: true,
+          stream: true,
         }),
       });
 
@@ -172,54 +173,88 @@ export default function DocumentStudio() {
         throw new Error(errorMsg);
       }
 
-      const { documentId } = await response.json();
+      // Read SSE stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response stream");
 
-      // Poll for completion every 3 seconds
-      const poll = async () => {
-        const maxAttempts = 60; // 3 minutes max
-        let attempts = 0;
+      const decoder = new TextDecoder();
+      let documentId: string | null = null;
+      let buffer = "";
 
-        while (attempts < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-          attempts++;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE events — split on double newline
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
+          if (!dataLine) continue;
 
           try {
-            const pollRes = await fetch(
-              `/api/documents/generated/${documentId}`,
-            );
-            if (!pollRes.ok) continue;
+            const event = JSON.parse(dataLine.slice(6));
 
-            const doc = await pollRes.json();
+            if (event.type === "generation_start") {
+              documentId = event.documentId;
+            } else if (event.type === "generation_complete") {
+              documentId = event.documentId || documentId;
+              // Fetch the completed document (sections are saved in DB)
+              const docRes = await fetch(
+                `/api/documents/generated/${documentId}`,
+              );
+              if (!docRes.ok)
+                throw new Error("Failed to load generated document");
+              const doc = await docRes.json();
 
-            if (doc.status === "COMPLETED") {
               dispatch({
                 type: "GENERATION_COMPLETE",
-                sections: doc.content || doc.editedContent || [],
+                sections: doc.content || [],
                 rawContent: "",
                 documentId: doc.id,
               });
               return;
+            } else if (event.type === "error") {
+              throw new Error(event.message || "Generation failed");
             }
-
-            if (doc.status === "FAILED") {
-              throw new Error(doc.error || "Document generation failed");
-            }
-          } catch (pollError) {
+          } catch (parseError) {
+            // Re-throw generation errors, ignore JSON parse errors
             if (
-              pollError instanceof Error &&
-              pollError.message !== "Document generation failed"
+              parseError instanceof Error &&
+              parseError.message !== "Generation failed" &&
+              !parseError.message.startsWith("Failed to") &&
+              parseError instanceof SyntaxError === false
             ) {
-              // Network error during poll — keep trying
-              continue;
+              throw parseError;
             }
-            throw pollError;
           }
         }
+      }
 
-        throw new Error("Generation timed out. Please try again.");
-      };
+      // Stream ended — try to fetch document as fallback
+      if (documentId) {
+        const docRes = await fetch(`/api/documents/generated/${documentId}`);
+        if (docRes.ok) {
+          const doc = await docRes.json();
+          if (doc.status === "COMPLETED") {
+            dispatch({
+              type: "GENERATION_COMPLETE",
+              sections: doc.content || [],
+              rawContent: "",
+              documentId: doc.id,
+            });
+            return;
+          }
+          if (doc.status === "FAILED") {
+            throw new Error(doc.error || "Generation failed");
+          }
+        }
+      }
 
-      await poll();
+      throw new Error("Generation failed unexpectedly. Please try again.");
     } catch (error) {
       dispatch({
         type: "GENERATION_ERROR",
