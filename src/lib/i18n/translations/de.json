@@ -376,25 +376,6 @@
     "copyEmbed": "Einbettungscode kopieren",
     "copied": "Kopiert!"
   },
-  "referrals": {
-    "title": "Empfehlungsprogramm",
-    "description": "Laden Sie Kollegen ein und erhalten Sie Belohnungen bei Abonnement",
-    "yourLink": "Ihr Empfehlungslink",
-    "copyLink": "Link kopieren",
-    "linkCopied": "Link kopiert!",
-    "inviteByEmail": "Per E-Mail einladen",
-    "sendInvite": "Einladung senden",
-    "inviteSent": "Einladung gesendet!",
-    "stats": "Empfehlungsstatistik",
-    "totalInvites": "Einladungen gesamt",
-    "signedUp": "Registriert",
-    "converted": "Konvertiert",
-    "pending": "Ausstehend",
-    "history": "Empfehlungsverlauf",
-    "status": "Status",
-    "date": "Datum",
-    "noReferrals": "Noch keine Empfehlungen. Teilen Sie Ihren Link!"
-  },
   "upgrade": {
     "title": "Plan upgraden",
     "currentPlan": "Aktueller Plan",

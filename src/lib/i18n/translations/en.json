@@ -376,25 +376,6 @@
     "copyEmbed": "Copy embed code",
     "copied": "Copied!"
   },
-  "referrals": {
-    "title": "Referral Program",
-    "description": "Invite colleagues and earn rewards when they subscribe",
-    "yourLink": "Your Referral Link",
-    "copyLink": "Copy Link",
-    "linkCopied": "Link copied!",
-    "inviteByEmail": "Invite by Email",
-    "sendInvite": "Send Invite",
-    "inviteSent": "Invitation sent!",
-    "stats": "Referral Stats",
-    "totalInvites": "Total Invites",
-    "signedUp": "Signed Up",
-    "converted": "Converted",
-    "pending": "Pending",
-    "history": "Referral History",
-    "status": "Status",
-    "date": "Date",
-    "noReferrals": "No referrals yet. Share your link to get started!"
-  },
   "upgrade": {
     "title": "Upgrade Your Plan",
     "currentPlan": "Current Plan",

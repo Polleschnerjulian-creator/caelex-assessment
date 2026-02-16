@@ -35,7 +35,6 @@ import {
   FileSearch,
   Orbit,
   Code2,
-  Gift,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -733,16 +732,6 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               ? t("sidebar.widget")
               : "Widget"}
           </NavItem>
-          <NavItem
-            href="/dashboard/settings/referrals"
-            icon={<Gift size={16} strokeWidth={1.5} />}
-            onClick={handleNavClick}
-          >
-            {t("sidebar.referrals") !== "sidebar.referrals"
-              ? t("sidebar.referrals")
-              : "Referrals"}
-          </NavItem>
-
           <button
             onClick={handleLogout}
             className="

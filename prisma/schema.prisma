@@ -62,9 +62,6 @@ model User {
   submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
   consents               UserConsent[]           // GDPR consent records
   breachReports          BreachReport[]          // GDPR Art. 33/34 breach reports
-  referralsGiven         Referral[]              @relation("referrals_given")
-  referralsReceived      Referral[]              @relation("referrals_received")
-
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage  Int                     @default(0)
   lastReengagementAt     DateTime?
@@ -3985,34 +3982,6 @@ model BreachReport {
 // ============================================
 // CUSTOMER RETENTION & ACQUISITION
 // ============================================
-
-// ─── Referral System ───
-
-enum ReferralStatus {
-  PENDING
-  SIGNED_UP
-  CONVERTED
-  EXPIRED
-}
-
-model Referral {
-  id              String         @id @default(cuid())
-  referrerUserId  String
-  referrer        User           @relation("referrals_given", fields: [referrerUserId], references: [id], onDelete: Cascade)
-  referredEmail   String
-  referredUserId  String?
-  referredUser    User?          @relation("referrals_received", fields: [referredUserId], references: [id], onDelete: SetNull)
-  code            String         @unique
-  status          ReferralStatus @default(PENDING)
-  rewardGranted   Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  convertedAt     DateTime?
-
-  @@index([referrerUserId])
-  @@index([referredEmail])
-  @@index([code])
-  @@index([status])
-}
 
 // ─── Churn Intervention ───
 

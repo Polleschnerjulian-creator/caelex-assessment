@@ -376,25 +376,6 @@
     "copyEmbed": "Copier le code",
     "copied": "Copié !"
   },
-  "referrals": {
-    "title": "Programme de parrainage",
-    "description": "Invitez des collègues et gagnez des récompenses à leur abonnement",
-    "yourLink": "Votre lien de parrainage",
-    "copyLink": "Copier le lien",
-    "linkCopied": "Lien copié !",
-    "inviteByEmail": "Inviter par e-mail",
-    "sendInvite": "Envoyer l'invitation",
-    "inviteSent": "Invitation envoyée !",
-    "stats": "Statistiques de parrainage",
-    "totalInvites": "Invitations totales",
-    "signedUp": "Inscrits",
-    "converted": "Convertis",
-    "pending": "En attente",
-    "history": "Historique de parrainage",
-    "status": "Statut",
-    "date": "Date",
-    "noReferrals": "Aucun parrainage. Partagez votre lien pour commencer !"
-  },
   "upgrade": {
     "title": "Mettre à niveau votre plan",
     "currentPlan": "Plan actuel",

@@ -376,25 +376,6 @@
     "copyEmbed": "Copiar código",
     "copied": "¡Copiado!"
   },
-  "referrals": {
-    "title": "Programa de referidos",
-    "description": "Invite a colegas y gane recompensas cuando se suscriban",
-    "yourLink": "Su enlace de referido",
-    "copyLink": "Copiar enlace",
-    "linkCopied": "¡Enlace copiado!",
-    "inviteByEmail": "Invitar por correo",
-    "sendInvite": "Enviar invitación",
-    "inviteSent": "¡Invitación enviada!",
-    "stats": "Estadísticas de referidos",
-    "totalInvites": "Invitaciones totales",
-    "signedUp": "Registrados",
-    "converted": "Convertidos",
-    "pending": "Pendientes",
-    "history": "Historial de referidos",
-    "status": "Estado",
-    "date": "Fecha",
-    "noReferrals": "Sin referidos aún. ¡Comparta su enlace para comenzar!"
-  },
   "upgrade": {
     "title": "Mejorar su plan",
     "currentPlan": "Plan actual",
