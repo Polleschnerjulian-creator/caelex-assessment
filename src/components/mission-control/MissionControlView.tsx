@@ -188,7 +188,7 @@ export default function MissionControlView() {
   if (isLoading) {
     return (
       <div
-        className="h-[calc(100vh-64px)] bg-[#0A0A0B] flex items-center justify-center"
+        className="h-[calc(100vh-64px)] bg-[#030810] flex items-center justify-center"
         role="status"
         aria-live="polite"
       >
@@ -206,7 +206,7 @@ export default function MissionControlView() {
   }
 
   return (
-    <div className="h-[calc(100vh-64px)] bg-[#0A0A0B] relative flex flex-col overflow-hidden">
+    <div className="h-[calc(100vh-64px)] bg-[#030810] relative flex flex-col overflow-hidden">
       {/* 3D Canvas */}
       <div className="flex-1 relative">
         <GlobeScene

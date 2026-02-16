@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useMemo, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
 import EarthMesh from "./EarthMesh";
 import SatellitePoints from "./SatellitePoints";
 import FleetLabels from "./FleetLabels";
@@ -29,6 +30,52 @@ interface GlobeSceneProps {
   };
 }
 
+// Starfield background — thousands of tiny white dots on a large sphere
+function Starfield() {
+  const ref = useRef<THREE.Points>(null);
+
+  const geometry = useMemo(() => {
+    const count = 3000;
+    const positions = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      // Random position on a distant sphere
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 40 + Math.random() * 20;
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = r * Math.cos(phi);
+      positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      sizes[i] = 0.5 + Math.random() * 1.5;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    return geo;
+  }, []);
+
+  const material = useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        color: "#ffffff",
+        size: 0.08,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.7,
+      }),
+    [],
+  );
+
+  // Very slow rotation for parallax effect
+  useFrame(() => {
+    if (ref.current) {
+      ref.current.rotation.y += 0.00002;
+    }
+  });
+
+  return <points ref={ref} geometry={geometry} material={material} />;
+}
+
 function SceneContent({
   satellites,
   fleetNoradIds,
@@ -42,9 +89,12 @@ function SceneContent({
 }: GlobeSceneProps) {
   return (
     <>
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[5, 3, 5]} intensity={0.4} color="#b4c6ef" />
-      <pointLight position={[0, 0, 0]} intensity={0.05} color="#1a2744" />
+      {/* Brighter, more natural lighting */}
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[5, 3, 5]} intensity={1.0} color="#fffaf0" />
+      <hemisphereLight args={["#4488cc", "#112244", 0.3]} />
+
+      <Starfield />
 
       <EarthMesh radius={1} segments={compact ? 32 : 64} />
 

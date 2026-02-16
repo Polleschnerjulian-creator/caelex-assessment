@@ -23,7 +23,7 @@ export default function GlobeWidget() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
         {/* Globe - 2/3 width */}
-        <div className="lg:col-span-2 relative h-[280px] bg-[#050508]">
+        <div className="lg:col-span-2 relative h-[280px] bg-[#030810]">
           {isLoading ? (
             <div
               className="absolute inset-0 flex items-center justify-center"
