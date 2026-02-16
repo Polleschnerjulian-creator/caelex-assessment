@@ -22,7 +22,7 @@ import { DOCUMENT_TYPE_META as DOC_META, DOCUMENT_SECTIONS } from "./types";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-5-20250929";
 const MAX_TOKENS = 16384;
-const MAX_TOKENS_PER_SECTION = 1500;
+const MAX_TOKENS_PER_SECTION = 2048;
 const PROMPT_VERSION = "v1.0";
 
 let anthropicClient: Anthropic | null = null;
