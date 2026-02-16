@@ -27,8 +27,12 @@ export async function POST(request: Request) {
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
+      // H5: Generic error to prevent account enumeration
       return NextResponse.json(
-        { error: "Account already exists" },
+        {
+          error: "Validation failed",
+          details: { email: ["This email cannot be used"] },
+        },
         { status: 400 },
       );
     }

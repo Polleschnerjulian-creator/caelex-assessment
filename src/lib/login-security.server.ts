@@ -104,7 +104,11 @@ export async function getGeoFromIP(ipAddress: string): Promise<{
     ipAddress === "::1" ||
     ipAddress.startsWith("192.168.") ||
     ipAddress.startsWith("10.") ||
-    ipAddress.startsWith("172.")
+    (() => {
+      if (!ipAddress.startsWith("172.")) return false;
+      const second = parseInt(ipAddress.split(".")[1], 10);
+      return second >= 16 && second <= 31;
+    })()
   ) {
     return { city: null, country: null, countryCode: null };
   }
@@ -112,7 +116,7 @@ export async function getGeoFromIP(ipAddress: string): Promise<{
   try {
     // Using ip-api.com free service (rate limited - in production use MaxMind GeoIP2)
     const response = await fetch(
-      `http://ip-api.com/json/${ipAddress}?fields=status,city,country,countryCode,lat,lon`,
+      `https://pro.ip-api.com/json/${ipAddress}?fields=status,city,country,countryCode,lat,lon&key=${process.env.IP_API_KEY || ""}`,
       { next: { revalidate: 86400 } }, // Cache for 24 hours
     );
 

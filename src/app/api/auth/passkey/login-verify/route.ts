@@ -44,9 +44,24 @@ export async function POST(request: Request) {
     const { response } = validation.data;
     const { ipAddress, userAgent } = getRequestContext(request);
 
+    // Read challenge token from httpOnly cookie
+    const challengeToken = request.headers
+      .get("cookie")
+      ?.split(";")
+      .find((c) => c.trim().startsWith("__webauthn_challenge="))
+      ?.split("=")[1];
+
+    if (!challengeToken) {
+      return NextResponse.json(
+        { error: "Challenge expired or missing" },
+        { status: 400 },
+      );
+    }
+
     // Cast the Zod-validated response to the expected type
     const result = await verifyPasskeyAuthentication(
       response as unknown as Parameters<typeof verifyPasskeyAuthentication>[0],
+      challengeToken,
     );
 
     if (!result.success || !result.userId) {
@@ -114,7 +129,8 @@ export async function POST(request: Request) {
     // Return success with user info
     // The client should then call next-auth signIn with the user ID
     // to properly create a session
-    return NextResponse.json({
+    // Clear the challenge cookie
+    const res = NextResponse.json({
       success: true,
       userId: user.id,
       user: {
@@ -125,6 +141,8 @@ export async function POST(request: Request) {
       },
       message: "Passkey verified. Complete sign-in on client.",
     });
+    res.cookies.delete("__webauthn_challenge");
+    return res;
   } catch (error) {
     console.error("Error verifying passkey login:", error);
     return NextResponse.json(

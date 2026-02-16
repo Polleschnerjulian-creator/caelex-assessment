@@ -67,7 +67,7 @@ function getAuthRateLimiter(): Ratelimit | null {
 const RATE_LIMIT_EXEMPT_ROUTES = [
   "/api/v1/webhooks",
   "/api/cron/",
-  "/api/auth/", // NextAuth callbacks have their own protection
+  "/api/auth/callback/", // Only NextAuth OAuth callbacks are exempt; login/signup/mfa use auth limiter
   "/api/public/", // Public API handles its own rate limiting
 ];
 
@@ -82,10 +82,17 @@ function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     const ips = forwarded.split(",").map((ip) => ip.trim());
-    return ips[ips.length - 1] || "unknown";
+    return ips[0] || "unknown";
   }
 
   return "unknown";
+}
+
+const IP_REGEX = /^[\d.:a-fA-F]+$/;
+
+function getSanitizedClientIp(req: NextRequest): string {
+  const ip = getClientIp(req);
+  return IP_REGEX.test(ip) ? ip : "unknown";
 }
 
 // ─── Security Headers ───
@@ -95,7 +102,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy":
-    "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    "camera=(), microphone=(), geolocation=(), interest-cohort=(), accelerometer=(), gyroscope=(), magnetometer=(), usb=(), payment=()",
 };
 
 // Known scraper/bot User-Agents to block on assessment endpoints
@@ -281,7 +288,7 @@ export default async function middleware(req: NextRequest) {
       const limiter = isAuthRoute ? getAuthRateLimiter() : getApiRateLimiter();
 
       if (limiter) {
-        const ip = getClientIp(req);
+        const ip = getSanitizedClientIp(req);
         const result = await limiter.limit(`ip:${ip}`);
 
         if (!result.success) {
@@ -391,8 +398,16 @@ export default async function middleware(req: NextRequest) {
 
     if (hasSession) {
       const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
+      // Validate callbackUrl is a safe relative path (prevent open redirect)
+      const safeUrl =
+        callbackUrl &&
+        callbackUrl.startsWith("/") &&
+        !callbackUrl.startsWith("//") &&
+        !callbackUrl.includes("://")
+          ? callbackUrl
+          : "/dashboard";
       return applySecurityHeaders(
-        NextResponse.redirect(new URL(callbackUrl || "/dashboard", req.url)),
+        NextResponse.redirect(new URL(safeUrl, req.url)),
         pathname,
         nonce,
       );

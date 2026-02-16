@@ -24,13 +24,22 @@ export async function POST(request: Request) {
     }
 
     const { email } = validation.data;
-    const { options, userId } =
+    const { options, userId, challengeToken } =
       await generatePasskeyAuthenticationOptions(email);
 
-    return NextResponse.json({
+    // Set challenge token in httpOnly cookie (stateless, works across serverless instances)
+    const response = NextResponse.json({
       options,
       hasCredentials: !!userId,
     });
+    response.cookies.set("__webauthn_challenge", challengeToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 300, // 5 minutes
+      path: "/api/auth/passkey",
+    });
+    return response;
   } catch (error) {
     console.error("Error generating passkey login options:", error);
     return NextResponse.json(

@@ -355,7 +355,7 @@ describe("GET /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("DB connection failed");
+    expect(data.error).toBe("Internal server error");
   });
 });
 
@@ -464,7 +464,7 @@ describe("POST /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Transaction failed");
+    expect(data.error).toBe("Internal server error");
   });
 });
 
@@ -528,7 +528,7 @@ describe("GET /api/nis2/[assessmentId]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("DB error");
+    expect(data.error).toBe("Internal server error");
   });
 });
 

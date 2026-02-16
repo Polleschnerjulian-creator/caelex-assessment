@@ -75,10 +75,10 @@ describe("MFA Service", () => {
       expect(secret1).not.toBe(secret2);
     });
 
-    it("should generate a secret of sufficient length for SHA1 (20 bytes / 160 bits)", () => {
+    it("should generate a secret of sufficient length for SHA256 (32 bytes / 256 bits)", () => {
       const secret = generateTotpSecret();
-      // 20 bytes in base32 = 32 characters
-      expect(secret.length).toBeGreaterThanOrEqual(32);
+      // 32 bytes in base32 = ~52 characters
+      expect(secret.length).toBeGreaterThanOrEqual(52);
     });
   });
 
@@ -91,7 +91,7 @@ describe("MFA Service", () => {
       // Generate a valid code using the same library
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -121,7 +121,7 @@ describe("MFA Service", () => {
       const secret = generateTotpSecret();
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -461,7 +461,7 @@ describe("MFA Service", () => {
       const secret = generateTotpSecret();
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -496,7 +496,7 @@ describe("MFA Service", () => {
       const secret = generateTotpSecret();
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -558,7 +558,7 @@ describe("MFA Service", () => {
       const secret = generateTotpSecret();
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -602,7 +602,7 @@ describe("MFA Service", () => {
 
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),
@@ -829,7 +829,7 @@ describe("MFA Service", () => {
       // Step 2: Generate a valid TOTP code
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(setup.secret),
@@ -940,7 +940,7 @@ describe("MFA Service", () => {
       const secret = generateTotpSecret();
       const totp = new OTPAuth.TOTP({
         issuer: "Caelex",
-        algorithm: "SHA1",
+        algorithm: "SHA256",
         digits: 6,
         period: 30,
         secret: OTPAuth.Secret.fromBase32(secret),

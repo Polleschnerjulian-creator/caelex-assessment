@@ -182,26 +182,48 @@ export async function GET() {
         where: { userId },
       }),
 
-      // Notifications
+      // Notifications (limited fields — exclude internal metadata)
       prisma.notification.findMany({
         where: { userId },
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          createdAt: true,
+          read: true,
+        },
         orderBy: { createdAt: "desc" },
       }),
 
-      // ASTRA conversations with messages
+      // ASTRA conversations (exclude message content which may contain PII from user queries)
       prisma.astraConversation.findMany({
         where: { userId },
-        include: {
+        select: {
+          id: true,
+          mode: true,
+          createdAt: true,
           messages: {
+            select: {
+              id: true,
+              role: true,
+              createdAt: true,
+            },
             orderBy: { createdAt: "asc" },
           },
         },
         orderBy: { createdAt: "desc" },
       }),
 
-      // Audit log entries
+      // Audit log entries (exclude previousValue/newValue which may contain PII)
       prisma.auditLog.findMany({
         where: { userId },
+        select: {
+          id: true,
+          action: true,
+          entityType: true,
+          entityId: true,
+          timestamp: true,
+        },
         orderBy: { timestamp: "desc" },
       }),
 
@@ -227,10 +249,23 @@ export async function GET() {
         where: { userId },
       }),
 
-      // Authorization workflows
+      // Authorization workflows (exclude document file URLs/storage paths)
       prisma.authorizationWorkflow.findMany({
         where: { userId },
-        include: { documents: true },
+        include: {
+          documents: {
+            select: {
+              id: true,
+              documentType: true,
+              name: true,
+              fileName: true,
+              fileSize: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
       }),
 
       // Scheduled reports

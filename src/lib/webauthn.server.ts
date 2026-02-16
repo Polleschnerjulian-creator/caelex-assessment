@@ -18,37 +18,21 @@ import type {
   AuthenticatorTransportFuture,
 } from "@simplewebauthn/server";
 import { prisma } from "@/lib/prisma";
+import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 
 // Configuration
 const rpName = "Caelex";
-const rpID = process.env.WEBAUTHN_RP_ID || "localhost";
+const rpID =
+  process.env.WEBAUTHN_RP_ID ||
+  (process.env.NODE_ENV === "production"
+    ? (() => {
+        throw new Error("WEBAUTHN_RP_ID is required in production");
+      })()
+    : "localhost");
 const origin = process.env.WEBAUTHN_ORIGIN || `https://${rpID}`;
 
-// Store challenges temporarily (in production, use Redis or similar)
-const challengeStore = new Map<
-  string,
-  { challenge: string; expires: number }
->();
-
-function storeChallenge(userId: string, challenge: string): void {
-  challengeStore.set(userId, {
-    challenge,
-    expires: Date.now() + 5 * 60 * 1000, // 5 minutes
-  });
-}
-
-function getChallenge(userId: string): string | null {
-  const stored = challengeStore.get(userId);
-  if (!stored || stored.expires < Date.now()) {
-    challengeStore.delete(userId);
-    return null;
-  }
-  return stored.challenge;
-}
-
-function clearChallenge(userId: string): void {
-  challengeStore.delete(userId);
-}
+// Challenge tokens are HMAC-signed and stateless — no server-side storage needed.
+// This works correctly across serverless instances (Vercel, etc.).
 
 // Generate registration options for new passkey
 export async function generatePasskeyRegistrationOptions(
@@ -57,6 +41,7 @@ export async function generatePasskeyRegistrationOptions(
   userName?: string,
 ): Promise<{
   options: Awaited<ReturnType<typeof generateRegistrationOptions>>;
+  challengeToken: string;
 }> {
   // Get existing credentials to exclude
   const existingCredentials = await prisma.webAuthnCredential.findMany({
@@ -86,22 +71,38 @@ export async function generatePasskeyRegistrationOptions(
     },
   });
 
-  // Store challenge for verification
-  storeChallenge(userId, options.challenge);
+  // Create HMAC-signed challenge token (stateless, works across serverless instances)
+  const challengeToken = createSignedToken(
+    { userId, challenge: options.challenge, type: "registration" },
+    5 * 60 * 1000, // 5 minutes
+  );
 
-  return { options };
+  return { options, challengeToken };
 }
 
 // Verify registration response and save credential
 export async function verifyPasskeyRegistration(
   userId: string,
   response: RegistrationResponseJSON,
+  challengeToken: string,
   deviceName?: string,
 ): Promise<{ success: boolean; credentialId?: string; error?: string }> {
-  const expectedChallenge = getChallenge(userId);
-  if (!expectedChallenge) {
-    return { success: false, error: "Challenge expired or not found" };
+  // Verify the HMAC-signed challenge token
+  const tokenData = verifySignedToken<{
+    userId: string;
+    challenge: string;
+    type: string;
+  }>(challengeToken);
+
+  if (
+    !tokenData ||
+    tokenData.userId !== userId ||
+    tokenData.type !== "registration"
+  ) {
+    return { success: false, error: "Invalid or expired challenge" };
   }
+
+  const expectedChallenge = tokenData.challenge;
 
   let verification: VerifiedRegistrationResponse;
   try {
@@ -112,10 +113,11 @@ export async function verifyPasskeyRegistration(
       expectedRPID: rpID,
     });
   } catch (error) {
-    console.error("WebAuthn registration verification failed:", error);
+    console.error(
+      "WebAuthn registration verification failed:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     return { success: false, error: "Verification failed" };
-  } finally {
-    clearChallenge(userId);
   }
 
   if (!verification.verified || !verification.registrationInfo) {
@@ -159,6 +161,7 @@ export async function generatePasskeyAuthenticationOptions(
 ): Promise<{
   options: Awaited<ReturnType<typeof generateAuthenticationOptions>>;
   userId?: string;
+  challengeToken: string;
 }> {
   let allowCredentials: {
     id: string;
@@ -195,18 +198,36 @@ export async function generatePasskeyAuthenticationOptions(
       allowCredentials.length > 0 ? allowCredentials : undefined,
   });
 
-  // Store challenge (use a special key for login flow)
-  const challengeKey = userId || `login_${options.challenge.slice(0, 8)}`;
-  storeChallenge(challengeKey, options.challenge);
+  // Create HMAC-signed challenge token (stateless, works across serverless instances)
+  const challengeToken = createSignedToken(
+    {
+      userId: userId || "anonymous",
+      challenge: options.challenge,
+      type: "authentication",
+    },
+    5 * 60 * 1000, // 5 minutes
+  );
 
-  return { options, userId };
+  return { options, userId, challengeToken };
 }
 
 // Verify authentication response and return user
 export async function verifyPasskeyAuthentication(
   response: AuthenticationResponseJSON,
+  challengeToken: string,
   expectedUserId?: string,
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
+  // Verify the HMAC-signed challenge token
+  const tokenData = verifySignedToken<{
+    userId: string;
+    challenge: string;
+    type: string;
+  }>(challengeToken);
+
+  if (!tokenData || tokenData.type !== "authentication") {
+    return { success: false, error: "Invalid or expired challenge" };
+  }
+
   // Find the credential
   const credential = await prisma.webAuthnCredential.findUnique({
     where: { credentialId: response.id },
@@ -222,27 +243,6 @@ export async function verifyPasskeyAuthentication(
     return { success: false, error: "Credential does not belong to user" };
   }
 
-  // Get challenge
-  const challengeKey = credential.userId;
-  const expectedChallenge = getChallenge(challengeKey);
-
-  // Also try login-specific challenge
-  let usedChallengeKey = challengeKey;
-  if (!expectedChallenge) {
-    // Try to find challenge by iterating (in production, use a better approach)
-    for (const [key, value] of challengeStore.entries()) {
-      if (key.startsWith("login_") && value.expires > Date.now()) {
-        usedChallengeKey = key;
-        break;
-      }
-    }
-  }
-
-  const challenge = getChallenge(usedChallengeKey);
-  if (!challenge) {
-    return { success: false, error: "Challenge expired or not found" };
-  }
-
   let verification: VerifiedAuthenticationResponse;
   try {
     // Decode the stored credentials from base64
@@ -252,7 +252,7 @@ export async function verifyPasskeyAuthentication(
 
     verification = await verifyAuthenticationResponse({
       response,
-      expectedChallenge: challenge,
+      expectedChallenge: tokenData.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
       credential: {
@@ -267,10 +267,11 @@ export async function verifyPasskeyAuthentication(
       },
     });
   } catch (error) {
-    console.error("WebAuthn authentication verification failed:", error);
+    console.error(
+      "WebAuthn authentication verification failed:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     return { success: false, error: "Verification failed" };
-  } finally {
-    clearChallenge(usedChallengeKey);
   }
 
   if (!verification.verified) {

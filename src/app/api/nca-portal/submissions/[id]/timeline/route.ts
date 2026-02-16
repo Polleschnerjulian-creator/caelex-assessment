@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSubmissionTimeline } from "@/lib/services/nca-portal-service";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 export async function GET(
   _request: NextRequest,
@@ -22,13 +23,15 @@ export async function GET(
 
     return NextResponse.json({ timeline });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Submission not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Submission not found") {
+      return NextResponse.json(
+        { error: "Submission not found" },
+        { status: 404 },
+      );
     }
     console.error("Failed to fetch timeline:", error);
     return NextResponse.json(
-      { error: "Failed to fetch timeline" },
+      { error: getSafeErrorMessage(error, "Failed to fetch timeline") },
       { status: 500 },
     );
   }

@@ -11,6 +11,8 @@ import {
   Prisma,
 } from "@prisma/client";
 import crypto from "crypto";
+import { encrypt, decrypt } from "@/lib/encryption";
+import { validateExternalUrl } from "@/lib/url-validation";
 
 // ─── Types ───
 
@@ -97,15 +99,21 @@ export type WebhookEvent = keyof typeof WEBHOOK_EVENTS;
 export async function createWebhook(
   input: CreateWebhookInput,
 ): Promise<Webhook> {
+  // SSRF protection — block internal/private IP addresses
+  validateExternalUrl(input.url, "Webhook");
+
   // Generate secret for signature verification
   const secret = generateWebhookSecret();
+
+  // H17: Encrypt webhook signing secret at rest
+  const encryptedSecret = await encrypt(secret);
 
   return prisma.webhook.create({
     data: {
       organizationId: input.organizationId,
       name: input.name,
       url: input.url,
-      secret,
+      secret: encryptedSecret,
       events: input.events,
       headers: input.headers as Prisma.InputJsonValue,
       isActive: true,
@@ -151,6 +159,11 @@ export async function updateWebhook(
     isActive?: boolean;
   },
 ): Promise<Webhook> {
+  // SSRF protection — block internal/private IP addresses
+  if (updates.url) {
+    validateExternalUrl(updates.url, "Webhook");
+  }
+
   return prisma.webhook.update({
     where: { id: webhookId, organizationId },
     data: {
@@ -181,9 +194,12 @@ export async function regenerateWebhookSecret(
 ): Promise<string> {
   const newSecret = generateWebhookSecret();
 
+  // H17: Encrypt webhook signing secret at rest
+  const encryptedSecret = await encrypt(newSecret);
+
   await prisma.webhook.update({
     where: { id: webhookId, organizationId },
-    data: { secret: newSecret },
+    data: { secret: encryptedSecret },
   });
 
   return newSecret;
@@ -246,10 +262,13 @@ async function deliverWebhook(
   const startTime = Date.now();
 
   try {
+    // H17: Decrypt webhook signing secret before HMAC generation
+    const decryptedSecret = await decrypt(webhook.secret);
+
     // Generate signature
     const signature = generateSignature(
       JSON.stringify(payload),
-      webhook.secret,
+      decryptedSecret,
     );
 
     // Build headers
@@ -261,6 +280,9 @@ async function deliverWebhook(
       "X-Webhook-Timestamp": payload.timestamp,
       ...((webhook.headers as Record<string, string>) || {}),
     };
+
+    // SSRF protection — block internal/private IP addresses before fetch
+    validateExternalUrl(webhook.url, "Webhook");
 
     // Make request with timeout
     const controller = new AbortController();
@@ -499,9 +521,12 @@ export async function testWebhook(
   const startTime = Date.now();
 
   try {
+    // H17: Decrypt webhook signing secret before HMAC generation
+    const decryptedSecret = await decrypt(webhook.secret);
+
     const signature = generateSignature(
       JSON.stringify(testPayload),
-      webhook.secret,
+      decryptedSecret,
     );
 
     const headers: Record<string, string> = {

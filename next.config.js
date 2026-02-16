@@ -81,7 +81,10 @@ const nextConfig = {
             key: "Cache-Control",
             value: "public, max-age=3600, s-maxage=3600",
           },
-          { key: "X-Frame-Options", value: "ALLOWALL" },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors *",
+          },
         ],
       },
     ];

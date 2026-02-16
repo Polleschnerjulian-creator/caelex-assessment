@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { submitPackage } from "@/lib/services/nca-portal-service";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 export async function POST(
   request: NextRequest,
@@ -37,13 +38,12 @@ export async function POST(
 
     return NextResponse.json({ submission }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Package not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Package not found") {
+      return NextResponse.json({ error: "Package not found" }, { status: 404 });
     }
     console.error("Failed to submit package:", error);
     return NextResponse.json(
-      { error: "Failed to submit package" },
+      { error: getSafeErrorMessage(error, "Failed to submit package") },
       { status: 500 },
     );
   }

@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { BaseReport } from "@/lib/pdf/templates/base-report";
+import { getSafeErrorMessage } from "@/lib/validations";
 import type {
   ReportConfig,
   ReportSection,
@@ -210,8 +211,9 @@ export async function POST(
     });
   } catch (error) {
     console.error("PDF generation error:", error);
-    const message =
-      error instanceof Error ? error.message : "PDF generation failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: getSafeErrorMessage(error, "PDF generation failed") },
+      { status: 500 },
+    );
   }
 }

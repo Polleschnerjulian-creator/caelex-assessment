@@ -12,6 +12,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { getSafeErrorMessage } from "@/lib/validations";
 import {
   generateAuditPackageData,
   getAcceptedEvidenceDocuments,
@@ -206,14 +207,15 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown error";
     console.error(
       "Audit export error:",
-      msg,
+      error instanceof Error ? error.message : "Unknown error",
       error instanceof Error ? error.stack : "",
     );
     return NextResponse.json(
-      { error: `Failed to generate audit package: ${msg}` },
+      {
+        error: getSafeErrorMessage(error, "Failed to generate audit package"),
+      },
       { status: 500 },
     );
   }

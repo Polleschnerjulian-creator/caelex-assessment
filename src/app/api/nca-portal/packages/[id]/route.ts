@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getPackage } from "@/lib/services/nca-portal-service";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 export async function GET(
   _request: NextRequest,
@@ -22,13 +23,12 @@ export async function GET(
 
     return NextResponse.json({ package: pkg });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Package not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Package not found") {
+      return NextResponse.json({ error: "Package not found" }, { status: 404 });
     }
     console.error("Failed to fetch package:", error);
     return NextResponse.json(
-      { error: "Failed to fetch package" },
+      { error: getSafeErrorMessage(error, "Failed to fetch package") },
       { status: 500 },
     );
   }

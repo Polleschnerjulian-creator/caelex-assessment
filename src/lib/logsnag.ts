@@ -84,10 +84,13 @@ export async function trackSignup(params: {
   email: string;
   provider: string;
 }) {
+  const maskedEmail = params.email
+    ? params.email.replace(/^(.{1,2}).*@/, "$1***@")
+    : "unknown";
   await trackEvent({
     channel: "signups",
     event: "New User Signup",
-    description: `${params.email} signed up via ${params.provider}`,
+    description: `${maskedEmail} signed up via ${params.provider}`,
     tags: {
       userId: params.userId,
       provider: params.provider,

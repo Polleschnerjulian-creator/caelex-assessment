@@ -9,14 +9,39 @@
  * - ENCRYPTION_SALT: 16-character hex string (generate with: openssl rand -hex 16)
  */
 
-import { createCipheriv, createDecipheriv, randomBytes, scrypt } from "crypto";
-import { promisify } from "util";
+import {
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+  scrypt,
+  ScryptOptions,
+} from "crypto";
 
-const scryptAsync = promisify(scrypt);
+function scryptAsync(
+  password: NodeJS.ArrayBufferView | string,
+  salt: NodeJS.ArrayBufferView | string,
+  keylen: number,
+  options?: ScryptOptions,
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const cb = (err: Error | null, derivedKey: Buffer) => {
+      if (err) reject(err);
+      else resolve(derivedKey);
+    };
+    if (options) {
+      scrypt(password, salt, keylen, options, cb);
+    } else {
+      scrypt(password, salt, keylen, cb);
+    }
+  });
+}
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ORG_KEY_PREFIX = "org:";
+
+// OWASP 2024+ recommended scrypt parameters
+const SCRYPT_PARAMS = { N: 32768, r: 8, p: 1 };
 
 // Key derivation cache (derived once per process)
 let cachedKey: Buffer | null = null;
@@ -47,7 +72,12 @@ async function getKey(): Promise<Buffer> {
     throw new Error("ENCRYPTION_KEY must be at least 32 characters");
   }
 
-  cachedKey = (await scryptAsync(encryptionKey, encryptionSalt, 32)) as Buffer;
+  cachedKey = await scryptAsync(
+    encryptionKey,
+    encryptionSalt,
+    32,
+    SCRYPT_PARAMS,
+  );
   return cachedKey;
 }
 
@@ -70,7 +100,7 @@ async function getOrgKey(organizationId: string): Promise<Buffer> {
   // Derive org-specific key using scrypt with organizationId as additional salt
   // This creates a unique key per organization while still depending on the master secret
   const orgSalt = `org:${organizationId}:${process.env.ENCRYPTION_SALT}`;
-  const orgKey = (await scryptAsync(masterKey, orgSalt, 32)) as Buffer;
+  const orgKey = await scryptAsync(masterKey, orgSalt, 32, SCRYPT_PARAMS);
 
   // Manage cache size (simple LRU eviction)
   if (orgKeyCache.size >= MAX_ORG_KEY_CACHE_SIZE) {

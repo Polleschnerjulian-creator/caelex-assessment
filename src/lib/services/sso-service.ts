@@ -12,6 +12,8 @@ import {
   Prisma,
 } from "@prisma/client";
 import { logSecurityEvent } from "./security-audit-service";
+import { encrypt, decrypt } from "@/lib/encryption";
+import { createSignedToken } from "@/lib/signed-token";
 import crypto from "crypto";
 
 // ─── Types ───
@@ -137,9 +139,9 @@ export async function configureSSOConnection(
     );
   }
 
-  // Encrypt client secret if provided
+  // Encrypt client secret if provided (AES-256-GCM via main encryption module)
   const encryptedSecret = input.clientSecret
-    ? encryptSecret(input.clientSecret)
+    ? await encrypt(input.clientSecret)
     : undefined;
 
   const connection = await prisma.sSOConnection.upsert({
@@ -215,7 +217,7 @@ export async function updateSSOConnection(
     updateData.certificate = input.certificate;
   if (input.clientId !== undefined) updateData.clientId = input.clientId;
   if (input.clientSecret !== undefined) {
-    updateData.clientSecret = encryptSecret(input.clientSecret);
+    updateData.clientSecret = await encrypt(input.clientSecret);
   }
   if (input.issuerUrl !== undefined) updateData.issuerUrl = input.issuerUrl;
   if (input.autoProvision !== undefined)
@@ -612,6 +614,22 @@ export function generateSAMLMetadata(
 }
 
 /**
+ * Escape special XML characters to prevent XML injection
+ */
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    const map: Record<string, string> = {
+      "<": "&lt;",
+      ">": "&gt;",
+      "&": "&amp;",
+      "'": "&apos;",
+      '"': "&quot;",
+    };
+    return map[c] || c;
+  });
+}
+
+/**
  * Generate SAML metadata XML
  */
 export function generateSAMLMetadataXML(
@@ -622,13 +640,13 @@ export function generateSAMLMetadataXML(
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
-                     entityID="${metadata.entityId}">
+                     entityID="${escapeXml(metadata.entityId)}">
   <md:SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"
                       AuthnRequestsSigned="false"
                       WantAssertionsSigned="true">
     <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>
     <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                  Location="${metadata.assertionConsumerServiceUrl}"
+                                  Location="${escapeXml(metadata.assertionConsumerServiceUrl)}"
                                   index="1" />
   </md:SPSSODescriptor>
 </md:EntityDescriptor>`;
@@ -684,53 +702,50 @@ export function generateOIDCState(): { state: string; nonce: string } {
 }
 
 // ─── Encryption Helpers ───
+// Uses the main AES-256-GCM encryption module for authenticated encryption.
+// Previous implementation used AES-256-CBC (vulnerable to padding oracle attacks)
+// and fell back to plain base64 when no key was set.
 
 /**
- * Encrypt a secret value
+ * Decrypt a secret value.
+ * Uses AES-256-GCM from the main encryption module.
+ *
+ * @deprecated Legacy AES-256-CBC support retained only for migration of pre-existing secrets.
+ * All new secrets are encrypted with AES-256-GCM. The CBC path will be removed in a future release.
  */
-function encryptSecret(value: string): string {
-  const key = process.env.SSO_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
-  if (!key) {
+export async function decryptSecret(encrypted: string): Promise<string> {
+  if (!encrypted) return encrypted;
+
+  // New format: iv:authTag:ciphertext (AES-256-GCM from encryption.ts)
+  const parts = encrypted.split(":");
+  if (parts.length === 3 && parts[0].length === 32) {
+    return decrypt(encrypted);
+  }
+
+  // Legacy format: iv:ciphertext (AES-256-CBC) — DEPRECATED, migration only.
+  // AES-256-CBC is vulnerable to padding oracle attacks and lacks authentication.
+  // Secrets hitting this path should be re-encrypted by updating the SSO connection.
+  if (parts.length === 2) {
     console.warn(
-      "No encryption key found. Using base64 encoding (not secure for production).",
+      "[SSO] DEPRECATED: Decrypting legacy AES-256-CBC secret. " +
+        "Re-save the SSO connection to migrate to AES-256-GCM.",
     );
-    return Buffer.from(value).toString("base64");
+    const key = process.env.SSO_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
+    if (!key) {
+      throw new Error(
+        "SSO_ENCRYPTION_KEY or NEXTAUTH_SECRET required to decrypt legacy SSO secrets",
+      );
+    }
+    const [ivHex, encryptedHex] = parts;
+    const iv = Buffer.from(ivHex, "hex");
+    const keyHash = crypto.createHash("sha256").update(key).digest();
+    const decipher = crypto.createDecipheriv("aes-256-cbc", keyHash, iv);
+    let decrypted = decipher.update(encryptedHex, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
   }
 
-  const iv = crypto.randomBytes(16);
-  const keyHash = crypto.createHash("sha256").update(key).digest();
-  const cipher = crypto.createCipheriv("aes-256-cbc", keyHash, iv);
-
-  let encrypted = cipher.update(value, "utf8", "hex");
-  encrypted += cipher.final("hex");
-
-  return `${iv.toString("hex")}:${encrypted}`;
-}
-
-/**
- * Decrypt a secret value
- */
-export function decryptSecret(encrypted: string): string {
-  const key = process.env.SSO_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
-  if (!key) {
-    // If no key, assume base64 encoding
-    return Buffer.from(encrypted, "base64").toString("utf8");
-  }
-
-  const [ivHex, encryptedHex] = encrypted.split(":");
-  if (!ivHex || !encryptedHex) {
-    // Fallback for non-encrypted values
-    return encrypted;
-  }
-
-  const iv = Buffer.from(ivHex, "hex");
-  const keyHash = crypto.createHash("sha256").update(key).digest();
-  const decipher = crypto.createDecipheriv("aes-256-cbc", keyHash, iv);
-
-  let decrypted = decipher.update(encryptedHex, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-
-  return decrypted;
+  throw new Error("Invalid encrypted secret format");
 }
 
 // ─── SSO Enforcement ───
@@ -769,19 +784,28 @@ export async function getSSOLoginUrl(
   const connection = await getSSOConnectionByDomain(domain);
   if (!connection || !connection.isActive) return null;
 
-  const state = JSON.stringify({
-    orgId: connection.organizationId,
-    returnUrl: returnUrl || "/dashboard",
-    timestamp: Date.now(),
-  });
-
-  const encodedState = Buffer.from(state).toString("base64url");
-
   const providerConfig = PROVIDER_CONFIGS[connection.provider];
   if (providerConfig.type === "saml") {
+    // HMAC-sign the state to prevent tampering (C7 fix)
+    const encodedState = createSignedToken(
+      {
+        orgId: connection.organizationId,
+        returnUrl: returnUrl || "/dashboard",
+      },
+      10 * 60 * 1000, // 10 minutes for SSO flow
+    );
     return `${baseUrl}/api/sso/saml/login?orgId=${connection.organizationId}&state=${encodedState}`;
   } else {
-    const { nonce } = generateOIDCState();
+    // H11: Include nonce in signed state for OIDC replay protection
+    const nonce = crypto.randomBytes(32).toString("hex");
+    const encodedState = createSignedToken(
+      {
+        orgId: connection.organizationId,
+        returnUrl: returnUrl || "/dashboard",
+        nonce,
+      },
+      10 * 60 * 1000, // 10 minutes for SSO flow
+    );
     const redirectUri = `${baseUrl}/api/sso/oidc/callback`;
     return generateOIDCAuthUrl(connection, redirectUri, encodedState, nonce);
   }

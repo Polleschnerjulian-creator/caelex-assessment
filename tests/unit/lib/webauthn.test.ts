@@ -52,6 +52,31 @@ vi.mock("@simplewebauthn/server", () => ({
   verifyAuthenticationResponse: mockVerifyAuthenticationResponse,
 }));
 
+vi.mock("@/lib/signed-token", () => ({
+  createSignedToken: vi.fn(
+    (payload: Record<string, unknown>, expiresInMs = 5 * 60 * 1000) => {
+      const tokenData = { ...payload, exp: Date.now() + expiresInMs };
+      const data = Buffer.from(JSON.stringify(tokenData)).toString("base64url");
+      return `${data}.test-signature`;
+    },
+  ),
+  verifySignedToken: vi.fn((token: string) => {
+    if (!token) return null;
+    const [data] = token.split(".");
+    if (!data) return null;
+    try {
+      const payload = JSON.parse(
+        Buffer.from(data, "base64url").toString("utf-8"),
+      );
+      if (typeof payload.exp === "number" && payload.exp < Date.now())
+        return null;
+      return payload;
+    } catch {
+      return null;
+    }
+  }),
+}));
+
 import {
   generatePasskeyRegistrationOptions,
   verifyPasskeyRegistration,
@@ -223,7 +248,7 @@ describe("WebAuthn / Passkeys Service", () => {
       });
     });
 
-    it("should return the generated options object", async () => {
+    it("should return the generated options object and a challengeToken", async () => {
       mockPrisma.webAuthnCredential.findMany.mockResolvedValue([]);
       const expectedOptions = {
         challenge: "challenge-return-test",
@@ -238,6 +263,7 @@ describe("WebAuthn / Passkeys Service", () => {
       );
 
       expect(result.options).toBe(expectedOptions);
+      expect(typeof result.challengeToken).toBe("string");
     });
 
     it("should store the challenge for later verification", async () => {
@@ -246,7 +272,10 @@ describe("WebAuthn / Passkeys Service", () => {
         challenge: "stored-challenge-xyz",
       });
 
-      await generatePasskeyRegistrationOptions("user-7", "a@b.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-7",
+        "a@b.com",
+      );
 
       // Verify the stored challenge is used by the verification step
       // We test this indirectly: immediately verifying should find the challenge
@@ -270,6 +299,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const verifyResult = await verifyPasskeyRegistration(
         "user-7",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(verifyResult.success).toBe(true);
@@ -285,24 +315,31 @@ describe("WebAuthn / Passkeys Service", () => {
   // ════════════════════════════════════════════════════════
 
   describe("verifyPasskeyRegistration", () => {
+    let registrationChallengeToken: string;
+
     beforeEach(async () => {
       // Pre-store a challenge for the test user
       mockPrisma.webAuthnCredential.findMany.mockResolvedValue([]);
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "reg-challenge-for-verify",
       });
-      await generatePasskeyRegistrationOptions("user-reg", "reg@test.com");
+      const result = await generatePasskeyRegistrationOptions(
+        "user-reg",
+        "reg@test.com",
+      );
+      registrationChallengeToken = result.challengeToken;
     });
 
     it("should return error when challenge has expired or is not found", async () => {
-      // Use a user ID that has no stored challenge
+      // Use an invalid token that cannot be verified
       const result = await verifyPasskeyRegistration(
         "user-no-challenge",
         makeRegistrationResponse() as never,
+        "invalid-token",
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Challenge expired or not found");
+      expect(result.error).toBe("Invalid or expired challenge");
     });
 
     it("should call verifyRegistrationResponse with correct parameters", async () => {
@@ -322,7 +359,11 @@ describe("WebAuthn / Passkeys Service", () => {
       mockPrisma.webAuthnCredential.create.mockResolvedValue({ id: "saved-1" });
 
       const response = makeRegistrationResponse();
-      await verifyPasskeyRegistration("user-reg", response as never);
+      await verifyPasskeyRegistration(
+        "user-reg",
+        response as never,
+        registrationChallengeToken,
+      );
 
       expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith({
         response,
@@ -340,6 +381,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-reg",
         makeRegistrationResponse() as never,
+        registrationChallengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -347,11 +389,10 @@ describe("WebAuthn / Passkeys Service", () => {
     });
 
     it("should return error when verification is not verified", async () => {
-      // Need a fresh challenge since previous test consumed it
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-1",
       });
-      await generatePasskeyRegistrationOptions(
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
         "user-reg-unverified",
         "u@t.com",
       );
@@ -364,6 +405,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-reg-unverified",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -374,7 +416,10 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-2",
       });
-      await generatePasskeyRegistrationOptions("user-reg-noinfo", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-noinfo",
+        "u@t.com",
+      );
 
       mockVerifyRegistrationResponse.mockResolvedValue({
         verified: true,
@@ -384,6 +429,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-reg-noinfo",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -394,7 +440,10 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-3",
       });
-      await generatePasskeyRegistrationOptions("user-reg-dup", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-dup",
+        "u@t.com",
+      );
 
       mockVerifyRegistrationResponse.mockResolvedValue({
         verified: true,
@@ -416,6 +465,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-reg-dup",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -426,7 +476,10 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-4",
       });
-      await generatePasskeyRegistrationOptions("user-reg-ok", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-ok",
+        "u@t.com",
+      );
 
       const credentialId = new Uint8Array([7, 8, 9]);
       const publicKey = new Uint8Array([10, 11, 12]);
@@ -452,6 +505,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-reg-ok",
         response as never,
+        challengeToken,
         "My Laptop",
       );
 
@@ -476,7 +530,10 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-5",
       });
-      await generatePasskeyRegistrationOptions("user-reg-defname", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-defname",
+        "u@t.com",
+      );
 
       mockVerifyRegistrationResponse.mockResolvedValue({
         verified: true,
@@ -498,6 +555,7 @@ describe("WebAuthn / Passkeys Service", () => {
       await verifyPasskeyRegistration(
         "user-reg-defname",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       const createData =
@@ -509,7 +567,10 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "fresh-challenge-6",
       });
-      await generatePasskeyRegistrationOptions("user-reg-notrans", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-notrans",
+        "u@t.com",
+      );
 
       mockVerifyRegistrationResponse.mockResolvedValue({
         verified: true,
@@ -532,7 +593,11 @@ describe("WebAuthn / Passkeys Service", () => {
       // Remove transports from the response
       delete (response.response as Record<string, unknown>).transports;
 
-      await verifyPasskeyRegistration("user-reg-notrans", response as never);
+      await verifyPasskeyRegistration(
+        "user-reg-notrans",
+        response as never,
+        challengeToken,
+      );
 
       const createData =
         mockPrisma.webAuthnCredential.create.mock.calls[0][0].data;
@@ -543,22 +608,28 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "one-time-challenge",
       });
-      await generatePasskeyRegistrationOptions("user-reg-clear", "u@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-reg-clear",
+        "u@t.com",
+      );
 
       mockVerifyRegistrationResponse.mockRejectedValue(new Error("fail"));
 
+      // First attempt with valid token
       await verifyPasskeyRegistration(
         "user-reg-clear",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
-      // The challenge should be cleared, so a second attempt should fail with "expired"
+      // Second attempt with invalid token should fail
       const result = await verifyPasskeyRegistration(
         "user-reg-clear",
         makeRegistrationResponse() as never,
+        "expired-token",
       );
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Challenge expired or not found");
+      expect(result.error).toBe("Invalid or expired challenge");
     });
   });
 
@@ -582,6 +653,7 @@ describe("WebAuthn / Passkeys Service", () => {
       });
       expect(result.options.challenge).toBe("auth-challenge-no-email");
       expect(result.userId).toBeUndefined();
+      expect(typeof result.challengeToken).toBe("string");
     });
 
     it("should look up user credentials when email is provided", async () => {
@@ -616,6 +688,7 @@ describe("WebAuthn / Passkeys Service", () => {
         { id: "cred-2", transports: undefined },
       ]);
       expect(result.userId).toBe("user-auth-1");
+      expect(typeof result.challengeToken).toBe("string");
     });
 
     it("should pass undefined allowCredentials when user has no passkeys", async () => {
@@ -651,7 +724,7 @@ describe("WebAuthn / Passkeys Service", () => {
       expect(result.userId).toBeUndefined();
     });
 
-    it("should return the generated options", async () => {
+    it("should return the generated options and challengeToken", async () => {
       const expectedOptions = {
         challenge: "auth-options-result",
         timeout: 60000,
@@ -662,6 +735,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await generatePasskeyAuthenticationOptions();
 
       expect(result.options).toBe(expectedOptions);
+      expect(typeof result.challengeToken).toBe("string");
     });
   });
 
@@ -671,10 +745,17 @@ describe("WebAuthn / Passkeys Service", () => {
 
   describe("verifyPasskeyAuthentication", () => {
     it("should return error when credential is not found", async () => {
+      // Generate auth options to get a valid challengeToken
+      mockGenerateAuthenticationOptions.mockResolvedValue({
+        challenge: "auth-challenge-cred-not-found",
+      });
+      const { challengeToken } = await generatePasskeyAuthenticationOptions();
+
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue(null);
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -682,6 +763,19 @@ describe("WebAuthn / Passkeys Service", () => {
     });
 
     it("should return error when expectedUserId does not match credential owner", async () => {
+      // Generate auth options to get a valid challengeToken
+      const mockUser = {
+        id: "user-a",
+        email: "usera@test.com",
+        webAuthnCredentials: [{ credentialId: "cred-id-1", transports: null }],
+      };
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+      mockGenerateAuthenticationOptions.mockResolvedValue({
+        challenge: "auth-challenge-user-mismatch",
+      });
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("usera@test.com");
+
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-1",
         credentialId: "cred-id-1",
@@ -694,6 +788,7 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse() as never,
+        challengeToken,
         "user-b", // different user
       );
 
@@ -702,10 +797,6 @@ describe("WebAuthn / Passkeys Service", () => {
     });
 
     it("should return error when challenge is expired or not found", async () => {
-      // Advance time far enough to expire any lingering challenges from prior tests
-      const realNow = Date.now();
-      vi.spyOn(Date, "now").mockReturnValue(realNow + 10 * 60 * 1000);
-
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-2",
         credentialId: "cred-id-1",
@@ -716,18 +807,18 @@ describe("WebAuthn / Passkeys Service", () => {
         user: { id: "user-c-unique-no-challenge" },
       });
 
+      // Pass an invalid token directly
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse() as never,
+        "invalid-token",
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Challenge expired or not found");
-
-      vi.restoreAllMocks();
+      expect(result.error).toBe("Invalid or expired challenge");
     });
 
     it("should verify authentication and return success with userId", async () => {
-      // First generate auth options to store a challenge
+      // First generate auth options to get a challengeToken
       const mockUser = {
         id: "user-auth-verify",
         email: "verify@test.com",
@@ -739,7 +830,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "auth-verify-challenge",
       });
-      await generatePasskeyAuthenticationOptions("verify@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("verify@test.com");
 
       // Now set up the credential lookup for authentication
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
@@ -761,6 +853,7 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-verify") as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(true);
@@ -779,7 +872,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "counter-challenge",
       });
-      await generatePasskeyAuthenticationOptions("counter@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("counter@test.com");
 
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-counter",
@@ -799,6 +893,7 @@ describe("WebAuthn / Passkeys Service", () => {
 
       await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-counter") as never,
+        challengeToken,
       );
 
       expect(mockPrisma.webAuthnCredential.update).toHaveBeenCalledWith({
@@ -822,7 +917,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "fail-challenge",
       });
-      await generatePasskeyAuthenticationOptions("fail@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("fail@test.com");
 
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-fail",
@@ -840,6 +936,7 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-auth-fail") as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -858,7 +955,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "noverify-challenge",
       });
-      await generatePasskeyAuthenticationOptions("noverify@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("noverify@test.com");
 
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-noverify",
@@ -876,6 +974,7 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-not-verified") as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
@@ -894,7 +993,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "creddata-challenge",
       });
-      await generatePasskeyAuthenticationOptions("creddata@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("creddata@test.com");
 
       const storedPublicKey = Buffer.from([10, 20, 30]).toString("base64");
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
@@ -914,7 +1014,7 @@ describe("WebAuthn / Passkeys Service", () => {
       mockPrisma.webAuthnCredential.update.mockResolvedValue({});
 
       const authResponse = makeAuthenticationResponse("cred-data");
-      await verifyPasskeyAuthentication(authResponse as never);
+      await verifyPasskeyAuthentication(authResponse as never, challengeToken);
 
       const callArgs = mockVerifyAuthenticationResponse.mock.calls[0][0];
       expect(callArgs.response).toBe(authResponse);
@@ -927,10 +1027,6 @@ describe("WebAuthn / Passkeys Service", () => {
     });
 
     it("should clear the challenge after authentication (even on failure)", async () => {
-      // Advance time to expire all lingering challenges from prior tests
-      const baseTime = Date.now() + 20 * 60 * 1000;
-      vi.spyOn(Date, "now").mockReturnValue(baseTime);
-
       // Store a fresh challenge for this test
       mockPrisma.user.findUnique.mockResolvedValue({
         id: "user-clear-auth",
@@ -940,7 +1036,8 @@ describe("WebAuthn / Passkeys Service", () => {
       mockGenerateAuthenticationOptions.mockResolvedValue({
         challenge: "clear-auth-challenge",
       });
-      await generatePasskeyAuthenticationOptions("clear@test.com");
+      const { challengeToken } =
+        await generatePasskeyAuthenticationOptions("clear@test.com");
 
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-clear",
@@ -954,11 +1051,13 @@ describe("WebAuthn / Passkeys Service", () => {
 
       mockVerifyAuthenticationResponse.mockRejectedValue(new Error("fail"));
 
+      // First attempt with valid token
       await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-clear") as never,
+        challengeToken,
       );
 
-      // Second attempt should fail with challenge expired (it was cleared in the finally block)
+      // Second attempt with invalid token should fail
       mockPrisma.webAuthnCredential.findUnique.mockResolvedValue({
         id: "db-cred-clear",
         credentialId: "cred-clear",
@@ -971,11 +1070,10 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const result = await verifyPasskeyAuthentication(
         makeAuthenticationResponse("cred-clear") as never,
+        "invalid-token",
       );
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Challenge expired or not found");
-
-      vi.restoreAllMocks();
+      expect(result.error).toBe("Invalid or expired challenge");
     });
   });
 
@@ -993,7 +1091,10 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const now = Date.now();
       vi.spyOn(Date, "now").mockReturnValue(now);
-      await generatePasskeyRegistrationOptions("user-expire", "e@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-expire",
+        "e@t.com",
+      );
 
       // Advance time past 5 minutes
       vi.spyOn(Date, "now").mockReturnValue(now + 5 * 60 * 1000 + 1);
@@ -1001,10 +1102,11 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-expire",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Challenge expired or not found");
+      expect(result.error).toBe("Invalid or expired challenge");
 
       vi.restoreAllMocks();
     });
@@ -1017,7 +1119,10 @@ describe("WebAuthn / Passkeys Service", () => {
 
       const now = Date.now();
       vi.spyOn(Date, "now").mockReturnValue(now);
-      await generatePasskeyRegistrationOptions("user-valid-time", "v@t.com");
+      const { challengeToken } = await generatePasskeyRegistrationOptions(
+        "user-valid-time",
+        "v@t.com",
+      );
 
       // Advance time to just under 5 minutes
       vi.spyOn(Date, "now").mockReturnValue(now + 4 * 60 * 1000);
@@ -1042,6 +1147,7 @@ describe("WebAuthn / Passkeys Service", () => {
       const result = await verifyPasskeyRegistration(
         "user-valid-time",
         makeRegistrationResponse() as never,
+        challengeToken,
       );
 
       expect(result.success).toBe(true);
@@ -1058,13 +1164,14 @@ describe("WebAuthn / Passkeys Service", () => {
       });
       await generatePasskeyRegistrationOptions("user-overwrite", "o@t.com");
 
-      // Generate second challenge (overwrites the first)
+      // Generate second challenge (each generate produces an independent token)
       mockGenerateRegistrationOptions.mockResolvedValue({
         challenge: "second-challenge",
       });
-      await generatePasskeyRegistrationOptions("user-overwrite", "o@t.com");
+      const { challengeToken: secondToken } =
+        await generatePasskeyRegistrationOptions("user-overwrite", "o@t.com");
 
-      // Verify should use the second challenge
+      // Verify should use the second challenge (via the second token)
       mockVerifyRegistrationResponse.mockResolvedValue({
         verified: true,
         registrationInfo: {
@@ -1083,6 +1190,7 @@ describe("WebAuthn / Passkeys Service", () => {
       await verifyPasskeyRegistration(
         "user-overwrite",
         makeRegistrationResponse() as never,
+        secondToken,
       );
 
       expect(

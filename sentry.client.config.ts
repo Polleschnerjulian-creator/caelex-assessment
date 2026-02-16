@@ -30,6 +30,9 @@ if (!process.env.NEXT_PUBLIC_SENTRY_DSN || !hasErrorTrackingConsent()) {
     // Environment
     environment: process.env.NODE_ENV,
 
+    // Never send PII to Sentry
+    sendDefaultPii: false,
+
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
@@ -37,7 +40,7 @@ if (!process.env.NEXT_PUBLIC_SENTRY_DSN || !hasErrorTrackingConsent()) {
     debug: false,
 
     // Session Replay
-    replaysOnErrorSampleRate: 1.0,
+    replaysOnErrorSampleRate: 0.1,
     replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0,
 
     integrations: [
@@ -48,7 +51,7 @@ if (!process.env.NEXT_PUBLIC_SENTRY_DSN || !hasErrorTrackingConsent()) {
       }),
     ],
 
-    // Filter out non-critical errors
+    // Filter out non-critical errors and scrub PII
     beforeSend(event, hint) {
       // Don't send errors in development unless explicitly enabled
       if (process.env.NODE_ENV === "development" && !process.env.SENTRY_DEBUG) {
@@ -66,6 +69,13 @@ if (!process.env.NEXT_PUBLIC_SENTRY_DSN || !hasErrorTrackingConsent()) {
         if (error.message.includes("Failed to fetch")) {
           return null;
         }
+      }
+
+      // Scrub user PII
+      if (event.user) {
+        delete event.user.email;
+        delete event.user.ip_address;
+        delete event.user.username;
       }
 
       return event;

@@ -87,6 +87,64 @@ export interface AuditLogEntry {
   userAgent?: string;
 }
 
+// ─── PII Sanitization for Audit Values ───
+
+/**
+ * Fields that contain PII or secrets and must be redacted before storing in audit logs.
+ * This prevents sensitive data from leaking into the audit trail where it may be
+ * exported, queried, or accessed by users with audit-read permissions.
+ */
+const PII_FIELDS = new Set([
+  "password",
+  "passwordHash",
+  "hashed",
+  "secret",
+  "token",
+  "accessToken",
+  "refreshToken",
+  "access_token",
+  "refresh_token",
+  "id_token",
+  "encryptedSecret",
+  "signingSecret",
+  "bankAccount",
+  "iban",
+  "taxId",
+  "vatNumber",
+  "policyNumber",
+  "ssn",
+  "socialSecurity",
+  "creditCard",
+  "cardNumber",
+]);
+
+/**
+ * Recursively sanitize an audit value by redacting known PII fields.
+ * Objects are deeply traversed; arrays are mapped; primitives pass through.
+ */
+function sanitizeAuditValue(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeAuditValue(item));
+  }
+
+  const obj = value as Record<string, unknown>;
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [key, val] of Object.entries(obj)) {
+    if (PII_FIELDS.has(key)) {
+      sanitized[key] = "[REDACTED]";
+    } else if (typeof val === "object" && val !== null) {
+      sanitized[key] = sanitizeAuditValue(val);
+    } else {
+      sanitized[key] = val;
+    }
+  }
+
+  return sanitized;
+}
+
 /**
  * Log an audit event to the database.
  * Automatically extends the SHA-256 hash chain for tamper-evident audit trails.
@@ -96,9 +154,11 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   try {
     const timestamp = new Date();
     const previousValue = entry.previousValue
-      ? JSON.stringify(entry.previousValue)
+      ? JSON.stringify(sanitizeAuditValue(entry.previousValue))
       : null;
-    const newValue = entry.newValue ? JSON.stringify(entry.newValue) : null;
+    const newValue = entry.newValue
+      ? JSON.stringify(sanitizeAuditValue(entry.newValue))
+      : null;
 
     // Compute hash chain — dynamically imported to keep client bundles clean
     let hashFields: { entryHash: string; previousHash: string } | null = null;
@@ -155,9 +215,11 @@ export async function logAuditEventsBatch(
         entityType: entry.entityType,
         entityId: entry.entityId,
         previousValue: entry.previousValue
-          ? JSON.stringify(entry.previousValue)
+          ? JSON.stringify(sanitizeAuditValue(entry.previousValue))
           : null,
-        newValue: entry.newValue ? JSON.stringify(entry.newValue) : null,
+        newValue: entry.newValue
+          ? JSON.stringify(sanitizeAuditValue(entry.newValue))
+          : null,
         description: entry.description,
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
@@ -244,7 +306,6 @@ export async function getEntityAuditLogs(
         select: {
           id: true,
           name: true,
-          email: true,
         },
       },
     },
@@ -273,7 +334,6 @@ export async function exportAuditLogs(
       user: {
         select: {
           name: true,
-          email: true,
         },
       },
     },
@@ -293,13 +353,17 @@ export async function exportAuditLogs(
 
     const rows = logs.map((log) => [
       log.timestamp.toISOString(),
-      log.user?.name || log.user?.email || "Unknown",
+      log.user?.name || "Unknown",
       log.action,
       log.entityType,
       log.entityId,
       log.description || "",
-      log.previousValue || "",
-      log.newValue || "",
+      log.previousValue
+        ? JSON.stringify(sanitizeAuditValue(JSON.parse(log.previousValue)))
+        : "",
+      log.newValue
+        ? JSON.stringify(sanitizeAuditValue(JSON.parse(log.newValue)))
+        : "",
     ]);
 
     return [headers, ...rows]

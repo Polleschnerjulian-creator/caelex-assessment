@@ -12,7 +12,9 @@
  */
 
 import "server-only";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt } from "@/lib/encryption";
 import { logSecurityEvent } from "@/lib/services/security-audit-service";
 import {
   SecurityAuditEventType,
@@ -54,12 +56,15 @@ export async function createHoneyToken(input: CreateHoneyTokenInput) {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
+  // H15: Encrypt tokenValue at rest
+  const encryptedTokenValue = await encrypt(input.tokenValue);
+
   return prisma.honeyToken.create({
     data: {
       tokenType: input.tokenType,
       name: input.name,
       description: input.description,
-      tokenValue: input.tokenValue,
+      tokenValue: encryptedTokenValue,
       tokenHash,
       alertEmail: input.alertEmail,
       alertWebhookUrl: input.alertWebhookUrl,
@@ -270,7 +275,7 @@ function sanitizeHeaders(
  * List all honey tokens with statistics.
  */
 export async function listHoneyTokens() {
-  return prisma.honeyToken.findMany({
+  const tokens = await prisma.honeyToken.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       _count: {
@@ -278,13 +283,20 @@ export async function listHoneyTokens() {
       },
     },
   });
+
+  // H15: Decrypt tokenValues for display
+  for (const token of tokens) {
+    token.tokenValue = await decrypt(token.tokenValue);
+  }
+
+  return tokens;
 }
 
 /**
  * Get honey token details with recent triggers.
  */
 export async function getHoneyTokenDetails(id: string) {
-  return prisma.honeyToken.findUnique({
+  const token = await prisma.honeyToken.findUnique({
     where: { id },
     include: {
       triggers: {
@@ -293,6 +305,13 @@ export async function getHoneyTokenDetails(id: string) {
       },
     },
   });
+
+  // H15: Decrypt tokenValue for display
+  if (token) {
+    token.tokenValue = await decrypt(token.tokenValue);
+  }
+
+  return token;
 }
 
 /**
@@ -325,19 +344,21 @@ export async function deleteHoneyToken(id: string) {
 
 /**
  * Generate a realistic-looking fake API key.
+ * H16: Uses crypto.randomInt() instead of Math.random() for CSPRNG.
  */
 export function generateFakeApiKey(prefix = "caelex"): string {
   const charset =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let key = `${prefix}_fake_`;
   for (let i = 0; i < 32; i++) {
-    key += charset[Math.floor(Math.random() * charset.length)];
+    key += charset[crypto.randomInt(charset.length)];
   }
   return key;
 }
 
 /**
  * Generate a realistic-looking fake AWS credential.
+ * H16: Uses crypto.randomInt() instead of Math.random() for CSPRNG.
  */
 export function generateFakeAwsCredential(
   type: "access_key" | "secret",
@@ -347,7 +368,7 @@ export function generateFakeAwsCredential(
     let key = "AKIAFAKE";
     const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     for (let i = 0; i < 12; i++) {
-      key += charset[Math.floor(Math.random() * charset.length)];
+      key += charset[crypto.randomInt(charset.length)];
     }
     return key;
   } else {
@@ -356,7 +377,7 @@ export function generateFakeAwsCredential(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let secret = "";
     for (let i = 0; i < 40; i++) {
-      secret += charset[Math.floor(Math.random() * charset.length)];
+      secret += charset[crypto.randomInt(charset.length)];
     }
     return secret;
   }
@@ -364,13 +385,14 @@ export function generateFakeAwsCredential(
 
 /**
  * Generate a realistic-looking fake database URL.
+ * H16: Uses crypto.randomBytes() instead of Math.random() for CSPRNG.
  */
 export function generateFakeDatabaseUrl(
   type: "postgres" | "mysql" = "postgres",
 ): string {
   const user = "admin_backup";
-  const pass = `fake${Math.random().toString(36).slice(2, 10)}`;
-  const host = `db-backup-${Math.random().toString(36).slice(2, 8)}.internal.example.com`;
+  const pass = `fake${crypto.randomBytes(4).toString("hex")}`;
+  const host = `db-backup-${crypto.randomBytes(4).toString("hex")}.internal.example.com`;
 
   if (type === "postgres") {
     return `postgresql://${user}:${pass}@${host}:5432/caelex_backup`;

@@ -81,21 +81,24 @@ export async function GET(request: Request) {
 
       case "customers": {
         const orgs = await prisma.organization.findMany({
-          include: {
-            subscription: true,
+          select: {
+            id: true,
+            name: true,
+            plan: true,
+            createdAt: true,
+            updatedAt: true,
             _count: { select: { members: true, spacecraft: true } },
-            healthScore: true,
+            healthScore: { select: { score: true, riskLevel: true } },
           },
         });
 
         csv =
-          "Organization,Plan,Status,Members,Spacecraft,Health Score,Risk Level,Created At\n";
+          "Organization,Plan,Members,Spacecraft,Health Score,Risk Level,Created At\n";
         csv += orgs
           .map((o) =>
             [
               o.name,
               o.plan,
-              o.subscription?.status || "N/A",
               o._count.members,
               o._count.spacecraft,
               o.healthScore?.score || "N/A",

@@ -12,15 +12,24 @@ import {
   clearFailedAttempts,
 } from "@/lib/login-security.server";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 const validateSchema = z.object({
   code: z.string().min(6).max(10), // 6 for TOTP, 8 for backup code
-  userId: z.string().optional(), // For pre-auth validation
   isBackupCode: z.boolean().optional().default(false),
 });
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 requests per minute per IP (M3/M17 security fix)
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const rl = await checkRateLimit("mfa", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body = await request.json();
     const validation = validateSchema.safeParse(body);
 
@@ -31,16 +40,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const { code, userId: providedUserId, isBackupCode } = validation.data;
+    const { code, isBackupCode } = validation.data;
     const { ipAddress, userAgent } = getRequestContext(request);
 
-    // Get user ID from session or provided value
+    // Always require authenticated session — never accept userId from request body
     const session = await auth();
-    const userId = providedUserId || session?.user?.id;
-
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     let isValid = false;
 

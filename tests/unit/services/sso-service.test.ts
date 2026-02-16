@@ -18,6 +18,34 @@ vi.mock("@/lib/services/security-audit-service", () => ({
   logSecurityEvent: vi.fn(),
 }));
 
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((v: string) =>
+    Promise.resolve(`${"a".repeat(32)}:${"b".repeat(32)}:${v}`),
+  ),
+  decrypt: vi.fn((v: string) => {
+    // Extract the last part (the "plaintext" we put there)
+    const parts = v.split(":");
+    return Promise.resolve(parts[parts.length - 1]);
+  }),
+  isEncrypted: vi.fn(() => false),
+}));
+
+vi.mock("@/lib/signed-token", () => ({
+  createSignedToken: vi.fn((payload: Record<string, unknown>) => {
+    const data = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    return `${data}.fake-signature`;
+  }),
+  verifySignedToken: vi.fn((token: string) => {
+    const [data] = token.split(".");
+    if (!data) return null;
+    try {
+      return JSON.parse(Buffer.from(data, "base64url").toString("utf-8"));
+    } catch {
+      return null;
+    }
+  }),
+}));
+
 // ─── Imports (after mocks) ───
 
 import { prisma } from "@/lib/prisma";
@@ -185,7 +213,10 @@ describe("SSO Service", () => {
       // clientSecret should have been encrypted (not stored as plaintext)
       const upsertCall = vi.mocked(prisma.sSOConnection.upsert).mock
         .calls[0][0];
-      expect(upsertCall.create.clientSecret).not.toBe("super-secret");
+      // The encrypt mock returns `${32 'a's}:${32 'b's}:${value}`
+      expect(upsertCall.create.clientSecret).toBe(
+        `${"a".repeat(32)}:${"b".repeat(32)}:super-secret`,
+      );
       expect(result).toEqual(conn);
     });
 
@@ -389,8 +420,10 @@ describe("SSO Service", () => {
 
       const updateCall = vi.mocked(prisma.sSOConnection.update).mock
         .calls[0][0];
-      // The clientSecret in the data should NOT be the plaintext value
-      expect(updateCall.data.clientSecret).not.toBe("new-secret");
+      // The clientSecret in the data should be encrypted
+      expect(updateCall.data.clientSecret).toBe(
+        `${"a".repeat(32)}:${"b".repeat(32)}:new-secret`,
+      );
       expect(typeof updateCall.data.clientSecret).toBe("string");
     });
 
@@ -1238,21 +1271,8 @@ describe("SSO Service", () => {
   // ════════════════════════════════════════════════════════════════════════
 
   describe("decryptSecret", () => {
-    const originalEnv = process.env;
-
-    afterEach(() => {
-      process.env = originalEnv;
-    });
-
     it("should decrypt a value that was encrypted with encryptSecret", async () => {
-      process.env = {
-        ...originalEnv,
-        SSO_ENCRYPTION_KEY: "test-encryption-key-for-sso-service-tests",
-      };
-
-      // We need to re-import to pick up the env change for encryption,
-      // but since encryptSecret is private, we test through configure + decrypt
-      // Instead, test the decrypt path with a known format
+      // Test through configure + decrypt since encryptSecret is private
       const conn = mockOIDCConnection();
       vi.mocked(prisma.sSOConnection.upsert).mockResolvedValue(conn as never);
 
@@ -1270,33 +1290,20 @@ describe("SSO Service", () => {
         .calls[0][0];
       const encryptedValue = upsertCall.create.clientSecret as string;
 
-      // It should be in "iv:encrypted" format
+      // It should be in "iv:authTag:ciphertext" format (3 parts)
       expect(encryptedValue).toContain(":");
+      expect(encryptedValue.split(":")).toHaveLength(3);
 
-      // Decrypt it and verify
-      const decrypted = decryptSecret(encryptedValue);
+      // Decrypt it and verify (now async)
+      const decrypted = await decryptSecret(encryptedValue);
       expect(decrypted).toBe("my-secret-value");
     });
 
-    it("should handle base64 fallback when no encryption key is set", () => {
-      process.env = { ...originalEnv };
-      delete process.env.SSO_ENCRYPTION_KEY;
-      delete process.env.NEXTAUTH_SECRET;
-
-      const base64Value = Buffer.from("hello").toString("base64");
-      const result = decryptSecret(base64Value);
-      expect(result).toBe("hello");
-    });
-
-    it("should return value as-is when it has no colon separator and key is set", () => {
-      process.env = {
-        ...originalEnv,
-        SSO_ENCRYPTION_KEY: "some-key",
-      };
-
-      // A value without ":" should be returned as-is (fallback path)
-      const result = decryptSecret("plain-value-no-colon");
-      expect(result).toBe("plain-value-no-colon");
+    it("should throw when encrypted secret format is invalid", async () => {
+      // A value without ":" should throw
+      await expect(decryptSecret("plain-value-no-colon")).rejects.toThrow(
+        "Invalid encrypted secret format",
+      );
     });
   });
 
@@ -1443,12 +1450,12 @@ describe("SSO Service", () => {
       );
 
       expect(result).not.toBeNull();
-      // The state is base64url encoded; decode it and check returnUrl
+      // The state is now a signed token: data.signature
       const stateParam = result!.match(/state=([^&]+)/)?.[1];
       expect(stateParam).toBeDefined();
-      const decoded = JSON.parse(
-        Buffer.from(stateParam!, "base64url").toString(),
-      );
+      const decodedState = decodeURIComponent(stateParam!);
+      const dataPart = decodedState.split(".")[0];
+      const decoded = JSON.parse(Buffer.from(dataPart, "base64url").toString());
       expect(decoded.returnUrl).toBe("/dashboard/settings");
       expect(decoded.orgId).toBe("org-1");
     });
@@ -1465,9 +1472,9 @@ describe("SSO Service", () => {
       );
 
       const stateParam = result!.match(/state=([^&]+)/)?.[1];
-      const decoded = JSON.parse(
-        Buffer.from(stateParam!, "base64url").toString(),
-      );
+      const decodedState = decodeURIComponent(stateParam!);
+      const dataPart = decodedState.split(".")[0];
+      const decoded = JSON.parse(Buffer.from(dataPart, "base64url").toString());
       expect(decoded.returnUrl).toBe("/dashboard");
     });
   });

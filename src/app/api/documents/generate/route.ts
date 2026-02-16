@@ -16,6 +16,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { getSafeErrorMessage } from "@/lib/validations";
 import {
   generateDocument,
   generateDocumentStream,
@@ -122,8 +123,7 @@ export async function POST(request: NextRequest) {
             }
             controller.close();
           } catch (error) {
-            const errorMsg =
-              error instanceof Error ? error.message : "Generation failed";
+            const errorMsg = getSafeErrorMessage(error, "Generation failed");
             const data = `data: ${JSON.stringify({ type: "error", message: errorMsg })}\n\n`;
             controller.enqueue(encoder.encode(data));
             controller.close();
@@ -156,11 +156,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Document generation error:", error);
-    const message =
-      error instanceof Error ? error.message : "Document generation failed";
+    const message = getSafeErrorMessage(error, "Document generation failed");
 
     // Handle missing assessment data specifically
-    if (message.includes("No") && message.includes("found")) {
+    if (
+      error instanceof Error &&
+      error.message.includes("No") &&
+      error.message.includes("found")
+    ) {
       return NextResponse.json(
         {
           error:

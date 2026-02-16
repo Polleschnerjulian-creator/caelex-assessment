@@ -7,9 +7,19 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { setupMfa } from "@/lib/mfa.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 requests per minute per IP (M3 security fix)
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const rl = await checkRateLimit("mfa", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const session = await auth();
     if (!session?.user?.id || !session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

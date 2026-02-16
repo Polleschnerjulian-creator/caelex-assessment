@@ -110,13 +110,22 @@ export async function PATCH(
       );
     }
 
-    // Verify user is a member of the organization
+    // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id, organizationId },
+      select: { role: true },
     });
     if (!member) {
       return NextResponse.json(
         { error: "You do not have access to this organization" },
+        { status: 403 },
+      );
+    }
+
+    // Only OWNER, ADMIN, or MANAGER can manage webhooks
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
         { status: 403 },
       );
     }
@@ -205,13 +214,22 @@ export async function DELETE(
       );
     }
 
-    // Verify user is a member of the organization
+    // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id, organizationId },
+      select: { role: true },
     });
     if (!member) {
       return NextResponse.json(
         { error: "You do not have access to this organization" },
+        { status: 403 },
+      );
+    }
+
+    // Only OWNER, ADMIN, or MANAGER can manage webhooks
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions" },
         { status: 403 },
       );
     }

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSSOConnection, decryptSecret } from "@/lib/services/sso-service";
 import { logSecurityEvent } from "@/lib/services/security-audit-service";
+import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 import { headers } from "next/headers";
 import { SSOProvider } from "@prisma/client";
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Handle error from IdP
     if (error) {
-      console.error("OIDC error:", error, errorDescription);
+      console.error("OIDC error from IdP:", error);
       return redirectWithError(errorDescription || error);
     }
 
@@ -27,19 +28,23 @@ export async function GET(request: NextRequest) {
       return redirectWithError("Invalid callback parameters");
     }
 
-    // Parse state to get organization ID and return URL
-    let organizationId: string;
-    let returnUrl = "/dashboard";
+    // Verify HMAC-signed state to prevent tampering (includes nonce for H11)
+    const stateData = verifySignedToken<{
+      orgId: string;
+      returnUrl?: string;
+      nonce: string;
+    }>(state);
 
-    try {
-      const stateData = JSON.parse(
-        Buffer.from(state, "base64url").toString("utf-8"),
-      );
-      organizationId = stateData.orgId;
-      returnUrl = stateData.returnUrl || "/dashboard";
-    } catch {
-      return redirectWithError("Invalid state parameter");
+    if (!stateData?.orgId) {
+      return redirectWithError("Invalid or expired state parameter");
     }
+
+    if (!stateData.nonce) {
+      return redirectWithError("Missing nonce in state parameter");
+    }
+
+    const organizationId = stateData.orgId;
+    const returnUrl = stateData.returnUrl || "/dashboard";
 
     // Get SSO connection
     const connection = await getSSOConnection(organizationId);
@@ -69,7 +74,7 @@ export async function GET(request: NextRequest) {
         grant_type: "authorization_code",
         client_id: connection.clientId || "",
         client_secret: connection.clientSecret
-          ? decryptSecret(connection.clientSecret)
+          ? await decryptSecret(connection.clientSecret)
           : "",
         code,
         redirect_uri: redirectUri,
@@ -77,21 +82,36 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error("Token exchange failed:", errorData);
+      console.error("Token exchange failed:", tokenResponse.status);
 
       await logSecurityEvent({
         event: "SSO_LOGIN",
         description: "OIDC login failed: Token exchange error",
         organizationId,
         riskLevel: "MEDIUM",
-        metadata: { error: errorData },
+        metadata: { statusCode: tokenResponse.status },
       });
 
       return redirectWithError("Failed to exchange authorization code");
     }
 
     const tokens = await tokenResponse.json();
+
+    // H11: Validate nonce from id_token to prevent replay attacks
+    if (tokens.id_token) {
+      const idTokenPayload = parseJwtPayload(tokens.id_token);
+      if (idTokenPayload.nonce !== stateData.nonce) {
+        await logSecurityEvent({
+          event: "SSO_LOGIN",
+          description:
+            "OIDC login failed: nonce mismatch (possible replay attack)",
+          organizationId,
+          riskLevel: "HIGH",
+          metadata: { expectedNonce: stateData.nonce },
+        });
+        return redirectWithError("Nonce validation failed");
+      }
+    }
 
     // Get user info
     const userInfoEndpoint = getUserInfoEndpoint(
@@ -131,7 +151,7 @@ export async function GET(request: NextRequest) {
         description: "OIDC login failed: No email in user info",
         organizationId,
         riskLevel: "MEDIUM",
-        metadata: { userInfo },
+        metadata: { hasEmail: false, claimsPresent: Object.keys(userInfo) },
       });
 
       return redirectWithError("No email address in user profile");
@@ -179,22 +199,25 @@ export async function GET(request: NextRequest) {
     // 3. Create a session
     // 4. Redirect to the return URL with session cookie
 
-    // Create a temporary token for the SSO login
-    const ssoToken = Buffer.from(
-      JSON.stringify({
+    // Create an HMAC-signed SSO token (prevents forgery)
+    const ssoToken = createSignedToken(
+      {
         email,
         name,
         organizationId,
         provider: connection.provider,
-        timestamp: Date.now(),
-      }),
-    ).toString("base64url");
+      },
+      5 * 60 * 1000, // 5 minutes
+    );
 
     return NextResponse.redirect(
       `${baseUrl}/api/auth/callback/sso?token=${ssoToken}&returnUrl=${encodeURIComponent(returnUrl)}`,
     );
   } catch (error) {
-    console.error("Error in OIDC callback:", error);
+    console.error(
+      "Error in OIDC callback:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     return redirectWithError("Internal server error");
   }
 }
@@ -229,6 +252,17 @@ function getUserInfoEndpoint(
     default:
       return `${issuerUrl}/userinfo`;
   }
+}
+
+/**
+ * Parse a JWT payload without verification (signature is verified by the IdP token exchange).
+ * Used to extract the nonce claim for validation.
+ */
+function parseJwtPayload(jwt: string): Record<string, unknown> {
+  const parts = jwt.split(".");
+  if (parts.length !== 3) throw new Error("Invalid JWT format");
+  const payload = Buffer.from(parts[1], "base64url").toString("utf-8");
+  return JSON.parse(payload);
 }
 
 function redirectWithError(message: string): NextResponse {

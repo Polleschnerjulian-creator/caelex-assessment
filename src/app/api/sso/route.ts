@@ -15,6 +15,7 @@ import {
   SSO_PROVIDER_NAMES,
 } from "@/lib/services/sso-service";
 import { SSOProvider, OrganizationRole } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +32,18 @@ export async function GET(request: NextRequest) {
         { error: "Organization ID is required" },
         { status: 400 },
       );
+    }
+
+    // Verify user has admin access to this organization
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const connection = await getSSOConnection(organizationId);
@@ -110,6 +123,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify user has admin access to this organization
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
     if (!provider || !Object.values(SSOProvider).includes(provider)) {
       return NextResponse.json(
         { error: "Invalid SSO provider" },
@@ -170,6 +195,18 @@ export async function DELETE(request: NextRequest) {
         { error: "Organization ID is required" },
         { status: 400 },
       );
+    }
+
+    // Verify user has admin access to this organization
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     await disableSSOConnection(organizationId, session.user.id);

@@ -14,6 +14,7 @@ import type {
   Prisma,
 } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { encrypt, decrypt } from "@/lib/encryption";
 import {
   notifyUser,
   notifyOrganization,
@@ -75,12 +76,15 @@ export async function reportBreach(
     },
   ];
 
+  // H13: Encrypt description — contains GDPR-critical PII
+  const encryptedDescription = await encrypt(input.description);
+
   const breach = await prisma.breachReport.create({
     data: {
       reportedById: userId,
       organizationId: input.organizationId || null,
       title: input.title,
-      description: input.description,
+      description: encryptedDescription,
       severity: input.severity,
       affectedDataTypes: input.affectedDataTypes,
       affectedDataSubjects: input.affectedDataSubjects,
@@ -196,7 +200,15 @@ export async function getBreachReports(
     prisma.breachReport.count({ where }),
   ]);
 
-  return { reports: reports as BreachReportWithReporter[], total };
+  // H13: Decrypt description fields
+  const decryptedReports = await Promise.all(
+    reports.map(async (report) => ({
+      ...report,
+      description: await decrypt(report.description),
+    })),
+  );
+
+  return { reports: decryptedReports as BreachReportWithReporter[], total };
 }
 
 /**
@@ -228,6 +240,11 @@ export async function getBreachReport(
       },
     },
   });
+
+  // H13: Decrypt description field
+  if (report) {
+    report.description = await decrypt(report.description);
+  }
 
   return report as BreachReportWithReporter | null;
 }

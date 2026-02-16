@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 const disableSchema = z.object({
   password: z.string().min(1, "Password is required"),
@@ -17,6 +18,15 @@ const disableSchema = z.object({
 
 export async function DELETE(request: Request) {
   try {
+    // Rate limit: 5 requests per minute per IP (M3 security fix)
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const rl = await checkRateLimit("mfa", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

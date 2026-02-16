@@ -15,11 +15,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { options } = await generatePasskeyRegistrationOptions(
-      session.user.id,
-      session.user.email,
-      session.user.name || undefined,
-    );
+    const { options, challengeToken } =
+      await generatePasskeyRegistrationOptions(
+        session.user.id,
+        session.user.email,
+        session.user.name || undefined,
+      );
 
     // Log audit event
     const { ipAddress, userAgent } = getRequestContext(request);
@@ -33,7 +34,16 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    return NextResponse.json(options);
+    // Set challenge token in httpOnly cookie (stateless, works across serverless instances)
+    const response = NextResponse.json(options);
+    response.cookies.set("__webauthn_challenge", challengeToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 300, // 5 minutes
+      path: "/api/auth/passkey",
+    });
+    return response;
   } catch (error) {
     console.error("Error generating passkey registration options:", error);
     return NextResponse.json(

@@ -19,6 +19,28 @@ import {
   handleCorsPreflightResponse,
 } from "@/lib/cors.server";
 
+async function resolveAllowedOrigins(
+  widgetId: string | undefined,
+): Promise<string[] | "*"> {
+  if (!widgetId) return "*";
+  try {
+    const config = await prisma.widgetConfig.findUnique({
+      where: { id: widgetId },
+      select: { allowedDomains: true },
+    });
+    if (config?.allowedDomains && config.allowedDomains.length > 0) {
+      // Map bare domains to full origin URLs for CORS header matching
+      return config.allowedDomains.flatMap((domain) => [
+        `https://${domain}`,
+        `http://${domain}`,
+      ]);
+    }
+  } catch {
+    // Fall back to wildcard on DB error
+  }
+  return "*";
+}
+
 export async function OPTIONS(request: NextRequest) {
   const origin = request.headers.get("origin");
   return handleCorsPreflightResponse(origin, "*");
@@ -58,6 +80,16 @@ export async function POST(request: NextRequest) {
 
   const { event, widgetId } = parsed.data;
 
+  // Validate CORS origin against widget's allowed domains
+  const allowedOrigins = await resolveAllowedOrigins(widgetId);
+  if (allowedOrigins !== "*" && origin && !allowedOrigins.includes(origin)) {
+    const response = NextResponse.json(
+      { error: "Origin not allowed" },
+      { status: 403 },
+    );
+    return applyCorsHeaders(response, origin, allowedOrigins);
+  }
+
   // Increment the appropriate counter
   try {
     const incrementField =
@@ -76,5 +108,5 @@ export async function POST(request: NextRequest) {
   }
 
   const response = NextResponse.json({ ok: true }, { status: 200 });
-  return applyCorsHeaders(response, origin, "*");
+  return applyCorsHeaders(response, origin, allowedOrigins);
 }

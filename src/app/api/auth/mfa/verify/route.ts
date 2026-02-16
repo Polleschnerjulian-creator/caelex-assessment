@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { verifyMfaSetup } from "@/lib/mfa.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 const verifySchema = z.object({
   code: z.string().length(6).regex(/^\d+$/, "Code must be 6 digits"),
@@ -15,6 +16,15 @@ const verifySchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 requests per minute per IP (M3 security fix)
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const rl = await checkRateLimit("mfa", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

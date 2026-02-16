@@ -14,14 +14,33 @@ import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
 const ISSUER = "Caelex";
-const ALGORITHM = "SHA1";
+// SHA256 for new enrollments (OWASP recommended). Existing users enrolled with SHA1
+// will need to re-enroll after this change, as the algorithm is embedded in the TOTP URI.
+const ALGORITHM = "SHA256";
 const DIGITS = 6;
 const PERIOD = 30; // seconds
 
+// TOTP replay protection — track recently used codes per user
+// Using in-memory Map is appropriate here since:
+// 1. TOTP window is only 30 seconds
+// 2. Same code being accepted on different instances is acceptable (each verifies independently)
+// 3. No persistence needed — worst case is code reuse during server restart
+const usedTotpCodes = new Map<string, number>(); // key: `${userId}:${code}`, value: timestamp
+
+// Clean up expired entries periodically
+setInterval(() => {
+  const cutoff = Date.now() - 60_000; // 60 second TTL
+  for (const [key, timestamp] of usedTotpCodes) {
+    if (timestamp < cutoff) {
+      usedTotpCodes.delete(key);
+    }
+  }
+}, 30_000); // Every 30 seconds
+
 // Generate a new TOTP secret
 export function generateTotpSecret(): string {
-  // Generate a 20-byte (160-bit) secret for SHA1 TOTP
-  const secret = new OTPAuth.Secret({ size: 20 });
+  // Generate a 32-byte (256-bit) secret for SHA256 TOTP
+  const secret = new OTPAuth.Secret({ size: 32 });
   return secret.base32;
 }
 
@@ -231,7 +250,18 @@ export async function validateMfaCode(
   const secret = await decrypt(mfaConfig.encryptedSecret);
 
   // Verify code
-  return verifyTotpCode(secret, code);
+  if (!verifyTotpCode(secret, code)) {
+    return false;
+  }
+
+  // Replay protection — reject previously used codes
+  const replayKey = `${userId}:${code}`;
+  if (usedTotpCodes.has(replayKey)) {
+    return false;
+  }
+  usedTotpCodes.set(replayKey, Date.now());
+
+  return true;
 }
 
 // Check if user has MFA enabled

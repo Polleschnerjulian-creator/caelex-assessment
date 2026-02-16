@@ -150,6 +150,22 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:widget",
       }),
+
+      // MFA operations: 5 per minute (strict to prevent brute force on TOTP/backup codes)
+      mfa: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:mfa",
+      }),
+
+      // Admin operations: 30 per minute
+      admin: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:admin",
+      }),
     }
   : null;
 
@@ -233,6 +249,8 @@ const fallbackLimiters = {
   nca_package: new InMemoryRateLimiter(10, 3600000),
   public_api: new InMemoryRateLimiter(5, 3600000),
   widget: new InMemoryRateLimiter(30, 3600000),
+  mfa: new InMemoryRateLimiter(5, 60000),
+  admin: new InMemoryRateLimiter(30, 60000),
 };
 
 // ─── Public API ───
@@ -249,7 +267,9 @@ export type RateLimitType =
   | "nca_portal"
   | "nca_package"
   | "public_api"
-  | "widget";
+  | "widget"
+  | "mfa"
+  | "admin";
 
 /**
  * Check rate limit for an identifier.

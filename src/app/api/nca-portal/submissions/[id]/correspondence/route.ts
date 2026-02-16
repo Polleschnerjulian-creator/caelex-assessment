@@ -10,6 +10,7 @@ import {
   getCorrespondence,
   createCorrespondence,
 } from "@/lib/services/nca-correspondence-service";
+import { getSafeErrorMessage } from "@/lib/validations";
 import type { CorrespondenceDirection, MessageType } from "@prisma/client";
 
 export async function GET(
@@ -27,13 +28,15 @@ export async function GET(
 
     return NextResponse.json({ correspondence });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Submission not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Submission not found") {
+      return NextResponse.json(
+        { error: "Submission not found" },
+        { status: 404 },
+      );
     }
     console.error("Failed to fetch correspondence:", error);
     return NextResponse.json(
-      { error: "Failed to fetch correspondence" },
+      { error: getSafeErrorMessage(error, "Failed to fetch correspondence") },
       { status: 500 },
     );
   }
@@ -91,13 +94,15 @@ export async function POST(
 
     return NextResponse.json({ correspondence }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Submission not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Submission not found") {
+      return NextResponse.json(
+        { error: "Submission not found" },
+        { status: 404 },
+      );
     }
     console.error("Failed to create correspondence:", error);
     return NextResponse.json(
-      { error: "Failed to create correspondence" },
+      { error: getSafeErrorMessage(error, "Failed to create correspondence") },
       { status: 500 },
     );
   }

@@ -16,7 +16,14 @@ function MfaChallengeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  // Validate callbackUrl is a safe relative path (prevent open redirect)
+  const callbackUrl =
+    rawCallbackUrl.startsWith("/") &&
+    !rawCallbackUrl.startsWith("//") &&
+    !rawCallbackUrl.includes("://")
+      ? rawCallbackUrl
+      : "/dashboard";
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isBackupCode, setIsBackupCode] = useState(false);

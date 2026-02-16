@@ -18,6 +18,7 @@ import {
 } from "@/lib/nis2-engine.server";
 import { generateAutoAssessments } from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 // GET /api/nis2 - Get all NIS2 assessments for user
 export async function GET() {
@@ -60,9 +61,10 @@ export async function GET() {
     return NextResponse.json({ assessments: decryptedAssessments });
   } catch (error) {
     console.error("Error fetching NIS2 assessments:", error);
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: getSafeErrorMessage(error, "Internal server error") },
+      { status: 500 },
+    );
   }
 }
 
@@ -277,8 +279,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating NIS2 assessment:", error);
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: getSafeErrorMessage(error, "Internal server error") },
+      { status: 500 },
+    );
   }
 }

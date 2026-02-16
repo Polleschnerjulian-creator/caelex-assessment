@@ -266,7 +266,7 @@ export async function getOrganizationApiKeys(
   });
 
   return keys.map((key) => {
-    const { keyHash, ...keyWithoutHash } = key;
+    const { keyHash, previousKeyHash, ...keyWithoutHash } = key;
     return {
       ...keyWithoutHash,
       maskedKey: `${key.keyPrefix}${"•".repeat(20)}`,
@@ -287,7 +287,7 @@ export async function getApiKeyById(
 
   if (!key) return null;
 
-  const { keyHash, ...keyWithoutHash } = key;
+  const { keyHash, previousKeyHash, ...keyWithoutHash } = key;
   return {
     ...keyWithoutHash,
     maskedKey: `${key.keyPrefix}${"•".repeat(20)}`,

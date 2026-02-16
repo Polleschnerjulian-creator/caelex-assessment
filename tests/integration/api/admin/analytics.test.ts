@@ -983,7 +983,7 @@ describe("Admin Analytics API", () => {
 
       const csv = await response.text();
       expect(csv).toContain(
-        "Organization,Plan,Status,Members,Spacecraft,Health Score,Risk Level,Created At",
+        "Organization,Plan,Members,Spacecraft,Health Score,Risk Level,Created At",
       );
       expect(csv).toContain("SpaceCorp");
       expect(csv).toContain("PROFESSIONAL");

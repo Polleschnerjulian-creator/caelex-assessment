@@ -222,7 +222,7 @@ describe("POST /api/auth/signup", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Account already exists");
+    expect(data.error).toBe("Validation failed");
   });
 
   // ─── Successful Registration ───

@@ -1,6 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import crypto from "crypto";
 
+// Mock encryption (H17: webhook secrets are now encrypted at rest)
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((val: string) => `encrypted:${val}`),
+  decrypt: vi.fn((val: string) =>
+    val.startsWith("encrypted:") ? val.slice(10) : val,
+  ),
+  isEncrypted: vi.fn((val: string) => val.startsWith("encrypted:")),
+}));
+
+// Mock URL validation (H4: SSRF protection)
+vi.mock("@/lib/url-validation", () => ({
+  validateExternalUrl: vi.fn(),
+}));
+
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -225,7 +239,7 @@ describe("Webhook Service", () => {
           url: "https://example.com/webhook",
           events: ["compliance.score_changed"],
           isActive: true,
-          secret: expect.stringMatching(/^whsec_/),
+          secret: expect.stringMatching(/^encrypted:whsec_/),
         }),
       });
       expect(result).toEqual(createdWebhook);
@@ -281,8 +295,9 @@ describe("Webhook Service", () => {
         data: { secret: string };
       }) => {
         const secret = args.data.secret;
-        expect(secret).toMatch(/^whsec_[A-Za-z0-9_-]+$/);
-        expect(secret.length).toBeGreaterThan(10);
+        // H17: Secret is encrypted at rest — mock encrypt prepends "encrypted:"
+        expect(secret).toMatch(/^encrypted:whsec_[A-Za-z0-9_-]+$/);
+        expect(secret.length).toBeGreaterThan(20);
         return makeWebhook({ secret });
       }) as never);
 
@@ -481,10 +496,12 @@ describe("Webhook Service", () => {
 
       const newSecret = await regenerateWebhookSecret("wh-1", "org-1");
 
+      // Function returns plaintext secret to caller
       expect(newSecret).toMatch(/^whsec_[A-Za-z0-9_-]+$/);
+      // H17: But stores encrypted version in DB
       expect(prisma.webhook.update).toHaveBeenCalledWith({
         where: { id: "wh-1", organizationId: "org-1" },
-        data: { secret: newSecret },
+        data: { secret: `encrypted:${newSecret}` },
       });
     });
 

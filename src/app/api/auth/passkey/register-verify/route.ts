@@ -45,10 +45,25 @@ export async function POST(request: Request) {
     const { response, deviceName } = validation.data;
     const { ipAddress, userAgent } = getRequestContext(request);
 
+    // Read challenge token from httpOnly cookie
+    const challengeToken = request.headers
+      .get("cookie")
+      ?.split(";")
+      .find((c) => c.trim().startsWith("__webauthn_challenge="))
+      ?.split("=")[1];
+
+    if (!challengeToken) {
+      return NextResponse.json(
+        { error: "Challenge expired or missing" },
+        { status: 400 },
+      );
+    }
+
     // Cast the Zod-validated response to the expected type
     const result = await verifyPasskeyRegistration(
       session.user.id,
       response as unknown as Parameters<typeof verifyPasskeyRegistration>[1],
+      challengeToken,
       deviceName,
     );
 
@@ -80,11 +95,14 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    return NextResponse.json({
+    // Clear the challenge cookie
+    const res = NextResponse.json({
       success: true,
       credentialId: result.credentialId,
       message: "Passkey registered successfully",
     });
+    res.cookies.delete("__webauthn_challenge");
+    return res;
   } catch (error) {
     console.error("Error verifying passkey registration:", error);
     return NextResponse.json(

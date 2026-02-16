@@ -58,6 +58,12 @@ vi.mock("@/lib/login-security.server", () => ({
   clearFailedAttempts: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  getIdentifier: vi.fn().mockReturnValue("test-ip"),
+  createRateLimitResponse: vi.fn(),
+}));
+
 // ─── Imports ──────────────────────────────────────────────────────────────────
 
 import { auth } from "@/lib/auth";
@@ -733,9 +739,8 @@ describe("MFA API Endpoints", () => {
       expect(data.error).toBe("Invalid code");
     });
 
-    it("should accept a provided userId for pre-auth validation", async () => {
+    it("should return 401 when userId is provided in body with no session", async () => {
       vi.mocked(auth).mockResolvedValue(null as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
@@ -744,12 +749,12 @@ describe("MFA API Endpoints", () => {
       const response = await validateRoute(request);
       const data = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(validateMfaCode).toHaveBeenCalledWith("pre-auth-user", "123456");
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+      expect(validateMfaCode).not.toHaveBeenCalled();
     });
 
-    it("should prefer provided userId over session userId", async () => {
+    it("should use session userId even when userId is provided in body", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
       vi.mocked(validateMfaCode).mockResolvedValue(true);
 
@@ -759,7 +764,7 @@ describe("MFA API Endpoints", () => {
       });
       await validateRoute(request);
 
-      expect(validateMfaCode).toHaveBeenCalledWith("other-user", "123456");
+      expect(validateMfaCode).toHaveBeenCalledWith("user-123", "123456");
     });
 
     it("should validate backup code when isBackupCode is true", async () => {

@@ -3,6 +3,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ─── Mock server-only ───
 vi.mock("server-only", () => ({}));
 
+// ─── Mock encryption (H17: webhook secrets encrypted at rest) ───
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((val: string) => `encrypted:${val}`),
+  decrypt: vi.fn((val: string) =>
+    val.startsWith("encrypted:") ? val.slice(10) : val,
+  ),
+  isEncrypted: vi.fn((val: string) => val.startsWith("encrypted:")),
+}));
+
+// ─── Mock URL validation (H4: SSRF protection) ───
+vi.mock("@/lib/url-validation", () => ({
+  validateExternalUrl: vi.fn(),
+}));
+
 // ─── Mock Prisma ───
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -93,13 +107,11 @@ vi.mock("@/lib/services/api-key-service", () => ({
   }),
   revokeApiKey: vi.fn().mockResolvedValue({ id: "key-1", isActive: false }),
   getApiKeyById: vi.fn().mockResolvedValue(null),
-  validateApiKey: vi
-    .fn()
-    .mockResolvedValue({
-      valid: false,
-      apiKey: null,
-      error: "Invalid API key",
-    }),
+  validateApiKey: vi.fn().mockResolvedValue({
+    valid: false,
+    apiKey: null,
+    error: "Invalid API key",
+  }),
   hasScope: vi.fn().mockReturnValue(true),
   hasAnyScope: vi.fn().mockReturnValue(true),
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 999 }),

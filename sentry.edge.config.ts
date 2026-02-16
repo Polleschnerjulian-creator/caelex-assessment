@@ -12,6 +12,9 @@ if (process.env.SENTRY_DSN) {
     // Environment
     environment: process.env.NODE_ENV,
 
+    // Never send PII to Sentry
+    sendDefaultPii: false,
+
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 

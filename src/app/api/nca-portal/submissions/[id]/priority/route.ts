@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { updatePriority } from "@/lib/services/nca-portal-service";
+import { getSafeErrorMessage } from "@/lib/validations";
 import type { SubmissionPriority } from "@prisma/client";
 
 const VALID_PRIORITIES: SubmissionPriority[] = [
@@ -44,13 +45,15 @@ export async function PATCH(
 
     return NextResponse.json({ submission });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Submission not found") {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (error instanceof Error && error.message === "Submission not found") {
+      return NextResponse.json(
+        { error: "Submission not found" },
+        { status: 404 },
+      );
     }
     console.error("Failed to update priority:", error);
     return NextResponse.json(
-      { error: "Failed to update priority" },
+      { error: getSafeErrorMessage(error, "Failed to update priority") },
       { status: 500 },
     );
   }

@@ -12,13 +12,16 @@ if (process.env.SENTRY_DSN) {
     // Environment
     environment: process.env.NODE_ENV,
 
+    // Never send PII (emails, IPs, user data) to Sentry
+    sendDefaultPii: false,
+
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
 
-    // Filter server-side errors
+    // Filter server-side errors and scrub sensitive data
     beforeSend(event, hint) {
       // Don't send errors in development
       if (process.env.NODE_ENV === "development" && !process.env.SENTRY_DEBUG) {
@@ -36,7 +39,48 @@ if (process.env.SENTRY_DSN) {
         }
       }
 
+      // Scrub request bodies and headers for PII
+      if (event.request) {
+        delete event.request.data; // Remove request body entirely
+        if (event.request.headers) {
+          const sensitiveHeaders = ["authorization", "cookie", "x-api-key"];
+          for (const header of sensitiveHeaders) {
+            if (event.request.headers[header]) {
+              event.request.headers[header] = "[REDACTED]";
+            }
+          }
+        }
+        // Scrub query strings that may contain PII
+        if (event.request.query_string) {
+          const qs = event.request.query_string;
+          if (
+            typeof qs === "string" &&
+            /email|token|password|secret/i.test(qs)
+          ) {
+            event.request.query_string = "[REDACTED]";
+          }
+        }
+      }
+
+      // Scrub user context
+      if (event.user) {
+        delete event.user.email;
+        delete event.user.ip_address;
+        delete event.user.username;
+      }
+
       return event;
+    },
+
+    // Filter breadcrumbs containing PII
+    beforeBreadcrumb(breadcrumb) {
+      if (breadcrumb.category === "http" && breadcrumb.data) {
+        const url = breadcrumb.data.url || "";
+        if (/email|token|password|secret/i.test(url)) {
+          breadcrumb.data.url = "[REDACTED]";
+        }
+      }
+      return breadcrumb;
     },
   });
 }

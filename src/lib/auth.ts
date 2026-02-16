@@ -212,7 +212,7 @@ const authResult = isAuthConfigured
               }
             } catch (error) {
               logger.error("Failed to check user status", error);
-              // Allow sign in if DB check fails (fail open)
+              return false; // Fail closed: block sign in if DB is unreachable
             }
           }
           return true;
@@ -376,10 +376,9 @@ const authResult = isAuthConfigured
               logger.error("Failed to log sign in", error);
             }
 
-            // Set Sentry user context
+            // Set Sentry user context (ID only — no PII)
             Sentry.setUser({
               id: user.id,
-              email: user.email || undefined,
             });
           }
         },

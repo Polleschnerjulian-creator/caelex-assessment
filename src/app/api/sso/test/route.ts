@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { testSSOConnection } from "@/lib/services/sso-service";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,6 +23,18 @@ export async function POST(request: NextRequest) {
         { error: "Organization ID is required" },
         { status: 400 },
       );
+    }
+
+    // Verify user has admin access to this organization
+    const membership = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const result = await testSSOConnection(organizationId, session.user.id);

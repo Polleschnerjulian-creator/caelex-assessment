@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSSOConnection } from "@/lib/services/sso-service";
 import { logSecurityEvent } from "@/lib/services/security-audit-service";
+import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 import { headers } from "next/headers";
 
 export async function POST(request: NextRequest) {
@@ -62,19 +63,17 @@ export async function POST(request: NextRequest) {
       const email = emailMatch[1];
       const name = nameMatch ? nameMatch[1] : email.split("@")[0];
 
-      // Parse relay state for return URL
+      // Parse relay state for return URL (verify HMAC signature)
       let returnUrl = "/dashboard";
       if (relayState) {
-        try {
-          const state = JSON.parse(
-            Buffer.from(relayState as string, "base64url").toString("utf-8"),
-          );
-          if (state.returnUrl) {
-            returnUrl = state.returnUrl;
-          }
-        } catch {
-          // Ignore relay state parsing errors
+        const state = verifySignedToken<{
+          orgId: string;
+          returnUrl?: string;
+        }>(relayState as string);
+        if (state?.returnUrl) {
+          returnUrl = state.returnUrl;
         }
+        // If signature invalid, silently use default returnUrl
       }
 
       // Get request info for logging
@@ -103,16 +102,16 @@ export async function POST(request: NextRequest) {
       const protocol = headersList.get("x-forwarded-proto") || "https";
       const baseUrl = `${protocol}://${host}`;
 
-      // Create a temporary token for the SSO login
-      const ssoToken = Buffer.from(
-        JSON.stringify({
+      // Create an HMAC-signed SSO token (prevents forgery)
+      const ssoToken = createSignedToken(
+        {
           email,
           name,
           organizationId,
           provider: "SAML",
-          timestamp: Date.now(),
-        }),
-      ).toString("base64url");
+        },
+        5 * 60 * 1000, // 5 minutes
+      );
 
       return NextResponse.redirect(
         `${baseUrl}/api/auth/callback/sso?token=${ssoToken}&returnUrl=${encodeURIComponent(returnUrl)}`,
