@@ -13,7 +13,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateDocumentSection } from "@/lib/astra/document-generator";
 
-export const maxDuration = 55; // Stay well under 60s limit
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {

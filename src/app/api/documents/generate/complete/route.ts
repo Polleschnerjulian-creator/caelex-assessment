@@ -10,6 +10,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+
+export const maxDuration = 60;
 import { prisma } from "@/lib/prisma";
 import { finalizeChunkedGeneration } from "@/lib/astra/document-generator";
 

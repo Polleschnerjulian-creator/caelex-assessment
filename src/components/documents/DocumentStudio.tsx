@@ -242,29 +242,46 @@ export default function DocumentStudio() {
           title: section.title,
         });
 
-        const sectionRes = await fetch("/api/documents/generate/section", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            documentId,
-            sectionIndex: i,
-            sectionTitle: section.title,
-            sectionNumber: section.number,
-          }),
-        });
-
-        if (!sectionRes.ok) {
-          const data = await sectionRes.json().catch(() => null);
-          throw new Error(
-            data?.error || `Failed to generate section "${section.title}"`,
-          );
-        }
-
-        const result = (await sectionRes.json()) as {
+        // Retry once on failure (handles transient timeouts / rate limits)
+        let lastError: string | null = null;
+        let result: {
           content: string;
           inputTokens: number;
           outputTokens: number;
-        };
+        } | null = null;
+
+        for (let attempt = 0; attempt < 2; attempt++) {
+          if (attempt > 0) {
+            // Wait before retry
+            await new Promise((r) => setTimeout(r, 3000));
+          }
+
+          const sectionRes = await fetch("/api/documents/generate/section", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({
+              documentId,
+              sectionIndex: i,
+              sectionTitle: section.title,
+              sectionNumber: section.number,
+            }),
+          });
+
+          if (sectionRes.ok) {
+            result = await sectionRes.json();
+            lastError = null;
+            break;
+          }
+
+          const data = await sectionRes.json().catch(() => null);
+          lastError =
+            data?.error ||
+            `Section "${section.title}" failed (HTTP ${sectionRes.status})`;
+        }
+
+        if (!result) {
+          throw new Error(lastError || "Section generation failed");
+        }
 
         sectionContents.push(result.content);
         totalInputTokens += result.inputTokens;
