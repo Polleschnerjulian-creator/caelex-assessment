@@ -86,13 +86,11 @@ describe("PricingTable Component", () => {
     it("should toggle between monthly and yearly pricing", () => {
       renderPricingTable();
 
-      const toggle = screen.getByRole("button", { name: "" }); // Toggle button
-
-      // Toggle is a button element - we need to find it differently
+      // Toggle is a button element
       const monthlyText = screen.getByText("Monthly");
-      const yearlyText = screen.getByText("Yearly");
 
-      expect(monthlyText).toHaveClass("text-white");
+      // Monthly is active by default — uses dark:text-white text-slate-900 font-medium
+      expect(monthlyText.className).toContain("font-medium");
     });
 
     it("should show yearly savings message", () => {

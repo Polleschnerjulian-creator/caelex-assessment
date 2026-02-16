@@ -89,6 +89,16 @@ The API uses standard HTTP status codes. Error responses include:
       description: "Compliance status and scoring endpoints",
     },
     {
+      name: "Assessment",
+      description:
+        "Run compliance assessments against EU Space Act, NIS2, and national space law engines",
+    },
+    {
+      name: "Public",
+      description:
+        "Unauthenticated endpoints for embeddable widgets and quick checks (rate limited: 5/hour)",
+    },
+    {
       name: "Spacecraft",
       description: "Spacecraft and space asset management",
     },
@@ -559,7 +569,231 @@ The API uses standard HTTP status codes. Error responses include:
         },
       },
     },
+
+    // ─── Assessment Endpoints ───
+
+    "/compliance/assess": {
+      post: {
+        tags: ["Assessment"],
+        summary: "EU Space Act compliance assessment",
+        description:
+          "Run a full EU Space Act compliance assessment. Returns operator classification, applicable articles (redacted), module statuses, and checklist.",
+        operationId: "assessEUSpaceAct",
+        security: [{ apiKey: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/EUSpaceActAssessInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Assessment result" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+        },
+      },
+    },
+    "/compliance/nis2/classify": {
+      post: {
+        tags: ["Assessment"],
+        summary: "NIS2 entity classification",
+        description:
+          "Classify a space sector entity under NIS2 Directive (essential, important, or out of scope).",
+        operationId: "classifyNIS2",
+        security: [{ apiKey: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/NIS2ClassifyInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Classification result" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+    "/compliance/nis2/assess": {
+      post: {
+        tags: ["Assessment"],
+        summary: "Full NIS2 compliance assessment",
+        description:
+          "Run a full NIS2 compliance assessment including applicable requirements (redacted), incident timeline, and penalties.",
+        operationId: "assessNIS2",
+        security: [{ apiKey: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/NIS2AssessInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "NIS2 assessment result" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+    "/compliance/space-law/assess": {
+      post: {
+        tags: ["Assessment"],
+        summary: "Multi-jurisdiction space law assessment",
+        description:
+          "Assess compliance across up to 10 European national space law jurisdictions. Returns comparison matrix, favorability scores, and recommendations.",
+        operationId: "assessSpaceLaw",
+        security: [{ apiKey: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/SpaceLawAssessInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Space law assessment result" },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+    "/compliance/modules": {
+      get: {
+        tags: ["Compliance"],
+        summary: "List compliance modules",
+        description:
+          "Returns all EU Space Act compliance modules with article ranges and overall progress.",
+        operationId: "getComplianceModules",
+        security: [{ apiKey: [] }],
+        responses: {
+          "200": { description: "Module list with progress" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+    "/compliance/articles": {
+      get: {
+        tags: ["Compliance"],
+        summary: "List EU Space Act articles",
+        description:
+          "Paginated, filterable list of EU Space Act articles (redacted). Filter by operator type or compliance type.",
+        operationId: "listArticles",
+        security: [{ apiKey: [] }],
+        parameters: [
+          { $ref: "#/components/parameters/page" },
+          { $ref: "#/components/parameters/limit" },
+          {
+            name: "operatorType",
+            in: "query",
+            description:
+              "Filter by operator abbreviation (SCO, LO, LSO, ISOS, CAP, PDP, TCO, ALL)",
+            schema: { type: "string" },
+          },
+          {
+            name: "complianceType",
+            in: "query",
+            description: "Filter by compliance type",
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "200": { description: "Paginated article list" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+        },
+      },
+    },
+
+    // ─── Public Endpoints ───
+
+    "/../public/compliance/quick-check": {
+      post: {
+        tags: ["Public"],
+        summary: "Quick compliance check (unauthenticated)",
+        description:
+          "3-field quick EU Space Act compliance check. Rate limited to 5 requests/hour per IP. No API key required.",
+        operationId: "quickCheck",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["activityType", "entitySize", "establishment"],
+                properties: {
+                  activityType: {
+                    type: "string",
+                    enum: [
+                      "spacecraft",
+                      "launch_vehicle",
+                      "launch_site",
+                      "isos",
+                      "data_provider",
+                    ],
+                  },
+                  entitySize: {
+                    type: "string",
+                    enum: ["small", "research", "medium", "large"],
+                  },
+                  establishment: {
+                    type: "string",
+                    enum: [
+                      "eu",
+                      "third_country_eu_services",
+                      "third_country_no_eu",
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Quick check result" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+        },
+      },
+    },
+    "/../public/compliance/nis2/quick-classify": {
+      post: {
+        tags: ["Public"],
+        summary: "Quick NIS2 classification (unauthenticated)",
+        description:
+          "2-field NIS2 entity classification for space sector. Rate limited to 5 requests/hour per IP. No API key required.",
+        operationId: "nis2QuickClassify",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["entitySize"],
+                properties: {
+                  entitySize: {
+                    type: "string",
+                    enum: ["micro", "small", "medium", "large"],
+                  },
+                  sector: { type: "string", default: "space" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "NIS2 classification result" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+        },
+      },
+    },
   },
+
   components: {
     securitySchemes: {
       apiKey: {
@@ -788,6 +1022,114 @@ The API uses standard HTTP status codes. Error responses include:
           },
           spacecraftId: { type: "string" },
           occurredAt: { type: "string", format: "date-time" },
+        },
+      },
+      EUSpaceActAssessInput: {
+        type: "object",
+        required: ["activityType", "establishment", "entitySize"],
+        properties: {
+          activityType: {
+            type: "string",
+            enum: [
+              "spacecraft",
+              "launch_vehicle",
+              "launch_site",
+              "isos",
+              "data_provider",
+            ],
+          },
+          establishment: {
+            type: "string",
+            enum: ["eu", "third_country_eu_services", "third_country_no_eu"],
+          },
+          entitySize: {
+            type: "string",
+            enum: ["small", "research", "medium", "large"],
+          },
+          isDefenseOnly: { type: "boolean", nullable: true },
+          hasPostLaunchAssets: { type: "boolean", nullable: true },
+          operatesConstellation: { type: "boolean", nullable: true },
+          constellationSize: { type: "integer", nullable: true },
+          primaryOrbit: {
+            type: "string",
+            enum: ["LEO", "MEO", "GEO", "beyond"],
+            nullable: true,
+          },
+          offersEUServices: { type: "boolean", nullable: true },
+        },
+      },
+      NIS2ClassifyInput: {
+        type: "object",
+        required: ["entitySize"],
+        properties: {
+          entitySize: {
+            type: "string",
+            enum: ["micro", "small", "medium", "large"],
+          },
+          sector: { type: "string", default: "space" },
+          spaceSubSector: { type: "string", nullable: true },
+          isEUEstablished: { type: "boolean", default: true },
+          operatesGroundInfra: { type: "boolean", nullable: true },
+          operatesSatComms: { type: "boolean", nullable: true },
+          providesLaunchServices: { type: "boolean", nullable: true },
+        },
+      },
+      NIS2AssessInput: {
+        type: "object",
+        required: ["entitySize"],
+        description:
+          "Extends NIS2ClassifyInput with additional fields for full assessment",
+        properties: {
+          entitySize: {
+            type: "string",
+            enum: ["micro", "small", "medium", "large"],
+          },
+          sector: { type: "string", default: "space" },
+          spaceSubSector: { type: "string", nullable: true },
+          isEUEstablished: { type: "boolean", default: true },
+          operatesGroundInfra: { type: "boolean", nullable: true },
+          operatesSatComms: { type: "boolean", nullable: true },
+          providesLaunchServices: { type: "boolean", nullable: true },
+          manufacturesSpacecraft: { type: "boolean", nullable: true },
+          providesEOData: { type: "boolean", nullable: true },
+          employeeCount: { type: "integer", nullable: true },
+          annualRevenue: { type: "number", nullable: true },
+          memberStateCount: { type: "integer", nullable: true },
+          hasISO27001: { type: "boolean", nullable: true },
+          hasExistingCSIRT: { type: "boolean", nullable: true },
+          hasRiskManagement: { type: "boolean", nullable: true },
+        },
+      },
+      SpaceLawAssessInput: {
+        type: "object",
+        required: ["selectedJurisdictions"],
+        properties: {
+          selectedJurisdictions: {
+            type: "array",
+            items: {
+              type: "string",
+              enum: [
+                "FR",
+                "UK",
+                "BE",
+                "NL",
+                "LU",
+                "AT",
+                "DK",
+                "DE",
+                "IT",
+                "NO",
+              ],
+            },
+            minItems: 1,
+            maxItems: 10,
+          },
+          activityType: { type: "string", nullable: true },
+          entityNationality: { type: "string", nullable: true },
+          entitySize: { type: "string", nullable: true },
+          primaryOrbit: { type: "string", nullable: true },
+          constellationSize: { type: "integer", nullable: true },
+          licensingStatus: { type: "string", nullable: true },
         },
       },
     },

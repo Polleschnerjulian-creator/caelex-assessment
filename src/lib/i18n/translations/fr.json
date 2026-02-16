@@ -353,5 +353,27 @@
     "priority": "Priorité",
     "followUpRequired": "Suivi requis",
     "slaDeadline": "Échéance SLA"
+  },
+  "widget": {
+    "title": "Widget intégrable",
+    "subtitle": "Intégrez des vérifications de conformité sur votre site ou ceux de vos partenaires.",
+    "setup": "Configurer le widget",
+    "widgetType": "Type de widget",
+    "theme": "Thème",
+    "allowedDomains": "Domaines autorisés",
+    "embedCode": "Code d'intégration",
+    "preview": "Aperçu",
+    "analytics": "Analytique",
+    "save": "Enregistrer",
+    "impressions": "Impressions",
+    "completions": "Complétions",
+    "ctaClicks": "Clics CTA",
+    "conversionRate": "Taux de conversion",
+    "ctaRate": "Taux CTA",
+    "quickCheck": "Vérification rapide",
+    "complianceBadge": "Badge de conformité",
+    "nis2Classifier": "Classificateur NIS2",
+    "copyEmbed": "Copier le code",
+    "copied": "Copié !"
   }
 }

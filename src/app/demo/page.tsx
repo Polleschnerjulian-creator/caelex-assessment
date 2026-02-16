@@ -12,7 +12,6 @@ import {
   Clock,
   Users,
   FileCheck,
-  Sparkles,
   Play,
   Calendar,
 } from "lucide-react";
@@ -117,13 +116,6 @@ export default function DemoPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.1] mb-6">
-                <Sparkles size={14} className="text-amber-400" />
-                <span className="text-[13px] text-white/60">
-                  Trusted by leading space companies
-                </span>
-              </div>
-
               <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
                 See Caelex
                 <br />

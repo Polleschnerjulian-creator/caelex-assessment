@@ -353,5 +353,27 @@
     "priority": "Prioridad",
     "followUpRequired": "Seguimiento requerido",
     "slaDeadline": "Plazo SLA"
+  },
+  "widget": {
+    "title": "Widget integrable",
+    "subtitle": "Integre verificaciones de cumplimiento en su sitio web o sitios asociados.",
+    "setup": "Configurar widget",
+    "widgetType": "Tipo de widget",
+    "theme": "Tema",
+    "allowedDomains": "Dominios permitidos",
+    "embedCode": "Código de integración",
+    "preview": "Vista previa",
+    "analytics": "Analíticas",
+    "save": "Guardar cambios",
+    "impressions": "Impresiones",
+    "completions": "Completados",
+    "ctaClicks": "Clics CTA",
+    "conversionRate": "Tasa de conversión",
+    "ctaRate": "Tasa CTA",
+    "quickCheck": "Verificación rápida",
+    "complianceBadge": "Insignia de cumplimiento",
+    "nis2Classifier": "Clasificador NIS2",
+    "copyEmbed": "Copiar código",
+    "copied": "¡Copiado!"
   }
 }

@@ -68,7 +68,7 @@ describe("OptionCard", () => {
     const onClick = vi.fn();
     render(<OptionCard {...defaultProps} onClick={onClick} />);
 
-    await user.click(screen.getByRole("button"));
+    await user.click(screen.getByRole("radio"));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
@@ -87,7 +87,7 @@ describe("OptionCard", () => {
       <OptionCard {...defaultProps} isSelected={true} />,
     );
     const button = container.querySelector("button");
-    expect(button?.className).toContain("bg-white/[0.08]");
+    expect(button?.className).toContain("bg-emerald-500/[0.12]");
   });
 
   it("applies default styling when isSelected is false", () => {
@@ -95,16 +95,14 @@ describe("OptionCard", () => {
       <OptionCard {...defaultProps} isSelected={false} />,
     );
     const button = container.querySelector("button");
-    expect(button?.className).toContain("bg-white/[0.04]");
+    expect(button?.className).toContain("bg-white/[0.03]");
   });
 
   it("shows check indicator when selected", () => {
-    render(<OptionCard {...defaultProps} isSelected={true} />);
-    // The check indicator div should have bg-white class when selected
     const { container } = render(
       <OptionCard {...defaultProps} isSelected={true} />,
     );
-    const checkCircle = container.querySelector(".bg-white");
+    const checkCircle = container.querySelector(".bg-emerald-500");
     expect(checkCircle).toBeInTheDocument();
   });
 
@@ -112,12 +110,12 @@ describe("OptionCard", () => {
     const { container } = render(
       <OptionCard {...defaultProps} isSelected={false} />,
     );
-    const emptyCircle = container.querySelector(".border-white\\/\\[0\\.30\\]");
+    const emptyCircle = container.querySelector(".border-white\\/\\[0\\.25\\]");
     expect(emptyCircle).toBeInTheDocument();
   });
 
   it("renders as a button element", () => {
     render(<OptionCard {...defaultProps} />);
-    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByRole("radio")).toBeInTheDocument();
   });
 });

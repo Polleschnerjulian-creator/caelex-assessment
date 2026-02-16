@@ -1,0 +1,165 @@
+{
+  "inputs": {
+    "src/widget/theme.ts": {
+      "bytes": 1228,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/widget/styles/widget-css.ts": {
+      "bytes": 6040,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/widget/mount.ts": {
+      "bytes": 881,
+      "imports": [
+        {
+          "path": "src/widget/theme.ts",
+          "kind": "import-statement",
+          "original": "./theme"
+        },
+        {
+          "path": "src/widget/styles/widget-css.ts",
+          "kind": "import-statement",
+          "original": "./styles/widget-css"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/widget/api.ts": {
+      "bytes": 1853,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/widget/components/StepIndicator.ts": {
+      "bytes": 565,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/widget/components/ResultCard.ts": {
+      "bytes": 2421,
+      "imports": [
+        {
+          "path": "../api",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/widget/components/QuickCheckWidget.ts": {
+      "bytes": 7149,
+      "imports": [
+        {
+          "path": "src/widget/api.ts",
+          "kind": "import-statement",
+          "original": "../api"
+        },
+        {
+          "path": "src/widget/components/StepIndicator.ts",
+          "kind": "import-statement",
+          "original": "./StepIndicator"
+        },
+        {
+          "path": "src/widget/components/ResultCard.ts",
+          "kind": "import-statement",
+          "original": "./ResultCard"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/widget/components/ComplianceBadge.ts": {
+      "bytes": 2026,
+      "imports": [
+        {
+          "path": "src/widget/api.ts",
+          "kind": "import-statement",
+          "original": "../api"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/widget/components/NIS2Classifier.ts": {
+      "bytes": 7132,
+      "imports": [
+        {
+          "path": "src/widget/api.ts",
+          "kind": "import-statement",
+          "original": "../api"
+        },
+        {
+          "path": "src/widget/components/StepIndicator.ts",
+          "kind": "import-statement",
+          "original": "./StepIndicator"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/widget/index.ts": {
+      "bytes": 2349,
+      "imports": [
+        {
+          "path": "src/widget/mount.ts",
+          "kind": "import-statement",
+          "original": "./mount"
+        },
+        {
+          "path": "src/widget/components/QuickCheckWidget.ts",
+          "kind": "import-statement",
+          "original": "./components/QuickCheckWidget"
+        },
+        {
+          "path": "src/widget/components/ComplianceBadge.ts",
+          "kind": "import-statement",
+          "original": "./components/ComplianceBadge"
+        },
+        {
+          "path": "src/widget/components/NIS2Classifier.ts",
+          "kind": "import-statement",
+          "original": "./components/NIS2Classifier"
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "public/widget/caelex-widget.js": {
+      "imports": [],
+      "exports": [],
+      "entryPoint": "src/widget/index.ts",
+      "inputs": {
+        "src/widget/theme.ts": {
+          "bytesInOutput": 877
+        },
+        "src/widget/styles/widget-css.ts": {
+          "bytesInOutput": 5727
+        },
+        "src/widget/mount.ts": {
+          "bytesInOutput": 296
+        },
+        "src/widget/api.ts": {
+          "bytesInOutput": 895
+        },
+        "src/widget/components/StepIndicator.ts": {
+          "bytesInOutput": 268
+        },
+        "src/widget/components/ResultCard.ts": {
+          "bytesInOutput": 1441
+        },
+        "src/widget/components/QuickCheckWidget.ts": {
+          "bytesInOutput": 4164
+        },
+        "src/widget/components/ComplianceBadge.ts": {
+          "bytesInOutput": 1363
+        },
+        "src/widget/components/NIS2Classifier.ts": {
+          "bytesInOutput": 4404
+        },
+        "src/widget/index.ts": {
+          "bytesInOutput": 751
+        }
+      },
+      "bytes": 20211
+    }
+  }
+}

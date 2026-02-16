@@ -101,7 +101,7 @@ describe("OutOfScopeResult", () => {
       <OutOfScopeResult {...defaultProps} detail="" />,
     );
     const detailBoxes = container.querySelectorAll(
-      ".bg-white\\/\\[0\\.05\\].border",
+      ".bg-white\\/\\[0\\.03\\].border",
     );
     // Should only have the CTA border, not the detail box
     expect(
@@ -112,7 +112,7 @@ describe("OutOfScopeResult", () => {
   it("renders the alert icon", () => {
     const { container } = render(<OutOfScopeResult {...defaultProps} />);
     // The icon wrapper
-    const iconWrapper = container.querySelector(".w-16.h-16.rounded-full");
+    const iconWrapper = container.querySelector(".w-16.h-16.rounded-2xl");
     expect(iconWrapper).toBeInTheDocument();
   });
 });

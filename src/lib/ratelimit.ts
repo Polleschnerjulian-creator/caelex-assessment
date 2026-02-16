@@ -134,6 +134,22 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:nca_package",
       }),
+
+      // Public API: 5 per hour per IP (strict, unauthenticated endpoints)
+      public_api: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:public_api",
+      }),
+
+      // Widget analytics tracking: 30 per hour per IP
+      widget: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:widget",
+      }),
     }
   : null;
 
@@ -215,6 +231,8 @@ const fallbackLimiters = {
   document_generation: new InMemoryRateLimiter(5, 3600000),
   nca_portal: new InMemoryRateLimiter(30, 3600000),
   nca_package: new InMemoryRateLimiter(10, 3600000),
+  public_api: new InMemoryRateLimiter(5, 3600000),
+  widget: new InMemoryRateLimiter(30, 3600000),
 };
 
 // ─── Public API ───
@@ -229,7 +247,9 @@ export type RateLimitType =
   | "supplier"
   | "document_generation"
   | "nca_portal"
-  | "nca_package";
+  | "nca_package"
+  | "public_api"
+  | "widget";
 
 /**
  * Check rate limit for an identifier.

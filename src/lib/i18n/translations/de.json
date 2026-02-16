@@ -353,5 +353,27 @@
     "priority": "Priorität",
     "followUpRequired": "Nachverfolgung erforderlich",
     "slaDeadline": "SLA-Frist"
+  },
+  "widget": {
+    "title": "Einbettbares Widget",
+    "subtitle": "Betten Sie Compliance-Checks auf Ihrer Website oder Partnerseiten ein.",
+    "setup": "Widget einrichten",
+    "widgetType": "Widget-Typ",
+    "theme": "Design",
+    "allowedDomains": "Erlaubte Domains",
+    "embedCode": "Einbettungscode",
+    "preview": "Vorschau",
+    "analytics": "Analytik",
+    "save": "Änderungen speichern",
+    "impressions": "Impressionen",
+    "completions": "Abschlüsse",
+    "ctaClicks": "CTA-Klicks",
+    "conversionRate": "Konversionsrate",
+    "ctaRate": "CTA-Rate",
+    "quickCheck": "Schnellprüfung",
+    "complianceBadge": "Compliance-Badge",
+    "nis2Classifier": "NIS2-Klassifikator",
+    "copyEmbed": "Einbettungscode kopieren",
+    "copied": "Kopiert!"
   }
 }

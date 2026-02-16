@@ -1,0 +1,191 @@
+/**
+ * Widget CSS as string constant — injected into Shadow DOM.
+ * Auto-generated from widget.css during build, but kept as source of truth
+ * for the TypeScript build path.
+ */
+
+// This will be replaced by esbuild's CSS loader in production.
+// For development, we inline the CSS string.
+export const WIDGET_CSS = `
+.caelex-widget-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--caelex-text-primary);
+  background: var(--caelex-bg);
+  border: 1px solid var(--caelex-card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 420px;
+  width: 100%;
+}
+.caelex-widget-root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.caelex-card {
+  background: var(--caelex-card-bg);
+  border: 1px solid var(--caelex-card-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.caelex-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--caelex-card-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.caelex-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--caelex-text-heading);
+}
+.caelex-header-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--caelex-accent);
+  color: #fff;
+}
+.caelex-body { padding: 20px; }
+.caelex-steps {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.caelex-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--caelex-card-border);
+  transition: background 0.2s, transform 0.2s;
+}
+.caelex-step-dot.active {
+  background: var(--caelex-accent);
+  transform: scale(1.25);
+}
+.caelex-step-dot.completed { background: var(--caelex-green); }
+.caelex-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--caelex-text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.caelex-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--caelex-input-bg);
+  border: 1px solid var(--caelex-input-border);
+  border-radius: 8px;
+  color: var(--caelex-input-text);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394A3B8' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.caelex-select:focus { border-color: var(--caelex-accent); }
+.caelex-field { margin-bottom: 14px; }
+.caelex-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.caelex-btn-primary { background: var(--caelex-accent); color: #fff; }
+.caelex-btn-primary:hover { background: var(--caelex-accent-hover); }
+.caelex-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.caelex-btn-outline {
+  background: transparent;
+  color: var(--caelex-accent);
+  border: 1px solid var(--caelex-accent);
+}
+.caelex-btn-outline:hover { background: var(--caelex-accent); color: #fff; }
+.caelex-result { animation: caelex-fadeIn 0.3s ease-out; }
+.caelex-result-header { text-align: center; margin-bottom: 16px; }
+.caelex-result-regime {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.caelex-regime-standard { background: rgba(59,130,246,0.15); color: var(--caelex-accent); }
+.caelex-regime-light { background: rgba(34,197,94,0.15); color: var(--caelex-green); }
+.caelex-result-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--caelex-card-border);
+  font-size: 13px;
+}
+.caelex-result-stat:last-child { border-bottom: none; }
+.caelex-result-stat-label { color: var(--caelex-text-secondary); }
+.caelex-result-stat-value { font-weight: 600; color: var(--caelex-text-heading); }
+.caelex-module-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.caelex-module-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.caelex-module-badge.required { background: rgba(239,68,68,0.12); color: var(--caelex-red); }
+.caelex-module-badge.simplified { background: rgba(245,158,11,0.12); color: var(--caelex-amber); }
+.caelex-grade {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 auto 12px;
+  border: 3px solid;
+}
+.caelex-grade-essential { color: var(--caelex-red); border-color: var(--caelex-red); background: rgba(239,68,68,0.08); }
+.caelex-grade-important { color: var(--caelex-amber); border-color: var(--caelex-amber); background: rgba(245,158,11,0.08); }
+.caelex-grade-out_of_scope { color: var(--caelex-green); border-color: var(--caelex-green); background: rgba(34,197,94,0.08); }
+.caelex-cta { margin-top: 16px; }
+.caelex-footer {
+  padding: 10px 20px;
+  border-top: 1px solid var(--caelex-card-border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--caelex-text-secondary);
+}
+.caelex-footer a { color: var(--caelex-accent); text-decoration: none; }
+.caelex-footer a:hover { text-decoration: underline; }
+.caelex-loading { display: flex; justify-content: center; padding: 32px 0; }
+.caelex-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--caelex-card-border);
+  border-top-color: var(--caelex-accent);
+  border-radius: 50%;
+  animation: caelex-spin 0.6s linear infinite;
+}
+.caelex-error { text-align: center; padding: 16px; color: var(--caelex-red); font-size: 13px; }
+@keyframes caelex-fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes caelex-spin { to { transform: rotate(360deg); } }
+`;

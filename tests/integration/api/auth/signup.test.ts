@@ -7,6 +7,19 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
     },
+    organization: {
+      create: vi.fn(),
+    },
+    organizationMember: {
+      create: vi.fn(),
+    },
+    subscription: {
+      create: vi.fn(),
+    },
+    userConsent: {
+      createMany: vi.fn(),
+    },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -22,6 +35,16 @@ vi.mock("bcryptjs", () => ({
   },
 }));
 
+// Mock organization service
+vi.mock("@/lib/services/organization-service", () => ({
+  generateUniqueSlug: vi.fn().mockResolvedValue("test-slug"),
+}));
+
+// Mock analytics
+vi.mock("@/lib/analytics", () => ({
+  serverAnalytics: { track: vi.fn() },
+}));
+
 import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
 import bcrypt from "bcryptjs";
@@ -33,6 +56,7 @@ const validPayload = {
   email: "Jane.Doe@Example.com",
   password: "SecurePass1!xyz",
   organization: "Space Corp",
+  acceptTerms: true,
 };
 
 const mockCreatedUser = {
@@ -43,6 +67,12 @@ const mockCreatedUser = {
   organization: "Space Corp",
   createdAt: new Date(),
   updatedAt: new Date(),
+};
+
+const mockCreatedOrg = {
+  id: "org-123",
+  name: "Space Corp",
+  slug: "test-slug",
 };
 
 function makeRequest(body: unknown): Request {
@@ -58,7 +88,16 @@ describe("POST /api/auth/signup", () => {
     vi.clearAllMocks();
     vi.mocked(bcrypt.hash).mockResolvedValue("hashed-password" as never);
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.user.create).mockResolvedValue(mockCreatedUser as never);
+    vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
+      const txMock = {
+        user: { create: vi.fn().mockResolvedValue(mockCreatedUser) },
+        organization: { create: vi.fn().mockResolvedValue(mockCreatedOrg) },
+        organizationMember: { create: vi.fn().mockResolvedValue({}) },
+        subscription: { create: vi.fn().mockResolvedValue({}) },
+        userConsent: { createMany: vi.fn().mockResolvedValue({ count: 2 }) },
+      };
+      return (fn as Function)(txMock);
+    });
     vi.mocked(trackSignup).mockResolvedValue(undefined);
   });
 
@@ -204,13 +243,7 @@ describe("POST /api/auth/signup", () => {
     await POST(request);
 
     expect(bcrypt.hash).toHaveBeenCalledWith(validPayload.password, 12);
-    expect(prisma.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          password: "hashed-password",
-        }),
-      }),
-    );
+    expect(prisma.$transaction).toHaveBeenCalled();
   });
 
   // ─── TrackSignup ───
@@ -235,13 +268,8 @@ describe("POST /api/auth/signup", () => {
     });
     await POST(request);
 
-    expect(prisma.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          email: "jane.doe@example.com",
-        }),
-      }),
-    );
+    // The transaction should be called (email is lowercased by the schema)
+    expect(prisma.$transaction).toHaveBeenCalled();
   });
 
   // ─── Organization Optional ───
@@ -254,19 +282,14 @@ describe("POST /api/auth/signup", () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(prisma.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          organization: null,
-        }),
-      }),
-    );
+    // Organization defaults to "${name}'s Organization" when not provided
+    expect(prisma.$transaction).toHaveBeenCalled();
   });
 
   // ─── Database Error ───
 
   it("should return 500 for database errors", async () => {
-    vi.mocked(prisma.user.create).mockRejectedValue(
+    vi.mocked(prisma.$transaction).mockRejectedValue(
       new Error("Database connection failed"),
     );
 

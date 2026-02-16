@@ -51,6 +51,13 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
+// ─── Mock Encryption ───
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((v: string) => Promise.resolve(v)),
+  decrypt: vi.fn((v: string) => Promise.resolve(v)),
+  isEncrypted: vi.fn(() => false),
+}));
+
 // ─── Imports (after mocks) ───
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";

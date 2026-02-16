@@ -63,11 +63,12 @@ function getAuthRateLimiter(): Ratelimit | null {
   return authRateLimiter;
 }
 
-// Routes exempt from middleware rate limiting (webhooks, cron jobs)
+// Routes exempt from middleware rate limiting (webhooks, cron jobs, public API)
 const RATE_LIMIT_EXEMPT_ROUTES = [
   "/api/v1/webhooks",
   "/api/cron/",
   "/api/auth/", // NextAuth callbacks have their own protection
+  "/api/public/", // Public API handles its own rate limiting
 ];
 
 function getClientIp(req: NextRequest): string {
@@ -118,6 +119,10 @@ function applySecurityHeaders(
   nonce?: string,
 ): NextResponse {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+    // Allow widget pages to be embedded in iframes
+    if (key === "X-Frame-Options" && pathname?.startsWith("/widget/")) {
+      return;
+    }
     response.headers.set(key, value);
   });
 
@@ -173,10 +178,13 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/cron/",
   "/api/supplier/",
   "/api/v1/webhooks",
+  "/api/v1/compliance/", // API v1 uses API key auth, not CSRF
   "/api/auth/",
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
   "/api/nis2/calculate", // NIS2 assessment is public, CSRF exempt (rate limited instead)
   "/api/astra/", // ASTRA has session auth + rate limiting, CSRF exempt
+  "/api/public/", // Public API endpoints use rate limiting, not CSRF
+  "/api/widget/", // Widget config API uses session auth
 ];
 
 function validateOrigin(req: NextRequest): boolean {

@@ -353,5 +353,27 @@
     "priority": "Priority",
     "followUpRequired": "Follow-up Required",
     "slaDeadline": "SLA Deadline"
+  },
+  "widget": {
+    "title": "Embeddable Widget",
+    "subtitle": "Embed compliance checks on your website or partner sites.",
+    "setup": "Set Up Widget",
+    "widgetType": "Widget Type",
+    "theme": "Theme",
+    "allowedDomains": "Allowed Domains",
+    "embedCode": "Embed Code",
+    "preview": "Preview",
+    "analytics": "Analytics",
+    "save": "Save Changes",
+    "impressions": "Impressions",
+    "completions": "Completions",
+    "ctaClicks": "CTA Clicks",
+    "conversionRate": "Conversion Rate",
+    "ctaRate": "CTA Rate",
+    "quickCheck": "Quick Check",
+    "complianceBadge": "Compliance Badge",
+    "nis2Classifier": "NIS2 Classifier",
+    "copyEmbed": "Copy embed code",
+    "copied": "Copied!"
   }
 }

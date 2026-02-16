@@ -25,6 +25,13 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock Encryption
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((v: string) => Promise.resolve(v)),
+  decrypt: vi.fn((v: string) => Promise.resolve(v)),
+  isEncrypted: vi.fn(() => false),
+}));
+
 // Mock incident-response-service
 vi.mock("@/lib/services/incident-response-service", () => ({
   INCIDENT_CLASSIFICATION: {

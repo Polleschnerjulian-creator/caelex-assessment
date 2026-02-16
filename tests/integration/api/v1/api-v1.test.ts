@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// ─── Mock server-only ───
+vi.mock("server-only", () => ({}));
+
 // ─── Mock Prisma ───
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -50,6 +53,9 @@ vi.mock("@/lib/prisma", () => ({
     securityAuditLog: {
       create: vi.fn(),
     },
+    organizationMember: {
+      findFirst: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));
@@ -69,8 +75,63 @@ vi.mock("@/lib/services/security-audit-service", () => ({
   logSecurityEvents: vi.fn().mockResolvedValue([]),
 }));
 
+// ─── Mock API Key Service ───
+vi.mock("@/lib/services/api-key-service", () => ({
+  getOrganizationApiKeys: vi.fn().mockResolvedValue([]),
+  createApiKey: vi.fn().mockResolvedValue({
+    apiKey: {
+      id: "key-1",
+      keyPrefix: "caelex_abcd",
+      name: "Test Key",
+      scopes: ["read:compliance"],
+      isActive: true,
+      rateLimit: 1000,
+      expiresAt: null,
+      createdAt: new Date(),
+    },
+    plainTextKey: "caelex_testapikey1234567890abcdef",
+  }),
+  revokeApiKey: vi.fn().mockResolvedValue({ id: "key-1", isActive: false }),
+  getApiKeyById: vi.fn().mockResolvedValue(null),
+  validateApiKey: vi
+    .fn()
+    .mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "Invalid API key",
+    }),
+  hasScope: vi.fn().mockReturnValue(true),
+  hasAnyScope: vi.fn().mockReturnValue(true),
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 999 }),
+  logApiRequest: vi.fn().mockResolvedValue(undefined),
+  API_SCOPES: {
+    "read:compliance": "Read compliance data",
+    "write:compliance": "Write compliance data",
+    "read:spacecraft": "Read spacecraft data",
+    "write:spacecraft": "Write spacecraft data",
+  },
+}));
+
+// ─── Mock HMAC Signing ───
+vi.mock("@/lib/hmac-signing.server", () => ({
+  verifySignature: vi.fn().mockReturnValue({ valid: true }),
+  extractRequestDetails: vi.fn().mockReturnValue({}),
+  createSignature: vi.fn().mockReturnValue("mock-signature"),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import {
+  validateApiKey,
+  hasScope,
+  hasAnyScope,
+  checkRateLimit,
+  logApiRequest,
+  getOrganizationApiKeys,
+  createApiKey,
+  getApiKeyById,
+  revokeApiKey,
+} from "@/lib/services/api-key-service";
 
 // ─── Shared Test Data ───
 
@@ -134,6 +195,19 @@ function makeAuthedGetRequest(
   });
 }
 
+// Default org member mock for all tests — set after clearAllMocks
+beforeEach(() => {
+  vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
+    id: "member-1",
+    userId: "user-123",
+    organizationId: ORG_ID,
+    role: "OWNER",
+    permissions: ["*"],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as never);
+});
+
 // ════════════════════════════════════════════════════════════════════════════════
 // 1. API Keys Management (session-auth): /api/v1/keys
 // ════════════════════════════════════════════════════════════════════════════════
@@ -191,7 +265,7 @@ describe("GET /api/v1/keys", () => {
 
   it("returns 500 on database error", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.findMany).mockRejectedValue(new Error("DB down"));
+    vi.mocked(getOrganizationApiKeys).mockRejectedValue(new Error("DB down"));
 
     const req = makeGetRequest(
       `http://localhost/api/v1/keys?organizationId=${ORG_ID}`,
@@ -286,10 +360,13 @@ describe("POST /api/v1/keys", () => {
 
   it("creates key successfully with valid input", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.create).mockResolvedValue({
-      ...mockApiKeyRecord,
-      scopes: ["read:compliance"],
-    } as any);
+    vi.mocked(createApiKey).mockResolvedValue({
+      apiKey: {
+        ...mockApiKeyRecord,
+        scopes: ["read:compliance"],
+      } as any,
+      plainTextKey: "caelex_testapikey1234567890abcdef",
+    });
 
     const req = makePostRequest("http://localhost/api/v1/keys", {
       organizationId: ORG_ID,
@@ -307,7 +384,7 @@ describe("POST /api/v1/keys", () => {
 
   it("returns 500 on database error during creation", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.create).mockRejectedValue(new Error("DB error"));
+    vi.mocked(createApiKey).mockRejectedValue(new Error("DB error"));
 
     const req = makePostRequest("http://localhost/api/v1/keys", {
       organizationId: ORG_ID,
@@ -365,7 +442,7 @@ describe("GET /api/v1/keys/[keyId]", () => {
 
   it("returns 404 when key not found", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.findFirst).mockResolvedValue(null);
+    vi.mocked(getApiKeyById).mockResolvedValue(null);
 
     const req = makeGetRequest(
       `http://localhost/api/v1/keys/key-999?organizationId=${ORG_ID}`,
@@ -381,9 +458,17 @@ describe("GET /api/v1/keys/[keyId]", () => {
 
   it("returns key details on success", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.findFirst).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
+    vi.mocked(getApiKeyById).mockResolvedValue({
+      id: mockApiKeyRecord.id,
+      name: mockApiKeyRecord.name,
+      maskedKey: "caelex_abcd...xxxx",
+      scopes: mockApiKeyRecord.scopes,
+      rateLimit: mockApiKeyRecord.rateLimit,
+      isActive: mockApiKeyRecord.isActive,
+      createdAt: mockApiKeyRecord.createdAt,
+      lastUsedAt: mockApiKeyRecord.lastUsedAt,
+      expiresAt: mockApiKeyRecord.expiresAt,
+    } as any);
 
     const req = makeGetRequest(
       `http://localhost/api/v1/keys/key-1?organizationId=${ORG_ID}`,
@@ -436,7 +521,10 @@ describe("DELETE /api/v1/keys/[keyId]", () => {
 
   it("returns success on key revocation", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue(mockApiKeyRecord as any);
+    vi.mocked(revokeApiKey).mockResolvedValue({
+      id: "key-1",
+      isActive: false,
+    } as any);
 
     const req = makeDeleteRequest(
       `http://localhost/api/v1/keys/key-1?organizationId=${ORG_ID}&reason=compromised`,
@@ -452,7 +540,7 @@ describe("DELETE /api/v1/keys/[keyId]", () => {
 
   it("returns 500 on database error during revocation", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.apiKey.update).mockRejectedValue(new Error("DB error"));
+    vi.mocked(revokeApiKey).mockRejectedValue(new Error("DB error"));
 
     const req = makeDeleteRequest(
       `http://localhost/api/v1/keys/key-1?organizationId=${ORG_ID}`,
@@ -479,9 +567,19 @@ describe("GET /api/v1/compliance", () => {
     const mod = await import("@/app/api/v1/compliance/route");
     GET = mod.GET;
 
-    // Default: rate limit OK
-    vi.mocked(prisma.apiRequest.count).mockResolvedValue(0);
-    vi.mocked(prisma.apiRequest.create).mockResolvedValue({} as any);
+    // Default: validateApiKey returns invalid (tests override for success)
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "Invalid API key",
+    });
+    vi.mocked(hasScope).mockReturnValue(true);
+    vi.mocked(hasAnyScope).mockReturnValue(true);
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      allowed: true,
+      remaining: 999,
+    });
+    vi.mocked(logApiRequest).mockResolvedValue(undefined);
   });
 
   it("returns 401 when no Authorization header provided", async () => {
@@ -505,7 +603,11 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 401 when API key not found in database", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(null);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "API key not found",
+    });
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
     const res = await GET(req as any);
@@ -516,10 +618,11 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 401 when API key is revoked (inactive)", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue({
-      ...mockApiKeyRecord,
-      isActive: false,
-    } as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "API key has been revoked",
+    });
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
     const res = await GET(req as any);
@@ -528,10 +631,11 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 401 when API key is expired", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue({
-      ...mockApiKeyRecord,
-      expiresAt: new Date("2020-01-01"),
-    } as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "API key has expired",
+    });
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
     const res = await GET(req as any);
@@ -540,11 +644,11 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 403 when API key lacks required scope", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue({
-      ...mockApiKeyRecord,
-      scopes: ["read:spacecraft"], // missing read:compliance
-    } as any);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: { ...mockApiKeyRecord, scopes: ["read:spacecraft"] } as any,
+    });
+    vi.mocked(hasScope).mockReturnValue(false);
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
     const res = await GET(req as any);
@@ -555,12 +659,14 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 429 when rate limit exceeded", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
-    // Simulate rate limit exceeded: count >= rateLimit
-    vi.mocked(prisma.apiRequest.count).mockResolvedValue(1001);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      allowed: false,
+      remaining: 0,
+    });
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
     const res = await GET(req as any);
@@ -571,10 +677,10 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 200 with compliance overview on success", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
     vi.mocked(prisma.spacecraft.count).mockResolvedValue(5);
     vi.mocked(prisma.authorizationWorkflow.count).mockResolvedValue(2);
     vi.mocked(prisma.deadline.count).mockResolvedValue(3);
@@ -596,10 +702,10 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("returns 500 when database throws in handler", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
     vi.mocked(prisma.spacecraft.count).mockRejectedValue(new Error("DB error"));
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/compliance");
@@ -611,11 +717,10 @@ describe("GET /api/v1/compliance", () => {
   });
 
   it("allows wildcard scope (*) to access compliance endpoint", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue({
-      ...mockApiKeyRecord,
-      scopes: ["*"],
-    } as any);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: { ...mockApiKeyRecord, scopes: ["*"] } as any,
+    });
     vi.mocked(prisma.spacecraft.count).mockResolvedValue(0);
     vi.mocked(prisma.authorizationWorkflow.count).mockResolvedValue(0);
     vi.mocked(prisma.deadline.count).mockResolvedValue(0);
@@ -640,8 +745,19 @@ describe("GET /api/v1/spacecraft", () => {
     const mod = await import("@/app/api/v1/spacecraft/route");
     GET = mod.GET;
 
-    vi.mocked(prisma.apiRequest.count).mockResolvedValue(0);
-    vi.mocked(prisma.apiRequest.create).mockResolvedValue({} as any);
+    // Default: validateApiKey returns invalid (tests override for success)
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: false,
+      apiKey: null,
+      error: "Invalid API key",
+    });
+    vi.mocked(hasScope).mockReturnValue(true);
+    vi.mocked(hasAnyScope).mockReturnValue(true);
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      allowed: true,
+      remaining: 999,
+    });
+    vi.mocked(logApiRequest).mockResolvedValue(undefined);
   });
 
   it("returns 401 without auth header", async () => {
@@ -652,11 +768,11 @@ describe("GET /api/v1/spacecraft", () => {
   });
 
   it("returns 403 without read:spacecraft scope", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue({
-      ...mockApiKeyRecord,
-      scopes: ["read:compliance"], // missing read:spacecraft
-    } as any);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: { ...mockApiKeyRecord, scopes: ["read:compliance"] } as any,
+    });
+    vi.mocked(hasScope).mockReturnValue(false);
 
     const req = makeAuthedGetRequest("http://localhost/api/v1/spacecraft");
     const res = await GET(req as any);
@@ -665,10 +781,10 @@ describe("GET /api/v1/spacecraft", () => {
   });
 
   it("returns paginated spacecraft list on success", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
 
     const mockSpacecraft = [
       {
@@ -709,10 +825,10 @@ describe("GET /api/v1/spacecraft", () => {
   });
 
   it("caps pageSize at 100", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
     vi.mocked(prisma.spacecraft.findMany).mockResolvedValue([]);
     vi.mocked(prisma.spacecraft.count).mockResolvedValue(0);
 
@@ -727,10 +843,10 @@ describe("GET /api/v1/spacecraft", () => {
   });
 
   it("passes status filter to query", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
     vi.mocked(prisma.spacecraft.findMany).mockResolvedValue([]);
     vi.mocked(prisma.spacecraft.count).mockResolvedValue(0);
 
@@ -751,10 +867,10 @@ describe("GET /api/v1/spacecraft", () => {
   });
 
   it("returns 500 on database error", async () => {
-    vi.mocked(prisma.apiKey.findUnique).mockResolvedValue(
-      mockApiKeyRecord as any,
-    );
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({} as any);
+    vi.mocked(validateApiKey).mockResolvedValue({
+      valid: true,
+      apiKey: mockApiKeyRecord as any,
+    });
     vi.mocked(prisma.spacecraft.findMany).mockRejectedValue(
       new Error("DB error"),
     );

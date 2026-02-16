@@ -34,6 +34,7 @@ import {
   BarChart3,
   FileSearch,
   Orbit,
+  Code2,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -714,6 +715,15 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             onClick={handleNavClick}
           >
             {t("sidebar.settings")}
+          </NavItem>
+          <NavItem
+            href="/dashboard/settings/widget"
+            icon={<Code2 size={16} strokeWidth={1.5} />}
+            onClick={handleNavClick}
+          >
+            {t("sidebar.widget") !== "sidebar.widget"
+              ? t("sidebar.widget")
+              : "Widget"}
           </NavItem>
 
           <button

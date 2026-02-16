@@ -254,6 +254,32 @@ export function createMockFile(
   return new File([blob], name, { type });
 }
 
+/**
+ * Create a Prisma $transaction mock that executes the callback with a mock tx client.
+ * Usage:
+ *   vi.mocked(prisma.$transaction).mockImplementation(
+ *     mockPrismaTransaction({ user: { create: vi.fn().mockResolvedValue(mockUser) } })
+ *   );
+ */
+export function mockPrismaTransaction(
+  models: Record<string, Record<string, ReturnType<typeof vi.fn>>>,
+) {
+  return async (fn: unknown) => {
+    if (typeof fn === "function") {
+      return fn(models);
+    }
+    // Array-style transaction: return results as-is
+    return fn;
+  };
+}
+
+/**
+ * Standard mock session factory for auth tests
+ */
+export function createAuthMock(session: MockSession | null) {
+  return vi.fn().mockResolvedValue(session);
+}
+
 // Re-export testing utilities
 export { userEvent };
 export * from "@testing-library/react";

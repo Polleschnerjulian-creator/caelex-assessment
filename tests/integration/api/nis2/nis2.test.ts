@@ -54,6 +54,18 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
+// ─── Mock Encryption ───
+vi.mock("@/lib/encryption", () => ({
+  encrypt: vi.fn((v: string) => Promise.resolve(v)),
+  decrypt: vi.fn((v: string) => Promise.resolve(v)),
+  isEncrypted: vi.fn(() => false),
+}));
+
+// ─── Mock NIS2 Auto-Assessment ───
+vi.mock("@/lib/nis2-auto-assessment.server", () => ({
+  generateAutoAssessments: vi.fn(() => []),
+}));
+
 // ─── Mock Rate Limiting ───
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true, remaining: 9 }),
@@ -343,7 +355,7 @@ describe("GET /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Internal server error");
+    expect(data.error).toBe("DB connection failed");
   });
 });
 
@@ -373,12 +385,16 @@ describe("POST /api/nis2", () => {
     authed();
     const { sector: _sector, ...withoutSector } = validNIS2AssessmentPayload;
 
-    vi.mocked(prisma.$transaction).mockResolvedValue({
-      id: "new-nis2-assessment",
-    } as never);
-    vi.mocked(prisma.nIS2Assessment.findUnique).mockResolvedValue(
+    vi.mocked(prisma.nIS2Assessment.create).mockResolvedValue(
       mockNIS2Assessment as never,
     );
+    vi.mocked(prisma.nIS2RequirementStatus.createMany).mockResolvedValue({
+      count: 2,
+    } as never);
+    vi.mocked(prisma.nIS2Assessment.findUnique).mockResolvedValue({
+      ...mockNIS2Assessment,
+      requirements: [],
+    } as never);
 
     const req = makeRequest("http://localhost/api/nis2", {
       method: "POST",
@@ -408,17 +424,12 @@ describe("POST /api/nis2", () => {
     authed();
     const createdAssessment = { ...mockNIS2Assessment, id: "new-nis2-1" };
 
-    vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
-      return (fn as Function)({
-        nIS2Assessment: {
-          create: vi.fn().mockResolvedValue(createdAssessment),
-        },
-        nIS2RequirementStatus: {
-          create: vi.fn().mockResolvedValue({}),
-        },
-      });
-    });
-
+    vi.mocked(prisma.nIS2Assessment.create).mockResolvedValue(
+      createdAssessment as never,
+    );
+    vi.mocked(prisma.nIS2RequirementStatus.createMany).mockResolvedValue({
+      count: 2,
+    } as never);
     vi.mocked(prisma.nIS2Assessment.findUnique).mockResolvedValue({
       ...createdAssessment,
       requirements: [],
@@ -441,7 +452,7 @@ describe("POST /api/nis2", () => {
 
   it("should return 500 on database error during creation", async () => {
     authed();
-    vi.mocked(prisma.$transaction).mockRejectedValue(
+    vi.mocked(prisma.nIS2Assessment.create).mockRejectedValue(
       new Error("Transaction failed"),
     );
 
@@ -453,7 +464,7 @@ describe("POST /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Internal server error");
+    expect(data.error).toBe("Transaction failed");
   });
 });
 
@@ -517,7 +528,7 @@ describe("GET /api/nis2/[assessmentId]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(500);
-    expect(data.error).toBe("Internal server error");
+    expect(data.error).toBe("DB error");
   });
 });
 

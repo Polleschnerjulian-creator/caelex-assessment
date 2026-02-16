@@ -2385,6 +2385,7 @@ model Organization {
   healthScore       CustomerHealthScore?    // CEO Analytics: customer health
   submissionPackages SubmissionPackage[]    // NCA Portal: document packages
   breachReports      BreachReport[]        // GDPR Art. 33/34 breach reports
+  widgetConfigs      WidgetConfig[]        // Embeddable widget configurations
 
   @@index([slug])
 }
@@ -3204,6 +3205,10 @@ model ApiKey {
   revokedAt      DateTime?
   revokedReason  String?
 
+  // Widget Integration
+  keyType        String   @default("standard") // "standard" | "widget"
+  widgetConfig   WidgetConfig?
+
   // Relations
   requests       ApiRequest[]
 
@@ -3211,6 +3216,34 @@ model ApiKey {
   @@index([organizationId])
   @@index([keyPrefix])
   @@index([previousKeyHash])
+}
+
+model WidgetConfig {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  apiKeyId        String   @unique
+  apiKey          ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  // Configuration
+  widgetType      String   @default("quick_check") // "quick_check" | "compliance_badge" | "nis2_classifier"
+  theme           String   @default("dark") // "dark" | "light"
+  allowedDomains  String[] // CORS whitelist for widget embedding
+
+  // Customization
+  customCta       String?  // Custom CTA button text
+  ctaUrl          String?  // Custom CTA URL
+
+  // Analytics counters
+  impressions     Int      @default(0)
+  completions     Int      @default(0)
+  ctaClicks       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([apiKeyId])
 }
 
 model ApiRequest {

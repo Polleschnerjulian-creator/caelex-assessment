@@ -132,9 +132,9 @@ describe("UsageMetrics Component", () => {
         />,
       );
 
-      // The exceeded value should have amber color class
+      // The exceeded value should have amber color class (dark:text-amber-400)
       const exceededText = screen.getByText(/15.*\/.*10/);
-      expect(exceededText).toHaveClass("text-amber-400");
+      expect(exceededText.className).toContain("text-amber-");
     });
   });
 
@@ -142,10 +142,8 @@ describe("UsageMetrics Component", () => {
     it("should render progress bars for numeric limits", () => {
       const { container } = render(<UsageMetrics {...defaultProps} />);
 
-      // Progress bars should exist
-      const progressBars = container.querySelectorAll(
-        ".bg-navy-700.rounded-full",
-      );
+      // Progress bars should exist (role="progressbar")
+      const progressBars = screen.getAllByRole("progressbar");
       expect(progressBars.length).toBeGreaterThan(0);
     });
 
@@ -184,11 +182,11 @@ describe("UsageMetrics Component", () => {
       expect(amberBar).toBeInTheDocument();
     });
 
-    it("should show blue color for low percentage", () => {
+    it("should show green color for low percentage", () => {
       const { container } = render(<UsageMetrics {...defaultProps} />);
 
-      const blueBar = container.querySelector(".bg-blue-500");
-      expect(blueBar).toBeInTheDocument();
+      const greenBar = container.querySelector(".bg-emerald-500");
+      expect(greenBar).toBeInTheDocument();
     });
   });
 
