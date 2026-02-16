@@ -74,12 +74,14 @@ export function GenerationProgress({
   const meta = documentType ? DOCUMENT_TYPE_META[documentType] : null;
   const [currentPhase, setCurrentPhase] = useState(0);
   const [phaseProgress, setPhaseProgress] = useState(0);
+  const [animationDone, setAnimationDone] = useState(false);
 
   // Advance through phases during generation
   useEffect(() => {
     if (status !== "generating") {
       setCurrentPhase(0);
       setPhaseProgress(0);
+      setAnimationDone(false);
       return;
     }
 
@@ -96,10 +98,14 @@ export function GenerationProgress({
 
       setPhaseProgress(progress);
 
-      if (progress >= 1 && phaseIndex < GENERATION_PHASES.length - 1) {
-        phaseIndex++;
-        setCurrentPhase(phaseIndex);
-        startTime = Date.now();
+      if (progress >= 1) {
+        if (phaseIndex < GENERATION_PHASES.length - 1) {
+          phaseIndex++;
+          setCurrentPhase(phaseIndex);
+          startTime = Date.now();
+        } else {
+          setAnimationDone(true);
+        }
       }
 
       animFrame = requestAnimationFrame(tick);
@@ -274,6 +280,27 @@ export function GenerationProgress({
                 />
               </div>
             </div>
+
+            {/* Show when animation finishes but API is still working */}
+            {animationDone && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-white/40"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <RefreshCw size={12} />
+                </motion.div>
+                ASTRA is still processing — this may take a moment...
+              </motion.div>
+            )}
           </motion.div>
         )}
 

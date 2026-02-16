@@ -157,8 +157,19 @@ export default function DocumentStudio() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Generation failed");
+        let errorMsg = "Generation failed";
+        try {
+          const data = await response.json();
+          errorMsg = data.error || errorMsg;
+        } catch {
+          // Non-JSON response (e.g., Vercel 504 timeout)
+          if (response.status === 504) {
+            errorMsg = "Generation timed out. Please try again.";
+          } else {
+            errorMsg = `Server error (${response.status})`;
+          }
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();

@@ -23,6 +23,8 @@ import {
 } from "@/lib/astra/document-generator";
 import type { DocumentGenerationType } from "@/lib/astra/document-generator/types";
 
+export const maxDuration = 120; // AI generation needs time for Anthropic API call
+
 const VALID_TYPES: DocumentGenerationType[] = [
   "DEBRIS_MITIGATION_PLAN",
   "CYBERSECURITY_FRAMEWORK",
