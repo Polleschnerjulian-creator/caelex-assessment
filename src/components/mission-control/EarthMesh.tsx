@@ -14,8 +14,13 @@ function ll(lon: number, lat: number): [number, number] {
   return [((lon + 180) / 360) * 2048, ((90 - lat) / 180) * 1024];
 }
 
-// Draw a filled polygon from lon/lat coordinate pairs
-function drawPoly(ctx: CanvasRenderingContext2D, coords: [number, number][]) {
+// Stroke a polygon outline from lon/lat coordinates (no fill)
+function strokePoly(
+  ctx: CanvasRenderingContext2D,
+  coords: [number, number][],
+  color: string,
+  width: number,
+) {
   ctx.beginPath();
   const [x0, y0] = ll(coords[0][0], coords[0][1]);
   ctx.moveTo(x0, y0);
@@ -24,15 +29,13 @@ function drawPoly(ctx: CanvasRenderingContext2D, coords: [number, number][]) {
     ctx.lineTo(x, y);
   }
   ctx.closePath();
-}
-
-// Simple pseudo-random noise for terrain variation
-function noise(x: number, y: number): number {
-  const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-  return n - Math.floor(n);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
 }
 
 // ── Continent coordinate data (lon, lat) ──
+
 const NORTH_AMERICA: [number, number][] = [
   [-168, 65],
   [-162, 60],
@@ -314,7 +317,6 @@ const AFRICA: [number, number][] = [
 ];
 
 const ASIA_MAIN: [number, number][] = [
-  // Turkey → Middle East → India → Southeast Asia → China → Russia → back
   [27, 42],
   [30, 41],
   [33, 37],
@@ -389,8 +391,6 @@ const ASIA_MAIN: [number, number][] = [
   [170, 65],
   [177, 65],
   [180, 68],
-  // Wraps at date line — we draw a separate polygon for far-east Russia
-  // Back along Russia north to Urals to Turkey
   [180, 72],
   [170, 70],
   [160, 68],
@@ -413,7 +413,6 @@ const ASIA_MAIN: [number, number][] = [
   [30, 42],
 ];
 
-// Russia east of date line (Chukotka peninsula)
 const RUSSIA_EAST: [number, number][] = [
   [-180, 68],
   [-175, 65],
@@ -624,7 +623,28 @@ const SRI_LANKA: [number, number][] = [
   [80, 9],
 ];
 
-// ── Texture generation ──
+const ALL_CONTINENTS = [
+  NORTH_AMERICA,
+  CENTRAL_AMERICA,
+  SOUTH_AMERICA,
+  EUROPE,
+  AFRICA,
+  ASIA_MAIN,
+  RUSSIA_EAST,
+  ARABIAN_PENINSULA,
+  AUSTRALIA,
+  GREENLAND,
+  UK,
+  JAPAN,
+  INDONESIA,
+  BORNEO,
+  NEW_GUINEA,
+  MADAGASCAR,
+  NEW_ZEALAND,
+  SRI_LANKA,
+];
+
+// ── Monochrome wireframe texture ──
 
 function createEarthTexture(): THREE.CanvasTexture {
   const W = 2048;
@@ -634,238 +654,61 @@ function createEarthTexture(): THREE.CanvasTexture {
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // === Ocean: deep blue with latitude gradient ===
-  const oceanGrad = ctx.createLinearGradient(0, 0, 0, H);
-  oceanGrad.addColorStop(0, "#071a35"); // Polar dark
-  oceanGrad.addColorStop(0.1, "#0a2444");
-  oceanGrad.addColorStop(0.3, "#0d3461");
-  oceanGrad.addColorStop(0.5, "#114578"); // Equatorial brightest
-  oceanGrad.addColorStop(0.7, "#0d3461");
-  oceanGrad.addColorStop(0.9, "#0a2444");
-  oceanGrad.addColorStop(1, "#071a35");
-  ctx.fillStyle = oceanGrad;
+  // Near-black base
+  ctx.fillStyle = "#030508";
   ctx.fillRect(0, 0, W, H);
 
-  // Add subtle ocean depth variation
-  for (let i = 0; i < 200; i++) {
-    const x = Math.random() * W;
-    const y = Math.random() * H;
-    const r = 20 + Math.random() * 80;
-    const alpha = 0.02 + Math.random() * 0.03;
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-    grad.addColorStop(0, `rgba(15, 60, 110, ${alpha})`);
-    grad.addColorStop(1, "rgba(15, 60, 110, 0)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
+  // === Grid lines (latitude + longitude) ===
 
-  // === Coastal shelf glow (draw before land) ===
-  function drawCoastalShelf(coords: [number, number][]) {
-    drawPoly(ctx, coords);
-    ctx.strokeStyle = "rgba(30, 90, 150, 0.35)";
-    ctx.lineWidth = 8;
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(40, 110, 180, 0.2)";
-    ctx.lineWidth = 16;
+  // Longitude lines every 30 degrees
+  ctx.strokeStyle = "rgba(60, 140, 220, 0.07)";
+  ctx.lineWidth = 0.8;
+  for (let lon = -180; lon <= 180; lon += 30) {
+    const [x] = ll(lon, 0);
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
     ctx.stroke();
   }
 
-  const allContinents = [
-    NORTH_AMERICA,
-    CENTRAL_AMERICA,
-    SOUTH_AMERICA,
-    EUROPE,
-    AFRICA,
-    ASIA_MAIN,
-    RUSSIA_EAST,
-    ARABIAN_PENINSULA,
-    AUSTRALIA,
-    GREENLAND,
-    UK,
-    JAPAN,
-    INDONESIA,
-    BORNEO,
-    NEW_GUINEA,
-    MADAGASCAR,
-    NEW_ZEALAND,
-    SRI_LANKA,
-  ];
-
-  for (const c of allContinents) {
-    drawCoastalShelf(c);
-  }
-
-  // === Land base: varied green/brown ===
-  function fillContinent(coords: [number, number][], baseColor: string) {
-    drawPoly(ctx, coords);
-    ctx.fillStyle = baseColor;
-    ctx.fill();
-  }
-
-  // Main land colors
-  const landGreen = "#1e5a28";
-  const landDarkGreen = "#184d1f";
-  const landBrown = "#4a6a2a";
-
-  fillContinent(NORTH_AMERICA, landGreen);
-  fillContinent(CENTRAL_AMERICA, "#2a6a2a");
-  fillContinent(SOUTH_AMERICA, "#1a6a24");
-  fillContinent(EUROPE, landDarkGreen);
-  fillContinent(AFRICA, landBrown);
-  fillContinent(ASIA_MAIN, landGreen);
-  fillContinent(RUSSIA_EAST, landDarkGreen);
-  fillContinent(ARABIAN_PENINSULA, "#7a6e40");
-  fillContinent(AUSTRALIA, "#6a5a30");
-  fillContinent(GREENLAND, "#5a6a60");
-  fillContinent(UK, landDarkGreen);
-  fillContinent(JAPAN, landGreen);
-  fillContinent(INDONESIA, "#1a6a24");
-  fillContinent(BORNEO, "#1a6a24");
-  fillContinent(NEW_GUINEA, "#1a6a24");
-  fillContinent(MADAGASCAR, "#2a6a2a");
-  fillContinent(NEW_ZEALAND, landDarkGreen);
-  fillContinent(SRI_LANKA, "#1a6a24");
-
-  // === Terrain variation using pixel noise ===
-  const imageData = ctx.getImageData(0, 0, W, H);
-  const data = imageData.data;
-  for (let y = 0; y < H; y += 2) {
-    for (let x = 0; x < W; x += 2) {
-      const idx = (y * W + x) * 4;
-      const r = data[idx],
-        g = data[idx + 1],
-        b = data[idx + 2];
-      // Only add noise to land pixels (green channel dominant over blue for land)
-      if (g > b && g > 20) {
-        const n = (noise(x * 0.05, y * 0.05) - 0.5) * 18;
-        data[idx] = Math.max(0, Math.min(255, r + n * 0.8));
-        data[idx + 1] = Math.max(0, Math.min(255, g + n));
-        data[idx + 2] = Math.max(0, Math.min(255, b + n * 0.5));
-        // Copy to neighboring pixels for 2x2 block
-        for (let dy = 0; dy < 2; dy++) {
-          for (let dx = 0; dx < 2; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const ni = ((y + dy) * W + (x + dx)) * 4;
-            if (ni < data.length - 3) {
-              data[ni] = data[idx];
-              data[ni + 1] = data[idx + 1];
-              data[ni + 2] = data[idx + 2];
-            }
-          }
-        }
-      }
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-
-  // === Desert overlays ===
-  ctx.globalCompositeOperation = "source-atop";
-
-  // Sahara Desert
-  ctx.beginPath();
-  const sah = [
-    [-15, 28],
-    [-5, 30],
-    [5, 30],
-    [15, 28],
-    [25, 27],
-    [33, 26],
-    [35, 20],
-    [25, 18],
-    [10, 17],
-    [0, 20],
-    [-10, 22],
-    [-15, 25],
-  ];
-  const [sx0, sy0] = ll(sah[0][0], sah[0][1]);
-  ctx.moveTo(sx0, sy0);
-  sah.slice(1).forEach(([lon, lat]) => {
-    const [x, y] = ll(lon, lat);
-    ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-  ctx.fillStyle = "rgba(140, 120, 60, 0.55)";
-  ctx.fill();
-
-  // Australian interior desert
-  ctx.beginPath();
-  const aus = [
-    [120, -20],
-    [130, -18],
-    [140, -20],
-    [145, -25],
-    [140, -30],
-    [135, -32],
-    [128, -30],
-    [120, -27],
-  ];
-  const [ax0, ay0] = ll(aus[0][0], aus[0][1]);
-  ctx.moveTo(ax0, ay0);
-  aus.slice(1).forEach(([lon, lat]) => {
-    const [x, y] = ll(lon, lat);
-    ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-  ctx.fillStyle = "rgba(150, 110, 50, 0.5)";
-  ctx.fill();
-
-  // Central Asian steppe/desert
-  ctx.beginPath();
-  const cas = [
-    [50, 45],
-    [60, 45],
-    [75, 42],
-    [80, 40],
-    [75, 35],
-    [65, 33],
-    [55, 35],
-    [50, 40],
-  ];
-  const [cs0, cy0] = ll(cas[0][0], cas[0][1]);
-  ctx.moveTo(cs0, cy0);
-  cas.slice(1).forEach(([lon, lat]) => {
-    const [x, y] = ll(lon, lat);
-    ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-  ctx.fillStyle = "rgba(130, 115, 55, 0.45)";
-  ctx.fill();
-
-  ctx.globalCompositeOperation = "source-over";
-
-  // === Ice caps ===
-  // Arctic
-  const arcticGrad = ctx.createLinearGradient(0, 0, 0, 55);
-  arcticGrad.addColorStop(0, "rgba(210, 225, 240, 0.75)");
-  arcticGrad.addColorStop(1, "rgba(210, 225, 240, 0)");
-  ctx.fillStyle = arcticGrad;
-  ctx.fillRect(0, 0, W, 55);
-
-  // Antarctic
-  ctx.fillStyle = "rgba(210, 225, 240, 0.85)";
-  ctx.fillRect(0, H - 55, W, 55);
-  const antGrad = ctx.createLinearGradient(0, H - 90, 0, H - 55);
-  antGrad.addColorStop(0, "rgba(210, 225, 240, 0)");
-  antGrad.addColorStop(1, "rgba(210, 225, 240, 0.6)");
-  ctx.fillStyle = antGrad;
-  ctx.fillRect(0, H - 90, W, 35);
-
-  // === Coastlines: thin bright edge ===
-  for (const c of allContinents) {
-    drawPoly(ctx, c);
-    ctx.strokeStyle = "rgba(80, 150, 200, 0.25)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  // === Subtle latitude lines ===
-  ctx.strokeStyle = "rgba(60, 100, 160, 0.06)";
-  ctx.lineWidth = 0.5;
-  for (let y = 0; y < H; y += 64) {
+  // Latitude lines every 30 degrees
+  for (let lat = -90; lat <= 90; lat += 30) {
+    const [, y] = ll(0, lat);
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
     ctx.stroke();
+  }
+
+  // Equator + prime meridian slightly brighter
+  ctx.strokeStyle = "rgba(60, 140, 220, 0.12)";
+  ctx.lineWidth = 1;
+  // Equator
+  const [, eqY] = ll(0, 0);
+  ctx.beginPath();
+  ctx.moveTo(0, eqY);
+  ctx.lineTo(W, eqY);
+  ctx.stroke();
+  // Prime meridian
+  const [pmX] = ll(0, 0);
+  ctx.beginPath();
+  ctx.moveTo(pmX, 0);
+  ctx.lineTo(pmX, H);
+  ctx.stroke();
+
+  // === Continent outlines — outer glow layer ===
+  for (const c of ALL_CONTINENTS) {
+    strokePoly(ctx, c, "rgba(50, 140, 220, 0.08)", 6);
+  }
+
+  // === Continent outlines — main line ===
+  for (const c of ALL_CONTINENTS) {
+    strokePoly(ctx, c, "rgba(70, 160, 240, 0.55)", 1.8);
+  }
+
+  // === Continent outlines — bright core ===
+  for (const c of ALL_CONTINENTS) {
+    strokePoly(ctx, c, "rgba(120, 190, 255, 0.35)", 0.8);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -891,10 +734,9 @@ const atmosphereFragmentShader = `
   void main() {
     vec3 viewDir = normalize(cameraPosition - vWorldPosition);
     float fresnel = 1.0 - dot(viewDir, vNormal);
-    fresnel = pow(fresnel, 3.0);
-    // Blue-white atmosphere glow
-    vec3 color = mix(vec3(0.25, 0.55, 1.0), vec3(0.5, 0.75, 1.0), fresnel);
-    gl_FragColor = vec4(color, fresnel * 0.6);
+    fresnel = pow(fresnel, 3.5);
+    vec3 color = vec3(0.2, 0.5, 0.9);
+    gl_FragColor = vec4(color, fresnel * 0.4);
   }
 `;
 
@@ -932,17 +774,11 @@ export default function EarthMesh({
     <group>
       <mesh ref={meshRef}>
         <sphereGeometry args={[radius, segments, segments]} />
-        <meshStandardMaterial
-          map={texture}
-          emissive="#071428"
-          emissiveIntensity={0.2}
-          roughness={0.8}
-          metalness={0.05}
-        />
+        <meshBasicMaterial map={texture} transparent opacity={1} />
       </mesh>
       {/* Atmosphere glow */}
       <mesh ref={atmosphereRef}>
-        <sphereGeometry args={[radius * 1.025, 64, 64]} />
+        <sphereGeometry args={[radius * 1.02, 64, 64]} />
         <primitive object={atmosphereMaterial} />
       </mesh>
     </group>

@@ -89,10 +89,9 @@ function SceneContent({
 }: GlobeSceneProps) {
   return (
     <>
-      {/* Brighter, more natural lighting */}
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[5, 3, 5]} intensity={1.0} color="#fffaf0" />
-      <hemisphereLight args={["#4488cc", "#112244", 0.3]} />
+      {/* Minimal ambient — lines are self-lit via texture */}
+      <ambientLight intensity={0.1} />
+      <directionalLight position={[5, 3, 5]} intensity={0.15} color="#4488cc" />
 
       <Starfield />
 
