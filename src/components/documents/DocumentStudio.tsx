@@ -1,9 +1,10 @@
 "use client";
 
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { DocumentTypeSelector } from "./DocumentTypeSelector";
 import { DataReviewPanel } from "./DataReviewPanel";
@@ -115,9 +116,28 @@ const STEPS = [
 
 // ─── Component ───
 
+const VALID_TYPES: DocumentGenerationType[] = [
+  "DEBRIS_MITIGATION_PLAN",
+  "CYBERSECURITY_FRAMEWORK",
+  "ENVIRONMENTAL_FOOTPRINT",
+  "INSURANCE_COMPLIANCE",
+  "NIS2_ASSESSMENT",
+  "AUTHORIZATION_APPLICATION",
+];
+
 export default function DocumentStudio() {
   const [state, dispatch] = useReducer(studioReducer, initialState);
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+
+  // Deep-link: auto-select document type from ?type= query param
+  useEffect(() => {
+    const typeParam = searchParams.get("type") as DocumentGenerationType | null;
+    if (typeParam && VALID_TYPES.includes(typeParam) && state.step === 1) {
+      dispatch({ type: "SELECT_TYPE", documentType: typeParam });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     if (!state.documentType) return;

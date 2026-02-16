@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { csrfHeaders } from "@/lib/csrf-client";
+import Link from "next/link";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Shield,
@@ -29,7 +30,7 @@ import {
   Eye,
   Minus,
   XCircle,
-  Download,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -179,7 +180,7 @@ function InsurancePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [showNewAssessment, setShowNewAssessment] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  // Removed PDF download in favor of AI Document Studio
 
   // Form state for new assessment
   const [formData, setFormData] = useState({
@@ -339,30 +340,7 @@ function InsurancePageContent() {
     }
   };
 
-  const downloadPdf = async () => {
-    if (!selectedAssessment) return;
-    setDownloadingPdf(true);
-    try {
-      const res = await fetch("/api/insurance/report/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ assessmentId: selectedAssessment.id }),
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Insurance-Compliance-Report-${selectedAssessment.id}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-    } finally {
-      setDownloadingPdf(false);
-    }
-  };
+  // PDF download removed — use AI Document Studio instead
 
   // Build profile for calculations
   const buildProfile = (): InsuranceRiskProfile | null => {
@@ -1499,14 +1477,13 @@ function InsurancePageContent() {
                   </button>
                   <div className="flex items-center gap-3">
                     {selectedAssessment && report && (
-                      <button
-                        onClick={downloadPdf}
-                        disabled={downloadingPdf}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-[13px] transition-all disabled:opacity-50"
+                      <Link
+                        href="/dashboard/documents/generate?type=INSURANCE_COMPLIANCE"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-[13px] transition-all"
                       >
-                        <Download className="w-4 h-4" aria-hidden="true" />
-                        {downloadingPdf ? "Generating..." : "Download PDF"}
-                      </button>
+                        <Zap className="w-4 h-4" aria-hidden="true" />
+                        Generate with ASTRA
+                      </Link>
                     )}
                     {selectedAssessment && (
                       <button

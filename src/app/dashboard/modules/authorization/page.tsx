@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import FeatureGate from "@/components/dashboard/FeatureGate";
 import {
   Building2,
@@ -22,7 +23,7 @@ import {
   Leaf,
   DollarSign,
   BookOpen,
-  Download,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import EmptyState from "@/components/dashboard/EmptyState";
@@ -122,7 +123,7 @@ function AuthorizationPageContent() {
   // Computed NCA determination for form
   const [ncaDetermination, setNcaDetermination] =
     useState<NCADetermination | null>(null);
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  // Removed PDF download in favor of AI Document Studio
 
   useEffect(() => {
     fetchData();
@@ -200,30 +201,7 @@ function AuthorizationPageContent() {
     }
   };
 
-  const downloadPdf = async () => {
-    if (!selectedWorkflow) return;
-    setDownloadingPdf(true);
-    try {
-      const res = await fetch("/api/authorization/application/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ workflowId: selectedWorkflow.id }),
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Authorization-Application-${selectedWorkflow.id}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-    } finally {
-      setDownloadingPdf(false);
-    }
-  };
+  // PDF download removed — use AI Document Studio instead
 
   const updateDocumentStatus = async (documentId: string, status: string) => {
     if (!selectedWorkflow) return;
@@ -1206,16 +1184,13 @@ function AuthorizationPageContent() {
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <button
-                    onClick={downloadPdf}
-                    disabled={downloadingPdf}
-                    className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-lg font-medium text-[13px] transition-all disabled:opacity-50"
+                  <Link
+                    href="/dashboard/documents/generate?type=AUTHORIZATION_APPLICATION"
+                    className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-lg font-medium text-[13px] transition-all"
                   >
-                    <Download size={14} aria-hidden="true" />
-                    {downloadingPdf
-                      ? "Generating..."
-                      : "Download Application PDF"}
-                  </button>
+                    <Zap size={14} aria-hidden="true" />
+                    Generate with ASTRA
+                  </Link>
                   {selectedWorkflow.status === "in_progress" &&
                     progress.percent === 100 && (
                       <button
