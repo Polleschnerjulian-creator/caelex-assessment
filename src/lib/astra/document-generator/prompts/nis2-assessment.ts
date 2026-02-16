@@ -67,13 +67,34 @@ ${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.req
 
 ## Required Sections
 
-Generate the following sections in order. Focus on substantive analysis using the provided data — do NOT create blank template fields. Where sub-question responses are available, use them as evidence for compliance analysis.
+Generate a COMPLETE NIS2 Compliance Assessment Report that meets EU Directive 2022/2555 requirements for space sector entities. Every section must be comprehensive, authoritative, and suitable for submission to the national competent authority. Use the assessment data above as the foundation, and supplement with expert regulatory analysis, space-sector-specific guidance, and cross-regulation insights.
 
-1. **Executive Summary** — Overview of NIS2 applicability, entity classification, compliance score, and key findings. Highlight critical gaps and strengths.
-2. **Entity Classification** — Detailed analysis of essential/important/out-of-scope classification per Art. 3, using the provided sector, size, and classification data. Explain the implications.
-3. **Implementation Status & Gap Analysis** — For each assessed requirement area (Art. 21(2)(a)-(j)), provide compliance analysis incorporating the detailed sub-question responses as evidence. Group findings by compliance status. Focus on what IS and ISN'T in place — do not list requirements that haven't been assessed.
-4. **Incident Reporting Readiness** — Based on the reporting-related requirement responses, assess Art. 23 capability: 24h early warning, 72h notification, 1-month final report. Identify specific gaps.
-5. **Cross-Regulation Overlap** — Analyze the ${a.euSpaceActOverlapCount || 0} overlapping requirements between NIS2 and EU Space Act, highlighting where single implementation efforts can satisfy both frameworks.
-6. **Compliance Matrix** — Table mapping assessed requirements to status with evidence from sub-question responses. Include article references and severity levels.
-7. **Recommendations** — Prioritized implementation roadmap based on gap analysis. Start with critical severity items, then major, then minor. Include effort estimates and deadlines.`;
+1. **Executive Summary** — High-level overview: entity classification, sector analysis, compliance score interpretation, maturity assessment, key strengths, critical gaps, penalty exposure, and strategic recommendations. An NCA reviewer should get the complete compliance picture from this section alone.
+
+2. **Entity Classification Analysis** — Comprehensive Art. 2-3 classification: detailed analysis of why this entity is classified as ${a.entityClassification || "the determined classification"}, sector-specific criteria applied, size thresholds analysis, space-sector exceptions and special provisions, implications for supervisory regime, applicable penalty framework (Art. 34: essential = EUR 10M / 2%, important = EUR 7M / 1.4%). Reference national transposition specifics where relevant.
+
+3. **Applicable Regulatory Framework** — Complete mapping of NIS2 obligations for this entity type: Art. 21(2)(a)-(j) measures, Art. 23 reporting obligations, Art. 20 governance requirements, Art. 27 registration duties. For each, explain what is required, the space-sector-specific interpretation, and how it relates to EU Space Act cybersecurity provisions.
+
+4. **Implementation Status by Measure Category** — For each Art. 21(2) measure category, provide detailed compliance analysis:
+   - **(a) Risk Analysis & IS Policies** — Current policy framework, risk assessment methodology, space-specific risk considerations
+   - **(b) Incident Handling** — Detection capabilities, response procedures, classification taxonomy, escalation workflows
+   - **(c) Business Continuity** — BCP/BIA status, crisis management framework, backup systems for space operations
+   - **(d) Supply Chain Security** — Supplier risk management, contractual security requirements, SBOM practices
+   - **(e) Network & IS Acquisition** — Secure development lifecycle, vulnerability management, patch compliance
+   - **(f) Effectiveness Assessment** — Audit programme, penetration testing, security metrics and KPIs
+   - **(g) Cyber Hygiene & Training** — Training programme, awareness campaigns, space-operations-specific training
+   - **(h) Cryptography** — Encryption standards for uplink/downlink, key management, crypto agility
+   - **(i) HR, Access Control, Asset Management** — Personnel screening, access governance, asset inventory
+   - **(j) MFA & Authentication** — MFA coverage, emergency access procedures, secure communications
+   For each category: use the sub-question response data as evidence, identify gaps, cite specific article requirements, and provide implementation guidance referencing ENISA NIS2 guidance and ISO 27001 controls.
+
+5. **Incident Reporting Readiness** — Comprehensive Art. 23 analysis: current capability for 24h early warning, 72h notification, intermediate reporting, 1-month final report. Analyze the operator's detection capabilities (MTTD), reporting workflows, CSIRT coordination, significant incident criteria. Provide gap analysis against the reporting timeline requirements and specific remediation steps.
+
+6. **Cross-Regulation Synergies** — Detailed analysis of the ${a.euSpaceActOverlapCount || 0} overlapping requirements between NIS2 and EU Space Act (Art. 27-30). For each overlap: identify where a single implementation effort satisfies both frameworks, estimate effort savings, and flag areas requiring separate compliance work. Include ISO 27001 and ENISA space controls cross-references. Quantify total potential efficiency gains.
+
+7. **Governance & Accountability** — Art. 20 compliance: management body responsibilities, cybersecurity training requirements for leadership, personal liability provisions, CISO appointment and reporting structure. Provide guidance on governance best practices for space sector entities.
+
+8. **Compliance Verification Matrix** — Complete table mapping ALL applicable NIS2 requirements to compliance status. For each: requirement ID, article reference, category, severity (critical/major/minor), compliance status, evidence summary from sub-question responses, and remediation action if non-compliant.
+
+9. **Risk-Prioritized Remediation Roadmap** — Implementation plan prioritized by: (1) critical severity gaps with regulatory deadlines, (2) major gaps affecting core operations, (3) minor improvements for maturity advancement. For each action: specific deliverable, estimated effort (weeks), responsible role, dependencies, and target completion date. Include quick wins (0-3 months), core programme (3-9 months), and continuous improvement (9-18 months) phases.`;
 }

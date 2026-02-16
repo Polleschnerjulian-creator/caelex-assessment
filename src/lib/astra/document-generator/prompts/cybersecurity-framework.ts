@@ -68,13 +68,21 @@ ${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.req
 
 ## Required Sections
 
-Generate the following sections in order. Focus on substantive analysis using the provided data — do NOT create blank template fields. Where sub-question responses are available, use them as evidence for compliance analysis.
+Generate a COMPLETE Cybersecurity Framework document that meets EU Space Act Art. 27-30 requirements and aligns with NIST CSF, ISO 27001, and ECSS-E-ST-70-41C. Every section must be comprehensive, authoritative, and NCA-submission-ready. Use the assessment data above as the foundation, and supplement with expert cybersecurity guidance, industry standards, and space-specific threat analysis.
 
-1. **Executive Summary** — Overview of the organization's cybersecurity posture, maturity level, key strengths, and critical gaps. Include compliance score context.
-2. **Organization Security Profile** — Analyze current security capabilities based on the provided data: team size, certifications, existing plans. Assess readiness against EU Space Act Art. 27-30.
-3. **Risk Assessment** — Based on the space segment complexity, data sensitivity, and satellite count, analyze the threat landscape and risk categories specific to this operator.
-4. **Implementation Status & Gap Analysis** — For each assessed requirement, provide compliance analysis incorporating the detailed sub-question responses as evidence. Group by compliance status (compliant, partial, non-compliant). Focus on what IS and ISN'T in place.
-5. **Maturity Assessment** — Based on the assessment responses, evaluate maturity across key domains. Identify areas closest to compliance and furthest from target.
-6. **Compliance Matrix** — Table mapping assessed requirements to implementation status with evidence from sub-question responses. Only include requirements that have been assessed.
-7. **Recommendations** — Prioritized improvement actions based on gap analysis. Include effort estimates and regulatory deadlines. Focus on highest-impact items first.`;
+1. **Executive Summary** — High-level overview: organization security profile, maturity score analysis, compliance posture across all requirement areas, key strengths, critical vulnerabilities, and strategic recommendations. An NCA reviewer should get the complete picture from this section alone.
+
+2. **Organization Security Profile** — Complete security capabilities assessment: team structure and expertise, certifications held and their scope, existing security infrastructure, incident response readiness, business continuity posture. Analyze against EU Space Act Art. 27 requirements for space operators. Where data wasn't provided, describe what Art. 27-30 requires.
+
+3. **Threat Landscape & Risk Assessment** — Comprehensive space cybersecurity threat analysis tailored to this operator: threats to space segment (jamming, spoofing, cyber-physical attacks on satellites), ground segment threats (network intrusion, insider threats, supply chain compromise), link segment threats (eavesdropping, command injection, replay attacks). Risk categorization by likelihood and impact. Reference ENISA space threat taxonomy and NIST SP 800-53 controls. Tailor analysis to the operator's specific complexity level and data sensitivity.
+
+4. **Security Architecture** — Complete security architecture across all segments: space segment hardening (onboard encryption, secure boot, command authentication), ground segment security (network segmentation, access control, monitoring), link security (encryption standards, key management, anti-jamming). Reference CCSDS security standards and ECSS-E-ST-70-41C. Where specific implementation data was provided in sub-questions, incorporate it as evidence.
+
+5. **Implementation Status by Requirement Area** — For each cybersecurity requirement area, provide detailed analysis: current implementation status (using sub-question response data as evidence), gap identification, regulatory requirement (Art. reference), and specific technical measures needed. Group into: (1) Governance & Policy, (2) Access Control & Authentication, (3) Network & Communications Security, (4) Data Protection & Encryption, (5) Incident Response, (6) Supply Chain Security, (7) Monitoring & Audit.
+
+6. **Maturity Assessment** — NIST CSF maturity evaluation across all five functions (Identify, Protect, Detect, Respond, Recover). For each function: current maturity level assessment based on the data, target maturity level per EU Space Act requirements, specific gaps, and improvement roadmap. Include maturity scoring methodology.
+
+7. **Compliance Verification Matrix** — Complete table mapping ALL cybersecurity requirements to implementation status. For each: requirement ID, article reference, compliance status, evidence summary from sub-question responses, responsible party, and remediation action if non-compliant.
+
+8. **Implementation Roadmap & Recommendations** — Phased implementation plan: Phase 1 (Quick Wins, 0-3 months), Phase 2 (Core Controls, 3-6 months), Phase 3 (Advanced Capabilities, 6-12 months), Phase 4 (Continuous Improvement, 12+ months). Each phase: specific actions, effort estimates, resource requirements, dependencies, and expected maturity improvement.`;
 }
