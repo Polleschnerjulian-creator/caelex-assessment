@@ -1,20 +1,19 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import {
-  Database,
-  FileText,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
-  Zap,
-  Loader2,
-  Sparkles,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { CheckCircle2, XCircle, RefreshCw, Zap } from "lucide-react";
 import type { DocumentGenerationType } from "@/lib/astra/document-generator/types";
 import { DOCUMENT_TYPE_META } from "@/lib/astra/document-generator/types";
 import type { StreamProgress } from "./DocumentStudio";
+
+// ─── Radial Layout Constants ───
+
+const CX = 200;
+const CY = 200;
+const RING_R = 130;
+const HUB_R = 44;
+
+// ─── Component ───
 
 interface GenerationProgressProps {
   status: "idle" | "generating" | "completed" | "error";
@@ -56,97 +55,348 @@ export function GenerationProgress({
 
   const progress = getProgress();
 
+  // ─── Radial visualization data ───
+  const estimatedTotal = getEstimatedSections(documentType);
+  const phase = streamProgress?.phase ?? "preparing";
+  const sections = streamProgress?.sections ?? [];
+  const nodeCount = Math.max(estimatedTotal, sections.length);
+  const activeIndex =
+    phase === "streaming" ? sections.findIndex((s) => !s.completed) : -1;
+  const completedCount = sections.filter((s) => s.completed).length;
+
+  const phaseLabel =
+    phase === "preparing"
+      ? "Collecting Data"
+      : phase === "streaming"
+        ? `Writing ${Math.min(completedCount + 1, nodeCount)}/${nodeCount}`
+        : "Finalizing";
+
+  const nodes = Array.from({ length: nodeCount }, (_, i) => {
+    const angle = ((2 * Math.PI) / nodeCount) * i - Math.PI / 2;
+    const x = CX + RING_R * Math.cos(angle);
+    const y = CY + RING_R * Math.sin(angle);
+    const section = sections[i];
+    return {
+      x,
+      y,
+      angle,
+      completed: section?.completed ?? false,
+      active: i === activeIndex,
+      title: section?.title ?? "",
+    };
+  });
+
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
       <div className="w-full max-w-lg">
         {status === "generating" && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-6"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center gap-5"
           >
-            {/* ASTRA avatar */}
-            <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <Zap size={24} className="text-emerald-500" />
+            {/* ── Radial Visualization ── */}
+            <div className="relative w-full aspect-square max-w-[380px]">
+              {/* Background radial glow */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-2/3 h-2/3 rounded-full bg-emerald-500/[0.04] blur-[60px]" />
               </div>
-              <motion.div
-                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500"
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-            </div>
 
-            {/* Title */}
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-                ASTRA is generating your document
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-white/50 mt-1">
-                {meta?.title}
-              </p>
-            </div>
+              {/* SVG layer */}
+              <svg viewBox="0 0 400 400" className="w-full h-full" fill="none">
+                <defs>
+                  <radialGradient id="gen-hub-glow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
 
-            {/* Phase list */}
-            <div className="w-full space-y-1">
-              {/* Phase 1: Collecting Data */}
-              <PhaseRow
-                icon={Database}
-                title="Collecting Assessment Data"
-                subtitle="Scanning compliance modules for relevant data points..."
-                isActive={streamProgress?.phase === "preparing"}
-                isCompleted={
-                  streamProgress?.phase === "streaming" ||
-                  streamProgress?.phase === "finalizing"
-                }
-              />
+                {/* Hub ambient glow */}
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r={HUB_R + 24}
+                  fill="url(#gen-hub-glow)"
+                />
 
-              {/* Phase 2: Streaming sections */}
-              {streamProgress &&
-                streamProgress.phase !== "preparing" &&
-                streamProgress.sections.map((section, index) => (
-                  <PhaseRow
-                    key={index}
-                    icon={FileText}
-                    title={section.title}
-                    isActive={
-                      !section.completed && streamProgress.phase === "streaming"
-                    }
-                    isCompleted={section.completed}
+                {/* Outer decorative ring — slow rotation */}
+                <motion.circle
+                  cx={CX}
+                  cy={CY}
+                  r={RING_R + 10}
+                  stroke="rgba(16,185,129,0.05)"
+                  strokeWidth={0.5}
+                  strokeDasharray="3 9"
+                  fill="none"
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 50,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                />
+
+                {/* Scanning ring — preparing phase */}
+                {phase === "preparing" && (
+                  <motion.circle
+                    cx={CX}
+                    cy={CY}
+                    r={RING_R}
+                    stroke="#10b981"
+                    strokeWidth={1.5}
+                    strokeDasharray="14 10"
+                    strokeOpacity={0.25}
+                    fill="none"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    style={{ transformOrigin: `${CX}px ${CY}px` }}
                   />
+                )}
+
+                {/* Arcs: hub → each node */}
+                {nodes.map((node, i) => (
+                  <g key={`arc-${i}`}>
+                    <motion.path
+                      d={`M${CX},${CY} L${node.x.toFixed(1)},${node.y.toFixed(1)}`}
+                      stroke={
+                        node.completed
+                          ? "rgba(16,185,129,0.25)"
+                          : node.active
+                            ? "rgba(16,185,129,0.35)"
+                            : "rgba(255,255,255,0.03)"
+                      }
+                      strokeWidth={node.active ? 1.5 : 0.5}
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.4, delay: i * 0.04 }}
+                    />
+                    {/* Animated dash on active arc */}
+                    {node.active && (
+                      <motion.path
+                        d={`M${CX},${CY} L${node.x.toFixed(1)},${node.y.toFixed(1)}`}
+                        stroke="#10b981"
+                        strokeWidth={1}
+                        strokeDasharray="4 6"
+                        animate={{ strokeDashoffset: [0, -20] }}
+                        transition={{
+                          duration: 0.8,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      />
+                    )}
+                  </g>
                 ))}
 
-              {/* Placeholder when still preparing */}
-              {streamProgress?.phase === "preparing" && (
-                <PhaseRow
-                  icon={FileText}
-                  title="Generating document sections..."
-                  isPending
-                />
-              )}
+                {/* Particle trail: active node → hub */}
+                {nodes.map(
+                  (node, i) =>
+                    node.active &&
+                    [0, 1, 2].map((p) => (
+                      <motion.circle
+                        key={`p-${i}-${p}`}
+                        r={2}
+                        fill="#10b981"
+                        animate={{
+                          cx: [node.x, CX],
+                          cy: [node.y, CY],
+                          opacity: [0, 0.8, 0],
+                        }}
+                        transition={{
+                          duration: 1.6,
+                          delay: p * 0.5,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      />
+                    )),
+                )}
 
-              {/* Phase 3: Finalizing */}
-              {streamProgress?.phase === "finalizing" && (
-                <PhaseRow
-                  icon={Sparkles}
-                  title="Finalizing Document"
-                  subtitle="Saving and preparing for review..."
-                  isActive
+                {/* Hub circle */}
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r={HUB_R}
+                  fill="rgba(10,15,30,0.9)"
+                  stroke="rgba(16,185,129,0.25)"
+                  strokeWidth={2}
                 />
-              )}
+
+                {/* Hub rotating ring */}
+                <motion.circle
+                  cx={CX}
+                  cy={CY}
+                  r={HUB_R + 5}
+                  stroke="rgba(16,185,129,0.12)"
+                  strokeWidth={1}
+                  strokeDasharray="6 4"
+                  fill="none"
+                  animate={{ rotate: -360 }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                />
+
+                {/* ── Section nodes ── */}
+                {nodes.map((node, i) => {
+                  if (node.completed) {
+                    return (
+                      <g key={`n-${i}`}>
+                        {/* Completed: solid emerald with spring pop */}
+                        <motion.circle
+                          cx={node.x}
+                          cy={node.y}
+                          r={7}
+                          fill="#10b981"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 12,
+                          }}
+                          style={{
+                            transformOrigin: `${node.x}px ${node.y}px`,
+                          }}
+                        />
+                        {/* Checkmark path */}
+                        <motion.path
+                          d={`M${node.x - 3},${node.y + 0.5} L${node.x - 0.5},${node.y + 3} L${node.x + 3.5},${node.y - 2}`}
+                          stroke="white"
+                          strokeWidth={1.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 0.3, delay: 0.15 }}
+                        />
+                      </g>
+                    );
+                  }
+
+                  if (node.active) {
+                    const cos = Math.cos(node.angle);
+                    const sin = Math.sin(node.angle);
+                    const lx = node.x + 20 * cos;
+                    const ly = node.y + 20 * sin;
+                    const anchor =
+                      cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
+                    const baseline =
+                      sin > 0.3 ? "hanging" : sin < -0.3 ? "auto" : "central";
+                    const label =
+                      node.title.length > 24
+                        ? node.title.slice(0, 24) + "\u2026"
+                        : node.title;
+                    return (
+                      <g key={`n-${i}`}>
+                        {/* Pulse glow */}
+                        <motion.circle
+                          cx={node.x}
+                          cy={node.y}
+                          r={16}
+                          fill="rgba(16,185,129,0.08)"
+                          animate={{
+                            scale: [1, 1.4, 1],
+                            opacity: [0.3, 0.08, 0.3],
+                          }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          style={{
+                            transformOrigin: `${node.x}px ${node.y}px`,
+                          }}
+                        />
+                        {/* Active dot */}
+                        <motion.circle
+                          cx={node.x}
+                          cy={node.y}
+                          r={8}
+                          fill="rgba(16,185,129,0.15)"
+                          stroke="#10b981"
+                          strokeWidth={1.5}
+                          animate={{ scale: [1, 1.15, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          style={{
+                            transformOrigin: `${node.x}px ${node.y}px`,
+                          }}
+                        />
+                        {/* Section title label */}
+                        {label && (
+                          <text
+                            x={lx}
+                            y={ly}
+                            fill="rgba(16,185,129,0.8)"
+                            fontSize={9}
+                            fontWeight={500}
+                            textAnchor={anchor}
+                            dominantBaseline={baseline}
+                          >
+                            {label}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  }
+
+                  // Pending: small dim dot
+                  return (
+                    <circle
+                      key={`n-${i}`}
+                      cx={node.x}
+                      cy={node.y}
+                      r={3.5}
+                      fill="rgba(255,255,255,0.08)"
+                    />
+                  );
+                })}
+
+                {/* Finalizing: expanding pulse ring */}
+                {phase === "finalizing" && (
+                  <motion.circle
+                    cx={CX}
+                    cy={CY}
+                    r={RING_R}
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    animate={{
+                      scale: [HUB_R / RING_R, 1.08],
+                      opacity: [0.35, 0],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    style={{ transformOrigin: `${CX}px ${CY}px` }}
+                  />
+                )}
+              </svg>
+
+              {/* Center hub text overlay (HTML for crisp text) */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex flex-col items-center">
+                  <Zap size={16} className="text-emerald-500 mb-1" />
+                  <span className="text-2xl font-bold text-white tabular-nums leading-none">
+                    {progress}%
+                  </span>
+                  <span className="text-[9px] text-emerald-400/60 font-medium tracking-widest uppercase mt-1.5">
+                    {phaseLabel}
+                  </span>
+                </div>
+              </div>
             </div>
 
+            {/* Document type label */}
+            <p className="text-sm text-white/50">{meta?.title}</p>
+
             {/* Overall progress bar */}
-            <div className="w-full">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-slate-400 dark:text-white/30">
-                  Overall Progress
-                </span>
-                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                  {progress}%
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/[0.06] overflow-hidden">
+            <div className="w-full max-w-xs">
+              <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
                 <motion.div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
                   animate={{ width: `${progress}%` }}
@@ -205,88 +455,6 @@ export function GenerationProgress({
         )}
       </div>
     </div>
-  );
-}
-
-// ─── Phase Row ───
-
-function PhaseRow({
-  icon: Icon,
-  title,
-  subtitle,
-  isActive,
-  isCompleted,
-  isPending,
-}: {
-  icon: LucideIcon;
-  title: string;
-  subtitle?: string;
-  isActive?: boolean;
-  isCompleted?: boolean;
-  isPending?: boolean;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
-      transition={{ duration: 0.25 }}
-      className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
-        isActive
-          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
-          : isCompleted
-            ? "bg-emerald-500/[0.03]"
-            : ""
-      }`}
-    >
-      {/* Icon / status */}
-      <div className="mt-0.5 shrink-0">
-        {isCompleted ? (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          >
-            <CheckCircle2 size={18} className="text-emerald-500" />
-          </motion.div>
-        ) : isActive ? (
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          >
-            <Loader2 size={18} className="text-emerald-400" />
-          </motion.div>
-        ) : (
-          <Icon size={18} className="text-slate-400 dark:text-white/25" />
-        )}
-      </div>
-
-      {/* Text */}
-      <div className="flex-1 min-w-0">
-        <p
-          className={`text-sm font-medium ${
-            isActive
-              ? "text-emerald-700 dark:text-emerald-400"
-              : isCompleted
-                ? "text-slate-600 dark:text-white/60"
-                : "text-slate-400 dark:text-white/25"
-          }`}
-        >
-          {title}
-        </p>
-        <AnimatePresence>
-          {isActive && subtitle && (
-            <motion.p
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-slate-500 dark:text-white/40 mt-0.5"
-            >
-              {subtitle}
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
   );
 }
 
