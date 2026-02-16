@@ -110,6 +110,9 @@ export async function GET(request: Request) {
           evidenceNotes,
           targetDate: statusRecord?.targetDate || null,
           statusId: statusRecord?.id || null,
+          responses: statusRecord?.responses
+            ? (statusRecord.responses as Record<string, unknown>)
+            : null,
         };
       }),
     );
@@ -151,6 +154,7 @@ export async function PATCH(request: Request) {
       notes,
       evidenceNotes,
       targetDate,
+      responses,
     } = body;
 
     if (!assessmentId || !requirementId) {
@@ -208,6 +212,7 @@ export async function PATCH(request: Request) {
         notes: encryptedNotes ?? undefined,
         evidenceNotes: encryptedEvidenceNotes ?? undefined,
         targetDate: targetDate ? new Date(targetDate) : undefined,
+        ...(responses !== undefined ? { responses } : {}),
       },
       create: {
         assessmentId,
@@ -216,6 +221,7 @@ export async function PATCH(request: Request) {
         notes: encryptedNotes,
         evidenceNotes: encryptedEvidenceNotes,
         targetDate: targetDate ? new Date(targetDate) : null,
+        ...(responses !== undefined ? { responses } : {}),
       },
     });
 

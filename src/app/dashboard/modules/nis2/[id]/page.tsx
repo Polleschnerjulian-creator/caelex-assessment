@@ -40,6 +40,9 @@ import {
 import { csrfHeaders } from "@/lib/csrf-client";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
+import AssessmentFieldForm from "@/components/shared/AssessmentFieldForm";
+import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
+import { NIS2_REQUIREMENTS } from "@/data/nis2-requirements";
 import { getIcon } from "@/lib/icons";
 import type { Question, QuestionOption } from "@/lib/questions";
 
@@ -52,6 +55,7 @@ interface RequirementStatus {
   notes: string | null;
   evidenceNotes: string | null;
   targetDate: string | null;
+  responses: Record<string, unknown> | null;
 }
 
 interface RequirementMeta {
@@ -852,6 +856,12 @@ export default function NIS2AssessmentDetailPage() {
   // Requirements expand
   const [expandedReqs, setExpandedReqs] = useState<Set<string>>(new Set());
   const [updatingReq, setUpdatingReq] = useState<string | null>(null);
+  const [requirementResponses, setRequirementResponses] = useState<
+    Record<string, Record<string, unknown>>
+  >({});
+  const [saveTimers, setSaveTimers] = useState<Record<string, NodeJS.Timeout>>(
+    {},
+  );
 
   // Implementation phases expand
   const [expandedPhases, setExpandedPhases] = useState<Set<number>>(new Set());
@@ -873,6 +883,16 @@ export default function NIS2AssessmentDetailPage() {
       }
       if (data.recommendations) {
         setRecommendations(data.recommendations);
+      }
+      // Initialize local responses from persisted data
+      if (data.assessment?.requirements) {
+        const initial: Record<string, Record<string, unknown>> = {};
+        for (const req of data.assessment.requirements) {
+          if (req.responses) {
+            initial[req.requirementId] = req.responses;
+          }
+        }
+        setRequirementResponses(initial);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
@@ -946,6 +966,57 @@ export default function NIS2AssessmentDetailPage() {
     } finally {
       setUpdatingReq(null);
     }
+  };
+
+  const saveResponses = useCallback(
+    async (requirementId: string, responses: Record<string, unknown>) => {
+      try {
+        await fetch("/api/nis2/requirements", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            assessmentId,
+            requirementId,
+            responses,
+          }),
+        });
+      } catch (error) {
+        console.error("Error saving responses:", error);
+      }
+    },
+    [assessmentId],
+  );
+
+  const handleFieldChange = useCallback(
+    (requirementId: string, fieldId: string, value: unknown) => {
+      setRequirementResponses((prev) => {
+        const updated = { ...prev[requirementId], [fieldId]: value };
+        const next = { ...prev, [requirementId]: updated };
+
+        // Debounced save
+        if (saveTimers[requirementId]) {
+          clearTimeout(saveTimers[requirementId]);
+        }
+        const timer = setTimeout(() => {
+          saveResponses(requirementId, updated);
+        }, 500);
+        setSaveTimers((t) => ({ ...t, [requirementId]: timer }));
+
+        return next;
+      });
+    },
+    [saveTimers, saveResponses],
+  );
+
+  const getFieldCompletionCount = (
+    requirementId: string,
+    totalFields: number,
+  ) => {
+    const resp = requirementResponses[requirementId];
+    if (!resp) return 0;
+    return Object.values(resp).filter(
+      (v) => v !== null && v !== undefined && v !== "",
+    ).length;
   };
 
   // Toggle requirement expand
@@ -1794,6 +1865,20 @@ export default function NIS2AssessmentDetailPage() {
                 const isExpanded = expandedReqs.has(req.requirementId);
                 const isUpdating = updatingReq === req.requirementId;
                 const meta = reqMeta[req.requirementId];
+                const nis2Def = NIS2_REQUIREMENTS.find(
+                  (r) => r.id === req.requirementId,
+                );
+                const fields = nis2Def?.assessmentFields || [];
+                const responses = requirementResponses[req.requirementId] || {};
+                const completedFields = getFieldCompletionCount(
+                  req.requirementId,
+                  fields.length,
+                );
+                const suggested = suggestComplianceStatus(
+                  nis2Def?.complianceRule,
+                  responses,
+                  { supportPartial: true },
+                );
                 const severityColors: Record<string, string> = {
                   critical: "text-red-400 bg-red-500/10",
                   major: "text-amber-400 bg-amber-500/10",
@@ -1820,6 +1905,11 @@ export default function NIS2AssessmentDetailPage() {
                         <span className="text-sm text-slate-900 dark:text-white/80 truncate">
                           {meta?.title || req.requirementId}
                         </span>
+                        {!isExpanded && fields.length > 0 && (
+                          <span className="text-[10px] text-slate-400 dark:text-white/30 flex-shrink-0">
+                            {completedFields}/{fields.length}
+                          </span>
+                        )}
                         {meta?.severity && (
                           <span
                             className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${severityColors[meta.severity] || ""} flex-shrink-0`}
@@ -1889,6 +1979,52 @@ export default function NIS2AssessmentDetailPage() {
                             <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
                               {meta.spaceSpecificGuidance}
                             </p>
+                          </div>
+                        )}
+
+                        {/* Sub-question form */}
+                        {fields.length > 0 && (
+                          <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
+                            <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/40 mb-3">
+                              Assessment Details
+                            </p>
+                            <AssessmentFieldForm
+                              fields={fields}
+                              values={responses}
+                              onChange={(fieldId, value) =>
+                                handleFieldChange(
+                                  req.requirementId,
+                                  fieldId,
+                                  value,
+                                )
+                              }
+                            />
+                          </div>
+                        )}
+
+                        {/* Auto-suggested status */}
+                        {suggested && suggested !== req.status && (
+                          <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                            <Sparkles size={14} className="text-blue-400" />
+                            <span className="text-[12px] text-blue-400/80">
+                              ASTRA suggests:{" "}
+                              <span className="font-medium capitalize">
+                                {statusConfig[suggested as ReqStatusValue]
+                                  ?.label || suggested}
+                              </span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleUpdateRequirement(
+                                  req.requirementId,
+                                  suggested as ReqStatusValue,
+                                )
+                              }
+                              className="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-md hover:bg-blue-500/20 transition-colors"
+                            >
+                              Accept
+                            </button>
                           </div>
                         )}
 

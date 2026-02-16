@@ -34,22 +34,10 @@ export type RequirementStatus =
   | "not_assessed"
   | "not_applicable";
 
-export interface AssessmentField {
-  id: string;
-  label: string;
-  type: "text" | "number" | "select" | "boolean" | "date";
-  options?: { value: string; label: string }[];
-  unit?: string;
-  placeholder?: string;
-  required?: boolean;
-  helpText?: string;
-}
+// Re-export shared types for backward compatibility
+export type { AssessmentField, ComplianceRule } from "@/lib/compliance/types";
 
-export interface ComplianceRule {
-  requiredTrue?: string[];
-  requiredNotEmpty?: string[];
-  numberThresholds?: Record<string, { min?: number; max?: number }>;
-}
+import type { AssessmentField, ComplianceRule } from "@/lib/compliance/types";
 
 export interface DebrisMissionProfile {
   // Orbit

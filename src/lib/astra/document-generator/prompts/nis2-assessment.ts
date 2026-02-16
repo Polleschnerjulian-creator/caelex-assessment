@@ -4,6 +4,26 @@
 
 import type { NIS2DataBundle } from "../types";
 
+function formatResponses(
+  responses: Record<string, unknown> | null | undefined,
+): string {
+  if (!responses || Object.keys(responses).length === 0) return "";
+  const lines = Object.entries(responses)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([key, value]) => {
+      const label = key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (s) => s.toUpperCase())
+        .trim();
+      if (typeof value === "boolean")
+        return `  - ${label}: ${value ? "Yes" : "No"}`;
+      return `  - ${label}: ${value}`;
+    });
+  return lines.length > 0
+    ? `\n  Sub-question responses:\n${lines.join("\n")}`
+    : "";
+}
+
 export function buildNIS2Prompt(data: NIS2DataBundle): string {
   const a = data.assessment;
   const reqCompliant = data.requirements.filter(
@@ -43,7 +63,7 @@ export function buildNIS2Prompt(data: NIS2DataBundle): string {
 **EU Space Act Overlap:** ${a.euSpaceActOverlapCount || 0} overlapping requirements
 **Requirements Status:** ${reqCompliant} compliant, ${reqPartial} partial, ${reqTotal} total
 
-${data.requirements.length > 0 ? `## Requirement Status Matrix\n${data.requirements.map((r) => `- ${r.requirementId}: ${r.status}${r.notes ? ` — ${r.notes}` : ""}`).join("\n")}` : ""}
+${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.requirements.map((r) => `- **${r.requirementId}**: ${r.status}${r.notes ? ` — ${r.notes}` : ""}${formatResponses(r.responses)}`).join("\n")}` : ""}
 
 ## Required Sections
 
@@ -52,7 +72,7 @@ Generate the following sections in order:
 1. **Executive Summary** — Overview of NIS2 applicability, classification, and compliance status
 2. **Entity Classification** — Detailed analysis of essential/important/out-of-scope classification per Art. 3, including sector and size criteria
 3. **Applicable Requirements** — Full list of NIS2 requirements applicable to this entity type, referencing Art. 21(2)(a)-(j)
-4. **Implementation Status** — Current implementation status per requirement area with evidence references
+4. **Implementation Status** — Current implementation status per requirement area with evidence references, incorporating detailed sub-question responses where available
 5. **Gap Analysis** — Detailed gap analysis identifying non-compliant and partially compliant areas with remediation priorities
 6. **Incident Reporting Readiness** — Assessment of Art. 23 incident reporting capability: 24h early warning, 72h notification, 1-month final report
 7. **Cross-Regulation Overlap** — Analysis of overlapping requirements between NIS2 and EU Space Act cybersecurity provisions, highlighting efficiency opportunities

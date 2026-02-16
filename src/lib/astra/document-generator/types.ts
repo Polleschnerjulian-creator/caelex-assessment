@@ -111,6 +111,7 @@ export interface CybersecurityDataBundle {
     requirementId: string;
     status: string;
     notes?: string | null;
+    responses?: Record<string, unknown> | null;
   }>;
   organization: { name: string; slug: string };
 }
@@ -198,6 +199,7 @@ export interface NIS2DataBundle {
     requirementId: string;
     status: string;
     notes?: string | null;
+    responses?: Record<string, unknown> | null;
   }>;
   organization: { name: string; slug: string };
 }

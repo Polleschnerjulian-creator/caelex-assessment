@@ -23,9 +23,12 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
+  Sparkles,
 } from "lucide-react";
 import EvidencePanel from "@/components/audit/EvidencePanel";
 import AstraButton from "@/components/astra/AstraButton";
+import AssessmentFieldForm from "@/components/shared/AssessmentFieldForm";
+import { suggestComplianceStatus } from "@/lib/compliance/auto-assess";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AstraBulkButton from "@/components/astra/AstraBulkButton";
 import {
@@ -89,6 +92,7 @@ interface RequirementWithStatus extends CybersecurityRequirement {
   evidenceNotes: string | null;
   targetDate: string | null;
   statusId: string | null;
+  responses: Record<string, unknown> | null;
 }
 
 interface Framework {
@@ -199,6 +203,12 @@ function CybersecurityPageContent() {
   const [activeCategory, setActiveCategory] =
     useState<RequirementCategory | null>(null);
   const [expandedReqs, setExpandedReqs] = useState<Set<string>>(new Set());
+  const [requirementResponses, setRequirementResponses] = useState<
+    Record<string, Record<string, unknown>>
+  >({});
+  const [saveTimers, setSaveTimers] = useState<Record<string, NodeJS.Timeout>>(
+    {},
+  );
 
   // Form state for new assessment
   const [form, setForm] = useState<Partial<CybersecurityProfile>>({
@@ -236,6 +246,14 @@ function CybersecurityPageContent() {
       if (res.ok) {
         const data = await res.json();
         setRequirements(data.requirements);
+        // Initialize local responses from persisted data
+        const initial: Record<string, Record<string, unknown>> = {};
+        for (const req of data.requirements) {
+          if (req.responses) {
+            initial[req.id] = req.responses;
+          }
+        }
+        setRequirementResponses(initial);
       }
     } catch (error) {
       console.error("Error fetching requirements:", error);
@@ -330,6 +348,58 @@ function CybersecurityPageContent() {
       console.error("Error updating requirement:", error);
       fetchRequirements(selectedAssessment.id);
     }
+  };
+
+  const saveResponses = useCallback(
+    async (requirementId: string, responses: Record<string, unknown>) => {
+      if (!selectedAssessment) return;
+      try {
+        await fetch("/api/cybersecurity/requirements", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            assessmentId: selectedAssessment.id,
+            requirementId,
+            responses,
+          }),
+        });
+      } catch (error) {
+        console.error("Error saving responses:", error);
+      }
+    },
+    [selectedAssessment],
+  );
+
+  const handleFieldChange = useCallback(
+    (requirementId: string, fieldId: string, value: unknown) => {
+      setRequirementResponses((prev) => {
+        const updated = { ...prev[requirementId], [fieldId]: value };
+        const next = { ...prev, [requirementId]: updated };
+
+        // Debounced save
+        if (saveTimers[requirementId]) {
+          clearTimeout(saveTimers[requirementId]);
+        }
+        const timer = setTimeout(() => {
+          saveResponses(requirementId, updated);
+        }, 500);
+        setSaveTimers((t) => ({ ...t, [requirementId]: timer }));
+
+        return next;
+      });
+    },
+    [saveTimers, saveResponses],
+  );
+
+  const getFieldCompletionCount = (
+    requirementId: string,
+    totalFields: number,
+  ) => {
+    const resp = requirementResponses[requirementId];
+    if (!resp) return 0;
+    return Object.values(resp).filter(
+      (v) => v !== null && v !== undefined && v !== "",
+    ).length;
   };
 
   const generateFramework = async () => {
@@ -1252,6 +1322,17 @@ function CybersecurityPageContent() {
                   ).map((req) => {
                     const statConfig = statusConfig[req.status];
                     const isExpanded = expandedReqs.has(req.id);
+                    const fields = req.assessmentFields || [];
+                    const responses = requirementResponses[req.id] || {};
+                    const completedFields = getFieldCompletionCount(
+                      req.id,
+                      fields.length,
+                    );
+                    const suggested = suggestComplianceStatus(
+                      req.complianceRule,
+                      responses,
+                      { supportPartial: true },
+                    );
 
                     return (
                       <div
@@ -1301,6 +1382,12 @@ function CybersecurityPageContent() {
                                         </span>
                                       )}
                                   </div>
+                                  {!isExpanded && fields.length > 0 && (
+                                    <p className="text-[11px] text-slate-500 dark:text-white/40 mt-1">
+                                      {completedFields}/{fields.length} fields
+                                      completed
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Status selector */}
@@ -1368,6 +1455,56 @@ function CybersecurityPageContent() {
                               className="border-t border-white/10"
                             >
                               <div className="p-5 pt-4 space-y-4">
+                                {/* Sub-question form */}
+                                {fields.length > 0 && (
+                                  <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/40 mb-3">
+                                      Assessment Details
+                                    </p>
+                                    <AssessmentFieldForm
+                                      fields={fields}
+                                      values={responses}
+                                      onChange={(fieldId, value) =>
+                                        handleFieldChange(
+                                          req.id,
+                                          fieldId,
+                                          value,
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Auto-suggested status */}
+                                {suggested && suggested !== req.status && (
+                                  <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                                    <Sparkles
+                                      size={14}
+                                      className="text-blue-400"
+                                    />
+                                    <span className="text-[12px] text-blue-400/80">
+                                      ASTRA suggests:{" "}
+                                      <span className="font-medium capitalize">
+                                        {statusConfig[
+                                          suggested as RequirementStatus
+                                        ]?.label || suggested}
+                                      </span>
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateRequirementStatus(
+                                          req.id,
+                                          suggested as RequirementStatus,
+                                        )
+                                      }
+                                      className="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-md hover:bg-blue-500/20 transition-colors"
+                                    >
+                                      Accept
+                                    </button>
+                                  </div>
+                                )}
+
                                 {/* Tips */}
                                 {req.tips.length > 0 && (
                                   <div className="p-3 bg-white/[0.04] rounded-lg">

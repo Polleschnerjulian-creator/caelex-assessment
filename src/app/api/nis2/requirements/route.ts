@@ -71,6 +71,9 @@ export async function GET(request: NextRequest) {
           req.evidenceNotes && isEncrypted(req.evidenceNotes)
             ? await decrypt(req.evidenceNotes)
             : req.evidenceNotes,
+        responses: req.responses
+          ? (req.responses as Record<string, unknown>)
+          : null,
       })),
     );
 
@@ -102,6 +105,7 @@ export async function PATCH(request: Request) {
       notes,
       evidenceNotes,
       targetDate,
+      responses,
     } = body;
 
     if (!assessmentId || !requirementId) {
@@ -139,7 +143,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Find the requirement status
+    // Get previous state for audit
     const existing = await prisma.nIS2RequirementStatus.findUnique({
       where: {
         assessmentId_requirementId: {
@@ -149,13 +153,6 @@ export async function PATCH(request: Request) {
       },
     });
 
-    if (!existing) {
-      return NextResponse.json(
-        { error: "Requirement status not found" },
-        { status: 404 },
-      );
-    }
-
     // Encrypt sensitive text fields before storage
     const encryptedNotes =
       notes !== undefined && notes !== null ? await encrypt(notes) : notes;
@@ -164,18 +161,30 @@ export async function PATCH(request: Request) {
         ? await encrypt(evidenceNotes)
         : evidenceNotes;
 
-    // Build update data
-    const updateData: Record<string, unknown> = {};
-    if (status !== undefined) updateData.status = status;
-    if (notes !== undefined) updateData.notes = encryptedNotes;
-    if (evidenceNotes !== undefined)
-      updateData.evidenceNotes = encryptedEvidenceNotes;
-    if (targetDate !== undefined)
-      updateData.targetDate = targetDate ? new Date(targetDate) : null;
-
-    const updated = await prisma.nIS2RequirementStatus.update({
-      where: { id: existing.id },
-      data: updateData,
+    // Upsert requirement status
+    const updated = await prisma.nIS2RequirementStatus.upsert({
+      where: {
+        assessmentId_requirementId: {
+          assessmentId,
+          requirementId,
+        },
+      },
+      update: {
+        status: status ?? undefined,
+        notes: encryptedNotes ?? undefined,
+        evidenceNotes: encryptedEvidenceNotes ?? undefined,
+        targetDate: targetDate ? new Date(targetDate) : undefined,
+        ...(responses !== undefined ? { responses } : {}),
+      },
+      create: {
+        assessmentId,
+        requirementId,
+        status: status || "not_assessed",
+        notes: encryptedNotes,
+        evidenceNotes: encryptedEvidenceNotes,
+        targetDate: targetDate ? new Date(targetDate) : null,
+        ...(responses !== undefined ? { responses } : {}),
+      },
     });
 
     // Recalculate maturity score for the assessment
@@ -205,8 +214,10 @@ export async function PATCH(request: Request) {
       userId,
       action: "nis2_requirement_status_changed",
       entityType: "nis2_requirement",
-      entityId: existing.id,
-      previousValue: { status: existing.status, notes: existing.notes },
+      entityId: existing?.id ?? updated.id,
+      previousValue: existing
+        ? { status: existing.status, notes: existing.notes }
+        : null,
       newValue: { status, notes, evidenceNotes },
       description: `Updated NIS2 requirement ${requirementId} status to ${status || "unchanged"}`,
       ipAddress,

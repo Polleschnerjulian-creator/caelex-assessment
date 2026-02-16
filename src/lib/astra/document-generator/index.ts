@@ -340,8 +340,103 @@ export async function* generateDocumentStream(
 }
 
 /**
+ * Generate a document for an existing DB record (no new record created).
+ * Used by async/background flows where the record is pre-created.
+ */
+export async function generateDocumentForRecord(
+  documentId: string,
+  params: DocumentGenerationParams,
+): Promise<void> {
+  const startTime = Date.now();
+  const language = params.language || "en";
+
+  try {
+    // Mark as generating
+    await prisma.generatedDocument.update({
+      where: { id: documentId },
+      data: { status: "GENERATING" },
+    });
+
+    const client = getAnthropicClient();
+    if (!client) {
+      throw new Error("ANTHROPIC_API_KEY not configured");
+    }
+
+    // Collect assessment data
+    const dataBundle = await collectAssessmentData(
+      params.userId,
+      params.organizationId,
+      params.documentType,
+      params.assessmentId,
+    );
+
+    // Build prompt
+    const { systemPrompt, userMessage } = buildPrompt(dataBundle, language);
+
+    // Call Claude
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    });
+
+    const rawContent =
+      response.content
+        .filter((block): block is Anthropic.TextBlock => block.type === "text")
+        .map((block) => block.text)
+        .join("\n") || "";
+
+    // Parse to sections
+    const sections = parseMarkdownToSections(rawContent);
+    const generationTimeMs = Date.now() - startTime;
+
+    // Update record
+    await prisma.generatedDocument.update({
+      where: { id: documentId },
+      data: {
+        status: "COMPLETED",
+        content: JSON.parse(JSON.stringify(sections)),
+        rawContent,
+        modelUsed: MODEL,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        generationTimeMs,
+      },
+    });
+
+    // Audit log
+    await logAuditEvent({
+      action: "DOCUMENT_GENERATED",
+      userId: params.userId,
+      entityType: "GeneratedDocument",
+      entityId: documentId,
+      metadata: {
+        documentType: params.documentType,
+        language,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        generationTimeMs,
+        sectionCount: sections.length,
+      },
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    await prisma.generatedDocument.update({
+      where: { id: documentId },
+      data: {
+        status: "FAILED",
+        error: errorMessage,
+      },
+    });
+  }
+}
+
+/**
  * Start document generation in the background (fire-and-forget).
- * Used by ASTRA tool handlers to avoid blocking the chat.
+ * Creates the DB record, starts generation async, returns the document ID.
  */
 export async function startBackgroundGeneration(
   params: DocumentGenerationParams,
@@ -364,14 +459,11 @@ export async function startBackgroundGeneration(
   });
 
   // Start generation in background (fire-and-forget)
-  generateDocument({
-    ...params,
-  }).catch(async (error) => {
+  generateDocumentForRecord(doc.id, params).catch((error) => {
     console.error(
       `Background document generation failed for ${doc.id}:`,
       error,
     );
-    // The generateDocument function already updates the status to FAILED
   });
 
   return doc.id;

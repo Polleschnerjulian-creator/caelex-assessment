@@ -7,7 +7,7 @@
  * Supports streaming (SSE) and non-streaming responses.
  */
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -20,8 +20,10 @@ import { getSafeErrorMessage } from "@/lib/validations";
 import {
   generateDocument,
   generateDocumentStream,
+  generateDocumentForRecord,
 } from "@/lib/astra/document-generator";
 import type { DocumentGenerationType } from "@/lib/astra/document-generator/types";
+import { DOCUMENT_TYPE_META } from "@/lib/astra/document-generator/types";
 
 export const maxDuration = 120; // AI generation needs time for Anthropic API call
 
@@ -112,6 +114,40 @@ export async function POST(request: NextRequest) {
       assessmentId,
       language,
     };
+
+    // Async mode — create record, start generation in background, return immediately
+    if (body.async) {
+      const meta = DOCUMENT_TYPE_META[documentType as DocumentGenerationType];
+      const doc = await prisma.generatedDocument.create({
+        data: {
+          userId,
+          organizationId: membership.organization.id,
+          documentType: documentType as DocumentGenerationType,
+          title: meta.title,
+          language,
+          assessmentId,
+          status: "PENDING",
+          promptVersion: "v1.0",
+        },
+      });
+
+      // Run generation after response is sent — uses Vercel waitUntil under the hood
+      after(async () => {
+        try {
+          await generateDocumentForRecord(doc.id, params);
+        } catch (error) {
+          console.error(
+            `Async document generation failed for ${doc.id}:`,
+            error,
+          );
+        }
+      });
+
+      return NextResponse.json({
+        documentId: doc.id,
+        status: "GENERATING",
+      });
+    }
 
     // Streaming response
     if (stream) {

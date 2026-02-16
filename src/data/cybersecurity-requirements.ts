@@ -85,6 +85,8 @@ export interface CybersecurityProfile {
   supplierSecurityAssessed: boolean;
 }
 
+import type { AssessmentField, ComplianceRule } from "@/lib/compliance/types";
+
 export interface CybersecurityRequirement {
   id: string;
   articleRef: string;
@@ -105,6 +107,8 @@ export interface CybersecurityRequirement {
   isoReference?: string;
   severity: "critical" | "major" | "minor";
   implementationTimeWeeks?: number;
+  assessmentFields?: AssessmentField[];
+  complianceRule?: ComplianceRule;
 }
 
 // ─── Requirements Data ───
@@ -141,6 +145,50 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.5.1",
     severity: "critical",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "policyDocumentExists",
+        label: "Information security policy document exists?",
+        type: "boolean",
+      },
+      {
+        id: "boardApproved",
+        label: "Policy approved by board/executive management?",
+        type: "boolean",
+      },
+      {
+        id: "lastReviewDate",
+        label: "Date of last policy review",
+        type: "date",
+      },
+      {
+        id: "reviewFrequency",
+        label: "Policy review frequency",
+        type: "select",
+        options: [
+          { value: "annual", label: "Annual" },
+          { value: "biannual", label: "Biannual" },
+          { value: "quarterly", label: "Quarterly" },
+        ],
+      },
+      {
+        id: "coversSpaceSpecific",
+        label: "Covers space-specific security considerations?",
+        type: "boolean",
+      },
+      {
+        id: "communicatedToStaff",
+        label: "Communicated to all staff?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "policyDocumentExists",
+        "boardApproved",
+        "communicatedToStaff",
+      ],
+    },
   },
   {
     id: "risk_mgmt_framework",
@@ -171,6 +219,42 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27005:2022",
     severity: "critical",
     implementationTimeWeeks: 8,
+    assessmentFields: [
+      {
+        id: "frameworkDocumented",
+        label: "Risk management framework documented?",
+        type: "boolean",
+      },
+      {
+        id: "frameworkType",
+        label: "Framework type",
+        type: "select",
+        options: [
+          { value: "NIST_CSF", label: "NIST CSF" },
+          { value: "ISO_27005", label: "ISO 27005" },
+          { value: "custom", label: "Custom" },
+        ],
+      },
+      {
+        id: "includesSpaceThreats",
+        label: "Includes space-specific threats?",
+        type: "boolean",
+      },
+      {
+        id: "riskAppetiteDefined",
+        label: "Risk appetite and tolerance defined?",
+        type: "boolean",
+      },
+      {
+        id: "integratedWithERM",
+        label: "Integrated with enterprise risk management?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["frameworkDocumented", "includesSpaceThreats"],
+      requiredNotEmpty: ["frameworkType"],
+    },
   },
   {
     id: "security_roles",
@@ -198,6 +282,31 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 20(1)",
     severity: "major",
     implementationTimeWeeks: 2,
+    assessmentFields: [
+      {
+        id: "securityResponsibleDesignated",
+        label: "Security responsible person designated?",
+        type: "boolean",
+      },
+      {
+        id: "raciMatrixDocumented",
+        label: "RACI matrix for security functions documented?",
+        type: "boolean",
+      },
+      {
+        id: "thirdPartyRolesIncluded",
+        label: "Third-party/supplier responsibilities included?",
+        type: "boolean",
+      },
+      {
+        id: "roleDescriptionsExist",
+        label: "Role descriptions/job profiles exist?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["securityResponsibleDesignated", "raciMatrixDocumented"],
+    },
   },
 
   // ═══ RISK ASSESSMENT (Art. 77-78) ═══
@@ -231,6 +340,43 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 6.1.2",
     severity: "critical",
     implementationTimeWeeks: 6,
+    assessmentFields: [
+      {
+        id: "annualAssessmentConducted",
+        label: "Annual risk assessment conducted?",
+        type: "boolean",
+      },
+      {
+        id: "assetInventoryExists",
+        label: "Asset inventory exists?",
+        type: "boolean",
+      },
+      {
+        id: "includesSupplyChainRisks",
+        label: "Includes supply chain risks?",
+        type: "boolean",
+      },
+      {
+        id: "spaceThreatsConsidered",
+        label: "Space-specific threats considered (jamming, spoofing, ASAT)?",
+        type: "boolean",
+      },
+      {
+        id: "assessmentMethodology",
+        label: "Assessment methodology",
+        type: "select",
+        options: [
+          { value: "ISO_27005", label: "ISO 27005" },
+          { value: "NIST", label: "NIST" },
+          { value: "OCTAVE", label: "OCTAVE" },
+          { value: "custom", label: "Custom" },
+        ],
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["annualAssessmentConducted", "assetInventoryExists"],
+      requiredNotEmpty: ["assessmentMethodology"],
+    },
   },
   {
     id: "threat_intelligence",
@@ -260,6 +406,38 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 21(2)(e)",
     severity: "major",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "threatIntelSubscribed",
+        label: "Subscribed to threat intelligence feeds?",
+        type: "boolean",
+      },
+      {
+        id: "threatFeedSources",
+        label: "Primary threat feed source",
+        type: "select",
+        options: [
+          { value: "ENISA", label: "ENISA" },
+          { value: "ESA", label: "ESA" },
+          { value: "ISAC", label: "ISAC" },
+          { value: "commercial", label: "Commercial" },
+        ],
+      },
+      {
+        id: "regularBriefings",
+        label: "Regular threat briefings conducted?",
+        type: "boolean",
+      },
+      {
+        id: "integrationWithRisk",
+        label: "Threat intelligence integrated with risk management?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["threatIntelSubscribed", "regularBriefings"],
+      requiredNotEmpty: ["threatFeedSources"],
+    },
   },
   {
     id: "supply_chain_risk",
@@ -288,6 +466,47 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.5.19-A.5.23",
     severity: "major",
     implementationTimeWeeks: 6,
+    assessmentFields: [
+      {
+        id: "criticalSuppliersIdentified",
+        label: "Critical suppliers identified?",
+        type: "boolean",
+      },
+      {
+        id: "securityAssessmentsPerformed",
+        label: "Security assessments performed on suppliers?",
+        type: "boolean",
+      },
+      {
+        id: "contractualSecReqs",
+        label: "Contractual security requirements in place?",
+        type: "boolean",
+      },
+      {
+        id: "geopoliticalRisksConsidered",
+        label: "Geopolitical risks considered?",
+        type: "boolean",
+      },
+      {
+        id: "supplierAuditFrequency",
+        label: "Supplier audit frequency",
+        type: "select",
+        options: [
+          { value: "annual", label: "Annual" },
+          { value: "biannual", label: "Biannual" },
+          { value: "ad_hoc", label: "Ad-hoc" },
+          { value: "none", label: "None" },
+        ],
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "criticalSuppliersIdentified",
+        "securityAssessmentsPerformed",
+        "contractualSecReqs",
+      ],
+      requiredNotEmpty: ["supplierAuditFrequency"],
+    },
   },
 
   // ═══ INFORMATION SECURITY (Art. 79-80) ═══
@@ -319,6 +538,47 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.5.15-A.5.18",
     severity: "critical",
     implementationTimeWeeks: 6,
+    assessmentFields: [
+      {
+        id: "rbacImplemented",
+        label: "Role-based access control implemented?",
+        type: "boolean",
+      },
+      {
+        id: "leastPrivilegeEnforced",
+        label: "Least privilege principle enforced?",
+        type: "boolean",
+      },
+      {
+        id: "accessReviewFrequency",
+        label: "Access review frequency",
+        type: "select",
+        options: [
+          { value: "monthly", label: "Monthly" },
+          { value: "quarterly", label: "Quarterly" },
+          { value: "biannual", label: "Biannual" },
+          { value: "annual", label: "Annual" },
+        ],
+      },
+      {
+        id: "privilegedAccountInventory",
+        label: "Privileged account inventory maintained?",
+        type: "boolean",
+      },
+      {
+        id: "groundStationAccessSeparate",
+        label: "Ground station access separated from corporate?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "rbacImplemented",
+        "leastPrivilegeEnforced",
+        "privilegedAccountInventory",
+      ],
+      requiredNotEmpty: ["accessReviewFrequency"],
+    },
   },
   {
     id: "mfa",
@@ -346,6 +606,46 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 21(2)(j)",
     severity: "critical",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "mfaEnforced",
+        label: "MFA enforced for remote and critical access?",
+        type: "boolean",
+      },
+      {
+        id: "mfaType",
+        label: "MFA type",
+        type: "select",
+        options: [
+          { value: "FIDO2", label: "FIDO2" },
+          { value: "hardware_token", label: "Hardware Token" },
+          { value: "TOTP", label: "TOTP" },
+          { value: "SMS", label: "SMS" },
+        ],
+      },
+      {
+        id: "coversMissionCritical",
+        label: "Covers all mission-critical systems?",
+        type: "boolean",
+      },
+      {
+        id: "coveragePercent",
+        label: "System coverage percentage",
+        type: "number",
+        unit: "%",
+        helpText: "Percentage of systems covered",
+      },
+      {
+        id: "exceptionsDocumented",
+        label: "Exceptions documented with compensating controls?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["mfaEnforced", "coversMissionCritical"],
+      requiredNotEmpty: ["mfaType"],
+      numberThresholds: { coveragePercent: { min: 90 } },
+    },
   },
   {
     id: "data_protection",
@@ -374,6 +674,36 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.5.12-A.5.14",
     severity: "major",
     implementationTimeWeeks: 6,
+    assessmentFields: [
+      {
+        id: "classificationSchemeExists",
+        label: "Data classification scheme exists?",
+        type: "boolean",
+      },
+      {
+        id: "telemetryClassified",
+        label: "Telemetry, command, and mission data classified?",
+        type: "boolean",
+      },
+      {
+        id: "dlpImplemented",
+        label: "Data loss prevention implemented?",
+        type: "boolean",
+      },
+      {
+        id: "dataAtRestEncrypted",
+        label: "Data at rest encrypted?",
+        type: "boolean",
+      },
+      {
+        id: "exportControlConsidered",
+        label: "Export control implications considered (ITAR/EAR)?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["classificationSchemeExists", "dataAtRestEncrypted"],
+    },
   },
   {
     id: "network_security",
@@ -406,6 +736,43 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.20-A.8.22",
     severity: "major",
     implementationTimeWeeks: 8,
+    assessmentFields: [
+      {
+        id: "missionNetworkIsolated",
+        label: "Mission control network isolated from corporate?",
+        type: "boolean",
+      },
+      {
+        id: "firewallRulesDocumented",
+        label: "Firewall rules documented?",
+        type: "boolean",
+      },
+      {
+        id: "idsIpsDeployed",
+        label: "IDS/IPS deployed?",
+        type: "boolean",
+      },
+      {
+        id: "penTestFrequency",
+        label: "Penetration testing frequency",
+        type: "select",
+        options: [
+          { value: "annual", label: "Annual" },
+          { value: "biannual", label: "Biannual" },
+          { value: "quarterly", label: "Quarterly" },
+          { value: "none", label: "None" },
+        ],
+      },
+      {
+        id: "zeroTrustImplemented",
+        label: "Zero trust architecture implemented?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["missionNetworkIsolated", "firewallRulesDocumented"],
+      requiredNotEmpty: ["penTestFrequency"],
+    },
   },
 
   // ═══ CRYPTOGRAPHY (Art. 81-82) ═══
@@ -435,6 +802,40 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.24",
     severity: "major",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "policyDocumentExists",
+        label: "Cryptographic policy document exists?",
+        type: "boolean",
+      },
+      {
+        id: "approvedAlgorithmList",
+        label: "Approved algorithm list maintained?",
+        type: "boolean",
+      },
+      {
+        id: "postQuantumPlanExists",
+        label: "Post-quantum cryptography transition plan exists?",
+        type: "boolean",
+      },
+      {
+        id: "keyLifecycleDocumented",
+        label: "Key lifecycle management documented?",
+        type: "boolean",
+      },
+      {
+        id: "ccsdsMandated",
+        label: "CCSDS standards mandated for space links?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "policyDocumentExists",
+        "approvedAlgorithmList",
+        "keyLifecycleDocumented",
+      ],
+    },
   },
   {
     id: "space_link_encryption",
@@ -465,6 +866,48 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     severity: "critical",
     implementationTimeWeeks: 12,
+    assessmentFields: [
+      {
+        id: "linksEncrypted",
+        label: "Space-to-ground links encrypted?",
+        type: "boolean",
+      },
+      {
+        id: "encryptionStandard",
+        label: "Encryption standard",
+        type: "select",
+        options: [
+          { value: "CCSDS_SDLS", label: "CCSDS SDLS" },
+          { value: "AES_256", label: "AES-256" },
+          { value: "custom", label: "Custom" },
+        ],
+      },
+      {
+        id: "hsmForGroundKeys",
+        label: "HSM used for ground segment keys?",
+        type: "boolean",
+      },
+      {
+        id: "authSeparateFromEncryption",
+        label: "Authentication separate from encryption?",
+        type: "boolean",
+      },
+      {
+        id: "keyRotationSchedule",
+        label: "Key rotation schedule",
+        type: "select",
+        options: [
+          { value: "per_pass", label: "Per Pass" },
+          { value: "daily", label: "Daily" },
+          { value: "weekly", label: "Weekly" },
+          { value: "monthly", label: "Monthly" },
+        ],
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["linksEncrypted", "hsmForGroundKeys"],
+      requiredNotEmpty: ["encryptionStandard"],
+    },
   },
   {
     id: "key_management",
@@ -491,6 +934,36 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.24",
     severity: "major",
     implementationTimeWeeks: 6,
+    assessmentFields: [
+      {
+        id: "hsmUsed",
+        label: "Hardware security modules (HSM) used for key storage?",
+        type: "boolean",
+      },
+      {
+        id: "keyRotationDefined",
+        label: "Key rotation schedules defined?",
+        type: "boolean",
+      },
+      {
+        id: "keyDistributionSecure",
+        label: "Secure key distribution procedures in place?",
+        type: "boolean",
+      },
+      {
+        id: "keyRecoveryProcesses",
+        label: "Key recovery processes documented?",
+        type: "boolean",
+      },
+      {
+        id: "keyInventoryMaintained",
+        label: "Key inventory maintained?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["hsmUsed", "keyRotationDefined", "keyDistributionSecure"],
+    },
   },
 
   // ═══ DETECTION & MONITORING (Art. 83-84) ═══
@@ -524,6 +997,42 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.15-A.8.16",
     severity: "critical",
     implementationTimeWeeks: 8,
+    assessmentFields: [
+      {
+        id: "siemDeployed",
+        label: "SIEM deployed?",
+        type: "boolean",
+      },
+      {
+        id: "groundStationCoverage",
+        label: "Ground station systems covered by monitoring?",
+        type: "boolean",
+      },
+      {
+        id: "missionControlCoverage",
+        label: "Mission control systems covered by monitoring?",
+        type: "boolean",
+      },
+      {
+        id: "monitoringMode",
+        label: "Monitoring mode",
+        type: "select",
+        options: [
+          { value: "24x7", label: "24/7" },
+          { value: "business_hours", label: "Business Hours" },
+          { value: "on_call", label: "On-Call" },
+        ],
+      },
+      {
+        id: "alertProceduresDocumented",
+        label: "Alert and escalation procedures documented?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["siemDeployed", "alertProceduresDocumented"],
+      requiredNotEmpty: ["monitoringMode"],
+    },
   },
   {
     id: "anomaly_detection",
@@ -552,6 +1061,40 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     severity: "major",
     implementationTimeWeeks: 12,
+    assessmentFields: [
+      {
+        id: "baselineBehaviorDefined",
+        label: "Baseline normal behavior defined?",
+        type: "boolean",
+      },
+      {
+        id: "commandPatternMonitoring",
+        label: "Unauthorized command pattern monitoring in place?",
+        type: "boolean",
+      },
+      {
+        id: "rfInterferenceDetection",
+        label: "RF interference/jamming detection capability?",
+        type: "boolean",
+      },
+      {
+        id: "mlBasedDetection",
+        label: "ML-based anomaly detection implemented?",
+        type: "boolean",
+      },
+      {
+        id: "detectionRulesDocumented",
+        label: "Detection rules and baselines documented?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "baselineBehaviorDefined",
+        "commandPatternMonitoring",
+        "detectionRulesDocumented",
+      ],
+    },
   },
   {
     id: "log_management",
@@ -578,6 +1121,44 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.15",
     severity: "major",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "centralizedLogging",
+        label: "Centralized logging implemented?",
+        type: "boolean",
+      },
+      {
+        id: "retentionMonths",
+        label: "Log retention period",
+        type: "number",
+        unit: "months",
+        placeholder: "e.g., 12",
+        helpText: "Minimum 12 months recommended",
+      },
+      {
+        id: "logIntegrityProtected",
+        label: "Log integrity protected (immutable storage)?",
+        type: "boolean",
+      },
+      {
+        id: "timestampSynchronized",
+        label: "Timestamps synchronized (NTP)?",
+        type: "boolean",
+      },
+      {
+        id: "allCriticalSystemsCovered",
+        label: "All critical systems covered?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "centralizedLogging",
+        "logIntegrityProtected",
+        "timestampSynchronized",
+      ],
+      numberThresholds: { retentionMonths: { min: 12 } },
+    },
   },
 
   // ═══ BUSINESS CONTINUITY (Art. 85) ═══
@@ -611,6 +1192,51 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 22301",
     severity: "critical",
     implementationTimeWeeks: 8,
+    assessmentFields: [
+      {
+        id: "bcpDocumentExists",
+        label: "Business continuity plan document exists?",
+        type: "boolean",
+      },
+      {
+        id: "includesGroundStationLoss",
+        label: "Includes loss of ground station scenarios?",
+        type: "boolean",
+      },
+      {
+        id: "includesSatelliteAnomalies",
+        label: "Includes satellite anomaly/failure scenarios?",
+        type: "boolean",
+      },
+      {
+        id: "alternativeCommPaths",
+        label: "Alternative communication paths documented?",
+        type: "boolean",
+      },
+      {
+        id: "testFrequency",
+        label: "BCP test frequency",
+        type: "select",
+        options: [
+          { value: "annual", label: "Annual" },
+          { value: "biannual", label: "Biannual" },
+          { value: "quarterly", label: "Quarterly" },
+        ],
+      },
+      {
+        id: "lastTestDate",
+        label: "Date of last BCP test",
+        type: "date",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "bcpDocumentExists",
+        "includesGroundStationLoss",
+        "alternativeCommPaths",
+      ],
+      requiredNotEmpty: ["testFrequency"],
+    },
   },
   {
     id: "backup_recovery",
@@ -638,6 +1264,52 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.8.13",
     severity: "major",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "backupPolicyExists",
+        label: "Backup policy exists?",
+        type: "boolean",
+      },
+      {
+        id: "includesSpacecraftConfig",
+        label: "Includes spacecraft configuration/parameters?",
+        type: "boolean",
+      },
+      {
+        id: "offsiteStorageUsed",
+        label: "Offsite backup storage used?",
+        type: "boolean",
+      },
+      {
+        id: "backupRule",
+        label: "Backup strategy",
+        type: "select",
+        options: [
+          { value: "3-2-1", label: "3-2-1 Rule" },
+          { value: "other", label: "Other" },
+        ],
+      },
+      {
+        id: "recoveryTestFrequency",
+        label: "Recovery test frequency",
+        type: "select",
+        options: [
+          { value: "monthly", label: "Monthly" },
+          { value: "quarterly", label: "Quarterly" },
+          { value: "annual", label: "Annual" },
+          { value: "none", label: "None" },
+        ],
+      },
+      {
+        id: "lastRecoveryTest",
+        label: "Date of last recovery test",
+        type: "date",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["backupPolicyExists", "offsiteStorageUsed"],
+      requiredNotEmpty: ["backupRule", "recoveryTestFrequency"],
+    },
   },
 
   // ═══ INCIDENT REPORTING (Art. 89-92) ═══
@@ -668,6 +1340,53 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     isoReference: "ISO 27001:2022 A.5.24-A.5.28",
     severity: "critical",
     implementationTimeWeeks: 4,
+    assessmentFields: [
+      {
+        id: "planDocumentExists",
+        label: "Incident response plan document exists?",
+        type: "boolean",
+      },
+      {
+        id: "includesSpaceIncidents",
+        label: "Includes space-specific incident types?",
+        type: "boolean",
+      },
+      {
+        id: "severityClassificationDefined",
+        label: "Severity classification defined?",
+        type: "boolean",
+      },
+      {
+        id: "escalationToNCA",
+        label: "Escalation paths to NCA documented?",
+        type: "boolean",
+      },
+      {
+        id: "commTemplatesExist",
+        label: "Communication templates exist?",
+        type: "boolean",
+      },
+      {
+        id: "tabletopExerciseFrequency",
+        label: "Tabletop exercise frequency",
+        type: "select",
+        options: [
+          { value: "annual", label: "Annual" },
+          { value: "biannual", label: "Biannual" },
+          { value: "quarterly", label: "Quarterly" },
+          { value: "none", label: "None" },
+        ],
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "planDocumentExists",
+        "includesSpaceIncidents",
+        "severityClassificationDefined",
+        "escalationToNCA",
+      ],
+      requiredNotEmpty: ["tabletopExerciseFrequency"],
+    },
   },
   {
     id: "early_warning",
@@ -696,6 +1415,36 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 23(4)(a)",
     severity: "critical",
     implementationTimeWeeks: 2,
+    assessmentFields: [
+      {
+        id: "ncaRegistered",
+        label: "Registered with NCA incident reporting portal?",
+        type: "boolean",
+      },
+      {
+        id: "twentyFourSevenContacts",
+        label: "24/7 incident contacts designated?",
+        type: "boolean",
+      },
+      {
+        id: "earlyWarningTemplates",
+        label: "Early warning templates prepared?",
+        type: "boolean",
+      },
+      {
+        id: "incidentThresholdsDefined",
+        label: "Significant incident thresholds defined?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "ncaRegistered",
+        "twentyFourSevenContacts",
+        "earlyWarningTemplates",
+        "incidentThresholdsDefined",
+      ],
+    },
   },
   {
     id: "detailed_notification",
@@ -723,6 +1472,35 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 23(4)(b)",
     severity: "critical",
     implementationTimeWeeks: 2,
+    assessmentFields: [
+      {
+        id: "notificationProcedureExists",
+        label: "Detailed notification procedure exists?",
+        type: "boolean",
+      },
+      {
+        id: "impactAssessmentTemplate",
+        label: "Impact assessment template prepared?",
+        type: "boolean",
+      },
+      {
+        id: "containmentMeasuresDocumented",
+        label: "Containment measures documented?",
+        type: "boolean",
+      },
+      {
+        id: "crossBorderPrepared",
+        label: "Cross-border notification prepared (if applicable)?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "notificationProcedureExists",
+        "impactAssessmentTemplate",
+        "containmentMeasuresDocumented",
+      ],
+    },
   },
   {
     id: "final_report",
@@ -750,6 +1528,35 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     nis2Reference: "NIS2 Art. 23(4)(d)",
     severity: "major",
     implementationTimeWeeks: 2,
+    assessmentFields: [
+      {
+        id: "reportTemplateExists",
+        label: "Final report template exists?",
+        type: "boolean",
+      },
+      {
+        id: "rcaMethodologyDefined",
+        label: "Root cause analysis methodology defined?",
+        type: "boolean",
+      },
+      {
+        id: "lessonsLearnedProcess",
+        label: "Lessons learned process in place?",
+        type: "boolean",
+      },
+      {
+        id: "remediationTracking",
+        label: "Remediation action tracking implemented?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "reportTemplateExists",
+        "rcaMethodologyDefined",
+        "lessonsLearnedProcess",
+      ],
+    },
   },
 
   // ═══ EUSRN (Art. 93-95) ═══
@@ -776,6 +1583,31 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     severity: "major",
     implementationTimeWeeks: 1,
+    assessmentFields: [
+      {
+        id: "registrationSubmitted",
+        label: "EUSRN registration submitted?",
+        type: "boolean",
+      },
+      {
+        id: "contactsDesignated",
+        label: "Operational contacts designated?",
+        type: "boolean",
+      },
+      {
+        id: "registrationInfoCurrent",
+        label: "Registration information current?",
+        type: "boolean",
+      },
+      {
+        id: "liaisonDesignated",
+        label: "EUSRN liaison designated?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["registrationSubmitted", "contactsDesignated"],
+    },
   },
   {
     id: "eusrn_participation",
@@ -802,6 +1634,31 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     ],
     severity: "minor",
     implementationTimeWeeks: 0, // Ongoing
+    assessmentFields: [
+      {
+        id: "exercisesParticipated",
+        label: "Participated in EUSRN cyber exercises?",
+        type: "boolean",
+      },
+      {
+        id: "threatIntelShared",
+        label: "Threat intelligence shared (anonymized if needed)?",
+        type: "boolean",
+      },
+      {
+        id: "meetingsAttended",
+        label: "EUSRN coordination meetings attended?",
+        type: "boolean",
+      },
+      {
+        id: "recommendationsImplemented",
+        label: "EUSRN recommendations implemented?",
+        type: "boolean",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["exercisesParticipated", "meetingsAttended"],
+    },
   },
 ];
 

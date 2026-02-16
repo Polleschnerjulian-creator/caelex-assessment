@@ -140,7 +140,12 @@ async function collectCybersecurityData(
     orderBy: { updatedAt: "desc" },
     include: {
       requirements: {
-        select: { requirementId: true, status: true, notes: true },
+        select: {
+          requirementId: true,
+          status: true,
+          notes: true,
+          responses: true,
+        },
       },
     },
   });
@@ -163,7 +168,12 @@ async function collectCybersecurityData(
       maturityScore: assessment.maturityScore,
       isSimplifiedRegime: assessment.isSimplifiedRegime,
     },
-    requirements: assessment.requirements,
+    requirements: assessment.requirements.map((r) => ({
+      requirementId: r.requirementId,
+      status: r.status,
+      notes: r.notes,
+      responses: (r.responses as Record<string, unknown>) || null,
+    })),
     organization: org,
   };
 }
@@ -281,7 +291,12 @@ async function collectNIS2Data(
     orderBy: { updatedAt: "desc" },
     include: {
       requirements: {
-        select: { requirementId: true, status: true, notes: true },
+        select: {
+          requirementId: true,
+          status: true,
+          notes: true,
+          responses: true,
+        },
       },
     },
   });
@@ -304,7 +319,12 @@ async function collectNIS2Data(
       riskLevel: assessment.riskLevel,
       euSpaceActOverlapCount: assessment.euSpaceActOverlapCount,
     },
-    requirements: assessment.requirements,
+    requirements: assessment.requirements.map((r) => ({
+      requirementId: r.requirementId,
+      status: r.status,
+      notes: r.notes,
+      responses: (r.responses as Record<string, unknown>) || null,
+    })),
     organization: org,
   };
 }

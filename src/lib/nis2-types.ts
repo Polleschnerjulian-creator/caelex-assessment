@@ -101,6 +101,9 @@ export interface NIS2Requirement {
   implementationTimeWeeks?: number;
   // Proportionality
   canBeSimplified: boolean; // Can be reduced for smaller entities under Art. 21(1)
+  // ASTRA deep assessment fields
+  assessmentFields?: import("@/lib/compliance/types").AssessmentField[];
+  complianceRule?: import("@/lib/compliance/types").ComplianceRule;
 }
 
 // ─── ENISA Space Control Interface ───

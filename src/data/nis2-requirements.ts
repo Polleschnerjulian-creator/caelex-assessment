@@ -23,6 +23,7 @@ import {
   NIS2Requirement,
   NIS2AssessmentAnswers,
 } from "@/lib/nis2-types";
+import type { AssessmentField, ComplianceRule } from "@/lib/compliance/types";
 
 // ─── NIS2 Requirements Array ───
 
@@ -65,6 +66,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "policyExists",
+        label: "IS policy document exists",
+        type: "boolean" as const,
+      },
+      {
+        id: "coversAllSegments",
+        label: "Covers ground, space, and link segments",
+        type: "boolean" as const,
+        helpText:
+          "Policy must explicitly address ground stations, mission control, TT&C links, and inter-satellite links",
+      },
+      {
+        id: "managementApproved",
+        label: "Approved by senior management",
+        type: "boolean" as const,
+      },
+      {
+        id: "annualReview",
+        label: "Reviewed at least annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastReviewDate",
+        label: "Last review date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "policyExists",
+        "coversAllSegments",
+        "managementApproved",
+        "annualReview",
+      ],
+      requiredNotEmpty: ["lastReviewDate"],
+    },
   },
   {
     id: "nis2-002",
@@ -100,6 +139,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "riskMethodologyDefined",
+        label: "Risk assessment methodology documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceThreatsIncluded",
+        label: "Includes space-specific threats (jamming, spoofing, ASAT)",
+        type: "boolean" as const,
+        helpText:
+          "Must cover RF interference, GNSS spoofing, uplink command injection, and supply chain manipulation",
+      },
+      {
+        id: "riskRegisterMaintained",
+        label: "Risk register maintained with space-specific scenarios",
+        type: "boolean" as const,
+      },
+      {
+        id: "periodicReassessment",
+        label: "Risk reassessment performed at least annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastAssessmentDate",
+        label: "Last risk assessment date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "riskMethodologyDefined",
+        "spaceThreatsIncluded",
+        "riskRegisterMaintained",
+        "periodicReassessment",
+      ],
+      requiredNotEmpty: ["lastAssessmentDate"],
+    },
   },
   {
     id: "nis2-003",
@@ -133,6 +210,38 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "appetiteDocumented",
+        label: "Risk appetite statement formally documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "boardEndorsed",
+        label: "Endorsed by management body",
+        type: "boolean" as const,
+      },
+      {
+        id: "differentiatesCriticality",
+        label:
+          "Differentiates tolerance for safety-critical vs business-critical systems",
+        type: "boolean" as const,
+        helpText:
+          "TT&C and payload control should have near-zero risk tolerance",
+      },
+      {
+        id: "communicatedToStakeholders",
+        label: "Communicated to relevant stakeholders",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "appetiteDocumented",
+        "boardEndorsed",
+        "differentiatesCriticality",
+      ],
+    },
   },
   {
     id: "nis2-004",
@@ -167,6 +276,35 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "classificationSchemeExists",
+        label: "Asset classification scheme documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "allSegmentsCovered",
+        label: "Covers ground, space, and link segment assets",
+        type: "boolean" as const,
+      },
+      {
+        id: "inventoryComplete",
+        label: "Complete asset inventory with assigned classifications",
+        type: "boolean" as const,
+      },
+      {
+        id: "reviewedPeriodically",
+        label: "Classifications reviewed periodically",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "classificationSchemeExists",
+        "allSegmentsCovered",
+        "inventoryComplete",
+      ],
+    },
   },
   {
     id: "nis2-005",
@@ -201,6 +339,34 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "scheduleExists",
+        label: "Reassessment schedule defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "annualCycle",
+        label: "Reassessments performed at least annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "triggersDefined",
+        label: "Trigger criteria for unscheduled reassessments defined",
+        type: "boolean" as const,
+        helpText:
+          "E.g., mission phase transitions, constellation expansion, significant space weather events",
+      },
+      {
+        id: "lastReassessmentDate",
+        label: "Last reassessment date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["scheduleExists", "annualCycle", "triggersDefined"],
+      requiredNotEmpty: ["lastReassessmentDate"],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -241,6 +407,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 8,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "detectionCapabilityExists",
+        label: "Automated incident detection systems deployed",
+        type: "boolean" as const,
+      },
+      {
+        id: "coversGroundSegment",
+        label: "Detection covers ground segment IT/OT",
+        type: "boolean" as const,
+      },
+      {
+        id: "coversSpaceTelemetry",
+        label: "Detection covers space segment telemetry anomalies",
+        type: "boolean" as const,
+      },
+      {
+        id: "rfMonitoring",
+        label: "RF spectrum monitoring for jamming detection",
+        type: "boolean" as const,
+        helpText:
+          "Monitor ground station RF environment for interference patterns",
+      },
+      {
+        id: "mttdHours",
+        label: "Mean time to detect (MTTD) in hours",
+        type: "number" as const,
+        unit: "hours",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "detectionCapabilityExists",
+        "coversGroundSegment",
+        "coversSpaceTelemetry",
+      ],
+      numberThresholds: { mttdHours: { max: 24 } },
+    },
   },
   {
     id: "nis2-007",
@@ -276,6 +480,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "irpExists",
+        label: "Incident response plan documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceScenariosCovered",
+        label: "Covers space-specific incident types",
+        type: "boolean" as const,
+        helpText:
+          "E.g., loss of contact, unauthorised commanding, telemetry manipulation, RF interference",
+      },
+      {
+        id: "rolesAndEscalation",
+        label: "Roles and escalation paths defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "safeModeCriteria",
+        label: "Safe-mode triggering criteria documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastDrillDate",
+        label: "Last incident response drill date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "irpExists",
+        "spaceScenariosCovered",
+        "rolesAndEscalation",
+        "safeModeCriteria",
+      ],
+      requiredNotEmpty: ["lastDrillDate"],
+    },
   },
   {
     id: "nis2-008",
@@ -311,6 +553,38 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "taxonomyExists",
+        label: "Incident classification taxonomy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceCategories",
+        label:
+          "Includes space-specific categories (commanding anomalies, RF interference, loss of contact)",
+        type: "boolean" as const,
+      },
+      {
+        id: "severityLevels",
+        label: "Severity levels defined with impact criteria",
+        type: "boolean" as const,
+      },
+      {
+        id: "reportingThresholds",
+        label: "Reporting thresholds mapped to NIS2 Art. 23",
+        type: "boolean" as const,
+        helpText: "Clear thresholds for mandatory reporting to NCA",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "taxonomyExists",
+        "spaceCategories",
+        "severityLevels",
+        "reportingThresholds",
+      ],
+    },
   },
   {
     id: "nis2-009",
@@ -346,6 +620,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 4,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "containmentProcedures",
+        label: "Containment procedures documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "commandingLockout",
+        label: "Commanding lockout procedure defined",
+        type: "boolean" as const,
+        helpText: "Ability to prevent further unauthorised commands",
+      },
+      {
+        id: "networkIsolation",
+        label: "Ground station network isolation procedures in place",
+        type: "boolean" as const,
+      },
+      {
+        id: "cleanBaselines",
+        label: "Clean firmware/software baselines maintained for recovery",
+        type: "boolean" as const,
+      },
+      {
+        id: "verificationChecklist",
+        label: "Post-incident verification checklist exists",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "containmentProcedures",
+        "commandingLockout",
+        "networkIsolation",
+        "cleanBaselines",
+      ],
+    },
   },
   {
     id: "nis2-010",
@@ -380,6 +690,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "reviewProcessExists",
+        label: "Formal post-incident review process defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "rcaMethodology",
+        label: "Root cause analysis methodology used",
+        type: "boolean" as const,
+        helpText: "E.g., 5-Whys, fault tree analysis",
+      },
+      {
+        id: "lessonsLearnedRegister",
+        label: "Lessons learned register maintained",
+        type: "boolean" as const,
+      },
+      {
+        id: "improvementsTracked",
+        label: "Improvement actions tracked to completion",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "reviewProcessExists",
+        "rcaMethodology",
+        "lessonsLearnedRegister",
+        "improvementsTracked",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -420,6 +761,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 8,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "bcpExists",
+        label: "Business continuity plan documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "biaCompleted",
+        label: "Business impact analysis completed for space operations",
+        type: "boolean" as const,
+      },
+      {
+        id: "rtoRpoDefined",
+        label: "Recovery time and point objectives (RTO/RPO) defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "backupFacilitiesIdentified",
+        label: "Backup ground stations/facilities identified",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastBcpTestDate",
+        label: "Last BCP test date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "bcpExists",
+        "biaCompleted",
+        "rtoRpoDefined",
+        "backupFacilitiesIdentified",
+      ],
+      requiredNotEmpty: ["lastBcpTestDate"],
+    },
   },
   {
     id: "nis2-012",
@@ -456,6 +833,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "backupProceduresExist",
+        label: "TT&C backup procedures documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "backupGroundStation",
+        label: "Backup ground station agreement in place",
+        type: "boolean" as const,
+      },
+      {
+        id: "keysStoredOffsite",
+        label: "Command encryption keys stored securely off-site",
+        type: "boolean" as const,
+        helpText: "Geographically separate HSMs for backup key storage",
+      },
+      {
+        id: "drTestedWithSpacecraft",
+        label: "DR tested with actual spacecraft or high-fidelity simulator",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastDrTestDate",
+        label: "Last disaster recovery test date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "backupProceduresExist",
+        "backupGroundStation",
+        "keysStoredOffsite",
+        "drTestedWithSpacecraft",
+      ],
+      requiredNotEmpty: ["lastDrTestDate"],
+    },
   },
   {
     id: "nis2-013",
@@ -491,6 +905,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "crisisFrameworkExists",
+        label: "Crisis management framework documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "commandDelegation",
+        label: "Command authority delegation matrix defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "externalCoordination",
+        label:
+          "Pre-arranged coordination with national space agencies and SSA providers",
+        type: "boolean" as const,
+      },
+      {
+        id: "conjunctionProcedures",
+        label:
+          "Conjunction assessment procedures for anomalous spacecraft behaviour",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastCrisisExerciseDate",
+        label: "Last crisis exercise date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "crisisFrameworkExists",
+        "commandDelegation",
+        "externalCoordination",
+      ],
+      requiredNotEmpty: ["lastCrisisExerciseDate"],
+    },
   },
   {
     id: "nis2-014",
@@ -526,6 +977,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "exerciseScheduleExists",
+        label: "Exercise schedule defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "tabletopAnnual",
+        label: "Tabletop exercise conducted at least annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "functionalDrillAnnual",
+        label: "Functional drill conducted at least annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "cyberSpaceScenarios",
+        label: "Exercises include combined cyber-space scenarios",
+        type: "boolean" as const,
+        helpText: "E.g., ground station ransomware during conjunction warning",
+      },
+      {
+        id: "lastExerciseDate",
+        label: "Last exercise date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "exerciseScheduleExists",
+        "tabletopAnnual",
+        "cyberSpaceScenarios",
+      ],
+      requiredNotEmpty: ["lastExerciseDate"],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -566,6 +1053,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "supplierRiskMethodology",
+        label: "Supplier risk assessment methodology defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "criticalSupplierRegistry",
+        label: "Critical supplier registry maintained with risk ratings",
+        type: "boolean" as const,
+      },
+      {
+        id: "provenanceVerification",
+        label: "Hardware provenance verification performed",
+        type: "boolean" as const,
+        helpText:
+          "Mitigates counterfeit component risk for flight-grade electronics",
+      },
+      {
+        id: "geopoliticalRisksAssessed",
+        label: "Geopolitical risks assessed for ITAR/EAR-controlled components",
+        type: "boolean" as const,
+      },
+      {
+        id: "criticalSupplierCount",
+        label: "Number of critical suppliers assessed",
+        type: "number" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "supplierRiskMethodology",
+        "criticalSupplierRegistry",
+        "provenanceVerification",
+      ],
+      numberThresholds: { criticalSupplierCount: { min: 1 } },
+    },
   },
   {
     id: "nis2-016",
@@ -601,6 +1125,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "securityClausesStandard",
+        label: "Standard security clauses in contracts",
+        type: "boolean" as const,
+      },
+      {
+        id: "rightToAudit",
+        label: "Right-to-audit clauses included",
+        type: "boolean" as const,
+      },
+      {
+        id: "incidentNotificationReqs",
+        label: "Incident notification obligations defined for subcontractors",
+        type: "boolean" as const,
+        helpText: "Aligned with NIS2 24h/72h reporting timelines",
+      },
+      {
+        id: "complianceTracked",
+        label: "Subcontractor compliance status tracked",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "securityClausesStandard",
+        "rightToAudit",
+        "incidentNotificationReqs",
+        "complianceTracked",
+      ],
+    },
   },
   {
     id: "nis2-017",
@@ -637,6 +1192,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 10,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "secureCodingStandards",
+        label: "Secure coding standards enforced (MISRA C, CERT C)",
+        type: "boolean" as const,
+      },
+      {
+        id: "sbomRequired",
+        label: "Software bills of materials (SBOMs) required from suppliers",
+        type: "boolean" as const,
+      },
+      {
+        id: "staticDynamicAnalysis",
+        label: "Static and dynamic code analysis performed",
+        type: "boolean" as const,
+      },
+      {
+        id: "cryptographicSigning",
+        label: "Flight software builds cryptographically signed",
+        type: "boolean" as const,
+      },
+      {
+        id: "integrityVerifiedPreUpload",
+        label: "Binary integrity verified before every spacecraft upload",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "secureCodingStandards",
+        "sbomRequired",
+        "staticDynamicAnalysis",
+        "cryptographicSigning",
+        "integrityVerifiedPreUpload",
+      ],
+    },
   },
   {
     id: "nis2-018",
@@ -672,6 +1263,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "bidirectionalNotification",
+        label: "Bidirectional incident notification procedures established",
+        type: "boolean" as const,
+      },
+      {
+        id: "contractualTimelines",
+        label: "Notification timelines in supplier contracts",
+        type: "boolean" as const,
+        helpText: "Aligned with NIS2 24h/72h requirements",
+      },
+      {
+        id: "componentAssetMapping",
+        label: "Supplier components mapped to deployed space assets",
+        type: "boolean" as const,
+      },
+      {
+        id: "vulnerabilityDisclosure",
+        label:
+          "Vulnerability disclosure coordination process with key suppliers",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "bidirectionalNotification",
+        "contractualTimelines",
+        "componentAssetMapping",
+      ],
+    },
   },
   {
     id: "nis2-019",
@@ -707,6 +1329,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "antiCounterfeitPolicy",
+        label: "Anti-counterfeit policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "authorisedDistributorsOnly",
+        label:
+          "Flight-grade components sourced from authorised distributors only",
+        type: "boolean" as const,
+      },
+      {
+        id: "incomingInspection",
+        label: "Incoming inspection and testing for critical components",
+        type: "boolean" as const,
+      },
+      {
+        id: "chainOfCustody",
+        label: "Chain of custody records maintained for flight hardware",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "antiCounterfeitPolicy",
+        "authorisedDistributorsOnly",
+        "incomingInspection",
+        "chainOfCustody",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -747,6 +1400,41 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 8,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "ssdlcImplemented",
+        label: "Secure software development lifecycle (SSDLC) implemented",
+        type: "boolean" as const,
+      },
+      {
+        id: "threatModellingDone",
+        label: "Threat modelling performed for space-specific interfaces",
+        type: "boolean" as const,
+      },
+      {
+        id: "securityRequirementsDerived",
+        label: "Security requirements derived from mission criticality",
+        type: "boolean" as const,
+      },
+      {
+        id: "protocolFuzzing",
+        label: "Fuzz testing of CCSDS protocol parsers performed",
+        type: "boolean" as const,
+      },
+      {
+        id: "codeReviewEnforced",
+        label: "Code review enforced for commanding/telemetry code",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "ssdlcImplemented",
+        "threatModellingDone",
+        "securityRequirementsDerived",
+        "codeReviewEnforced",
+      ],
+    },
   },
   {
     id: "nis2-021",
@@ -782,6 +1470,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "vulnMgmtProgramme",
+        label: "Vulnerability management programme in place",
+        type: "boolean" as const,
+      },
+      {
+        id: "automatedScanning",
+        label: "Automated vulnerability scanning performed",
+        type: "boolean" as const,
+      },
+      {
+        id: "manualAssessment",
+        label: "Manual assessment for mission-specific software",
+        type: "boolean" as const,
+        helpText:
+          "Supplement automated scanning for specialised RTOS, embedded, and legacy systems",
+      },
+      {
+        id: "remediationSlas",
+        label: "Remediation SLAs defined by severity",
+        type: "boolean" as const,
+      },
+      {
+        id: "exceptionProcess",
+        label:
+          "Exception process with compensating controls for unpatchable systems",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "vulnMgmtProgramme",
+        "automatedScanning",
+        "remediationSlas",
+      ],
+    },
   },
   {
     id: "nis2-022",
@@ -817,6 +1542,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "patchPolicyExists",
+        label: "Patch management policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "testEnvironment",
+        label: "Test environment mirrors operational configuration",
+        type: "boolean" as const,
+      },
+      {
+        id: "stagedRollout",
+        label: "Staged rollout with rollback capability",
+        type: "boolean" as const,
+      },
+      {
+        id: "emergencyPatchProcess",
+        label: "Emergency patching procedures for zero-day vulnerabilities",
+        type: "boolean" as const,
+      },
+      {
+        id: "patchCompliancePercent",
+        label: "Patch compliance rate (%)",
+        type: "number" as const,
+        unit: "%",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "patchPolicyExists",
+        "testEnvironment",
+        "stagedRollout",
+        "emergencyPatchProcess",
+      ],
+      numberThresholds: { patchCompliancePercent: { min: 90 } },
+    },
   },
   {
     id: "nis2-023",
@@ -853,6 +1615,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 8,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "segmentationImplemented",
+        label:
+          "Network segmentation between mission-critical and corporate networks",
+        type: "boolean" as const,
+      },
+      {
+        id: "securityZonesDefined",
+        label:
+          "Security zones defined (mission control, telemetry, ground station, corporate, DMZ)",
+        type: "boolean" as const,
+      },
+      {
+        id: "dataDiodesUsed",
+        label: "Data diodes or unidirectional gateways for telemetry flows",
+        type: "boolean" as const,
+        helpText: "Unidirectional flows from ground station to mission control",
+      },
+      {
+        id: "crossZoneFlowsDocumented",
+        label: "Cross-zone data flows documented and authorised",
+        type: "boolean" as const,
+      },
+      {
+        id: "penTestConducted",
+        label: "Network penetration testing conducted",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "segmentationImplemented",
+        "securityZonesDefined",
+        "crossZoneFlowsDocumented",
+        "penTestConducted",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -893,6 +1693,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "auditProgrammeExists",
+        label: "Security audit programme and schedule defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceDomainExpertise",
+        label: "Auditors have space system security expertise",
+        type: "boolean" as const,
+        helpText:
+          "Not just generic IT auditors; must understand CCSDS, TT&C, ground station operations",
+      },
+      {
+        id: "itAndOtCovered",
+        label: "Audits cover both IT and OT aspects",
+        type: "boolean" as const,
+      },
+      {
+        id: "remediationTracked",
+        label: "Audit findings tracked to remediation",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastAuditDate",
+        label: "Last security audit date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "auditProgrammeExists",
+        "itAndOtCovered",
+        "remediationTracked",
+      ],
+      requiredNotEmpty: ["lastAuditDate"],
+    },
   },
   {
     id: "nis2-025",
@@ -928,6 +1765,39 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "penTestConducted",
+        label: "Penetration testing conducted on ground segment",
+        type: "boolean" as const,
+      },
+      {
+        id: "rfSecurityTesting",
+        label: "RF link security testing performed (where applicable)",
+        type: "boolean" as const,
+        helpText:
+          "Testing of uplink command authentication and downlink data integrity",
+      },
+      {
+        id: "ccsdsProtocolFuzzing",
+        label: "CCSDS protocol fuzzing included in scope",
+        type: "boolean" as const,
+      },
+      {
+        id: "findingsRemediated",
+        label: "Identified vulnerabilities remediated and retested",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastPenTestDate",
+        label: "Last penetration test date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["penTestConducted", "findingsRemediated"],
+      requiredNotEmpty: ["lastPenTestDate"],
+    },
   },
   {
     id: "nis2-026",
@@ -962,6 +1832,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "minor",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "metricsDefinedDoc",
+        label: "Security metrics formally defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceOpsMetrics",
+        label: "Includes space-operations-relevant KPIs",
+        type: "boolean" as const,
+        helpText:
+          "E.g., MTTD for telemetry anomalies, ground station patching compliance, command auth success rate",
+      },
+      {
+        id: "managementReporting",
+        label: "Metrics reported to management body quarterly",
+        type: "boolean" as const,
+      },
+      {
+        id: "trendAnalysis",
+        label: "Trend analysis and benchmarking performed",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "metricsDefinedDoc",
+        "spaceOpsMetrics",
+        "managementReporting",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1002,6 +1903,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "trainingProgrammeExists",
+        label: "Security awareness training programme documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "roleSpecificTraining",
+        label: "Role-specific training for mission controllers and engineers",
+        type: "boolean" as const,
+      },
+      {
+        id: "annualRefresher",
+        label: "Annual refresher training with assessment",
+        type: "boolean" as const,
+      },
+      {
+        id: "trainingCompletionPercent",
+        label: "Training completion rate (%)",
+        type: "number" as const,
+        unit: "%",
+      },
+      {
+        id: "lastTrainingDate",
+        label: "Last training cycle date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "trainingProgrammeExists",
+        "roleSpecificTraining",
+        "annualRefresher",
+      ],
+      numberThresholds: { trainingCompletionPercent: { min: 90 } },
+      requiredNotEmpty: ["lastTrainingDate"],
+    },
   },
   {
     id: "nis2-028",
@@ -1037,6 +1975,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "hygienePolicy",
+        label: "Cyber hygiene policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "secureConfigBaselines",
+        label: "Secure configuration baselines for all system categories",
+        type: "boolean" as const,
+        helpText:
+          "Baselines for mission control, ground station, and corporate systems",
+      },
+      {
+        id: "automatedComplianceChecking",
+        label: "Automated compliance checking against baselines",
+        type: "boolean" as const,
+      },
+      {
+        id: "defaultCredsAddressed",
+        label: "Default credentials changed on all ground station equipment",
+        type: "boolean" as const,
+      },
+      {
+        id: "passwordPolicyEnforced",
+        label: "Password policy enforced across all systems",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "hygienePolicy",
+        "secureConfigBaselines",
+        "defaultCredsAddressed",
+        "passwordPolicyEnforced",
+      ],
+    },
   },
   {
     id: "nis2-029",
@@ -1073,6 +2048,36 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "minor",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "satcomCurriculumExists",
+        label: "Specialised SATCOM security training curriculum exists",
+        type: "boolean" as const,
+      },
+      {
+        id: "rfLinkProtection",
+        label: "RF link protection techniques covered",
+        type: "boolean" as const,
+        helpText: "Jamming, spoofing, CCSDS protocol security features",
+      },
+      {
+        id: "handsOnExercises",
+        label: "Practical hands-on exercises included",
+        type: "boolean" as const,
+      },
+      {
+        id: "trainerQualified",
+        label: "Trainers qualified in space security domain",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "satcomCurriculumExists",
+        "rfLinkProtection",
+        "trainerQualified",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1114,6 +2119,47 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 12,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "uplinkEncrypted",
+        label: "Command uplinks encrypted",
+        type: "boolean" as const,
+      },
+      {
+        id: "uplinkAuthenticated",
+        label: "Command uplinks authenticated",
+        type: "boolean" as const,
+      },
+      {
+        id: "downlinkEncrypted",
+        label: "Telemetry/payload downlinks encrypted",
+        type: "boolean" as const,
+      },
+      {
+        id: "approvedAlgorithms",
+        label: "Approved cryptographic algorithms used (AES-256 or equivalent)",
+        type: "boolean" as const,
+      },
+      {
+        id: "encryptionCoverage",
+        label: "Encryption coverage",
+        type: "select" as const,
+        options: [
+          { value: "all", label: "All links encrypted" },
+          { value: "most", label: "Most links encrypted (>80%)" },
+          { value: "some", label: "Some links encrypted (50-80%)" },
+          { value: "few", label: "Few links encrypted (<50%)" },
+        ],
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "uplinkEncrypted",
+        "uplinkAuthenticated",
+        "approvedAlgorithms",
+      ],
+      requiredNotEmpty: ["encryptionCoverage"],
+    },
   },
   {
     id: "nis2-031",
@@ -1150,6 +2196,44 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 8,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "keyMgmtPolicyExists",
+        label: "Key management policy and procedures documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "hsmUsed",
+        label:
+          "Hardware security modules (HSMs) used for ground segment key storage",
+        type: "boolean" as const,
+      },
+      {
+        id: "keyRotationSchedule",
+        label: "Key rotation schedule defined and followed",
+        type: "boolean" as const,
+        helpText: "Aligned with spacecraft contact windows",
+      },
+      {
+        id: "backupKeysGeographicSeparation",
+        label: "Backup keys stored in geographically separate locations",
+        type: "boolean" as const,
+      },
+      {
+        id: "emergencyRevocation",
+        label: "Emergency key revocation procedure defined",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "keyMgmtPolicyExists",
+        "hsmUsed",
+        "keyRotationSchedule",
+        "backupKeysGeographicSeparation",
+        "emergencyRevocation",
+      ],
+    },
   },
   {
     id: "nis2-032",
@@ -1185,6 +2269,33 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "algorithmInventory",
+        label: "Cryptographic algorithm inventory maintained",
+        type: "boolean" as const,
+      },
+      {
+        id: "agilityAssessment",
+        label: "Crypto agility assessment completed",
+        type: "boolean" as const,
+        helpText: "Which systems can be updated without hardware change",
+      },
+      {
+        id: "pqcRoadmap",
+        label: "Post-quantum cryptography migration roadmap defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "missionLifetimeYears",
+        label: "Longest active mission lifetime (years)",
+        type: "number" as const,
+        unit: "years",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["algorithmInventory", "agilityAssessment", "pqcRoadmap"],
+    },
   },
   {
     id: "nis2-033",
@@ -1220,6 +2331,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "atRestPolicyExists",
+        label: "Data-at-rest encryption policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "databasesEncrypted",
+        label: "Databases containing sensitive data encrypted",
+        type: "boolean" as const,
+      },
+      {
+        id: "fullDiskEncryption",
+        label: "Full-disk encryption on portable devices",
+        type: "boolean" as const,
+      },
+      {
+        id: "backupMediaEncrypted",
+        label: "Backup media encrypted (especially off-site storage)",
+        type: "boolean" as const,
+      },
+      {
+        id: "commandDataEncrypted",
+        label: "Spacecraft command data and encryption keys encrypted at rest",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "atRestPolicyExists",
+        "databasesEncrypted",
+        "fullDiskEncryption",
+        "backupMediaEncrypted",
+        "commandDataEncrypted",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1260,6 +2407,35 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "screeningPolicy",
+        label: "Personnel screening policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "criticalRolesScreened",
+        label: "Mission-critical roles undergo background screening",
+        type: "boolean" as const,
+      },
+      {
+        id: "reScreeningScheduled",
+        label: "Re-screening at defined intervals for high-privilege roles",
+        type: "boolean" as const,
+      },
+      {
+        id: "terminationProcedure",
+        label: "Access revocation within 24 hours of role change/termination",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "screeningPolicy",
+        "criticalRolesScreened",
+        "terminationProcedure",
+      ],
+    },
   },
   {
     id: "nis2-035",
@@ -1296,6 +2472,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "physicalAccessControls",
+        label:
+          "Physical access control for ground stations and mission control",
+        type: "boolean" as const,
+      },
+      {
+        id: "logicalAccessControls",
+        label: "Role-based logical access controls enforced",
+        type: "boolean" as const,
+      },
+      {
+        id: "mfaPhysicalAccess",
+        label: "Multi-factor physical access control for antenna halls",
+        type: "boolean" as const,
+      },
+      {
+        id: "accessLogged",
+        label: "All physical and logical access logged with non-repudiation",
+        type: "boolean" as const,
+      },
+      {
+        id: "quarterlyAccessReview",
+        label: "Quarterly access reviews for mission-critical systems",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "physicalAccessControls",
+        "logicalAccessControls",
+        "accessLogged",
+        "quarterlyAccessReview",
+      ],
+    },
   },
   {
     id: "nis2-036",
@@ -1331,6 +2543,41 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 4,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "inventoryExists",
+        label: "Comprehensive asset inventory maintained",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceSegmentIncluded",
+        label: "Space segment assets with on-board software versions included",
+        type: "boolean" as const,
+      },
+      {
+        id: "groundSegmentIncluded",
+        label: "Ground segment equipment included (antennas, modems, routers)",
+        type: "boolean" as const,
+      },
+      {
+        id: "ownershipAssigned",
+        label: "Asset ownership assigned",
+        type: "boolean" as const,
+      },
+      {
+        id: "configBaselinesTracked",
+        label: "Configuration baselines and change history tracked",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "inventoryExists",
+        "spaceSegmentIncluded",
+        "groundSegmentIncluded",
+        "ownershipAssigned",
+      ],
+    },
   },
   {
     id: "nis2-037",
@@ -1366,6 +2613,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 6,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "pamPolicy",
+        label: "Privileged access management policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "dualAuthorisation",
+        label:
+          "Dual-authorisation (four-eyes) for critical spacecraft commands",
+        type: "boolean" as const,
+      },
+      {
+        id: "sessionRecording",
+        label: "Privileged access sessions recorded for mission control",
+        type: "boolean" as const,
+      },
+      {
+        id: "jitAccess",
+        label: "Just-in-time privileged access with automatic expiration",
+        type: "boolean" as const,
+      },
+      {
+        id: "privilegedAccountInventory",
+        label: "Privileged account inventory maintained",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "pamPolicy",
+        "dualAuthorisation",
+        "sessionRecording",
+        "privilegedAccountInventory",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1406,6 +2689,39 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 4,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "mfaEnforced",
+        label: "MFA enforced for all mission control and ground station access",
+        type: "boolean" as const,
+      },
+      {
+        id: "hardwareTokens",
+        label: "Hardware security keys (FIDO2/U2F) deployed",
+        type: "boolean" as const,
+        helpText: "Phishing-resistant MFA for high-assurance environments",
+      },
+      {
+        id: "vpnMfa",
+        label: "MFA on VPN connections to operations networks",
+        type: "boolean" as const,
+      },
+      {
+        id: "exceptionsDocumented",
+        label: "MFA exceptions documented with compensating controls",
+        type: "boolean" as const,
+      },
+      {
+        id: "mfaCoveragePercent",
+        label: "MFA deployment coverage (%)",
+        type: "number" as const,
+        unit: "%",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["mfaEnforced", "vpnMfa"],
+      numberThresholds: { mfaCoveragePercent: { min: 95 } },
+    },
   },
   {
     id: "nis2-039",
@@ -1441,6 +2757,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "emergencyProceduresDocumented",
+        label: "Emergency access procedures documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "breakGlassCredentials",
+        label:
+          "Break-glass credentials stored securely (sealed envelope, dual-custody safe)",
+        type: "boolean" as const,
+      },
+      {
+        id: "semiAnnualTesting",
+        label: "Emergency access procedures tested at least semi-annually",
+        type: "boolean" as const,
+      },
+      {
+        id: "auditTrailCreated",
+        label: "Emergency access creates audit trail for post-event review",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastEmergencyTestDate",
+        label: "Last emergency access test date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "emergencyProceduresDocumented",
+        "breakGlassCredentials",
+        "semiAnnualTesting",
+        "auditTrailCreated",
+      ],
+      requiredNotEmpty: ["lastEmergencyTestDate"],
+    },
   },
   {
     id: "nis2-040",
@@ -1475,6 +2828,35 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 3,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "secureCommsPolicy",
+        label: "Secure communications policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "e2eEncryptedChannels",
+        label: "End-to-end encrypted voice/messaging deployed",
+        type: "boolean" as const,
+      },
+      {
+        id: "identityVerification",
+        label: "Identity verification for mission-critical calls",
+        type: "boolean" as const,
+      },
+      {
+        id: "backupChannels",
+        label: "Backup communication channels independent of primary systems",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "secureCommsPolicy",
+        "e2eEncryptedChannels",
+        "backupChannels",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1514,6 +2896,35 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 2,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "boardApprovesMeasures",
+        label: "Management body formally approves cybersecurity measures",
+        type: "boolean" as const,
+      },
+      {
+        id: "quarterlyAgendaItem",
+        label: "Cybersecurity is a standing quarterly board agenda item",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceRiskBriefings",
+        label: "Board receives space-sector-specific threat briefings",
+        type: "boolean" as const,
+      },
+      {
+        id: "riskAcceptanceDocumented",
+        label: "Board risk acceptance decisions documented",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "boardApprovesMeasures",
+        "quarterlyAgendaItem",
+        "riskAcceptanceDocumented",
+      ],
+    },
   },
   {
     id: "nis2-042",
@@ -1548,6 +2959,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 1,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "boardTrainingProgramme",
+        label: "Cybersecurity training programme for management body exists",
+        type: "boolean" as const,
+      },
+      {
+        id: "allMembersCompleted",
+        label: "All management body members completed training",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceContentIncluded",
+        label: "Training covers space-specific cybersecurity threats",
+        type: "boolean" as const,
+        helpText: "Including personal liability implications under NIS2",
+      },
+      {
+        id: "annualRefresherBoard",
+        label: "Annual refresher training conducted",
+        type: "boolean" as const,
+      },
+      {
+        id: "lastBoardTrainingDate",
+        label: "Last board training date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "boardTrainingProgramme",
+        "allMembersCompleted",
+        "spaceContentIncluded",
+        "annualRefresherBoard",
+      ],
+      requiredNotEmpty: ["lastBoardTrainingDate"],
+    },
   },
   {
     id: "nis2-043",
@@ -1582,6 +3030,33 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "cisoAppointed",
+        label: "CISO or equivalent role designated",
+        type: "boolean" as const,
+      },
+      {
+        id: "authorityDefined",
+        label: "Role has defined authority across IT and OT domains",
+        type: "boolean" as const,
+      },
+      {
+        id: "reportsToBoard",
+        label: "Clear reporting line to management body",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceDomainExpertiseAccess",
+        label: "Has or can access space systems security expertise",
+        type: "boolean" as const,
+        helpText:
+          "For smaller operators, a virtual CISO arrangement with space cybersecurity consultancy is acceptable",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["cisoAppointed", "authorityDefined", "reportsToBoard"],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1622,6 +3097,43 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 2,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "csirtRegistered",
+        label: "Pre-registered with national CSIRT",
+        type: "boolean" as const,
+      },
+      {
+        id: "earlyWarningProcedure",
+        label: "Early warning submission procedure documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "templatePrepared",
+        label: "Early warning template pre-filled with static data",
+        type: "boolean" as const,
+      },
+      {
+        id: "twentyFourSevenCapability",
+        label: "24/7 capability for early warning submission",
+        type: "boolean" as const,
+        helpText:
+          "At least two authorised persons designated for 24/7 coverage",
+      },
+      {
+        id: "testSubmissionDone",
+        label: "Test submission performed with CSIRT",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "csirtRegistered",
+        "earlyWarningProcedure",
+        "templatePrepared",
+        "twentyFourSevenCapability",
+      ],
+    },
   },
   {
     id: "nis2-045",
@@ -1656,6 +3168,38 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 2,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "notificationProcedure",
+        label: "72-hour incident notification procedure documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "templateWithSpaceFields",
+        label: "Notification template includes space-specific fields",
+        type: "boolean" as const,
+        helpText:
+          "Affected spacecraft/ground systems, service impact, containment measures",
+      },
+      {
+        id: "impactAssessmentMethodology",
+        label: "Impact assessment methodology defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "iocCollectionProcess",
+        label: "IoC collection and sharing process established",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "notificationProcedure",
+        "templateWithSpaceFields",
+        "impactAssessmentMethodology",
+        "iocCollectionProcess",
+      ],
+    },
   },
   {
     id: "nis2-046",
@@ -1690,6 +3234,37 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "finalReportTemplate",
+        label: "Final report template with space-specific sections",
+        type: "boolean" as const,
+      },
+      {
+        id: "rcaMethodologyDefined",
+        label: "Root cause analysis methodology defined",
+        type: "boolean" as const,
+      },
+      {
+        id: "crossSegmentTimeline",
+        label:
+          "Capable of producing cross-segment timeline (space, ground, link)",
+        type: "boolean" as const,
+      },
+      {
+        id: "remediationTracking",
+        label: "Remediation action tracking to completion",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "finalReportTemplate",
+        "rcaMethodologyDefined",
+        "crossSegmentTimeline",
+        "remediationTracking",
+      ],
+    },
   },
   {
     id: "nis2-047",
@@ -1724,6 +3299,39 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "major",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "criteriaDocumented",
+        label: "Significant incident criteria documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "spaceIncidentsMapped",
+        label: "Space-specific incidents mapped to NIS2 thresholds",
+        type: "boolean" as const,
+        helpText:
+          "E.g., unauthorised commanding, loss of contact, unintended manoeuvre, service disruption",
+      },
+      {
+        id: "decisionTreeExists",
+        label: "Decision tree for incident significance determination",
+        type: "boolean" as const,
+      },
+      {
+        id: "thresholdsDefined",
+        label: "Clear quantitative thresholds defined",
+        type: "boolean" as const,
+        helpText: "E.g., loss of contact duration, number of affected users",
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "criteriaDocumented",
+        "spaceIncidentsMapped",
+        "decisionTreeExists",
+        "thresholdsDefined",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1762,6 +3370,42 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "critical",
     implementationTimeWeeks: 1,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "authorityIdentified",
+        label: "Competent NIS2 authority identified in Member State",
+        type: "boolean" as const,
+      },
+      {
+        id: "registrationSubmitted",
+        label: "Registration submitted to competent authority",
+        type: "boolean" as const,
+      },
+      {
+        id: "registrationConfirmed",
+        label: "Registration confirmation received",
+        type: "boolean" as const,
+      },
+      {
+        id: "infoKeptCurrent",
+        label: "Registration information kept up to date",
+        type: "boolean" as const,
+      },
+      {
+        id: "registrationDate",
+        label: "Registration submission date",
+        type: "date" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "authorityIdentified",
+        "registrationSubmitted",
+        "registrationConfirmed",
+        "infoKeptCurrent",
+      ],
+      requiredNotEmpty: ["registrationDate"],
+    },
   },
   {
     id: "nis2-049",
@@ -1796,6 +3440,36 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "minor",
     implementationTimeWeeks: 1,
     canBeSimplified: false,
+    assessmentFields: [
+      {
+        id: "domainInventoryMaintained",
+        label: "Domain name inventory maintained",
+        type: "boolean" as const,
+      },
+      {
+        id: "ipRangesDocumented",
+        label: "IP address ranges documented for all operational networks",
+        type: "boolean" as const,
+      },
+      {
+        id: "submittedToAuthority",
+        label: "Domain/IP information submitted to authority",
+        type: "boolean" as const,
+      },
+      {
+        id: "updateProcessDefined",
+        label: "Process defined for updating authority when changes occur",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: [
+        "domainInventoryMaintained",
+        "ipRangesDocumented",
+        "submittedToAuthority",
+        "updateProcessDefined",
+      ],
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1835,6 +3509,33 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "minor",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "sharingPolicyExists",
+        label: "Information sharing policy documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "communityMembership",
+        label: "Member of sharing community or ISAC",
+        type: "boolean" as const,
+        helpText:
+          "E.g., EUSRN, space-sector ISAC, or bilateral sharing agreements",
+      },
+      {
+        id: "tlpImplemented",
+        label: "Traffic Light Protocol (TLP) implemented",
+        type: "boolean" as const,
+      },
+      {
+        id: "activeParticipation",
+        label: "Actively sharing and receiving threat intelligence",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["sharingPolicyExists", "communityMembership"],
+    },
   },
   {
     id: "nis2-051",
@@ -1869,6 +3570,35 @@ export const NIS2_REQUIREMENTS: NIS2Requirement[] = [
     severity: "minor",
     implementationTimeWeeks: 2,
     canBeSimplified: true,
+    assessmentFields: [
+      {
+        id: "coordinationProcedures",
+        label: "Cross-operator coordination procedures documented",
+        type: "boolean" as const,
+      },
+      {
+        id: "peerOperatorsIdentified",
+        label: "Peer operators using same platforms/providers identified",
+        type: "boolean" as const,
+        helpText:
+          "Operators sharing spacecraft bus, ground station provider, or software platform",
+      },
+      {
+        id: "encryptedChannelsEstablished",
+        label:
+          "Pre-arranged encrypted communication channels for urgent coordination",
+        type: "boolean" as const,
+      },
+      {
+        id: "coordinationProtocol",
+        label:
+          "Coordination protocol with roles and information classification defined",
+        type: "boolean" as const,
+      },
+    ],
+    complianceRule: {
+      requiredTrue: ["coordinationProcedures", "peerOperatorsIdentified"],
+    },
   },
 ];
 

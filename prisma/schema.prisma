@@ -382,6 +382,7 @@ model CybersecurityRequirementStatus {
   notes         String?  @db.Text
   evidenceNotes String?  @db.Text
   targetDate    DateTime?
+  responses     Json?    // structured sub-question responses
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -466,6 +467,7 @@ model NIS2RequirementStatus {
   notes         String?  @db.Text
   evidenceNotes String?  @db.Text
   targetDate    DateTime?
+  responses     Json?    // structured sub-question responses
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

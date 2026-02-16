@@ -4,6 +4,26 @@
 
 import type { CybersecurityDataBundle } from "../types";
 
+function formatResponses(
+  responses: Record<string, unknown> | null | undefined,
+): string {
+  if (!responses || Object.keys(responses).length === 0) return "";
+  const lines = Object.entries(responses)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([key, value]) => {
+      const label = key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (s) => s.toUpperCase())
+        .trim();
+      if (typeof value === "boolean")
+        return `  - ${label}: ${value ? "Yes" : "No"}`;
+      return `  - ${label}: ${value}`;
+    });
+  return lines.length > 0
+    ? `\n  Sub-question responses:\n${lines.join("\n")}`
+    : "";
+}
+
 export function buildCybersecurityPrompt(
   data: CybersecurityDataBundle,
 ): string {
@@ -44,7 +64,7 @@ export function buildCybersecurityPrompt(
 **Simplified Regime:** ${a.isSimplifiedRegime ? "Yes (Art. 10)" : "No"}
 **Requirements Status:** ${reqCompliant} compliant, ${reqPartial} partial, ${reqTotal} total
 
-${data.requirements.length > 0 ? `## Requirement Status Matrix\n${data.requirements.map((r) => `- ${r.requirementId}: ${r.status}${r.notes ? ` — ${r.notes}` : ""}`).join("\n")}` : ""}
+${data.requirements.length > 0 ? `## Detailed Requirement Assessment\n${data.requirements.map((r) => `- **${r.requirementId}**: ${r.status}${r.notes ? ` — ${r.notes}` : ""}${formatResponses(r.responses)}`).join("\n")}` : ""}
 
 ## Required Sections
 
@@ -55,7 +75,7 @@ Generate the following sections in order:
 3. **Security Architecture** — Space segment, ground segment, and link security architecture overview
 4. **Risk Assessment** — Threat landscape for space operations, risk categories, impact analysis
 5. **Implementation Plan** — 8-phase roadmap: (1) Governance, (2) Asset Management, (3) Access Control, (4) Network Security, (5) Data Protection, (6) Incident Response, (7) Supply Chain, (8) Monitoring & Audit
-6. **Gap Analysis** — Current vs. target state for each requirement area
+6. **Gap Analysis** — Current vs. target state for each requirement area, incorporating detailed sub-question responses where available
 7. **Maturity Assessment** — Current maturity level per NIST CSF domain with target levels
 8. **Compliance Matrix** — Table mapping requirements to implementation status, responsible parties, and timelines
 9. **Recommendations** — Prioritized improvement actions with estimated effort and impact`;

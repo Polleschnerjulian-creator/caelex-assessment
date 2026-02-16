@@ -145,6 +145,7 @@ export default function DocumentStudio() {
     dispatch({ type: "START_GENERATION" });
 
     try {
+      // Start async generation — returns immediately with document ID
       const response = await fetch("/api/documents/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
@@ -152,7 +153,7 @@ export default function DocumentStudio() {
           documentType: state.documentType,
           assessmentId: state.assessmentId,
           language: state.language,
-          stream: false,
+          async: true,
         }),
       });
 
@@ -162,7 +163,6 @@ export default function DocumentStudio() {
           const data = await response.json();
           errorMsg = data.error || errorMsg;
         } catch {
-          // Non-JSON response (e.g., Vercel 504 timeout)
           if (response.status === 504) {
             errorMsg = "Generation timed out. Please try again.";
           } else {
@@ -172,14 +172,54 @@ export default function DocumentStudio() {
         throw new Error(errorMsg);
       }
 
-      const data = await response.json();
+      const { documentId } = await response.json();
 
-      dispatch({
-        type: "GENERATION_COMPLETE",
-        sections: data.content,
-        rawContent: "",
-        documentId: data.documentId,
-      });
+      // Poll for completion every 3 seconds
+      const poll = async () => {
+        const maxAttempts = 60; // 3 minutes max
+        let attempts = 0;
+
+        while (attempts < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          attempts++;
+
+          try {
+            const pollRes = await fetch(
+              `/api/documents/generated/${documentId}`,
+            );
+            if (!pollRes.ok) continue;
+
+            const doc = await pollRes.json();
+
+            if (doc.status === "COMPLETED") {
+              dispatch({
+                type: "GENERATION_COMPLETE",
+                sections: doc.content || doc.editedContent || [],
+                rawContent: "",
+                documentId: doc.id,
+              });
+              return;
+            }
+
+            if (doc.status === "FAILED") {
+              throw new Error(doc.error || "Document generation failed");
+            }
+          } catch (pollError) {
+            if (
+              pollError instanceof Error &&
+              pollError.message !== "Document generation failed"
+            ) {
+              // Network error during poll — keep trying
+              continue;
+            }
+            throw pollError;
+          }
+        }
+
+        throw new Error("Generation timed out. Please try again.");
+      };
+
+      await poll();
     } catch (error) {
       dispatch({
         type: "GENERATION_ERROR",
