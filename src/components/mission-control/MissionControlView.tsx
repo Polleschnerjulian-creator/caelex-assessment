@@ -17,6 +17,7 @@ import SatelliteInfoPanel from "./SatelliteInfoPanel";
 import { SpacecraftForm } from "@/components/spacecraft/SpacecraftForm";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { csrfHeaders } from "@/lib/csrf-client";
 import type { SatelliteData, OrbitType } from "@/lib/satellites/types";
 
 const MAX_SEARCH_RESULTS = 8;
@@ -39,6 +40,7 @@ export default function MissionControlView() {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [addingToFleet, setAddingToFleet] = useState<number | null>(null);
   const [orbitTypes, setOrbitTypes] = useState<Set<OrbitType>>(new Set());
   const [objectTypes, setObjectTypes] = useState<Set<string>>(new Set());
   const [fleetOnly, setFleetOnly] = useState(false);
@@ -143,6 +145,46 @@ export default function MissionControlView() {
     setFleetOnly((prev) => !prev);
   }, []);
 
+  const handleAddToFleet = useCallback(
+    async (sat: SatelliteData) => {
+      if (!organization || addingToFleet !== null) return;
+      setAddingToFleet(sat.noradId);
+      try {
+        const res = await fetch(
+          `/api/organizations/${organization.id}/spacecraft`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...csrfHeaders(),
+            },
+            body: JSON.stringify({
+              name: sat.name,
+              noradId: String(sat.noradId),
+              cosparId: sat.cosparId,
+              orbitType: sat.orbitType,
+              altitudeKm: Math.round((sat.apoapsis + sat.periapsis) / 2),
+              inclinationDeg: sat.inclination,
+              missionType: "other",
+              status: "OPERATIONAL",
+            }),
+          },
+        );
+        if (!res.ok) {
+          const data = await res.json();
+          console.error("Failed to add spacecraft:", data.error);
+        } else {
+          refetch();
+        }
+      } catch (err) {
+        console.error("Failed to add spacecraft:", err);
+      } finally {
+        setAddingToFleet(null);
+      }
+    },
+    [organization, addingToFleet, refetch],
+  );
+
   if (isLoading) {
     return (
       <div
@@ -245,10 +287,32 @@ export default function MissionControlView() {
                           {sat.noradId} · {sat.cosparId} · {sat.orbitType}
                         </p>
                       </div>
-                      {isFleet && (
+                      {isFleet ? (
                         <span className="text-[8px] font-mono px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 rounded flex-shrink-0">
                           FLEET
                         </span>
+                      ) : (
+                        organization && (
+                          <button
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleAddToFleet(sat);
+                            }}
+                            disabled={addingToFleet === sat.noradId}
+                            className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+                            title="Add to Fleet"
+                          >
+                            {addingToFleet === sat.noradId ? (
+                              <Loader2
+                                size={12}
+                                className="animate-spin"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <Plus size={12} aria-hidden="true" />
+                            )}
+                          </button>
+                        )
                       )}
                     </button>
                   );
@@ -325,6 +389,8 @@ export default function MissionControlView() {
               isFleet={isSelectedFleet}
               onClose={() => setSelectedNoradId(null)}
               t={t}
+              onAddToFleet={organization ? handleAddToFleet : undefined}
+              isAdding={addingToFleet === selectedSatellite.noradId}
             />
           )}
         </AnimatePresence>

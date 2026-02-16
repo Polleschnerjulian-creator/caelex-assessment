@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import type { SatelliteData } from "@/lib/satellites/types";
 
@@ -10,6 +10,8 @@ interface SatelliteInfoPanelProps {
   isFleet: boolean;
   onClose: () => void;
   t: (key: string) => string;
+  onAddToFleet?: (sat: SatelliteData) => void;
+  isAdding?: boolean;
 }
 
 function formatAltitude(km: number): string {
@@ -21,6 +23,8 @@ export default function SatelliteInfoPanel({
   isFleet,
   onClose,
   t,
+  onAddToFleet,
+  isAdding,
 }: SatelliteInfoPanelProps) {
   const fields = [
     { label: t("missionControl.noradId"), value: String(satellite.noradId) },
@@ -92,6 +96,33 @@ export default function SatelliteInfoPanel({
               <ExternalLink size={12} aria-hidden="true" />
               {t("missionControl.manageSpacecraft")}
             </Link>
+          </div>
+        )}
+
+        {/* Add to Fleet button for non-fleet satellites */}
+        {!isFleet && onAddToFleet && (
+          <div className="pt-3 mt-3 border-t border-white/5">
+            <button
+              onClick={() => onAddToFleet(satellite)}
+              disabled={isAdding}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 text-white rounded-lg text-[12px] font-medium transition-all"
+            >
+              {isAdding ? (
+                <>
+                  <Loader2
+                    size={14}
+                    className="animate-spin"
+                    aria-hidden="true"
+                  />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus size={14} aria-hidden="true" />
+                  Add to Fleet
+                </>
+              )}
+            </button>
           </div>
         )}
       </div>
