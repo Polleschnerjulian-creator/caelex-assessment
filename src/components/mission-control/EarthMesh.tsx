@@ -9,18 +9,12 @@ interface EarthMeshProps {
   segments?: number;
 }
 
-// Convert longitude/latitude to equirectangular canvas pixel coords (2048x1024)
+// Convert lon/lat → equirectangular canvas pixel coords (2048x1024)
 function ll(lon: number, lat: number): [number, number] {
   return [((lon + 180) / 360) * 2048, ((90 - lat) / 180) * 1024];
 }
 
-// Stroke a polygon outline from lon/lat coordinates (no fill)
-function strokePoly(
-  ctx: CanvasRenderingContext2D,
-  coords: [number, number][],
-  color: string,
-  width: number,
-) {
+function drawPoly(ctx: CanvasRenderingContext2D, coords: [number, number][]) {
   ctx.beginPath();
   const [x0, y0] = ll(coords[0][0], coords[0][1]);
   ctx.moveTo(x0, y0);
@@ -29,12 +23,9 @@ function strokePoly(
     ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.stroke();
 }
 
-// ── Continent coordinate data (lon, lat) ──
+// ── Continent data (lon, lat) ──
 
 const NORTH_AMERICA: [number, number][] = [
   [-168, 65],
@@ -644,7 +635,7 @@ const ALL_CONTINENTS = [
   SRI_LANKA,
 ];
 
-// ── Monochrome wireframe texture ──
+// ── Subtle dark continent texture (background layer) ──
 
 function createEarthTexture(): THREE.CanvasTexture {
   const W = 2048;
@@ -654,61 +645,23 @@ function createEarthTexture(): THREE.CanvasTexture {
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // Near-black base
-  ctx.fillStyle = "#030508";
+  // Near-black ocean
+  ctx.fillStyle = "#030506";
   ctx.fillRect(0, 0, W, H);
 
-  // === Grid lines (latitude + longitude) ===
+  // Subtle dark teal continent fills
+  ctx.fillStyle = "rgba(12, 30, 42, 0.7)";
+  for (const c of ALL_CONTINENTS) {
+    drawPoly(ctx, c);
+    ctx.fill();
+  }
 
-  // Longitude lines every 30 degrees
-  ctx.strokeStyle = "rgba(60, 140, 220, 0.07)";
-  ctx.lineWidth = 0.8;
-  for (let lon = -180; lon <= 180; lon += 30) {
-    const [x] = ll(lon, 0);
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
+  // Faint coastline edge
+  for (const c of ALL_CONTINENTS) {
+    drawPoly(ctx, c);
+    ctx.strokeStyle = "rgba(30, 70, 100, 0.3)";
+    ctx.lineWidth = 1.2;
     ctx.stroke();
-  }
-
-  // Latitude lines every 30 degrees
-  for (let lat = -90; lat <= 90; lat += 30) {
-    const [, y] = ll(0, lat);
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-
-  // Equator + prime meridian slightly brighter
-  ctx.strokeStyle = "rgba(60, 140, 220, 0.12)";
-  ctx.lineWidth = 1;
-  // Equator
-  const [, eqY] = ll(0, 0);
-  ctx.beginPath();
-  ctx.moveTo(0, eqY);
-  ctx.lineTo(W, eqY);
-  ctx.stroke();
-  // Prime meridian
-  const [pmX] = ll(0, 0);
-  ctx.beginPath();
-  ctx.moveTo(pmX, 0);
-  ctx.lineTo(pmX, H);
-  ctx.stroke();
-
-  // === Continent outlines — outer glow layer ===
-  for (const c of ALL_CONTINENTS) {
-    strokePoly(ctx, c, "rgba(50, 140, 220, 0.08)", 6);
-  }
-
-  // === Continent outlines — main line ===
-  for (const c of ALL_CONTINENTS) {
-    strokePoly(ctx, c, "rgba(70, 160, 240, 0.55)", 1.8);
-  }
-
-  // === Continent outlines — bright core ===
-  for (const c of ALL_CONTINENTS) {
-    strokePoly(ctx, c, "rgba(120, 190, 255, 0.35)", 0.8);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -716,9 +669,48 @@ function createEarthTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-// ── Atmosphere glow shader ──
+// ── Green dot grid (lat/lon lines as points on the sphere) ──
 
-const atmosphereVertexShader = `
+function createGridGeometry(radius: number): THREE.BufferGeometry {
+  const points: number[] = [];
+  const DEG = Math.PI / 180;
+  const dotSpacing = 1.5; // degrees between dots
+  const gridSpacing = 10; // degrees between grid lines
+
+  // Latitude lines
+  for (let lat = -80; lat <= 80; lat += gridSpacing) {
+    const phi = (90 - lat) * DEG;
+    for (let lon = -180; lon < 180; lon += dotSpacing) {
+      const theta = (lon + 180) * DEG;
+      points.push(
+        radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        -radius * Math.sin(phi) * Math.sin(theta),
+      );
+    }
+  }
+
+  // Longitude lines
+  for (let lon = -180; lon < 180; lon += gridSpacing) {
+    const theta = (lon + 180) * DEG;
+    for (let lat = -80; lat <= 80; lat += dotSpacing) {
+      const phi = (90 - lat) * DEG;
+      points.push(
+        radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        -radius * Math.sin(phi) * Math.sin(theta),
+      );
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+  return geo;
+}
+
+// ── Atmosphere edge glow ──
+
+const atmosphereVert = `
   varying vec3 vNormal;
   varying vec3 vWorldPosition;
   void main() {
@@ -728,15 +720,15 @@ const atmosphereVertexShader = `
   }
 `;
 
-const atmosphereFragmentShader = `
+const atmosphereFrag = `
   varying vec3 vNormal;
   varying vec3 vWorldPosition;
   void main() {
     vec3 viewDir = normalize(cameraPosition - vWorldPosition);
     float fresnel = 1.0 - dot(viewDir, vNormal);
-    fresnel = pow(fresnel, 3.5);
-    vec3 color = vec3(0.2, 0.5, 0.9);
-    gl_FragColor = vec4(color, fresnel * 0.4);
+    fresnel = pow(fresnel, 4.0);
+    vec3 color = vec3(0.15, 0.4, 0.2);
+    gl_FragColor = vec4(color, fresnel * 0.35);
   }
 `;
 
@@ -744,16 +736,32 @@ export default function EarthMesh({
   radius = 1,
   segments = 64,
 }: EarthMeshProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const atmosphereRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
 
   const texture = useMemo(() => createEarthTexture(), []);
+  const gridGeometry = useMemo(
+    () => createGridGeometry(radius * 1.002),
+    [radius],
+  );
+
+  const gridMaterial = useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        color: "#30a040",
+        size: 0.006,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.7,
+        depthWrite: false,
+      }),
+    [],
+  );
 
   const atmosphereMaterial = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        vertexShader: atmosphereVertexShader,
-        fragmentShader: atmosphereFragmentShader,
+        vertexShader: atmosphereVert,
+        fragmentShader: atmosphereFrag,
         transparent: true,
         side: THREE.BackSide,
         depthWrite: false,
@@ -762,23 +770,25 @@ export default function EarthMesh({
   );
 
   useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.0002;
-    }
-    if (atmosphereRef.current) {
-      atmosphereRef.current.rotation.y += 0.0002;
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.0002;
     }
   });
 
   return (
-    <group>
-      <mesh ref={meshRef}>
+    <group ref={groupRef}>
+      {/* Earth sphere with subtle continent texture */}
+      <mesh>
         <sphereGeometry args={[radius, segments, segments]} />
-        <meshBasicMaterial map={texture} transparent opacity={1} />
+        <meshBasicMaterial map={texture} />
       </mesh>
-      {/* Atmosphere glow */}
-      <mesh ref={atmosphereRef}>
-        <sphereGeometry args={[radius * 1.02, 64, 64]} />
+
+      {/* Green dot grid overlay */}
+      <points geometry={gridGeometry} material={gridMaterial} />
+
+      {/* Subtle atmosphere edge glow */}
+      <mesh>
+        <sphereGeometry args={[radius * 1.015, 64, 64]} />
         <primitive object={atmosphereMaterial} />
       </mesh>
     </group>
