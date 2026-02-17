@@ -37,7 +37,7 @@ function useAnimatedSection(margin: `${number}px` = "-80px") {
 
 function fadeUp(isInView: boolean, delay = 0) {
   return {
-    initial: { opacity: 0, y: 25 },
+    initial: { opacity: 0, y: 30 },
     animate: isInView ? { opacity: 1, y: 0 } : {},
     transition: { duration: 0.5, delay },
   };
@@ -302,14 +302,16 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 mb-4 block">
+      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 mb-4 block">
         {eyebrow}
       </span>
-      <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+      <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-lg text-white/60 max-w-2xl mx-auto">{subtitle}</p>
+        <p className="text-[15px] md:text-[16px] text-white/40 leading-relaxed max-w-[650px] mx-auto">
+          {subtitle}
+        </p>
       )}
     </motion.div>
   );
@@ -329,7 +331,7 @@ function GlassCard({
       className={`
         bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl
         shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]
-        ${hover ? "transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.12]" : ""}
+        ${hover ? "transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]" : ""}
         ${className}
       `}
     >
@@ -350,30 +352,34 @@ function HeroSection() {
       ref={ref}
       className="relative pt-40 pb-24 md:pt-48 md:pb-32 overflow-hidden"
     >
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-500/[0.06] rounded-full blur-[120px]" />
-      </div>
+      {/* Background glow — emerald radial gradient matching About/Pricing */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(16, 185, 129, 0.10) 0%, transparent 60%)",
+        }}
+      />
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 text-center">
         <motion.div {...fadeUp(isInView, 0)}>
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-blue-400/70 mb-6 block">
+          <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
             Security & Compliance
           </span>
         </motion.div>
 
         <motion.h1
           {...fadeUp(isInView, 0.1)}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight"
+          className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-white mb-6"
         >
           Security-First Infrastructure
           <br />
-          <span className="text-white/60">for Space Compliance</span>
+          <span className="text-white/50">for Space Compliance</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
-          className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10"
+          className="text-[18px] md:text-[20px] text-white/50 max-w-[650px] mx-auto mb-10 leading-relaxed"
         >
           Enterprise-grade security protecting the world&apos;s most sensitive
           space regulatory data. EU-hosted, end-to-end encrypted, zero
@@ -388,11 +394,11 @@ function HeroSection() {
           {trustBadges.map((badge) => (
             <div
               key={badge.label}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-[13px] text-white/60"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-[12px] text-white/60"
             >
               <badge.icon
                 size={14}
-                className="text-blue-400"
+                className="text-emerald-400"
                 aria-hidden="true"
               />
               {badge.label}
@@ -407,14 +413,14 @@ function HeroSection() {
         >
           <Link
             href="/docs/api"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-[14px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
           >
             View Documentation
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/80 text-[14px] font-medium hover:border-white/40 hover:text-white transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
           >
             Contact Security Team
           </Link>
@@ -428,8 +434,16 @@ function InfrastructureSection() {
   const { ref, isInView } = useAnimatedSection();
 
   return (
-    <section ref={ref} className="py-24 md:py-32">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+    <section ref={ref} className="relative py-24 md:py-32">
+      {/* Subtle background glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
+        }}
+      />
+      <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Infrastructure"
           title="EU-Hosted, Encrypted Everywhere"
@@ -440,18 +454,18 @@ function InfrastructureSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {infrastructureItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
-              <GlassCard className="p-8 h-full">
-                <div className="p-2.5 rounded-lg bg-blue-500/10 w-fit mb-5">
+              <GlassCard className="p-8 h-full group">
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors w-fit mb-5">
                   <item.icon
                     size={20}
-                    className="text-blue-400"
+                    className="text-emerald-400"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-[18px] font-medium text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-[14px] text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -479,18 +493,18 @@ function ApplicationSecuritySection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {applicationSecurityItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
-              <GlassCard className="p-6 h-full">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] w-fit mb-4">
+              <GlassCard className="p-6 h-full group">
+                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
                     className="text-white/50"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-semibold text-white mb-2">
+                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[14px] text-white/45 leading-relaxed">
+                <p className="text-[13px] text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -506,8 +520,15 @@ function GDPRSection() {
   const { ref, isInView } = useAnimatedSection();
 
   return (
-    <section ref={ref} className="py-24 md:py-32">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+    <section ref={ref} className="relative py-24 md:py-32">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 40% at 80% 70%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)",
+        }}
+      />
+      <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Data Protection"
           title="GDPR-Compliant by Design"
@@ -518,18 +539,18 @@ function GDPRSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {gdprItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
-              <GlassCard className="p-6 h-full">
-                <div className="p-2.5 rounded-lg bg-green-500/10 w-fit mb-4">
+              <GlassCard className="p-6 h-full group">
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-green-400"
+                    className="text-emerald-400"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-semibold text-white mb-2">
+                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[14px] text-white/45 leading-relaxed">
+                <p className="text-[13px] text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -555,7 +576,10 @@ function AISecuritySection() {
         />
 
         <motion.div {...fadeUp(isInView, 0.15)}>
-          <GlassCard className="max-w-3xl mx-auto p-8 md:p-10" hover={false}>
+          <GlassCard
+            className="max-w-[720px] mx-auto p-8 md:p-10"
+            hover={false}
+          >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-2.5 rounded-lg bg-purple-500/10">
                 <Brain
@@ -564,7 +588,7 @@ function AISecuritySection() {
                   aria-hidden="true"
                 />
               </div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-[18px] font-medium text-white">
                 ASTRA AI Compliance
               </h3>
             </div>
@@ -578,14 +602,14 @@ function AISecuritySection() {
                 >
                   <CheckCircle2
                     size={18}
-                    className="text-green-400 mt-0.5 shrink-0"
+                    className="text-emerald-400 mt-0.5 shrink-0"
                     aria-hidden="true"
                   />
                   <div>
                     <span className="text-[14px] font-medium text-white">
                       {item.label}
                     </span>
-                    <p className="text-[13px] text-white/45 mt-0.5">
+                    <p className="text-[13px] text-white/45 mt-0.5 leading-[1.6]">
                       {item.description}
                     </p>
                   </div>
@@ -615,18 +639,18 @@ function AuditSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {auditItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
-              <GlassCard className="p-8 h-full">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] w-fit mb-5">
+              <GlassCard className="p-8 h-full group">
+                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
                   <item.icon
                     size={20}
                     className="text-white/50"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-[18px] font-medium text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-[14px] text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -642,8 +666,15 @@ function CertificationsSection() {
   const { ref, isInView } = useAnimatedSection();
 
   return (
-    <section ref={ref} className="py-24 md:py-32">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+    <section ref={ref} className="relative py-24 md:py-32">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
+        }}
+      />
+      <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Certifications"
           title="Compliance Roadmap"
@@ -651,7 +682,7 @@ function CertificationsSection() {
           isInView={isInView}
         />
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-[600px] mx-auto">
           {certificationTimeline.map((item, i) => (
             <motion.div
               key={item.label}
@@ -668,14 +699,14 @@ function CertificationsSection() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     item.status === "active"
-                      ? "bg-green-500/10 border border-green-500/30"
+                      ? "bg-emerald-500/10 border border-emerald-500/30"
                       : "bg-white/[0.04] border border-white/[0.08]"
                   }`}
                 >
                   {item.status === "active" ? (
                     <CheckCircle2
                       size={18}
-                      className="text-green-400"
+                      className="text-emerald-400"
                       aria-hidden="true"
                     />
                   ) : (
@@ -691,20 +722,22 @@ function CertificationsSection() {
               {/* Content */}
               <div className="pb-10">
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-[16px] font-semibold text-white">
+                  <h3 className="text-[16px] font-medium text-white">
                     {item.label}
                   </h3>
                   <span
-                    className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider ${
                       item.status === "active"
-                        ? "bg-green-500/10 text-green-400"
+                        ? "bg-emerald-500/15 text-emerald-400"
                         : "bg-white/[0.06] text-white/40"
                     }`}
                   >
                     {item.date}
                   </span>
                 </div>
-                <p className="text-[14px] text-white/45">{item.description}</p>
+                <p className="text-[14px] text-white/40 leading-[1.6]">
+                  {item.description}
+                </p>
               </div>
             </motion.div>
           ))}
@@ -730,18 +763,18 @@ function EnterpriseSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {enterpriseFeatures.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
-              <GlassCard className="p-6 h-full">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] w-fit mb-4">
+              <GlassCard className="p-6 h-full group">
+                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
                     className="text-white/50"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-semibold text-white mb-2">
+                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[14px] text-white/45 leading-relaxed">
+                <p className="text-[13px] text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -757,28 +790,39 @@ function CTASection() {
   const { ref, isInView } = useAnimatedSection();
 
   return (
-    <section ref={ref} className="py-24 md:py-32">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+    <section ref={ref} className="relative py-24 md:py-32">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)",
+        }}
+      />
+      <div className="relative max-w-[1200px] mx-auto px-6 md:px-12">
         <motion.div {...fadeUp(isInView, 0)}>
           <GlassCard className="p-12 md:p-16 text-center" hover={false}>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
               Ready to secure your space compliance?
             </h2>
-            <p className="text-lg text-white/50 max-w-xl mx-auto mb-8">
+            <p className="text-[17px] text-white/50 max-w-[520px] mx-auto mb-10 leading-relaxed">
               Start with a free compliance assessment or talk to our team about
               enterprise security needs.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/assessment"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-colors"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[15px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               >
                 Start Free Assessment
-                <ArrowRight size={16} aria-hidden="true" />
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-white/20 text-white/80 text-[14px] font-medium hover:border-white/40 hover:text-white transition-all"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/80 text-[15px] font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
               >
                 Contact Sales
               </Link>
