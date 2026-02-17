@@ -50,7 +50,7 @@ export default function AstraChatInput() {
             placeholder="Ask about regulations..."
             disabled={isTyping}
             rows={1}
-            className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-500/20 disabled:opacity-50 transition-all resize-none"
+            className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-500/20 disabled:opacity-50 transition-all resize-none"
           />
           <button
             onClick={handleSend}
@@ -62,9 +62,9 @@ export default function AstraChatInput() {
           </button>
         </div>
         <div className="flex items-center justify-between mt-1.5 px-1">
-          <p className="text-[9px] text-white/15">Shift+Enter for new line</p>
+          <p className="text-[9px] text-white/40">Shift+Enter for new line</p>
           {remainingQueries !== null && (
-            <p className="text-[9px] text-white/30">
+            <p className="text-[9px] text-white/40">
               {remainingQueries} queries remaining
             </p>
           )}

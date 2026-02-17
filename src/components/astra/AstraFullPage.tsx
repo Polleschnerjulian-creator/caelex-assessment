@@ -112,12 +112,18 @@ export default function AstraFullPage() {
             <h2 className="text-[18px] font-semibold text-white mb-2">
               ASTRA AI Einwilligung
             </h2>
-            <p className="text-[13px] text-white/50 leading-relaxed mb-5">
+            <p className="text-[13px] text-white/50 leading-relaxed mb-3">
               ASTRA verwendet Ihre Compliance-Daten, um kontextbezogene
               regulatorische Beratung zu liefern. Ihre Eingaben werden
               verarbeitet, aber nicht zum Trainieren von KI-Modellen verwendet.
             </p>
-            <ul className="text-[12px] text-white/40 space-y-2 mb-6 text-left">
+            <p className="text-[12px] text-amber-400/70 leading-relaxed mb-5 px-3 py-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+              Hinweis gem. EU AI Act Art. 50: ASTRA ist ein KI-System (Large
+              Language Model). Alle Antworten sind KI-generiert und stellen
+              keine Rechtsberatung dar. Bitte verifizieren Sie regulatorische
+              Informationen stets mit qualifizierten Fachleuten.
+            </p>
+            <ul className="text-[12px] text-white/50 space-y-2 mb-6 text-left">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5">&#x2022;</span>
                 <span>Gesprachsdaten werden verschlusselt gespeichert</span>
@@ -137,7 +143,7 @@ export default function AstraFullPage() {
             >
               Einverstanden &mdash; ASTRA aktivieren
             </button>
-            <p className="text-[10px] text-white/20 mt-4">
+            <p className="text-[10px] text-white/40 mt-4">
               Siehe unsere{" "}
               <a
                 href="/legal/privacy"

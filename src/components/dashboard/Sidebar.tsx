@@ -140,7 +140,7 @@ function CompactModuleItem({
             ? "text-slate-300 dark:text-white/20"
             : isActive
               ? "text-emerald-700 dark:text-emerald-400"
-              : "text-slate-500 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/50"
+              : "text-slate-500 dark:text-white/50 group-hover:text-slate-600 dark:group-hover:text-white/60"
         }`}
       >
         {icon}
@@ -149,7 +149,7 @@ function CompactModuleItem({
       {locked && (
         <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
-            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/20">
+            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/40">
               {requiredPlan}
             </span>
           )}
@@ -213,7 +213,7 @@ function ModuleGroup({
           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/40"
+              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50"
           }`}
         >
           {count}
