@@ -36,6 +36,10 @@
     {
       "path": "/api/cron/demo-followup",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/regulatory-feed",
+      "schedule": "0 7 * * *"
     }
   ]
 }

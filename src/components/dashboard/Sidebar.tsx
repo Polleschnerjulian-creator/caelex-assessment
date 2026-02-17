@@ -672,6 +672,18 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 {t("sidebar.timeline")}
               </NavItem>
               <NavItem
+                href="/dashboard/regulatory-feed"
+                icon={<Radio size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={
+                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
+                }
+              >
+                {t("sidebar.regulatoryFeed") !== "sidebar.regulatoryFeed"
+                  ? t("sidebar.regulatoryFeed")
+                  : "Regulatory Feed"}
+              </NavItem>
+              <NavItem
                 href="/dashboard/mission-control"
                 icon={<Orbit size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}

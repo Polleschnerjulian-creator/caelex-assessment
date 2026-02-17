@@ -18,6 +18,7 @@ const MODULE_LABELS: Record<string, string> = {
   documents: "Document Management",
   timeline: "Timeline & Deadlines",
   "audit-center": "Audit Center",
+  "regulatory-feed": "Regulatory Feed",
 };
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
@@ -41,6 +42,8 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
     "Deadline management, configurable reminders, and regulatory milestone tracking.",
   "audit-center":
     "Centralized compliance evidence management, hash-verified audit trails, and audit-ready export packages across all regulatory modules.",
+  "regulatory-feed":
+    "Automated monitoring of EUR-Lex for new EU legislation affecting space compliance, with severity classification and module impact analysis.",
 };
 
 interface FeatureGateProps {

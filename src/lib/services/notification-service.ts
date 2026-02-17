@@ -294,6 +294,20 @@ export const NOTIFICATION_CONFIG: Record<
     defaultSeverity: "URGENT",
     emailSubjectPrefix: "[BREACH DEADLINE]",
   },
+
+  // Regulatory Feed
+  REGULATORY_UPDATE: {
+    label: "Regulatory Update",
+    category: "regulatory",
+    defaultSeverity: "WARNING",
+    emailSubjectPrefix: "[Regulatory]",
+  },
+  REGULATORY_CRITICAL_UPDATE: {
+    label: "Critical Regulatory Update",
+    category: "regulatory",
+    defaultSeverity: "CRITICAL",
+    emailSubjectPrefix: "[CRITICAL Regulatory]",
+  },
 };
 
 export const NOTIFICATION_CATEGORIES = [
@@ -307,6 +321,7 @@ export const NOTIFICATION_CATEGORIES = [
   { id: "system", label: "System Notifications" },
   { id: "nca", label: "NCA Submissions" },
   { id: "breach", label: "GDPR Breach Notifications" },
+  { id: "regulatory", label: "Regulatory Feed" },
 ];
 
 // ─── CRUD Operations ───

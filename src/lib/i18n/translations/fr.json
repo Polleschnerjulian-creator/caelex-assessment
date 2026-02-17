@@ -65,7 +65,8 @@
     "missionControl": "Centre de mission",
     "aiGenerate": "Génération IA",
     "ncaPortal": "Portail ANC",
-    "new": "NOUVEAU"
+    "new": "NOUVEAU",
+    "regulatoryFeed": "Flux réglementaire"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -375,6 +376,23 @@
     "nis2Classifier": "Classificateur NIS2",
     "copyEmbed": "Copier le code",
     "copied": "Copié !"
+  },
+  "regulatoryFeed": {
+    "title": "Flux réglementaire",
+    "subtitle": "Surveillance automatique d'EUR-Lex pour les nouvelles législations UE affectant la conformité spatiale",
+    "totalUpdates": "Total des mises à jour",
+    "criticalUpdates": "Critique",
+    "highUpdates": "Haute priorité",
+    "thisWeek": "Cette semaine",
+    "allSeverities": "Tout",
+    "markAsRead": "Marquer comme lu",
+    "viewOnEurLex": "Voir sur EUR-Lex",
+    "noUpdates": "Pas encore de mises à jour réglementaires",
+    "noUpdatesDescription": "Le flux EUR-Lex est vérifié quotidiennement à 7h00 UTC. Les nouveaux actes délégués, références NIS2 et législations spatiales apparaîtront ici.",
+    "affectedModules": "Modules concernés",
+    "publishedOn": "Publié le",
+    "matchReason": "Raison de la correspondance",
+    "filterByModule": "Filtrer par module"
   },
   "upgrade": {
     "title": "Mettre à niveau votre plan",

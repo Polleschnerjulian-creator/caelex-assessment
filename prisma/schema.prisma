@@ -2020,6 +2020,10 @@ enum NotificationType {
   BREACH_REPORTED
   BREACH_ESCALATED
   BREACH_AUTHORITY_DEADLINE
+
+  // Regulatory Feed
+  REGULATORY_UPDATE
+  REGULATORY_CRITICAL_UPDATE
 }
 
 // ============================================
@@ -2395,6 +2399,7 @@ model Organization {
   breachReports      BreachReport[]        // GDPR Art. 33/34 breach reports
   widgetConfigs      WidgetConfig[]        // Embeddable widget configurations
   churnInterventions ChurnIntervention[]   // Churn intervention tracking
+  regulatoryUpdateReads RegulatoryUpdateRead[] // Regulatory feed read tracking
 
   @@index([slug])
 }
@@ -4055,4 +4060,51 @@ model DemoRequest {
   @@index([status])
   @@index([email])
   @@index([createdAt])
+}
+
+// ============================================
+// REGULATORY CHANGE INTELLIGENCE
+// ============================================
+
+enum RegulatoryUpdateSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model RegulatoryUpdate {
+  id              String                    @id @default(cuid())
+  celexNumber     String                    @unique  // e.g. "32025R0001"
+  title           String                    @db.Text
+  documentType    String                    // REG_DEL, REG_IMPL, DIR_DEL, DIR_IMPL, DEC_IMPL, etc.
+  sourceUrl       String                    // EUR-Lex URL
+  publishedAt     DateTime
+  severity        RegulatoryUpdateSeverity
+  affectedModules String[]                  // ["cybersecurity", "debris", "nis2", ...]
+  matchReason     String                    @db.Text // Why this was flagged
+  summary         String?                   @db.Text // Optional summary
+
+  // Tracking
+  reads           RegulatoryUpdateRead[]
+  createdAt       DateTime                  @default(now())
+
+  @@index([publishedAt])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model RegulatoryUpdateRead {
+  id                  String             @id @default(cuid())
+  regulatoryUpdateId  String
+  regulatoryUpdate    RegulatoryUpdate   @relation(fields: [regulatoryUpdateId], references: [id], onDelete: Cascade)
+  organizationId      String
+  organization        Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  readByUserId        String             // User who marked it as read
+
+  readAt              DateTime           @default(now())
+
+  @@unique([regulatoryUpdateId, organizationId])
+  @@index([organizationId])
+  @@index([regulatoryUpdateId])
 }

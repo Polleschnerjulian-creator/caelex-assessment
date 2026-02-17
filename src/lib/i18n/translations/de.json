@@ -65,7 +65,8 @@
     "missionControl": "Missionskontrolle",
     "aiGenerate": "KI-Generierung",
     "ncaPortal": "NCA-Portal",
-    "new": "NEU"
+    "new": "NEU",
+    "regulatoryFeed": "Regulierungs-Feed"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -375,6 +376,23 @@
     "nis2Classifier": "NIS2-Klassifikator",
     "copyEmbed": "Einbettungscode kopieren",
     "copied": "Kopiert!"
+  },
+  "regulatoryFeed": {
+    "title": "Regulierungs-Feed",
+    "subtitle": "Automatische Überwachung von EUR-Lex für neue EU-Gesetzgebung mit Auswirkung auf die Weltraum-Compliance",
+    "totalUpdates": "Alle Updates",
+    "criticalUpdates": "Kritisch",
+    "highUpdates": "Hohe Priorität",
+    "thisWeek": "Diese Woche",
+    "allSeverities": "Alle",
+    "markAsRead": "Als gelesen markieren",
+    "viewOnEurLex": "Auf EUR-Lex ansehen",
+    "noUpdates": "Noch keine regulatorischen Updates",
+    "noUpdatesDescription": "Der EUR-Lex-Feed wird täglich um 7:00 Uhr UTC überprüft. Neue delegierte Rechtsakte, NIS2-Referenzen und weltraumbezogene Gesetzgebung werden hier angezeigt.",
+    "affectedModules": "Betroffene Module",
+    "publishedOn": "Veröffentlicht",
+    "matchReason": "Grund der Zuordnung",
+    "filterByModule": "Nach Modul filtern"
   },
   "upgrade": {
     "title": "Plan upgraden",

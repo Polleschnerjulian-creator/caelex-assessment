@@ -65,7 +65,8 @@
     "missionControl": "Control de misión",
     "aiGenerate": "Generación IA",
     "ncaPortal": "Portal ANC",
-    "new": "NUEVO"
+    "new": "NUEVO",
+    "regulatoryFeed": "Feed regulatorio"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -375,6 +376,23 @@
     "nis2Classifier": "Clasificador NIS2",
     "copyEmbed": "Copiar código",
     "copied": "¡Copiado!"
+  },
+  "regulatoryFeed": {
+    "title": "Feed regulatorio",
+    "subtitle": "Monitoreo automatizado de EUR-Lex para nueva legislación de la UE que afecte al cumplimiento espacial",
+    "totalUpdates": "Actualizaciones totales",
+    "criticalUpdates": "Crítico",
+    "highUpdates": "Alta prioridad",
+    "thisWeek": "Esta semana",
+    "allSeverities": "Todos",
+    "markAsRead": "Marcar como leído",
+    "viewOnEurLex": "Ver en EUR-Lex",
+    "noUpdates": "Aún no hay actualizaciones regulatorias",
+    "noUpdatesDescription": "El feed de EUR-Lex se verifica diariamente a las 7:00 UTC. Nuevos actos delegados, referencias NIS2 y legislación espacial aparecerán aquí.",
+    "affectedModules": "Módulos afectados",
+    "publishedOn": "Publicado",
+    "matchReason": "Motivo de la coincidencia",
+    "filterByModule": "Filtrar por módulo"
   },
   "upgrade": {
     "title": "Mejorar su plan",

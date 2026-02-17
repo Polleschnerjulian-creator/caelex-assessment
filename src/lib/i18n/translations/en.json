@@ -65,7 +65,8 @@
     "missionControl": "Mission Control",
     "aiGenerate": "AI Generate",
     "ncaPortal": "NCA Portal",
-    "new": "NEW"
+    "new": "NEW",
+    "regulatoryFeed": "Regulatory Feed"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -375,6 +376,23 @@
     "nis2Classifier": "NIS2 Classifier",
     "copyEmbed": "Copy embed code",
     "copied": "Copied!"
+  },
+  "regulatoryFeed": {
+    "title": "Regulatory Feed",
+    "subtitle": "Automated monitoring of EUR-Lex for new EU legislation affecting space compliance",
+    "totalUpdates": "Total Updates",
+    "criticalUpdates": "Critical",
+    "highUpdates": "High Priority",
+    "thisWeek": "This Week",
+    "allSeverities": "All",
+    "markAsRead": "Mark as read",
+    "viewOnEurLex": "View on EUR-Lex",
+    "noUpdates": "No regulatory updates yet",
+    "noUpdatesDescription": "The EUR-Lex feed is checked daily at 7:00 AM UTC. New delegated acts, NIS2 references, and space-related legislation will appear here.",
+    "affectedModules": "Affected Modules",
+    "publishedOn": "Published",
+    "matchReason": "Match Reason",
+    "filterByModule": "Filter by module"
   },
   "upgrade": {
     "title": "Upgrade Your Plan",
