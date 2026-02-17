@@ -413,10 +413,10 @@ function HeroSection() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link
-            href="/docs/api"
+            href="/assessment"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-[14px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
           >
-            Dokumentation ansehen
+            Kostenloses Assessment starten
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <Link
