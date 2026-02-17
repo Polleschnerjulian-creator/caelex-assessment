@@ -220,6 +220,8 @@ export type IncidentCategory =
   | "spacecraft_anomaly"
   | "conjunction_event"
   | "regulatory_breach"
+  | "nis2_significant_incident"
+  | "nis2_near_miss"
   | "other";
 
 /**

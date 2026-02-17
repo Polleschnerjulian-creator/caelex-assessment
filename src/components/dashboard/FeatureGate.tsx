@@ -19,6 +19,7 @@ const MODULE_LABELS: Record<string, string> = {
   timeline: "Timeline & Deadlines",
   "audit-center": "Audit Center",
   "regulatory-feed": "Regulatory Feed",
+  incidents: "Incident Command Center",
 };
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
@@ -44,6 +45,8 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
     "Centralized compliance evidence management, hash-verified audit trails, and audit-ready export packages across all regulatory modules.",
   "regulatory-feed":
     "Automated monitoring of EUR-Lex for new EU legislation affecting space compliance, with severity classification and module impact analysis.",
+  incidents:
+    "NIS2 Art. 23 incident response with live deadline tracking, workflow state machine, NCA notification drafting, and auto-escalation.",
 };
 
 interface FeatureGateProps {

@@ -66,7 +66,8 @@
     "aiGenerate": "AI Generate",
     "ncaPortal": "NCA Portal",
     "new": "NEW",
-    "regulatoryFeed": "Regulatory Feed"
+    "regulatoryFeed": "Regulatory Feed",
+    "incidents": "Incidents"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -422,6 +423,38 @@
     "unsubscribed": "Successfully unsubscribed.",
     "invalidEmail": "Please enter a valid email address.",
     "error": "Something went wrong. Please try again."
+  },
+  "incidents": {
+    "mono": "Incident Command Center",
+    "title": "Active Incidents",
+    "description": "NIS2 Art. 23 incident response with live deadline tracking and NCA notification management.",
+    "activeIncidents": "Active Incidents",
+    "criticalSeverity": "Critical Severity",
+    "nis2PhasesDue": "NIS2 Phases Due",
+    "overduePhases": "Overdue Phases",
+    "workflowProgress": "Workflow Progress",
+    "nis2ReportingPhases": "NIS2 Reporting Phases",
+    "noActiveIncidents": "No active incidents",
+    "allClear": "All clear. No incidents require attention.",
+    "criticalDeadlineAlert": "Critical Deadline Alert",
+    "criticalDeadlineMessage": "One or more NIS2 reporting deadlines are less than 2 hours away. Immediate action required.",
+    "generateDraft": "Draft",
+    "markSubmitted": "Submit",
+    "submitted": "Submitted",
+    "overdue": "OVERDUE",
+    "phaseEarlyWarning": "Early Warning (24h)",
+    "phaseNotification": "Incident Notification (72h)",
+    "phaseIntermediateReport": "Intermediate Report",
+    "phaseFinalReport": "Final Report (30d)",
+    "stateReported": "Reported",
+    "stateTriaged": "Triaged",
+    "stateInvestigating": "Investigating",
+    "stateMitigating": "Mitigating",
+    "stateResolved": "Resolved",
+    "stateClosed": "Closed",
+    "filterSeverity": "Severity",
+    "filterCategory": "Category",
+    "filterAll": "All"
   },
   "demo": {
     "submitted": "Demo request submitted! We'll be in touch soon.",

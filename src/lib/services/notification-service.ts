@@ -167,6 +167,29 @@ export const NOTIFICATION_CONFIG: Record<
     defaultSeverity: "URGENT",
     emailSubjectPrefix: "[NCA Deadline]",
   },
+  INCIDENT_DEADLINE_WARNING: {
+    label: "Incident Deadline Warning",
+    category: "incidents",
+    defaultSeverity: "WARNING",
+    emailSubjectPrefix: "[Deadline]",
+  },
+  INCIDENT_DEADLINE_CRITICAL: {
+    label: "Incident Deadline Critical",
+    category: "incidents",
+    defaultSeverity: "CRITICAL",
+    emailSubjectPrefix: "[URGENT]",
+  },
+  INCIDENT_DEADLINE_OVERDUE: {
+    label: "Incident Deadline Overdue",
+    category: "incidents",
+    defaultSeverity: "URGENT",
+    emailSubjectPrefix: "[OVERDUE]",
+  },
+  INCIDENT_STATUS_CHANGED: {
+    label: "Incident Status Changed",
+    category: "incidents",
+    defaultSeverity: "INFO",
+  },
 
   // Reports
   WEEKLY_DIGEST: {

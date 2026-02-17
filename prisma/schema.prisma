@@ -1393,6 +1393,9 @@ model Incident {
   resolutionSteps   String[]          @default([])
   lessonsLearned    String?           @db.Text
 
+  // Workflow
+  workflowState     String            @default("reported") // reported, triaged, investigating, mitigating, resolved, closed
+
   // NCA Reporting
   requiresNCANotification Boolean     @default(true)
   reportedToNCA     Boolean           @default(false)
@@ -1411,12 +1414,14 @@ model Incident {
   affectedAssets    IncidentAsset[]
   attachments       IncidentAttachment[]
   reports           SupervisionReport[]
+  nis2Phases        IncidentNIS2Phase[]
 
   @@index([supervisionId])
   @@index([category])
   @@index([severity])
   @@index([status])
   @@index([detectedAt])
+  @@index([workflowState])
 }
 
 model IncidentAsset {
@@ -1443,6 +1448,27 @@ model IncidentAttachment {
   uploadedAt DateTime @default(now())
 
   @@index([incidentId])
+}
+
+model IncidentNIS2Phase {
+  id              String   @id @default(cuid())
+  incidentId      String
+  incident        Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  phase           String   // early_warning, notification, intermediate_report, final_report
+  deadline        DateTime
+  status          String   @default("pending") // pending, draft_ready, submitted, overdue
+
+  submittedAt     DateTime?
+  draftContent    String?  @db.Text
+  referenceNumber String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([incidentId, phase])
+  @@index([status])
+  @@index([deadline])
 }
 
 model SupervisionReport {
@@ -1985,6 +2011,10 @@ enum NotificationType {
   INCIDENT_ESCALATED
   INCIDENT_RESOLVED
   NCA_DEADLINE_APPROACHING
+  INCIDENT_DEADLINE_WARNING
+  INCIDENT_DEADLINE_CRITICAL
+  INCIDENT_DEADLINE_OVERDUE
+  INCIDENT_STATUS_CHANGED
 
   // Reports
   WEEKLY_DIGEST

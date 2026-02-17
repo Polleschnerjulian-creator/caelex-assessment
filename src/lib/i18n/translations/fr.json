@@ -66,7 +66,8 @@
     "aiGenerate": "Génération IA",
     "ncaPortal": "Portail ANC",
     "new": "NOUVEAU",
-    "regulatoryFeed": "Flux réglementaire"
+    "regulatoryFeed": "Flux réglementaire",
+    "incidents": "Incidents"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -422,6 +423,38 @@
     "unsubscribed": "Désinscription réussie.",
     "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
     "error": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "incidents": {
+    "mono": "Centre de commandement des incidents",
+    "title": "Incidents actifs",
+    "description": "Réponse aux incidents NIS2 Art. 23 avec suivi en temps réel des délais et gestion des notifications ANC.",
+    "activeIncidents": "Incidents actifs",
+    "criticalSeverity": "Sévérité critique",
+    "nis2PhasesDue": "Phases NIS2 dues",
+    "overduePhases": "Phases en retard",
+    "workflowProgress": "Progression du workflow",
+    "nis2ReportingPhases": "Phases de signalement NIS2",
+    "noActiveIncidents": "Aucun incident actif",
+    "allClear": "Tout est clair. Aucun incident ne nécessite d'attention.",
+    "criticalDeadlineAlert": "Alerte de délai critique",
+    "criticalDeadlineMessage": "Un ou plusieurs délais de signalement NIS2 arrivent à échéance dans moins de 2 heures. Action immédiate requise.",
+    "generateDraft": "Brouillon",
+    "markSubmitted": "Soumettre",
+    "submitted": "Soumis",
+    "overdue": "EN RETARD",
+    "phaseEarlyWarning": "Alerte précoce (24h)",
+    "phaseNotification": "Notification d'incident (72h)",
+    "phaseIntermediateReport": "Rapport intermédiaire",
+    "phaseFinalReport": "Rapport final (30j)",
+    "stateReported": "Signalé",
+    "stateTriaged": "Trié",
+    "stateInvestigating": "En investigation",
+    "stateMitigating": "En atténuation",
+    "stateResolved": "Résolu",
+    "stateClosed": "Clôturé",
+    "filterSeverity": "Sévérité",
+    "filterCategory": "Catégorie",
+    "filterAll": "Tous"
   },
   "demo": {
     "submitted": "Demande de démo envoyée ! Nous vous contacterons bientôt.",

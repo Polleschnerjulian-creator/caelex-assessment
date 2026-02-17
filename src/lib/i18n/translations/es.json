@@ -66,7 +66,8 @@
     "aiGenerate": "Generación IA",
     "ncaPortal": "Portal ANC",
     "new": "NUEVO",
-    "regulatoryFeed": "Feed regulatorio"
+    "regulatoryFeed": "Feed regulatorio",
+    "incidents": "Incidentes"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -422,6 +423,38 @@
     "unsubscribed": "Desuscripción exitosa.",
     "invalidEmail": "Ingrese una dirección de correo válida.",
     "error": "Algo salió mal. Inténtelo de nuevo."
+  },
+  "incidents": {
+    "mono": "Centro de Comando de Incidentes",
+    "title": "Incidentes activos",
+    "description": "Respuesta a incidentes NIS2 Art. 23 con seguimiento en tiempo real de plazos y gestión de notificaciones ANC.",
+    "activeIncidents": "Incidentes activos",
+    "criticalSeverity": "Severidad crítica",
+    "nis2PhasesDue": "Fases NIS2 pendientes",
+    "overduePhases": "Fases vencidas",
+    "workflowProgress": "Progreso del flujo",
+    "nis2ReportingPhases": "Fases de notificación NIS2",
+    "noActiveIncidents": "Sin incidentes activos",
+    "allClear": "Todo despejado. Ningún incidente requiere atención.",
+    "criticalDeadlineAlert": "Alerta de plazo crítico",
+    "criticalDeadlineMessage": "Uno o más plazos de notificación NIS2 vencen en menos de 2 horas. Se requiere acción inmediata.",
+    "generateDraft": "Borrador",
+    "markSubmitted": "Enviar",
+    "submitted": "Enviado",
+    "overdue": "VENCIDO",
+    "phaseEarlyWarning": "Alerta temprana (24h)",
+    "phaseNotification": "Notificación de incidente (72h)",
+    "phaseIntermediateReport": "Informe intermedio",
+    "phaseFinalReport": "Informe final (30d)",
+    "stateReported": "Reportado",
+    "stateTriaged": "Triado",
+    "stateInvestigating": "En investigación",
+    "stateMitigating": "En mitigación",
+    "stateResolved": "Resuelto",
+    "stateClosed": "Cerrado",
+    "filterSeverity": "Severidad",
+    "filterCategory": "Categoría",
+    "filterAll": "Todos"
   },
   "demo": {
     "submitted": "¡Solicitud de demo enviada! Nos pondremos en contacto pronto.",

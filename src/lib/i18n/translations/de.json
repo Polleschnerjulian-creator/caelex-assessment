@@ -66,7 +66,8 @@
     "aiGenerate": "KI-Generierung",
     "ncaPortal": "NCA-Portal",
     "new": "NEU",
-    "regulatoryFeed": "Regulierungs-Feed"
+    "regulatoryFeed": "Regulierungs-Feed",
+    "incidents": "Vorfälle"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -422,6 +423,38 @@
     "unsubscribed": "Erfolgreich abgemeldet.",
     "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "incidents": {
+    "mono": "Vorfallkommandozentrale",
+    "title": "Aktive Vorfälle",
+    "description": "NIS2 Art. 23 Vorfallreaktion mit Live-Fristen-Tracking und NCA-Benachrichtigungsverwaltung.",
+    "activeIncidents": "Aktive Vorfälle",
+    "criticalSeverity": "Kritische Schwere",
+    "nis2PhasesDue": "NIS2-Phasen fällig",
+    "overduePhases": "Überfällige Phasen",
+    "workflowProgress": "Workflow-Fortschritt",
+    "nis2ReportingPhases": "NIS2-Meldephasen",
+    "noActiveIncidents": "Keine aktiven Vorfälle",
+    "allClear": "Alles klar. Keine Vorfälle erfordern Aufmerksamkeit.",
+    "criticalDeadlineAlert": "Kritische Fristenwarnung",
+    "criticalDeadlineMessage": "Eine oder mehrere NIS2-Meldefristen laufen in weniger als 2 Stunden ab. Sofortiges Handeln erforderlich.",
+    "generateDraft": "Entwurf",
+    "markSubmitted": "Einreichen",
+    "submitted": "Eingereicht",
+    "overdue": "ÜBERFÄLLIG",
+    "phaseEarlyWarning": "Frühwarnung (24h)",
+    "phaseNotification": "Vorfallmeldung (72h)",
+    "phaseIntermediateReport": "Zwischenbericht",
+    "phaseFinalReport": "Abschlussbericht (30T)",
+    "stateReported": "Gemeldet",
+    "stateTriaged": "Triagiert",
+    "stateInvestigating": "Wird untersucht",
+    "stateMitigating": "Wird eingedämmt",
+    "stateResolved": "Gelöst",
+    "stateClosed": "Geschlossen",
+    "filterSeverity": "Schwere",
+    "filterCategory": "Kategorie",
+    "filterAll": "Alle"
   },
   "demo": {
     "submitted": "Demo-Anfrage eingereicht! Wir melden uns in Kürze.",

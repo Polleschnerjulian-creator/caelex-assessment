@@ -256,12 +256,127 @@ export async function GET(req: Request) {
       );
     }
 
+    // 6. Incident NIS2 phase deadline monitoring
+    let incidentPhaseNotifications = 0;
+    const incidentErrors: string[] = [];
+    try {
+      const pendingPhases = await prisma.incidentNIS2Phase.findMany({
+        where: {
+          status: { in: ["pending", "draft_ready"] },
+        },
+        include: {
+          incident: {
+            select: {
+              id: true,
+              incidentNumber: true,
+              title: true,
+              supervision: {
+                select: { userId: true },
+              },
+            },
+          },
+        },
+      });
+
+      const now = new Date();
+
+      for (const phase of pendingPhases) {
+        try {
+          const deadlineMs = phase.deadline.getTime();
+          const createdMs = phase.createdAt.getTime();
+          const totalMs = deadlineMs - createdMs;
+          const remainingMs = deadlineMs - now.getTime();
+          const percentRemaining =
+            totalMs > 0 ? (remainingMs / totalMs) * 100 : 0;
+          const hoursRemaining = remainingMs / (1000 * 60 * 60);
+
+          const userId = phase.incident.supervision.userId;
+          const incNum = phase.incident.incidentNumber;
+          const phaseLabel = phase.phase.replace(/_/g, " ");
+
+          if (remainingMs <= 0) {
+            // Overdue
+            await prisma.incidentNIS2Phase.update({
+              where: { id: phase.id },
+              data: { status: "overdue" },
+            });
+            await notifyUser(
+              userId,
+              "INCIDENT_DEADLINE_OVERDUE",
+              `OVERDUE: ${incNum} — ${phaseLabel}`,
+              `The ${phaseLabel} deadline for ${incNum} is overdue. Submit immediately to avoid regulatory penalties.`,
+              {
+                actionUrl: "/dashboard/incidents",
+                entityType: "incident",
+                entityId: phase.incident.id,
+                severity: "URGENT",
+              },
+            );
+            incidentPhaseNotifications++;
+          } else if (hoursRemaining < 2 || percentRemaining < 10) {
+            // Critical
+            await notifyUser(
+              userId,
+              "INCIDENT_DEADLINE_CRITICAL",
+              `CRITICAL: ${incNum} — ${phaseLabel} due in ${Math.ceil(hoursRemaining)}h`,
+              `The ${phaseLabel} deadline for ${incNum} is imminent. Less than ${Math.ceil(hoursRemaining)} hours remaining.`,
+              {
+                actionUrl: "/dashboard/incidents",
+                entityType: "incident",
+                entityId: phase.incident.id,
+                severity: "CRITICAL",
+              },
+            );
+            incidentPhaseNotifications++;
+          } else if (percentRemaining < 25) {
+            // Warning (< 25%)
+            await notifyUser(
+              userId,
+              "INCIDENT_DEADLINE_WARNING",
+              `${incNum} — ${phaseLabel} deadline approaching`,
+              `Less than 25% of the ${phaseLabel} deadline window remains for ${incNum}. Consider preparing your submission.`,
+              {
+                actionUrl: "/dashboard/incidents",
+                entityType: "incident",
+                entityId: phase.incident.id,
+                severity: "WARNING",
+              },
+            );
+            incidentPhaseNotifications++;
+          } else if (percentRemaining < 50) {
+            // Info (< 50%)
+            await notifyUser(
+              userId,
+              "INCIDENT_DEADLINE_WARNING",
+              `${incNum} — ${phaseLabel} reminder`,
+              `The ${phaseLabel} deadline for ${incNum} is at the halfway mark. Due: ${phase.deadline.toLocaleDateString()}.`,
+              {
+                actionUrl: "/dashboard/incidents",
+                entityType: "incident",
+                entityId: phase.incident.id,
+              },
+            );
+            incidentPhaseNotifications++;
+          }
+        } catch (err) {
+          incidentErrors.push(`Failed to process phase ${phase.id}: ${err}`);
+        }
+      }
+    } catch (err) {
+      incidentErrors.push(`Failed to query incident phases: ${err}`);
+    }
+
     const duration = Date.now() - startTime;
-    const allErrors = [...result.errors, ...breachResult.errors];
+    const allErrors = [
+      ...result.errors,
+      ...breachResult.errors,
+      ...incidentErrors,
+    ];
 
     logger.info("NCA deadline monitoring complete:", {
       notificationsSent: result.notificationsSent,
       breachEscalations: breachResult.escalated,
+      incidentPhaseNotifications,
       errors: allErrors.length,
       duration: `${duration}ms`,
     });
@@ -270,6 +385,7 @@ export async function GET(req: Request) {
       success: true,
       notificationsSent: result.notificationsSent,
       breachEscalations: breachResult.escalated,
+      incidentPhaseNotifications,
       errorCount: allErrors.length,
       errors: allErrors.slice(0, 10),
       duration: `${duration}ms`,

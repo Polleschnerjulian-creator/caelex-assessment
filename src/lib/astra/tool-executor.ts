@@ -35,6 +35,7 @@ import {
   getTermByAbbreviation,
   searchTerms,
 } from "./regulatory-knowledge/glossary";
+import type { IncidentCategory } from "@/lib/services/incident-response-service";
 
 // ─── Main Executor ───
 
@@ -1661,6 +1662,247 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
           : deadlines.length > 0
             ? `You have ${deadlines.length} upcoming deadline(s) in the next ${daysAhead} days.`
             : "No upcoming NCA deadlines.",
+    };
+  },
+  // ─── Incident Tools ───
+
+  report_incident: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { createIncidentWithAutopilot } =
+      await import("@/lib/services/incident-autopilot");
+
+    // Find supervision config for this user
+    const config = await prisma.supervisionConfig.findUnique({
+      where: { userId: userContext.userId },
+    });
+
+    if (!config) {
+      return {
+        error:
+          "No supervision configuration found. Please set up supervision first.",
+      };
+    }
+
+    const result = await createIncidentWithAutopilot(
+      {
+        supervisionId: config.id,
+        category: input.category as IncidentCategory,
+        title: input.title as string,
+        description: input.description as string,
+        detectedBy: input.detectedBy as string,
+        detectedAt: input.detectedAt
+          ? new Date(input.detectedAt as string)
+          : undefined,
+        affectedAssets: input.affectedAssets as
+          | Array<{
+              assetName: string;
+              cosparId?: string;
+              noradId?: string;
+            }>
+          | undefined,
+      },
+      userContext.userId,
+    );
+
+    if (!result.success) {
+      return { error: result.error || "Failed to create incident" };
+    }
+
+    return {
+      incidentId: result.incidentId,
+      incidentNumber: result.incidentNumber,
+      severity: result.severity,
+      nis2Phases: result.nis2Phases,
+      summary: `Incident ${result.incidentNumber} created with severity ${result.severity?.toUpperCase()}. ${result.nis2Phases?.length || 0} NIS2 reporting phases created with deadlines.`,
+      dashboardUrl: "/dashboard/incidents",
+    };
+  },
+
+  get_incident_status: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { getIncidentCommandData } =
+      await import("@/lib/services/incident-autopilot");
+
+    let incidentId = input.incidentId as string | undefined;
+
+    // Look up by number if needed
+    if (!incidentId && input.incidentNumber) {
+      const incident = await prisma.incident.findFirst({
+        where: { incidentNumber: input.incidentNumber as string },
+        select: { id: true },
+      });
+      if (!incident) {
+        return {
+          error: `Incident ${input.incidentNumber} not found.`,
+        };
+      }
+      incidentId = incident.id;
+    }
+
+    if (!incidentId) {
+      return { error: "Please provide either incidentId or incidentNumber." };
+    }
+
+    const data = await getIncidentCommandData(incidentId);
+    if (!data) {
+      return { error: "Incident not found." };
+    }
+
+    return {
+      ...data,
+      summary: `${data.incident.incidentNumber} (${data.incident.severity}) — ${data.workflow.stateName}. ${data.nis2Phases.filter((p) => !p.countdown.isSubmitted).length} phases pending.`,
+    };
+  },
+
+  list_active_incidents: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { listActiveIncidents } =
+      await import("@/lib/services/incident-autopilot");
+
+    const config = await prisma.supervisionConfig.findUnique({
+      where: { userId: userContext.userId },
+    });
+
+    if (!config) {
+      return { error: "No supervision configuration found.", incidents: [] };
+    }
+
+    const incidents = await listActiveIncidents(config.id, {
+      category: input.category as string | undefined,
+      severity: input.severity as string | undefined,
+    });
+
+    const limit = (input.limit as number) || 20;
+    const limited = incidents.slice(0, limit);
+
+    const overdueCount = limited.reduce(
+      (sum, i) => sum + i.nis2PhasesSummary.overdue,
+      0,
+    );
+
+    return {
+      incidents: limited,
+      total: incidents.length,
+      overduePhases: overdueCount,
+      summary:
+        incidents.length === 0
+          ? "No active incidents."
+          : `${incidents.length} active incident(s). ${overdueCount > 0 ? `${overdueCount} overdue NIS2 phase(s) requiring immediate attention.` : "All deadlines on track."}`,
+    };
+  },
+
+  draft_nca_notification: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { generateNCANotificationDraft } =
+      await import("@/lib/services/incident-notification-templates");
+    const { decrypt, isEncrypted } = await import("@/lib/encryption");
+
+    const incidentId = input.incidentId as string;
+    const phase = input.phase as string;
+
+    const incident = await prisma.incident.findUnique({
+      where: { id: incidentId },
+      include: { affectedAssets: true },
+    });
+
+    if (!incident) {
+      return { error: "Incident not found." };
+    }
+
+    // Decrypt sensitive fields
+    const description =
+      incident.description && isEncrypted(incident.description)
+        ? await decrypt(incident.description)
+        : incident.description;
+
+    const rootCause =
+      incident.rootCause && isEncrypted(incident.rootCause)
+        ? await decrypt(incident.rootCause)
+        : incident.rootCause;
+
+    const impactAssessment =
+      incident.impactAssessment && isEncrypted(incident.impactAssessment)
+        ? await decrypt(incident.impactAssessment)
+        : incident.impactAssessment;
+
+    const lessonsLearned =
+      incident.lessonsLearned && isEncrypted(incident.lessonsLearned)
+        ? await decrypt(incident.lessonsLearned)
+        : incident.lessonsLearned;
+
+    const draft = generateNCANotificationDraft(
+      phase as
+        | "early_warning"
+        | "notification"
+        | "intermediate_report"
+        | "final_report",
+      {
+        incidentNumber: incident.incidentNumber,
+        category: incident.category,
+        severity: incident.severity,
+        title: incident.title,
+        description: description || "",
+        detectedAt: incident.detectedAt.toISOString(),
+        detectedBy: incident.detectedBy,
+        detectionMethod: incident.detectionMethod,
+        rootCause: rootCause || null,
+        impactAssessment: impactAssessment || null,
+        immediateActions: incident.immediateActions,
+        containmentMeasures: incident.containmentMeasures,
+        resolutionSteps: incident.resolutionSteps,
+        lessonsLearned: lessonsLearned || null,
+        affectedAssets: incident.affectedAssets,
+        reportedToNCA: incident.reportedToNCA,
+        ncaReferenceNumber: incident.ncaReferenceNumber,
+        resolvedAt: incident.resolvedAt?.toISOString() || null,
+      },
+    );
+
+    // Store draft on phase record
+    await prisma.incidentNIS2Phase.updateMany({
+      where: { incidentId, phase },
+      data: { draftContent: draft.content, status: "draft_ready" },
+    });
+
+    return {
+      title: draft.title,
+      content: draft.content,
+      legalBasis: draft.legalBasis,
+      instructions: `This draft is ready for review and submission to your CSIRT/competent authority. You can submit it via the Incident Command Center at /dashboard/incidents.`,
+    };
+  },
+
+  advance_incident_workflow: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { advanceIncidentWorkflow } =
+      await import("@/lib/services/incident-autopilot");
+
+    const result = await advanceIncidentWorkflow(
+      input.incidentId as string,
+      input.event as string,
+      userContext.userId,
+      input.notes as string | undefined,
+    );
+
+    if (!result.success) {
+      return { error: result.error || "Failed to advance workflow." };
+    }
+
+    return {
+      previousState: result.previousState,
+      currentState: result.currentState,
+      availableTransitions: result.availableTransitions,
+      summary: `Workflow advanced from ${result.previousState} to ${result.currentState}. ${result.availableTransitions?.length ? `Next actions: ${result.availableTransitions.map((t) => t.event).join(", ")}` : "No further transitions available."}`,
     };
   },
 };

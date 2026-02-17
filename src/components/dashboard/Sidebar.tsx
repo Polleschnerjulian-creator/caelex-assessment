@@ -672,6 +672,15 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 {t("sidebar.timeline")}
               </NavItem>
               <NavItem
+                href="/dashboard/incidents"
+                icon={<AlertTriangle size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                {t("sidebar.incidents") !== "sidebar.incidents"
+                  ? t("sidebar.incidents")
+                  : "Incidents"}
+              </NavItem>
+              <NavItem
                 href="/dashboard/regulatory-feed"
                 icon={<Radio size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}

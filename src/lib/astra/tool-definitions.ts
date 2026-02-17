@@ -834,6 +834,177 @@ export const getNcaDeadlines: AstraToolDefinition = {
   },
 };
 
+// ─── Incident Tools ───
+
+export const reportIncident: AstraToolDefinition = {
+  name: "report_incident",
+  description:
+    "Create a new incident via the Incident Autopilot system. Automatically classifies severity, creates NIS2 Art. 23 reporting phases with deadlines, and notifies the organization. Use when the user reports a cybersecurity incident, spacecraft anomaly, conjunction event, or other operational incident.",
+  input_schema: {
+    type: "object",
+    properties: {
+      category: {
+        type: "string",
+        description: "Incident category",
+        enum: [
+          "loss_of_contact",
+          "debris_generation",
+          "cyber_incident",
+          "spacecraft_anomaly",
+          "conjunction_event",
+          "regulatory_breach",
+          "other",
+        ],
+      },
+      title: {
+        type: "string",
+        description: "Short title describing the incident",
+      },
+      description: {
+        type: "string",
+        description: "Detailed description of the incident",
+      },
+      detectedBy: {
+        type: "string",
+        description:
+          "Who or what detected the incident (e.g. operator name, monitoring system)",
+      },
+      detectedAt: {
+        type: "string",
+        description:
+          "ISO 8601 timestamp of detection. Defaults to now if not provided.",
+      },
+      affectedAssets: {
+        type: "array",
+        description: "List of affected spacecraft or assets",
+        items: {
+          type: "object",
+          properties: {
+            assetName: { type: "string", description: "Asset/spacecraft name" },
+            cosparId: { type: "string", description: "COSPAR ID if available" },
+            noradId: { type: "string", description: "NORAD ID if available" },
+          },
+          required: ["assetName"],
+        },
+      },
+    },
+    required: ["category", "title", "description", "detectedBy"],
+  },
+};
+
+export const getIncidentStatus: AstraToolDefinition = {
+  name: "get_incident_status",
+  description:
+    "Get the full status of a specific incident including workflow state, NIS2 reporting phase countdowns, and available actions. Use when the user asks about an incident's current state or deadlines.",
+  input_schema: {
+    type: "object",
+    properties: {
+      incidentId: {
+        type: "string",
+        description: "The incident ID (cuid)",
+      },
+      incidentNumber: {
+        type: "string",
+        description:
+          "The incident number (e.g. INC-2026-001). Use this if the user references by number.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const listActiveIncidentsTool: AstraToolDefinition = {
+  name: "list_active_incidents",
+  description:
+    "List all active (non-closed) incidents with their NIS2 deadline summaries. Use when the user asks about current incidents, what needs attention, or wants an incident overview.",
+  input_schema: {
+    type: "object",
+    properties: {
+      category: {
+        type: "string",
+        description: "Filter by incident category",
+        enum: [
+          "loss_of_contact",
+          "debris_generation",
+          "cyber_incident",
+          "spacecraft_anomaly",
+          "conjunction_event",
+          "regulatory_breach",
+          "other",
+        ],
+      },
+      severity: {
+        type: "string",
+        description: "Filter by severity level",
+        enum: ["critical", "high", "medium", "low"],
+      },
+      limit: {
+        type: "number",
+        description: "Maximum number of incidents to return. Default: 20.",
+      },
+    },
+    required: [],
+  },
+};
+
+export const draftNcaNotification: AstraToolDefinition = {
+  name: "draft_nca_notification",
+  description:
+    "Generate an NCA notification draft for a specific NIS2 reporting phase. Creates template-based notification text ready for NCA submission. Use when the user wants to prepare or review a notification draft.",
+  input_schema: {
+    type: "object",
+    properties: {
+      incidentId: {
+        type: "string",
+        description: "The incident ID",
+      },
+      phase: {
+        type: "string",
+        description: "The NIS2 reporting phase to draft",
+        enum: [
+          "early_warning",
+          "notification",
+          "intermediate_report",
+          "final_report",
+        ],
+      },
+    },
+    required: ["incidentId", "phase"],
+  },
+};
+
+export const advanceIncidentWorkflowTool: AstraToolDefinition = {
+  name: "advance_incident_workflow",
+  description:
+    "Advance an incident's workflow to the next state (e.g. triage → investigate → mitigate → resolve → close). Use when the user wants to progress an incident through its lifecycle.",
+  input_schema: {
+    type: "object",
+    properties: {
+      incidentId: {
+        type: "string",
+        description: "The incident ID",
+      },
+      event: {
+        type: "string",
+        description: "The workflow event to trigger",
+        enum: [
+          "triage",
+          "investigate",
+          "mitigate",
+          "resolve",
+          "close",
+          "reopen",
+        ],
+      },
+      notes: {
+        type: "string",
+        description: "Optional notes about this workflow transition",
+      },
+    },
+    required: ["incidentId", "event"],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -875,6 +1046,13 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   getSubmissionDetail,
   checkPackageCompleteness,
   getNcaDeadlines,
+
+  // Incident Tools
+  reportIncident,
+  getIncidentStatus,
+  listActiveIncidentsTool,
+  draftNcaNotification,
+  advanceIncidentWorkflowTool,
 ];
 
 // ─── Tool Name Lookup ───
@@ -930,5 +1108,12 @@ export const TOOL_CATEGORIES = {
     "get_submission_detail",
     "check_package_completeness",
     "get_nca_deadlines",
+  ],
+  incident: [
+    "report_incident",
+    "get_incident_status",
+    "list_active_incidents",
+    "draft_nca_notification",
+    "advance_incident_workflow",
   ],
 } as const;

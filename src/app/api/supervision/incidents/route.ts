@@ -45,6 +45,9 @@ export async function GET(req: Request) {
         include: {
           affectedAssets: true,
           attachments: true,
+          nis2Phases: {
+            orderBy: { deadline: "asc" },
+          },
         },
         orderBy: { detectedAt: "desc" },
         take: limit,
@@ -82,6 +85,24 @@ export async function GET(req: Request) {
             ? await decrypt(incident.lessonsLearned)
             : incident.lessonsLearned;
 
+        // Compute NIS2 phase summary
+        const now = Date.now();
+        const phases = incident.nis2Phases || [];
+        const submittedPhases = phases.filter(
+          (p) => p.status === "submitted",
+        ).length;
+        const overduePhases = phases.filter(
+          (p) => p.status !== "submitted" && now > p.deadline.getTime(),
+        ).length;
+        const nextPending = phases.find(
+          (p) => p.status !== "submitted" && p.deadline.getTime() > now,
+        );
+        const pendingPhases = phases.filter((p) => p.status !== "submitted");
+        const urgentDeadlineMs =
+          pendingPhases.length > 0
+            ? Math.min(...pendingPhases.map((p) => p.deadline.getTime() - now))
+            : null;
+
         return {
           ...incident,
           description: decryptedDescription,
@@ -92,6 +113,14 @@ export async function GET(req: Request) {
           ncaDeadlineHours: classification?.ncaDeadlineHours || 72,
           isOverdue,
           requiresNCANotification: incident.requiresNCANotification,
+          nis2PhasesSummary: {
+            total: phases.length,
+            submitted: submittedPhases,
+            overdue: overduePhases,
+            nextDeadline: nextPending?.deadline.toISOString() || null,
+            nextPhase: nextPending?.phase || null,
+          },
+          urgentDeadlineMs,
         };
       }),
     );
