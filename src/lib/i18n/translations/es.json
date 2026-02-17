@@ -67,7 +67,8 @@
     "ncaPortal": "Portal ANC",
     "new": "NUEVO",
     "regulatoryFeed": "Feed regulatorio",
-    "incidents": "Incidentes"
+    "incidents": "Incidentes",
+    "digitalTwin": "Digital Twin"
   },
   "topbar": {
     "runAssessment": "Iniciar evaluación",
@@ -461,5 +462,42 @@
     "error": "Error al enviar la solicitud. Inténtelo de nuevo.",
     "formTitle": "Solicitar una demo",
     "formDescription": "Vea cómo Caelex puede ayudar a su organización con el cumplimiento"
+  },
+  "digitalTwin": {
+    "title": "Digital Twin de Cumplimiento",
+    "description": "Postura de cumplimiento en tiempo real con análisis predictivo y modelado de escenarios",
+    "monoLabel": "DIGITAL TWIN",
+    "tabOverview": "Resumen",
+    "tabFrameworks": "Marcos",
+    "tabRisk": "Matriz de riesgo",
+    "tabScenarios": "Escenarios",
+    "tabTimeline": "Cronología",
+    "overallScore": "Puntuación global",
+    "maturityLevel": "Nivel de madurez",
+    "evidenceCoverage": "Cobertura de evidencia",
+    "deadlineHealth": "Estado de plazos",
+    "riskExposure": "Exposición al riesgo",
+    "velocity": "Velocidad",
+    "maturity1": "Inicial",
+    "maturity2": "En desarrollo",
+    "maturity3": "Definido",
+    "maturity4": "Gestionado",
+    "maturity5": "Optimizado",
+    "scenarioAddJurisdiction": "Añadir jurisdicción",
+    "scenarioChangeOperator": "Cambiar tipo de operador",
+    "scenarioAddSatellites": "Añadir satélites",
+    "scenarioExpandOps": "Expandir operaciones",
+    "runSimulation": "Ejecutar simulación",
+    "scenarioBuilder": "Constructor de escenarios",
+    "savedScenarios": "Escenarios guardados",
+    "complianceTrajectory": "Trayectoria de cumplimiento",
+    "moduleBreakdown": "Desglose de módulos",
+    "activeAlerts": "Alertas activas",
+    "frameworkComparison": "Comparación de marcos",
+    "frameworkRadar": "Radar de marcos",
+    "riskLandscape": "Paisaje de riesgo",
+    "financialExposure": "Exposición financiera",
+    "emptyTitle": "Sin datos disponibles",
+    "emptyDescription": "Complete las evaluaciones de cumplimiento para llenar su Digital Twin."
   }
 }

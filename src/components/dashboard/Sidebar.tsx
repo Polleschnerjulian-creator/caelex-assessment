@@ -32,6 +32,7 @@ import {
   AlertTriangle,
   Flag,
   BarChart3,
+  Layers,
   FileSearch,
   Orbit,
   Code2,
@@ -670,6 +671,15 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 {t("sidebar.timeline")}
+              </NavItem>
+              <NavItem
+                href="/dashboard/digital-twin"
+                icon={<Layers size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                {t("sidebar.digitalTwin") !== "sidebar.digitalTwin"
+                  ? t("sidebar.digitalTwin")
+                  : "Digital Twin"}
               </NavItem>
               <NavItem
                 href="/dashboard/incidents"

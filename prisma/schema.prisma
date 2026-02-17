@@ -62,6 +62,8 @@ model User {
   submissionPackages     SubmissionPackage[]     // NCA Portal: document packages
   consents               UserConsent[]           // GDPR consent records
   breachReports          BreachReport[]          // GDPR Art. 33/34 breach reports
+  complianceSnapshots    ComplianceSnapshot[]    // Digital Twin: daily compliance snapshots
+  whatIfScenarios        WhatIfScenario[]        // Digital Twin: saved what-if scenarios
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage  Int                     @default(0)
   lastReengagementAt     DateTime?
@@ -4137,4 +4139,93 @@ model RegulatoryUpdateRead {
   @@unique([regulatoryUpdateId, organizationId])
   @@index([organizationId])
   @@index([regulatoryUpdateId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Compliance Digital Twin
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ComplianceSnapshot {
+  id                       String   @id @default(cuid())
+  userId                   String
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId           String?
+  snapshotDate             DateTime
+
+  // Scores
+  overallScore             Int      // 0-100
+  euSpaceActScore          Int?
+  nis2Score                Int?
+  grade                    String   // A, B, C, D, F
+
+  // Module Scores (JSON: { authorization: 85, debris: 72, ... })
+  moduleScores             String   @db.Text
+
+  // Maturity
+  maturityLevel            Int      // 1-5
+
+  // Evidence
+  evidenceTotal            Int      @default(0)
+  evidenceAccepted         Int      @default(0)
+  evidenceExpired          Int      @default(0)
+  evidenceCompletePct      Float    @default(0) // 0-100
+
+  // Deadlines
+  deadlinesTotal           Int      @default(0)
+  deadlinesOverdue         Int      @default(0)
+  deadlinesDueSoon         Int      @default(0)
+  deadlinesCompleted       Int      @default(0)
+
+  // Incidents
+  incidentsOpen            Int      @default(0)
+  incidentsCritical        Int      @default(0)
+  incidentsMTTR            Float?   // Mean time to resolve in hours
+
+  // NCA
+  ncaNotificationsOverdue  Int      @default(0)
+
+  // Financial Risk
+  maxPenaltyExposure       Float    @default(0) // EUR worst-case
+  estimatedRiskEur         Float    @default(0) // risk-adjusted penalty
+
+  // Velocity (score change)
+  velocityDaily            Float    @default(0)
+  velocity7Day             Float    @default(0)
+  velocity30Day            Float    @default(0)
+
+  // Requirements
+  requirementsTotal        Int      @default(0)
+  requirementsCompliant    Int      @default(0)
+  requirementsPartial      Int      @default(0)
+  requirementsNonCompliant Int      @default(0)
+  requirementsNotAssessed  Int      @default(0)
+
+  createdAt                DateTime @default(now())
+
+  @@unique([userId, snapshotDate])
+  @@index([userId, snapshotDate])
+  @@index([organizationId, snapshotDate])
+}
+
+model WhatIfScenario {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId   String?
+
+  name             String
+  scenarioType     String    // add_jurisdiction, change_operator_type, add_satellites, expand_operations
+  parameters       String    @db.Text // JSON input
+  baselineScore    Int
+  projectedScore   Int
+  scoreDelta       Int
+  results          String    @db.Text // JSON full result
+
+  computedAt       DateTime?
+  isFavorite       Boolean   @default(false)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
 }

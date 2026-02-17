@@ -67,7 +67,8 @@
     "ncaPortal": "Portail ANC",
     "new": "NOUVEAU",
     "regulatoryFeed": "Flux réglementaire",
-    "incidents": "Incidents"
+    "incidents": "Incidents",
+    "digitalTwin": "Digital Twin"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -461,5 +462,42 @@
     "error": "Échec de l'envoi de la demande. Veuillez réessayer.",
     "formTitle": "Demander une démo",
     "formDescription": "Découvrez comment Caelex peut aider votre organisation"
+  },
+  "digitalTwin": {
+    "title": "Jumeau Numérique de Conformité",
+    "description": "Posture de conformité en temps réel avec analyse prédictive et modélisation de scénarios",
+    "monoLabel": "JUMEAU NUMÉRIQUE",
+    "tabOverview": "Aperçu",
+    "tabFrameworks": "Cadres",
+    "tabRisk": "Matrice de risque",
+    "tabScenarios": "Scénarios",
+    "tabTimeline": "Chronologie",
+    "overallScore": "Score global",
+    "maturityLevel": "Niveau de maturité",
+    "evidenceCoverage": "Couverture des preuves",
+    "deadlineHealth": "Santé des échéances",
+    "riskExposure": "Exposition au risque",
+    "velocity": "Vélocité",
+    "maturity1": "Initial",
+    "maturity2": "En développement",
+    "maturity3": "Défini",
+    "maturity4": "Géré",
+    "maturity5": "Optimisé",
+    "scenarioAddJurisdiction": "Ajouter une juridiction",
+    "scenarioChangeOperator": "Changer le type d'opérateur",
+    "scenarioAddSatellites": "Ajouter des satellites",
+    "scenarioExpandOps": "Étendre les opérations",
+    "runSimulation": "Lancer la simulation",
+    "scenarioBuilder": "Constructeur de scénarios",
+    "savedScenarios": "Scénarios enregistrés",
+    "complianceTrajectory": "Trajectoire de conformité",
+    "moduleBreakdown": "Répartition des modules",
+    "activeAlerts": "Alertes actives",
+    "frameworkComparison": "Comparaison des cadres",
+    "frameworkRadar": "Radar des cadres",
+    "riskLandscape": "Paysage des risques",
+    "financialExposure": "Exposition financière",
+    "emptyTitle": "Aucune donnée disponible",
+    "emptyDescription": "Effectuez des évaluations de conformité pour alimenter votre Jumeau Numérique."
   }
 }

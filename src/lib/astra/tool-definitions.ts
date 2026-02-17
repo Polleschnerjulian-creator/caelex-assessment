@@ -1005,6 +1005,75 @@ export const advanceIncidentWorkflowTool: AstraToolDefinition = {
   },
 };
 
+// ─── Digital Twin Tools ───
+
+export const queryComplianceTwin: AstraToolDefinition = {
+  name: "query_compliance_twin",
+  description:
+    "Returns the Compliance Digital Twin state — overall score, maturity level, evidence coverage, deadline health, financial risk exposure, and velocity. Use when the user asks about their compliance posture, where they stand, or wants a comprehensive summary.",
+  input_schema: {
+    type: "object",
+    properties: {
+      focusArea: {
+        type: "string",
+        description:
+          "Optional: Focus on a specific area. Values: 'score', 'evidence', 'deadlines', 'risk', 'velocity', 'modules'. Omit for full twin state.",
+        enum: ["score", "evidence", "deadlines", "risk", "velocity", "modules"],
+      },
+    },
+    required: [],
+  },
+};
+
+export const runWhatifScenario: AstraToolDefinition = {
+  name: "run_whatif_scenario",
+  description:
+    "Runs a what-if compliance simulation. Supports 4 scenario types: adding a jurisdiction, changing operator type, adding satellites to fleet, or expanding operations. Returns projected score, delta, new requirements, and financial impact.",
+  input_schema: {
+    type: "object",
+    properties: {
+      scenarioType: {
+        type: "string",
+        description: "The type of scenario to simulate.",
+        enum: [
+          "add_jurisdiction",
+          "change_operator_type",
+          "add_satellites",
+          "expand_operations",
+        ],
+      },
+      parameters: {
+        type: "object",
+        description:
+          "Scenario-specific parameters. For add_jurisdiction: { jurisdictionCode: 'IT' }. For change_operator_type: { newOperatorType: 'ISOS', currentOperatorType: 'SCO' }. For add_satellites: { additionalSatellites: 10, currentFleetSize: 5 }. For expand_operations: { newMemberStates: 3, groundInfra: true, satcom: false }.",
+      },
+    },
+    required: ["scenarioType", "parameters"],
+  },
+};
+
+export const getEvidenceGaps: AstraToolDefinition = {
+  name: "get_evidence_gaps",
+  description:
+    "Returns a prioritized list of compliance evidence gaps — requirements that are missing evidence, have expired evidence, or are non-compliant. Use when the user wants to know what evidence they need or what's missing.",
+  input_schema: {
+    type: "object",
+    properties: {
+      framework: {
+        type: "string",
+        description: "Optional: Filter to a specific framework.",
+        enum: ["debris", "cybersecurity", "nis2"],
+      },
+      onlyCritical: {
+        type: "boolean",
+        description:
+          "If true, only return critical and high priority gaps. Default: false.",
+      },
+    },
+    required: [],
+  },
+};
+
 export const ALL_TOOLS: AstraToolDefinition[] = [
   // Compliance Tools
   checkComplianceStatus,
@@ -1053,6 +1122,11 @@ export const ALL_TOOLS: AstraToolDefinition[] = [
   listActiveIncidentsTool,
   draftNcaNotification,
   advanceIncidentWorkflowTool,
+
+  // Digital Twin Tools
+  queryComplianceTwin,
+  runWhatifScenario,
+  getEvidenceGaps,
 ];
 
 // ─── Tool Name Lookup ───
@@ -1115,5 +1189,10 @@ export const TOOL_CATEGORIES = {
     "list_active_incidents",
     "draft_nca_notification",
     "advance_incident_workflow",
+  ],
+  digital_twin: [
+    "query_compliance_twin",
+    "run_whatif_scenario",
+    "get_evidence_gaps",
   ],
 } as const;

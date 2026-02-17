@@ -67,7 +67,8 @@
     "ncaPortal": "NCA-Portal",
     "new": "NEU",
     "regulatoryFeed": "Regulierungs-Feed",
-    "incidents": "Vorfälle"
+    "incidents": "Vorfälle",
+    "digitalTwin": "Digital Twin"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -461,5 +462,42 @@
     "error": "Demo-Anfrage konnte nicht gesendet werden. Bitte erneut versuchen.",
     "formTitle": "Demo anfordern",
     "formDescription": "Erfahren Sie, wie Caelex Ihrer Organisation bei der Compliance hilft"
+  },
+  "digitalTwin": {
+    "title": "Compliance Digital Twin",
+    "description": "Echtzeit-Compliance-Status mit prädiktiver Analyse und Szenario-Modellierung",
+    "monoLabel": "DIGITAL TWIN",
+    "tabOverview": "Übersicht",
+    "tabFrameworks": "Frameworks",
+    "tabRisk": "Risikomatrix",
+    "tabScenarios": "Szenarien",
+    "tabTimeline": "Zeitachse",
+    "overallScore": "Gesamtbewertung",
+    "maturityLevel": "Reifegrad",
+    "evidenceCoverage": "Nachweisabdeckung",
+    "deadlineHealth": "Fristenstatus",
+    "riskExposure": "Risikoexposition",
+    "velocity": "Geschwindigkeit",
+    "maturity1": "Initial",
+    "maturity2": "Entwickelnd",
+    "maturity3": "Definiert",
+    "maturity4": "Gesteuert",
+    "maturity5": "Optimiert",
+    "scenarioAddJurisdiction": "Jurisdiktion hinzufügen",
+    "scenarioChangeOperator": "Betreibertyp ändern",
+    "scenarioAddSatellites": "Satelliten hinzufügen",
+    "scenarioExpandOps": "Betrieb erweitern",
+    "runSimulation": "Simulation starten",
+    "scenarioBuilder": "Szenario-Builder",
+    "savedScenarios": "Gespeicherte Szenarien",
+    "complianceTrajectory": "Compliance-Verlauf",
+    "moduleBreakdown": "Modulübersicht",
+    "activeAlerts": "Aktive Warnungen",
+    "frameworkComparison": "Framework-Vergleich",
+    "frameworkRadar": "Framework-Radar",
+    "riskLandscape": "Risikolandschaft",
+    "financialExposure": "Finanzielle Exposition",
+    "emptyTitle": "Keine Daten verfügbar",
+    "emptyDescription": "Führen Sie Compliance-Bewertungen durch, um Ihren Digital Twin zu füllen."
   }
 }

@@ -67,7 +67,8 @@
     "ncaPortal": "NCA Portal",
     "new": "NEW",
     "regulatoryFeed": "Regulatory Feed",
-    "incidents": "Incidents"
+    "incidents": "Incidents",
+    "digitalTwin": "Digital Twin"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -461,5 +462,42 @@
     "error": "Failed to submit demo request. Please try again.",
     "formTitle": "Request a Demo",
     "formDescription": "See how Caelex can help your organization achieve compliance"
+  },
+  "digitalTwin": {
+    "title": "Compliance Digital Twin",
+    "description": "Real-time compliance posture with predictive analytics and scenario modeling",
+    "monoLabel": "DIGITAL TWIN",
+    "tabOverview": "Overview",
+    "tabFrameworks": "Frameworks",
+    "tabRisk": "Risk Matrix",
+    "tabScenarios": "Scenarios",
+    "tabTimeline": "Timeline",
+    "overallScore": "Overall Score",
+    "maturityLevel": "Maturity Level",
+    "evidenceCoverage": "Evidence Coverage",
+    "deadlineHealth": "Deadline Health",
+    "riskExposure": "Risk Exposure",
+    "velocity": "Velocity",
+    "maturity1": "Initial",
+    "maturity2": "Developing",
+    "maturity3": "Defined",
+    "maturity4": "Managed",
+    "maturity5": "Optimized",
+    "scenarioAddJurisdiction": "Add Jurisdiction",
+    "scenarioChangeOperator": "Change Operator Type",
+    "scenarioAddSatellites": "Add Satellites",
+    "scenarioExpandOps": "Expand Operations",
+    "runSimulation": "Run Simulation",
+    "scenarioBuilder": "Scenario Builder",
+    "savedScenarios": "Saved Scenarios",
+    "complianceTrajectory": "Compliance Trajectory",
+    "moduleBreakdown": "Module Breakdown",
+    "activeAlerts": "Active Alerts",
+    "frameworkComparison": "Framework Comparison",
+    "frameworkRadar": "Framework Radar",
+    "riskLandscape": "Risk Landscape",
+    "financialExposure": "Financial Exposure",
+    "emptyTitle": "No Data Available",
+    "emptyDescription": "Complete compliance assessments to populate your Digital Twin."
   }
 }

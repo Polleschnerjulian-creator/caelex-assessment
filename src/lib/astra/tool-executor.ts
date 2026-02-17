@@ -1905,6 +1905,154 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       summary: `Workflow advanced from ${result.previousState} to ${result.currentState}. ${result.availableTransitions?.length ? `Next actions: ${result.availableTransitions.map((t) => t.event).join(", ")}` : "No further transitions available."}`,
     };
   },
+
+  // ─── Digital Twin Tools ───
+
+  query_compliance_twin: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { getComplianceTwinState } =
+      await import("@/lib/services/compliance-twin-service");
+
+    const state = await getComplianceTwinState(userContext.userId);
+    const focusArea = input.focusArea as string | undefined;
+
+    if (focusArea === "score") {
+      return {
+        overallScore: state.score.overall,
+        grade: state.score.grade,
+        euSpaceAct: state.score.euSpaceAct,
+        nis2: state.score.nis2,
+        maturityLevel: state.score.maturityLevel,
+        maturityLabel: state.score.maturityLabel,
+        summary: `Overall compliance score: ${state.score.overall}/100 (Grade ${state.score.grade}). Maturity Level ${state.score.maturityLevel} — ${state.score.maturityLabel}.`,
+      };
+    }
+
+    if (focusArea === "evidence") {
+      return {
+        ...state.evidence,
+        summary: `Evidence coverage: ${state.evidence.completePct}% (${state.evidence.accepted}/${state.evidence.total} approved). ${state.evidence.expired} expired items need renewal.`,
+      };
+    }
+
+    if (focusArea === "deadlines") {
+      return {
+        ...state.deadlines,
+        summary: `Deadline health: ${state.deadlines.healthScore}%. ${state.deadlines.overdue} overdue, ${state.deadlines.dueSoon} due soon, ${state.deadlines.completed} completed out of ${state.deadlines.total}.`,
+      };
+    }
+
+    if (focusArea === "risk") {
+      return {
+        ...state.risk,
+        summary: `Risk exposure: EUR ${(state.risk.estimatedRiskEur / 1_000_000).toFixed(1)}M (max: EUR ${(state.risk.maxPenaltyExposure / 1_000_000).toFixed(1)}M). Risk-adjusted based on current compliance score.`,
+      };
+    }
+
+    if (focusArea === "velocity") {
+      return {
+        ...state.velocity,
+        summary: `Compliance velocity: ${state.velocity.thirtyDay > 0 ? "+" : ""}${state.velocity.thirtyDay} pts/month (${state.velocity.trend}). Daily: ${state.velocity.daily}, 7-day: ${state.velocity.sevenDay}.`,
+      };
+    }
+
+    if (focusArea === "modules") {
+      return {
+        modules: state.modules,
+        summary: `${state.modules.length} compliance modules tracked. Top: ${state.modules
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+          .map((m) => `${m.name} (${m.score})`)
+          .join(", ")}.`,
+      };
+    }
+
+    // Full state summary
+    return {
+      score: state.score,
+      evidence: state.evidence,
+      deadlines: state.deadlines,
+      incidents: state.incidents,
+      risk: state.risk,
+      velocity: state.velocity,
+      requirements: state.requirements,
+      alertCount: state.alerts.length,
+      topAlerts: state.alerts.slice(0, 3),
+      summary: `Compliance score: ${state.score.overall}/100 (Grade ${state.score.grade}, L${state.score.maturityLevel}). Evidence: ${state.evidence.completePct}%. Deadlines: ${state.deadlines.overdue} overdue. Risk: EUR ${(state.risk.estimatedRiskEur / 1_000_000).toFixed(1)}M. Velocity: ${state.velocity.trend} (${state.velocity.thirtyDay > 0 ? "+" : ""}${state.velocity.thirtyDay} pts/mo). ${state.alerts.length} active alert(s).`,
+    };
+  },
+
+  run_whatif_scenario: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { simulateScenario } =
+      await import("@/lib/services/whatif-simulation-service");
+
+    const result = await simulateScenario(userContext.userId, {
+      scenarioType: input.scenarioType as
+        | "add_jurisdiction"
+        | "change_operator_type"
+        | "add_satellites"
+        | "expand_operations",
+      name: `ASTRA Scenario: ${input.scenarioType}`,
+      parameters: (input.parameters as Record<string, unknown>) || {},
+    });
+
+    return {
+      baselineScore: result.baselineScore,
+      projectedScore: result.projectedScore,
+      scoreDelta: result.scoreDelta,
+      newRequirementsCount: result.newRequirements.length,
+      newRequirements: result.newRequirements.slice(0, 5),
+      financialImpact: result.financialImpact,
+      riskLevel: result.riskAssessment.level,
+      recommendations: result.recommendations,
+      summary: `Scenario "${input.scenarioType}": Score ${result.baselineScore} → ${result.projectedScore} (${result.scoreDelta >= 0 ? "+" : ""}${result.scoreDelta}). ${result.newRequirements.length} new requirements. Financial impact: EUR ${(result.financialImpact.delta / 1_000_000).toFixed(1)}M. Risk: ${result.riskAssessment.level}.`,
+    };
+  },
+
+  get_evidence_gaps: async (
+    input: Record<string, unknown>,
+    userContext: AstraUserContext,
+  ) => {
+    const { getEvidenceGapAnalysis } =
+      await import("@/lib/services/compliance-twin-service");
+
+    const orgMember = await prisma.organizationMember.findFirst({
+      where: { userId: userContext.userId },
+      select: { organizationId: true },
+    });
+
+    const gaps = await getEvidenceGapAnalysis(
+      userContext.userId,
+      orgMember?.organizationId || null,
+    );
+
+    let filtered = gaps;
+    if (input.framework) {
+      filtered = filtered.filter((g) => g.framework === input.framework);
+    }
+    if (input.onlyCritical) {
+      filtered = filtered.filter(
+        (g) => g.criticality === "critical" || g.criticality === "high",
+      );
+    }
+
+    return {
+      totalGaps: filtered.length,
+      gaps: filtered.slice(0, 15),
+      byCriticality: {
+        critical: filtered.filter((g) => g.criticality === "critical").length,
+        high: filtered.filter((g) => g.criticality === "high").length,
+        medium: filtered.filter((g) => g.criticality === "medium").length,
+        low: filtered.filter((g) => g.criticality === "low").length,
+      },
+      summary: `${filtered.length} evidence gap(s) found. ${filtered.filter((g) => g.criticality === "critical").length} critical, ${filtered.filter((g) => g.criticality === "high").length} high priority. ${filtered.filter((g) => g.evidenceExpired).length} with expired evidence.`,
+    };
+  },
 };
 
 // ─── Export ───
