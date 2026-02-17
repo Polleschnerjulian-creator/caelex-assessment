@@ -10,6 +10,7 @@ import {
   Clock,
   Check,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const timelineEvents = [
   {
@@ -166,14 +167,13 @@ export default function TimelinePage() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
-            >
-              <span>Resources</span>
-              <ChevronRight size={12} />
-              <span>Timeline</span>
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: "Resources", href: "/resources" },
+                { label: "Timeline", href: "/resources/timeline" },
+              ]}
+              className="mb-6"
+            />
             <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               Compliance Timeline
             </h1>

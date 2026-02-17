@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { ChevronRight, Search, BookMarked } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const glossaryTerms = [
   {
@@ -211,14 +212,13 @@ export default function GlossaryPage() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
-            >
-              <span>Resources</span>
-              <ChevronRight size={12} />
-              <span>Glossary</span>
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: "Resources", href: "/resources" },
+                { label: "Glossary", href: "/resources/glossary" },
+              ]}
+              className="mb-6"
+            />
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center">
                 <BookMarked size={24} className="text-emerald-400" />

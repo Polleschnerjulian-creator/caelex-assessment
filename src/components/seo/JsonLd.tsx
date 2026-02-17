@@ -62,14 +62,6 @@ export function WebSiteJsonLd() {
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
   };
 
   return (
@@ -109,11 +101,6 @@ export function SoftwareApplicationJsonLd() {
     ],
     screenshot: `${siteConfig.url}/screenshots/dashboard.png`,
     softwareVersion: "1.0",
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      reviewCount: "1",
-    },
   };
 
   return (

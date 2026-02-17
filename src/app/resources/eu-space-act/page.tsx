@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, AlertTriangle, Check, ChevronRight } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 const keyStats = [
   { value: "119", label: "Articles" },
@@ -134,14 +135,13 @@ export default function EUSpaceActPage() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-2 text-[12px] text-white/40 hover:text-emerald-400/70 transition-colors mb-6"
-            >
-              <span>Resources</span>
-              <ChevronRight size={12} />
-              <span>EU Space Act</span>
-            </Link>
+            <Breadcrumbs
+              items={[
+                { label: "Resources", href: "/resources" },
+                { label: "EU Space Act", href: "/resources/eu-space-act" },
+              ]}
+              className="mb-6"
+            />
             <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               EU Space Act Overview
             </h1>

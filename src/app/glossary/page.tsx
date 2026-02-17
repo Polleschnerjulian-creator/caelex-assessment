@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { BookText, ArrowRight, Search } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { pageMetadata } from "@/lib/seo";
+import { DefinedTermSetJsonLd } from "@/components/seo/JsonLd";
+import { pageMetadata, siteConfig } from "@/lib/seo";
 import {
   getAllTerms,
   getAlphabetWithTerms,
@@ -48,6 +49,15 @@ export default function GlossaryPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <DefinedTermSetJsonLd
+        name="Space Compliance Glossary"
+        description="Comprehensive glossary of space compliance terminology covering EU Space Act, NIS2, operator types, technical standards, and regulatory concepts."
+        terms={terms.map((t) => ({
+          term: t.term,
+          definition: t.definition,
+          url: `${siteConfig.url}/glossary/${t.slug}`,
+        }))}
+      />
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}
