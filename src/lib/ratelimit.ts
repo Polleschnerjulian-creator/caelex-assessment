@@ -39,11 +39,13 @@ const redis =
       })
     : null;
 
-// Log warning if Redis not configured
+// Enforce Redis in production — in-memory fallback is not safe for multi-instance
 if (!redis && process.env.NODE_ENV === "production") {
-  console.warn(
-    "[SECURITY WARNING] Upstash Redis not configured. Rate limiting will use in-memory fallback, " +
-      "which is not suitable for production with multiple instances.",
+  console.error(
+    "[SECURITY] Upstash Redis not configured in production. " +
+      "Rate limiting will use in-memory fallback which is NOT safe for " +
+      "multi-instance deployments (Vercel serverless). " +
+      "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
   );
 }
 

@@ -104,14 +104,33 @@ function sendEvent(
     timestamp: new Date().toISOString(),
   };
 
+  // Read cookie consent status to pass to server for GDPR validation
+  let consentStatus = "none";
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("caelex-cookie-consent");
+      if (raw) {
+        const prefs = raw === "all" ? { analytics: true } : JSON.parse(raw);
+        consentStatus = prefs.analytics ? "analytics" : "necessary";
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
   // Use sendBeacon for reliability (survives page unload)
   if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-    navigator.sendBeacon("/api/analytics/track", JSON.stringify(payload));
+    // sendBeacon doesn't support custom headers, so embed consent in payload
+    const beaconPayload = { ...payload, _consent: consentStatus };
+    navigator.sendBeacon("/api/analytics/track", JSON.stringify(beaconPayload));
   } else if (typeof fetch !== "undefined") {
     // Fallback to fetch for SSR or older browsers
     fetch("/api/analytics/track", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-cookie-consent": consentStatus,
+      },
       body: JSON.stringify(payload),
       keepalive: true, // Survives page navigation
     }).catch(() => {

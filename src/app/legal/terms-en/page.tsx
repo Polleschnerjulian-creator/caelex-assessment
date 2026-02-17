@@ -368,6 +368,16 @@ export default function TermsEnPage() {
                 Caelex assumes no liability for decisions made based on the
                 information provided by the platform or AI-generated content.
               </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (6) The AI features of the platform (particularly ASTRA and
+                automated document generation) use Large Language Models.
+                AI-generated outputs may be incomplete, inaccurate, or outdated.
+                The user is obligated to have all AI-generated content reviewed
+                by qualified professionals before use — especially before
+                regulatory submissions. The provider shall not be liable for
+                damages arising from the unverified adoption of AI-generated
+                content.
+              </p>
             </section>
 
             {/* Section 10 - Indemnification */}

@@ -11,6 +11,38 @@ import {
   isR2Configured,
 } from "@/lib/storage/r2-client";
 
+// ─── Magic Number Validation ───
+// Validates file content matches declared MIME type by checking file signatures
+const MAGIC_NUMBERS: Record<string, number[][]> = {
+  "application/pdf": [[0x25, 0x50, 0x44, 0x46]], // %PDF
+  "image/png": [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  "image/jpeg": [[0xff, 0xd8, 0xff]],
+  "image/gif": [
+    [0x47, 0x49, 0x46, 0x38, 0x37, 0x61], // GIF87a
+    [0x47, 0x49, 0x46, 0x38, 0x39, 0x61], // GIF89a
+  ],
+  "application/zip": [[0x50, 0x4b, 0x03, 0x04]],
+  // DOCX/XLSX/PPTX are ZIP-based
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    [0x50, 0x4b, 0x03, 0x04],
+  ],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+    [0x50, 0x4b, 0x03, 0x04],
+  ],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [
+    [0x50, 0x4b, 0x03, 0x04],
+  ],
+};
+
+function validateMagicNumber(buffer: Buffer, mimeType: string): boolean {
+  const signatures = MAGIC_NUMBERS[mimeType];
+  // If no known signature for this type, allow (e.g. text/plain, text/csv)
+  if (!signatures) return true;
+  return signatures.some((sig) =>
+    sig.every((byte, i) => buffer.length > i && buffer[i] === byte),
+  );
+}
+
 // GET /api/documents - List documents with filters
 export async function GET(req: Request) {
   try {
@@ -141,7 +173,7 @@ export async function POST(req: Request) {
         );
       }
 
-      // SECURITY: Validate file type
+      // SECURITY: Validate file type (MIME header)
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         return NextResponse.json(
           {
@@ -157,6 +189,15 @@ export async function POST(req: Request) {
 
       // Generate storage path and checksum
       const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+      // SECURITY: Magic number validation — verify actual file content matches MIME
+      const magicValid = validateMagicNumber(fileBuffer, file.type);
+      if (!magicValid) {
+        return NextResponse.json(
+          { error: "File content does not match declared file type." },
+          { status: 400 },
+        );
+      }
       checksum = crypto.createHash("sha256").update(fileBuffer).digest("hex");
 
       // Generate a safe storage path

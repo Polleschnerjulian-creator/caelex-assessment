@@ -46,6 +46,24 @@ export async function POST(request: Request) {
 
     const data = result.data;
 
+    // GDPR: Check cookie consent (header from fetch, or embedded from sendBeacon)
+    // Analytics events should only be stored if the user has consented
+    const rawBody = body as Record<string, unknown>;
+    const cookieConsent =
+      request.headers.get("x-cookie-consent") ||
+      (typeof rawBody._consent === "string" ? rawBody._consent : undefined);
+    if (
+      !cookieConsent ||
+      cookieConsent === "none" ||
+      cookieConsent === "necessary"
+    ) {
+      // No analytics consent — only allow essential event types
+      const essentialEvents = ["signup", "login"];
+      if (!essentialEvents.includes(data.eventType)) {
+        return NextResponse.json({ ok: true, tracked: false });
+      }
+    }
+
     // Get country from headers (if behind Cloudflare or similar)
     const ipCountry =
       request.headers.get("cf-ipcountry") ||

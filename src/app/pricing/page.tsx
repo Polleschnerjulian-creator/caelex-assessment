@@ -717,6 +717,9 @@ export default function PricingPage() {
                             annually
                           </p>
                         )}
+                        <p className="text-[12px] text-white/30 mt-1">
+                          All prices excl. VAT (zzgl. MwSt.)
+                        </p>
                       </div>
 
                       {/* CTA */}

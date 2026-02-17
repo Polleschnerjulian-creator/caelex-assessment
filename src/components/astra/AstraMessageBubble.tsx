@@ -399,10 +399,13 @@ export default function AstraMessageBubble({
             : "bg-cyan-500/10 border border-cyan-500/20 rounded-tl-xl rounded-bl-xl rounded-br-xl"
         } ${message.type === "text" ? "px-3.5 py-2.5" : "px-3.5 pt-2.5 pb-1"}`}
       >
-        {/* Confidence indicator (for ASTRA messages) */}
-        {isAstra && confidence && (
-          <div className="flex justify-end mb-1.5">
-            <ConfidenceBadge level={confidence} />
+        {/* AI-generated indicator + Confidence (for ASTRA messages) */}
+        {isAstra && (
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[9px] text-white/25 font-medium uppercase tracking-wider">
+              AI-generated
+            </span>
+            {confidence && <ConfidenceBadge level={confidence} />}
           </div>
         )}
 

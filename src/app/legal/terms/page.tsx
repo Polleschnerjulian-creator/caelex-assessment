@@ -393,6 +393,16 @@ export default function TermsPage() {
                 Basis der bereitgestellten Informationen oder KI-generierten
                 Inhalte getroffen werden.
               </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                (6) Die KI-Funktionen der Plattform (insbesondere ASTRA und die
+                automatische Dokumentengenerierung) verwenden Large Language
+                Models. Die KI-generierten Ausgaben können unvollständig,
+                ungenau oder veraltet sein. Der Nutzer ist verpflichtet, alle
+                KI-generierten Inhalte vor Verwendung — insbesondere vor
+                behördlichen Einreichungen — durch qualifizierte Fachpersonen
+                prüfen zu lassen. Der Anbieter haftet nicht für Schäden, die aus
+                der ungeprüften Übernahme KI-generierter Inhalte entstehen.
+              </p>
             </section>
 
             {/* § 10 - Indemnification */}

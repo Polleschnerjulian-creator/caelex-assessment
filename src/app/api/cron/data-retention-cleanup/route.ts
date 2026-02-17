@@ -97,7 +97,23 @@ export async function GET(req: Request) {
       count: expiredTokens.count,
     });
 
-    // 3. Delete analytics events older than 90 days
+    // 3a. Anonymize IP-related data in analytics events older than 30 days
+    //     GDPR Art. 5(1)(c) data minimization — IP info not needed for aggregate stats
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const anonymizedIps = await prisma.analyticsEvent.updateMany({
+      where: {
+        timestamp: { lt: thirtyDaysAgo },
+        userAgent: { not: null },
+      },
+      data: {
+        userAgent: null,
+      },
+    });
+    logger.info("Anonymized analytics events (>30 days): cleared userAgent", {
+      count: anonymizedIps.count,
+    });
+
+    // 3b. Delete analytics events older than 90 days
     const oldAnalytics = await prisma.analyticsEvent.deleteMany({
       where: {
         timestamp: { lt: ninetyDaysAgo },

@@ -306,6 +306,10 @@ export default function AstraSection() {
           <p className="text-[13px] text-white/30 mt-4">
             Available in every module. Context-aware to your mission profile.
           </p>
+          <p className="text-[11px] text-white/20 mt-2">
+            ASTRA is an AI system. Outputs are AI-generated and do not
+            constitute legal advice. Always verify with qualified professionals.
+          </p>
         </motion.div>
       </div>
     </section>
