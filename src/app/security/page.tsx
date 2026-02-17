@@ -213,36 +213,6 @@ const auditItems = [
   },
 ];
 
-const certificationTimeline = [
-  {
-    label: "DSGVO / GDPR",
-    status: "active" as const,
-    date: "Konform",
-    description:
-      "Vollständige Konformität mit der EU-Datenschutz-Grundverordnung",
-  },
-  {
-    label: "EU AI Act",
-    status: "active" as const,
-    date: "Konform",
-    description:
-      "Transparenz und menschliche Aufsicht gemäß Verordnung (EU) 2024/1689",
-  },
-  {
-    label: "SOC 2 Type II",
-    status: "planned" as const,
-    date: "Q3 2026",
-    description:
-      "Unabhängiges Audit für Sicherheit, Verfügbarkeit und Vertraulichkeit",
-  },
-  {
-    label: "ISO 27001",
-    status: "planned" as const,
-    date: "Q4 2026",
-    description: "Zertifizierung für Informationssicherheits-Management",
-  },
-];
-
 const enterpriseFeatures = [
   {
     icon: Key,
@@ -662,88 +632,6 @@ function AuditSection() {
   );
 }
 
-function CertificationsSection() {
-  const { ref, isInView } = useAnimatedSection();
-
-  return (
-    <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
-        }}
-      />
-      <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
-        <SectionHeader
-          eyebrow="Zertifizierungen"
-          title="Compliance-Roadmap"
-          subtitle="Aktuelle Zertifizierungen und geplante Meilensteine für Sicherheit und Compliance."
-          isInView={isInView}
-        />
-
-        <div className="max-w-[600px] mx-auto">
-          {certificationTimeline.map((item, i) => (
-            <motion.div
-              key={item.label}
-              {...fadeUp(isInView, 0.15 + i * 0.1)}
-              className="flex items-start gap-6 relative"
-            >
-              {i < certificationTimeline.length - 1 && (
-                <div className="absolute left-[19px] top-[40px] bottom-0 w-px bg-white/[0.06]" />
-              )}
-
-              <div className="relative shrink-0 mt-1">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    item.status === "active"
-                      ? "bg-emerald-500/10 border border-emerald-500/30"
-                      : "bg-white/[0.04] border border-white/[0.08]"
-                  }`}
-                >
-                  {item.status === "active" ? (
-                    <CheckCircle2
-                      size={18}
-                      className="text-emerald-400"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <Clock
-                      size={18}
-                      className="text-white/30"
-                      aria-hidden="true"
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="pb-10">
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-[16px] font-medium text-white">
-                    {item.label}
-                  </h3>
-                  <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      item.status === "active"
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-white/[0.06] text-white/40"
-                    }`}
-                  >
-                    {item.date}
-                  </span>
-                </div>
-                <p className="text-[14px] text-white/40 leading-[1.6]">
-                  {item.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function EnterpriseSection() {
   const { ref, isInView } = useAnimatedSection();
 
@@ -844,7 +732,6 @@ export default function SecurityPage() {
       <GDPRSection />
       <AISecuritySection />
       <AuditSection />
-      <CertificationsSection />
       <EnterpriseSection />
       <CTASection />
     </main>
