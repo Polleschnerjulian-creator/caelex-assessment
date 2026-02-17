@@ -3,6 +3,8 @@
 // ============================================================================
 
 import { additionalGuides } from "./additional-guides";
+import { newGuidesPart1 } from "./new-guides-part1";
+import { newGuidesPart2 } from "./new-guides-part2";
 
 export interface Guide {
   slug: string;
@@ -1111,7 +1113,12 @@ Start your debris mitigation assessment today.
 // HELPER FUNCTIONS
 // ============================================================================
 
-const allGuides = [...guides, ...additionalGuides];
+const allGuides = [
+  ...guides,
+  ...additionalGuides,
+  ...newGuidesPart1,
+  ...newGuidesPart2,
+];
 
 export function getAllGuides(): Guide[] {
   return allGuides.sort(
