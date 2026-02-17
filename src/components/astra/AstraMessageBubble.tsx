@@ -20,6 +20,7 @@ import type {
 import AstraDocumentCard from "./AstraDocumentCard";
 import AstraInteractiveInput from "./AstraInteractiveInput";
 import AstraBulkProgress from "./AstraBulkProgress";
+import AstraToolExecutionCard from "./AstraToolExecutionCard";
 
 interface AstraMessageBubbleProps {
   message: AstraMessage;
@@ -427,6 +428,13 @@ export default function AstraMessageBubble({
             </div>
           </div>
         )}
+
+        {/* Tool Execution Card */}
+        {isAstra &&
+          message.metadata?.toolCalls &&
+          message.metadata.toolCalls.length > 0 && (
+            <AstraToolExecutionCard toolCalls={message.metadata.toolCalls} />
+          )}
 
         {/* Compliance Impact */}
         {isAstra && complianceImpact && (

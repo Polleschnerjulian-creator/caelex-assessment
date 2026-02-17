@@ -38,7 +38,6 @@ import {
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
-import { useAstra } from "@/components/astra/AstraProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   getRequiredPlan,
@@ -295,7 +294,6 @@ interface SidebarProps {
 export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { hasModuleAccess, isLoading, organization } = useOrganization();
-  const { openGeneral } = useAstra();
   const { t } = useLanguage();
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
   const [upgradeModule, setUpgradeModule] = useState<string | undefined>();
@@ -599,26 +597,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
-              <button
-                onClick={() => {
-                  openGeneral();
-                  handleNavClick();
-                }}
-                className="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] w-full text-left
-                  text-slate-800 dark:text-cyan-400/80 hover:text-slate-900 dark:hover:text-cyan-300
-                  hover:bg-slate-100 dark:hover:bg-cyan-500/[0.06] transition-all duration-150"
+              <NavItem
+                href="/dashboard/astra"
+                icon={<Zap size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge="Beta"
               >
-                <span
-                  className="w-4 h-4 flex-shrink-0 text-cyan-500 dark:text-cyan-400"
-                  aria-hidden="true"
-                >
-                  <Zap size={16} strokeWidth={1.5} />
-                </span>
-                <span className="flex-1">ASTRA</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium uppercase tracking-wider">
-                  Beta
-                </span>
-              </button>
+                ASTRA
+              </NavItem>
             </div>
           </div>
 

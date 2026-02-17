@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { Zap } from "lucide-react";
-import { useAstra } from "./AstraProvider";
 
 interface AstraButtonProps {
   articleId: string;
@@ -18,13 +18,17 @@ export default function AstraButton({
   severity,
   regulationType,
 }: AstraButtonProps) {
-  const { openWithArticle } = useAstra();
+  const params = new URLSearchParams({
+    article: articleId,
+    ref: articleRef,
+    title,
+    severity,
+    regulation: regulationType,
+  });
 
   return (
-    <button
-      onClick={() =>
-        openWithArticle(articleId, articleRef, title, severity, regulationType)
-      }
+    <Link
+      href={`/dashboard/astra?${params.toString()}`}
       className="flex items-center gap-1.5 mt-2 text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors group"
     >
       <Zap
@@ -32,6 +36,6 @@ export default function AstraButton({
         className="text-cyan-500/60 group-hover:text-cyan-400 transition-colors"
       />
       <span>Use ASTRA</span>
-    </button>
+    </Link>
   );
 }

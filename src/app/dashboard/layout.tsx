@@ -9,8 +9,6 @@ import { OrganizationProvider } from "@/components/providers/OrganizationProvide
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
 import { AstraProvider } from "@/components/astra/AstraProvider";
-import AstraChatPanel from "@/components/astra/AstraChatPanel";
-import AstraFAB from "@/components/astra/AstraFAB";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 
@@ -55,12 +53,6 @@ export default function DashboardLayout({
                   </main>
                 </div>
               </div>
-
-              {/* ASTRA Chat Panel */}
-              <AstraChatPanel />
-
-              {/* ASTRA Floating Action Button */}
-              <AstraFAB />
 
               {/* Onboarding overlay for new users */}
               <OnboardingOverlay />

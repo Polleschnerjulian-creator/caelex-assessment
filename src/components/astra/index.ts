@@ -1,9 +1,13 @@
 export { AstraProvider, useAstra } from "./AstraProvider";
-export { default as AstraChatPanel } from "./AstraChatPanel";
+export { default as AstraFullPage } from "./AstraFullPage";
 export { default as AstraButton } from "./AstraButton";
 export { default as AstraBulkButton } from "./AstraBulkButton";
 export { default as AstraMessageBubble } from "./AstraMessageBubble";
 export { default as AstraDocumentCard } from "./AstraDocumentCard";
 export { default as AstraInteractiveInput } from "./AstraInteractiveInput";
 export { default as AstraBulkProgress } from "./AstraBulkProgress";
-export { default as AstraFAB } from "./AstraFAB";
+export { default as AstraToolBrowser } from "./AstraToolBrowser";
+export { default as AstraToolExecutionCard } from "./AstraToolExecutionCard";
+export { default as AstraChatInput } from "./AstraChatInput";
+export { default as AstraContextBar } from "./AstraContextBar";
+export { default as AstraConversationList } from "./AstraConversationList";

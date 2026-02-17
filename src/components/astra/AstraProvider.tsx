@@ -19,10 +19,19 @@ import type {
   ConfidenceLevel,
 } from "@/lib/astra/types";
 
+// ─── Conversation Summary ───
+
+export interface ConversationSummary {
+  id: string;
+  mode: string;
+  messageCount: number;
+  lastMessage: string;
+  updatedAt: string;
+}
+
 // ─── Context Type ───
 
 interface AstraContextType {
-  isOpen: boolean;
   messages: AstraMessage[];
   context: AstraContext | null;
   missionData: AstraMissionData;
@@ -30,14 +39,16 @@ interface AstraContextType {
   conversationId: string | null;
   remainingQueries: number | null;
   error: string | null;
-  openWithArticle: (
+  conversations: ConversationSummary[];
+  conversationsLoading: boolean;
+  setArticleContext: (
     articleId: string,
     articleRef: string,
     title: string,
     severity: string,
     regulationType: string,
   ) => void;
-  openWithCategory: (
+  setCategoryContext: (
     category: string,
     categoryLabel: string,
     articles: Array<{
@@ -48,12 +59,15 @@ interface AstraContextType {
     }>,
     regulationType: string,
   ) => void;
-  openGeneral: () => void;
-  close: () => void;
+  setGeneralContext: () => void;
   sendMessage: (text: string) => void;
   resetChat: () => void;
   updateMissionData: (data: Partial<AstraMissionData>) => void;
   clearError: () => void;
+  fetchConversations: () => Promise<void>;
+  loadConversation: (id: string) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
+  setConversationId: (id: string | null) => void;
 }
 
 const AstraCtx = createContext<AstraContextType | null>(null);
@@ -75,6 +89,7 @@ function responseToMessage(
       actions: response.actions,
       confidence: response.confidence,
       complianceImpact: response.complianceImpact,
+      toolCalls: response.metadata?.toolCalls,
     },
   };
 }
@@ -109,7 +124,6 @@ function createLocalGreeting(ctx: AstraContext): AstraMessage {
 // ─── Provider Component ───
 
 export function AstraProvider({ children }: { children: ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AstraMessage[]>([]);
   const [context, setContext] = useState<AstraContext | null>(null);
   const [missionData, setMissionData] = useState<AstraMissionData>({});
@@ -117,6 +131,8 @@ export function AstraProvider({ children }: { children: ReactNode }) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [remainingQueries, setRemainingQueries] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
 
   // Track abort controller for cancellation
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -125,7 +141,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
-  const openWithArticle = useCallback(
+  const setArticleContext = useCallback(
     (
       articleId: string,
       articleRef: string,
@@ -133,17 +149,15 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       severity: string,
       regulationType: string,
     ) => {
-      // If same article is already loaded, just re-open
+      // If same article is already loaded, keep messages
       if (
         context &&
         context.mode === "article" &&
         (context as AstraArticleContext).articleId === articleId
       ) {
-        setIsOpen(true);
         return;
       }
 
-      // Different article: new chat
       const ctx: AstraArticleContext = {
         mode: "article",
         articleId,
@@ -157,12 +171,11 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       setMissionData({});
       setConversationId(null);
       setError(null);
-      setIsOpen(true);
     },
     [context],
   );
 
-  const openWithCategory = useCallback(
+  const setCategoryContext = useCallback(
     (
       category: string,
       categoryLabel: string,
@@ -186,15 +199,13 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       setMissionData({});
       setConversationId(null);
       setError(null);
-      setIsOpen(true);
     },
     [],
   );
 
-  const openGeneral = useCallback(() => {
-    // If messages exist, just re-open (preserve history)
-    if (messages.length > 0) {
-      setIsOpen(true);
+  const setGeneralContext = useCallback(() => {
+    // If messages exist and we're already in general mode, preserve them
+    if (messages.length > 0 && context?.mode === "general") {
       return;
     }
 
@@ -204,17 +215,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
     setMissionData({});
     setConversationId(null);
     setError(null);
-    setIsOpen(true);
-  }, [messages.length]);
-
-  const close = useCallback(() => {
-    setIsOpen(false);
-    // Cancel any pending request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-  }, []);
+  }, [messages.length, context?.mode]);
 
   const resetChat = useCallback(() => {
     // Cancel any pending request
@@ -252,7 +253,6 @@ export function AstraProvider({ children }: { children: ReactNode }) {
       abortControllerRef.current = new AbortController();
 
       try {
-        // Build request payload
         const payload = {
           message: text.trim(),
           conversationId: conversationId || undefined,
@@ -273,9 +273,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
 
         const response = await fetch("/api/astra/chat", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
           signal: abortControllerRef.current.signal,
         });
@@ -304,17 +302,14 @@ export function AstraProvider({ children }: { children: ReactNode }) {
 
         const data: AstraChatResponse = await response.json();
 
-        // Update conversation ID if this is a new conversation
         if (data.conversationId && !conversationId) {
           setConversationId(data.conversationId);
         }
 
-        // Update remaining queries
         if (data.remainingQueries !== undefined) {
           setRemainingQueries(data.remainingQueries);
         }
 
-        // Add assistant message
         const assistantMsg = responseToMessage(
           data.response,
           data.conversationId,
@@ -322,7 +317,6 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         setMessages((prev) => [...prev, assistantMsg]);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
-          // Request was cancelled, don't show error
           return;
         }
 
@@ -330,16 +324,13 @@ export function AstraProvider({ children }: { children: ReactNode }) {
           err instanceof Error ? err.message : "An unexpected error occurred.";
         setError(errorMessage);
 
-        // Add error message to chat
         const errorMsg: AstraMessage = {
           id: crypto.randomUUID(),
           role: "astra",
           type: "text",
           content: `I encountered an issue: ${errorMessage}`,
           timestamp: new Date(),
-          metadata: {
-            confidence: "HIGH" as ConfidenceLevel,
-          },
+          metadata: { confidence: "HIGH" as ConfidenceLevel },
         };
         setMessages((prev) => [...prev, errorMsg]);
       } finally {
@@ -354,10 +345,82 @@ export function AstraProvider({ children }: { children: ReactNode }) {
     setMissionData((prev) => ({ ...prev, ...data }));
   }, []);
 
+  // ─── Conversation Management ───
+
+  const fetchConversations = useCallback(async () => {
+    setConversationsLoading(true);
+    try {
+      const res = await fetch("/api/astra/chat?list=true");
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversations(data.conversations || []);
+    } catch {
+      // Silently fail
+    } finally {
+      setConversationsLoading(false);
+    }
+  }, []);
+
+  const loadConversation = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/astra/chat?conversationId=${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const conv = data.conversation;
+
+      // Map API messages to AstraMessage format
+      const mapped: AstraMessage[] = (conv.messages || []).map(
+        (m: {
+          id: string;
+          role: string;
+          content: string;
+          sources?: unknown;
+          confidence?: ConfidenceLevel;
+          createdAt: string;
+        }) => ({
+          id: m.id,
+          role: m.role === "user" ? "user" : "astra",
+          type: "text" as const,
+          content: m.content,
+          timestamp: new Date(m.createdAt),
+          metadata: {
+            sources: m.sources || undefined,
+            confidence: m.confidence || undefined,
+          },
+        }),
+      );
+
+      setMessages(mapped);
+      setConversationId(id);
+      setContext({ mode: "general" });
+      setError(null);
+    } catch {
+      setError("Failed to load conversation.");
+    }
+  }, []);
+
+  const deleteConversation = useCallback(
+    async (id: string) => {
+      try {
+        const res = await fetch(`/api/astra/chat?conversationId=${id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) return;
+        setConversations((prev) => prev.filter((c) => c.id !== id));
+        // If we deleted the active conversation, reset
+        if (conversationId === id) {
+          resetChat();
+        }
+      } catch {
+        // Silently fail
+      }
+    },
+    [conversationId, resetChat],
+  );
+
   return (
     <AstraCtx.Provider
       value={{
-        isOpen,
         messages,
         context,
         missionData,
@@ -365,14 +428,19 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         conversationId,
         remainingQueries,
         error,
-        openWithArticle,
-        openWithCategory,
-        openGeneral,
-        close,
+        conversations,
+        conversationsLoading,
+        setArticleContext,
+        setCategoryContext,
+        setGeneralContext,
         sendMessage,
         resetChat,
         updateMissionData,
         clearError,
+        fetchConversations,
+        loadConversation,
+        deleteConversation,
+        setConversationId,
       }}
     >
       {children}

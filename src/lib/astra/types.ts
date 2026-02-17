@@ -471,6 +471,7 @@ export interface AstraMessage {
     actions?: AstraAction[];
     confidence?: ConfidenceLevel;
     complianceImpact?: ComplianceImpact;
+    toolCalls?: AstraToolCall[];
   };
 }
 
