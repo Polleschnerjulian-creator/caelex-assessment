@@ -67,7 +67,7 @@ const frameworkPillars = [
     items: [
       "Klare Entscheidungsstrukturen und Verantwortlichkeiten",
       "Regelmäßige Überprüfung der Unternehmensprozesse",
-      "Transparente Kommunikation gegenüber Stakeholdern",
+      "Transparente Kommunikation gegenüber Kunden und Partnern",
       "Dokumentierte Richtlinien für alle Geschäftsbereiche",
     ],
   },
@@ -79,12 +79,12 @@ const frameworkPillars = [
       "Systematische Identifikation und Bewertung von Risiken",
       "Kontinuierliches Monitoring regulatorischer Änderungen",
       "Incident-Response-Prozesse mit definierten Eskalationswegen",
-      "Regelmäßige interne und externe Sicherheitsaudits",
+      "Automatisierte Sicherheitsscans und interne Code-Reviews bei jedem Deployment",
     ],
   },
   {
     icon: HeartHandshake,
-    title: "Stakeholder-Verantwortung",
+    title: "Kundenverantwortung",
     subtitle: "Accountability",
     items: [
       "Gleichbehandlung aller Kunden unabhängig von Größe",
@@ -124,7 +124,7 @@ const codexArticles = [
   {
     number: "VI",
     title: "Nachhaltiges Wachstum",
-    text: "Wir verpflichten uns zu verantwortungsvollem Wachstum. Das betrifft unsere Infrastruktur (effiziente Ressourcennutzung, EU-Hosting), unser Geschäftsmodell (nachhaltige Kundenbeziehungen) und unsere Unternehmenskultur (faire Arbeitsbedingungen, Diversität).",
+    text: "Wir verpflichten uns zu verantwortungsvollem Wachstum. Das betrifft unsere Infrastruktur (effiziente Ressourcennutzung, EU-Hosting) und unser Geschäftsmodell (nachhaltige Kundenbeziehungen statt kurzfristiger Gewinnmaximierung).",
   },
 ];
 
@@ -138,7 +138,7 @@ const esgPillars = [
       {
         title: "EU-Only Cloud-Infrastruktur",
         description:
-          "Hosting in energieeffizienten europäischen Rechenzentren mit Grünstrom-Zertifizierung",
+          "AWS eu-central-1 (Frankfurt) — carbon-neutral Region mit 100% Renewable-Energy-Matching",
       },
       {
         title: "Effiziente Software-Architektur",
@@ -169,9 +169,9 @@ const esgPillars = [
           "Kostenloses Assessment, öffentliche Guides und Glossare für den Zugang zu Regulierungswissen",
       },
       {
-        title: "Verantwortungsvolle Arbeitgeber",
+        title: "Transparente Regulierungskommunikation",
         description:
-          "Faire Vergütung, Remote-First-Kultur und Weiterbildungsmöglichkeiten für alle Teammitglieder",
+          "Verständliche Aufbereitung komplexer Regulierung — öffentlicher Blog, Glossar und Leitfäden für die gesamte Branche",
       },
     ],
   },
@@ -184,7 +184,7 @@ const esgPillars = [
       {
         title: "Dokumentierte Richtlinien",
         description:
-          "Code of Conduct, Datenschutzrichtlinie und Informationssicherheitsrichtlinie für alle Mitarbeitenden",
+          "Datenschutzrichtlinie, Nutzungsbedingungen und Cookie-Richtlinie — öffentlich einsehbar",
       },
       {
         title: "Compliance-Monitoring",
@@ -192,9 +192,9 @@ const esgPillars = [
           "Kontinuierliche Überwachung regulatorischer Anforderungen und automatisierte Audit-Trails",
       },
       {
-        title: "Stakeholder-Reporting",
+        title: "Automatisierte Audit-Trails",
         description:
-          "Regelmäßige Transparenzberichte zu Sicherheitsvorfällen, Datenschutzanfragen und Systemverfügbarkeit",
+          "Lückenlose Protokollierung aller sicherheitsrelevanten Aktionen — jederzeit nachvollziehbar",
       },
     ],
   },
@@ -216,21 +216,6 @@ const complianceFrameworks = [
     name: "NIS2-Richtlinie",
     status: "achieved" as const,
     description: "Sicherheitsmaßnahmen nach Art. 21, Incident Reporting",
-  },
-  {
-    name: "SOC 2 Type II",
-    status: "planned" as const,
-    description: "Audit für Security, Availability und Confidentiality",
-  },
-  {
-    name: "ISO 27001",
-    status: "planned" as const,
-    description: "Informationssicherheits-Managementsystem (ISMS)",
-  },
-  {
-    name: "ISO 27701",
-    status: "planned" as const,
-    description: "Privacy Information Management System (PIMS)",
   },
 ];
 
@@ -272,7 +257,7 @@ const riskCategories = [
       "Kontinuierliches Monitoring europäischer Gesetzgebung",
       "Proaktive Anpassung an neue Anforderungen",
       "Automatisierte Compliance-Checks in der CI/CD-Pipeline",
-      "Regelmäßige Überprüfung durch externe Experten",
+      "Automatisierte Dependency-Checks und Secret-Scanning in der CI/CD-Pipeline",
     ],
   },
 ];
@@ -339,11 +324,6 @@ const reportingChannels = [
 
 const governanceDocuments = [
   {
-    title: "Code of Conduct",
-    description: "Verhaltenskodex für alle Mitarbeitenden und Partner",
-    status: "available" as const,
-  },
-  {
     title: "Datenschutzrichtlinie",
     description: "DSGVO-konforme Verarbeitung personenbezogener Daten",
     status: "available" as const,
@@ -362,15 +342,10 @@ const governanceDocuments = [
     href: "/legal/cookies",
   },
   {
-    title: "Informationssicherheitsrichtlinie",
-    description: "Internes ISMS-Dokument auf Anfrage für Enterprise-Kunden",
-    status: "on-request" as const,
-  },
-  {
-    title: "Transparenzbericht",
-    description:
-      "Jährlicher Bericht zu Sicherheitsvorfällen und Datenschutzanfragen",
-    status: "coming-soon" as const,
+    title: "Impressum",
+    description: "Angaben gemäß § 5 TMG und Verantwortlichkeit",
+    status: "available" as const,
+    href: "/legal/impressum",
   },
 ];
 
@@ -755,11 +730,11 @@ function ComplianceFrameworkSection() {
         <SectionHeader
           eyebrow="Compliance"
           title="Regulatorische Frameworks"
-          subtitle="Caelex richtet sich nach den strengsten europäischen Regulierungen und arbeitet kontinuierlich an internationalen Zertifizierungen."
+          subtitle="Caelex richtet sich nach den strengsten europäischen Regulierungen — ohne Kompromisse."
           isInView={isInView}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[1000px] mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-[900px] mx-auto">
           {complianceFrameworks.map((fw, i) => (
             <motion.div key={fw.name} {...fadeUp(isInView, 0.15 + i * 0.06)}>
               <GlassCard className="p-6 h-full">
@@ -862,7 +837,7 @@ function EthicalPoliciesSection() {
         <SectionHeader
           eyebrow="Richtlinien"
           title="Ethik & Compliance-Policies"
-          subtitle="Verbindliche interne Richtlinien, die für alle Mitarbeitenden, Partner und Auftragnehmer gelten."
+          subtitle="Verbindliche Richtlinien, die für die gesamte Produktentwicklung und alle Geschäftsbeziehungen gelten."
           isInView={isInView}
         />
 
@@ -973,7 +948,7 @@ function DocumentsSection() {
         <SectionHeader
           eyebrow="Dokumente"
           title="Governance-Dokumentation"
-          subtitle="Zentrale Richtlinien und Dokumente für Kunden, Partner und Stakeholder."
+          subtitle="Zentrale Richtlinien und Dokumente — öffentlich einsehbar."
           isInView={isInView}
         />
 
@@ -1048,9 +1023,8 @@ function CTASection() {
               Fragen zu unserer Governance?
             </h2>
             <p className="text-[17px] text-white/50 max-w-[560px] mx-auto mb-10 leading-relaxed">
-              Wir stehen Investoren, Enterprise-Kunden und Partnern für
-              detaillierte Auskünfte zu unseren Governance-Strukturen zur
-              Verfügung.
+              Wir stehen für offenen Dialog — zu Governance, Datenschutz oder
+              unserer Arbeitsweise.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
