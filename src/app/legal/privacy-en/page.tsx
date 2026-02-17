@@ -369,34 +369,6 @@ export default function PrivacyEnPage() {
                 </p>
               </div>
 
-              {/* Rate Limiting */}
-              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
-                  Upstash Inc. — Rate Limiting
-                </h4>
-                <p className="text-[13px] text-white/60">
-                  San Francisco, CA, USA
-                  <br />
-                  <strong className="text-white/70">Purpose:</strong> API rate
-                  limiting, abuse protection
-                  <br />
-                  <strong className="text-white/70">Data:</strong> Anonymized
-                  request identifiers, counters
-                  <br />
-                  <strong className="text-white/70">Safeguards:</strong> SOC 2,
-                  SCCs
-                  <br />
-                  <a
-                    href="https://upstash.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
-                  >
-                    Privacy Policy →
-                  </a>
-                </p>
-              </div>
-
               {/* Error Tracking */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
@@ -477,6 +449,64 @@ export default function PrivacyEnPage() {
                   <br />
                   <a
                     href="https://www.anthropic.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Privacy Policy →
+                  </a>
+                </p>
+              </div>
+
+              {/* Event Analytics */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  LogSnag Inc. — Event Analytics
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  USA
+                  <br />
+                  <strong className="text-white/70">Purpose:</strong>{" "}
+                  Server-side event analytics for product and operational
+                  metrics
+                  <br />
+                  <strong className="text-white/70">Data:</strong> Signup events
+                  (masked email address), subscription events, compliance
+                  milestones, error events
+                  <br />
+                  <strong className="text-white/70">Safeguards:</strong> SCCs,
+                  TLS encryption
+                  <br />
+                  <a
+                    href="https://logsnag.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Privacy Policy →
+                  </a>
+                </p>
+              </div>
+
+              {/* Distributed Rate Limiting */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  Upstash Inc. — Distributed Rate Limiting (Redis)
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  San Francisco, CA, USA
+                  <br />
+                  <strong className="text-white/70">Purpose:</strong>{" "}
+                  Distributed rate limiting for abuse protection
+                  <br />
+                  <strong className="text-white/70">Data:</strong> Sanitized IP
+                  address hashes, API endpoint paths
+                  <br />
+                  <strong className="text-white/70">Safeguards:</strong> SOC 2,
+                  encryption at rest
+                  <br />
+                  <a
+                    href="https://upstash.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
@@ -588,6 +618,16 @@ export default function PrivacyEnPage() {
                 Art. 22 GDPR takes place, as no decisions with legal effect are
                 made.
               </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                <strong className="text-white/80">
+                  Clarification on Art. 22 GDPR (Profiling):
+                </strong>{" "}
+                Compliance scoring calculates aggregated percentages based on
+                manual user inputs. This constitutes information preparation,
+                not profiling within the meaning of Art. 4(4) GDPR. The scores
+                do not produce legal effects or similarly significant impacts on
+                data subjects.
+              </p>
             </section>
 
             {/* Section 6 - Data Retention */}
@@ -642,6 +682,15 @@ export default function PrivacyEnPage() {
                     <tr className="border-b border-white/[0.06]">
                       <td className="py-3 pr-4">Contact inquiries</td>
                       <td className="py-3 pr-4">3 years after completion</td>
+                      <td className="py-3">Art. 6(1)(f) GDPR</td>
+                    </tr>
+                    <tr className="border-b border-white/[0.06]">
+                      <td className="py-3 pr-4">
+                        IP addresses in audit and security logs
+                      </td>
+                      <td className="py-3 pr-4">
+                        90 days, then automated anonymization
+                      </td>
                       <td className="py-3">Art. 6(1)(f) GDPR</td>
                     </tr>
                     <tr>

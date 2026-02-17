@@ -373,34 +373,6 @@ export default function PrivacyPage() {
                 </p>
               </div>
 
-              {/* Rate Limiting */}
-              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
-                  Upstash Inc. — Rate Limiting
-                </h4>
-                <p className="text-[13px] text-white/60">
-                  San Francisco, CA, USA
-                  <br />
-                  <strong className="text-white/70">Zweck:</strong>{" "}
-                  API-Rate-Limiting, Missbrauchsschutz
-                  <br />
-                  <strong className="text-white/70">Daten:</strong>{" "}
-                  Anonymisierte Request-Identifier, Zähler
-                  <br />
-                  <strong className="text-white/70">Garantien:</strong> SOC 2,
-                  SCCs
-                  <br />
-                  <a
-                    href="https://upstash.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
-                  >
-                    Datenschutzerklärung →
-                  </a>
-                </p>
-              </div>
-
               {/* Error Tracking */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
                 <h4 className="text-[14px] font-medium text-white mb-2">
@@ -482,6 +454,63 @@ export default function PrivacyPage() {
                   <br />
                   <a
                     href="https://www.anthropic.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Datenschutzerklärung →
+                  </a>
+                </p>
+              </div>
+
+              {/* Event-Analyse */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  LogSnag Inc. — Event-Analyse
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  USA
+                  <br />
+                  <strong className="text-white/70">Zweck:</strong>{" "}
+                  Serverseitige Event-Analyse für Produkt- und Betriebsmetriken
+                  <br />
+                  <strong className="text-white/70">Daten:</strong>{" "}
+                  Signup-Events (maskierte E-Mail-Adresse), Subscription-Events,
+                  Compliance-Meilensteine, Fehler-Events
+                  <br />
+                  <strong className="text-white/70">Garantien:</strong> SCCs,
+                  TLS-Verschlüsselung
+                  <br />
+                  <a
+                    href="https://logsnag.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                  >
+                    Datenschutzerklärung →
+                  </a>
+                </p>
+              </div>
+
+              {/* Verteiltes Rate Limiting */}
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
+                <h4 className="text-[14px] font-medium text-white mb-2">
+                  Upstash Inc. — Verteiltes Rate Limiting (Redis)
+                </h4>
+                <p className="text-[13px] text-white/60">
+                  San Francisco, CA, USA
+                  <br />
+                  <strong className="text-white/70">Zweck:</strong> Verteiltes
+                  Rate Limiting zum Schutz vor Missbrauch
+                  <br />
+                  <strong className="text-white/70">Daten:</strong> Sanitisierte
+                  IP-Adress-Hashes, API-Endpunkt-Pfade
+                  <br />
+                  <strong className="text-white/70">Garantien:</strong> SOC 2,
+                  Verschlüsselung at-rest
+                  <br />
+                  <a
+                    href="https://upstash.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-emerald-400 hover:text-emerald-300 text-[12px]"
@@ -598,6 +627,16 @@ export default function PrivacyPage() {
                 Entscheidungsfindung im Sinne von Art. 22 DSGVO statt, da keine
                 Entscheidungen mit rechtlicher Wirkung getroffen werden.
               </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                <strong className="text-white/80">
+                  Klarstellung zu Art. 22 DSGVO (Profiling):
+                </strong>{" "}
+                Compliance-Scoring berechnet aggregierte Prozentsätze auf Basis
+                manueller Nutzereingaben. Es handelt sich um eine
+                Informationsaufbereitung, nicht um Profiling im Sinne von Art. 4
+                Nr. 4 DSGVO. Die Scores erzeugen keine rechtliche Wirkung und
+                keine ähnlich erhebliche Beeinträchtigung.
+              </p>
             </section>
 
             {/* Section 6 - Data Retention */}
@@ -650,6 +689,15 @@ export default function PrivacyPage() {
                     <tr className="border-b border-white/[0.06]">
                       <td className="py-3 pr-4">Kontaktanfragen</td>
                       <td className="py-3 pr-4">3 Jahre nach Abschluss</td>
+                      <td className="py-3">Art. 6 Abs. 1 lit. f DSGVO</td>
+                    </tr>
+                    <tr className="border-b border-white/[0.06]">
+                      <td className="py-3 pr-4">
+                        IP-Adressen in Audit- und Sicherheits-Logs
+                      </td>
+                      <td className="py-3 pr-4">
+                        90 Tage, danach automatisierte Anonymisierung
+                      </td>
                       <td className="py-3">Art. 6 Abs. 1 lit. f DSGVO</td>
                     </tr>
                     <tr>
