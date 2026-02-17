@@ -262,6 +262,16 @@ export default function CookiePolicyPage() {
                   </tbody>
                 </table>
               </div>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+                <strong className="text-white/80">
+                  Hinweis zu Sentry Session Replay:
+                </strong>{" "}
+                Sentry kann Sitzungswiedergabedaten erfassen, einschließlich
+                Seiteninteraktionen (z.B. Klicks, Scrollverhalten,
+                Navigationspfade), um Fehler zu diagnostizieren. Es werden keine
+                Videoaufzeichnungen erstellt. Sitzungsdaten werden nach 90 Tagen
+                anonymisiert.
+              </p>
             </section>
 
             <section>
@@ -307,10 +317,39 @@ export default function CookiePolicyPage() {
                 </li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-4">
-                Sie können Ihre Einwilligung jederzeit widerrufen, indem Sie den
-                Eintrag &quot;caelex-cookie-consent&quot; in Ihrem
-                Browser-localStorage löschen. Alternativ können Sie alle
-                Website-Daten über die Browser-Einstellungen löschen.
+                Sie können Ihre Einwilligung jederzeit widerrufen. Dafür stehen
+                Ihnen folgende Möglichkeiten zur Verfügung:
+              </p>
+              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-3 space-y-2">
+                <li>
+                  Klicken Sie auf das{" "}
+                  <strong className="text-white/80">
+                    Cookie-Symbol unten links
+                  </strong>{" "}
+                  auf der Website, um das Einwilligungsbanner erneut zu öffnen
+                  und Ihre Präferenzen zu ändern
+                </li>
+                <li>
+                  Löschen Sie den Eintrag{" "}
+                  <code className="text-white/80 bg-white/[0.06] px-1.5 py-0.5 rounded text-[12px]">
+                    caelex-cookie-consent
+                  </code>{" "}
+                  aus dem localStorage Ihres Browsers über die Entwicklertools
+                  (F12 → Application → Local Storage)
+                </li>
+                <li>
+                  Kontaktieren Sie uns per E-Mail an{" "}
+                  <a
+                    href="mailto:privacy@caelex.eu"
+                    className="text-white/80 hover:text-white underline"
+                  >
+                    privacy@caelex.eu
+                  </a>
+                </li>
+              </ul>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+                Alternativ können Sie alle Website-Daten über die
+                Browser-Einstellungen löschen.
               </p>
             </section>
 
@@ -380,6 +419,12 @@ export default function CookiePolicyPage() {
                 Cookies ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
                 Für Analyse-Dienste (Vercel Analytics, Sentry) holen wir Ihre
                 ausdrückliche Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO ein.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+                Gemäß den EU-Leitlinien werden Ihre Einwilligungspräferenzen
+                alle 12 Monate überprüft und aktualisiert. Nach Ablauf dieses
+                Zeitraums werden Sie erneut über das Cookie-Banner um Ihre
+                Einwilligung gebeten.
               </p>
             </section>
 

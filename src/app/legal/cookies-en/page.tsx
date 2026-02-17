@@ -268,6 +268,15 @@ export default function CookiePolicyEnPage() {
                   </tbody>
                 </table>
               </div>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+                <strong className="text-white/80">
+                  Note on Sentry Session Replay:
+                </strong>{" "}
+                Sentry may collect session replay data including page
+                interactions (e.g. clicks, scroll behavior, navigation paths)
+                for debugging purposes. No video recordings are made. Session
+                data is anonymized after 90 days.
+              </p>
             </section>
 
             <section>
@@ -311,8 +320,37 @@ export default function CookiePolicyEnPage() {
                 </li>
               </ul>
               <p className="text-[14px] text-white/60 leading-relaxed mt-4">
-                You can withdraw your consent at any time by deleting the
-                "caelex-cookie-consent" entry in your browser's localStorage.
+                You can withdraw your consent at any time using any of the
+                following methods:
+              </p>
+              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-3 space-y-2">
+                <li>
+                  Click the{" "}
+                  <strong className="text-white/80">
+                    cookie icon in the bottom-left corner
+                  </strong>{" "}
+                  of the website to reopen the consent banner and change your
+                  preferences
+                </li>
+                <li>
+                  Delete the{" "}
+                  <code className="text-white/80 bg-white/[0.06] px-1.5 py-0.5 rounded text-[12px]">
+                    caelex-cookie-consent
+                  </code>{" "}
+                  entry from your browser&apos;s localStorage via the developer
+                  tools (F12 → Application → Local Storage)
+                </li>
+                <li>
+                  Contact us by email at{" "}
+                  <a
+                    href="mailto:privacy@caelex.eu"
+                    className="text-emerald-400 hover:text-emerald-300"
+                  >
+                    privacy@caelex.eu
+                  </a>
+                </li>
+              </ul>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
                 Alternatively, you can delete all website data via your browser
                 settings.
               </p>
@@ -383,6 +421,12 @@ export default function CookiePolicyEnPage() {
                 Art. 6(1)(f) GDPR (legitimate interest). For analytics services
                 (Vercel Analytics, Sentry), we obtain your explicit consent
                 pursuant to Art. 6(1)(a) GDPR.
+              </p>
+              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+                In accordance with EU guidelines, your consent preferences are
+                reviewed and refreshed every 12 months. After this period, you
+                will be prompted again via the cookie banner to confirm your
+                preferences.
               </p>
             </section>
 
