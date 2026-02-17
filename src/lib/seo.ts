@@ -262,6 +262,19 @@ export const pageMetadata = {
     ],
   }),
 
+  governance: generateMetadata({
+    title: "Corporate Governance",
+    description:
+      "Unsere Prinzipien: Transparenz, Datensouveränität, regulatorische Integrität und verantwortungsvolle KI. So handelt Caelex.",
+    path: "/governance",
+    keywords: [
+      "corporate governance",
+      "space compliance ethics",
+      "Caelex Prinzipien",
+      "responsible AI",
+    ],
+  }),
+
   security: generateMetadata({
     title: "Security & Compliance",
     description:
