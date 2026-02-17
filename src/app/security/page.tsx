@@ -15,14 +15,13 @@ import {
   UserCheck,
   ShieldCheck,
   Globe,
-  Fingerprint,
   Brain,
   Activity,
-  AlertTriangle,
   CheckCircle2,
   Clock,
   Building2,
   ArrowRight,
+  Users,
 } from "lucide-react";
 
 // ============================================================================
@@ -50,233 +49,236 @@ function fadeUp(isInView: boolean, delay = 0) {
 const trustBadges = [
   { label: "GDPR Compliant", icon: Shield },
   { label: "EU AI Act", icon: Brain },
-  { label: "AES-256 Encryption", icon: Lock },
+  { label: "AES-256 Encrypted", icon: Lock },
   { label: "SOC 2 (Planned)", icon: ShieldCheck },
 ];
 
 const infrastructureItems = [
   {
     icon: Server,
-    title: "Hosting",
+    title: "EU-Only Hosting",
     description:
-      "Vercel (EU Region), Edge Network with automatic DDoS protection and global CDN distribution.",
+      "Unsere gesamte Infrastruktur wird in der EU betrieben. Deine Daten verlassen nie europäischen Boden.",
   },
   {
     icon: Database,
-    title: "Database",
+    title: "Verschlüsselte Datenbank",
     description:
-      "Neon PostgreSQL (EU), encrypted at rest with AES-256 and in transit with TLS 1.3.",
+      "Alle Daten sind im Ruhezustand und bei der Übertragung verschlüsselt — nach Industriestandard AES-256.",
   },
   {
     icon: Cloud,
-    title: "Storage",
+    title: "Sicherer Dateispeicher",
     description:
-      "Cloudflare R2 (EU), S3-compatible object storage with server-side encryption.",
+      "Dokumente und Uploads werden serverseitig verschlüsselt in EU-Rechenzentren gespeichert.",
   },
   {
     icon: Globe,
-    title: "CDN & Edge",
+    title: "DDoS-Schutz & CDN",
     description:
-      "Vercel Edge Network with automatic SSL, DDoS protection, and sub-50ms global latency.",
+      "Automatischer Schutz vor Angriffen, SSL-Verschlüsselung und ein globales Edge-Netzwerk für schnelle Ladezeiten.",
   },
 ];
 
 const applicationSecurityItems = [
   {
     icon: UserCheck,
-    title: "Authentication",
+    title: "Sichere Anmeldung",
     description:
-      "NextAuth v5 with bcrypt (12 rounds), Google OAuth, SSO (SAML/OIDC), and MFA-ready architecture.",
+      "Passwörter werden nach Best Practices gehasht. Login per Google, Enterprise SSO oder klassisch per E-Mail — mit Multi-Faktor-Authentifizierung.",
   },
   {
     icon: Key,
-    title: "Authorization",
+    title: "Rollenbasierte Zugriffe",
     description:
-      "Role-Based Access Control with 5 permission levels (Owner, Admin, Manager, Member, Viewer) and organization-level isolation.",
+      "Jedes Teammitglied sieht nur, was es sehen soll. Granulare Rollen von Viewer bis Owner — isoliert pro Organisation.",
   },
   {
     icon: Activity,
-    title: "API Security",
+    title: "API-Absicherung",
     description:
-      "Rate limiting via Upstash Redis (7 tiers), API key authentication, CSRF protection, and origin header validation.",
+      "Mehrstufiges Rate Limiting, API-Key-Authentifizierung und Schutz gegen gängige Angriffsvektoren wie CSRF und Injection.",
   },
   {
     icon: FileCheck,
-    title: "Input Validation",
+    title: "Eingabevalidierung",
     description:
-      "Zod schema validation on all inputs, Content Security Policy headers, HSTS (2-year preload), X-Frame-Options DENY.",
+      "Jede Eingabe wird serverseitig validiert. Strikte Content-Security-Policies und moderne Security-Header schützen zusätzlich.",
   },
   {
-    icon: Fingerprint,
-    title: "File Validation",
+    icon: Shield,
+    title: "Upload-Prüfung",
     description:
-      "Magic number verification for uploaded files, configurable size limits, and content-type enforcement.",
+      "Hochgeladene Dateien werden auf Dateityp und Größe geprüft, bevor sie akzeptiert werden. Kein Blindvertrauen.",
   },
   {
     icon: ShieldCheck,
-    title: "Dependency Scanning",
+    title: "Automatische Sicherheitsscans",
     description:
-      "Automated security scanning via CodeQL, TruffleHog secret detection, and OWASP dependency checks in CI/CD.",
+      "Unser Code wird bei jedem Deployment automatisch auf Schwachstellen, Secrets und unsichere Abhängigkeiten geprüft.",
   },
 ];
 
 const gdprItems = [
   {
     icon: Lock,
-    title: "Encryption at Rest",
+    title: "Sensible Daten verschlüsselt",
     description:
-      "AES-256-GCM with scrypt key derivation for sensitive fields including VAT numbers, bank accounts, and tax IDs.",
+      "Besonders schützenswerte Felder wie Steuernummern oder Bankdaten werden zusätzlich mit AES-256 verschlüsselt — nicht nur die Datenbank.",
   },
   {
     icon: Eye,
-    title: "Data Minimization",
+    title: "Datenminimierung",
     description:
-      "IP anonymization after 30 days, automatic data cleanup, and minimal data collection principles.",
+      "Wir sammeln nur, was wirklich nötig ist. IP-Adressen werden automatisch anonymisiert, veraltete Daten regelmäßig gelöscht.",
   },
   {
     icon: FileCheck,
-    title: "Cookie Consent",
+    title: "Cookie-Einwilligung",
     description:
-      "Granular consent management with analytics opt-in. No tracking without explicit user consent.",
+      "Granulares Consent-Management mit echtem Opt-in. Kein Tracking ohne deine ausdrückliche Zustimmung.",
   },
   {
     icon: Database,
-    title: "Data Portability",
+    title: "Datenportabilität",
     description:
-      "GDPR Art. 15/20 compliant data export. Users can download all their data in standard formats.",
+      "Deine Daten gehören dir. Jederzeit vollständiger Export gemäß DSGVO Art. 15 und Art. 20 — in Standardformaten.",
   },
   {
-    icon: AlertTriangle,
-    title: "Right to Erasure",
+    icon: Users,
+    title: "Recht auf Löschung",
     description:
-      "Complete data deletion with cascading removal across all linked records upon user request.",
+      "Auf Anfrage werden alle deine Daten vollständig und unwiderruflich gelöscht — über alle verknüpften Systeme hinweg.",
   },
   {
-    icon: Shield,
-    title: "No External Tracking",
+    icon: Eye,
+    title: "Kein externes Tracking",
     description:
-      "Self-hosted analytics only. No Google Analytics, no third-party trackers, no data sharing with advertisers.",
+      "Wir nutzen ausschließlich selbst gehostete Analysen. Kein Google Analytics, keine Drittanbieter-Tracker, kein Datenverkauf.",
   },
 ];
 
 const aiSecurityItems = [
   {
-    label: "Art. 50 Compliance",
+    label: "Transparenz",
     description:
-      "AI-generated content is clearly labeled per EU AI Act transparency requirements",
+      "KI-generierte Inhalte sind immer klar gekennzeichnet — gemäß EU AI Act Art. 50",
   },
   {
-    label: "No Training on Your Data",
+    label: "Kein Training mit deinen Daten",
     description:
-      "Customer data is never used for AI model training or fine-tuning",
+      "Deine Daten werden niemals zum Trainieren oder Verbessern von KI-Modellen verwendet",
   },
   {
-    label: "Human Oversight",
+    label: "Mensch bleibt in Kontrolle",
     description:
-      "All AI outputs include disclaimers that they do not constitute legal advice",
+      "Alle KI-Antworten enthalten den Hinweis, dass sie keine Rechtsberatung darstellen",
   },
   {
-    label: "Explicit Consent",
-    description: "AI features require explicit opt-in before any interaction",
+    label: "Ausdrückliche Einwilligung",
+    description:
+      "KI-Funktionen erfordern ein explizites Opt-in vor jeder Nutzung",
   },
   {
-    label: "Full Audit Trail",
+    label: "Lückenloser Audit Trail",
     description:
-      "Every AI interaction is logged with timestamps and context for accountability",
+      "Jede KI-Interaktion wird mit Zeitstempel und Kontext protokolliert — für volle Nachvollziehbarkeit",
   },
 ];
 
 const auditItems = [
   {
     icon: FileCheck,
-    title: "Comprehensive Audit Logging",
+    title: "Lückenlose Protokollierung",
     description:
-      "Full trail with IP address, user-agent, entity changes, and timestamps for every state-changing operation.",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Security Event Tracking",
-    description:
-      "Login attempts, permission changes, data access, and API key usage are monitored and logged.",
+      "Jede sicherheitsrelevante Aktion wird protokolliert — wer hat was wann geändert, von welchem Gerät.",
   },
   {
     icon: Activity,
-    title: "Error Monitoring",
+    title: "Sicherheits-Monitoring",
     description:
-      "Sentry integration with EU data residency for real-time error tracking and alerting.",
+      "Login-Versuche, Berechtigungsänderungen und Datenzugriffe werden überwacht und bei Auffälligkeiten gemeldet.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Echtzeit-Fehlerüberwachung",
+    description:
+      "Fehler werden in Echtzeit erkannt und an unser Team gemeldet — mit EU-Datenresidenz für die Monitoring-Daten.",
   },
   {
     icon: Clock,
-    title: "99.99% Uptime SLA",
+    title: "99,99% Verfügbarkeit",
     description:
-      "Vercel's enterprise-grade infrastructure with automatic failover and zero-downtime deployments.",
+      "Enterprise-Infrastruktur mit automatischem Failover und Zero-Downtime-Deployments.",
   },
 ];
 
 const certificationTimeline = [
   {
-    label: "GDPR",
+    label: "DSGVO / GDPR",
     status: "active" as const,
-    date: "Compliant",
-    description: "Full compliance with EU General Data Protection Regulation",
+    date: "Konform",
+    description:
+      "Vollständige Konformität mit der EU-Datenschutz-Grundverordnung",
   },
   {
     label: "EU AI Act",
     status: "active" as const,
-    date: "Compliant",
+    date: "Konform",
     description:
-      "Transparency and human oversight per Regulation (EU) 2024/1689",
+      "Transparenz und menschliche Aufsicht gemäß Verordnung (EU) 2024/1689",
   },
   {
     label: "SOC 2 Type II",
     status: "planned" as const,
     date: "Q3 2026",
-    description: "Security, availability, and confidentiality audit",
+    description:
+      "Unabhängiges Audit für Sicherheit, Verfügbarkeit und Vertraulichkeit",
   },
   {
     label: "ISO 27001",
     status: "planned" as const,
     date: "Q4 2026",
-    description: "Information security management system certification",
+    description: "Zertifizierung für Informationssicherheits-Management",
   },
 ];
 
 const enterpriseFeatures = [
   {
     icon: Key,
-    title: "SSO (SAML/OIDC)",
+    title: "Single Sign-On",
     description:
-      "Enterprise Single Sign-On with SAML 2.0 and OpenID Connect support.",
+      "Nahtlose Anmeldung über euren bestehenden Identity Provider — SAML und OpenID Connect werden unterstützt.",
   },
   {
     icon: Clock,
-    title: "Custom Data Retention",
+    title: "Individuelle Aufbewahrungsfristen",
     description:
-      "Configurable data retention policies to meet your organization's requirements.",
+      "Konfigurierbare Datenaufbewahrung passend zu den Anforderungen eurer Organisation.",
   },
   {
     icon: Shield,
-    title: "Dedicated Security Contact",
+    title: "Dedizierter Security-Kontakt",
     description:
-      "Direct line to our security team for incident coordination and questions.",
+      "Direkter Draht zu unserem Sicherheitsteam für Fragen, Vorfälle und Koordination.",
   },
   {
-    icon: AlertTriangle,
+    icon: Activity,
     title: "Incident Response SLA",
     description:
-      "Defined response times for security incidents with escalation procedures.",
+      "Definierte Reaktionszeiten bei Sicherheitsvorfällen mit klaren Eskalationswegen.",
   },
   {
     icon: ShieldCheck,
-    title: "Annual Penetration Testing",
+    title: "Jährliche Penetration Tests",
     description:
-      "Third-party security assessments with remediation tracking and reporting.",
+      "Unabhängige Sicherheitsprüfungen durch externe Experten — mit Tracking der Behebung.",
   },
   {
     icon: Building2,
-    title: "Organization Isolation",
+    title: "Organisations-Isolation",
     description:
-      "Complete data isolation between organizations with separate encryption contexts.",
+      "Vollständige Datentrennung zwischen Organisationen. Keine geteilten Ressourcen, kein Datenleck zwischen Tenants.",
   },
 ];
 
@@ -352,7 +354,6 @@ function HeroSection() {
       ref={ref}
       className="relative pt-40 pb-24 md:pt-48 md:pb-32 overflow-hidden"
     >
-      {/* Background glow — emerald radial gradient matching About/Pricing */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -372,18 +373,18 @@ function HeroSection() {
           {...fadeUp(isInView, 0.1)}
           className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-white mb-6"
         >
-          Security-First Infrastructure
+          Deine Compliance-Daten
           <br />
-          <span className="text-white/50">for Space Compliance</span>
+          <span className="text-white/50">in sicheren Händen</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
           className="text-[18px] md:text-[20px] text-white/50 max-w-[650px] mx-auto mb-10 leading-relaxed"
         >
-          Enterprise-grade security protecting the world&apos;s most sensitive
-          space regulatory data. EU-hosted, end-to-end encrypted, zero
-          third-party tracking.
+          Enterprise-Sicherheit für die sensibelsten Daten der
+          Raumfahrt-Regulierung. Gehostet in der EU, Ende-zu-Ende verschlüsselt,
+          ohne Tracking durch Dritte.
         </motion.p>
 
         {/* Trust Badges */}
@@ -415,14 +416,14 @@ function HeroSection() {
             href="/docs/api"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-[14px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
           >
-            View Documentation
+            Dokumentation ansehen
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
           >
-            Contact Security Team
+            Security-Team kontaktieren
           </Link>
         </motion.div>
       </div>
@@ -435,7 +436,6 @@ function InfrastructureSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      {/* Subtle background glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -445,9 +445,9 @@ function InfrastructureSection() {
       />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Infrastructure"
-          title="EU-Hosted, Encrypted Everywhere"
-          subtitle="All data stays within the European Union. Every layer of our infrastructure is encrypted and hardened."
+          eyebrow="Infrastruktur"
+          title="In der EU gehostet. Überall verschlüsselt."
+          subtitle="Alle Daten bleiben in der Europäischen Union. Jede Schicht unserer Infrastruktur ist verschlüsselt und abgesichert."
           isInView={isInView}
         />
 
@@ -484,9 +484,9 @@ function ApplicationSecuritySection() {
     <section ref={ref} className="py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Application Security"
-          title="Defense in Depth"
-          subtitle="Multiple layers of security controls protect your data from authentication to API access."
+          eyebrow="Anwendungssicherheit"
+          title="Mehrere Schutzebenen"
+          subtitle="Von der Anmeldung bis zum API-Zugriff — deine Daten sind durch mehrere unabhängige Sicherheitsschichten geschützt."
           isInView={isInView}
         />
 
@@ -530,9 +530,9 @@ function GDPRSection() {
       />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Data Protection"
-          title="GDPR-Compliant by Design"
-          subtitle="Privacy isn't an afterthought. Every feature is built with data protection principles at its core."
+          eyebrow="Datenschutz"
+          title="DSGVO-konform von Anfang an"
+          subtitle="Datenschutz ist kein Nachgedanke. Jede Funktion wird mit Privacy-by-Design-Prinzipien entwickelt."
           isInView={isInView}
         />
 
@@ -569,9 +569,9 @@ function AISecuritySection() {
     <section ref={ref} className="py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="AI Security"
-          title="EU AI Act Conformity"
-          subtitle="Our AI assistant ASTRA is designed to meet EU AI Act transparency and oversight requirements."
+          eyebrow="KI-Sicherheit"
+          title="EU AI Act konform"
+          subtitle="Unser KI-Assistent ASTRA erfüllt die Anforderungen des EU AI Act an Transparenz und menschliche Aufsicht."
           isInView={isInView}
         />
 
@@ -589,7 +589,7 @@ function AISecuritySection() {
                 />
               </div>
               <h3 className="text-[18px] font-medium text-white">
-                ASTRA AI Compliance
+                ASTRA — Verantwortungsvolle KI
               </h3>
             </div>
 
@@ -630,9 +630,9 @@ function AuditSection() {
     <section ref={ref} className="py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Monitoring"
+          eyebrow="Überwachung"
           title="Audit & Monitoring"
-          subtitle="Complete visibility into every action taken on the platform with real-time monitoring."
+          subtitle="Volle Transparenz über jede Aktion auf der Plattform — mit Echtzeit-Überwachung."
           isInView={isInView}
         />
 
@@ -676,9 +676,9 @@ function CertificationsSection() {
       />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Certifications"
-          title="Compliance Roadmap"
-          subtitle="Current certifications and planned milestones for security and compliance."
+          eyebrow="Zertifizierungen"
+          title="Compliance-Roadmap"
+          subtitle="Aktuelle Zertifizierungen und geplante Meilensteine für Sicherheit und Compliance."
           isInView={isInView}
         />
 
@@ -689,12 +689,10 @@ function CertificationsSection() {
               {...fadeUp(isInView, 0.15 + i * 0.1)}
               className="flex items-start gap-6 relative"
             >
-              {/* Vertical line */}
               {i < certificationTimeline.length - 1 && (
                 <div className="absolute left-[19px] top-[40px] bottom-0 w-px bg-white/[0.06]" />
               )}
 
-              {/* Status dot */}
               <div className="relative shrink-0 mt-1">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -719,7 +717,6 @@ function CertificationsSection() {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="pb-10">
                 <div className="flex items-center gap-3 mb-1">
                   <h3 className="text-[16px] font-medium text-white">
@@ -755,8 +752,8 @@ function EnterpriseSection() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Enterprise"
-          title="Enterprise Security Features"
-          subtitle="Advanced security capabilities for organizations with the highest compliance requirements."
+          title="Für höchste Anforderungen"
+          subtitle="Erweiterte Sicherheitsfunktionen für Organisationen, die keine Kompromisse eingehen."
           isInView={isInView}
         />
 
@@ -802,18 +799,18 @@ function CTASection() {
         <motion.div {...fadeUp(isInView, 0)}>
           <GlassCard className="p-12 md:p-16 text-center" hover={false}>
             <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
-              Ready to secure your space compliance?
+              Bereit für sichere Space Compliance?
             </h2>
             <p className="text-[17px] text-white/50 max-w-[520px] mx-auto mb-10 leading-relaxed">
-              Start with a free compliance assessment or talk to our team about
-              enterprise security needs.
+              Starte mit einem kostenlosen Assessment oder sprich mit unserem
+              Team über Enterprise-Sicherheit.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/assessment"
                 className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[15px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               >
-                Start Free Assessment
+                Kostenloses Assessment
                 <ArrowRight
                   size={16}
                   className="transition-transform duration-300 group-hover:translate-x-0.5"
@@ -824,7 +821,7 @@ function CTASection() {
                 href="/contact"
                 className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/80 text-[15px] font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
               >
-                Contact Sales
+                Vertrieb kontaktieren
               </Link>
             </div>
           </GlassCard>
