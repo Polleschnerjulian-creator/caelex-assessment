@@ -80,6 +80,12 @@ export default function Navigation() {
                   Resources
                 </Link>
                 <Link
+                  href="/security"
+                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                >
+                  Security
+                </Link>
+                <Link
                   href="/pricing"
                   className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
                 >
@@ -189,6 +195,13 @@ export default function Navigation() {
                   className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Resources
+                </Link>
+                <Link
+                  href="/security"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                >
+                  Security
                 </Link>
                 <Link
                   href="/about"

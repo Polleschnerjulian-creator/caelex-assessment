@@ -262,6 +262,20 @@ export const pageMetadata = {
     ],
   }),
 
+  security: generateMetadata({
+    title: "Security & Compliance",
+    description:
+      "Enterprise-grade security infrastructure for space regulatory compliance. GDPR-compliant, AES-256 encryption, self-hosted analytics, EU AI Act conformity.",
+    path: "/security",
+    keywords: [
+      "space compliance security",
+      "GDPR space platform",
+      "AES-256 encryption",
+      "EU AI Act compliance",
+      "space data protection",
+    ],
+  }),
+
   resources: generateMetadata({
     title: "Resources",
     description:
