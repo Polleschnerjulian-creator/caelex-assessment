@@ -207,10 +207,7 @@ export async function POST(request: Request) {
     console.error("Error creating cybersecurity assessment:", msg, error);
     return NextResponse.json(
       {
-        error:
-          process.env.NODE_ENV === "development"
-            ? msg
-            : "Internal server error",
+        error: msg,
       },
       { status: 500 },
     );
