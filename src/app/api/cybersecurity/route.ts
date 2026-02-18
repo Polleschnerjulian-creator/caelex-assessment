@@ -203,9 +203,15 @@ export async function POST(request: Request) {
       applicableRequirements: applicableRequirements.map((r) => r.id),
     });
   } catch (error) {
-    console.error("Error creating cybersecurity assessment:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Error creating cybersecurity assessment:", msg, error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error:
+          process.env.NODE_ENV === "development"
+            ? msg
+            : "Internal server error",
+      },
       { status: 500 },
     );
   }
