@@ -220,7 +220,15 @@ function validateOrigin(req: NextRequest): boolean {
     allowedOrigins.push("http://localhost:3000", "http://127.0.0.1:3000");
   }
 
-  return allowedOrigins.length === 0 || allowedOrigins.includes(requestOrigin);
+  // Fail-safe: in production, reject if no allowed origins configured
+  if (allowedOrigins.length === 0) {
+    if (process.env.NODE_ENV === "production") {
+      return false;
+    }
+    return true; // Allow in dev when no origins configured
+  }
+
+  return allowedOrigins.includes(requestOrigin);
 }
 
 // ─── Main Middleware ───

@@ -65,6 +65,26 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+
+  // ─── AI (optional) ───
+  ANTHROPIC_API_KEY: z.string().optional(),
+
+  // ─── Cron Jobs ───
+  CRON_SECRET: z.string().optional(),
+
+  // ─── Payments (optional) ───
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
+  // ─── Storage (optional) ───
+  R2_ENDPOINT: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET_NAME: z.string().optional(),
+
+  // ─── Tracking (optional) ───
+  LOGSNAG_TOKEN: z.string().optional(),
 });
 
 /**
@@ -83,6 +103,9 @@ const productionRequirements = z.object({
       1,
       "UPSTASH_REDIS_REST_TOKEN required in production for rate limiting",
     ),
+  CRON_SECRET: z
+    .string()
+    .min(16, "CRON_SECRET required in production for cron job authentication"),
 });
 
 // ─── Types ───

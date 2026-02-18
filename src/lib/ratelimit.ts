@@ -176,6 +176,14 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:admin",
       }),
+
+      // Contact form: 5 per hour per IP (prevent spam)
+      contact: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:contact",
+      }),
     }
   : null;
 
@@ -262,6 +270,7 @@ const fallbackLimiters = {
   mfa: new InMemoryRateLimiter(5, 60000),
   generate2: new InMemoryRateLimiter(20, 3600000),
   admin: new InMemoryRateLimiter(30, 60000),
+  contact: new InMemoryRateLimiter(5, 3600000),
 };
 
 // ─── Public API ───
@@ -281,7 +290,8 @@ export type RateLimitType =
   | "widget"
   | "generate2"
   | "mfa"
-  | "admin";
+  | "admin"
+  | "contact";
 
 /**
  * Check rate limit for an identifier.

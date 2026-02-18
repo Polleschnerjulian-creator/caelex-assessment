@@ -39,7 +39,14 @@ export async function GET(request: Request) {
     }
 
     const [
-      organizations,
+      totalOrganizations,
+      paidCustomers,
+      trialCustomers,
+      freeCustomers,
+      enterpriseCount,
+      professionalCount,
+      starterCount,
+      freeCount,
       newOrganizations,
       usersByOrg,
       healthScores,
@@ -47,21 +54,39 @@ export async function GET(request: Request) {
       conversionEvents,
       topOrganizations,
     ] = await Promise.all([
-      // All organizations with subscription data
-      prisma.organization.findMany({
-        include: {
-          subscription: true,
-          members: {
-            select: { id: true },
-          },
-          _count: {
-            select: {
-              spacecraft: true,
-              members: true,
-            },
+      // Total count (replaces loading ALL orgs into memory)
+      prisma.organization.count(),
+
+      // Paid customers (active subscription, not FREE plan)
+      prisma.organization.count({
+        where: {
+          subscription: { status: "ACTIVE" },
+          plan: { not: "FREE" },
+        },
+      }),
+
+      // Trial customers
+      prisma.organization.count({
+        where: {
+          subscription: { status: "TRIALING" },
+        },
+      }),
+
+      // Free customers (FREE plan, not trialing)
+      prisma.organization.count({
+        where: {
+          plan: "FREE",
+          subscription: {
+            is: null,
           },
         },
       }),
+
+      // Plan breakdown — individual counts instead of loading all orgs
+      prisma.organization.count({ where: { plan: "ENTERPRISE" } }),
+      prisma.organization.count({ where: { plan: "PROFESSIONAL" } }),
+      prisma.organization.count({ where: { plan: "STARTER" } }),
+      prisma.organization.count({ where: { plan: "FREE" } }),
 
       // New organizations in period
       prisma.organization.count({
@@ -79,7 +104,10 @@ export async function GET(request: Request) {
       // Customer health scores
       prisma.customerHealthScore
         .findMany({
-          include: {
+          select: {
+            score: true,
+            trend: true,
+            riskLevel: true,
             organization: {
               select: {
                 name: true,
@@ -112,7 +140,7 @@ export async function GET(request: Request) {
         },
       }),
 
-      // Top organizations by member count
+      // Top organizations by member count (already uses select, good)
       prisma.organization.findMany({
         select: {
           id: true,
@@ -141,35 +169,12 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    // Calculate customer segments using org plan field
-    const paidCustomers = organizations.filter(
-      (org) => org.subscription?.status === "ACTIVE" && org.plan !== "FREE",
-    ).length;
-    const trialCustomers = organizations.filter(
-      (org) => org.subscription?.status === "TRIALING",
-    ).length;
-    const freeCustomers = organizations.filter(
-      (org) => org.plan === "FREE" && org.subscription?.status !== "TRIALING",
-    ).length;
-
-    // Plan breakdown
+    // Plan breakdown from individual counts
     const planBreakdown = [
-      {
-        plan: "Enterprise",
-        count: organizations.filter((o) => o.plan === "ENTERPRISE").length,
-      },
-      {
-        plan: "Professional",
-        count: organizations.filter((o) => o.plan === "PROFESSIONAL").length,
-      },
-      {
-        plan: "Starter",
-        count: organizations.filter((o) => o.plan === "STARTER").length,
-      },
-      {
-        plan: "Free/Trial",
-        count: organizations.filter((o) => o.plan === "FREE").length,
-      },
+      { plan: "Enterprise", count: enterpriseCount },
+      { plan: "Professional", count: professionalCount },
+      { plan: "Starter", count: starterCount },
+      { plan: "Free/Trial", count: freeCount },
     ];
 
     // Calculate average users per org
@@ -254,7 +259,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       metrics: {
-        total: organizations.length,
+        total: totalOrganizations,
         paid: paidCustomers,
         trial: trialCustomers,
         free: freeCustomers,

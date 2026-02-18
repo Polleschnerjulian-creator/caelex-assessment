@@ -75,53 +75,40 @@ export async function GET(req: Request) {
   try {
     logger.info("Starting data retention cleanup (GDPR Art. 5(1)(e))...");
 
-    // 1. Delete expired sessions
-    const expiredSessions = await prisma.session.deleteMany({
-      where: {
-        expires: { lt: now },
-      },
-    });
+    // Batch 1: Atomic cleanup of expired auth data (sessions + tokens)
+    const [expiredSessions, expiredTokens] = await prisma.$transaction([
+      prisma.session.deleteMany({
+        where: { expires: { lt: now } },
+      }),
+      prisma.verificationToken.deleteMany({
+        where: { expires: { lt: now } },
+      }),
+    ]);
     results.expiredSessions = expiredSessions.count;
-    logger.info("Deleted expired sessions", {
-      count: expiredSessions.count,
-    });
-
-    // 2. Delete expired verification tokens
-    const expiredTokens = await prisma.verificationToken.deleteMany({
-      where: {
-        expires: { lt: now },
-      },
-    });
     results.expiredVerificationTokens = expiredTokens.count;
-    logger.info("Deleted expired verification tokens", {
-      count: expiredTokens.count,
+    logger.info("Deleted expired auth data (transaction)", {
+      sessions: expiredSessions.count,
+      tokens: expiredTokens.count,
     });
 
-    // 3a. Anonymize IP-related data in analytics events older than 30 days
-    //     GDPR Art. 5(1)(c) data minimization — IP info not needed for aggregate stats
+    // Batch 2: Atomic analytics cleanup (anonymize + delete old)
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const anonymizedIps = await prisma.analyticsEvent.updateMany({
-      where: {
-        timestamp: { lt: thirtyDaysAgo },
-        userAgent: { not: null },
-      },
-      data: {
-        userAgent: null,
-      },
-    });
-    logger.info("Anonymized analytics events (>30 days): cleared userAgent", {
-      count: anonymizedIps.count,
-    });
-
-    // 3b. Delete analytics events older than 90 days
-    const oldAnalytics = await prisma.analyticsEvent.deleteMany({
-      where: {
-        timestamp: { lt: ninetyDaysAgo },
-      },
-    });
+    const [anonymizedIps, oldAnalytics] = await prisma.$transaction([
+      prisma.analyticsEvent.updateMany({
+        where: {
+          timestamp: { lt: thirtyDaysAgo },
+          userAgent: { not: null },
+        },
+        data: { userAgent: null },
+      }),
+      prisma.analyticsEvent.deleteMany({
+        where: { timestamp: { lt: ninetyDaysAgo } },
+      }),
+    ]);
     results.oldAnalyticsEvents = oldAnalytics.count;
-    logger.info("Deleted old analytics events (>90 days)", {
-      count: oldAnalytics.count,
+    logger.info("Analytics cleanup (transaction)", {
+      anonymized: anonymizedIps.count,
+      deleted: oldAnalytics.count,
     });
 
     // 4. Delete old ASTRA conversations older than 6 months

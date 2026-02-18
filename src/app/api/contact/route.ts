@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import {
+  checkRateLimit,
+  getIdentifier,
+  createRateLimitResponse,
+} from "@/lib/ratelimit";
 
 function escapeHtml(str: string): string {
   return str
@@ -12,6 +17,13 @@ function escapeHtml(str: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 per hour per IP
+    const identifier = getIdentifier(request);
+    const rateLimitResult = await checkRateLimit("contact", identifier);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const body = await request.json();
     const { name, email, company, message } = body;
 
@@ -23,6 +35,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate string lengths to prevent abuse
+    if (name.length > 200 || email.length > 320 || message.length > 5000) {
+      return NextResponse.json({ error: "Input too long" }, { status: 400 });
+    }
+    if (company && company.length > 200) {
+      return NextResponse.json({ error: "Input too long" }, { status: 400 });
+    }
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -32,8 +52,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Honeypot: reject if hidden field is filled (bots fill all fields)
+    if (body._hp) {
+      // Silently succeed to not tip off the bot
+      return NextResponse.json({ success: true });
+    }
+
     // Send email via Resend
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY not configured");
+      return NextResponse.json(
+        { error: "Service temporarily unavailable" },
+        { status: 503 },
+      );
+    }
+
+    const resend = new Resend(resendApiKey);
     await resend.emails.send({
       from: "Caelex Contact <noreply@caelex.eu>",
       to: "cs@caelex.eu",
