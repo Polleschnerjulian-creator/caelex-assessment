@@ -6,20 +6,20 @@ import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
 import { SECTION_DEFINITIONS } from "@/lib/generate/section-definitions";
 import { NCA_DOC_TYPE_MAP } from "@/lib/generate/types";
-import { parseMarkdownToSections } from "@/lib/astra/document-generator/content-structurer";
+import { parseSectionsFromMarkdown } from "@/lib/generate/parse-sections";
+import type { ParsedSection } from "@/lib/generate/parse-sections";
 import { csrfHeaders } from "@/lib/csrf-client";
 import type {
   NCADocumentType,
   ReadinessResult,
   SectionDefinition,
 } from "@/lib/generate/types";
-import type { ReportSection } from "@/lib/pdf/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
 interface DocumentState {
   id: string | null;
-  content: ReportSection[] | null;
+  content: ParsedSection[] | null;
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
 }
@@ -128,7 +128,7 @@ export function Generate2Page() {
               : detail.document.content;
           setDocumentState({
             id: detail.document.id,
-            content: content as ReportSection[],
+            content: content as ParsedSection[],
             actionRequiredCount: detail.document.actionRequiredCount || 0,
             evidencePlaceholderCount:
               detail.document.evidencePlaceholderCount || 0,
@@ -212,7 +212,7 @@ export function Generate2Page() {
       const fullContent = sectionContents
         .filter((s) => typeof s === "string" && s.length > 0)
         .join("\n\n");
-      const parsedSections = parseMarkdownToSections(fullContent);
+      const parsedSections = parseSectionsFromMarkdown(fullContent);
       const actionRequired = (
         fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
       ).length;

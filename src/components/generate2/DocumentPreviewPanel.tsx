@@ -9,7 +9,7 @@ import type {
   ReadinessResult,
   SectionDefinition,
 } from "@/lib/generate/types";
-import type { ReportSection } from "@/lib/pdf/types";
+import type { ParsedSection } from "@/lib/generate/parse-sections";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 type GenerationPhase = "init" | "sections" | "finalizing";
@@ -24,7 +24,7 @@ interface DocumentPreviewPanelProps {
   currentSection: number;
   isGenerating: boolean;
   generationPhase: GenerationPhase;
-  documentContent: ReportSection[] | null;
+  documentContent: ParsedSection[] | null;
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
   documentId: string | null;
