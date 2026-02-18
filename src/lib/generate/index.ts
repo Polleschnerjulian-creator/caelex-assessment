@@ -139,26 +139,53 @@ export async function generateSection(
     sectionTitle,
   );
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS_PER_SECTION,
-    temperature: 0.3,
-    system: systemPrompt,
-    messages: [{ role: "user", content: sectionPrompt }],
-  });
+  // Retry with exponential backoff for transient errors (429, 529, 500)
+  const MAX_RETRIES = 3;
+  let lastError: Error | null = null;
 
-  const content =
-    response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("\n") || "";
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await client.messages.create({
+        model: MODEL,
+        max_tokens: MAX_TOKENS_PER_SECTION,
+        temperature: 0.3,
+        system: systemPrompt,
+        messages: [{ role: "user", content: sectionPrompt }],
+      });
 
-  return {
-    content,
-    sectionIndex,
-    inputTokens: response.usage.input_tokens,
-    outputTokens: response.usage.output_tokens,
-  };
+      const content =
+        response.content
+          .filter(
+            (block): block is Anthropic.TextBlock => block.type === "text",
+          )
+          .map((block) => block.text)
+          .join("\n") || "";
+
+      return {
+        content,
+        sectionIndex,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      const status = (err as { status?: number }).status;
+      const isRetryable = status === 429 || status === 529 || status === 500;
+
+      if (!isRetryable || attempt === MAX_RETRIES) {
+        throw lastError;
+      }
+
+      // Exponential backoff: 2s, 4s, 8s
+      const delayMs = 2000 * Math.pow(2, attempt);
+      console.log(
+        `[generateSection] Retrying section ${sectionNumber} (attempt ${attempt + 1}/${MAX_RETRIES}) after ${delayMs}ms — status ${status}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError || new Error("Section generation failed after retries");
 }
 
 /**
