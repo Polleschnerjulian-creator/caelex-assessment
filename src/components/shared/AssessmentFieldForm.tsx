@@ -54,17 +54,28 @@ function FieldRenderer({
             <button
               type="button"
               onClick={() => setShowHelp(!showHelp)}
-              className="text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+              className={`rounded-full p-0.5 transition-colors ${
+                showHelp
+                  ? "text-emerald-400 bg-emerald-500/10"
+                  : "text-slate-400 dark:text-white/30 hover:text-emerald-400 hover:bg-emerald-500/10"
+              }`}
+              title="Show explanation"
             >
-              <HelpCircle size={12} />
+              <HelpCircle size={13} />
             </button>
           )}
         </div>
 
         {showHelp && field.helpText && (
-          <p className="text-[11px] text-slate-500 dark:text-white/40 mb-1.5 italic">
-            {field.helpText}
-          </p>
+          <div className="flex gap-2 mb-2 px-3 py-2 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/10">
+            <HelpCircle
+              size={13}
+              className="text-emerald-400/60 flex-shrink-0 mt-0.5"
+            />
+            <p className="text-[11px] text-emerald-300/70 leading-relaxed">
+              {field.helpText}
+            </p>
+          </div>
         )}
 
         {field.type === "boolean" && (
