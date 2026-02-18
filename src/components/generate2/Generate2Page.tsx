@@ -6,6 +6,7 @@ import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
 import { SECTION_DEFINITIONS } from "@/lib/generate/section-definitions";
 import { NCA_DOC_TYPE_MAP } from "@/lib/generate/types";
+import { parseMarkdownToSections } from "@/lib/astra/document-generator/content-structurer";
 import { csrfHeaders } from "@/lib/csrf-client";
 import type {
   NCADocumentType,
@@ -205,15 +206,31 @@ export function Generate2Page() {
         setCompletedSections(i + 1);
       }
 
-      // 3. Finalize
+      // 3. Finalize (client-side parsing to avoid server timeout)
       setGenerationPhase("finalizing");
+
+      const fullContent = sectionContents
+        .filter((s) => typeof s === "string" && s.length > 0)
+        .join("\n\n");
+      const parsedSections = parseMarkdownToSections(fullContent);
+      const actionRequired = (
+        fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
+      ).length;
+      const evidencePlaceholders = (
+        fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
+      ).length;
+
+      // Send only parsed result to server (thin DB update)
       const completeRes = await fetch(
         `/api/generate2/documents/${documentId}/complete`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
-            sectionContents,
+            parsedSections,
+            rawContent: fullContent,
+            actionRequiredCount: actionRequired,
+            evidencePlaceholderCount: evidencePlaceholders,
             totalInputTokens,
             totalOutputTokens,
             generationTimeMs: Date.now() - startTime,
@@ -228,13 +245,26 @@ export function Generate2Page() {
         throw new Error(errData.error || "Failed to finalize document");
       }
 
-      const completeData = await completeRes.json();
+      const finalSections =
+        parsedSections.length > 0
+          ? parsedSections
+          : [
+              {
+                title: "Generated Content",
+                content: [
+                  {
+                    type: "text" as const,
+                    value: fullContent.substring(0, 50000),
+                  },
+                ],
+              },
+            ];
 
       setDocumentState({
         id: documentId,
-        content: completeData.content,
-        actionRequiredCount: completeData.actionRequiredCount,
-        evidencePlaceholderCount: completeData.evidencePlaceholderCount,
+        content: finalSections,
+        actionRequiredCount: actionRequired,
+        evidencePlaceholderCount: evidencePlaceholders,
       });
       setCompletedDocs((prev) => new Set([...prev, selectedType]));
       setPanelState("completed");

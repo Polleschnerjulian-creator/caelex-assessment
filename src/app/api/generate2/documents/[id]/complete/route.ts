@@ -3,16 +3,17 @@
  *
  * POST /api/generate2/documents/[id]/complete
  *
- * Assembles all sections, counts markers, marks document as COMPLETED.
+ * Receives pre-parsed sections from the client and saves to DB.
+ * All heavy processing (markdown parsing, marker counting) is done client-side.
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { finalizeGeneration } from "@/lib/generate";
+import { logAuditEvent } from "@/lib/audit";
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function POST(
   request: NextRequest,
@@ -39,56 +40,65 @@ export async function POST(
       );
     }
 
-    let body: Record<string, unknown>;
-    try {
-      body = await request.json();
-    } catch (parseErr) {
-      console.error("Finalize: failed to parse request body:", parseErr);
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
-    }
-
+    const body = await request.json();
     const {
-      sectionContents,
+      parsedSections,
+      rawContent,
+      actionRequiredCount,
+      evidencePlaceholderCount,
       totalInputTokens,
       totalOutputTokens,
       generationTimeMs,
     } = body as {
-      sectionContents: string[];
+      parsedSections: unknown[];
+      rawContent: string;
+      actionRequiredCount: number;
+      evidencePlaceholderCount: number;
       totalInputTokens: number;
       totalOutputTokens: number;
       generationTimeMs: number;
     };
 
-    if (!sectionContents || !Array.isArray(sectionContents)) {
+    if (!parsedSections || !Array.isArray(parsedSections)) {
       return NextResponse.json(
-        { error: "Missing sectionContents" },
+        { error: "Missing parsedSections" },
         { status: 400 },
       );
     }
 
-    console.log(
-      `Finalize: docId=${documentId}, sections=${sectionContents.length}, ` +
-        `totalChars=${sectionContents.reduce((a, s) => a + (s?.length || 0), 0)}`,
-    );
+    await prisma.nCADocument.update({
+      where: { id: documentId },
+      data: {
+        status: "COMPLETED",
+        content: JSON.parse(JSON.stringify(parsedSections)),
+        rawContent: rawContent || "",
+        modelUsed: "claude-sonnet-4-6",
+        inputTokens: totalInputTokens || 0,
+        outputTokens: totalOutputTokens || 0,
+        generationTimeMs: generationTimeMs || 0,
+        actionRequiredCount: actionRequiredCount || 0,
+        evidencePlaceholderCount: evidencePlaceholderCount || 0,
+      },
+    });
 
-    const result = await finalizeGeneration(
-      documentId,
-      session.user.id,
-      sectionContents,
-      totalInputTokens || 0,
-      totalOutputTokens || 0,
-      generationTimeMs || 0,
-    );
+    // Non-blocking audit log
+    logAuditEvent({
+      action: "DOCUMENT_GENERATED",
+      userId: session.user.id,
+      entityType: "NCADocument",
+      entityId: documentId,
+      metadata: {
+        inputTokens: totalInputTokens || 0,
+        outputTokens: totalOutputTokens || 0,
+        generationTimeMs: generationTimeMs || 0,
+        sectionCount: parsedSections.length,
+        actionRequiredCount: actionRequiredCount || 0,
+        evidencePlaceholderCount: evidencePlaceholderCount || 0,
+        phase: "complete",
+      },
+    }).catch(() => {});
 
-    console.log(
-      `Finalize: success, parsedSections=${result.content.length}, ` +
-        `actions=${result.actionRequiredCount}, evidence=${result.evidencePlaceholderCount}`,
-    );
-
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Finalize generation error:", error);
     const message =
