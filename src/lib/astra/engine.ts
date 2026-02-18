@@ -40,7 +40,7 @@ import {
 // ─── Anthropic Client ───
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-5-20250929";
+const MODEL = "claude-sonnet-4-6-20250514";
 const MAX_TOKENS = 4096;
 const MAX_TOOL_ITERATIONS = 10; // Safety limit for tool call loops
 
