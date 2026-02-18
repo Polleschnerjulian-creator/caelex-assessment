@@ -1889,7 +1889,11 @@ export default function NIS2AssessmentDetailPage() {
                   <motion.div
                     key={req.id}
                     layout
-                    className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
+                    className={`rounded-xl overflow-hidden transition-all ${
+                      isExpanded
+                        ? "bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/[0.15] ring-1 ring-slate-200 dark:ring-white/[0.05]"
+                        : "bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08]"
+                    }`}
                   >
                     <button
                       onClick={() => toggleReqExpand(req.requirementId)}

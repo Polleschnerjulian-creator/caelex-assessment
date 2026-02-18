@@ -1359,7 +1359,12 @@ function CybersecurityPageContent() {
                     return (
                       <div
                         key={req.id}
-                        className="bg-white/[0.015] border border-white/10 rounded-xl overflow-hidden hover:border-white/[0.08] transition-all"
+                        className={`rounded-xl overflow-hidden transition-all cursor-pointer ${
+                          isExpanded
+                            ? "bg-white/[0.04] border border-white/[0.15] ring-1 ring-white/[0.05]"
+                            : "bg-white/[0.015] border border-white/10 hover:border-white/[0.12] hover:bg-white/[0.025]"
+                        }`}
+                        onClick={() => toggleExpanded(req.id)}
                       >
                         {/* Main row */}
                         <div className="p-5">
@@ -1421,6 +1426,7 @@ function CybersecurityPageContent() {
                                       e.target.value as RequirementStatus,
                                     )
                                   }
+                                  onClick={(e) => e.stopPropagation()}
                                   aria-label={`Compliance status for ${req.title}`}
                                   className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statConfig.color === "green" ? "text-green-400" : statConfig.color === "yellow" ? "text-yellow-400" : statConfig.color === "red" ? "text-red-400" : "text-white/60"}`}
                                 >
@@ -1449,20 +1455,15 @@ function CybersecurityPageContent() {
                                   </p>
                                 )}
 
-                              {/* Expand/collapse button */}
-                              <button
-                                onClick={() => toggleExpanded(req.id)}
-                                aria-expanded={isExpanded}
-                                aria-controls={`details-${req.id}`}
-                                className="flex items-center gap-1 text-[11px] text-white/70 hover:text-white/70 transition-colors"
-                              >
+                              {/* Expand/collapse indicator */}
+                              <div className="flex items-center gap-1 text-[11px] text-white/40">
                                 {isExpanded ? (
                                   <ChevronUp size={14} aria-hidden="true" />
                                 ) : (
                                   <ChevronDown size={14} aria-hidden="true" />
                                 )}
                                 {isExpanded ? "Hide details" : "Show details"}
-                              </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1476,7 +1477,10 @@ function CybersecurityPageContent() {
                               exit={{ height: 0, opacity: 0 }}
                               className="border-t border-white/10"
                             >
-                              <div className="p-5 pt-4 space-y-4">
+                              <div
+                                className="p-5 pt-4 space-y-4"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {/* Sub-question form */}
                                 {fields.length > 0 && (
                                   <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
