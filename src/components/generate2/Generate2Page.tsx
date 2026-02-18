@@ -190,7 +190,12 @@ export function Generate2Page() {
         );
 
         if (!sectionRes.ok) {
-          throw new Error(`Failed to generate section ${i + 1}`);
+          const errData = await sectionRes
+            .json()
+            .catch(() => ({ error: `Section ${i + 1} failed` }));
+          throw new Error(
+            errData.error || `Failed to generate section ${i + 1}`,
+          );
         }
 
         const sectionData = await sectionRes.json();
@@ -217,7 +222,10 @@ export function Generate2Page() {
       );
 
       if (!completeRes.ok) {
-        throw new Error("Failed to finalize document");
+        const errData = await completeRes
+          .json()
+          .catch(() => ({ error: "Finalization failed (no details)" }));
+        throw new Error(errData.error || "Failed to finalize document");
       }
 
       const completeData = await completeRes.json();

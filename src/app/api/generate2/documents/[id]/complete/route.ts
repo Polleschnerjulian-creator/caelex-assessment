@@ -39,7 +39,17 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      console.error("Finalize: failed to parse request body:", parseErr);
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+
     const {
       sectionContents,
       totalInputTokens,
@@ -59,6 +69,11 @@ export async function POST(
       );
     }
 
+    console.log(
+      `Finalize: docId=${documentId}, sections=${sectionContents.length}, ` +
+        `totalChars=${sectionContents.reduce((a, s) => a + (s?.length || 0), 0)}`,
+    );
+
     const result = await finalizeGeneration(
       documentId,
       session.user.id,
@@ -68,14 +83,16 @@ export async function POST(
       generationTimeMs || 0,
     );
 
+    console.log(
+      `Finalize: success, parsedSections=${result.content.length}, ` +
+        `actions=${result.actionRequiredCount}, evidence=${result.evidencePlaceholderCount}`,
+    );
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Finalize generation error:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Finalization failed",
-      },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Finalization failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

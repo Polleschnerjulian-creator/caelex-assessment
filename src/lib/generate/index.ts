@@ -172,8 +172,22 @@ export async function finalizeGeneration(
   totalOutputTokens: number,
   generationTimeMs: number,
 ): Promise<Generate2CompleteResult> {
-  const fullContent = sectionContents.join("\n\n");
+  // Filter out null/undefined values and ensure all entries are strings
+  const validContents = sectionContents
+    .map((s) => (typeof s === "string" ? s : ""))
+    .filter((s) => s.length > 0);
+
+  const fullContent = validContents.join("\n\n");
+
+  console.log(
+    `[finalizeGeneration] Parsing ${validContents.length} sections, totalChars=${fullContent.length}`,
+  );
+
   const sections = parseMarkdownToSections(fullContent);
+
+  console.log(
+    `[finalizeGeneration] Parsed into ${sections.length} report sections`,
+  );
 
   // Count [ACTION REQUIRED] and [EVIDENCE:] markers
   const actionRequiredCount = (
@@ -183,11 +197,29 @@ export async function finalizeGeneration(
     fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
   ).length;
 
+  // If no sections were parsed (AI didn't use ## SECTION: markers),
+  // create a single section from the raw content as fallback
+  const finalSections =
+    sections.length > 0
+      ? sections
+      : [
+          {
+            title: "Generated Content",
+            content: [
+              { type: "text" as const, value: fullContent.substring(0, 50000) },
+            ],
+          },
+        ];
+
+  const contentJson = JSON.parse(JSON.stringify(finalSections));
+
+  console.log(`[finalizeGeneration] Updating DB for doc ${documentId}`);
+
   await prisma.nCADocument.update({
     where: { id: documentId },
     data: {
       status: "COMPLETED",
-      content: JSON.parse(JSON.stringify(sections)),
+      content: contentJson,
       rawContent: fullContent,
       modelUsed: MODEL,
       inputTokens: totalInputTokens,
@@ -198,24 +230,34 @@ export async function finalizeGeneration(
     },
   });
 
-  await logAuditEvent({
-    action: "DOCUMENT_GENERATED",
-    userId,
-    entityType: "NCADocument",
-    entityId: documentId,
-    metadata: {
-      inputTokens: totalInputTokens,
-      outputTokens: totalOutputTokens,
-      generationTimeMs,
-      sectionCount: sections.length,
-      actionRequiredCount,
-      evidencePlaceholderCount,
-      phase: "complete",
-    },
-  });
+  console.log(`[finalizeGeneration] DB updated, logging audit event`);
+
+  // Audit log in a try-catch so it doesn't block the response
+  try {
+    await logAuditEvent({
+      action: "DOCUMENT_GENERATED",
+      userId,
+      entityType: "NCADocument",
+      entityId: documentId,
+      metadata: {
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        generationTimeMs,
+        sectionCount: finalSections.length,
+        actionRequiredCount,
+        evidencePlaceholderCount,
+        phase: "complete",
+      },
+    });
+  } catch (auditErr) {
+    console.error(
+      "[finalizeGeneration] Audit log failed (non-blocking):",
+      auditErr,
+    );
+  }
 
   return {
-    content: sections,
+    content: finalSections,
     actionRequiredCount,
     evidencePlaceholderCount,
   };
