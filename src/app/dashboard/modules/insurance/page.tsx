@@ -180,6 +180,7 @@ function InsurancePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [showNewAssessment, setShowNewAssessment] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   // Removed PDF download in favor of AI Document Studio
 
   // Form state for new assessment
@@ -227,18 +228,22 @@ function InsurancePageContent() {
 
   const createAssessment = async () => {
     setIsSaving(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/insurance", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(formData),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSelectedAssessment(data.assessment);
-        setShowNewAssessment(false);
-        fetchAssessments();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+      const data = await res.json();
+      setSelectedAssessment(data.assessment);
+      setShowNewAssessment(false);
+      fetchAssessments();
     } catch (error) {
       console.error("Error creating assessment:", error);
     } finally {
@@ -1645,6 +1650,13 @@ function InsurancePageContent() {
                   </select>
                 </div>
               </div>
+
+              {createError && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] mt-6">
+                  <AlertTriangle size={14} className="flex-shrink-0" />
+                  {createError}
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button

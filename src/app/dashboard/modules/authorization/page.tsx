@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ChevronRight,
   AlertCircle,
+  AlertTriangle,
   Plus,
   Calendar,
   ExternalLink,
@@ -119,6 +120,7 @@ function AuthorizationPageContent() {
   const [formLaunchCountry, setFormLaunchCountry] = useState("");
   const [formTargetDate, setFormTargetDate] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Computed NCA determination for form
   const [ncaDetermination, setNcaDetermination] =
@@ -174,6 +176,7 @@ function AuthorizationPageContent() {
     if (!formOperatorType || (!formIsThirdCountry && !formCountry)) return;
 
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/authorization", {
         method: "POST",
@@ -187,13 +190,16 @@ function AuthorizationPageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setWorkflows((prev) => [data.workflow, ...prev]);
-        setSelectedWorkflow(data.workflow);
-        setShowNewWorkflowForm(false);
-        setActiveStep(1); // Move to documents step
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+      const data = await res.json();
+      setWorkflows((prev) => [data.workflow, ...prev]);
+      setSelectedWorkflow(data.workflow);
+      setShowNewWorkflowForm(false);
+      setActiveStep(1); // Move to documents step
     } catch (error) {
       console.error("Error creating workflow:", error);
     } finally {
@@ -703,6 +709,12 @@ function AuthorizationPageContent() {
                       )}
 
                     {/* Create Button */}
+                    {createError && (
+                      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] mt-6">
+                        <AlertTriangle size={14} className="flex-shrink-0" />
+                        {createError}
+                      </div>
+                    )}
                     <div className="mt-6 flex justify-end gap-3">
                       {workflows.length > 0 && (
                         <button

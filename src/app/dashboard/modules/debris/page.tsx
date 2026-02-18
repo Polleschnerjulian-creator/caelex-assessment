@@ -125,6 +125,7 @@ function DebrisPageContent() {
   const [missionName, setMissionName] = useState("");
   const [caServiceProvider, setCaServiceProvider] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Expandable card state
   const [expandedRequirement, setExpandedRequirement] = useState<string | null>(
@@ -195,6 +196,7 @@ function DebrisPageContent() {
       return;
 
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/debris", {
         method: "POST",
@@ -215,14 +217,17 @@ function DebrisPageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        setSelectedAssessment(data.assessment);
-        setShowNewAssessment(false);
-        setActiveStep(1);
-        await fetchRequirements(data.assessment.id);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      setSelectedAssessment(data.assessment);
+      setShowNewAssessment(false);
+      setActiveStep(1);
+      await fetchRequirements(data.assessment.id);
     } catch (error) {
       console.error("Error creating assessment:", error);
     } finally {
@@ -919,6 +924,12 @@ function DebrisPageContent() {
                 )}
 
                 {/* Actions */}
+                {createError && (
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                    <AlertTriangle size={14} className="flex-shrink-0" />
+                    {createError}
+                  </div>
+                )}
                 <div className="flex justify-end gap-3">
                   {assessments.length > 0 && (
                     <button
