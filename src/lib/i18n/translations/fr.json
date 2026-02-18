@@ -68,7 +68,8 @@
     "new": "NOUVEAU",
     "regulatoryFeed": "Flux réglementaire",
     "incidents": "Incidents",
-    "digitalTwin": "Digital Twin"
+    "digitalTwin": "Digital Twin",
+    "generate2": "Generate 2.0"
   },
   "topbar": {
     "runAssessment": "Lancer l'évaluation",
@@ -499,5 +500,33 @@
     "financialExposure": "Exposition financière",
     "emptyTitle": "Aucune donnée disponible",
     "emptyDescription": "Effectuez des évaluations de conformité pour alimenter votre Jumeau Numérique."
+  },
+  "generate2": {
+    "title": "Generate 2.0",
+    "subtitle": "Générateur de documents prêts pour la soumission NCA",
+    "ncaDocuments": "Documents NCA",
+    "documentsGenerated": "{count}/16 documents générés",
+    "categoryDebris": "Catégorie A — Atténuation des débris",
+    "categoryCyber": "Catégorie B — Cybersécurité",
+    "generatePackage": "Générer le package complet",
+    "generating": "Génération en cours...",
+    "selectDocument": "Sélectionner un type de document",
+    "selectDocumentDesc": "Choisissez un document NCA dans le panneau de gauche pour vérifier la disponibilité des données et générer un contenu prêt à soumettre.",
+    "dataReadiness": "Disponibilité des données",
+    "documentOutline": "Structure du document",
+    "generate": "Générer",
+    "estimatedTime": "Temps estimé : ~{min} min",
+    "generatingDocument": "Génération du document...",
+    "sections": "{completed}/{total} sections",
+    "actionRequired": "{count} Action requise",
+    "evidencePlaceholder": "{count} Preuves",
+    "euSpaceActReferences": "Références EU Space Act",
+    "gapAnalysis": "Analyse des lacunes",
+    "missingCriticalData": "Données critiques manquantes",
+    "quickLinks": "Liens rapides",
+    "aboutDocument": "À propos de ce document",
+    "context": "Contexte",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX"
   }
 }

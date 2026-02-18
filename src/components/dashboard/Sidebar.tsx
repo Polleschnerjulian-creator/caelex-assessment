@@ -35,6 +35,7 @@ import {
   Layers,
   FileSearch,
   Orbit,
+  Sparkles,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -642,6 +643,18 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 {t("sidebar.aiGenerate") !== "sidebar.aiGenerate"
                   ? t("sidebar.aiGenerate")
                   : "AI Generate"}
+              </NavItem>
+              <NavItem
+                href="/dashboard/generate"
+                icon={<Sparkles size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={
+                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
+                }
+              >
+                {t("sidebar.generate2") !== "sidebar.generate2"
+                  ? t("sidebar.generate2")
+                  : "Generate 2.0"}
               </NavItem>
               <NavItem
                 href="/dashboard/audit-center"

@@ -68,7 +68,8 @@
     "new": "NEW",
     "regulatoryFeed": "Regulatory Feed",
     "incidents": "Incidents",
-    "digitalTwin": "Digital Twin"
+    "digitalTwin": "Digital Twin",
+    "generate2": "Generate 2.0"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -499,5 +500,33 @@
     "financialExposure": "Financial Exposure",
     "emptyTitle": "No Data Available",
     "emptyDescription": "Complete compliance assessments to populate your Digital Twin."
+  },
+  "generate2": {
+    "title": "Generate 2.0",
+    "subtitle": "NCA-Submission-Ready Document Generator",
+    "ncaDocuments": "NCA Documents",
+    "documentsGenerated": "{count}/16 documents generated",
+    "categoryDebris": "Category A — Debris Mitigation",
+    "categoryCyber": "Category B — Cybersecurity",
+    "generatePackage": "Generate Full Package",
+    "generating": "Generating...",
+    "selectDocument": "Select a document type",
+    "selectDocumentDesc": "Choose an NCA document from the left panel to preview its readiness and generate submission-ready content.",
+    "dataReadiness": "Data Readiness",
+    "documentOutline": "Document Outline",
+    "generate": "Generate",
+    "estimatedTime": "Estimated time: ~{min} min",
+    "generatingDocument": "Generating document...",
+    "sections": "{completed}/{total} sections",
+    "actionRequired": "{count} Action Required",
+    "evidencePlaceholder": "{count} Evidence",
+    "euSpaceActReferences": "EU Space Act References",
+    "gapAnalysis": "Gap Analysis",
+    "missingCriticalData": "Missing Critical Data",
+    "quickLinks": "Quick Links",
+    "aboutDocument": "About This Document",
+    "context": "Context",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX"
   }
 }

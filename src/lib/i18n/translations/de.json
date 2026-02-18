@@ -68,7 +68,8 @@
     "new": "NEU",
     "regulatoryFeed": "Regulierungs-Feed",
     "incidents": "Vorfälle",
-    "digitalTwin": "Digital Twin"
+    "digitalTwin": "Digital Twin",
+    "generate2": "Generate 2.0"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
@@ -499,5 +500,33 @@
     "financialExposure": "Finanzielle Exposition",
     "emptyTitle": "Keine Daten verfügbar",
     "emptyDescription": "Führen Sie Compliance-Bewertungen durch, um Ihren Digital Twin zu füllen."
+  },
+  "generate2": {
+    "title": "Generate 2.0",
+    "subtitle": "NCA-Einreichungsfähige Dokumentengenerierung",
+    "ncaDocuments": "NCA Dokumente",
+    "documentsGenerated": "{count}/16 Dokumente generiert",
+    "categoryDebris": "Kategorie A — Weltraummüllvermeidung",
+    "categoryCyber": "Kategorie B — Cybersicherheit",
+    "generatePackage": "Vollständiges Paket generieren",
+    "generating": "Wird generiert...",
+    "selectDocument": "Dokumenttyp auswählen",
+    "selectDocumentDesc": "Wählen Sie ein NCA-Dokument im linken Panel aus, um die Datenbereitschaft zu prüfen und einreichungsfertige Inhalte zu generieren.",
+    "dataReadiness": "Datenbereitschaft",
+    "documentOutline": "Dokumentstruktur",
+    "generate": "Generieren",
+    "estimatedTime": "Geschätzte Zeit: ~{min} Min",
+    "generatingDocument": "Dokument wird generiert...",
+    "sections": "{completed}/{total} Abschnitte",
+    "actionRequired": "{count} Handlung erforderlich",
+    "evidencePlaceholder": "{count} Nachweise",
+    "euSpaceActReferences": "EU Space Act Referenzen",
+    "gapAnalysis": "Lückenanalyse",
+    "missingCriticalData": "Fehlende kritische Daten",
+    "quickLinks": "Schnelllinks",
+    "aboutDocument": "Über dieses Dokument",
+    "context": "Kontext",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX"
   }
 }

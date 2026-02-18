@@ -64,6 +64,8 @@ model User {
   breachReports          BreachReport[]          // GDPR Art. 33/34 breach reports
   complianceSnapshots    ComplianceSnapshot[]    // Digital Twin: daily compliance snapshots
   whatIfScenarios        WhatIfScenario[]        // Digital Twin: saved what-if scenarios
+  ncaDocuments           NCADocument[]           // Generate 2.0: NCA documents
+  ncaDocPackages         NCADocPackage[]         // Generate 2.0: NCA submission packages
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage  Int                     @default(0)
   lastReengagementAt     DateTime?
@@ -2432,6 +2434,8 @@ model Organization {
   widgetConfigs      WidgetConfig[]        // Embeddable widget configurations
   churnInterventions ChurnIntervention[]   // Churn intervention tracking
   regulatoryUpdateReads RegulatoryUpdateRead[] // Regulatory feed read tracking
+  ncaDocuments          NCADocument[]          // Generate 2.0: NCA documents
+  ncaDocPackages        NCADocPackage[]        // Generate 2.0: NCA submission packages
 
   @@index([slug])
 }
@@ -4228,4 +4232,107 @@ model WhatIfScenario {
   updatedAt        DateTime  @updatedAt
 
   @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Generate 2.0 — NCA Document Generation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum NCADocumentType {
+  DMP                    // A1: Debris Mitigation Plan
+  ORBITAL_LIFETIME       // A2: Orbital Lifetime Analysis
+  COLLISION_AVOIDANCE    // A3: Collision Avoidance Ops Plan
+  EOL_DISPOSAL           // A4: End-of-Life Disposal Plan
+  PASSIVATION            // A5: Passivation Procedure
+  REENTRY_RISK           // A6: Re-Entry Casualty Risk
+  DEBRIS_SUPPLY_CHAIN    // A7: Supply Chain Compliance (Debris)
+  LIGHT_RF_POLLUTION     // A8: Light & RF Pollution Mitigation
+  CYBER_POLICY           // B1: Cybersecurity Policy
+  CYBER_RISK_ASSESSMENT  // B2: Cybersecurity Risk Assessment
+  INCIDENT_RESPONSE      // B3: Incident Response Plan
+  BCP_RECOVERY           // B4: Business Continuity & Recovery
+  ACCESS_CONTROL         // B5: Access Control & Auth Policy
+  SUPPLY_CHAIN_SECURITY  // B6: Supply Chain Security
+  EUSRN_PROCEDURES       // B7: EUSRN Notification Procedures
+  COMPLIANCE_MATRIX      // B8: Compliance Verification Matrix
+}
+
+enum NCADocumentStatus {
+  DRAFT
+  GENERATING
+  COMPLETED
+  FAILED
+  EXPORTED
+}
+
+enum NCAPackageStatus {
+  CREATED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+model NCADocument {
+  id                       String            @id @default(cuid())
+  userId                   String
+  organizationId           String
+  packageId                String?
+  documentType             NCADocumentType
+  title                    String
+  language                 String            @default("en")
+  status                   NCADocumentStatus @default(DRAFT)
+  content                  Json?             // ReportSection[]
+  rawContent               String?           @db.Text
+  editedContent            Json?
+  isEdited                 Boolean           @default(false)
+  readinessScore           Int?
+  actionRequiredCount      Int               @default(0)
+  evidencePlaceholderCount Int               @default(0)
+  modelUsed                String?
+  inputTokens              Int?
+  outputTokens             Int?
+  generationTimeMs         Int?
+  promptVersion            String?
+  pdfGenerated             Boolean           @default(false)
+  pdfGeneratedAt           DateTime?
+  docxGenerated            Boolean           @default(false)
+  docxGeneratedAt          DateTime?
+  version                  Int               @default(1)
+  parentId                 String?
+  error                    String?           @db.Text
+  parent                   NCADocument?      @relation("NCADocVersions", fields: [parentId], references: [id])
+  versions                 NCADocument[]     @relation("NCADocVersions")
+  user                     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization             Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  package                  NCADocPackage?    @relation(fields: [packageId], references: [id])
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([documentType])
+  @@index([packageId])
+}
+
+model NCADocPackage {
+  id                    String           @id @default(cuid())
+  userId                String
+  organizationId        String
+  name                  String           @default("NCA Submission Package")
+  status                NCAPackageStatus @default(CREATED)
+  overallReadiness      Int?
+  documentsTotal        Int              @default(0)
+  documentsCompleted    Int              @default(0)
+  documentsFailed       Int              @default(0)
+  totalInputTokens      Int?
+  totalOutputTokens     Int?
+  totalGenerationTimeMs Int?
+  documents             NCADocument[]
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([organizationId])
 }

@@ -161,6 +161,14 @@ export const rateLimiters = redis
         prefix: "ratelimit:mfa",
       }),
 
+      // Generate 2.0: 20 per hour per user (AI section generation calls)
+      generate2: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(20, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:generate2",
+      }),
+
       // Admin operations: 30 per minute
       admin: new Ratelimit({
         redis,
@@ -252,6 +260,7 @@ const fallbackLimiters = {
   public_api: new InMemoryRateLimiter(5, 3600000),
   widget: new InMemoryRateLimiter(30, 3600000),
   mfa: new InMemoryRateLimiter(5, 60000),
+  generate2: new InMemoryRateLimiter(20, 3600000),
   admin: new InMemoryRateLimiter(30, 60000),
 };
 
@@ -270,6 +279,7 @@ export type RateLimitType =
   | "nca_package"
   | "public_api"
   | "widget"
+  | "generate2"
   | "mfa"
   | "admin";
 
