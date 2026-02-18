@@ -24,7 +24,7 @@ import type {
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = "claude-sonnet-4-5-20250929";
-const MAX_TOKENS_PER_SECTION = 2048;
+const MAX_TOKENS_PER_SECTION = 4096;
 const PROMPT_VERSION = "gen2-v1.0";
 
 let anthropicClient: Anthropic | null = null;

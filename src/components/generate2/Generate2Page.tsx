@@ -235,24 +235,30 @@ export function Generate2Page() {
   }
 
   async function handleExportPdf() {
-    if (!documentState.id) return;
+    if (!documentState.id || !documentState.content || !selectedType) return;
 
     try {
-      const res = await fetch(
-        `/api/generate2/documents/${documentState.id}/export`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({ format: "pdf" }),
-        },
-      );
+      // 1. Mark as exported via API
+      await fetch(`/api/generate2/documents/${documentState.id}/export`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ format: "pdf" }),
+      });
 
-      if (res.ok) {
-        // PDF generation is done client-side using the returned sections
-        // For now, just mark as exported
-        const _data = await res.json();
-        // TODO: Integrate with existing PDF generator
-      }
+      // 2. Dynamic import jsPDF generator (client-side only)
+      const { generateDocumentPDF } = await import("@/lib/pdf/jspdf-generator");
+      const meta = NCA_DOC_TYPE_MAP[selectedType];
+      const blob = generateDocumentPDF(meta.title, documentState.content);
+
+      // 3. Trigger browser download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${meta.code}_${meta.shortTitle.replace(/[^a-zA-Z0-9\-_ ]/g, "")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed:", err);
     }
