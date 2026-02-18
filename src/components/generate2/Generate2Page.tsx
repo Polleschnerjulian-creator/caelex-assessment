@@ -6,6 +6,7 @@ import { DocumentPreviewPanel } from "./DocumentPreviewPanel";
 import { ContextPanel } from "./ContextPanel";
 import { SECTION_DEFINITIONS } from "@/lib/generate/section-definitions";
 import { NCA_DOC_TYPE_MAP } from "@/lib/generate/types";
+import { csrfHeaders } from "@/lib/csrf-client";
 import type {
   NCADocumentType,
   ReadinessResult,
@@ -154,7 +155,7 @@ export function Generate2Page() {
       // 1. Initialize
       const initRes = await fetch("/api/generate2/documents", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ documentType: selectedType }),
       });
 
@@ -174,7 +175,7 @@ export function Generate2Page() {
           `/api/generate2/documents/${documentId}/section`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
             body: JSON.stringify({
               sectionIndex: i,
               sectionTitle: sectionDefs[i].title,
@@ -199,7 +200,7 @@ export function Generate2Page() {
         `/api/generate2/documents/${documentId}/complete`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({
             sectionContents,
             totalInputTokens,
@@ -241,7 +242,7 @@ export function Generate2Page() {
         `/api/generate2/documents/${documentState.id}/export`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
           body: JSON.stringify({ format: "pdf" }),
         },
       );
