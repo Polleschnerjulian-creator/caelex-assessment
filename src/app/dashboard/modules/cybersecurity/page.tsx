@@ -232,6 +232,7 @@ function CybersecurityPageContent() {
   });
   const [assessmentName, setAssessmentName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Generated framework state
   const [generatedFramework, setGeneratedFramework] =
@@ -291,6 +292,7 @@ function CybersecurityPageContent() {
       return;
 
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/cybersecurity", {
         method: "POST",
@@ -301,16 +303,29 @@ function CybersecurityPageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        setSelectedAssessment(data.assessment);
-        setShowNewAssessment(false);
-        setActiveStep(1);
-        await fetchRequirements(data.assessment.id);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const msg =
+          res.status === 401
+            ? "Session expired — please log in again."
+            : res.status === 403
+              ? "Request blocked — please reload the page and try again."
+              : errData?.error || `Failed to create assessment (${res.status})`;
+        setCreateError(msg);
+        return;
       }
+
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      setSelectedAssessment(data.assessment);
+      setShowNewAssessment(false);
+      setActiveStep(1);
+      await fetchRequirements(data.assessment.id);
     } catch (error) {
       console.error("Error creating assessment:", error);
+      setCreateError(
+        "Network error — please check your connection and try again.",
+      );
     } finally {
       setCreating(false);
     }
@@ -1172,6 +1187,13 @@ function CybersecurityPageContent() {
                     Create Assessment
                   </button>
                 </div>
+
+                {createError && (
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                    <AlertTriangle size={14} className="flex-shrink-0" />
+                    {createError}
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
