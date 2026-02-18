@@ -20,7 +20,7 @@ import type {
 import { DOCUMENT_TYPE_META as DOC_META, DOCUMENT_SECTIONS } from "./types";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6-20250514";
+const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 16384;
 const MAX_TOKENS_PER_SECTION = 2048;
 const PROMPT_VERSION = "v1.0";

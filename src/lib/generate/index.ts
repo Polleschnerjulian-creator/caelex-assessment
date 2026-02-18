@@ -23,7 +23,7 @@ import type {
 } from "./types";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6-20250514";
+const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS_PER_SECTION = 4096;
 const PROMPT_VERSION = "gen2-v1.0";
 
