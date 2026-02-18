@@ -43,6 +43,9 @@ export function Generate2Page() {
     actionRequiredCount: 0,
     evidencePlaceholderCount: 0,
   });
+  const [generationPhase, setGenerationPhase] = useState<
+    "init" | "sections" | "finalizing"
+  >("init");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -142,6 +145,7 @@ export function Generate2Page() {
     setError(null);
     setIsGenerating(true);
     setPanelState("generating");
+    setGenerationPhase("init");
     setCompletedSections(0);
     setCurrentSection(0);
 
@@ -166,6 +170,7 @@ export function Generate2Page() {
 
       const initData = await initRes.json();
       const documentId = initData.documentId;
+      setGenerationPhase("sections");
 
       // 2. Generate each section
       for (let i = 0; i < sectionDefs.length; i++) {
@@ -196,6 +201,7 @@ export function Generate2Page() {
       }
 
       // 3. Finalize
+      setGenerationPhase("finalizing");
       const completeRes = await fetch(
         `/api/generate2/documents/${documentId}/complete`,
         {
@@ -311,6 +317,7 @@ export function Generate2Page() {
           completedSections={completedSections}
           currentSection={currentSection}
           isGenerating={isGenerating}
+          generationPhase={generationPhase}
           documentContent={documentState.content}
           actionRequiredCount={documentState.actionRequiredCount}
           evidencePlaceholderCount={documentState.evidencePlaceholderCount}

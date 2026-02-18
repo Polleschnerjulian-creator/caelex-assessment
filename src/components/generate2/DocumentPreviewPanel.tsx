@@ -12,6 +12,7 @@ import type {
 import type { ReportSection } from "@/lib/pdf/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
+type GenerationPhase = "init" | "sections" | "finalizing";
 
 interface DocumentPreviewPanelProps {
   selectedType: NCADocumentType | null;
@@ -22,6 +23,7 @@ interface DocumentPreviewPanelProps {
   completedSections: number;
   currentSection: number;
   isGenerating: boolean;
+  generationPhase: GenerationPhase;
   documentContent: ReportSection[] | null;
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
@@ -40,6 +42,7 @@ export function DocumentPreviewPanel({
   completedSections,
   currentSection,
   isGenerating,
+  generationPhase,
   documentContent,
   actionRequiredCount,
   evidencePlaceholderCount,
@@ -75,6 +78,7 @@ export function DocumentPreviewPanel({
           completedSections={completedSections}
           currentSection={currentSection}
           isGenerating={isGenerating}
+          phase={generationPhase}
         />
       </div>
     );
