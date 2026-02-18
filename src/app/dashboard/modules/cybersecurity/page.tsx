@@ -417,6 +417,214 @@ function CybersecurityPageContent() {
     ).length;
   };
 
+  const exportFrameworkPDF = async (fw: Framework) => {
+    const { generateDocumentPDF } = await import("@/lib/pdf/jspdf-generator");
+    type Content = import("@/lib/pdf/types").ReportSectionContent;
+    type Section = import("@/lib/pdf/types").ReportSection;
+
+    const sections: Section[] = [
+      {
+        title: "Organization Profile",
+        content: [
+          {
+            type: "keyValue" as const,
+            items: [
+              {
+                key: "Organization Size",
+                value: fw.organizationProfile.organizationSize,
+              },
+              {
+                key: "Space Segment Complexity",
+                value: fw.organizationProfile.spaceSegmentComplexity,
+              },
+              {
+                key: "Data Sensitivity",
+                value: fw.organizationProfile.dataSensitivity,
+              },
+              {
+                key: "Simplified Regime",
+                value: fw.organizationProfile.simplifiedRegime ? "Yes" : "No",
+              },
+              ...(fw.organizationProfile.existingCertifications.length > 0
+                ? [
+                    {
+                      key: "Certifications",
+                      value:
+                        fw.organizationProfile.existingCertifications.join(
+                          ", ",
+                        ),
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      },
+      {
+        title: "Maturity Assessment",
+        content: [
+          {
+            type: "keyValue" as const,
+            items: [
+              {
+                key: "Overall Score",
+                value: `${fw.maturityAssessment.overallScore}%`,
+              },
+              {
+                key: "Maturity Level",
+                value: fw.maturityAssessment.maturityLevel,
+              },
+              {
+                key: "Description",
+                value: fw.maturityAssessment.maturityDescription,
+              },
+            ],
+          },
+          {
+            type: "heading" as const,
+            value: "Scores by Category",
+            level: 3 as const,
+          },
+          {
+            type: "table" as const,
+            headers: ["Category", "Score", "Compliant", "Total"],
+            rows: Object.entries(fw.maturityAssessment.categoryScores).map(
+              ([cat, s]) => [
+                cat.replace(/_/g, " "),
+                `${s.score}%`,
+                String(s.compliant),
+                String(s.total),
+              ],
+            ),
+          },
+        ],
+      },
+      {
+        title: "Compliance Status",
+        content: [
+          {
+            type: "keyValue" as const,
+            items: [
+              {
+                key: "Total Requirements",
+                value: String(fw.complianceStatus.totalRequirements),
+              },
+              {
+                key: "Compliant",
+                value: String(fw.complianceStatus.compliant),
+              },
+              { key: "Partial", value: String(fw.complianceStatus.partial) },
+              {
+                key: "Non-Compliant",
+                value: String(fw.complianceStatus.nonCompliant),
+              },
+              {
+                key: "Not Assessed",
+                value: String(fw.complianceStatus.notAssessed),
+              },
+              {
+                key: "Not Applicable",
+                value: String(fw.complianceStatus.notApplicable),
+              },
+            ],
+          },
+        ],
+      },
+      ...(fw.gapAnalysis.critical.length > 0 || fw.gapAnalysis.major.length > 0
+        ? [
+            {
+              title: "Gap Analysis",
+              content: [
+                ...(fw.gapAnalysis.critical.length > 0
+                  ? [
+                      {
+                        type: "alert" as const,
+                        message: `${fw.gapAnalysis.critical.length} critical gap(s) require immediate attention.`,
+                        severity: "error" as const,
+                      },
+                      {
+                        type: "table" as const,
+                        headers: [
+                          "Requirement",
+                          "Article",
+                          "Status",
+                          "Est. Weeks",
+                        ],
+                        rows: fw.gapAnalysis.critical.map((g) => [
+                          g.title,
+                          g.articleRef,
+                          g.status,
+                          String(g.implementationWeeks),
+                        ]),
+                      },
+                    ]
+                  : []),
+                ...(fw.gapAnalysis.major.length > 0
+                  ? [
+                      {
+                        type: "alert" as const,
+                        message: `${fw.gapAnalysis.major.length} major gap(s) should be addressed soon.`,
+                        severity: "warning" as const,
+                      },
+                      {
+                        type: "table" as const,
+                        headers: [
+                          "Requirement",
+                          "Article",
+                          "Status",
+                          "Est. Weeks",
+                        ],
+                        rows: fw.gapAnalysis.major.map((g) => [
+                          g.title,
+                          g.articleRef,
+                          g.status,
+                          String(g.implementationWeeks),
+                        ]),
+                      },
+                    ]
+                  : []),
+              ] as Content[],
+            },
+          ]
+        : []),
+      {
+        title: "Implementation Plan",
+        content: [
+          {
+            type: "text" as const,
+            value: `Estimated total implementation time: ${fw.implementationPlan.totalEstimatedWeeks} weeks.`,
+          },
+          ...fw.implementationPlan.phases.map((phase) => ({
+            type: "table" as const,
+            headers: [`${phase.name}`, "Priority", "Est. Weeks"],
+            rows: phase.requirements.map((r) => [
+              r.title,
+              r.priority,
+              String(r.estimatedWeeks),
+            ]),
+          })),
+        ],
+      },
+      {
+        title: "Recommendations",
+        content: [
+          { type: "list" as const, items: fw.recommendations, ordered: true },
+        ],
+      },
+    ];
+
+    const blob = generateDocumentPDF(
+      "Cybersecurity Framework Report",
+      sections,
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cybersecurity-framework-${selectedAssessment?.id || "report"}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const generateFramework = async () => {
     if (!selectedAssessment) return;
 
@@ -1693,24 +1901,33 @@ function CybersecurityPageContent() {
                         ).toLocaleString()}
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob(
-                          [JSON.stringify(generatedFramework, null, 2)],
-                          { type: "application/json" },
-                        );
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `cybersecurity-framework-${selectedAssessment.id}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}
-                      className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
-                    >
-                      <Download size={14} />
-                      Export JSON
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => exportFrameworkPDF(generatedFramework)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white text-black hover:bg-white/90 transition-colors"
+                      >
+                        <Download size={14} />
+                        Export PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          const blob = new Blob(
+                            [JSON.stringify(generatedFramework, null, 2)],
+                            { type: "application/json" },
+                          );
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `cybersecurity-framework-${selectedAssessment.id}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                      >
+                        <Download size={14} />
+                        JSON
+                      </button>
+                    </div>
                   </div>
 
                   {/* Maturity Overview */}
