@@ -53,6 +53,47 @@ function str(v: unknown): string {
   }
 }
 
+/**
+ * Insert spaces into words that are too wide for the given maxWidth (mm).
+ * jsPDF's splitTextToSize only breaks at whitespace, so long URLs, compound
+ * German words, or any unbroken string will overflow the right margin.
+ * This pre-processes text so every "word" fits within maxWidth.
+ */
+function breakLongWords(doc: jsPDF, text: string, maxWidth: number): string {
+  // Split on whitespace, preserving the whitespace tokens
+  const tokens = text.split(/(\s+)/);
+  const result: string[] = [];
+
+  for (const token of tokens) {
+    // Keep whitespace as-is
+    if (/^\s+$/.test(token)) {
+      result.push(token);
+      continue;
+    }
+    // If it fits, keep it
+    if (doc.getTextWidth(token) <= maxWidth) {
+      result.push(token);
+      continue;
+    }
+    // Break oversized word into chunks that fit
+    let remaining = token;
+    while (remaining.length > 0) {
+      let end = remaining.length;
+      // Shrink until it fits
+      while (
+        end > 1 &&
+        doc.getTextWidth(remaining.substring(0, end)) > maxWidth
+      ) {
+        end--;
+      }
+      result.push(remaining.substring(0, end));
+      remaining = remaining.substring(end);
+    }
+  }
+
+  return result.join(" ");
+}
+
 // ─── PDF Builder ───
 
 class DocumentPDFBuilder {
@@ -115,7 +156,8 @@ class DocumentPDFBuilder {
     this.doc.setFontSize(18);
     this.doc.setTextColor(...COL.primary);
     this.doc.setFont("helvetica", "bold");
-    const titleLines = this.doc.splitTextToSize(this.title, CONTENT_W);
+    const safeTitle = breakLongWords(this.doc, this.title, CONTENT_W);
+    const titleLines = this.doc.splitTextToSize(safeTitle, CONTENT_W);
     this.doc.text(titleLines, MARGIN_L, this.y);
     this.y += titleLines.length * 7 + 2;
 
@@ -161,7 +203,8 @@ class DocumentPDFBuilder {
     this.doc.setFontSize(13);
     this.doc.setTextColor(...COL.primary);
     this.doc.setFont("helvetica", "bold");
-    this.doc.text(titleText, MARGIN_L, this.y);
+    const safeSectionTitle = breakLongWords(this.doc, titleText, CONTENT_W);
+    this.doc.text(safeSectionTitle, MARGIN_L, this.y);
     this.y += 5;
 
     // Section underline
@@ -222,7 +265,8 @@ class DocumentPDFBuilder {
     this.doc.setFontSize(10);
     this.doc.setTextColor(...COL.body);
     this.doc.setFont("helvetica", "normal");
-    const lines = this.doc.splitTextToSize(text, CONTENT_W);
+    const safe = breakLongWords(this.doc, text, CONTENT_W);
+    const lines = this.doc.splitTextToSize(safe, CONTENT_W);
     const lineHeight = 4.5;
     const totalHeight = lines.length * lineHeight;
     this.checkPageBreak(totalHeight);
@@ -242,7 +286,8 @@ class DocumentPDFBuilder {
       this.doc.setTextColor(...COL.secondary);
     }
     this.doc.setFont("helvetica", "bold");
-    const lines = this.doc.splitTextToSize(text, CONTENT_W);
+    const safe = breakLongWords(this.doc, text, CONTENT_W);
+    const lines = this.doc.splitTextToSize(safe, CONTENT_W);
     this.doc.text(lines, MARGIN_L, this.y);
     this.y += lines.length * 5 + 3;
   }
@@ -259,7 +304,8 @@ class DocumentPDFBuilder {
 
     for (let i = 0; i < items.length; i++) {
       const text = str(items[i]);
-      const lines = this.doc.splitTextToSize(text, textWidth);
+      const safe = breakLongWords(this.doc, text, textWidth);
+      const lines = this.doc.splitTextToSize(safe, textWidth);
       const height = lines.length * 4.5;
       this.checkPageBreak(height);
 
@@ -336,7 +382,8 @@ class DocumentPDFBuilder {
       const key = str(rec.key);
       const value = str(rec.value);
 
-      const valLines = this.doc.splitTextToSize(value, valWidth - 5);
+      const safeVal = breakLongWords(this.doc, value, valWidth - 5);
+      const valLines = this.doc.splitTextToSize(safeVal, valWidth - 5);
       const height = Math.max(valLines.length * 4, 5);
       this.checkPageBreak(height + 2);
 
@@ -384,7 +431,8 @@ class DocumentPDFBuilder {
           : COL.alertInfoText;
 
     this.doc.setFontSize(9);
-    const lines = this.doc.splitTextToSize(message, CONTENT_W - 12);
+    const safe = breakLongWords(this.doc, message, CONTENT_W - 12);
+    const lines = this.doc.splitTextToSize(safe, CONTENT_W - 12);
     const boxHeight = lines.length * 4 + 8;
     this.checkPageBreak(boxHeight);
 

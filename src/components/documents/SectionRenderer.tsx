@@ -20,7 +20,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
   switch (block.type) {
     case "text":
       return (
-        <p className="text-sm text-slate-700 dark:text-white/70 leading-relaxed mb-3">
+        <p className="text-sm text-slate-700 dark:text-white/70 leading-relaxed mb-3 break-words">
           {str(block.value)}
         </p>
       );
@@ -47,7 +47,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
               <span className="text-slate-400 dark:text-white/30 mt-0.5 flex-shrink-0">
                 {block.ordered ? `${i + 1}.` : "\u2022"}
               </span>
-              <span>{str(item)}</span>
+              <span className="break-words">{str(item)}</span>
             </li>
           ))}
         </ul>
@@ -81,7 +81,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
                   {(Array.isArray(row) ? row : []).map((cell, ci) => (
                     <td
                       key={ci}
-                      className="px-3 py-2 text-slate-700 dark:text-white/60"
+                      className="px-3 py-2 text-slate-700 dark:text-white/60 break-words"
                     >
                       {str(cell)}
                     </td>
@@ -101,7 +101,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
               <span className="font-medium text-slate-700 dark:text-white/70 min-w-[140px]">
                 {str(item?.key)}:
               </span>
-              <span className="text-slate-600 dark:text-white/50">
+              <span className="text-slate-600 dark:text-white/50 break-words">
                 {str(item?.value)}
               </span>
             </div>

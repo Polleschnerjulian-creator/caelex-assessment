@@ -61,6 +61,7 @@ const s = {
     lineHeight: 1.5,
     color: "#2D3748",
     marginBottom: 7,
+    overflow: "hidden" as const,
   },
   h2: {
     fontSize: 12,
@@ -79,7 +80,13 @@ const s = {
   listItem: { flexDirection: "row" as const, marginBottom: 3 },
   bullet: { width: 14, fontSize: 10, color: "#4A5568" },
   listNum: { width: 18, fontSize: 10, color: "#4A5568" },
-  listText: { flex: 1, fontSize: 10, lineHeight: 1.4, color: "#2D3748" },
+  listText: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 1.4,
+    color: "#2D3748",
+    overflow: "hidden" as const,
+  },
   table: { marginBottom: 12, borderWidth: 1, borderColor: "#E2E8F0" },
   thRow: {
     flexDirection: "row" as const,
@@ -99,7 +106,13 @@ const s = {
     fontWeight: "bold" as const,
     color: "#1E3A5F",
   },
-  td: { flex: 1, padding: 6, fontSize: 9, color: "#2D3748" },
+  td: {
+    flex: 1,
+    padding: 6,
+    fontSize: 9,
+    color: "#2D3748",
+    overflow: "hidden" as const,
+  },
   kvRow: {
     flexDirection: "row" as const,
     marginBottom: 4,
@@ -113,7 +126,12 @@ const s = {
     fontWeight: "bold" as const,
     color: "#4A5568",
   },
-  kvVal: { width: "65%", fontSize: 10, color: "#2D3748" },
+  kvVal: {
+    width: "65%",
+    fontSize: 10,
+    color: "#2D3748",
+    overflow: "hidden" as const,
+  },
   alertInfo: {
     padding: 10,
     marginBottom: 10,
