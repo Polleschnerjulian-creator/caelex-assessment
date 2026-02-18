@@ -792,6 +792,7 @@ export default function ExportControlPage() {
   const [statusFilter, setStatusFilter] = useState<ComplianceStatus | "all">(
     "all",
   );
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Check localStorage for disclaimer acknowledgement
   useEffect(() => {
@@ -863,6 +864,7 @@ export default function ExportControlPage() {
       return;
     }
 
+    setCreateError(null);
     try {
       const res = await fetch("/api/export-control", {
         method: "POST",
@@ -870,14 +872,18 @@ export default function ExportControlPage() {
         body: JSON.stringify(wizardData),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        setCurrentAssessment(data.assessment);
-        setShowWizard(false);
-        setWizardStep(1);
-        setWizardData({});
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      setCurrentAssessment(data.assessment);
+      setShowWizard(false);
+      setWizardStep(1);
+      setWizardData({});
     } catch (error) {
       console.error("Failed to create assessment:", error);
     }
@@ -1056,31 +1062,39 @@ export default function ExportControlPage() {
                 )}
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 flex justify-between">
-                <button
-                  onClick={() => {
-                    if (wizardStep === 1) {
-                      setShowWizard(false);
-                    } else {
-                      setWizardStep((s) => s - 1);
-                    }
-                  }}
-                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  {wizardStep === 1 ? "Cancel" : "Back"}
-                </button>
-                <button
-                  onClick={() => {
-                    if (wizardStep < 4) {
-                      setWizardStep((s) => s + 1);
-                    } else {
-                      handleCreateAssessment();
-                    }
-                  }}
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  {wizardStep < 4 ? "Continue" : "Create Assessment"}
-                </button>
+              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 space-y-3">
+                {createError && (
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                    <AlertTriangle size={14} className="flex-shrink-0" />
+                    {createError}
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => {
+                      if (wizardStep === 1) {
+                        setShowWizard(false);
+                      } else {
+                        setWizardStep((s) => s - 1);
+                      }
+                    }}
+                    className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  >
+                    {wizardStep === 1 ? "Cancel" : "Back"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (wizardStep < 4) {
+                        setWizardStep((s) => s + 1);
+                      } else {
+                        handleCreateAssessment();
+                      }
+                    }}
+                    className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {wizardStep < 4 ? "Continue" : "Create Assessment"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

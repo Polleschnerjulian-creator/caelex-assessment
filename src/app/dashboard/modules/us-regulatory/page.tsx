@@ -409,6 +409,7 @@ function UsRegulatoryPageContent() {
   });
   const [assessmentName, setAssessmentName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Filter state
   const [categoryFilter, setCategoryFilter] = useState<
@@ -483,6 +484,7 @@ function UsRegulatoryPageContent() {
       return;
 
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/us-regulatory", {
         method: "POST",
@@ -493,25 +495,29 @@ function UsRegulatoryPageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        await selectAssessment(data.assessment);
-        setShowNewAssessment(false);
-        // Reset form
-        setForm({
-          operatorTypes: [],
-          activityTypes: [],
-          isUsEntity: true,
-          usNexus: "us_licensed",
-          hasManeuverability: false,
-          hasPropulsion: false,
-          isConstellation: false,
-          isNGSO: true,
-          providesRemoteSensing: false,
-        });
-        setAssessmentName("");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      await selectAssessment(data.assessment);
+      setShowNewAssessment(false);
+      // Reset form
+      setForm({
+        operatorTypes: [],
+        activityTypes: [],
+        isUsEntity: true,
+        usNexus: "us_licensed",
+        hasManeuverability: false,
+        hasPropulsion: false,
+        isConstellation: false,
+        isNGSO: true,
+        providesRemoteSensing: false,
+      });
+      setAssessmentName("");
     } catch (error) {
       console.error("Error creating assessment:", error);
     } finally {
@@ -1186,23 +1192,31 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Create Button */}
-            <div className="flex justify-end">
-              <button
-                onClick={createAssessment}
-                disabled={
-                  form.operatorTypes.length === 0 ||
-                  form.activityTypes.length === 0 ||
-                  creating
-                }
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
-              >
-                {creating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-                Create Assessment
-              </button>
+            <div className="flex flex-col gap-3">
+              {createError && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                  <AlertTriangle size={14} className="flex-shrink-0" />
+                  {createError}
+                </div>
+              )}
+              <div className="flex justify-end">
+                <button
+                  onClick={createAssessment}
+                  disabled={
+                    form.operatorTypes.length === 0 ||
+                    form.activityTypes.length === 0 ||
+                    creating
+                  }
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
+                >
+                  {creating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4" />
+                  )}
+                  Create Assessment
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

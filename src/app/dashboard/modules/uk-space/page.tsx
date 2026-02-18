@@ -289,6 +289,7 @@ function UkSpacePageContent() {
   });
   const [assessmentName, setAssessmentName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Filter state
   const [categoryFilter, setCategoryFilter] = useState<
@@ -343,6 +344,7 @@ function UkSpacePageContent() {
     if (!form.operatorType || form.activityTypes.length === 0) return;
 
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/uk-space", {
         method: "POST",
@@ -353,12 +355,16 @@ function UkSpacePageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        await selectAssessment(data.assessment);
-        setShowNewAssessment(false);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      await selectAssessment(data.assessment);
+      setShowNewAssessment(false);
     } catch (error) {
       console.error("Error creating assessment:", error);
     } finally {
@@ -914,29 +920,37 @@ function UkSpacePageContent() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
-              <button
-                onClick={() => setShowNewAssessment(false)}
-                className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createAssessment}
-                disabled={
-                  !form.operatorType ||
-                  form.activityTypes.length === 0 ||
-                  creating
-                }
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
-              >
-                {creating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-                Start Assessment
-              </button>
+            <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
+              {createError && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                  <AlertTriangle size={14} className="flex-shrink-0" />
+                  {createError}
+                </div>
+              )}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowNewAssessment(false)}
+                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createAssessment}
+                  disabled={
+                    !form.operatorType ||
+                    form.activityTypes.length === 0 ||
+                    creating
+                  }
+                  className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
+                >
+                  {creating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4" />
+                  )}
+                  Start Assessment
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
