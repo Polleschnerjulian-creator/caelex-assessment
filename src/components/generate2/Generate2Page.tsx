@@ -43,6 +43,7 @@ export function Generate2Page() {
     evidencePlaceholderCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load readiness scores and existing documents
   useEffect(() => {
@@ -137,6 +138,7 @@ export function Generate2Page() {
   async function handleGenerate() {
     if (!selectedType) return;
 
+    setError(null);
     setIsGenerating(true);
     setPanelState("generating");
     setCompletedSections(0);
@@ -223,6 +225,8 @@ export function Generate2Page() {
       setPanelState("completed");
     } catch (err) {
       console.error("Generation failed:", err);
+      const message = err instanceof Error ? err.message : "Generation failed";
+      setError(message);
       setPanelState("pre-generation");
     } finally {
       setIsGenerating(false);
@@ -304,6 +308,7 @@ export function Generate2Page() {
           actionRequiredCount={documentState.actionRequiredCount}
           evidencePlaceholderCount={documentState.evidencePlaceholderCount}
           documentId={documentState.id}
+          error={error}
           onGenerate={handleGenerate}
           onExportPdf={handleExportPdf}
         />

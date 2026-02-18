@@ -26,6 +26,7 @@ interface DocumentPreviewPanelProps {
   actionRequiredCount: number;
   evidencePlaceholderCount: number;
   documentId: string | null;
+  error: string | null;
   onGenerate: () => void;
   onExportPdf: () => void;
 }
@@ -43,6 +44,7 @@ export function DocumentPreviewPanel({
   actionRequiredCount,
   evidencePlaceholderCount,
   documentId,
+  error,
   onGenerate,
   onExportPdf,
 }: DocumentPreviewPanelProps) {
@@ -326,6 +328,14 @@ export function DocumentPreviewPanel({
           ))}
         </div>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p className="text-sm font-medium text-red-400">Generation failed</p>
+          <p className="text-xs text-red-400/80 mt-1">{error}</p>
+        </div>
+      )}
 
       {/* Generate button */}
       <button
