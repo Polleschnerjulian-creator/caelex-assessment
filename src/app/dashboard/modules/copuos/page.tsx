@@ -252,6 +252,7 @@ function CopuosPageContent() {
   });
   const [missionName, setMissionName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Filter state
   const [sourceFilter, setSourceFilter] = useState<GuidelineSource | "all">(
@@ -304,6 +305,7 @@ function CopuosPageContent() {
   const createAssessment = async () => {
     if (!form.orbitRegime || !form.missionType) return;
 
+    setCreateError(null);
     setCreating(true);
     try {
       const res = await fetch("/api/copuos", {
@@ -315,12 +317,16 @@ function CopuosPageContent() {
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessments((prev) => [data.assessment, ...prev]);
-        await selectAssessment(data.assessment);
-        setShowNewAssessment(false);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+
+      const data = await res.json();
+      setAssessments((prev) => [data.assessment, ...prev]);
+      await selectAssessment(data.assessment);
+      setShowNewAssessment(false);
     } catch (error) {
       console.error("Error creating assessment:", error);
     } finally {
@@ -825,6 +831,13 @@ function CopuosPageContent() {
             </div>
 
             {/* Actions */}
+            {createError && (
+              <div className="flex items-center gap-2 px-4 py-3 mt-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                <AlertTriangle size={14} className="flex-shrink-0" />
+                {createError}
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setShowNewAssessment(false)}

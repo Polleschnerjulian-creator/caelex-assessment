@@ -760,6 +760,9 @@ export default function SpectrumManagementPage() {
     "all",
   );
   const [submitting, setSubmitting] = useState(false);
+  const [createAssessmentError, setCreateAssessmentError] = useState<
+    string | null
+  >(null);
 
   // Fetch assessments on mount
   useEffect(() => {
@@ -805,6 +808,7 @@ export default function SpectrumManagementPage() {
       return;
     }
 
+    setCreateAssessmentError(null);
     setSubmitting(true);
     try {
       const res = await fetch("/api/spectrum", {
@@ -813,23 +817,29 @@ export default function SpectrumManagementPage() {
         body: JSON.stringify(wizardData),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAssessment(data.assessment);
-        await fetchRequirements(data.assessment.id);
-        setShowWizard(false);
-        setWizardStep(1);
-        setWizardData({
-          serviceTypes: [],
-          frequencyBands: [],
-          orbitType: "",
-          satelliteCount: 1,
-          networkName: "",
-          administrationCode: "",
-          primaryJurisdiction: "ITU",
-          assessmentName: "",
-        });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateAssessmentError(
+          errData?.error || `Request failed (${res.status})`,
+        );
+        return;
       }
+
+      const data = await res.json();
+      setAssessment(data.assessment);
+      await fetchRequirements(data.assessment.id);
+      setShowWizard(false);
+      setWizardStep(1);
+      setWizardData({
+        serviceTypes: [],
+        frequencyBands: [],
+        orbitType: "",
+        satelliteCount: 1,
+        networkName: "",
+        administrationCode: "",
+        primaryJurisdiction: "ITU",
+        assessmentName: "",
+      });
     } catch (error) {
       console.error("Failed to create assessment:", error);
     } finally {
@@ -996,6 +1006,13 @@ export default function SpectrumManagementPage() {
                   <WizardStep4 data={wizardData} onChange={setWizardData} />
                 )}
               </div>
+
+              {createAssessmentError && (
+                <div className="flex items-center gap-2 px-4 py-3 mx-4 sm:mx-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  {createAssessmentError}
+                </div>
+              )}
 
               <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 flex justify-between">
                 <button

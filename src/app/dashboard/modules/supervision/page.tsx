@@ -104,6 +104,12 @@ function SupervisionPageContent() {
     notificationMethod: "email",
   });
 
+  // Error state
+  const [saveConfigError, setSaveConfigError] = useState<string | null>(null);
+  const [createIncidentError, setCreateIncidentError] = useState<string | null>(
+    null,
+  );
+
   // Incident form state
   const [showIncidentForm, setShowIncidentForm] = useState(false);
   const [incidentForm, setIncidentForm] = useState({
@@ -163,6 +169,7 @@ function SupervisionPageContent() {
   };
 
   const saveConfig = async () => {
+    setSaveConfigError(null);
     setSaving(true);
     try {
       const res = await fetch("/api/supervision", {
@@ -171,14 +178,18 @@ function SupervisionPageContent() {
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setConfig({
-          ...data.config,
-          primaryNCA: nationalAuthorities[formData.primaryCountry],
-        });
-        setActiveStep("reporting");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setSaveConfigError(errData?.error || `Request failed (${res.status})`);
+        return;
       }
+
+      const data = await res.json();
+      setConfig({
+        ...data.config,
+        primaryNCA: nationalAuthorities[formData.primaryCountry],
+      });
+      setActiveStep("reporting");
     } catch (error) {
       console.error("Error saving config:", error);
     } finally {
@@ -187,6 +198,7 @@ function SupervisionPageContent() {
   };
 
   const createIncident = async () => {
+    setCreateIncidentError(null);
     setSaving(true);
     try {
       const res = await fetch("/api/supervision/incidents", {
@@ -195,19 +207,26 @@ function SupervisionPageContent() {
         body: JSON.stringify(incidentForm),
       });
 
-      if (res.ok) {
-        setShowIncidentForm(false);
-        setIncidentForm({
-          category: "",
-          severity: "medium",
-          title: "",
-          description: "",
-          detectedAt: new Date().toISOString().slice(0, 16),
-          detectedBy: "",
-          detectionMethod: "manual",
-        });
-        fetchData();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setCreateIncidentError(
+          errData?.error || `Request failed (${res.status})`,
+        );
+        return;
       }
+
+      setShowIncidentForm(false);
+      setCreateIncidentError(null);
+      setIncidentForm({
+        category: "",
+        severity: "medium",
+        title: "",
+        description: "",
+        detectedAt: new Date().toISOString().slice(0, 16),
+        detectedBy: "",
+        detectionMethod: "manual",
+      });
+      fetchData();
     } catch (error) {
       console.error("Error creating incident:", error);
     } finally {
@@ -651,6 +670,13 @@ function SupervisionPageContent() {
                   </div>
                 </div>
 
+                {saveConfigError && (
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                    <AlertTriangle size={14} className="flex-shrink-0" />
+                    {saveConfigError}
+                  </div>
+                )}
+
                 <div className="flex justify-end pt-4">
                   <Button
                     onClick={saveConfig}
@@ -881,6 +907,13 @@ function SupervisionPageContent() {
                           </div>
                         </div>
                       </div>
+
+                      {createIncidentError && (
+                        <div className="flex items-center gap-2 px-4 py-3 mt-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                          <AlertTriangle size={14} className="flex-shrink-0" />
+                          {createIncidentError}
+                        </div>
+                      )}
 
                       <div className="flex gap-3 mt-6">
                         <Button
