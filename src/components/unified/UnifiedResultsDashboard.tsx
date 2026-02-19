@@ -107,7 +107,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           className="mb-8"
         >
           <div
-            className="p-6 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            className="p-6 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
               boxShadow:
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -247,7 +247,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             transition={{ delay: 0.2 }}
           >
             <div
-              className="rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
+              className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
                 boxShadow:
                   "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -425,7 +425,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             transition={{ delay: 0.25 }}
           >
             <div
-              className="rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
+              className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
                 boxShadow:
                   "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -591,7 +591,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             transition={{ delay: 0.3 }}
           >
             <div
-              className="rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
+              className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
                 boxShadow:
                   "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -730,7 +730,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             className="mt-8"
           >
             <div
-              className="p-6 rounded-2xl bg-emerald-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20"
+              className="p-6 rounded-xl bg-emerald-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20"
               style={{
                 boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
               }}
@@ -778,7 +778,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         >
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-3 w-full max-w-md mx-auto px-8 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[16px] font-medium hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all duration-300 group"
+            className="flex items-center justify-center gap-3 w-full max-w-md mx-auto px-8 py-5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[16px] font-medium hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all duration-300 group"
           >
             <LayoutDashboard size={20} />
             Go to Dashboard

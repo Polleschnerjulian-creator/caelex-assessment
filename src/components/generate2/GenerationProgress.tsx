@@ -52,7 +52,7 @@ export function GenerationProgress({
         >
           {/* ASTRA avatar */}
           <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
               <Zap size={24} className="text-emerald-400" />
             </div>
             <motion.div

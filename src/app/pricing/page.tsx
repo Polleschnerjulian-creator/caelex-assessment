@@ -965,7 +965,7 @@ export default function PricingPage() {
                     </div>
 
                     {/* Savings/Comparison Line */}
-                    <div className="rounded-xl p-5 bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="rounded-xl p-6 bg-emerald-500/10 border border-emerald-500/20">
                       {savings > 0 ? (
                         <p className="text-subtitle text-emerald-400 leading-relaxed">
                           Caelex costs{" "}

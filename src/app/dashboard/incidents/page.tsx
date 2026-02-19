@@ -575,7 +575,7 @@ export default function IncidentsPage() {
         {/* Empty state */}
         {!loading && incidents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4">
               <Shield
                 size={28}
                 className="text-slate-400 dark:text-white/30"

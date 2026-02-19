@@ -263,7 +263,7 @@ export default function LogoConcepts() {
         </div>
 
         {/* Recommendation */}
-        <div className="bg-white/[0.06] border border-white/[0.15] rounded-2xl p-8 max-w-xl mx-auto text-center">
+        <div className="bg-white/[0.06] border border-white/[0.15] rounded-xl p-8 max-w-xl mx-auto text-center">
           <span className="text-[10px] text-white/50 block mb-3">
             Empfehlung
           </span>

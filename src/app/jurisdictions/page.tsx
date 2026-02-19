@@ -53,7 +53,7 @@ export default function JurisdictionsPage() {
             </h2>
             <Link
               href="/jurisdictions/european-union"
-              className="block p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all group"
+              className="block p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all group"
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 text-[24px]">
@@ -87,7 +87,7 @@ export default function JurisdictionsPage() {
                   <Link
                     key={jurisdiction.slug}
                     href={`/jurisdictions/${jurisdiction.slug}`}
-                    className="group p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                    className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0 text-[20px] font-medium text-white/60">

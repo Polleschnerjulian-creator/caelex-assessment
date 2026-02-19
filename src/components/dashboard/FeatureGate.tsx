@@ -86,7 +86,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
     <div className="flex items-center justify-center min-h-[400px] px-4">
       <div className="max-w-md w-full text-center">
         {/* Lock icon */}
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
           <Lock
             size={28}
             className="text-slate-400 dark:text-white/30"

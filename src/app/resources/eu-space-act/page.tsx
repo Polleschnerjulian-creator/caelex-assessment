@@ -169,7 +169,7 @@ export default function EUSpaceActPage() {
       <section className="py-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
               boxShadow:
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -348,7 +348,7 @@ export default function EUSpaceActPage() {
             Key Obligations Summary
           </h2>
           <div
-            className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+            className="p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
               boxShadow:
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",

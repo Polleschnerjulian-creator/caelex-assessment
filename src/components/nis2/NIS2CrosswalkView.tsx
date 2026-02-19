@@ -61,7 +61,7 @@ export default function NIS2CrosswalkView({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.4 }}
-      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
+      className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6"
     >
       <div className="flex items-start justify-between mb-4">
         <div>

@@ -59,7 +59,7 @@ export default function UpgradePrompt({
             transition={{ duration: 0.2 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
           >
-            <div className="w-full max-w-lg bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-lg bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl shadow-2xl overflow-hidden">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-5">
                 <button

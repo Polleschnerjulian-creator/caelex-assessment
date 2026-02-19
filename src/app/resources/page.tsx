@@ -202,7 +202,7 @@ export default function ResourcesPage() {
                   <Link
                     key={category.href}
                     href={category.href}
-                    className={`group p-6 rounded-2xl bg-white/[0.04] border ${colors.border} transition-all duration-300 hover:bg-white/[0.06]`}
+                    className={`group p-6 rounded-xl bg-white/[0.04] border ${colors.border} transition-all duration-300 hover:bg-white/[0.06]`}
                   >
                     <div className="flex items-start gap-4">
                       <div
@@ -305,7 +305,7 @@ export default function ResourcesPage() {
           </section>
 
           {/* Quick Links */}
-          <section className="p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+          <section className="p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]">
             <h2 className="text-[20px] font-medium text-white mb-6">
               Quick Links
             </h2>

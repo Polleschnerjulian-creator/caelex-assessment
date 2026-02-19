@@ -453,7 +453,7 @@ function OutOfScopeCard({
       animate={{ opacity: 1, scale: 1 }}
       className="text-center py-8"
     >
-      <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
         <AlertTriangle className="w-8 h-8 text-amber-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
@@ -632,7 +632,7 @@ function NIS2Wizard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
+      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
@@ -957,7 +957,7 @@ export default function NIS2ModulePage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-12 text-center"
+            className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center"
           >
             <ShieldCheck
               className="w-12 h-12 text-cyan-400/40 mx-auto mb-4"

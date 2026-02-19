@@ -419,7 +419,7 @@ export default function PlatformPreview() {
           {/* Perspective wrapper */}
           <div className="relative" style={{ perspective: "2000px" }}>
             <div
-              className="relative rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.5)]"
+              className="relative rounded-xl border border-white/[0.08] bg-white/[0.02] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.5)]"
               style={{
                 transform: "rotateX(2deg)",
                 transformOrigin: "center bottom",
@@ -447,7 +447,7 @@ export default function PlatformPreview() {
                           : "text-white/35 hover:text-white/60 hover:bg-white/[0.03]"
                       }`}
                     >
-                      <Icon size={13} aria-hidden="true" />
+                      <Icon size={14} aria-hidden="true" />
                       <span className="hidden sm:inline">{tab.label}</span>
                       <span className="sm:hidden sr-only">{tab.label}</span>
                     </button>

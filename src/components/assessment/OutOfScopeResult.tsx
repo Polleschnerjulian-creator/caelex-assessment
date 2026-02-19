@@ -21,7 +21,7 @@ export default function OutOfScopeResult({
       className="max-w-xl mx-auto text-center py-12"
     >
       {/* Icon */}
-      <div className="w-16 h-16 rounded-2xl bg-amber-500/[0.12] backdrop-blur-[10px] border border-amber-500/20 flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 rounded-xl bg-amber-500/[0.12] backdrop-blur-[10px] border border-amber-500/20 flex items-center justify-center mx-auto mb-6">
         <AlertCircle size={28} className="text-amber-400" />
       </div>
 

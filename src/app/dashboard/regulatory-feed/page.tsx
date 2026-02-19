@@ -493,7 +493,7 @@ function FeedItem({
 function EmptyState({ t }: { t: (key: string) => string }) {
   return (
     <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
         <Radio
           size={28}
           className="text-slate-400 dark:text-white/30"

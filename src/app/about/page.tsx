@@ -345,7 +345,7 @@ export default function AboutPage() {
               >
                 <GlassCard className="p-6 h-full group">
                   <div
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${value.gradient} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}
+                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.gradient} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}
                   >
                     <value.icon size={26} className={value.iconColor} />
                   </div>
@@ -572,7 +572,7 @@ export default function AboutPage() {
               </div>
 
               <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-white/[0.08] flex items-center justify-center">
+                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-white/[0.08] flex items-center justify-center">
                   <div className="text-center">
                     <Globe
                       size={64}

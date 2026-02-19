@@ -10,7 +10,7 @@ export default function PricingLoading() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-[500px] bg-gray-200 dark:bg-[#1E293B] rounded-2xl"
+              className="h-[500px] bg-gray-200 dark:bg-[#1E293B] rounded-xl"
             />
           ))}
         </div>

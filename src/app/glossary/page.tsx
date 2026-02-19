@@ -201,7 +201,7 @@ export default function GlossaryPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="mt-20 text-center p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+          <div className="mt-20 text-center p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]">
             <BookText size={32} className="text-emerald-400 mx-auto mb-4" />
             <h2 className="text-[24px] font-medium text-white mb-4">
               Need help understanding compliance requirements?

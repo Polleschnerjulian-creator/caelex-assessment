@@ -93,7 +93,7 @@ export default function HowItWorks() {
 
                 {/* Card */}
                 <div
-                  className="relative z-10 p-6 md:p-8 rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12] h-full"
+                  className="relative z-10 p-6 md:p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12] h-full"
                   style={{
                     boxShadow:
                       "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",

@@ -474,7 +474,7 @@ export default function DemoPage() {
                 transition={{ delay: i * 0.1 }}
                 className="group"
               >
-                <div className="h-full p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
+                <div className="h-full p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-400/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                     <benefit.icon size={24} className="text-emerald-400" />
                   </div>
@@ -502,7 +502,7 @@ export default function DemoPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08]"
+                className="p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]"
               >
                 <p className="text-[17px] text-white/70 leading-relaxed mb-6 italic">
                   "{testimonial.quote}"

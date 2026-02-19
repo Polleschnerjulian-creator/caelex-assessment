@@ -80,7 +80,7 @@ export default function RegulationPicker() {
           >
             <Link href="/assessment/unified" className="block group">
               <div
-                className="relative p-8 md:p-10 rounded-2xl bg-gradient-to-br from-emerald-500/[0.08] to-blue-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 overflow-hidden"
+                className="relative p-8 md:p-10 rounded-xl bg-gradient-to-br from-emerald-500/[0.08] to-blue-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 overflow-hidden"
                 style={{
                   boxShadow:
                     "inset 0 1px 0 rgba(16,185,129,0.1), 0 4px 40px rgba(16,185,129,0.1)",

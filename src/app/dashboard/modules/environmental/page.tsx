@@ -1190,7 +1190,7 @@ function CalculatorStep({
 
             <div className="flex items-center gap-8">
               <div
-                className="w-24 h-24 rounded-2xl flex items-center justify-center text-[36px] font-bold"
+                className="w-24 h-24 rounded-xl flex items-center justify-center text-[36px] font-bold"
                 style={{
                   backgroundColor: `${getGradeColor(assessment.efdGrade as EFDGrade)}20`,
                   color: getGradeColor(assessment.efdGrade as EFDGrade),

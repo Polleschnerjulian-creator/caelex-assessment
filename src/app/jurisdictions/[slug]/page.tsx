@@ -402,7 +402,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                   <Scale size={24} className="text-emerald-400" />
                   National Space Law
                 </h2>
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <p className="text-[16px] text-white/70 font-medium mb-4">
                     {jurisdiction.spaceLaw}
                   </p>
@@ -428,7 +428,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                   <Building2 size={24} className="text-emerald-400" />
                   National Competent Authority (NCA)
                 </h2>
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <p className="text-[18px] text-white font-medium mb-2">
                     {jurisdiction.nca}
                   </p>
@@ -469,7 +469,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                     <Banknote size={24} className="text-emerald-400" />
                     Insurance & Liability
                   </h2>
-                  <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                  <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                     <p className="text-[15px] text-white/60 leading-relaxed">
                       {content.insuranceRequirements}
                     </p>
@@ -483,7 +483,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                   <h2 className="text-[24px] font-medium text-white mb-6">
                     Key Differences from EU Space Act
                   </h2>
-                  <div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+                  <div className="p-6 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                     <p className="text-[15px] text-white/60 leading-relaxed">
                       {content.euSpaceActRelation}
                     </p>
@@ -495,7 +495,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
             {/* Sidebar */}
             <div className="space-y-8">
               {/* CTA Card */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
+              <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
                 <h3 className="text-[18px] font-medium text-white mb-3">
                   Assess Your Compliance in {jurisdiction.country}
                 </h3>
@@ -514,7 +514,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
 
               {/* Caelex Coverage */}
               {content.caelexModules.length > 0 && (
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <h3 className="text-[16px] font-medium text-white mb-4">
                     Caelex Coverage
                   </h3>
@@ -536,7 +536,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
               )}
 
               {/* Other Jurisdictions */}
-              <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                 <h3 className="text-[16px] font-medium text-white mb-4">
                   Other Jurisdictions
                 </h3>

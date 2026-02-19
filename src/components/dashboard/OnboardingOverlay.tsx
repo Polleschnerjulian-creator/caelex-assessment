@@ -231,7 +231,7 @@ export default function OnboardingOverlay() {
               stiffness: 300,
               delay: 0.1,
             }}
-            className="relative w-full max-w-lg bg-white dark:bg-[#111113] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/[0.08] overflow-hidden"
+            className="relative w-full max-w-lg bg-white dark:bg-[#111113] rounded-xl shadow-2xl border border-slate-200 dark:border-white/[0.08] overflow-hidden"
           >
             {/* Progress Dots */}
             <div className="flex items-center justify-center gap-2 pt-6 pb-2">
@@ -266,7 +266,7 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
                       <CaelexIcon size={32} className="text-emerald-500" />
@@ -329,7 +329,7 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
                       <Download
@@ -432,7 +432,7 @@ export default function OnboardingOverlay() {
                   >
                     {/* Icon */}
                     <div
-                      className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
+                      className="mx-auto w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6"
                       aria-hidden="true"
                     >
                       <Sparkles

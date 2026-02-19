@@ -191,7 +191,7 @@ export default function FAQPage() {
             })}
           </div>
 
-          <section className="mt-20 p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-center">
+          <section className="mt-20 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-center">
             <HelpCircle size={32} className="text-emerald-400 mx-auto mb-4" />
             <h2 className="text-[24px] font-medium text-white mb-4">
               Still have questions?

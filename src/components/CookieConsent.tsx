@@ -205,7 +205,7 @@ export default function CookieConsent() {
       >
         {/* Liquid Glass Container */}
         <div
-          className="relative rounded-2xl overflow-hidden"
+          className="relative rounded-xl overflow-hidden"
           style={{
             background:
               "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",

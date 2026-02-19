@@ -70,7 +70,7 @@ export default function BlogPage() {
                   <article key={post.slug}>
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="group block p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
+                      className="group block p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
                     >
                       <div className="flex items-center gap-3 text-[12px] text-emerald-400/70 mb-4">
                         <span className="px-2 py-0.5 rounded-full bg-emerald-500/20">
@@ -107,7 +107,7 @@ export default function BlogPage() {
                 <article key={post.slug}>
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="group block p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                    className="group block p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 text-[11px] text-white/40 mb-3">
                       <span className="px-2 py-0.5 rounded-full bg-white/[0.08]">
@@ -147,7 +147,7 @@ export default function BlogPage() {
           </section>
 
           {/* Newsletter CTA */}
-          <section className="mt-20 p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center">
+          <section className="mt-20 p-8 rounded-xl bg-white/[0.04] border border-white/[0.08] text-center">
             <h2 className="text-[24px] font-medium text-white mb-3">
               Stay Updated
             </h2>

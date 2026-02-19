@@ -73,7 +73,7 @@ export default function JurisdictionCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6"
+      className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-6"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">

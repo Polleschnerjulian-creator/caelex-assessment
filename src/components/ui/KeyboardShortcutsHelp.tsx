@@ -72,7 +72,7 @@ export default function KeyboardShortcutsHelp({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-2xl max-h-[80vh] mx-4 bg-[#0F1629] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-2xl max-h-[80vh] mx-4 bg-[#0F1629] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">

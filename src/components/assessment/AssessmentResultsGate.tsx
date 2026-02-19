@@ -260,7 +260,7 @@ export default function AssessmentResultsGate({
             transition={{ delay: 0.1 }}
           >
             <div
-              className="relative rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-6 overflow-hidden"
+              className="relative rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-6 overflow-hidden"
               style={{
                 boxShadow:
                   "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
@@ -378,7 +378,7 @@ export default function AssessmentResultsGate({
             transition={{ delay: 0.2 }}
           >
             <div
-              className="rounded-2xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-8"
+              className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-8"
               style={{
                 boxShadow:
                   "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",

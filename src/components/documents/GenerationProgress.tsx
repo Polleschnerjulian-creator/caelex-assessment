@@ -67,7 +67,7 @@ export function GenerationProgress({
           >
             {/* ASTRA avatar */}
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                 <Zap size={24} className="text-emerald-500" />
               </div>
               <motion.div
@@ -163,7 +163,7 @@ export function GenerationProgress({
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center gap-4"
           >
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle2 size={28} className="text-emerald-500" />
             </div>
             <div className="text-center">
@@ -183,7 +183,7 @@ export function GenerationProgress({
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center gap-4"
           >
-            <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-red-500/10 flex items-center justify-center">
               <XCircle size={28} className="text-red-500" />
             </div>
             <div className="text-center">

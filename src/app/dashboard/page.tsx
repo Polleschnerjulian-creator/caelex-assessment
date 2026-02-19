@@ -268,7 +268,7 @@ function KPICard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 relative overflow-hidden"
+      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start mb-3">
         <div>
@@ -340,7 +340,7 @@ function EmptyState({
       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
         <Icon className="w-6 h-6 text-white/30" />
       </div>
-      <h3 className="text-body-lg font-medium text-white/80 mb-1">{title}</h3>
+      <h3 className="text-body-lg font-medium text-white/70 mb-1">{title}</h3>
       <p className="text-small text-white/50 mb-4 max-w-[240px]">
         {description}
       </p>
@@ -382,7 +382,7 @@ function DeadlineItem({
         }`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-small text-white/80 truncate">{deadline.title}</p>
+        <p className="text-small text-white/70 truncate">{deadline.title}</p>
         <p className="text-micro text-white/40">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
@@ -434,7 +434,7 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
+      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
     >
       <Icon className="w-5 h-5 text-white/60 group-hover:text-emerald-400 transition-colors" />
       <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
@@ -473,7 +473,7 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-white/5 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-white/10 last:border-0">
       <div
         className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
@@ -481,7 +481,7 @@ function ActivityItem({
         <Icon className="w-4 h-4 text-white/50" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-small text-white/80 truncate">
+        <p className="text-small text-white/70 truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
         <p className="text-micro text-white/40 mt-0.5">
@@ -854,7 +854,7 @@ function DashboardContent() {
               <button
                 onClick={() => setShowSuccessToast(false)}
                 aria-label="Dismiss notification"
-                className="text-white/50 hover:text-white/80"
+                className="text-white/50 hover:text-white/70"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -869,7 +869,7 @@ function DashboardContent() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5"
+            className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
           >
             <div className="flex items-start gap-4">
               <ClipboardList
@@ -999,7 +999,7 @@ function DashboardContent() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-10 text-center mb-8"
+            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center mb-8"
           >
             <h2 className="text-title font-medium text-white mb-2">
               {t("dashboard.importResults")}
@@ -1068,12 +1068,12 @@ function DashboardContent() {
                 className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
                 {t("common.viewAll")}{" "}
-                <ChevronRight className="w-3 h-3" aria-hidden="true" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </Link>
             }
           />
           {recentActivity.length > 0 ? (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-white/10">
               {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -1098,7 +1098,7 @@ function DashboardContent() {
         {/* ROW 5: Deadlines, Risk Heatmap, Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Upcoming Deadlines */}
-          <GlassCard hover={false} className="p-5">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.upcomingDeadlines")} />
             <div className="space-y-1">
               {DEMO_DEADLINES.slice(0, 5).map((deadline) => (
@@ -1108,7 +1108,7 @@ function DashboardContent() {
           </GlassCard>
 
           {/* Risk Heatmap */}
-          <GlassCard hover={false} className="p-5">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.riskHeatmap")} />
             <div className="grid grid-cols-4 gap-3 mt-2">
               {DEMO_RISK_HEATMAP.map((item, i) => (
@@ -1119,7 +1119,7 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-white/5">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-white/10">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
@@ -1145,7 +1145,7 @@ function DashboardContent() {
           </GlassCard>
 
           {/* Quick Actions */}
-          <GlassCard hover={false} className="p-5">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.quickActions")} />
             <div className="grid grid-cols-2 gap-3 mt-1">
               <QuickActionButton

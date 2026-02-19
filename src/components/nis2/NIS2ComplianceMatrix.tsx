@@ -29,7 +29,7 @@ export default function NIS2ComplianceMatrix({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
+      className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6"
     >
       <div className="flex items-center gap-2 mb-6">
         <Grid3X3 className="w-5 h-5 text-blue-400" aria-hidden="true" />

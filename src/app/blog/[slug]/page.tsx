@@ -241,7 +241,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
 
               {/* CTA */}
-              <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
+              <div className="mt-12 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
                 <h3 className="text-[20px] font-medium text-white mb-3">
                   Ready to assess your compliance?
                 </h3>
@@ -263,7 +263,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <aside className="space-y-8">
               {/* Table of Contents */}
               {toc.length > 0 && (
-                <div className="sticky top-32 p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="sticky top-32 p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <h4 className="text-[14px] font-medium text-white mb-4">
                     In this article
                   </h4>
@@ -283,7 +283,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <h4 className="text-[14px] font-medium text-white mb-4">
                     Related Articles
                   </h4>

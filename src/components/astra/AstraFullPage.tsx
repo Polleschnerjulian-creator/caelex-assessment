@@ -106,7 +106,7 @@ export default function AstraFullPage() {
       <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-dark-bg">
         <div className="max-w-md w-full px-6">
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
+            <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
               <ShieldCheck size={28} className="text-cyan-400" />
             </div>
             <h2 className="text-[18px] font-semibold text-white mb-2">

@@ -134,7 +134,7 @@ export default function RegulatoryCoverage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
-                className={`group relative p-6 rounded-2xl border ${colors.border} bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 hover:shadow-xl ${colors.glow}`}
+                className={`group relative p-6 rounded-xl border ${colors.border} bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 hover:shadow-xl ${colors.glow}`}
               >
                 {/* Icon & Title */}
                 <div className="flex items-start gap-4 mb-6">

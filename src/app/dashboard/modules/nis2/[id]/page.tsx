@@ -583,7 +583,7 @@ function InlineAssessmentWizard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
+      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
@@ -628,7 +628,7 @@ function InlineAssessmentWizard({
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8"
           >
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-amber-400" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
@@ -1185,7 +1185,7 @@ export default function NIS2AssessmentDetailPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => setShowWizard(true)}
-              className="w-full group relative overflow-hidden bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-600 rounded-2xl p-6 text-left transition-all duration-300 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20"
+              className="w-full group relative overflow-hidden bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-600 rounded-xl p-6 text-left transition-all duration-300 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20"
             >
               {/* Background pattern */}
               <div className="absolute inset-0 opacity-10">
@@ -1219,7 +1219,7 @@ export default function NIS2AssessmentDetailPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
+            className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
           >
             {/* Gradient top accent */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-green-500" />
@@ -1600,7 +1600,7 @@ export default function NIS2AssessmentDetailPage() {
         )}
 
         {/* Header Card */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-6">
           {/* Name */}
           <div className="flex items-start justify-between mb-4">
             {editingName ? (
@@ -2163,7 +2163,7 @@ export default function NIS2AssessmentDetailPage() {
 
         {/* Empty requirements */}
         {totalReqs === 0 && (
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-8 text-center">
+          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-8 text-center">
             <ShieldOff className="w-10 h-10 text-slate-400/40 dark:text-white/20 mx-auto mb-3" />
             <h3 className="text-sm font-medium text-slate-700 dark:text-white/70 mb-1">
               No requirements applicable

@@ -49,7 +49,7 @@ export default function Navigation() {
           <div className="flex items-center justify-between h-20">
             {/* Liquid Glass Bar — wraps logo + nav */}
             <div
-              className={`flex items-center justify-between w-full rounded-2xl px-5 py-2.5 transition-all duration-700 ${
+              className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 scrolled || mobileOpen
                   ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
                   : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -161,7 +161,7 @@ export default function Navigation() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, delay: 0.05 }}
-              className="relative mt-20 mx-6 p-6 rounded-2xl bg-[#111] border border-white/[0.08]"
+              className="relative mt-20 mx-6 p-6 rounded-xl bg-[#111] border border-white/[0.08]"
               role="navigation"
               aria-label="Mobile navigation"
             >

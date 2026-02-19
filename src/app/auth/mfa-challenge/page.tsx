@@ -152,7 +152,7 @@ function MfaChallengeContent() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-4">
@@ -358,7 +358,7 @@ function MfaChallengeLoading() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           </div>

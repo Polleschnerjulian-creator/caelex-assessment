@@ -496,7 +496,7 @@ export default async function ModulePage({ params }: PageProps) {
             {/* Sidebar */}
             <div className="space-y-8">
               {/* CTA Card */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
+              <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
                 <h3 className="text-[18px] font-medium text-white mb-3">
                   Start Your Assessment
                 </h3>
@@ -515,7 +515,7 @@ export default async function ModulePage({ params }: PageProps) {
 
               {/* Related Modules */}
               {relatedModuleData.length > 0 && (
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <h3 className="text-[16px] font-medium text-white mb-4">
                     Related Modules
                   </h3>
@@ -535,7 +535,7 @@ export default async function ModulePage({ params }: PageProps) {
 
               {/* Related Articles */}
               {content.relatedArticles.length > 0 && (
-                <div className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <h3 className="text-[16px] font-medium text-white mb-4">
                     Related Articles
                   </h3>

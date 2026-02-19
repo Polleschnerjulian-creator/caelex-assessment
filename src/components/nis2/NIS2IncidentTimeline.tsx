@@ -60,7 +60,7 @@ export default function NIS2IncidentTimeline({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6"
+      className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6"
     >
       <h3 className="text-lg font-semibold text-white mb-1">
         Incident Reporting Timeline

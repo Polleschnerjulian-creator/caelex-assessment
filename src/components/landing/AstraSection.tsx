@@ -130,7 +130,7 @@ export default function AstraSection() {
             className="lg:col-span-7"
           >
             <div
-              className="rounded-2xl overflow-hidden"
+              className="rounded-xl overflow-hidden"
               style={{
                 background: "#141414",
                 boxShadow:
@@ -165,7 +165,7 @@ export default function AstraSection() {
                   >
                     {/* User Prompt */}
                     <div className="flex justify-end">
-                      <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md bg-white/[0.08] text-body text-white/80">
+                      <div className="max-w-[85%] px-4 py-2.5 rounded-xl rounded-br-md bg-white/[0.08] text-body text-white/80">
                         {example.prompt}
                       </div>
                     </div>
@@ -182,7 +182,7 @@ export default function AstraSection() {
                             ASTRA
                           </span>
                         </div>
-                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-body text-white/60 leading-relaxed">
+                        <div className="px-4 py-2.5 rounded-xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-body text-white/60 leading-relaxed">
                           {example.response}
                         </div>
                       </div>

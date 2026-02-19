@@ -119,7 +119,7 @@ export default function Footer() {
   return (
     <footer className="dark-section bg-black text-white border-t border-white/[0.06]">
       {/* Newsletter Section */}
-      <div className="border-b border-white/[0.04]">
+      <div className="border-b border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-14">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div className="max-w-md">
@@ -159,7 +159,7 @@ export default function Footer() {
                     placeholder="your@email.com"
                     required
                     aria-required="true"
-                    className="flex-1 md:w-[280px] bg-white/[0.06] border border-white/[0.1] rounded-l-lg px-4 py-2.5 text-body text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                    className="flex-1 md:w-[280px] bg-white/[0.06] border border-white/10 rounded-l-lg px-4 py-2.5 text-body text-white placeholder:text-white/30 outline-none focus:border-white/30 transition-colors"
                   />
                   <button
                     type="submit"
@@ -171,7 +171,7 @@ export default function Footer() {
                     ) : (
                       <>
                         Subscribe
-                        <ArrowRight size={13} aria-hidden="true" />
+                        <ArrowRight size={14} aria-hidden="true" />
                       </>
                     )}
                   </button>
@@ -188,7 +188,7 @@ export default function Footer() {
                     }}
                     className="mt-0.5 w-3.5 h-3.5 rounded border-white/20 bg-white/[0.06] accent-white cursor-pointer"
                   />
-                  <span className="text-caption text-white/35 leading-relaxed group-hover:text-white/50 transition-colors">
+                  <span className="text-caption text-white/40 leading-relaxed group-hover:text-white/50 transition-colors">
                     I agree to receive regulatory updates from Caelex. You can
                     unsubscribe at any time.{" "}
                     <Link
@@ -241,7 +241,7 @@ export default function Footer() {
                 href="https://linkedin.com/company/caelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on LinkedIn"
               >
                 <LinkedInIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -250,7 +250,7 @@ export default function Footer() {
                 href="https://x.com/caboracaelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on X"
               >
                 <XIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -259,7 +259,7 @@ export default function Footer() {
                 href="https://instagram.com/caelex.eu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on Instagram"
               >
                 <InstagramIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -356,7 +356,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/[0.04]">
+      <div className="border-t border-white/[0.06]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}

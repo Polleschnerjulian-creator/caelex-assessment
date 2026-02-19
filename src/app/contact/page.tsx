@@ -367,7 +367,7 @@ export default function ContactPage() {
       <section className="relative py-16 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
           <GlassCard className="p-8 text-center" hover={false}>
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
+            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
               <Sparkles size={26} className="text-emerald-400" />
             </div>
             <h3 className="text-[20px] font-medium text-white mb-3">

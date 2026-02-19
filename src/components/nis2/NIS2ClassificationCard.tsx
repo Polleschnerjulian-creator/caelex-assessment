@@ -59,7 +59,7 @@ export default function NIS2ClassificationCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`rounded-2xl border ${config.borderColor} ${config.bgColor} p-6`}
+      className={`rounded-xl border ${config.borderColor} ${config.bgColor} p-6`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">

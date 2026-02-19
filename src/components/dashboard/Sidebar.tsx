@@ -70,7 +70,7 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
         ${
           isActive
             ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-            : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+            : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         }
       `}
     >
@@ -127,10 +127,10 @@ function CompactModuleItem({
         transition-all duration-150
         ${
           locked
-            ? "text-slate-400 dark:text-white/25 hover:text-slate-500 dark:hover:text-white/35 hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-default"
+            ? "text-slate-400 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/40 hover:bg-slate-50 dark:hover:bg-white/[0.06] cursor-default"
             : isActive
               ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-              : "text-slate-700 dark:text-white/50 hover:text-slate-900 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+              : "text-slate-700 dark:text-white/50 hover:text-slate-900 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         }
       `}
     >
@@ -154,7 +154,7 @@ function CompactModuleItem({
               {requiredPlan}
             </span>
           )}
-          <Lock size={10} className="text-slate-300 dark:text-white/20" />
+          <Lock size={14} className="text-slate-300 dark:text-white/20" />
         </span>
       )}
     </Link>
@@ -184,7 +184,7 @@ function ModuleGroup({
   const panelId = `module-group-${groupId}`;
 
   return (
-    <div className="mb-1">
+    <div className="mb-2">
       <button
         onClick={onToggle}
         aria-expanded={isExpanded}
@@ -197,7 +197,7 @@ function ModuleGroup({
               ? "text-emerald-700 dark:text-emerald-400/90"
               : "text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70"
           }
-          hover:bg-slate-50 dark:hover:bg-white/[0.02]
+          hover:bg-slate-50 dark:hover:bg-white/[0.06]
         `}
       >
         <motion.span
@@ -232,7 +232,7 @@ function ModuleGroup({
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="pl-2 pt-1 space-y-0.5">{children}</div>
+            <div className="pl-3 pt-2 space-y-1">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -395,7 +395,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
         >
           <X size={20} aria-hidden="true" />
         </button>
@@ -754,7 +754,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <div className="p-4 border-t border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/[0.08] flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10">
+            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img

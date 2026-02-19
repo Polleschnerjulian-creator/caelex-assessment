@@ -306,7 +306,7 @@ export default function CareersPage() {
         <div className="max-w-[800px] mx-auto">
           <GlassCard className="p-8 md:p-12" hover={false}>
             <div className="text-center mb-10">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
+              <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
                 <Sparkles size={26} className="text-emerald-400" />
               </div>
               <h2 className="text-[24px] font-medium text-white mb-3">

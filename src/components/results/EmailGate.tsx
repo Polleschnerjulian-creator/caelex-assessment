@@ -69,7 +69,7 @@ export default function EmailGate({
               role="dialog"
               aria-modal="true"
               aria-labelledby="email-gate-title"
-              className="bg-dark-bg border border-white/[0.15] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+              className="bg-dark-bg border border-white/[0.15] rounded-xl w-full max-w-md overflow-hidden shadow-2xl"
             >
               {/* Header */}
               <div className="relative px-6 pt-6 pb-4">
