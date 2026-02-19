@@ -73,18 +73,18 @@ export default function TimelineEntry({
       if (direction === "INBOUND") return "border-emerald-500/20";
       return "border-slate-500/20";
     }
-    return "border-slate-200 dark:border-navy-700";
+    return "border-slate-200 dark:border-dark-border";
   };
 
   return (
     <div className="flex gap-3" role="listitem">
       <div className="flex flex-col items-center" aria-hidden="true">
         <div
-          className={`w-8 h-8 rounded-lg border ${getBorderColor()} bg-white dark:bg-navy-800 flex items-center justify-center flex-shrink-0`}
+          className={`w-8 h-8 rounded-lg border ${getBorderColor()} bg-white dark:bg-dark-card flex items-center justify-center flex-shrink-0`}
         >
           {getIcon()}
         </div>
-        <div className="w-px flex-1 bg-slate-200 dark:bg-navy-700 my-1" />
+        <div className="w-px flex-1 bg-slate-200 dark:bg-dark-border my-1" />
       </div>
 
       <div className="flex-1 pb-4 min-w-0">

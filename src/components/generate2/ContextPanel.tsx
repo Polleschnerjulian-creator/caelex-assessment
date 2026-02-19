@@ -33,7 +33,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-navy-700">
+      <div className="px-4 py-3 border-b border-dark-border">
         <div className="flex items-center gap-2">
           <BookOpen size={16} className="text-emerald-400" />
           <h2 className="text-sm font-semibold text-white">Context</h2>
@@ -46,7 +46,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             EU Space Act References
           </h3>
-          <div className="bg-navy-800 border border-navy-700 rounded-lg p-3">
+          <div className="bg-dark-card border border-dark-border rounded-lg p-3">
             <p className="text-sm text-slate-300">{meta.articleRef}</p>
             <p className="text-xs text-slate-500 mt-1">
               {meta.category === "debris"

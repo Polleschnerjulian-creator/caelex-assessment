@@ -151,9 +151,9 @@ export function AuditExportDialog({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-navy-800 border border-navy-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-dark-card border border-dark-border rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-navy-700 flex items-center justify-between flex-shrink-0">
+        <div className="p-4 border-b border-dark-border flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-500/10 rounded-lg">
               <Download className="w-5 h-5 text-blue-400" />
@@ -164,7 +164,7 @@ export function AuditExportDialog({
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-navy-700 rounded transition-colors"
+            className="p-1 hover:bg-dark-border rounded transition-colors"
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
@@ -204,8 +204,8 @@ export function AuditExportDialog({
                     onClick={() => setFormat(option.value)}
                     className={`p-3 rounded-lg border text-left transition-colors ${
                       format === option.value
-                        ? "bg-blue-500/10 border-blue-500/50 text-blue-400"
-                        : "bg-navy-900 border-navy-600 hover:border-navy-500 text-slate-300"
+                        ? "bg-blue-500/10 border-emerald-500/50 text-blue-400"
+                        : "bg-dark-surface border-dark-border hover:border-dark-border text-slate-300"
                     }`}
                   >
                     <Icon className="w-5 h-5 mb-1" />
@@ -229,7 +229,7 @@ export function AuditExportDialog({
                 <button
                   key={preset}
                   onClick={() => setDatePreset(preset)}
-                  className="px-3 py-1 text-xs bg-navy-700 hover:bg-navy-600 text-slate-300 rounded transition-colors"
+                  className="px-3 py-1 text-xs bg-dark-border hover:bg-dark-border text-slate-300 rounded transition-colors"
                 >
                   Last {preset}
                 </button>
@@ -242,7 +242,7 @@ export function AuditExportDialog({
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
                   placeholder="Start date"
                 />
               </div>
@@ -252,7 +252,7 @@ export function AuditExportDialog({
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
                   placeholder="End date"
                 />
               </div>
@@ -272,8 +272,8 @@ export function AuditExportDialog({
                     onClick={() => toggleAction(action)}
                     className={`px-2 py-1 text-xs rounded-full transition-colors ${
                       selectedActions.includes(action)
-                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/50"
-                        : "bg-navy-700 text-slate-400 border border-transparent hover:border-navy-500"
+                        ? "bg-blue-500/20 text-blue-400 border border-emerald-500/50"
+                        : "bg-dark-border text-slate-400 border border-transparent hover:border-dark-border"
                     }`}
                   >
                     {action.replace(/_/g, " ").slice(0, 20)}
@@ -285,13 +285,13 @@ export function AuditExportDialog({
 
           {/* Include Security Events (PDF only) */}
           {format === "pdf" && (
-            <div className="flex items-center gap-3 p-3 bg-navy-900 border border-navy-600 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-dark-surface border border-dark-border rounded-lg">
               <input
                 type="checkbox"
                 id="includeSecurityEvents"
                 checked={includeSecurityEvents}
                 onChange={(e) => setIncludeSecurityEvents(e.target.checked)}
-                className="w-4 h-4 rounded border-navy-500 bg-navy-700 text-blue-500 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-dark-border bg-dark-border text-emerald-500 focus:ring-emerald-500"
               />
               <label
                 htmlFor="includeSecurityEvents"
@@ -307,7 +307,7 @@ export function AuditExportDialog({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-navy-700 flex justify-end gap-3 flex-shrink-0">
+        <div className="p-4 border-t border-dark-border flex justify-end gap-3 flex-shrink-0">
           <button
             onClick={onClose}
             disabled={isExporting}

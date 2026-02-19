@@ -222,7 +222,7 @@ export default function PackageBuilderPage() {
               {label}
             </span>
             {i < STEPS.length - 1 && (
-              <div className="flex-1 h-px bg-slate-200 dark:bg-navy-700" />
+              <div className="flex-1 h-px bg-slate-200 dark:bg-dark-border" />
             )}
           </div>
         ))}
@@ -272,7 +272,7 @@ export default function PackageBuilderPage() {
       {/* Step 2: Review Package */}
       {step === 1 && assemblyResult && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
               {assemblyResult.package.packageName}
             </h3>
@@ -304,7 +304,7 @@ export default function PackageBuilderPage() {
                         ? "border-emerald-500/20 bg-emerald-500/[0.02]"
                         : doc.status === "missing"
                           ? "border-red-500/20 bg-red-500/[0.02]"
-                          : "border-slate-200 dark:border-navy-700"
+                          : "border-slate-200 dark:border-dark-border"
                     }
                   `}
                 >
@@ -369,7 +369,7 @@ export default function PackageBuilderPage() {
       {/* Step 3: Confirm & Submit */}
       {step === 2 && assemblyResult && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
               Submission Details
             </h3>
@@ -381,7 +381,7 @@ export default function PackageBuilderPage() {
                 <select
                   value={submissionMethod}
                   onChange={(e) => setSubmissionMethod(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white"
                 >
                   <option value="PORTAL">Online Portal</option>
                   <option value="EMAIL">Email</option>
@@ -399,14 +399,14 @@ export default function PackageBuilderPage() {
                   onChange={(e) => setCoverLetter(e.target.value)}
                   placeholder="Optional cover letter for your submission..."
                   rows={4}
-                  className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Summary */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
               Summary
             </h3>

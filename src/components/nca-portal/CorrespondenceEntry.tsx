@@ -63,7 +63,7 @@ export default function CorrespondenceEntry({
         ${
           isInbound
             ? "bg-emerald-50/50 dark:bg-emerald-500/[0.04] border-emerald-200/50 dark:border-emerald-500/10"
-            : "bg-white dark:bg-navy-800/50 border-slate-200 dark:border-navy-700"
+            : "bg-white dark:bg-dark-card/50 border-slate-200 dark:border-dark-border"
         }
         ${!isRead && isInbound ? "ring-1 ring-emerald-400/30" : ""}
       `}

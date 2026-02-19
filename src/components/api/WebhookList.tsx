@@ -153,10 +153,10 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
       >
         <span className="sr-only">Loading webhooks...</span>
         <div
-          className="h-10 bg-navy-800 rounded w-1/4"
+          className="h-10 bg-dark-card rounded w-1/4"
           aria-hidden="true"
         ></div>
-        <div className="h-32 bg-navy-800 rounded" aria-hidden="true"></div>
+        <div className="h-32 bg-dark-card rounded" aria-hidden="true"></div>
       </div>
     );
   }
@@ -194,7 +194,7 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
                 Use this secret to verify webhook signatures. This is the only
                 time you&apos;ll see it.
               </p>
-              <code className="block px-3 py-2 bg-navy-900 rounded font-mono text-sm text-white break-all">
+              <code className="block px-3 py-2 bg-dark-surface rounded font-mono text-sm text-white break-all">
                 {newWebhookSecret}
               </code>
               <button
@@ -211,7 +211,7 @@ export default function WebhookList({ organizationId }: WebhookListProps) {
       {/* Webhooks List */}
       {webhooks.length === 0 ? (
         <div
-          className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl"
+          className="text-center py-12 bg-dark-card/50 border border-dark-border rounded-xl"
           role="status"
         >
           <Webhook
@@ -323,7 +323,7 @@ function WebhookCard({
       : null;
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-lg overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -353,13 +353,13 @@ function WebhookCard({
               {webhook.events.slice(0, 3).map((event) => (
                 <span
                   key={event}
-                  className="px-2 py-0.5 text-xs bg-navy-700 text-slate-300 rounded"
+                  className="px-2 py-0.5 text-xs bg-dark-border text-slate-300 rounded"
                 >
                   {event}
                 </span>
               ))}
               {webhook.events.length > 3 && (
-                <span className="px-2 py-0.5 text-xs bg-navy-700 text-slate-400 rounded">
+                <span className="px-2 py-0.5 text-xs bg-dark-border text-slate-400 rounded">
                   +{webhook.events.length - 3} more
                 </span>
               )}
@@ -414,7 +414,7 @@ function WebhookCard({
             </button>
             <button
               onClick={onEdit}
-              className="p-2 text-slate-400 hover:text-white hover:bg-navy-700 rounded transition-colors"
+              className="p-2 text-slate-400 hover:text-white hover:bg-dark-border rounded transition-colors"
               aria-label={`Edit webhook ${webhook.name}`}
             >
               <Edit className="w-4 h-4" aria-hidden="true" />
@@ -451,14 +451,14 @@ function WebhookCard({
 
       {/* Delivery History */}
       {expanded && (
-        <div className="border-t border-navy-700 p-4 bg-navy-900/50">
+        <div className="border-t border-dark-border p-4 bg-dark-surface/50">
           <h4 className="text-sm font-medium text-slate-300 mb-3">
             Recent Deliveries
           </h4>
           {loadingDeliveries ? (
             <div className="animate-pulse space-y-2">
-              <div className="h-8 bg-navy-800 rounded"></div>
-              <div className="h-8 bg-navy-800 rounded"></div>
+              <div className="h-8 bg-dark-card rounded"></div>
+              <div className="h-8 bg-dark-card rounded"></div>
             </div>
           ) : deliveries.length === 0 ? (
             <p className="text-sm text-slate-500">No deliveries yet</p>
@@ -467,7 +467,7 @@ function WebhookCard({
               {deliveries.slice(0, 10).map((delivery) => (
                 <div
                   key={delivery.id}
-                  className="flex items-center justify-between py-2 px-3 bg-navy-800 rounded text-sm"
+                  className="flex items-center justify-between py-2 px-3 bg-dark-card rounded text-sm"
                 >
                   <div className="flex items-center gap-3">
                     {delivery.status === "DELIVERED" ? (
@@ -631,8 +631,8 @@ function WebhookModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-navy-900 border border-navy-700 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-navy-700">
+      <div className="bg-dark-surface border border-dark-border rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-dark-border">
           <h2 className="text-lg font-semibold text-white">
             {isEditing ? "Edit Webhook" : "Create Webhook"}
           </h2>
@@ -660,7 +660,7 @@ function WebhookModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Slack Notifications"
-              className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -674,7 +674,7 @@ function WebhookModal({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com/webhooks/caelex"
-              className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
             <p className="text-xs text-slate-500 mt-1">
               Must be HTTPS in production
@@ -698,7 +698,7 @@ function WebhookModal({
               {availableEvents.map(({ event, description }) => (
                 <label
                   key={event}
-                  className="flex items-start gap-3 p-2 rounded hover:bg-navy-800 cursor-pointer"
+                  className="flex items-start gap-3 p-2 rounded hover:bg-dark-card cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -716,7 +716,7 @@ function WebhookModal({
           </div>
         </div>
 
-        <div className="p-6 border-t border-navy-700 flex justify-end gap-3">
+        <div className="p-6 border-t border-dark-border flex justify-end gap-3">
           <button
             onClick={onClose}
             className="px-4 py-2 text-slate-400 hover:text-white transition-colors"

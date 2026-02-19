@@ -508,9 +508,9 @@ export function Generate2Page() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-navy-950">
+    <div className="flex h-[calc(100vh-80px)] bg-dark-bg">
       {/* Left Panel — Document Selector (280px) */}
-      <div className="w-[280px] shrink-0 border-r border-navy-700 bg-navy-900/50">
+      <div className="w-[280px] shrink-0 border-r border-dark-border bg-dark-surface/50">
         <DocumentSelectorPanel
           selectedType={selectedType}
           onSelect={handleSelect}
@@ -545,7 +545,7 @@ export function Generate2Page() {
       </div>
 
       {/* Right Panel — Context (320px) */}
-      <div className="w-[320px] shrink-0 border-l border-navy-700 bg-navy-900/50 hidden xl:block">
+      <div className="w-[320px] shrink-0 border-l border-dark-border bg-dark-surface/50 hidden xl:block">
         <ContextPanel
           meta={selectedMeta}
           readiness={selectedReadiness || null}

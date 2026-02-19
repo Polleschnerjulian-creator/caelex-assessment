@@ -30,7 +30,7 @@ export function DocumentTypeCard({
       className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 group ${
         isSelected
           ? "bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/20"
-          : "bg-navy-800/50 border-navy-700/50 hover:bg-navy-800 hover:border-navy-600"
+          : "bg-dark-card/50 border-dark-border/50 hover:bg-dark-card hover:border-dark-border"
       }`}
     >
       <div className="flex items-center gap-2.5">

@@ -10,12 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          700: "#334155",
-          800: "#1E293B",
-          900: "#0F172A",
-          950: "#0A0F1E",
-        },
         // Light mode colors
         light: {
           bg: "#f8fafc",

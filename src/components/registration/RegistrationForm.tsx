@@ -250,9 +250,9 @@ export default function RegistrationForm({
       aria-modal="true"
       aria-labelledby="registration-form-title"
     >
-      <div className="bg-navy-900 border border-navy-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-dark-surface border border-dark-border rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="p-6 border-b border-navy-700">
+        <div className="p-6 border-b border-dark-border">
           <div className="flex items-center justify-between">
             <div>
               <h2
@@ -268,7 +268,7 @@ export default function RegistrationForm({
             <button
               onClick={onClose}
               aria-label="Close dialog"
-              className="p-2 text-slate-400 hover:text-white hover:bg-navy-700 rounded-lg transition-colors"
+              className="p-2 text-slate-400 hover:text-white hover:bg-dark-border rounded-lg transition-colors"
             >
               <X className="w-5 h-5" aria-hidden="true" />
             </button>
@@ -287,7 +287,7 @@ export default function RegistrationForm({
               <div
                 key={s}
                 className={`flex-1 h-1 rounded-full transition-colors ${
-                  s <= step ? "bg-blue-500" : "bg-navy-700"
+                  s <= step ? "bg-blue-500" : "bg-dark-border"
                 }`}
                 aria-hidden="true"
               />
@@ -333,7 +333,7 @@ export default function RegistrationForm({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-navy-700 flex justify-between">
+        <div className="p-6 border-t border-dark-border flex justify-between">
           <button
             onClick={step > 1 ? prevStep : onClose}
             className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white transition-colors"
@@ -417,7 +417,7 @@ function Step1BasicInfo({
           value={formData.spacecraftId}
           onChange={(e) => onSpacecraftSelect(e.target.value)}
           aria-required="true"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           <option value="">Select spacecraft...</option>
           {spacecraft.map((s) => (
@@ -442,7 +442,7 @@ function Step1BasicInfo({
           onChange={(e) => onUpdate("objectName", e.target.value)}
           aria-required="true"
           placeholder="e.g., EUMETSAT Meteosat-12"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
@@ -458,7 +458,7 @@ function Step1BasicInfo({
           value={formData.objectType}
           onChange={(e) => onUpdate("objectType", e.target.value)}
           aria-required="true"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {OBJECT_TYPES.map((type) => (
             <option key={type.value} value={type.value}>
@@ -482,7 +482,7 @@ function Step1BasicInfo({
           onChange={(e) => onUpdate("ownerOperator", e.target.value)}
           aria-required="true"
           placeholder="e.g., European Space Agency"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
@@ -498,7 +498,7 @@ function Step1BasicInfo({
           value={formData.stateOfRegistry}
           onChange={(e) => onUpdate("stateOfRegistry", e.target.value)}
           aria-required="true"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {EU_COUNTRIES.map((country) => (
             <option key={country.code} value={country.code}>
@@ -537,7 +537,7 @@ function Step2LaunchInfo({
           type="date"
           value={formData.launchDate}
           onChange={(e) => onUpdate("launchDate", e.target.value)}
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         />
       </div>
 
@@ -554,7 +554,7 @@ function Step2LaunchInfo({
           value={formData.launchSite}
           onChange={(e) => onUpdate("launchSite", e.target.value)}
           placeholder="e.g., Kourou, French Guiana"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
@@ -571,7 +571,7 @@ function Step2LaunchInfo({
           value={formData.launchVehicle}
           onChange={(e) => onUpdate("launchVehicle", e.target.value)}
           placeholder="e.g., Ariane 6"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
       </div>
 
@@ -586,7 +586,7 @@ function Step2LaunchInfo({
           id="reg-launch-state"
           value={formData.launchState}
           onChange={(e) => onUpdate("launchState", e.target.value)}
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           <option value="">Select country...</option>
           {EU_COUNTRIES.map((country) => (
@@ -628,7 +628,7 @@ function Step3OrbitalParams({
           value={formData.orbitalRegime}
           onChange={(e) => onUpdate("orbitalRegime", e.target.value)}
           aria-required="true"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-blue-500"
         >
           {ORBITAL_REGIMES.map((regime) => (
             <option key={regime.value} value={regime.value}>
@@ -652,7 +652,7 @@ function Step3OrbitalParams({
             value={formData.perigee}
             onChange={(e) => onUpdate("perigee", e.target.value)}
             placeholder="e.g., 400"
-            className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
         <div>
@@ -668,7 +668,7 @@ function Step3OrbitalParams({
             value={formData.apogee}
             onChange={(e) => onUpdate("apogee", e.target.value)}
             placeholder="e.g., 410"
-            className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>
@@ -688,7 +688,7 @@ function Step3OrbitalParams({
             value={formData.inclination}
             onChange={(e) => onUpdate("inclination", e.target.value)}
             placeholder="e.g., 51.6"
-            className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
         <div>
@@ -705,7 +705,7 @@ function Step3OrbitalParams({
             value={formData.period}
             onChange={(e) => onUpdate("period", e.target.value)}
             placeholder="e.g., 92.5"
-            className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>
@@ -725,7 +725,7 @@ function Step3OrbitalParams({
             value={formData.nodeLongitude}
             onChange={(e) => onUpdate("nodeLongitude", e.target.value)}
             placeholder="e.g., 0.0"
-            className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
       )}
@@ -764,12 +764,12 @@ function Step4Identifiers({
               onUpdate("internationalDesignator", e.target.value.toUpperCase())
             }
             placeholder="YYYY-NNNXXX (e.g., 2025-042A)"
-            className="flex-1 px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="flex-1 px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
           <button
             type="button"
             onClick={onGenerateCOSPAR}
-            className="flex items-center gap-2 px-3 py-2 bg-navy-700 text-slate-300 rounded-lg hover:bg-navy-600 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-dark-border text-slate-300 rounded-lg hover:bg-dark-border transition-colors"
             title="Generate suggestion"
             aria-label="Generate COSPAR ID suggestion"
           >
@@ -794,7 +794,7 @@ function Step4Identifiers({
           value={formData.noradCatalogNumber}
           onChange={(e) => onUpdate("noradCatalogNumber", e.target.value)}
           placeholder="e.g., 54321"
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
         />
         <p className="text-xs text-slate-500 mt-1">
           5-digit number assigned by NORAD/Space-Track
@@ -814,7 +814,7 @@ function Step4Identifiers({
           onChange={(e) => onUpdate("generalFunction", e.target.value)}
           placeholder="Describe the general function and purpose of the space object..."
           rows={4}
-          className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+          className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
         />
       </div>
     </div>

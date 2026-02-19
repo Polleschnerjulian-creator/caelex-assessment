@@ -74,9 +74,9 @@ export default function SubmissionCard({
       href={`/dashboard/nca-portal/submissions/${id}`}
       aria-label={`Submission to ${ncaAuthorityName}${reportTitle ? `: ${reportTitle}` : ""}, Priority: ${priority}, ${daysInStatus} days in status${isUrgent ? ", Urgent" : ""}`}
       className={`
-        block bg-white dark:bg-navy-800/50 border rounded-lg p-3
+        block bg-white dark:bg-dark-card/50 border rounded-lg p-3
         hover:border-emerald-500/30 transition-all duration-150 cursor-pointer group
-        ${isUrgent ? "border-red-500/30 dark:border-red-500/20" : "border-slate-200 dark:border-navy-700"}
+        ${isUrgent ? "border-red-500/30 dark:border-red-500/20" : "border-slate-200 dark:border-dark-border"}
       `}
     >
       <div className="flex items-start justify-between gap-2 mb-2">

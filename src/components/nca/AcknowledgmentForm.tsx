@@ -57,9 +57,9 @@ export function AcknowledgmentForm({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-navy-800 border border-navy-700 rounded-xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-dark-card border border-dark-border rounded-xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-navy-700 flex items-center justify-between">
+        <div className="p-4 border-b border-dark-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-500/10 rounded-lg">
               <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -70,7 +70,7 @@ export function AcknowledgmentForm({
           </div>
           <button
             onClick={onCancel}
-            className="p-1 hover:bg-navy-700 rounded transition-colors"
+            className="p-1 hover:bg-dark-border rounded transition-colors"
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
@@ -81,7 +81,7 @@ export function AcknowledgmentForm({
           <p className="text-sm text-slate-400">
             Record the acknowledgment received from{" "}
             <strong>{ncaAuthorityLabel}</strong> for submission{" "}
-            <code className="text-xs bg-navy-900 px-1 py-0.5 rounded">
+            <code className="text-xs bg-dark-surface px-1 py-0.5 rounded">
               {submissionId}
             </code>
           </p>
@@ -102,7 +102,7 @@ export function AcknowledgmentForm({
               value={ncaReference}
               onChange={(e) => setNcaReference(e.target.value)}
               placeholder="e.g., NCA-2026-001234"
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full px-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               required
             />
             <p className="text-xs text-slate-500 mt-1">
@@ -119,7 +119,7 @@ export function AcknowledgmentForm({
               value={acknowledgedBy}
               onChange={(e) => setAcknowledgedBy(e.target.value)}
               placeholder="e.g., Dr. Schmidt, Space Division"
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full px-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
             <p className="text-xs text-slate-500 mt-1">
               Name or department of the NCA contact (optional)
@@ -135,7 +135,7 @@ export function AcknowledgmentForm({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional notes about the acknowledgment..."
               rows={3}
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+              className="w-full px-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
             />
           </div>
 
@@ -145,7 +145,7 @@ export function AcknowledgmentForm({
               type="button"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-navy-700 hover:bg-navy-600 text-slate-300 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-dark-border hover:bg-dark-border text-slate-300 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

@@ -114,7 +114,7 @@ export function DeleteAccountCard({
           aria-modal="true"
           aria-labelledby="delete-account-title"
         >
-          <div className="bg-white dark:bg-navy-900 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-white/10">
+          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-white/10">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-red-50 dark:bg-red-500/5">
               <div className="flex items-center gap-3">

@@ -77,8 +77,8 @@ export default function CorrespondenceForm({
       aria-modal="true"
       aria-labelledby="correspondence-form-title"
     >
-      <div className="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-navy-700">
+      <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-dark-border">
           <h3
             id="correspondence-form-title"
             className="text-sm font-medium text-slate-900 dark:text-white"
@@ -107,7 +107,7 @@ export default function CorrespondenceForm({
                 id="corr-direction"
                 value={direction}
                 onChange={(e) => setDirection(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white"
               >
                 {DIRECTION_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -127,7 +127,7 @@ export default function CorrespondenceForm({
                 id="corr-type"
                 value={messageType}
                 onChange={(e) => setMessageType(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white"
               >
                 {MESSAGE_TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -151,7 +151,7 @@ export default function CorrespondenceForm({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject of the communication"
-              className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
               required
               aria-required="true"
             />
@@ -170,7 +170,7 @@ export default function CorrespondenceForm({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Content or summary of the communication"
               rows={4}
-              className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
               required
               aria-required="true"
             />
@@ -190,7 +190,7 @@ export default function CorrespondenceForm({
                 value={ncaContactName}
                 onChange={(e) => setNcaContactName(e.target.value)}
                 placeholder="Name of NCA contact person"
-                className="w-full px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
               />
             </div>
           )}
@@ -201,7 +201,7 @@ export default function CorrespondenceForm({
                 type="checkbox"
                 checked={requiresResponse}
                 onChange={(e) => setRequiresResponse(e.target.checked)}
-                className="rounded border-slate-300 dark:border-navy-600"
+                className="rounded border-slate-300 dark:border-dark-border"
               />
               <span className="text-xs text-slate-600 dark:text-slate-400">
                 Requires response
@@ -214,7 +214,7 @@ export default function CorrespondenceForm({
                 value={responseDeadline}
                 onChange={(e) => setResponseDeadline(e.target.value)}
                 aria-label="Response deadline"
-                className="px-3 py-1.5 text-xs bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white"
+                className="px-3 py-1.5 text-xs bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white"
               />
             )}
           </div>

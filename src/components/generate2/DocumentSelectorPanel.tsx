@@ -31,7 +31,7 @@ export function DocumentSelectorPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-navy-700">
+      <div className="px-4 py-3 border-b border-dark-border">
         <div className="flex items-center gap-2">
           <FileText size={16} className="text-emerald-400" />
           <h2 className="text-sm font-semibold text-white">NCA Documents</h2>
@@ -82,7 +82,7 @@ export function DocumentSelectorPanel({
       </div>
 
       {/* Generate Full Package button */}
-      <div className="px-3 py-3 border-t border-navy-700">
+      <div className="px-3 py-3 border-t border-dark-border">
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}

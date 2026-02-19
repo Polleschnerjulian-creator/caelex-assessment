@@ -134,9 +134,9 @@ export function SubmissionWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-navy-800 border border-navy-700 rounded-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="bg-dark-card border border-dark-border rounded-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-navy-700 flex-shrink-0">
+        <div className="p-4 border-b border-dark-border flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-500/10 rounded-lg">
@@ -169,7 +169,7 @@ export function SubmissionWizard({
                       ? "bg-green-500 text-white"
                       : s === step
                         ? "bg-emerald-500 text-white"
-                        : "bg-navy-700 text-slate-400"
+                        : "bg-dark-border text-slate-400"
                   }`}
                 >
                   {s < step ? <CheckCircle2 className="w-4 h-4" /> : s}
@@ -177,7 +177,7 @@ export function SubmissionWizard({
                 {s < 3 && (
                   <div
                     className={`w-12 h-0.5 mx-1 ${
-                      s < step ? "bg-green-500" : "bg-navy-700"
+                      s < step ? "bg-green-500" : "bg-dark-border"
                     }`}
                   />
                 )}
@@ -209,7 +209,7 @@ export function SubmissionWizard({
                     className={`w-full p-3 rounded-lg border text-left transition-colors ${
                       selectedAuthority === authority.value
                         ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400"
-                        : "bg-navy-900 border-navy-600 hover:border-navy-500 text-slate-300"
+                        : "bg-dark-surface border-dark-border hover:border-dark-border text-slate-300"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -265,7 +265,7 @@ export function SubmissionWizard({
                       className={`w-full p-3 rounded-lg border text-left transition-colors ${
                         submissionMethod === method.value
                           ? "bg-emerald-500/10 border-emerald-500/50"
-                          : "bg-navy-900 border-navy-600 hover:border-navy-500"
+                          : "bg-dark-surface border-dark-border hover:border-dark-border"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ export function SubmissionWizard({
               </h4>
 
               {/* Summary */}
-              <div className="bg-navy-900 border border-navy-600 rounded-lg p-4 space-y-3">
+              <div className="bg-dark-surface border border-dark-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400">Report:</span>
                   <span className="text-slate-200">
@@ -341,7 +341,7 @@ export function SubmissionWizard({
                   onChange={(e) => setCoverLetter(e.target.value)}
                   placeholder="Add any notes or cover letter content..."
                   rows={4}
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+                  className="w-full px-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
                 />
               </div>
 
@@ -366,7 +366,7 @@ export function SubmissionWizard({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-navy-700 flex justify-between flex-shrink-0">
+        <div className="p-4 border-t border-dark-border flex justify-between flex-shrink-0">
           <button
             onClick={() => (step > 1 ? setStep(step - 1) : onCancel())}
             disabled={isSubmitting}
@@ -380,7 +380,7 @@ export function SubmissionWizard({
             <button
               onClick={() => setStep(step + 1)}
               disabled={!canProceed()}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-navy-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-dark-border disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
             >
               Continue
               <ChevronRight className="w-4 h-4" />

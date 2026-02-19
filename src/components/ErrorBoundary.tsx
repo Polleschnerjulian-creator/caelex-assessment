@@ -18,7 +18,7 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
 
   return (
     <div className="min-h-[400px] flex items-center justify-center p-6">
-      <div className="bg-navy-800 border border-navy-700 rounded-xl p-8 max-w-md w-full text-center">
+      <div className="bg-dark-card border border-dark-border rounded-xl p-8 max-w-md w-full text-center">
         <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertTriangle className="w-8 h-8 text-red-500" />
         </div>
@@ -49,7 +49,7 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
 
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-navy-700 hover:bg-navy-600 text-white rounded-lg transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-dark-border hover:bg-dark-border text-white rounded-lg transition-colors"
           >
             <Home className="w-4 h-4" />
             Go to Dashboard

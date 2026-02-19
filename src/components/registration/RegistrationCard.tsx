@@ -48,7 +48,7 @@ export default function RegistrationCard({
   return (
     <div
       onClick={onSelect}
-      className="bg-navy-800 border border-navy-700 rounded-xl p-4 hover:border-navy-600 transition-all cursor-pointer group"
+      className="bg-dark-card border border-dark-border rounded-xl p-4 hover:border-dark-border transition-all cursor-pointer group"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

@@ -94,9 +94,9 @@ export function SubmissionStatusCard({
   };
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-navy-700">
+      <div className="p-4 border-b border-dark-border">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${colorClass}`}>
@@ -224,7 +224,7 @@ export function SubmissionStatusCard({
               {submission.statusHistory.map((entry, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 text-sm pl-4 border-l-2 border-navy-600"
+                  className="flex items-start gap-3 text-sm pl-4 border-l-2 border-dark-border"
                 >
                   <div className="flex-1">
                     <span className="text-slate-300">{entry.status}</span>
@@ -244,7 +244,7 @@ export function SubmissionStatusCard({
 
       {/* Actions */}
       {(onAcknowledge || onResend) && (
-        <div className="p-4 border-t border-navy-700 flex gap-2">
+        <div className="p-4 border-t border-dark-border flex gap-2">
           {onAcknowledge && submission.status === "SUBMITTED" && (
             <button
               onClick={onAcknowledge}

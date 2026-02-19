@@ -112,8 +112,8 @@ export default function SubmissionDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-navy-700 rounded animate-pulse w-48" />
-        <div className="h-64 bg-slate-200 dark:bg-navy-700 rounded-xl animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-dark-border rounded animate-pulse w-48" />
+        <div className="h-64 bg-slate-200 dark:bg-dark-border rounded-xl animate-pulse" />
         <span className="sr-only">Loading submission details...</span>
       </div>
     );
@@ -191,7 +191,7 @@ export default function SubmissionDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Timeline */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">
               Timeline
             </h3>
@@ -219,7 +219,7 @@ export default function SubmissionDetailPage() {
         {/* Right: Info Panel */}
         <div className="space-y-4">
           {/* Submission Info */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
               Submission Info
             </h3>
@@ -267,7 +267,7 @@ export default function SubmissionDetailPage() {
 
           {/* Linked Package */}
           {submission.package && (
-            <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Package size={14} className="text-blue-400" />
                 <h3 className="text-sm font-medium text-slate-900 dark:text-white">
@@ -285,7 +285,7 @@ export default function SubmissionDetailPage() {
           )}
 
           {/* Actions */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
               Actions
             </h3>

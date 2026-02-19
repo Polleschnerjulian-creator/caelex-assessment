@@ -62,7 +62,7 @@ export default function PortalStats({
         return (
           <div
             key={stat.key}
-            className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4"
+            className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
               <div

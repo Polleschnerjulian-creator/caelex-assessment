@@ -59,7 +59,7 @@ export default function UpgradePrompt({
             transition={{ duration: 0.2 }}
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
           >
-            <div className="w-full max-w-lg bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="w-full max-w-lg bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl overflow-hidden">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-5">
                 <button
@@ -92,7 +92,7 @@ export default function UpgradePrompt({
               <div className="px-6 py-5">
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   {/* Current Plan */}
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-200 dark:border-navy-700">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                       Current Plan
                     </p>
@@ -161,7 +161,7 @@ export default function UpgradePrompt({
                   </button>
                   <button
                     onClick={onClose}
-                    className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+                    className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-dark-card transition-colors"
                   >
                     Maybe Later
                   </button>

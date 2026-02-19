@@ -109,7 +109,7 @@ export default function NCAPortalClient() {
           </Link>
           <Link
             href="/dashboard/modules/supervision"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-navy-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-dark-border rounded-lg transition-colors"
           >
             <Plus size={14} />
             New Submission
@@ -127,7 +127,7 @@ export default function NCAPortalClient() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4 h-20 animate-pulse"
+              className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4 h-20 animate-pulse"
             />
           ))}
           <span className="sr-only">Loading portal statistics...</span>
@@ -143,13 +143,13 @@ export default function NCAPortalClient() {
 
       {/* Pipeline */}
       {isLoading ? (
-        <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4 h-64 animate-pulse" />
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4 h-64 animate-pulse" />
       ) : pipeline ? (
         <SubmissionPipeline pipeline={pipeline.pipeline} />
       ) : null}
 
       {/* Recent Activity */}
-      <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+      <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-slate-900 dark:text-white">
             Recent Correspondence

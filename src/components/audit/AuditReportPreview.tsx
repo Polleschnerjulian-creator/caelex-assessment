@@ -93,7 +93,7 @@ export function AuditReportPreview({
 
   if (isLoading) {
     return (
-      <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+      <div className="bg-dark-card border border-dark-border rounded-xl p-6">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
         </div>
@@ -102,9 +102,9 @@ export function AuditReportPreview({
   }
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-navy-700">
+      <div className="p-4 border-b border-dark-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -152,7 +152,7 @@ export function AuditReportPreview({
 
       {/* Stats Grid */}
       <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 mb-2">
             <Activity className="w-4 h-4" />
             <span className="text-sm">Total Events</span>
@@ -162,7 +162,7 @@ export function AuditReportPreview({
           </div>
         </div>
 
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 mb-2">
             <Calendar className="w-4 h-4" />
             <span className="text-sm">Daily Average</span>
@@ -170,7 +170,7 @@ export function AuditReportPreview({
           <div className="text-2xl font-bold text-slate-200">{avgDaily}</div>
         </div>
 
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 mb-2">
             <BarChart3 className="w-4 h-4" />
             <span className="text-sm">Action Types</span>
@@ -180,7 +180,7 @@ export function AuditReportPreview({
           </div>
         </div>
 
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <div className="flex items-center gap-2 text-slate-400 mb-2">
             <Shield className="w-4 h-4" />
             <span className="text-sm">Security Events</span>
@@ -199,7 +199,7 @@ export function AuditReportPreview({
       {/* Top Actions & Entities */}
       <div className="p-4 grid md:grid-cols-2 gap-4">
         {/* Top Actions */}
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <h4 className="text-sm font-medium text-slate-300 mb-3">
             Top Actions
           </h4>
@@ -216,7 +216,7 @@ export function AuditReportPreview({
                     </span>
                     <span className="text-slate-300">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-navy-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500 rounded-full"
                       style={{ width: `${percentage}%` }}
@@ -229,7 +229,7 @@ export function AuditReportPreview({
         </div>
 
         {/* Top Entities */}
-        <div className="bg-navy-900 border border-navy-600 rounded-lg p-4">
+        <div className="bg-dark-surface border border-dark-border rounded-lg p-4">
           <h4 className="text-sm font-medium text-slate-300 mb-3">
             By Entity Type
           </h4>
@@ -246,7 +246,7 @@ export function AuditReportPreview({
                     </span>
                     <span className="text-slate-300">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-navy-700 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
                     <div
                       className="h-full bg-cyan-500 rounded-full"
                       style={{ width: `${percentage}%` }}
@@ -261,7 +261,7 @@ export function AuditReportPreview({
 
       {/* Activity Trend */}
       {recentDays.length > 0 && (
-        <div className="p-4 border-t border-navy-700">
+        <div className="p-4 border-t border-dark-border">
           <h4 className="text-sm font-medium text-slate-300 mb-3">
             7-Day Activity Trend
           </h4>
@@ -293,8 +293,8 @@ export function AuditReportPreview({
 
       {/* Compliance Certificate Section */}
       {onGenerateCertificate && (
-        <div className="p-4 border-t border-navy-700">
-          <div className="flex items-center justify-between p-4 bg-navy-900 border border-navy-600 rounded-lg">
+        <div className="p-4 border-t border-dark-border">
+          <div className="flex items-center justify-between p-4 bg-dark-surface border border-dark-border rounded-lg">
             <div className="flex items-center gap-3">
               {certificateEligible ? (
                 <div className="p-2 bg-green-500/10 rounded-lg">
@@ -322,7 +322,7 @@ export function AuditReportPreview({
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
                 certificateEligible
                   ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-navy-700 text-slate-500 cursor-not-allowed"
+                  : "bg-dark-border text-slate-500 cursor-not-allowed"
               }`}
             >
               {isGeneratingCert ? (

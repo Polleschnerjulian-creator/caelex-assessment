@@ -61,7 +61,7 @@ const ACTION_COLORS: Record<
   article_status_changed: {
     bg: "bg-blue-500/10",
     text: "text-blue-400",
-    border: "border-blue-500/30",
+    border: "border-emerald-500/30",
   },
   document_uploaded: {
     bg: "bg-green-500/10",
@@ -71,7 +71,7 @@ const ACTION_COLORS: Record<
   document_status_changed: {
     bg: "bg-blue-500/10",
     text: "text-blue-400",
-    border: "border-blue-500/30",
+    border: "border-emerald-500/30",
   },
   workflow_status_changed: {
     bg: "bg-amber-500/10",
@@ -198,7 +198,7 @@ export function AuditTimeline({
 
   if (isLoading) {
     return (
-      <div className="bg-navy-800 border border-navy-700 rounded-xl p-6">
+      <div className="bg-dark-card border border-dark-border rounded-xl p-6">
         <h3 className="text-lg font-semibold text-slate-200 mb-4">{title}</h3>
         <div
           className="space-y-4"
@@ -213,10 +213,10 @@ export function AuditTimeline({
               className="flex gap-4 animate-pulse"
               aria-hidden="true"
             >
-              <div className="w-10 h-10 rounded-full bg-navy-700" />
+              <div className="w-10 h-10 rounded-full bg-dark-border" />
               <div className="flex-1">
-                <div className="h-4 w-48 bg-navy-700 rounded mb-2" />
-                <div className="h-3 w-32 bg-navy-700 rounded" />
+                <div className="h-4 w-48 bg-dark-border rounded mb-2" />
+                <div className="h-3 w-32 bg-dark-border rounded" />
               </div>
             </div>
           ))}
@@ -226,9 +226,9 @@ export function AuditTimeline({
   }
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-navy-700 flex items-center justify-between">
+      <div className="p-4 border-b border-dark-border flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
           <Activity className="w-5 h-5 text-blue-400" aria-hidden="true" />
           {title}
@@ -257,7 +257,7 @@ export function AuditTimeline({
           <div className="relative">
             {/* Timeline line */}
             <div
-              className="absolute left-5 top-0 bottom-0 w-px bg-navy-600"
+              className="absolute left-5 top-0 bottom-0 w-px bg-dark-border"
               aria-hidden="true"
             />
 
@@ -299,7 +299,7 @@ export function AuditTimeline({
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <div
-                          className="w-4 h-4 rounded-full bg-navy-600 flex items-center justify-center"
+                          className="w-4 h-4 rounded-full bg-dark-border flex items-center justify-center"
                           aria-hidden="true"
                         >
                           <User className="w-2.5 h-2.5 text-slate-500" />

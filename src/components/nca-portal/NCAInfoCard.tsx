@@ -67,7 +67,7 @@ export default function NCAInfoCard({
         ${
           selected
             ? "border-emerald-500 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06] ring-1 ring-emerald-500/30"
-            : "border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 hover:border-slate-300 dark:hover:border-navy-600"
+            : "border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card hover:border-slate-300 dark:hover:border-dark-border"
         }
       `}
     >

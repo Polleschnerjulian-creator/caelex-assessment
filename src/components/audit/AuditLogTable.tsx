@@ -136,9 +136,9 @@ export function AuditLogTable({
     entityType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-navy-700">
+      <div className="p-4 border-b border-dark-border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
             <FileText className="w-5 h-5" aria-hidden="true" />
@@ -164,7 +164,7 @@ export function AuditLogTable({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -181,7 +181,7 @@ export function AuditLogTable({
                 setSelectedAction(e.target.value);
                 handleFilterChange(e.target.value, undefined);
               }}
-              className="pl-10 pr-8 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              className="pl-10 pr-8 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
             >
               <option value="">All Actions</option>
               {filterOptions?.actions.map((action) => (
@@ -205,7 +205,7 @@ export function AuditLogTable({
                 setSelectedEntityType(e.target.value);
                 handleFilterChange(undefined, e.target.value);
               }}
-              className="pl-10 pr-8 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              className="pl-10 pr-8 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
             >
               <option value="">All Entities</option>
               {filterOptions?.entityTypes.map((entityType) => (
@@ -227,7 +227,7 @@ export function AuditLogTable({
             aria-live="polite"
             aria-busy="true"
           >
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto" />
             <p className="text-slate-400 mt-3">Loading audit logs...</p>
           </div>
         ) : logs.length === 0 ? (
@@ -240,7 +240,7 @@ export function AuditLogTable({
           </div>
         ) : (
           <table className="w-full" aria-label="Audit log entries">
-            <thead className="bg-navy-900/50">
+            <thead className="bg-dark-surface/50">
               <tr>
                 <th
                   scope="col"
@@ -280,10 +280,10 @@ export function AuditLogTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-700">
+            <tbody className="divide-y divide-dark-border">
               {logs.map((log) => (
                 <Fragment key={log.id}>
-                  <tr className="hover:bg-navy-700/30 transition-colors">
+                  <tr className="hover:bg-dark-border/30 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-slate-300">
                         <Clock
@@ -297,7 +297,7 @@ export function AuditLogTable({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-navy-600 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-dark-border flex items-center justify-center">
                           <User
                             className="w-3 h-3 text-slate-400"
                             aria-hidden="true"
@@ -341,7 +341,7 @@ export function AuditLogTable({
                             ? "Collapse details"
                             : "Expand details"
                         }
-                        className="p-1 hover:bg-navy-600 rounded transition-colors"
+                        className="p-1 hover:bg-dark-border rounded transition-colors"
                       >
                         {expandedRow === log.id ? (
                           <ChevronUp
@@ -358,7 +358,7 @@ export function AuditLogTable({
                     </td>
                   </tr>
                   {expandedRow === log.id && (
-                    <tr className="bg-navy-900/30">
+                    <tr className="bg-dark-surface/30">
                       <td colSpan={6} className="px-4 py-4">
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -397,7 +397,7 @@ export function AuditLogTable({
                                     <span className="text-red-400 text-xs">
                                       Previous:
                                     </span>
-                                    <pre className="mt-1 p-2 bg-navy-950 rounded text-xs text-slate-400 overflow-auto max-h-20">
+                                    <pre className="mt-1 p-2 bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
                                       {typeof log.previousValue === "string"
                                         ? log.previousValue
                                         : JSON.stringify(
@@ -413,7 +413,7 @@ export function AuditLogTable({
                                     <span className="text-green-400 text-xs">
                                       New:
                                     </span>
-                                    <pre className="mt-1 p-2 bg-navy-950 rounded text-xs text-slate-400 overflow-auto max-h-20">
+                                    <pre className="mt-1 p-2 bg-dark-bg rounded text-xs text-slate-400 overflow-auto max-h-20">
                                       {typeof log.newValue === "string"
                                         ? log.newValue
                                         : JSON.stringify(log.newValue, null, 2)}
@@ -438,7 +438,7 @@ export function AuditLogTable({
       {totalPages > 1 && (
         <nav
           aria-label="Pagination"
-          className="px-4 py-3 border-t border-navy-700 flex items-center justify-between"
+          className="px-4 py-3 border-t border-dark-border flex items-center justify-between"
         >
           <div className="text-sm text-slate-400">
             Showing {currentOffset + 1} -{" "}
@@ -451,7 +451,7 @@ export function AuditLogTable({
                 onPageChange?.(Math.max(0, currentOffset - pageSize))
               }
               disabled={currentPage === 1}
-              className="px-3 py-1 text-sm bg-navy-700 hover:bg-navy-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded transition-colors"
+              className="px-3 py-1 text-sm bg-dark-border hover:bg-dark-border disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded transition-colors"
             >
               Previous
             </button>
@@ -464,7 +464,7 @@ export function AuditLogTable({
             <button
               onClick={() => onPageChange?.(currentOffset + pageSize)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm bg-navy-700 hover:bg-navy-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded transition-colors"
+              className="px-3 py-1 text-sm bg-dark-border hover:bg-dark-border disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded transition-colors"
             >
               Next
             </button>

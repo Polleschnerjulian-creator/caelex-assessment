@@ -103,10 +103,10 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
       >
         <span className="sr-only">Loading API keys...</span>
         <div
-          className="h-10 bg-navy-800 rounded w-1/4"
+          className="h-10 bg-dark-card rounded w-1/4"
           aria-hidden="true"
         ></div>
-        <div className="h-32 bg-navy-800 rounded" aria-hidden="true"></div>
+        <div className="h-32 bg-dark-card rounded" aria-hidden="true"></div>
       </div>
     );
   }
@@ -148,7 +148,7 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
                 securely.
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 bg-navy-900 rounded font-mono text-sm text-white">
+                <code className="flex-1 px-3 py-2 bg-dark-surface rounded font-mono text-sm text-white">
                   {newKeySecret}
                 </code>
                 <button
@@ -158,7 +158,7 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
                       ? "Copied to clipboard"
                       : "Copy API key to clipboard"
                   }
-                  className="px-3 py-2 bg-navy-700 rounded hover:bg-navy-600 transition-colors"
+                  className="px-3 py-2 bg-dark-border rounded hover:bg-dark-border transition-colors"
                 >
                   {copiedKeyId === "new" ? (
                     <Check
@@ -187,7 +187,7 @@ export default function ApiKeyList({ organizationId }: ApiKeyListProps) {
       {/* Keys List */}
       {keys.length === 0 ? (
         <div
-          className="text-center py-12 bg-navy-800/50 border border-navy-700 rounded-xl"
+          className="text-center py-12 bg-dark-card/50 border border-dark-border rounded-xl"
           role="status"
         >
           <Key
@@ -252,7 +252,7 @@ function ApiKeyCard({
   const [showMasked, setShowMasked] = useState(false);
 
   return (
-    <div className="p-4 bg-navy-800 border border-navy-700 rounded-lg">
+    <div className="p-4 bg-dark-card border border-dark-border rounded-lg">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
@@ -272,7 +272,7 @@ function ApiKeyCard({
           </div>
 
           <div className="flex items-center gap-2 mb-3">
-            <code className="px-2 py-1 bg-navy-900 rounded font-mono text-sm text-slate-400">
+            <code className="px-2 py-1 bg-dark-surface rounded font-mono text-sm text-slate-400">
               {showMasked ? apiKey.maskedKey : apiKey.keyPrefix + "..."}
             </code>
             <button
@@ -305,7 +305,7 @@ function ApiKeyCard({
             {apiKey.scopes.map((scope) => (
               <span
                 key={scope}
-                className="px-2 py-0.5 text-xs bg-navy-700 text-slate-300 rounded"
+                className="px-2 py-0.5 text-xs bg-dark-border text-slate-300 rounded"
               >
                 {scope}
               </span>
@@ -430,8 +430,8 @@ function CreateApiKeyModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-navy-900 border border-navy-700 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-navy-700">
+      <div className="bg-dark-surface border border-dark-border rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-dark-border">
           <h2 className="text-lg font-semibold text-white">Create API Key</h2>
           <p className="text-sm text-slate-400 mt-1">
             Generate a new API key for programmatic access
@@ -455,7 +455,7 @@ function CreateApiKeyModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Production API Key"
-              className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -467,7 +467,7 @@ function CreateApiKeyModal({
             <select
               value={expiresIn}
               onChange={(e) => setExpiresIn(e.target.value)}
-              className="w-full px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-white focus:outline-none focus:border-emerald-500"
             >
               <option value="never">Never expires</option>
               <option value="30">30 days</option>
@@ -494,7 +494,7 @@ function CreateApiKeyModal({
               {Object.entries(availableScopes).map(([scope, description]) => (
                 <label
                   key={scope}
-                  className="flex items-start gap-3 p-2 rounded hover:bg-navy-800 cursor-pointer"
+                  className="flex items-start gap-3 p-2 rounded hover:bg-dark-card cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -512,7 +512,7 @@ function CreateApiKeyModal({
           </div>
         </div>
 
-        <div className="p-6 border-t border-navy-700 flex justify-end gap-3">
+        <div className="p-6 border-t border-dark-border flex justify-end gap-3">
           <button
             onClick={onClose}
             className="px-4 py-2 text-slate-400 hover:text-white transition-colors"

@@ -104,7 +104,7 @@ export function SubmissionHistory({
 
   if (isLoading) {
     return (
-      <div className="bg-navy-800 border border-navy-700 rounded-xl p-8">
+      <div className="bg-dark-card border border-dark-border rounded-xl p-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
         </div>
@@ -113,9 +113,9 @@ export function SubmissionHistory({
   }
 
   return (
-    <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+    <div className="bg-dark-card border border-dark-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-navy-700">
+      <div className="p-4 border-b border-dark-border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-200">
             Submission History
@@ -135,7 +135,7 @@ export function SubmissionHistory({
               placeholder="Search submissions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full pl-10 pr-4 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="relative">
@@ -143,7 +143,7 @@ export function SubmissionHistory({
             <select
               value={statusFilter || ""}
               onChange={(e) => setStatusFilter(e.target.value || null)}
-              className="pl-10 pr-8 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
+              className="pl-10 pr-8 py-2 bg-dark-surface border border-dark-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
             >
               <option value="">All Statuses</option>
               {uniqueStatuses.map((status) => (
@@ -157,7 +157,7 @@ export function SubmissionHistory({
       </div>
 
       {/* List */}
-      <div className="divide-y divide-navy-700">
+      <div className="divide-y divide-dark-border">
         {filteredSubmissions.length === 0 ? (
           <div className="p-8 text-center">
             <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
@@ -176,7 +176,7 @@ export function SubmissionHistory({
               <div
                 key={submission.id}
                 onClick={() => onSelect?.(submission)}
-                className={`p-4 hover:bg-navy-700/50 transition-colors ${
+                className={`p-4 hover:bg-dark-border/50 transition-colors ${
                   onSelect ? "cursor-pointer" : ""
                 }`}
               >

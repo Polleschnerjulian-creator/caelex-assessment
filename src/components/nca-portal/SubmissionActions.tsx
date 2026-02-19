@@ -77,7 +77,7 @@ export default function SubmissionActions({
           aria-expanded={showPriority}
           aria-haspopup="listbox"
           aria-label={`Priority: ${currentPriority}`}
-          className="w-full flex items-center justify-between px-3 py-2 text-sm bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-navy-600 transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-dark-border transition-colors"
         >
           <span>
             Priority:{" "}
@@ -96,7 +96,7 @@ export default function SubmissionActions({
           <div
             role="listbox"
             aria-label="Priority options"
-            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-lg shadow-lg z-10 overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg shadow-lg z-10 overflow-hidden"
           >
             {PRIORITY_OPTIONS.map((opt) => (
               <button

@@ -200,7 +200,7 @@ export default function WidgetSettingsPage() {
 
       {/* API Key Section */}
       {!config ? (
-        <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
           <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
             {t("widget.setup")}
           </h2>
@@ -230,7 +230,7 @@ export default function WidgetSettingsPage() {
                 Widget API Key (save this — it won&apos;t be shown again):
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-white dark:bg-navy-900 p-2 rounded border border-amber-200 dark:border-amber-500/20 text-amber-900 dark:text-amber-300 font-mono break-all">
+                <code className="flex-1 text-xs bg-white dark:bg-dark-surface p-2 rounded border border-amber-200 dark:border-amber-500/20 text-amber-900 dark:text-amber-300 font-mono break-all">
                   {newApiKey}
                 </code>
                 <button
@@ -244,7 +244,7 @@ export default function WidgetSettingsPage() {
           )}
 
           {/* Widget Type */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.widgetType")}
@@ -272,7 +272,7 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Theme */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Palette size={20} />
               {t("widget.theme")}
@@ -295,7 +295,7 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Allowed Domains */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Globe size={20} />
               {t("widget.allowedDomains")}
@@ -310,7 +310,7 @@ export default function WidgetSettingsPage() {
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="https://example.com"
-                className="flex-1 px-3 py-2 bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
+                className="flex-1 px-3 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
               />
               <button
                 onClick={addDomain}
@@ -357,18 +357,18 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Embed Code */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.embedCode")}
             </h2>
             <div className="relative">
-              <pre className="bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
+              <pre className="bg-slate-50 dark:bg-dark-surface border border-slate-200 dark:border-white/10 rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
                 {embedCode}
               </pre>
               <button
                 onClick={() => copyToClipboard(embedCode, "embed")}
-                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-md text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/80 transition-colors"
+                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-md text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/80 transition-colors"
               >
                 {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
               </button>
@@ -376,12 +376,12 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Live Preview */}
-          <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Eye size={20} />
               {t("widget.preview")}
             </h2>
-            <div className="flex justify-center p-8 bg-slate-50 dark:bg-navy-900 rounded-lg border border-slate-200 dark:border-white/10">
+            <div className="flex justify-center p-8 bg-slate-50 dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-white/10">
               <div className="text-center text-sm text-slate-500 dark:text-white/40">
                 <Code2 size={32} className="mx-auto mb-3 opacity-50" />
                 <p>Widget preview available when running locally.</p>
@@ -395,7 +395,7 @@ export default function WidgetSettingsPage() {
 
           {/* Analytics */}
           {analytics && (
-            <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <BarChart3 size={20} />
                 {t("widget.analytics")}

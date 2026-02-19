@@ -48,7 +48,7 @@ export default function SubmissionPipeline({
   if (!hasAnySubmissions) {
     return (
       <div
-        className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-8 text-center"
+        className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-8 text-center"
         role="status"
       >
         <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -59,7 +59,7 @@ export default function SubmissionPipeline({
   }
 
   return (
-    <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4">
+    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
       <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">
         Submission Pipeline
       </h3>

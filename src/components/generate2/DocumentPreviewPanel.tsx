@@ -90,7 +90,7 @@ export function DocumentPreviewPanel({
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-navy-700 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-dark-border flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
             <p className="text-sm text-slate-400">{meta.articleRef}</p>
@@ -122,7 +122,7 @@ export function DocumentPreviewPanel({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {documentContent.map((section, idx) => (
             <div key={idx} className="mb-8">
-              <h4 className="text-base font-semibold text-white mb-3 pb-2 border-b border-navy-700">
+              <h4 className="text-base font-semibold text-white mb-3 pb-2 border-b border-dark-border">
                 {section.title}
               </h4>
               <div className="space-y-2">
@@ -189,15 +189,15 @@ export function DocumentPreviewPanel({
                     return (
                       <div
                         key={blockIdx}
-                        className="overflow-x-auto rounded-lg border border-navy-700 my-2"
+                        className="overflow-x-auto rounded-lg border border-dark-border my-2"
                       >
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-navy-800">
+                            <tr className="bg-dark-card">
                               {block.headers.map((h, i) => (
                                 <th
                                   key={i}
-                                  className="px-3 py-2 text-left text-slate-400 font-medium border-b border-navy-700"
+                                  className="px-3 py-2 text-left text-slate-400 font-medium border-b border-dark-border"
                                 >
                                   {h}
                                 </th>
@@ -208,7 +208,7 @@ export function DocumentPreviewPanel({
                             {block.rows.map((row, rowIdx) => (
                               <tr
                                 key={rowIdx}
-                                className="border-b border-navy-700/50"
+                                className="border-b border-dark-border/50"
                               >
                                 {row.map((cell, cellIdx) => (
                                   <td
@@ -257,7 +257,7 @@ export function DocumentPreviewPanel({
                   }
                   if (block.type === "divider") {
                     return (
-                      <hr key={blockIdx} className="border-navy-700 my-3" />
+                      <hr key={blockIdx} className="border-dark-border my-3" />
                     );
                   }
                   return null;
@@ -283,7 +283,7 @@ export function DocumentPreviewPanel({
 
       {/* Readiness card */}
       {readiness && (
-        <div className="bg-navy-800 border border-navy-700 rounded-xl p-4 mb-6">
+        <div className="bg-dark-card border border-dark-border rounded-xl p-4 mb-6">
           <div className="flex items-center gap-4">
             <ReadinessRing score={readiness.score} size={56} strokeWidth={4} />
             <div>

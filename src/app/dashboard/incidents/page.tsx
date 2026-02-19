@@ -507,7 +507,7 @@ export default function IncidentsPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl p-4"
+              className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4"
             >
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon size={14} className={stat.color} />
@@ -607,7 +607,7 @@ export default function IncidentsPage() {
               return (
                 <div
                   key={incident.id}
-                  className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 rounded-xl overflow-hidden"
+                  className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl overflow-hidden"
                 >
                   {/* Row */}
                   <button
@@ -711,7 +711,7 @@ export default function IncidentsPage() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="border-t border-slate-200 dark:border-navy-700 p-4 space-y-5">
+                        <div className="border-t border-slate-200 dark:border-dark-border p-4 space-y-5">
                           {expandLoading ? (
                             <div className="flex items-center justify-center py-8">
                               <Loader2
