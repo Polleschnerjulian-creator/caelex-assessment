@@ -75,7 +75,7 @@ export default function ComplianceDonutChart({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
-          className="text-[42px] font-mono font-bold text-white"
+          className="text-[42px] font-bold text-white"
         >
           {totalScore}%
         </motion.span>
@@ -83,7 +83,7 @@ export default function ComplianceDonutChart({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.4 }}
-          className="text-[11px] font-mono uppercase tracking-wider text-white/50"
+          className="text-[11px] uppercase tracking-wider text-white/50"
         >
           Overall
         </motion.span>
@@ -91,7 +91,7 @@ export default function ComplianceDonutChart({
 
       {/* Demo Badge */}
       {isDemo && (
-        <div className="absolute top-0 right-0 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-mono px-2 py-1 rounded">
+        <div className="absolute top-0 right-0 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] px-2 py-1 rounded">
           SAMPLE DATA
         </div>
       )}

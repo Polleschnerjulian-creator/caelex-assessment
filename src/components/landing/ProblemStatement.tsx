@@ -21,7 +21,7 @@ export default function ProblemStatement() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="font-mono text-[11px] text-white/30">02 / 12</span>
+        <span className="text-[11px] text-white/30">02 / 12</span>
       </motion.div>
 
       <div className="max-w-[1000px] mx-auto">

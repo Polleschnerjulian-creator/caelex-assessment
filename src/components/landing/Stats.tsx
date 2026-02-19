@@ -61,10 +61,10 @@ function AnimatedStat({ value, label, index }: StatProps) {
 
   return (
     <div ref={ref} className="text-center">
-      <div className="font-mono text-[clamp(2.5rem,5vw,4rem)] font-semibold text-white tracking-[-0.03em]">
+      <div className="text-[clamp(2.5rem,5vw,4rem)] font-semibold text-white tracking-[-0.03em]">
         {displayValue}
       </div>
-      <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 mt-3">
+      <div className="text-[11px] uppercase tracking-[0.2em] text-white/60 mt-3">
         {label}
       </div>
     </div>

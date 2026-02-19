@@ -54,10 +54,10 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
       transition={{ delay: 0.3 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
           Applicable Articles
         </span>
-        <span className="font-mono text-[11px] text-white/50">
+        <span className="text-[11px] text-white/50">
           {articles.length} articles
         </span>
       </div>
@@ -72,7 +72,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           return (
             <div
               key={category}
-              className={`px-3 py-1.5 rounded-full font-mono text-[11px] bg-white/[0.08] border border-white/[0.12] ${display.opacity}`}
+              className={`px-3 py-1.5 rounded-full text-[11px] bg-white/[0.08] border border-white/[0.12] ${display.opacity}`}
             >
               {display.label}: {count}
             </div>
@@ -100,7 +100,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
                   <div className="flex items-start gap-4">
                     {/* Article number */}
                     <div className="flex-shrink-0">
-                      <span className="font-mono text-[11px] text-white/80 bg-white/[0.08] px-2 py-1 rounded">
+                      <span className="text-[11px] text-white/80 bg-white/[0.08] px-2 py-1 rounded">
                         Art. {article.number}
                       </span>
                     </div>
@@ -112,7 +112,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
                           {article.title}
                         </h4>
                         <span
-                          className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.08] flex-shrink-0 ${display.opacity}`}
+                          className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.08] flex-shrink-0 ${display.opacity}`}
                         >
                           {display.label}
                         </span>
@@ -162,7 +162,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-white/60 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-[11px] text-white/60 hover:text-white transition-colors"
         >
           View full regulation on EUR-Lex
           <ExternalLink className="w-3 h-3" aria-hidden="true" />

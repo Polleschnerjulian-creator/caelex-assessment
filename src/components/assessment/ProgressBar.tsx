@@ -16,11 +16,11 @@ export default function ProgressBar({
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-3">
-        <span className="font-mono text-[12px] text-emerald-400/70">
+        <span className="text-[12px] text-emerald-400/70">
           {String(currentStep).padStart(2, "0")} /{" "}
           {String(totalSteps).padStart(2, "0")}
         </span>
-        <span className="font-mono text-[12px] text-white/40">
+        <span className="text-[12px] text-white/40">
           {Math.round(progress)}%
         </span>
       </div>

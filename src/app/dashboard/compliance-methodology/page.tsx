@@ -284,7 +284,7 @@ export default function ComplianceMethodologyPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="p-6 lg:p-8 min-h-screen">
+    <div className="min-h-screen">
       <div className="max-w-[900px]">
         {/* Back Link */}
         <Link
@@ -422,10 +422,10 @@ export default function ComplianceMethodologyPage() {
                         <h3 className="text-[16px] font-medium text-white">
                           {mod.name}
                         </h3>
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
                           {t("methodology.weight", { percent: mod.weight })}
                         </span>
-                        <span className="text-[11px] font-mono text-white/30">
+                        <span className="text-[11px] text-white/30">
                           {mod.articles}
                         </span>
                       </div>
@@ -466,7 +466,7 @@ export default function ComplianceMethodologyPage() {
                               </p>
                             </td>
                             <td className="text-center">
-                              <span className="text-[13px] font-mono text-white/60">
+                              <span className="text-[13px] text-white/60">
                                 {factor.points}
                               </span>
                             </td>
@@ -490,7 +490,7 @@ export default function ComplianceMethodologyPage() {
                           <td className="pt-2 text-[12px] text-white/50 font-medium">
                             {t("common.total")}
                           </td>
-                          <td className="pt-2 text-center text-[13px] font-mono text-white/70 font-medium">
+                          <td className="pt-2 text-center text-[13px] text-white/70 font-medium">
                             {totalPoints}
                           </td>
                           <td />

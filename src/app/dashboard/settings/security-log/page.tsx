@@ -355,7 +355,7 @@ export default function SecurityLogPage() {
   };
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[900px]">
         {/* Back Link */}
         <Link

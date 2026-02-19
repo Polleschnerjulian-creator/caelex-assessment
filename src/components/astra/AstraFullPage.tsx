@@ -103,7 +103,7 @@ export default function AstraFullPage() {
   // ─── Consent Gate ───
   if (!astraConsented) {
     return (
-      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-[#0A0A0B]">
+      <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 items-center justify-center bg-dark-bg">
         <div className="max-w-md w-full px-6">
           <div className="flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
@@ -162,7 +162,7 @@ export default function AstraFullPage() {
 
   // ─── Main Layout ───
   return (
-    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-[#0A0A0B]">
+    <div className="flex h-[calc(100vh-64px)] -m-6 lg:-m-8 bg-dark-bg">
       {/* Conversation List (toggle, left) */}
       <AnimatePresence>
         {showConversations && (

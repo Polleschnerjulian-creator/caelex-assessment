@@ -340,9 +340,7 @@ export default function DocumentStudio() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
-                {t("documentStudio.title") !== "documentStudio.title"
-                  ? t("documentStudio.title")
-                  : "AI Document Studio"}
+                {t("documentStudio.title")}
               </h1>
               <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium uppercase tracking-wider flex items-center gap-1">
                 <Zap size={10} />
@@ -350,9 +348,7 @@ export default function DocumentStudio() {
               </span>
             </div>
             <p className="text-sm text-slate-500 dark:text-white/50 mt-0.5">
-              {t("documentStudio.subtitle") !== "documentStudio.subtitle"
-                ? t("documentStudio.subtitle")
-                : "Generate NCA-submission-ready compliance documents"}
+              {t("documentStudio.subtitle")}
             </p>
           </div>
         </div>

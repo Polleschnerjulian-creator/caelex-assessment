@@ -168,7 +168,7 @@ export default function Modules() {
           >
             <div>
               <span
-                className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4"
+                className="text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4"
                 aria-hidden="true"
               >
                 07 / 14 — Platform
@@ -182,13 +182,13 @@ export default function Modules() {
               </h2>
             </div>
             <div className="hidden md:flex items-center gap-4">
-              <span className="font-mono text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
+              <span className="text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
                 EU Space Act
               </span>
-              <span className="font-mono text-[10px] text-cyan-400/60 bg-cyan-500/10 px-2 py-1 rounded">
+              <span className="text-[10px] text-cyan-400/60 bg-cyan-500/10 px-2 py-1 rounded">
                 NIS2
               </span>
-              <span className="font-mono text-[10px] text-purple-400/60 bg-purple-500/10 px-2 py-1 rounded">
+              <span className="text-[10px] text-purple-400/60 bg-purple-500/10 px-2 py-1 rounded">
                 10 National Laws
               </span>
             </div>
@@ -237,17 +237,17 @@ export default function Modules() {
                       </div>
                       <div className="flex items-center gap-2">
                         {isNIS2 && (
-                          <span className="font-mono text-[10px] sm:text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] sm:text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
                             NIS2
                           </span>
                         )}
                         {isMulti && (
-                          <span className="font-mono text-[10px] sm:text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] sm:text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
                             ALL
                           </span>
                         )}
                         <span
-                          className="font-mono text-[11px] text-white/20"
+                          className="text-[11px] text-white/20"
                           aria-hidden="true"
                         >
                           {module.id}
@@ -266,7 +266,7 @@ export default function Modules() {
 
                     {/* Article range */}
                     <p
-                      className={`font-mono text-[10px] mb-4 ${
+                      className={`text-[10px] mb-4 ${
                         isNIS2 ? "text-cyan-400/60" : "text-white/40"
                       }`}
                     >
@@ -335,28 +335,26 @@ export default function Modules() {
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 py-8 border-t border-white/[0.06]">
             <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">8</p>
-              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-[24px] font-light text-white">8</p>
+              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Modules
               </p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">
-                170+
-              </p>
-              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-[24px] font-light text-white">170+</p>
+              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Requirements
               </p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">3</p>
-              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-[24px] font-light text-white">3</p>
+              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Frameworks
               </p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-[24px] font-light text-white">10</p>
-              <p className="font-mono text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-[24px] font-light text-white">10</p>
+              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
                 Jurisdictions
               </p>
             </div>

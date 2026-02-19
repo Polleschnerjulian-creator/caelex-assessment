@@ -33,6 +33,7 @@ import {
   Eye,
   Info,
 } from "lucide-react";
+import GlassCard from "@/components/ui/GlassCard";
 
 // ============================================================================
 // ANIMATED COUNTER
@@ -68,39 +69,6 @@ function AnimatedCounter({
       {count.toLocaleString("de-DE")}
       {suffix}
     </span>
-  );
-}
-
-// ============================================================================
-// GLASS CARD COMPONENT
-// ============================================================================
-function GlassCard({
-  children,
-  className = "",
-  hover = true,
-  highlighted = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-  highlighted?: boolean;
-}) {
-  return (
-    <div
-      className={`
-        relative rounded-2xl overflow-hidden
-        ${
-          highlighted
-            ? "bg-white/[0.06] backdrop-blur-xl border-2 border-emerald-500/30"
-            : "bg-white/[0.03] backdrop-blur-xl border border-white/[0.08]"
-        }
-        ${hover && !highlighted ? "transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]" : ""}
-        ${highlighted ? "shadow-[0_20px_60px_rgba(16,185,129,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]" : "shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"}
-        ${className}
-      `}
-    >
-      {children}
-    </div>
   );
 }
 

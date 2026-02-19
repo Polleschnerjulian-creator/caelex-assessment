@@ -159,7 +159,7 @@ export default function ApiKeysPage() {
 
   if (!orgId) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="">
         <div className="max-w-[800px]">
           <div className="text-center py-16">
             <Key className="w-8 h-8 text-white/20 mx-auto mb-3" />
@@ -171,7 +171,7 @@ export default function ApiKeysPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[800px]">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -363,7 +363,7 @@ export default function ApiKeysPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0A0A0B] border border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
+              className="bg-dark-bg border border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
             >
               <h2 className="text-[18px] font-medium text-white mb-1">
                 {t("apiKeys.createApiKey")}

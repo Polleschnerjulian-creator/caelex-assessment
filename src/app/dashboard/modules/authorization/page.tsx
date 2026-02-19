@@ -265,7 +265,7 @@ function AuthorizationPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8" role="status" aria-live="polite">
+      <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -284,10 +284,10 @@ function AuthorizationPageContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px]">
+    <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 01
         </p>
         <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
@@ -320,7 +320,7 @@ function AuthorizationPageContent() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
                     activeStep === index
                       ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
@@ -372,7 +372,7 @@ function AuthorizationPageContent() {
             {workflows.length > 0 && !showNewWorkflowForm && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/30">
                     Your Authorization Workflows
                   </p>
                   <button
@@ -785,7 +785,7 @@ function AuthorizationPageContent() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[28px] font-mono font-semibold text-white">
+                      <p className="text-[28px] font-semibold text-white">
                         {progress.percent}%
                       </p>
                     </div>
@@ -933,7 +933,7 @@ function AuthorizationPageContent() {
                   <p className="text-[11px] uppercase tracking-wider text-white/60 mb-1">
                     EU Space Act Enforcement
                   </p>
-                  <p className="text-[32px] font-mono font-semibold text-white">
+                  <p className="text-[32px] font-semibold text-white">
                     {daysUntilEnforcement.toLocaleString()}
                   </p>
                   <p className="text-[13px] text-white/60">
@@ -1005,7 +1005,7 @@ function AuthorizationPageContent() {
                         }`}
                       />
                       <div>
-                        <p className="text-[11px] font-mono text-white/70 mb-1">
+                        <p className="text-[11px] text-white/70 mb-1">
                           {milestone.date}
                         </p>
                         <p className="text-[14px] font-medium text-white mb-0.5">
@@ -1043,7 +1043,7 @@ function AuthorizationPageContent() {
                         <span className="text-[12px] text-white/60 truncate">
                           {doc.name}
                         </span>
-                        <span className="text-[11px] font-mono text-white/70">
+                        <span className="text-[11px] text-white/70">
                           {doc.dueDate
                             ? new Date(doc.dueDate).toLocaleDateString()
                             : "No deadline set"}
@@ -1185,7 +1185,7 @@ function AuthorizationPageContent() {
                       <p className="text-[11px] text-white/60 mb-1">
                         {item.label}
                       </p>
-                      <p className="text-[14px] font-mono text-white/60">
+                      <p className="text-[14px] text-white/60">
                         {item.date
                           ? new Date(item.date).toLocaleDateString()
                           : "—"}

@@ -22,7 +22,7 @@ export default function SpaceLawRecommendations({
       {/* Section header */}
       <div className="flex items-center gap-3 mb-2">
         <Lightbulb className="w-4 h-4 text-blue-400" aria-hidden="true" />
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
           Recommendations
         </span>
       </div>
@@ -41,7 +41,7 @@ export default function SpaceLawRecommendations({
               transition={{ duration: 0.4, delay: 0.15 + index * 0.08 }}
             >
               <div className="flex items-start gap-4 py-4 border-l-2 border-blue-500/20 pl-5">
-                <span className="text-2xl font-mono font-bold text-blue-400/30 leading-none flex-shrink-0 select-none">
+                <span className="text-2xl font-bold text-blue-400/30 leading-none flex-shrink-0 select-none">
                   {index + 1}
                 </span>
                 <p className="text-sm text-white/80 leading-relaxed pt-0.5">

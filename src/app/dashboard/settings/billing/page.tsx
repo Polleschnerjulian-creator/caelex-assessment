@@ -229,7 +229,7 @@ function BillingContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
       </div>
     );
@@ -239,7 +239,7 @@ function BillingContent() {
     "FREE") as PlanType;
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[1200px]">
         {/* Page Header */}
         <div className="mb-10">
@@ -302,7 +302,7 @@ function BillingContent() {
 
         {/* Pricing Table */}
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
             AVAILABLE PLANS
           </p>
           <PricingTable
@@ -314,7 +314,7 @@ function BillingContent() {
 
         {/* FAQ */}
         <div className="mt-12">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
             FREQUENTLY ASKED QUESTIONS
           </p>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
@@ -358,7 +358,7 @@ function BillingContent() {
 
 function BillingFallback() {
   return (
-    <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
+    <div className="flex items-center justify-center min-h-[400px]">
       <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
     </div>
   );

@@ -1,6 +1,6 @@
 export default function AssessmentLoading() {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0A0A0B] py-20">
+    <div className="min-h-screen bg-white dark:bg-dark-bg py-20">
       <div className="max-w-4xl mx-auto px-4 animate-pulse">
         <div className="text-center space-y-4 mb-12">
           <div className="h-10 w-80 mx-auto bg-gray-200 dark:bg-[#1E293B] rounded-lg" />

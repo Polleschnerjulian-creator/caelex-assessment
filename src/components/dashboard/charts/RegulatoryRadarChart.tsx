@@ -53,7 +53,7 @@ export default function RegulatoryRadarChart({
       className="relative h-[280px] w-full"
     >
       {isDemo && (
-        <div className="absolute top-0 right-0 z-10 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-mono px-2 py-1 rounded">
+        <div className="absolute top-0 right-0 z-10 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] px-2 py-1 rounded">
           SAMPLE DATA
         </div>
       )}

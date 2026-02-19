@@ -73,7 +73,7 @@ export function DeleteAccountCard({
             <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               DANGER ZONE
             </h2>
             <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">

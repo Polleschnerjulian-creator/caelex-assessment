@@ -348,7 +348,7 @@ export default function FileUploader({
                 {getStatusMessage()}
               </p>
             </div>
-            <span className="text-lg font-mono font-semibold text-slate-900 dark:text-white">
+            <span className="text-lg font-semibold text-slate-900 dark:text-white">
               {progress}%
             </span>
           </div>

@@ -29,6 +29,7 @@ import {
   HeartHandshake,
   Activity,
 } from "lucide-react";
+import GlassCard from "@/components/ui/GlassCard";
 
 // ============================================================================
 // ANIMATION HELPERS
@@ -353,29 +354,6 @@ const governanceDocuments = [
 // COMPONENTS
 // ============================================================================
 
-function GlassCard({
-  children,
-  className = "",
-  hover = true,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-}) {
-  return (
-    <div
-      className={`
-        bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl
-        shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]
-        ${hover ? "transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]" : ""}
-        ${className}
-      `}
-    >
-      {children}
-    </div>
-  );
-}
-
 function SectionHeader({
   eyebrow,
   title,
@@ -394,7 +372,7 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 mb-4 block">
+      <span className="text-[11px] uppercase tracking-[0.2em] text-white/30 mb-4 block">
         {eyebrow}
       </span>
       <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
@@ -554,7 +532,7 @@ function FrameworkSection() {
                     <h3 className="text-[18px] font-medium text-white">
                       {pillar.title}
                     </h3>
-                    <span className="text-[12px] text-white/30 font-mono uppercase tracking-wider">
+                    <span className="text-[12px] text-white/30 uppercase tracking-wider">
                       {pillar.subtitle}
                     </span>
                   </div>
@@ -690,7 +668,7 @@ function ESGSection() {
                       </h3>
                     </div>
                   </div>
-                  <p className="text-[12px] text-white/30 font-mono uppercase tracking-wider mb-6">
+                  <p className="text-[12px] text-white/30 uppercase tracking-wider mb-6">
                     {pillar.subtitle}
                   </p>
 

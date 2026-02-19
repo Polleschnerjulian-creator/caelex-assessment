@@ -39,7 +39,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-slate-300 dark:border-white/[0.08] text-slate-700 dark:text-white/70 font-mono text-[12px] px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-white/[0.15] hover:text-slate-900 dark:hover:text-white/80 transition-all"
+          className="border border-slate-300 dark:border-white/[0.08] text-slate-700 dark:text-white/70 text-[12px] px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-white/[0.15] hover:text-slate-900 dark:hover:text-white/80 transition-all"
         >
           {t("topbar.runAssessment")}
         </Link>

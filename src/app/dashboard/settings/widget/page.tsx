@@ -191,14 +191,10 @@ export default function WidgetSettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          {t("widget.title") !== "widget.title"
-            ? t("widget.title")
-            : "Embeddable Widget"}
+          {t("widget.title")}
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-white/60">
-          {t("widget.subtitle") !== "widget.subtitle"
-            ? t("widget.subtitle")
-            : "Embed compliance checks on your website or partner sites."}
+          {t("widget.subtitle")}
         </p>
       </div>
 
@@ -206,9 +202,7 @@ export default function WidgetSettingsPage() {
       {!config ? (
         <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
           <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
-            {t("widget.setup") !== "widget.setup"
-              ? t("widget.setup")
-              : "Set Up Widget"}
+            {t("widget.setup")}
           </h2>
           <p className="text-sm text-slate-500 dark:text-white/60 mb-6">
             Create a widget configuration to embed Caelex compliance tools on
@@ -253,9 +247,7 @@ export default function WidgetSettingsPage() {
           <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
-              {t("widget.widgetType") !== "widget.widgetType"
-                ? t("widget.widgetType")
-                : "Widget Type"}
+              {t("widget.widgetType")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {WIDGET_TYPES.map((wt) => (
@@ -283,9 +275,7 @@ export default function WidgetSettingsPage() {
           <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Palette size={20} />
-              {t("widget.theme") !== "widget.theme"
-                ? t("widget.theme")
-                : "Theme"}
+              {t("widget.theme")}
             </h2>
             <div className="flex gap-3">
               {["dark", "light"].map((t) => (
@@ -308,9 +298,7 @@ export default function WidgetSettingsPage() {
           <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Globe size={20} />
-              {t("widget.allowedDomains") !== "widget.allowedDomains"
-                ? t("widget.allowedDomains")
-                : "Allowed Domains"}
+              {t("widget.allowedDomains")}
             </h2>
             <p className="text-sm text-slate-500 dark:text-white/60 mb-4">
               Restrict which domains can embed your widget (CORS whitelist).
@@ -364,9 +352,7 @@ export default function WidgetSettingsPage() {
               className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 size={16} className="animate-spin" />}
-              {t("widget.save") !== "widget.save"
-                ? t("widget.save")
-                : "Save Changes"}
+              {t("widget.save")}
             </button>
           </div>
 
@@ -374,9 +360,7 @@ export default function WidgetSettingsPage() {
           <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
-              {t("widget.embedCode") !== "widget.embedCode"
-                ? t("widget.embedCode")
-                : "Embed Code"}
+              {t("widget.embedCode")}
             </h2>
             <div className="relative">
               <pre className="bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
@@ -395,9 +379,7 @@ export default function WidgetSettingsPage() {
           <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Eye size={20} />
-              {t("widget.preview") !== "widget.preview"
-                ? t("widget.preview")
-                : "Preview"}
+              {t("widget.preview")}
             </h2>
             <div className="flex justify-center p-8 bg-slate-50 dark:bg-navy-900 rounded-lg border border-slate-200 dark:border-white/10">
               <div className="text-center text-sm text-slate-500 dark:text-white/40">
@@ -416,9 +398,7 @@ export default function WidgetSettingsPage() {
             <div className="bg-white dark:bg-navy-800 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <BarChart3 size={20} />
-                {t("widget.analytics") !== "widget.analytics"
-                  ? t("widget.analytics")
-                  : "Analytics"}
+                {t("widget.analytics")}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {[

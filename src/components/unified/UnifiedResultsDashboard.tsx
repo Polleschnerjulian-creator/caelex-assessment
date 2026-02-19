@@ -365,7 +365,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                                       size={14}
                                       className="text-amber-400/70"
                                     />
-                                    <span className="text-white/70 font-mono">
+                                    <span className="text-white/70">
                                       {deadline.date}
                                     </span>
                                     <span className="text-white/50">

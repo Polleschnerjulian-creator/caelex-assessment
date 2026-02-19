@@ -144,37 +144,37 @@ export default function UserTable({ users, onRefresh }: Props) {
             <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 User
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 Organization
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 Plan
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 Role
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 Status
               </th>
               <th
                 scope="col"
-                className="text-right px-4 py-3 text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-right px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
               >
                 Actions
               </th>

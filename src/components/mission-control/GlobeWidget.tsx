@@ -51,13 +51,13 @@ export default function GlobeWidget() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/50 backdrop-blur-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  <span className="text-[10px] font-mono text-white/60">
+                  <span className="text-[10px] text-white/60">
                     {stats.total.toLocaleString()} {t("missionControl.tracked")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/50 backdrop-blur-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-[10px] font-mono text-white/60">
+                  <span className="text-[10px] text-white/60">
                     {fleet.length} {t("missionControl.yourFleet")}
                   </span>
                 </div>
@@ -73,7 +73,7 @@ export default function GlobeWidget() {
               className="w-4 h-4 text-emerald-400"
               aria-hidden="true"
             />
-            <h3 className="text-[12px] font-mono uppercase tracking-wider text-white/50">
+            <h3 className="text-[12px] uppercase tracking-wider text-white/50">
               {t("missionControl.fleetStatus")}
             </h3>
           </div>
@@ -89,13 +89,13 @@ export default function GlobeWidget() {
                     <p className="text-[12px] text-white/80 truncate">
                       {sc.name}
                     </p>
-                    <p className="text-[10px] text-white/35 font-mono">
+                    <p className="text-[10px] text-white/35">
                       {sc.orbitType}{" "}
                       {sc.altitudeKm ? `· ${Math.round(sc.altitudeKm)} km` : ""}
                     </p>
                   </div>
                   <span
-                    className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                    className={`text-[9px] px-1.5 py-0.5 rounded ${
                       sc.status === "ACTIVE" || sc.status === "OPERATIONAL"
                         ? "bg-emerald-500/15 text-emerald-400"
                         : sc.status === "PRE_LAUNCH"
@@ -108,7 +108,7 @@ export default function GlobeWidget() {
                 </div>
               ))}
               {fleet.length > 4 && (
-                <p className="text-[10px] text-white/30 font-mono">
+                <p className="text-[10px] text-white/30">
                   +{fleet.length - 4} {t("missionControl.more")}
                 </p>
               )}

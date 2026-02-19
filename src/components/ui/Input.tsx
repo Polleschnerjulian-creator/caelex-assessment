@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-[13px] font-medium text-slate-700 dark:text-white/80"
+            className="block text-body font-medium text-slate-700 dark:text-white/80"
           >
             {label}
             {props.required && (
@@ -47,7 +47,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             bg-white dark:bg-white/[0.06]
             border border-slate-200 dark:border-white/10
             rounded-lg
-            text-[14px] text-slate-900 dark:text-white
+            text-body-lg text-slate-900 dark:text-white
             placeholder:text-slate-400 dark:placeholder:text-white/60
             transition-all duration-200
             hover:border-slate-300 dark:hover:border-white/20
@@ -64,7 +64,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {hint && !error && (
           <p
             id={hintId}
-            className="text-[12px] text-slate-600 dark:text-white/70"
+            className="text-small text-slate-600 dark:text-white/70"
           >
             {hint}
           </p>
@@ -72,7 +72,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={errorId}
-            className="text-[12px] text-red-600 dark:text-red-400 flex items-center gap-1.5"
+            className="text-small text-red-600 dark:text-red-400 flex items-center gap-1.5"
             role="alert"
           >
             <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />

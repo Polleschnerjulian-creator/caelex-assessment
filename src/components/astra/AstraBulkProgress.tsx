@@ -92,7 +92,7 @@ export default function AstraBulkProgress({
               </button>
 
               {/* Article info */}
-              <span className="font-mono text-[10px] text-white/40 w-14 flex-shrink-0">
+              <span className="text-[10px] text-white/40 w-14 flex-shrink-0">
                 {item.articleRef}
               </span>
               <span className="text-[11px] text-white/60 flex-1 truncate">

@@ -662,7 +662,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
                     }}
                   />
                 </div>
-                <span className="text-[12px] font-mono text-white w-16 text-right">
+                <span className="text-[12px] text-white w-16 text-right">
                   {event.count}
                 </span>
               </div>
@@ -899,7 +899,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
                     <span className="text-[11px] text-white/50">
                       {plan.plan}
                     </span>
-                    <span className="text-[11px] font-mono text-white ml-auto">
+                    <span className="text-[11px] text-white ml-auto">
                       {plan.customers}
                     </span>
                   </div>
@@ -1248,7 +1248,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                     <span className="text-[11px] text-white/50">
                       {plan.plan}
                     </span>
-                    <span className="text-[11px] font-mono text-white ml-auto">
+                    <span className="text-[11px] text-white ml-auto">
                       {plan.count}
                     </span>
                   </div>
@@ -1280,7 +1280,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                       style={{ width: `${stage.rate}%` }}
                     />
                   </div>
-                  <span className="text-[12px] font-mono text-white w-12 text-right">
+                  <span className="text-[12px] text-white w-12 text-right">
                     {stage.count}
                   </span>
                   <span className="text-[11px] text-white/30 w-10 text-right">
@@ -1349,7 +1349,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                         {customer.plan}
                       </span>
                     </td>
-                    <td className="py-3 text-[13px] text-white text-right font-mono">
+                    <td className="py-3 text-[13px] text-white text-right">
                       €{customer.mrr}
                     </td>
                     <td className="py-3 text-[13px] text-white/50 text-right">
@@ -1444,7 +1444,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                       }}
                     />
                   </div>
-                  <span className="text-[12px] font-mono text-white w-16 text-right">
+                  <span className="text-[12px] text-white w-16 text-right">
                     {source.visits}
                   </span>
                   <span className="text-[11px] text-white/30 w-10 text-right">
@@ -1535,7 +1535,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                     {channel.channel}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-[13px] font-mono text-white">
+                    <span className="text-[13px] text-white">
                       {channel.visits}
                     </span>
                     <span className="text-[11px] text-white/30 w-10 text-right">
@@ -1565,7 +1565,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                   <span className="text-[13px] text-white flex-1">
                     {country.country}
                   </span>
-                  <span className="text-[12px] font-mono text-white/50">
+                  <span className="text-[12px] text-white/50">
                     {country.visits}
                   </span>
                   <span className="text-[11px] text-white/30 w-10 text-right">
@@ -1851,7 +1851,7 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="border-b border-white/[0.06] bg-[#131316]/80 backdrop-blur-xl sticky top-0 z-20">
+      <div className="border-b border-white/[0.06] bg-dark-surface/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>

@@ -15,31 +15,7 @@ import {
   Zap,
   Heart,
 } from "lucide-react";
-
-function GlassCard({
-  children,
-  className = "",
-  hover = true,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-}) {
-  return (
-    <div
-      className={`
-        relative rounded-2xl
-        bg-white/[0.03] backdrop-blur-xl
-        border border-white/[0.08]
-        ${hover ? "transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]" : ""}
-        shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]
-        ${className}
-      `}
-    >
-      {children}
-    </div>
-  );
-}
+import GlassCard from "@/components/ui/GlassCard";
 
 const positions = [
   {

@@ -61,7 +61,7 @@ export default function SatelliteInfoPanel({
             {satellite.name}
           </h3>
           {isFleet && (
-            <span className="inline-block mt-1 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded">
+            <span className="inline-block mt-1 px-2 py-0.5 text-[9px] uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded">
               {t("missionControl.yourSpacecraft")}
             </span>
           )}
@@ -79,10 +79,10 @@ export default function SatelliteInfoPanel({
       <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100%-48px)]">
         {fields.map((field) => (
           <div key={field.label}>
-            <p className="text-[9px] font-mono uppercase tracking-wider text-white/35 mb-0.5">
+            <p className="text-[9px] uppercase tracking-wider text-white/35 mb-0.5">
               {field.label}
             </p>
-            <p className="text-[13px] text-white/90 font-mono">{field.value}</p>
+            <p className="text-[13px] text-white/90">{field.value}</p>
           </div>
         ))}
 

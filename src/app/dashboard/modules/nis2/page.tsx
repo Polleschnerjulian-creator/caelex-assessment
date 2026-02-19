@@ -697,7 +697,7 @@ function NIS2Wizard({
             >
               {/* Question header */}
               <div className="mb-6 text-center max-w-xl mx-auto">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
                   Question {String(currentStep).padStart(2, "0")}
                 </span>
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
@@ -739,7 +739,7 @@ function NIS2Wizard({
             className="mt-8 max-w-xl mx-auto"
           >
             <div className="border-t border-slate-100 dark:border-white/[0.06] pt-6">
-              <label className="block text-xs font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/40 mb-2">
+              <label className="block text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-white/40 mb-2">
                 Assessment Name
               </label>
               <input
@@ -1042,7 +1042,7 @@ export default function NIS2ModulePage() {
                     <div className="flex items-center gap-6">
                       {/* Requirements progress */}
                       <div className="text-right">
-                        <div className="text-sm font-mono font-medium text-slate-900 dark:text-white">
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">
                           {compliantReqs}/{totalReqs}
                         </div>
                         <div className="text-[10px] text-slate-400 dark:text-white/30 uppercase">
@@ -1067,7 +1067,7 @@ export default function NIS2ModulePage() {
                       {assessment.euSpaceActOverlapCount != null &&
                         assessment.euSpaceActOverlapCount > 0 && (
                           <div className="text-right">
-                            <div className="text-sm font-mono font-medium text-green-400">
+                            <div className="text-sm font-medium text-green-400">
                               {assessment.euSpaceActOverlapCount}
                             </div>
                             <div className="text-[10px] text-green-400/60 uppercase">

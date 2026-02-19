@@ -41,7 +41,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-[13px] font-medium text-slate-700 dark:text-white/80"
+            className="block text-body font-medium text-slate-700 dark:text-white/80"
           >
             {label}
             {props.required && (
@@ -66,7 +66,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               bg-white dark:bg-white/[0.06]
               border border-slate-200 dark:border-white/10
               rounded-lg
-              text-[14px] text-slate-900 dark:text-white
+              text-body-lg text-slate-900 dark:text-white
               appearance-none
               transition-all duration-200
               hover:border-slate-300 dark:hover:border-white/20
@@ -110,7 +110,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {error && (
           <p
             id={errorId}
-            className="text-[12px] text-red-600 dark:text-red-400 flex items-center gap-1.5"
+            className="text-small text-red-600 dark:text-red-400 flex items-center gap-1.5"
             role="alert"
           >
             <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />

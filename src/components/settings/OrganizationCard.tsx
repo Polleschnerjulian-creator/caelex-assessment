@@ -482,9 +482,7 @@ export function OrganizationCard() {
                       {invitationInfo.orgName}
                     </span>{" "}
                     as{" "}
-                    <span className="font-mono text-[12px]">
-                      {invitationInfo.role}
-                    </span>
+                    <span className="text-[12px]">{invitationInfo.role}</span>
                   </p>
                 </div>
               </div>
@@ -661,7 +659,7 @@ export function OrganizationCard() {
           />
         </div>
         <div>
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             ORGANIZATION
           </h2>
           <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">

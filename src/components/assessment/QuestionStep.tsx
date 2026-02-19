@@ -51,7 +51,7 @@ export default function QuestionStep({
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
           {/* Question Number */}
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
             Question {String(questionNumber).padStart(2, "0")}
           </span>
 

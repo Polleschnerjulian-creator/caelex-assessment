@@ -64,7 +64,7 @@ export default function FilterPanel({
       <div className="p-4 space-y-5 overflow-y-auto max-h-[calc(100%-48px)]">
         {/* Orbit Type */}
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-wider text-white/40 mb-2">
+          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
             {t("missionControl.orbitType")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -74,7 +74,7 @@ export default function FilterPanel({
                 <button
                   key={opt.value}
                   onClick={() => onOrbitToggle(opt.value)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all border ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] transition-all border ${
                     active
                       ? "bg-white/10 border-white/20 text-white"
                       : "bg-white/5 border-white/5 text-white/30"
@@ -94,7 +94,7 @@ export default function FilterPanel({
 
         {/* Object Type */}
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-wider text-white/40 mb-2">
+          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
             {t("missionControl.objectType")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -105,7 +105,7 @@ export default function FilterPanel({
                 <button
                   key={opt.value}
                   onClick={() => onObjectToggle(opt.value)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all border ${
+                  className={`px-3 py-1.5 rounded-lg text-[11px] transition-all border ${
                     active
                       ? "bg-white/10 border-white/20 text-white"
                       : "bg-white/5 border-white/5 text-white/30"
@@ -148,7 +148,7 @@ export default function FilterPanel({
 
         {/* Result Count */}
         <div className="pt-3 border-t border-white/5">
-          <p className="text-[11px] text-white/40 font-mono">
+          <p className="text-[11px] text-white/40">
             {t("missionControl.showing")}{" "}
             <span className="text-white font-medium">
               {resultCount.toLocaleString()}

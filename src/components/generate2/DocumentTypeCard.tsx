@@ -44,9 +44,7 @@ export function DocumentTypeCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-mono text-slate-500">
-              {meta.code}
-            </span>
+            <span className="text-[11px] text-slate-500">{meta.code}</span>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${priorityStyles[meta.priority]}`}
             >

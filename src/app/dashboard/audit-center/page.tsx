@@ -352,11 +352,11 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
               Compliance Score
             </span>
           </div>
-          <div className="text-3xl font-mono font-bold text-slate-900 dark:text-white">
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">
             {overview.complianceScore}%
           </div>
           <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full mt-3 overflow-hidden">
@@ -376,11 +376,11 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Archive className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
               Evidence Coverage
             </span>
           </div>
-          <div className="text-3xl font-mono font-bold text-slate-900 dark:text-white">
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">
             {overview.evidenceCoverage.percentage}%
           </div>
           <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full mt-3 overflow-hidden">
@@ -403,11 +403,11 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
               Audit Trail
             </span>
           </div>
-          <div className="text-3xl font-mono font-bold text-slate-900 dark:text-white">
+          <div className="text-3xl font-bold text-slate-900 dark:text-white">
             {overview.totalAuditEntries.toLocaleString()}
           </div>
           {chainStatus ? (
@@ -434,12 +434,12 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
               Action Items
             </span>
           </div>
           <div
-            className={`text-3xl font-mono font-bold ${overview.actionItems.length > 0 ? "text-amber-400" : "text-green-400"}`}
+            className={`text-3xl font-bold ${overview.actionItems.length > 0 ? "text-amber-400" : "text-green-400"}`}
           >
             {overview.actionItems.length}
           </div>
@@ -527,12 +527,12 @@ function AuditCenterContent() {
                 <div className="flex items-center gap-4 flex-shrink-0 ml-4">
                   {/* Score badge */}
                   <div
-                    className={`text-sm font-mono font-bold ${mod.score >= 80 ? "text-green-400" : mod.score >= 50 ? "text-amber-400" : "text-red-400"}`}
+                    className={`text-sm font-bold ${mod.score >= 80 ? "text-green-400" : mod.score >= 50 ? "text-amber-400" : "text-red-400"}`}
                   >
                     {mod.score}%
                   </div>
                   {/* Requirement count */}
-                  <span className="text-xs font-mono text-slate-400 dark:text-white/30 hidden sm:inline">
+                  <span className="text-xs text-slate-400 dark:text-white/30 hidden sm:inline">
                     {mod.compliant}/{mod.totalRequirements}
                   </span>
                   {isExpanded ? (

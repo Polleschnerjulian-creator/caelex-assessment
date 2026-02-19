@@ -68,10 +68,10 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
       transition={{ delay: 0.1 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
           Compliance Modules
         </span>
-        <span className="font-mono text-[11px] text-white/50">
+        <span className="text-[11px] text-white/50">
           {modules.length} modules analyzed
         </span>
       </div>
@@ -101,7 +101,7 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
                       {IconComponent && <IconComponent className="w-4 h-4" />}
                     </div>
                     <span
-                      className={`text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded-full ${style.badge}`}
+                      className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-full ${style.badge}`}
                     >
                       {statusLabels[module.status]}
                     </span>
@@ -120,7 +120,7 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
                     <span className="text-[11px] text-white/50">
                       Relevant articles
                     </span>
-                    <span className={`font-mono text-[12px] ${style.text}`}>
+                    <span className={`text-[12px] ${style.text}`}>
                       {module.articleCount}
                     </span>
                   </div>

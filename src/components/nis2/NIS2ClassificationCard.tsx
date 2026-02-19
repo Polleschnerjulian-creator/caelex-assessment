@@ -71,7 +71,7 @@ export default function NIS2ClassificationCard({
             <IconComponent className={`w-6 h-6 ${config.color}`} />
           </div>
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/40 mb-1">
+            <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-1">
               NIS2 Entity Classification
             </div>
             <h3 className={`text-xl font-semibold ${config.color}`}>
@@ -79,9 +79,7 @@ export default function NIS2ClassificationCard({
             </h3>
           </div>
         </div>
-        <span className="font-mono text-[11px] text-white/30">
-          {articleRef}
-        </span>
+        <span className="text-[11px] text-white/30">{articleRef}</span>
       </div>
 
       {/* Description */}

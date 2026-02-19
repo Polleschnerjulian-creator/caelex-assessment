@@ -288,7 +288,7 @@ export default function TimelinePage() {
                     }}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[12px] font-mono text-white/40">
+                      <span className="text-[12px] text-white/40">
                         {event.date}
                       </span>
                       {event.critical && (

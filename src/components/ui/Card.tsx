@@ -82,7 +82,7 @@ export function CardTitle({
 }: CardTitleProps) {
   return (
     <Tag
-      className={`text-[16px] font-semibold text-slate-900 dark:text-white ${className}`}
+      className={`text-title font-semibold text-slate-900 dark:text-white ${className}`}
     >
       {children}
     </Tag>
@@ -100,7 +100,7 @@ export function CardDescription({
   className = "",
 }: CardDescriptionProps) {
   return (
-    <p className={`text-[13px] text-slate-600 dark:text-white/60 ${className}`}>
+    <p className={`text-body text-slate-600 dark:text-white/60 ${className}`}>
       {children}
     </p>
   );

@@ -197,7 +197,7 @@ export function PasskeyManagementCard() {
             <Fingerprint className="w-5 h-5 text-slate-400 dark:text-white/40" />
           </div>
           <div>
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
               PASSKEYS
             </h2>
             <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
@@ -221,7 +221,7 @@ export function PasskeyManagementCard() {
           <Fingerprint className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         </div>
         <div className="flex-1">
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             PASSKEYS
           </h2>
           <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">

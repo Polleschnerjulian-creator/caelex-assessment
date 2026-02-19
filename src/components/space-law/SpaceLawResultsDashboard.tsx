@@ -36,7 +36,7 @@ export default function SpaceLawResultsDashboard({
             <span>All assessments</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">
               National Space Laws
             </span>
             <button

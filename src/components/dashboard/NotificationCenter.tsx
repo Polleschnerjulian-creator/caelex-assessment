@@ -245,7 +245,7 @@ export default function NotificationCenter() {
           id="notification-panel"
           role="dialog"
           aria-label={t("notifications.notifications")}
-          className="absolute right-0 top-full mt-2 w-[380px] bg-[#0A0A0B] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-[380px] bg-dark-bg border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">

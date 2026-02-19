@@ -99,7 +99,7 @@ export function DocumentTypeSelector({ onSelect }: DocumentTypeSelectorProps) {
                 <p className="text-xs text-slate-500 dark:text-white/40 mt-1 line-clamp-2">
                   {doc.description}
                 </p>
-                <span className="inline-block text-[10px] text-slate-400 dark:text-white/30 mt-2 font-mono">
+                <span className="inline-block text-[10px] text-slate-400 dark:text-white/30 mt-2">
                   {doc.regulation}
                 </span>
               </div>

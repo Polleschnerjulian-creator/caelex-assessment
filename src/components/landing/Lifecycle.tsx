@@ -71,7 +71,7 @@ export default function Lifecycle() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="font-mono text-[11px] text-white/30">06 / 12</span>
+        <span className="text-[11px] text-white/30">06 / 12</span>
       </motion.div>
 
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -82,7 +82,7 @@ export default function Lifecycle() {
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
             The Journey
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto">
@@ -114,7 +114,7 @@ export default function Lifecycle() {
                           aria-hidden="true"
                         />
                       </div>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-1 rounded-full">
+                      <span className="text-[9px] uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-1 rounded-full">
                         {step.tag}
                       </span>
                     </div>
@@ -122,7 +122,7 @@ export default function Lifecycle() {
                     {/* Step number + title */}
                     <div className="mb-3">
                       <span
-                        className="font-mono text-[10px] text-white/20 block mb-1"
+                        className="text-[10px] text-white/20 block mb-1"
                         aria-hidden="true"
                       >
                         {step.number}
@@ -178,7 +178,7 @@ export default function Lifecycle() {
                       <h3 className="text-[15px] font-medium text-white">
                         {step.title}
                       </h3>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded-full">
+                      <span className="text-[9px] uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded-full">
                         {step.tag}
                       </span>
                     </div>

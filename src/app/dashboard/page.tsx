@@ -31,6 +31,7 @@ import { articles } from "@/data/articles";
 import { modules } from "@/data/modules";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import GlassCard from "@/components/ui/GlassCard";
 
 // Dynamic imports for chart components (to avoid SSR issues with Recharts)
 const ComplianceDonutChart = dynamic(
@@ -56,15 +57,6 @@ const Sparkline = dynamic(
 const ComplianceScoreCard = dynamic(
   () => import("@/components/dashboard/ComplianceScoreCard"),
   { ssr: false },
-);
-const GlobeWidget = dynamic(
-  () => import("@/components/mission-control/GlobeWidget"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[280px] bg-white/5 rounded-xl animate-pulse" />
-    ),
-  },
 );
 
 // ─── Types ───
@@ -245,24 +237,6 @@ function ChartSkeleton() {
   );
 }
 
-function GlassCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 function KPICard({
   value,
   label,
@@ -298,17 +272,17 @@ function KPICard({
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-[32px] font-mono font-semibold text-white leading-none">
+          <p className="text-[32px] font-semibold text-white leading-none">
             {value}
           </p>
-          <p className="text-[11px] font-mono uppercase tracking-wider text-white/50 mt-2">
+          <p className="text-[11px] uppercase tracking-wider text-white/50 mt-2">
             {label}
           </p>
         </div>
         {trend && trendValue && (
           <div className={`flex items-center gap-1 ${trendColor}`}>
             <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="text-[11px] font-mono">{trendValue}</span>
+            <span className="text-[11px]">{trendValue}</span>
             <span className="sr-only">
               Trend:{" "}
               {trend === "up"
@@ -342,7 +316,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+      <h2 className="text-[11px] uppercase tracking-[0.2em] text-white/40">
         {title}
       </h2>
       {action}
@@ -416,7 +390,7 @@ function DeadlineItem({
         </p>
       </div>
       <span
-        className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
+        className={`text-[9px] uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
       >
         {t(`common.${deadline.priority}`)}
       </span>
@@ -438,7 +412,7 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
         className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-[10px] font-mono text-white/90 font-medium">
+        <span className="text-[10px] text-white/90 font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
@@ -831,7 +805,7 @@ function DashboardContent() {
   if (loading) {
     return (
       <div
-        className="p-6 lg:p-8 min-h-screen"
+        className="min-h-screen"
         role="status"
         aria-live="polite"
         aria-label="Loading dashboard"
@@ -856,7 +830,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 min-h-screen">
+    <div className="min-h-screen">
       {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
@@ -957,6 +931,26 @@ function DashboardContent() {
         {/* Compliance Score Card */}
         <ComplianceScoreCard />
 
+        {/* Demo Mode Banner */}
+        {!hasData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-lg bg-amber-500/10 border border-amber-500/20"
+          >
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <p className="text-caption text-amber-400">
+              {t("dashboard.demoMode")}
+            </p>
+            <Link
+              href="/assessment"
+              className="ml-auto text-caption text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
+            >
+              {t("dashboard.startAssessmentLink")}
+            </Link>
+          </motion.div>
+        )}
+
         {/* ROW 1: KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <KPICard
@@ -1033,7 +1027,7 @@ function DashboardContent() {
 
         {/* ROW 2: Compliance Overview + Module Progress */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <GlassCard className="p-6">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.complianceOverview")} />
             <ComplianceDonutChart
               data={complianceSegments}
@@ -1042,7 +1036,7 @@ function DashboardContent() {
             />
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.moduleProgress")} />
             <ModuleProgressChart data={moduleChartData} isDemo={!hasData} />
           </GlassCard>
@@ -1050,7 +1044,7 @@ function DashboardContent() {
 
         {/* ROW 3: Timeline + Radar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <GlassCard className="p-6">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.complianceTimeline")} />
             <ComplianceTimelineChart
               data={DEMO_TIMELINE_DATA}
@@ -1058,14 +1052,14 @@ function DashboardContent() {
             />
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.regulatoryCoverage")} />
             <RegulatoryRadarChart data={radarData} isDemo={!hasData} />
           </GlassCard>
         </div>
 
         {/* ROW 4: Recent Activity */}
-        <GlassCard className="p-6 mb-8">
+        <GlassCard hover={false} className="p-6 mb-8">
           <SectionHeader
             title={t("dashboard.recentActivity")}
             action={
@@ -1101,35 +1095,20 @@ function DashboardContent() {
           )}
         </GlassCard>
 
-        {/* ROW 5: 3D Mission Globe */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
-              {t("missionControl.title")}
-            </h2>
-          </div>
-          <GlobeWidget />
-        </div>
-
-        {/* ROW 6: Deadlines, Risk Heatmap, Quick Actions */}
+        {/* ROW 5: Deadlines, Risk Heatmap, Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Upcoming Deadlines */}
-          <GlassCard className="p-5">
+          <GlassCard hover={false} className="p-5">
             <SectionHeader title={t("dashboard.upcomingDeadlines")} />
             <div className="space-y-1">
               {DEMO_DEADLINES.slice(0, 5).map((deadline) => (
                 <DeadlineItem key={deadline.id} deadline={deadline} t={t} />
               ))}
             </div>
-            {!hasData && (
-              <p className="text-[10px] text-amber-400/70 mt-3 text-center">
-                {t("dashboard.sampleDeadlines")}
-              </p>
-            )}
           </GlassCard>
 
           {/* Risk Heatmap */}
-          <GlassCard className="p-5">
+          <GlassCard hover={false} className="p-5">
             <SectionHeader title={t("dashboard.riskHeatmap")} />
             <div className="grid grid-cols-4 gap-3 mt-2">
               {DEMO_RISK_HEATMAP.map((item, i) => (
@@ -1163,15 +1142,10 @@ function DashboardContent() {
                 ),
               )}
             </div>
-            {!hasData && (
-              <p className="text-[10px] text-amber-400/70 mt-2 text-center">
-                {t("dashboard.sampleData")}
-              </p>
-            )}
           </GlassCard>
 
           {/* Quick Actions */}
-          <GlassCard className="p-5">
+          <GlassCard hover={false} className="p-5">
             <SectionHeader title={t("dashboard.quickActions")} />
             <div className="grid grid-cols-2 gap-3 mt-1">
               <QuickActionButton
@@ -1216,7 +1190,7 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[#0A0A0B] border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+                className="bg-dark-bg border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
                 <h2 className="text-[18px] font-medium text-white mb-2">
                   {t("dashboard.selectOperatorType")}
@@ -1273,11 +1247,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div
-          className="p-6 lg:p-8 min-h-screen"
-          role="status"
-          aria-live="polite"
-        >
+        <div className="min-h-screen" role="status" aria-live="polite">
           <div className="animate-pulse space-y-6 max-w-[1400px]">
             <div className="h-8 bg-white/5 rounded w-1/3" />
             <div className="h-4 bg-white/5 rounded w-1/2" />

@@ -5,7 +5,7 @@ export default function LogoConcepts() {
     <div className="dark-section min-h-screen bg-black text-white py-16 px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
             Brand Identity
           </span>
           <h1 className="text-[28px] font-light text-white mb-4">
@@ -16,7 +16,7 @@ export default function LogoConcepts() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-16">
           {/* Icon 1: Orbital C */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               01 — Orbital C
             </span>
             <div className="flex justify-center mb-4">
@@ -42,7 +42,7 @@ export default function LogoConcepts() {
 
           {/* Icon 2: Soft Square */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               02 — Soft Square
             </span>
             <div className="flex justify-center mb-4">
@@ -64,7 +64,7 @@ export default function LogoConcepts() {
 
           {/* Icon 3: Pure Orbit */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               03 — Pure Orbit
             </span>
             <div className="flex justify-center mb-4">
@@ -90,7 +90,7 @@ export default function LogoConcepts() {
 
           {/* Icon 4: Precision */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               04 — Precision
             </span>
             <div className="flex justify-center mb-4">
@@ -124,7 +124,7 @@ export default function LogoConcepts() {
 
           {/* Icon 5: Hex Frame */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               05 — Hex Frame
             </span>
             <div className="flex justify-center mb-4">
@@ -152,7 +152,7 @@ export default function LogoConcepts() {
 
           {/* Icon 6: Stacked Arcs */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="font-mono text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/40 block mb-4">
               06 — Stacked
             </span>
             <div className="flex justify-center mb-4">
@@ -257,16 +257,14 @@ export default function LogoConcepts() {
                   <circle cx="52" cy="22" r="5" fill="white" />
                 </svg>
               </div>
-              <span className="block font-mono text-[9px] text-white/40">
-                {size}px
-              </span>
+              <span className="block text-[9px] text-white/40">{size}px</span>
             </div>
           ))}
         </div>
 
         {/* Recommendation */}
         <div className="bg-white/[0.06] border border-white/[0.15] rounded-2xl p-8 max-w-xl mx-auto text-center">
-          <span className="font-mono text-[10px] text-white/50 block mb-3">
+          <span className="text-[10px] text-white/50 block mb-3">
             Empfehlung
           </span>
           <h3 className="text-[18px] text-white mb-4">

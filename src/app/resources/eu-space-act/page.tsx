@@ -318,7 +318,7 @@ export default function EUSpaceActPage() {
                 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
-                  <span className="text-[14px] font-mono text-white/60">
+                  <span className="text-[14px] text-white/60">
                     {chapter.number}
                   </span>
                 </div>
@@ -327,7 +327,7 @@ export default function EUSpaceActPage() {
                     <h3 className="text-[15px] font-medium text-white">
                       {chapter.title}
                     </h3>
-                    <span className="text-[10px] font-mono text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded">
+                    <span className="text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded">
                       Art. {chapter.articles}
                     </span>
                   </div>

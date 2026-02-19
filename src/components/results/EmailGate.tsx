@@ -69,7 +69,7 @@ export default function EmailGate({
               role="dialog"
               aria-modal="true"
               aria-labelledby="email-gate-title"
-              className="bg-[#0a0a0a] border border-white/[0.15] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+              className="bg-dark-bg border border-white/[0.15] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
             >
               {/* Header */}
               <div className="relative px-6 pt-6 pb-4">
@@ -104,7 +104,7 @@ export default function EmailGate({
               <form onSubmit={handleSubmit} className="px-6 pb-6">
                 {/* Email (required) */}
                 <div className="mb-4">
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
+                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
                     Email <span className="text-white/70">*</span>
                   </label>
                   <div className="relative">
@@ -133,7 +133,7 @@ export default function EmailGate({
 
                 {/* Company (optional) */}
                 <div className="mb-4">
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
+                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
                     Company <span className="text-white/40">(optional)</span>
                   </label>
                   <div className="relative">
@@ -153,7 +153,7 @@ export default function EmailGate({
 
                 {/* Role (optional) */}
                 <div className="mb-6">
-                  <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
+                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
                     Role <span className="text-white/40">(optional)</span>
                   </label>
                   <div className="relative">

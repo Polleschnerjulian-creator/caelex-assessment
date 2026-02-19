@@ -280,7 +280,7 @@ function SupervisionPageContent() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/60 mb-2">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/60 mb-2">
           MODULE 07
         </p>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -785,7 +785,7 @@ function SupervisionPageContent() {
                       role="dialog"
                       aria-label="Log new incident"
                       aria-modal="true"
-                      className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                      className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
                     >
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                         Log New Incident

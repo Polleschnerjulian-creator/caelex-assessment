@@ -78,7 +78,7 @@ export default function EUSpaceActCrossRef({
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <ArrowRight className="h-4 w-4 text-blue-400" aria-hidden="true" />
-          <h3 className="text-xs font-mono uppercase tracking-widest text-white/40">
+          <h3 className="text-xs uppercase tracking-widest text-white/40">
             EU Space Act Cross-Reference
           </h3>
         </div>

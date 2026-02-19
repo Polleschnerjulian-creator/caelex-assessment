@@ -166,7 +166,7 @@ export default function RegulationPicker() {
                   {/* Stats */}
                   <div className="flex flex-wrap gap-4 mb-10">
                     <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-3 text-center">
-                      <div className="font-mono text-[28px] font-medium text-white">
+                      <div className="text-[28px] font-medium text-white">
                         3
                       </div>
                       <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
@@ -174,7 +174,7 @@ export default function RegulationPicker() {
                       </div>
                     </div>
                     <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-3 text-center">
-                      <div className="font-mono text-[28px] font-medium text-white">
+                      <div className="text-[28px] font-medium text-white">
                         ~35
                       </div>
                       <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
@@ -182,7 +182,7 @@ export default function RegulationPicker() {
                       </div>
                     </div>
                     <div className="bg-white/[0.05] border border-white/[0.08] rounded-xl px-5 py-3 text-center">
-                      <div className="font-mono text-[28px] font-medium text-white">
+                      <div className="text-[28px] font-medium text-white">
                         8-10
                       </div>
                       <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">

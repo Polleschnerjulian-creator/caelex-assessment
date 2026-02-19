@@ -226,7 +226,7 @@ export default function DocumentViewer({
         role="dialog"
         aria-modal="true"
         aria-label={`Document viewer: ${fileName}`}
-        className={`bg-white dark:bg-[#0a0a0b] rounded-xl shadow-2xl flex flex-col ${
+        className={`bg-white dark:bg-dark-bg rounded-xl shadow-2xl flex flex-col ${
           isFullscreen
             ? "w-full h-full rounded-none"
             : "w-full max-w-5xl h-[85vh]"

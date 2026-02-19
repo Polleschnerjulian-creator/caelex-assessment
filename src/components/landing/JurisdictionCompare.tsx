@@ -83,7 +83,7 @@ export default function JurisdictionCompare() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="font-mono text-[11px] text-white/30">03 / 14</span>
+        <span className="text-[11px] text-white/30">03 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -94,7 +94,7 @@ export default function JurisdictionCompare() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block font-mono text-[11px] text-white/40 tracking-widest uppercase mb-4">
+          <span className="inline-block text-[11px] text-white/40 tracking-widest uppercase mb-4">
             Jurisdiction Comparison
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
@@ -132,7 +132,7 @@ export default function JurisdictionCompare() {
                   <div className="text-[15px] font-medium text-white">
                     {jurisdiction.name}
                   </div>
-                  <div className="font-mono text-[10px] text-white/40">
+                  <div className="text-[10px] text-white/40">
                     {jurisdiction.law}
                   </div>
                 </div>

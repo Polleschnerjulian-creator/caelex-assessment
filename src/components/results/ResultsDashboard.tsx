@@ -100,7 +100,7 @@ export default function ResultsDashboard({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
             Assessment Complete
           </span>
           <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-light tracking-[-0.02em] text-white mb-4">

@@ -191,7 +191,7 @@ export default function EvidencePanel({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <Shield size={12} className="text-blue-400/60" aria-hidden="true" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-white/30">
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
             Compliance Evidence ({evidence.length})
           </span>
         </div>

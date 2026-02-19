@@ -54,7 +54,7 @@ export default function ModulePageClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-blue-400/50 block mb-4">
+            <span className="text-[11px] uppercase tracking-[0.3em] text-blue-400/50 block mb-4">
               Module {module.id} of 08
             </span>
             <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-white mb-6">
@@ -78,7 +78,7 @@ export default function ModulePageClient({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
           >
-            <span className="inline-block font-mono text-[11px] text-white/30 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-full">
+            <span className="inline-block text-[11px] text-white/30 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-full">
               {module.articleRange}
             </span>
           </motion.div>
@@ -110,7 +110,7 @@ export default function ModulePageClient({
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-12"
           >
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/35 block mb-4">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-white/35 block mb-4">
               Key Capabilities
             </span>
             <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em]">
@@ -150,7 +150,7 @@ export default function ModulePageClient({
           >
             <div className="flex items-center gap-2.5 mb-4">
               <Sparkles size={14} className="text-blue-400/50" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/35">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-white/35">
                 Automation
               </span>
             </div>
@@ -223,7 +223,7 @@ export default function ModulePageClient({
                 className="transition-transform group-hover:-translate-x-1"
               />
               <div>
-                <span className="font-mono text-[10px] text-white/25 block">
+                <span className="text-[10px] text-white/25 block">
                   Module {prevModule.id}
                 </span>
                 <span>{prevModule.name}</span>
@@ -239,7 +239,7 @@ export default function ModulePageClient({
               className="group flex items-center gap-3 text-[13px] text-white/40 hover:text-white/70 transition-colors text-right"
             >
               <div>
-                <span className="font-mono text-[10px] text-white/25 block">
+                <span className="text-[10px] text-white/25 block">
                   Module {nextModule.id}
                 </span>
                 <span>{nextModule.name}</span>

@@ -38,7 +38,7 @@ export default function WhatYouGet() {
       <div className="max-w-[1000px] mx-auto px-6 md:px-8">
         {/* Header */}
         <ScrollReveal>
-          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/60 mb-6 text-center">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-6 text-center">
             OUTPUT
           </p>
           <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-medium text-white text-center mb-16">
@@ -53,7 +53,7 @@ export default function WhatYouGet() {
               <div className="relative bg-white/[0.015] border border-white/10 rounded-lg p-8 overflow-hidden hover:border-white/[0.1] hover:bg-white/[0.025] transition-all duration-500">
                 {/* Corner number */}
                 <span
-                  className="absolute top-4 right-4 font-mono text-[10px] text-white/10"
+                  className="absolute top-4 right-4 text-[10px] text-white/10"
                   aria-hidden="true"
                 >
                   {card.number}
@@ -70,7 +70,7 @@ export default function WhatYouGet() {
                 </p>
 
                 {/* Article references */}
-                <div className="font-mono text-[10px] text-white/10 mt-6 pt-4 border-t border-white/10">
+                <div className="text-[10px] text-white/10 mt-6 pt-4 border-t border-white/10">
                   {card.articles}
                 </div>
               </div>

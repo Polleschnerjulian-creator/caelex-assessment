@@ -197,7 +197,7 @@ function StatCard({
           {icon}
         </div>
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+          <p className="text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
             {label}
           </p>
           {loading ? (
@@ -246,9 +246,7 @@ function ActionCard({
       <p className="text-[13px] text-slate-600 dark:text-white/60 mb-3">
         {description}
       </p>
-      <p className="text-[12px] font-mono text-slate-500 dark:text-white/40">
-        {stat}
-      </p>
+      <p className="text-[12px] text-slate-500 dark:text-white/40">{stat}</p>
     </Link>
   );
 }

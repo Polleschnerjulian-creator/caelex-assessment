@@ -745,7 +745,7 @@ function CybersecurityPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8" role="status" aria-live="polite">
+      <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -764,10 +764,10 @@ function CybersecurityPageContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px]">
+    <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 04
         </p>
         <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
@@ -782,10 +782,10 @@ function CybersecurityPageContent() {
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
+            <p className="text-[32px] font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.maturityScore || 0}%
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               maturity score
             </p>
           </div>
@@ -805,15 +805,15 @@ function CybersecurityPageContent() {
             >
               {maturityInfo.label.split(" ")[0]}
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               maturity level
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-green-600 dark:text-green-400">
+            <p className="text-[32px] font-semibold text-green-600 dark:text-green-400">
               {metrics.compliant}/{metrics.total}
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               requirements compliant
             </p>
           </div>
@@ -836,7 +836,7 @@ function CybersecurityPageContent() {
                   : "Standard"}
               </p>
             </div>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               compliance regime
             </p>
           </div>
@@ -868,7 +868,7 @@ function CybersecurityPageContent() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
                     activeStep === index
                       ? "bg-white text-black"
                       : activeStep > index
@@ -920,7 +920,7 @@ function CybersecurityPageContent() {
             {assessments.length > 0 && !showNewAssessment && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/30">
                     Your Security Assessments
                   </p>
                   <button
@@ -1354,7 +1354,7 @@ function CybersecurityPageContent() {
                             <p className="text-[11px] text-white/70 uppercase tracking-wider mb-1">
                               {config.label}
                             </p>
-                            <p className="text-[18px] font-mono font-semibold text-white">
+                            <p className="text-[18px] font-semibold text-white">
                               {count}
                             </p>
                           </div>
@@ -1443,7 +1443,7 @@ function CybersecurityPageContent() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[28px] font-mono font-semibold text-white">
+                      <p className="text-[28px] font-semibold text-white">
                         {selectedAssessment.maturityScore || 0}%
                       </p>
                       <p
@@ -1937,7 +1937,7 @@ function CybersecurityPageContent() {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <p className="text-[32px] font-mono font-semibold text-white">
+                        <p className="text-[32px] font-semibold text-white">
                           {generatedFramework.maturityAssessment.overallScore}%
                         </p>
                         <p className="text-[11px] text-white/70">
@@ -1953,13 +1953,13 @@ function CybersecurityPageContent() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[16px] font-mono font-semibold text-green-400">
+                        <p className="text-[16px] font-semibold text-green-400">
                           {generatedFramework.complianceStatus.compliant}
                         </p>
                         <p className="text-[11px] text-white/70">Compliant</p>
                       </div>
                       <div>
-                        <p className="text-[16px] font-mono font-semibold text-red-400">
+                        <p className="text-[16px] font-semibold text-red-400">
                           {generatedFramework.complianceStatus.nonCompliant +
                             generatedFramework.complianceStatus.notAssessed}
                         </p>
@@ -1987,7 +1987,7 @@ function CybersecurityPageContent() {
                             <p className="text-[10px] text-white/70 uppercase tracking-wider mb-1">
                               {config?.label || cat}
                             </p>
-                            <p className="text-[20px] font-mono font-semibold text-white">
+                            <p className="text-[20px] font-semibold text-white">
                               {scores.score}%
                             </p>
                             <p className="text-[10px] text-white/60">

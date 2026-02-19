@@ -331,7 +331,7 @@ function MissionTimelineGantt() {
                 style={{ left: `${offset}%` }}
               >
                 <div className="h-3 w-px bg-slate-300 dark:bg-white/20" />
-                <span className="text-[10px] font-mono text-slate-500 dark:text-white/40 mt-0.5 -translate-x-1/2">
+                <span className="text-[10px] text-slate-500 dark:text-white/40 mt-0.5 -translate-x-1/2">
                   {year}
                 </span>
               </div>
@@ -372,7 +372,7 @@ function MissionTimelineGantt() {
                       >
                         {sl.text}
                       </span>
-                      <span className="text-[10px] text-slate-400 dark:text-white/40 font-mono">
+                      <span className="text-[10px] text-slate-400 dark:text-white/40">
                         {new Date(phase.startDate).getFullYear()}&ndash;
                         {new Date(phase.endDate).getFullYear()}
                       </span>
@@ -434,7 +434,7 @@ function MissionTimelineGantt() {
                               <p className="font-medium text-white">
                                 {ms.label}
                               </p>
-                              <p className="text-white/50 font-mono text-[10px] mt-0.5">
+                              <p className="text-white/50 text-[10px] mt-0.5">
                                 {new Date(ms.date).toLocaleDateString("en-US", {
                                   month: "short",
                                   year: "numeric",
@@ -475,7 +475,7 @@ function MissionTimelineGantt() {
                 </div>
 
                 {/* Date range */}
-                <p className="text-xs font-mono text-slate-500 dark:text-white/50 mb-2">
+                <p className="text-xs text-slate-500 dark:text-white/50 mb-2">
                   {new Date(phase.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -520,7 +520,7 @@ function MissionTimelineGantt() {
                         <span className="text-slate-700 dark:text-white/70">
                           {ms.label}
                         </span>
-                        <span className="ml-auto font-mono text-slate-400 dark:text-white/40">
+                        <span className="ml-auto text-slate-400 dark:text-white/40">
                           {new Date(ms.date).toLocaleDateString("en-US", {
                             month: "short",
                             year: "numeric",
@@ -542,7 +542,7 @@ function MissionTimelineGantt() {
             {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
             milestones
           </span>
-          <span className="font-mono">
+          <span>
             {new Date(timeRange.min).getFullYear()} &ndash;{" "}
             {new Date(timeRange.max).getFullYear()}
           </span>
@@ -797,7 +797,7 @@ function TimelinePageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
             TIMELINE
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -1298,7 +1298,7 @@ function TimelinePageContent() {
             role="dialog"
             aria-label="Add new deadline"
             aria-modal="true"
-            className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">

@@ -294,7 +294,7 @@ function DocumentsPageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
             DOCUMENTS
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -1040,7 +1040,7 @@ function DocumentsPageContent() {
             role="dialog"
             aria-label="Upload document"
             aria-modal="true"
-            className="bg-white dark:bg-[#0a0a0b] border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">

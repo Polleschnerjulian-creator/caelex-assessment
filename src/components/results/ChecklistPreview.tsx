@@ -36,10 +36,10 @@ export default function ChecklistPreview({
       transition={{ delay: 0.2 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
           Your Next Steps
         </span>
-        <span className="font-mono text-[11px] text-white/50">
+        <span className="text-[11px] text-white/50">
           Top 5 of {totalItems} action items
         </span>
       </div>
@@ -63,7 +63,7 @@ export default function ChecklistPreview({
                   {item.requirement}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="font-mono text-[10px] text-white/70 bg-white/[0.08] px-2 py-0.5 rounded">
+                  <span className="text-[10px] text-white/70 bg-white/[0.08] px-2 py-0.5 rounded">
                     Art. {item.articles}
                   </span>
                   <span className="text-[11px] text-white/50">

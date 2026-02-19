@@ -71,7 +71,7 @@ export default function ValueProposition() {
           transition={{ duration: 0.6 }}
           className="text-center mb-24"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
             Why Caelex
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[700px] mx-auto">
@@ -90,7 +90,7 @@ export default function ValueProposition() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-red-400/60 block mb-8">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-red-400/60 block mb-8">
                 Without Caelex
               </span>
             </motion.div>
@@ -134,7 +134,7 @@ export default function ValueProposition() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-blue-400/60 block mb-8">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-blue-400/60 block mb-8">
                 With Caelex
               </span>
             </motion.div>
@@ -181,16 +181,14 @@ export default function ValueProposition() {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <div>
-              <p className="font-mono text-[28px] font-light text-white mb-2">
-                90%
-              </p>
+              <p className="text-[28px] font-light text-white mb-2">90%</p>
               <p className="text-[13px] text-white/40 leading-[1.6]">
                 less time spent on regulatory analysis compared to manual legal
                 review
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] font-light text-white mb-2">
+              <p className="text-[28px] font-light text-white mb-2">
                 Real-time
               </p>
               <p className="text-[13px] text-white/40 leading-[1.6]">
@@ -199,9 +197,7 @@ export default function ValueProposition() {
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] font-light text-white mb-2">
-                1-click
-              </p>
+              <p className="text-[28px] font-light text-white mb-2">1-click</p>
               <p className="text-[13px] text-white/40 leading-[1.6]">
                 report generation for NCA submissions, audit trails, and
                 compliance certificates

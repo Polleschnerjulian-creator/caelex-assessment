@@ -69,7 +69,8 @@
     "regulatoryFeed": "Regulatory Feed",
     "incidents": "Incidents",
     "digitalTwin": "Digital Twin",
-    "generate2": "Generate 2.0"
+    "generate2": "Generate 2.0",
+    "widget": "Widget"
   },
   "topbar": {
     "runAssessment": "Run Assessment",
@@ -113,6 +114,8 @@
     "outOf100": "out of 100",
     "sampleData": "Sample data",
     "sampleDeadlines": "Sample deadlines",
+    "demoMode": "You're viewing demo data — run an assessment to see your real compliance status.",
+    "startAssessmentLink": "Start Assessment →",
     "selectOperatorType": "Select Operator Type",
     "selectOperatorDescription": "Choose your operator type to import applicable articles.",
     "selectOperatorPlaceholder": "Select operator type...",
@@ -361,6 +364,7 @@
   "widget": {
     "title": "Embeddable Widget",
     "subtitle": "Embed compliance checks on your website or partner sites.",
+    "description": "Configure and embed the compliance widget on your website",
     "setup": "Set Up Widget",
     "widgetType": "Widget Type",
     "theme": "Theme",

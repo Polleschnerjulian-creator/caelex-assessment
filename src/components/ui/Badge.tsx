@@ -54,8 +54,8 @@ const variants: Record<
 };
 
 const sizes: Record<BadgeSize, string> = {
-  sm: "px-1.5 py-0.5 text-[10px]",
-  md: "px-2.5 py-1 text-[11px]",
+  sm: "px-1.5 py-0.5 text-micro",
+  md: "px-2.5 py-1 text-caption",
 };
 
 export function Badge({

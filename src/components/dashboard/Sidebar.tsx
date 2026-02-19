@@ -385,7 +385,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[260px] lg:h-screen
-          bg-white dark:bg-[#0A0A0B] border-r border-slate-200 dark:border-white/10
+          bg-white dark:bg-dark-bg border-r border-slate-200 dark:border-white/10
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -404,8 +404,8 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
           <Link href="/" className="flex items-center gap-2">
             <Logo size={22} className="text-slate-900 dark:text-white" />
-            <span className="text-[10px] font-mono text-slate-500 dark:text-white/60 uppercase tracking-wider">
-              Beta
+            <span className="text-[10px] text-slate-500 dark:text-white/60 tracking-wider">
+              v0.1
             </span>
           </Link>
         </div>
@@ -602,7 +602,6 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 href="/dashboard/astra"
                 icon={<Zap size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge="Beta"
               >
                 ASTRA
               </NavItem>
@@ -619,13 +618,9 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 href="/dashboard/nca-portal"
                 icon={<Building2 size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={
-                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
-                }
+                badge={t("sidebar.new")}
               >
-                {t("sidebar.ncaPortal") !== "sidebar.ncaPortal"
-                  ? t("sidebar.ncaPortal")
-                  : "NCA Portal"}
+                {t("sidebar.ncaPortal")}
               </NavItem>
               <NavItem
                 href="/dashboard/documents"
@@ -640,21 +635,15 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
                 badge="AI"
               >
-                {t("sidebar.aiGenerate") !== "sidebar.aiGenerate"
-                  ? t("sidebar.aiGenerate")
-                  : "AI Generate"}
+                {t("sidebar.aiGenerate")}
               </NavItem>
               <NavItem
                 href="/dashboard/generate"
                 icon={<Sparkles size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={
-                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
-                }
+                badge={t("sidebar.new")}
               >
-                {t("sidebar.generate2") !== "sidebar.generate2"
-                  ? t("sidebar.generate2")
-                  : "Generate 2.0"}
+                {t("sidebar.generate2")}
               </NavItem>
               <NavItem
                 href="/dashboard/audit-center"
@@ -675,30 +664,22 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 icon={<Layers size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                {t("sidebar.digitalTwin") !== "sidebar.digitalTwin"
-                  ? t("sidebar.digitalTwin")
-                  : "Digital Twin"}
+                {t("sidebar.digitalTwin")}
               </NavItem>
               <NavItem
                 href="/dashboard/incidents"
                 icon={<AlertTriangle size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                {t("sidebar.incidents") !== "sidebar.incidents"
-                  ? t("sidebar.incidents")
-                  : "Incidents"}
+                {t("sidebar.incidents")}
               </NavItem>
               <NavItem
                 href="/dashboard/regulatory-feed"
                 icon={<Radio size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={
-                  t("sidebar.new") !== "sidebar.new" ? t("sidebar.new") : "NEW"
-                }
+                badge={t("sidebar.new")}
               >
-                {t("sidebar.regulatoryFeed") !== "sidebar.regulatoryFeed"
-                  ? t("sidebar.regulatoryFeed")
-                  : "Regulatory Feed"}
+                {t("sidebar.regulatoryFeed")}
               </NavItem>
               <NavItem
                 href="/dashboard/mission-control"

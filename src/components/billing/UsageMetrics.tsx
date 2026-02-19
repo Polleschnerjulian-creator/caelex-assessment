@@ -49,7 +49,7 @@ export default function UsageMetrics({
 
   return (
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-      <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-5">
+      <h3 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-5">
         Usage
       </h3>
 

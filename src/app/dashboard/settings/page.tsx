@@ -216,7 +216,7 @@ function SecurityCard() {
           <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
         </div>
         <div>
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             {t("settings.security")}
           </h2>
           <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
@@ -456,7 +456,7 @@ export default function SettingsPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[800px]">
         {/* Page Header */}
         <div className="mb-10">
@@ -475,7 +475,7 @@ export default function SettingsPage() {
               <User className="w-5 h-5 text-slate-600 dark:text-white/70" />
             </div>
             <div>
-              <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
                 {t("settings.account")}
               </h2>
               <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
@@ -549,7 +549,7 @@ export default function SettingsPage() {
                 <Key className="w-5 h-5 text-slate-600 dark:text-white/70" />
               </div>
               <div>
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
                   {t("settings.apiKeys")}
                 </h2>
                 <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
@@ -575,15 +575,11 @@ export default function SettingsPage() {
                 <Code2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
-                  {t("sidebar.widget") !== "sidebar.widget"
-                    ? t("sidebar.widget")
-                    : "Widget"}
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+                  {t("sidebar.widget")}
                 </h2>
                 <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
-                  {t("widget.description") !== "widget.description"
-                    ? t("widget.description")
-                    : "Configure and embed the compliance widget on your website"}
+                  {t("widget.description")}
                 </p>
               </div>
             </div>

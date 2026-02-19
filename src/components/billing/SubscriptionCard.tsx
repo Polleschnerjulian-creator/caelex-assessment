@@ -81,7 +81,7 @@ export default function SubscriptionCard({
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-1">
+          <h3 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-1">
             Current Subscription
           </h3>
           <p className="text-[13px] text-slate-500 dark:text-white/50">

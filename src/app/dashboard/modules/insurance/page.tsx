@@ -399,7 +399,7 @@ function InsurancePageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8" role="status" aria-live="polite">
+      <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
@@ -418,10 +418,10 @@ function InsurancePageContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px]">
+    <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 06
         </p>
         <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
@@ -494,7 +494,7 @@ function InsurancePageContent() {
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
                         isActive
                           ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                           : isCompleted

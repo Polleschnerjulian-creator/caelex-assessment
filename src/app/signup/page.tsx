@@ -94,7 +94,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] flex">
+    <div className="min-h-screen bg-dark-bg flex">
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden items-center justify-center">
         {/* Grid background */}
@@ -102,7 +102,7 @@ export default function SignupPage() {
 
         {/* Glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/8 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0B] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
 
         {/* Content */}
         <div className="relative z-10 max-w-md px-12">
@@ -205,7 +205,7 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px bg-white/[0.06] flex-1" />
-            <span className="text-white/30 text-[12px] font-mono uppercase tracking-wider">
+            <span className="text-white/30 text-[12px] uppercase tracking-wider">
               or
             </span>
             <div className="h-px bg-white/[0.06] flex-1" />

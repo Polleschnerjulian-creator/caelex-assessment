@@ -146,7 +146,7 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${inter.className} font-sans antialiased bg-white dark:bg-[#0A0A0B] text-slate-900 dark:text-white transition-colors`}
+        className={`${inter.className} font-sans antialiased bg-white dark:bg-dark-bg text-slate-900 dark:text-white transition-colors`}
       >
         <a href="#main-content" className="skip-to-main">
           Skip to main content

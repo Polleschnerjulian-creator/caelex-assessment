@@ -45,7 +45,7 @@ export default function NIS2ComplianceMatrix({
             Penalty Exposure
           </h4>
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
-            <div className="text-lg font-mono font-bold text-red-400 mb-1">
+            <div className="text-lg font-bold text-red-400 mb-1">
               {penalties.applicable}
             </div>
             <div className="text-xs text-red-400/60">
@@ -55,15 +55,11 @@ export default function NIS2ComplianceMatrix({
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white/[0.03] rounded-lg p-3">
               <div className="text-xs text-white/40 mb-1">Essential</div>
-              <div className="text-sm font-mono text-white">
-                {penalties.essential}
-              </div>
+              <div className="text-sm text-white">{penalties.essential}</div>
             </div>
             <div className="bg-white/[0.03] rounded-lg p-3">
               <div className="text-xs text-white/40 mb-1">Important</div>
-              <div className="text-sm font-mono text-white">
-                {penalties.important}
-              </div>
+              <div className="text-sm text-white">{penalties.important}</div>
             </div>
           </div>
         </div>
@@ -129,7 +125,7 @@ export default function NIS2ComplianceMatrix({
                   className="w-2 h-2 text-blue-400 fill-blue-400 flex-shrink-0"
                   aria-hidden="true"
                 />
-                <span className="font-mono text-sm text-blue-400 w-28 flex-shrink-0">
+                <span className="text-sm text-blue-400 w-28 flex-shrink-0">
                   {date.date}
                 </span>
                 <span className="text-sm text-white/60">

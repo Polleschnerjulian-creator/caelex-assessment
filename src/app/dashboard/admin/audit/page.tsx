@@ -82,7 +82,7 @@ export default function AdminAuditPage() {
   };
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[1200px]">
         {/* Header */}
         <div className="mb-8">

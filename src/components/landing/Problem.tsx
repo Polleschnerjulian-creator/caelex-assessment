@@ -19,7 +19,7 @@ export default function Problem() {
           {/* Left Column */}
           <ScrollReveal>
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/60 mb-8">
+              <p className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-8">
                 THE CHALLENGE
               </p>
               <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-medium text-white tracking-[-0.02em] leading-[1.2]">

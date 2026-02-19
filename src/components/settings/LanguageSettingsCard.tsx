@@ -17,7 +17,7 @@ export function LanguageSettingsCard() {
           />
         </div>
         <div>
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             {t("settings.language")}
           </h2>
           <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">

@@ -137,7 +137,7 @@ function DesktopTable({
             <tr className="bg-white/[0.04]">
               <th
                 scope="col"
-                className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-[11px] font-mono uppercase tracking-[0.15em] text-white/40 border-b border-white/[0.08] min-w-[200px]"
+                className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-[11px] uppercase tracking-[0.15em] text-white/40 border-b border-white/[0.08] min-w-[200px]"
               >
                 Criterion
               </th>
@@ -151,7 +151,7 @@ function DesktopTable({
                     <span className="text-base leading-none">
                       {j.flagEmoji}
                     </span>
-                    <span className="font-mono text-[11px] uppercase tracking-wider text-white/60">
+                    <span className="text-[11px] uppercase tracking-wider text-white/60">
                       {j.countryCode}
                     </span>
                   </div>
@@ -203,7 +203,7 @@ function GroupRows({
         >
           <div className="flex items-center gap-2 text-white/50">
             <span aria-hidden="true">{group.icon}</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
+            <span className="text-[10px] uppercase tracking-[0.2em]">
               {group.label}
             </span>
           </div>
@@ -284,7 +284,7 @@ function MobileCards({
           {/* Category header */}
           <div className="flex items-center gap-2 text-white/50 px-1 pt-3 pb-1">
             <span aria-hidden="true">{group.icon}</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
+            <span className="text-[10px] uppercase tracking-[0.2em]">
               {group.label}
             </span>
           </div>
@@ -312,7 +312,7 @@ function MobileCards({
                         <span className="text-sm leading-none">
                           {j.flagEmoji}
                         </span>
-                        <span className="font-mono text-[11px] text-white/50 uppercase tracking-wider">
+                        <span className="text-[11px] text-white/50 uppercase tracking-wider">
                           {j.countryCode}
                         </span>
                       </div>
@@ -360,10 +360,10 @@ export default function ComparisonMatrixView({
     >
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
           Comparison Matrix
         </span>
-        <span className="font-mono text-[11px] text-white/50">
+        <span className="text-[11px] text-white/50">
           {matrix.criteria.length} criteria &middot; {jurisdictions.length}{" "}
           jurisdictions
         </span>

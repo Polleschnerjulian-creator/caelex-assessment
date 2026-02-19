@@ -435,20 +435,14 @@ export default function IncidentsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <p className="text-[11px] font-mono tracking-widest text-slate-500 dark:text-white/30 uppercase mb-1">
-            {t("incidents.mono") !== "incidents.mono"
-              ? t("incidents.mono")
-              : "Incident Command Center"}
+          <p className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-1">
+            {t("incidents.mono")}
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            {t("incidents.title") !== "incidents.title"
-              ? t("incidents.title")
-              : "Active Incidents"}
+            {t("incidents.title")}
           </h1>
           <p className="text-[14px] text-slate-500 dark:text-white/50 mt-1">
-            {t("incidents.description") !== "incidents.description"
-              ? t("incidents.description")
-              : "NIS2 Art. 23 incident response with live deadline tracking and NCA notification management."}
+            {t("incidents.description")}
           </p>
         </div>
 
@@ -677,7 +671,7 @@ export default function IncidentsPage() {
                     {/* Countdown */}
                     {urgentMs !== null && urgentMs > 0 && (
                       <span
-                        className={`text-[11px] font-mono shrink-0 ${getCountdownColor(
+                        className={`text-[11px] shrink-0 ${getCountdownColor(
                           urgentMs > 0
                             ? (urgentMs / (72 * 60 * 60 * 1000)) * 100
                             : 0,
@@ -688,7 +682,7 @@ export default function IncidentsPage() {
                       </span>
                     )}
                     {urgentMs !== null && urgentMs <= 0 && (
-                      <span className="text-[11px] font-mono text-red-400 animate-pulse shrink-0">
+                      <span className="text-[11px] text-red-400 animate-pulse shrink-0">
                         OVERDUE
                       </span>
                     )}
@@ -729,7 +723,7 @@ export default function IncidentsPage() {
                             <>
                               {/* Workflow track */}
                               <div>
-                                <h4 className="text-[11px] font-mono tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                <h4 className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
                                   Workflow Progress
                                 </h4>
                                 <div className="flex items-center gap-0">
@@ -828,7 +822,7 @@ export default function IncidentsPage() {
                               {/* NIS2 Phase tracker */}
                               {expandedData.nis2Phases.length > 0 && (
                                 <div>
-                                  <h4 className="text-[11px] font-mono tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                  <h4 className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
                                     NIS2 Reporting Phases
                                   </h4>
                                   <div className="space-y-2">
@@ -904,7 +898,7 @@ export default function IncidentsPage() {
                                             </span>
                                           ) : (
                                             <span
-                                              className={`text-[11px] font-mono shrink-0 ${getCountdownColor(
+                                              className={`text-[11px] shrink-0 ${getCountdownColor(
                                                 pctRemaining,
                                                 isOverdue,
                                               )}`}

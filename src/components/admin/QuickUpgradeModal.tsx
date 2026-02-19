@@ -101,11 +101,11 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
               </p>
               <p className="text-[13px] text-slate-600 dark:text-white/60">
                 {success.orgName} upgraded from{" "}
-                <span className="font-mono text-[12px] text-slate-500 dark:text-white/50">
+                <span className="text-[12px] text-slate-500 dark:text-white/50">
                   {success.previousPlan}
                 </span>{" "}
                 to{" "}
-                <span className="font-mono text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
                   {plan}
                 </span>
               </p>

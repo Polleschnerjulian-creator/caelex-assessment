@@ -197,7 +197,7 @@ export default function MissionControlView() {
             className="w-8 h-8 text-white/20 animate-spin mx-auto mb-3"
             aria-hidden="true"
           />
-          <p className="text-[12px] text-white/40 font-mono">
+          <p className="text-[12px] text-white/40">
             {t("missionControl.loadingSatellites")}
           </p>
         </div>
@@ -283,12 +283,12 @@ export default function MissionControlView() {
                         <p className="text-[12px] text-white/90 truncate">
                           {sat.name}
                         </p>
-                        <p className="text-[10px] text-white/40 font-mono">
+                        <p className="text-[10px] text-white/40">
                           {sat.noradId} · {sat.cosparId} · {sat.orbitType}
                         </p>
                       </div>
                       {isFleet ? (
-                        <span className="text-[8px] font-mono px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 rounded flex-shrink-0">
+                        <span className="text-[8px] px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 rounded flex-shrink-0">
                           FLEET
                         </span>
                       ) : (
@@ -336,7 +336,7 @@ export default function MissionControlView() {
           {fleet.length > 0 && (
             <button
               onClick={handleFleetOnlyToggle}
-              className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono transition-all border ${
+              className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] transition-all border ${
                 fleetOnly
                   ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
                   : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-emerald-400"
@@ -354,7 +354,7 @@ export default function MissionControlView() {
           {/* Filter button */}
           <button
             onClick={() => setShowFilters((p) => !p)}
-            className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono transition-all border ${
+            className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] transition-all border ${
               showFilters
                 ? "bg-white/10 border-white/20 text-white"
                 : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-white/70"

@@ -409,7 +409,7 @@ function DebrisPageContent() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8" role="status" aria-live="polite">
+      <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-slate-100 dark:bg-white/[0.05] rounded w-1/3" />
           <div className="h-4 bg-slate-100 dark:bg-white/[0.05] rounded w-1/2" />
@@ -428,10 +428,10 @@ function DebrisPageContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-[1400px]">
+    <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
           MODULE 05
         </p>
         <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
@@ -446,34 +446,34 @@ function DebrisPageContent() {
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
+            <p className="text-[32px] font-semibold text-slate-900 dark:text-white">
               {metrics.compliant}/{metrics.total}
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               requirements compliant
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
+            <p className="text-[32px] font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.complianceScore || 0}%
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               compliance score
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-green-400">
-              {selectedAssessment.deorbitTimelineYears || "—"}
+            <p className="text-[32px] font-semibold text-green-400">
+              {selectedAssessment.deorbitTimelineYears || "\u2014"}
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               years to deorbit
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-mono font-semibold text-slate-900 dark:text-white">
-              {selectedAssessment.caServiceProvider || "—"}
+            <p className="text-[32px] font-semibold text-slate-900 dark:text-white">
+              {selectedAssessment.caServiceProvider || "\u2014"}
             </p>
-            <p className="font-mono text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
               CA service
             </p>
           </div>
@@ -505,7 +505,7 @@ function DebrisPageContent() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
                     activeStep === index
                       ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
@@ -557,7 +557,7 @@ function DebrisPageContent() {
             {assessments.length > 0 && !showNewAssessment && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30">
                     Your Debris Assessments
                   </p>
                   <button
@@ -1001,7 +1001,7 @@ function DebrisPageContent() {
                         assessed as compliant
                       </p>
                     </div>
-                    <p className="text-[28px] font-mono font-semibold text-slate-900 dark:text-white">
+                    <p className="text-[28px] font-semibold text-slate-900 dark:text-white">
                       {selectedAssessment.complianceScore || 0}%
                     </p>
                   </div>

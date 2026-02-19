@@ -194,11 +194,11 @@ function DashboardTab() {
             className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 md:p-4"
           >
             <p
-              className={`font-mono text-[20px] md:text-[24px] font-light ${stat.color}`}
+              className={`text-[20px] md:text-[24px] font-light ${stat.color}`}
             >
               {stat.value}
             </p>
-            <p className="font-mono text-[10px] text-white/35 mt-1 uppercase tracking-wider">
+            <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">
               {stat.label}
             </p>
           </div>
@@ -236,12 +236,12 @@ function DashboardTab() {
                     style={{ width: `${mod.progress}%` }}
                   />
                 </div>
-                <span className="font-mono text-[11px] text-white/30 w-8 text-right">
+                <span className="text-[11px] text-white/30 w-8 text-right">
                   {mod.progress}%
                 </span>
               </div>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ${
+                className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ${
                   mod.progress > 0
                     ? "bg-blue-500/10 text-blue-400/60"
                     : "bg-white/[0.04] text-white/25"
@@ -278,13 +278,11 @@ function DocumentsTab() {
                   <p className="text-[12px] text-white/60 truncate">
                     {doc.name}
                   </p>
-                  <p className="font-mono text-[10px] text-white/25">
-                    {doc.count} files
-                  </p>
+                  <p className="text-[10px] text-white/25">{doc.count} files</p>
                 </div>
               </div>
               <span
-                className={`text-[11px] sm:text-[10px] md:text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
+                className={`text-[11px] sm:text-[10px] md:text-[9px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
               >
                 {config.label}
               </span>
@@ -305,7 +303,7 @@ function TimelineTab() {
             key={i}
             className="flex items-center gap-4 bg-white/[0.02] border border-white/[0.04] rounded-lg px-4 py-3"
           >
-            <span className="font-mono text-[11px] text-white/30 w-16 flex-shrink-0">
+            <span className="text-[11px] text-white/30 w-16 flex-shrink-0">
               {deadline.date}
             </span>
             <div className="w-px h-5 bg-white/[0.08]" />
@@ -313,7 +311,7 @@ function TimelineTab() {
               {deadline.title}
             </p>
             <span
-              className={`text-[11px] sm:text-[10px] md:text-[9px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
+              className={`text-[11px] sm:text-[10px] md:text-[9px] px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
             >
               {deadline.urgency}
             </span>
@@ -347,7 +345,7 @@ function TrackerTab() {
               <p className="text-[12px] text-white/55 flex-1 min-w-0 truncate">
                 {article.title}
               </p>
-              <span className="text-[10px] font-mono text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block">
+              <span className="text-[10px] text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block">
                 {article.module}
               </span>
             </div>
@@ -387,7 +385,7 @@ export default function PlatformPreview() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="font-mono text-[11px] text-white/30">05 / 12</span>
+        <span className="text-[11px] text-white/30">05 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -398,7 +396,7 @@ export default function PlatformPreview() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
             Your Compliance Command Center
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto mb-4">

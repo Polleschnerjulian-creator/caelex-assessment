@@ -251,17 +251,36 @@ Dark, premium, space-tech. Linear.app meets Bloomberg Terminal aesthetics.
 --slate-400: #94A3B8      (secondary text)
 --slate-200: #E2E8F0      (primary text)
 --white: #F8FAFC          (headings, emphasis)
---blue-500: #3B82F6       (primary accent, CTAs)
+--emerald-500: #10B981    (primary accent, CTAs)
 --green-500: #22C55E      (compliant, positive)
 --amber-500: #F59E0B      (warnings, conditional)
 --red-500: #EF4444        (mandatory, critical)
 ```
 
+### Type Scale (tailwind.config.ts)
+
+Use semantic tokens instead of arbitrary `text-[Npx]` values:
+
+```
+text-micro     10px   Uppercase labels, tracking badges
+text-caption   11px   Small labels, metadata
+text-small     12px   Captions, form hints, error text
+text-body      13px   Default body (dashboard)
+text-body-lg   14px   Body text (marketing), form inputs
+text-subtitle  15px   Button text, prominent body
+text-title     16px   Card titles
+text-heading   18px   Section headings
+text-display-sm 24px  Sub-headings
+text-display   32px   Page headings
+text-display-lg 48px  Hero headlines
+```
+
 ### Component Patterns
 
 - Cards: `bg-navy-800 border border-navy-700 rounded-xl`
+- Glass cards: Import `GlassCard` from `@/components/ui/GlassCard` (supports `hover`, `highlighted` props)
 - Glass effect: `bg-white/5 backdrop-blur-sm border border-white/10`
-- Buttons: `bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-6 py-3`
+- Buttons: `bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-6 py-3`
 - Transitions: Framer Motion for wizard steps, `transition-all duration-200` for hovers
 
 ## Cron Jobs (Vercel)

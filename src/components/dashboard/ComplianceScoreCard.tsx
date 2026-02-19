@@ -129,7 +129,7 @@ export default function ComplianceScoreCard() {
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-emerald-400" />
-          <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-white/40">
             {t("dashboard.complianceScore")}
           </h2>
         </div>
@@ -177,7 +177,7 @@ export default function ComplianceScoreCard() {
             </svg>
           </div>
           <div>
-            <p className="text-[36px] font-mono font-semibold text-white leading-none">
+            <p className="text-[36px] font-semibold text-white leading-none">
               {data.overall}
             </p>
             <p className="text-[11px] text-white/50 mt-1">
@@ -199,7 +199,7 @@ export default function ComplianceScoreCard() {
                   style={{ width: `${mod.score}%` }}
                 />
               </div>
-              <span className="text-[11px] font-mono text-white/60 w-8 text-right">
+              <span className="text-[11px] text-white/60 w-8 text-right">
                 {mod.score}
               </span>
             </div>
@@ -219,7 +219,7 @@ export default function ComplianceScoreCard() {
                   className="flex items-start gap-2 text-[11px] leading-snug"
                 >
                   <span
-                    className={`shrink-0 mt-0.5 text-[8px] font-mono uppercase px-1.5 py-0.5 rounded border ${priorityColors[rec.priority]}`}
+                    className={`shrink-0 mt-0.5 text-[8px] uppercase px-1.5 py-0.5 rounded border ${priorityColors[rec.priority]}`}
                   >
                     {t(`common.${rec.priority}`)}
                   </span>

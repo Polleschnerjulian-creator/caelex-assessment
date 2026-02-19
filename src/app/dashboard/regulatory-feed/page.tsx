@@ -176,58 +176,32 @@ export default function RegulatoryFeedPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-[11px] font-mono text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
-            {t("regulatoryFeed.title") !== "regulatoryFeed.title"
-              ? t("regulatoryFeed.title")
-              : "REGULATORY FEED"}
+          <p className="text-[11px] text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
+            {t("regulatoryFeed.title")}
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
-            {t("regulatoryFeed.title") !== "regulatoryFeed.title"
-              ? t("regulatoryFeed.title")
-              : "Regulatory Feed"}
+            {t("regulatoryFeed.title")}
           </h1>
           <p className="text-[14px] text-slate-500 dark:text-white/50">
-            {t("regulatoryFeed.subtitle") !== "regulatoryFeed.subtitle"
-              ? t("regulatoryFeed.subtitle")
-              : "Automated monitoring of EUR-Lex for new EU legislation affecting space compliance"}
+            {t("regulatoryFeed.subtitle")}
           </p>
         </div>
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <StatCard label={t("regulatoryFeed.totalUpdates")} value={total} />
           <StatCard
-            label={
-              t("regulatoryFeed.totalUpdates") !== "regulatoryFeed.totalUpdates"
-                ? t("regulatoryFeed.totalUpdates")
-                : "Total Updates"
-            }
-            value={total}
-          />
-          <StatCard
-            label={
-              t("regulatoryFeed.criticalUpdates") !==
-              "regulatoryFeed.criticalUpdates"
-                ? t("regulatoryFeed.criticalUpdates")
-                : "Critical"
-            }
+            label={t("regulatoryFeed.criticalUpdates")}
             value={criticalCount}
             accent="text-red-400"
           />
           <StatCard
-            label={
-              t("regulatoryFeed.highUpdates") !== "regulatoryFeed.highUpdates"
-                ? t("regulatoryFeed.highUpdates")
-                : "High Priority"
-            }
+            label={t("regulatoryFeed.highUpdates")}
             value={highCount}
             accent="text-amber-400"
           />
           <StatCard
-            label={
-              t("regulatoryFeed.thisWeek") !== "regulatoryFeed.thisWeek"
-                ? t("regulatoryFeed.thisWeek")
-                : "This Week"
-            }
+            label={t("regulatoryFeed.thisWeek")}
             value={thisWeekCount}
             accent="text-blue-400"
           />
@@ -252,10 +226,7 @@ export default function RegulatoryFeedPage() {
                 }`}
               >
                 {sev === "ALL"
-                  ? t("regulatoryFeed.allSeverities") !==
-                    "regulatoryFeed.allSeverities"
-                    ? t("regulatoryFeed.allSeverities")
-                    : "All"
+                  ? t("regulatoryFeed.allSeverities")
                   : sev.charAt(0) + sev.slice(1).toLowerCase()}
               </button>
             );
@@ -271,12 +242,7 @@ export default function RegulatoryFeedPage() {
               }}
               className="text-[12px] px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/60 border border-slate-200 dark:border-white/10 appearance-none pr-7 cursor-pointer"
             >
-              <option value="">
-                {t("regulatoryFeed.filterByModule") !==
-                "regulatoryFeed.filterByModule"
-                  ? t("regulatoryFeed.filterByModule")
-                  : "Filter by module"}
-              </option>
+              <option value="">{t("regulatoryFeed.filterByModule")}</option>
               {Object.entries(MODULE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>
                   {label}
@@ -480,10 +446,7 @@ function FeedItem({
               {/* Match Reason */}
               <div className="mb-3">
                 <p className="text-[11px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
-                  {t("regulatoryFeed.matchReason") !==
-                  "regulatoryFeed.matchReason"
-                    ? t("regulatoryFeed.matchReason")
-                    : "Match Reason"}
+                  {t("regulatoryFeed.matchReason")}
                 </p>
                 <p className="text-[13px] text-slate-600 dark:text-white/60">
                   {update.matchReason}
@@ -499,10 +462,7 @@ function FeedItem({
                   className="inline-flex items-center gap-1.5 text-[12px] font-medium text-blue-500 hover:text-blue-400 transition-colors"
                 >
                   <ExternalLink size={12} />
-                  {t("regulatoryFeed.viewOnEurLex") !==
-                  "regulatoryFeed.viewOnEurLex"
-                    ? t("regulatoryFeed.viewOnEurLex")
-                    : "View on EUR-Lex"}
+                  {t("regulatoryFeed.viewOnEurLex")}
                 </a>
                 {!update.isRead && (
                   <button
@@ -518,10 +478,7 @@ function FeedItem({
                     ) : (
                       <Eye size={12} />
                     )}
-                    {t("regulatoryFeed.markAsRead") !==
-                    "regulatoryFeed.markAsRead"
-                      ? t("regulatoryFeed.markAsRead")
-                      : "Mark as read"}
+                    {t("regulatoryFeed.markAsRead")}
                   </button>
                 )}
               </div>
@@ -544,15 +501,10 @@ function EmptyState({ t }: { t: (key: string) => string }) {
         />
       </div>
       <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-        {t("regulatoryFeed.noUpdates") !== "regulatoryFeed.noUpdates"
-          ? t("regulatoryFeed.noUpdates")
-          : "No regulatory updates yet"}
+        {t("regulatoryFeed.noUpdates")}
       </h3>
       <p className="text-[14px] text-slate-500 dark:text-white/40 max-w-md mx-auto">
-        {t("regulatoryFeed.noUpdatesDescription") !==
-        "regulatoryFeed.noUpdatesDescription"
-          ? t("regulatoryFeed.noUpdatesDescription")
-          : "The EUR-Lex feed is checked daily at 7:00 AM UTC. New delegated acts, NIS2 references, and space-related legislation will appear here."}
+        {t("regulatoryFeed.noUpdatesDescription")}
       </p>
     </div>
   );

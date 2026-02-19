@@ -427,7 +427,7 @@ function EnvironmentalPageContent() {
   if (loading && assessments.length === 0) {
     return (
       <div
-        className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]"
+        className="flex items-center justify-center min-h-[400px]"
         role="status"
         aria-live="polite"
       >
@@ -441,11 +441,11 @@ function EnvironmentalPageContent() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="">
       <div className="max-w-[1200px]">
         {/* Header */}
         <div className="mb-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
             MODULE 03
           </p>
           <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-2">
@@ -1914,7 +1914,7 @@ function ReportStep({
                 className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <span className="px-2 py-1 bg-slate-200 dark:bg-white/[0.05] rounded text-[11px] text-slate-500 dark:text-white/60 font-mono">
+                  <span className="px-2 py-1 bg-slate-200 dark:bg-white/[0.05] rounded text-[11px] text-slate-500 dark:text-white/60">
                     {req.article}
                   </span>
                   <span className="text-[13px] text-slate-600 dark:text-white/70">

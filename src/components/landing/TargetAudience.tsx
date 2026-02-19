@@ -89,7 +89,7 @@ export default function TargetAudience() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
             Who it&apos;s for
           </span>
           <h2 className="text-[clamp(1.5rem,3vw,2.25rem)] font-light tracking-[-0.02em] text-white">
@@ -132,7 +132,7 @@ export default function TargetAudience() {
                 <p className="text-[12px] text-white/45 leading-[1.6] mb-3">
                   {audience.description}
                 </p>
-                <span className="inline-block font-mono text-[11px] sm:text-[10px] md:text-[9px] text-white/30 uppercase tracking-wider">
+                <span className="inline-block text-[11px] sm:text-[10px] md:text-[9px] text-white/30 uppercase tracking-wider">
                   {audience.tag}
                 </span>
               </motion.div>

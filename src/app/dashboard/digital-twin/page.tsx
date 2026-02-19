@@ -1503,42 +1503,27 @@ export default function DigitalTwinPage() {
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     {
       id: "overview",
-      label:
-        t("digitalTwin.tabOverview") !== "digitalTwin.tabOverview"
-          ? t("digitalTwin.tabOverview")
-          : "Overview",
+      label: t("digitalTwin.tabOverview"),
       icon: <BarChart3 size={14} />,
     },
     {
       id: "frameworks",
-      label:
-        t("digitalTwin.tabFrameworks") !== "digitalTwin.tabFrameworks"
-          ? t("digitalTwin.tabFrameworks")
-          : "Frameworks",
+      label: t("digitalTwin.tabFrameworks"),
       icon: <Shield size={14} />,
     },
     {
       id: "risk",
-      label:
-        t("digitalTwin.tabRisk") !== "digitalTwin.tabRisk"
-          ? t("digitalTwin.tabRisk")
-          : "Risk Matrix",
+      label: t("digitalTwin.tabRisk"),
       icon: <Target size={14} />,
     },
     {
       id: "scenarios",
-      label:
-        t("digitalTwin.tabScenarios") !== "digitalTwin.tabScenarios"
-          ? t("digitalTwin.tabScenarios")
-          : "Scenarios",
+      label: t("digitalTwin.tabScenarios"),
       icon: <GitBranch size={14} />,
     },
     {
       id: "timeline",
-      label:
-        t("digitalTwin.tabTimeline") !== "digitalTwin.tabTimeline"
-          ? t("digitalTwin.tabTimeline")
-          : "Timeline",
+      label: t("digitalTwin.tabTimeline"),
       icon: <Calendar size={14} />,
     },
   ];
@@ -1559,14 +1544,10 @@ export default function DigitalTwinPage() {
           </div>
           <div>
             <h1 className="text-[22px] font-semibold text-white">
-              {t("digitalTwin.title") !== "digitalTwin.title"
-                ? t("digitalTwin.title")
-                : "Compliance Digital Twin"}
+              {t("digitalTwin.title")}
             </h1>
             <p className="text-[13px] text-white/50">
-              {t("digitalTwin.description") !== "digitalTwin.description"
-                ? t("digitalTwin.description")
-                : "Real-time compliance posture with predictive analytics and scenario modeling"}
+              {t("digitalTwin.description")}
             </p>
           </div>
         </div>

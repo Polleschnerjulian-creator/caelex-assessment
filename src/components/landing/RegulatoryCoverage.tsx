@@ -98,7 +98,7 @@ export default function RegulatoryCoverage() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="font-mono text-[11px] text-white/30">02 / 14</span>
+        <span className="text-[11px] text-white/30">02 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -109,7 +109,7 @@ export default function RegulatoryCoverage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block font-mono text-[11px] text-white/40 tracking-widest uppercase mb-4">
+          <span className="inline-block text-[11px] text-white/40 tracking-widest uppercase mb-4">
             Regulatory Coverage
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
@@ -162,7 +162,7 @@ export default function RegulatoryCoverage() {
                       <div className="text-[20px] font-light text-white mb-0.5">
                         {stat.value}
                       </div>
-                      <div className="font-mono text-[9px] text-white/30 uppercase tracking-wider">
+                      <div className="text-[9px] text-white/30 uppercase tracking-wider">
                         {stat.label}
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function RegulatoryCoverage() {
         >
           <div>
             <div className="text-[28px] font-light text-white">170+</div>
-            <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-[10px] text-white/30 uppercase tracking-wider">
               Total Requirements
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-[28px] font-light text-white">8</div>
-            <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-[10px] text-white/30 uppercase tracking-wider">
               Compliance Modules
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-[28px] font-light text-white">2030</div>
-            <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-[10px] text-white/30 uppercase tracking-wider">
               Key Deadline
             </div>
           </div>
