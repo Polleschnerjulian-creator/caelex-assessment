@@ -185,7 +185,11 @@ export default function PackageBuilderPage() {
         </button>
         <div>
           <h1 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Package size={20} className="text-blue-400" aria-hidden="true" />
+            <Package
+              size={20}
+              className="text-emerald-400"
+              aria-hidden="true"
+            />
             Assemble Submission Package
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -205,7 +209,7 @@ export default function PackageBuilderPage() {
                   i < step
                     ? "bg-emerald-500 text-white"
                     : i === step
-                      ? "bg-blue-500 text-white"
+                      ? "bg-emerald-500 text-white"
                       : "bg-slate-200 dark:bg-white/[0.06] text-slate-500 dark:text-white/40"
                 }
               `}
@@ -251,7 +255,7 @@ export default function PackageBuilderPage() {
             <button
               onClick={handleAssemble}
               disabled={!selectedNCA || isAssembling}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isAssembling ? (
                 <>
@@ -357,7 +361,7 @@ export default function PackageBuilderPage() {
             </button>
             <button
               onClick={() => setStep(2)}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
             >
               Continue
               <ArrowRight size={14} />

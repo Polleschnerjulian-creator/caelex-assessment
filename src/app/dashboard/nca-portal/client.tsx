@@ -80,7 +80,11 @@ export default function NCAPortalClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 size={22} className="text-blue-400" aria-hidden="true" />
+            <Building2
+              size={22}
+              className="text-emerald-400"
+              aria-hidden="true"
+            />
             NCA Submission Portal
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -102,7 +106,7 @@ export default function NCAPortalClient() {
           </button>
           <Link
             href="/dashboard/nca-portal/packages/new"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
           >
             <Package size={14} />
             Assemble Package
@@ -179,7 +183,7 @@ export default function NCAPortalClient() {
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     entry.direction === "INBOUND"
-                      ? "bg-blue-500/10"
+                      ? "bg-emerald-500/10"
                       : "bg-slate-100 dark:bg-white/[0.06]"
                   }`}
                 >
@@ -190,7 +194,7 @@ export default function NCAPortalClient() {
                       size={14}
                       className={
                         entry.direction === "INBOUND"
-                          ? "text-blue-400"
+                          ? "text-emerald-400"
                           : "text-slate-400"
                       }
                     />
@@ -208,7 +212,7 @@ export default function NCAPortalClient() {
                 {!entry.isRead && (
                   <>
                     <div
-                      className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"
+                      className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"
                       aria-hidden="true"
                     />
                     <span className="sr-only">Unread</span>

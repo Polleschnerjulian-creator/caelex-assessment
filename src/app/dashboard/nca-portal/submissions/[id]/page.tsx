@@ -53,8 +53,11 @@ interface SubmissionDetail {
 
 const STATUS_BADGES: Record<string, { label: string; color: string }> = {
   DRAFT: { label: "Draft", color: "bg-slate-500/10 text-slate-400" },
-  SUBMITTED: { label: "Submitted", color: "bg-blue-500/10 text-blue-400" },
-  RECEIVED: { label: "Received", color: "bg-cyan-500/10 text-cyan-400" },
+  SUBMITTED: {
+    label: "Submitted",
+    color: "bg-emerald-500/10 text-emerald-400",
+  },
+  RECEIVED: { label: "Received", color: "bg-emerald-500/10 text-emerald-300" },
   UNDER_REVIEW: {
     label: "Under Review",
     color: "bg-amber-500/10 text-amber-400",
@@ -127,7 +130,7 @@ export default function SubmissionDetailPage() {
         </p>
         <button
           onClick={() => router.back()}
-          className="mt-4 text-sm text-blue-400 hover:text-blue-300"
+          className="mt-4 text-sm text-emerald-400 hover:text-emerald-300"
         >
           Go back
         </button>
@@ -180,7 +183,7 @@ export default function SubmissionDetailPage() {
         </div>
         <button
           onClick={() => setShowCorrespondenceForm(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
         >
           <MessageSquarePlus size={14} />
           Log Communication
@@ -269,7 +272,7 @@ export default function SubmissionDetailPage() {
           {submission.package && (
             <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Package size={14} className="text-blue-400" />
+                <Package size={14} className="text-emerald-400" />
                 <h3 className="text-sm font-medium text-slate-900 dark:text-white">
                   Linked Package
                 </h3>

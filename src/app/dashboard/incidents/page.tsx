@@ -112,9 +112,9 @@ const SEVERITY_CONFIG: Record<
     border: "border-amber-500/30",
   },
   medium: {
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/30",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/30",
   },
   low: {
     color: "text-slate-400",
@@ -136,8 +136,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const WORKFLOW_STATES: Record<string, { label: string; color: string }> = {
   reported: { label: "Reported", color: "text-amber-400" },
-  triaged: { label: "Triaged", color: "text-blue-400" },
-  investigating: { label: "Investigating", color: "text-purple-400" },
+  triaged: { label: "Triaged", color: "text-emerald-400" },
+  investigating: { label: "Investigating", color: "text-amber-400" },
   mitigating: { label: "Mitigating", color: "text-orange-400" },
   resolved: { label: "Resolved", color: "text-green-400" },
   closed: { label: "Closed", color: "text-slate-400" },
@@ -478,7 +478,7 @@ export default function IncidentsPage() {
               label: "Active Incidents",
               value: activeCount,
               icon: Activity,
-              color: "text-blue-400",
+              color: "text-emerald-400",
             },
             {
               label: "Critical Severity",
@@ -534,7 +534,7 @@ export default function IncidentsPage() {
                 onClick={() => setSeverityFilter(s)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
                   severityFilter === s
-                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 border border-transparent"
                 }`}
               >
@@ -552,7 +552,7 @@ export default function IncidentsPage() {
                 onClick={() => setCategoryFilter(c)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
                   categoryFilter === c
-                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 border border-transparent"
                 }`}
               >
@@ -746,7 +746,7 @@ export default function IncidentsPage() {
                                           <div
                                             className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
                                               isActive
-                                                ? "bg-blue-500 text-white ring-2 ring-blue-500/30"
+                                                ? "bg-emerald-500 text-white ring-2 ring-emerald-500/30"
                                                 : isPast
                                                   ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                                   : "bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/10"
@@ -761,7 +761,7 @@ export default function IncidentsPage() {
                                           <span
                                             className={`text-[9px] mt-1 ${
                                               isActive
-                                                ? "text-blue-400 font-medium"
+                                                ? "text-emerald-400 font-medium"
                                                 : "text-slate-400 dark:text-white/30"
                                             }`}
                                           >
@@ -800,7 +800,7 @@ export default function IncidentsPage() {
                                             actionLoading ===
                                             `workflow-${incident.id}-${t.event}`
                                           }
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
                                         >
                                           {actionLoading ===
                                           `workflow-${incident.id}-${t.event}` ? (
