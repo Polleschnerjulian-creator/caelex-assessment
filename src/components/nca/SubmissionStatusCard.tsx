@@ -65,8 +65,8 @@ const STATUS_ICONS: Record<string, typeof Send> = {
 
 const STATUS_COLORS: Record<string, string> = {
   gray: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-  blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  cyan: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  blue: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  cyan: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
   yellow: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
   orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   green: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -161,7 +161,7 @@ export function SubmissionStatusCard({
             href={submission.ncaAuthorityInfo.portalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300"
+            className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300"
           >
             <ExternalLink className="w-4 h-4" />
             Visit NCA Portal
@@ -259,7 +259,7 @@ export function SubmissionStatusCard({
             ) && (
               <button
                 onClick={onResend}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 Resend Submission
               </button>

@@ -238,7 +238,10 @@ export default function DocumentViewer({
             {isPdf ? (
               <FileText className="w-5 h-5 text-red-500" aria-hidden="true" />
             ) : isImage ? (
-              <ImageIcon className="w-5 h-5 text-blue-500" aria-hidden="true" />
+              <ImageIcon
+                className="w-5 h-5 text-emerald-500"
+                aria-hidden="true"
+              />
             ) : (
               <File
                 className="w-5 h-5 text-slate-400 dark:text-white/40"

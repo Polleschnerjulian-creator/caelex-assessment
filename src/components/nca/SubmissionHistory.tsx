@@ -52,8 +52,8 @@ const STATUS_ICONS: Record<string, typeof Send> = {
 
 const STATUS_BG_COLORS: Record<string, string> = {
   gray: "bg-slate-500/10",
-  blue: "bg-blue-500/10",
-  cyan: "bg-cyan-500/10",
+  blue: "bg-emerald-500/10",
+  cyan: "bg-emerald-500/10",
   yellow: "bg-yellow-500/10",
   orange: "bg-orange-500/10",
   green: "bg-green-500/10",
@@ -62,8 +62,8 @@ const STATUS_BG_COLORS: Record<string, string> = {
 
 const STATUS_TEXT_COLORS: Record<string, string> = {
   gray: "text-slate-400",
-  blue: "text-blue-400",
-  cyan: "text-cyan-400",
+  blue: "text-emerald-400",
+  cyan: "text-emerald-300",
   yellow: "text-yellow-400",
   orange: "text-orange-400",
   green: "text-green-400",
@@ -106,7 +106,7 @@ export function SubmissionHistory({
     return (
       <div className="bg-navy-800 border border-navy-700 rounded-xl p-8">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
         </div>
       </div>
     );
@@ -135,7 +135,7 @@ export function SubmissionHistory({
               placeholder="Search submissions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="relative">
@@ -143,7 +143,7 @@ export function SubmissionHistory({
             <select
               value={statusFilter || ""}
               onChange={(e) => setStatusFilter(e.target.value || null)}
-              className="pl-10 pr-8 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              className="pl-10 pr-8 py-2 bg-navy-900 border border-navy-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
             >
               <option value="">All Statuses</option>
               {uniqueStatuses.map((status) => (

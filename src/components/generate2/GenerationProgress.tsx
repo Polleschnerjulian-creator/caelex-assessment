@@ -52,11 +52,11 @@ export function GenerationProgress({
         >
           {/* ASTRA avatar */}
           <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-              <Zap size={24} className="text-purple-400" />
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <Zap size={24} className="text-emerald-400" />
             </div>
             <motion.div
-              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-500"
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500"
               animate={{ scale: [1, 1.3, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
@@ -134,13 +134,13 @@ export function GenerationProgress({
               <span className="text-[11px] text-white/30">
                 Overall Progress
               </span>
-              <span className="text-[11px] font-medium text-purple-400">
+              <span className="text-[11px] font-medium text-emerald-400">
                 {progress}%
               </span>
             </div>
             <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
               />
@@ -176,9 +176,9 @@ function PhaseRow({
       transition={{ duration: 0.25 }}
       className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
         isActive
-          ? "bg-purple-500/[0.06] border border-purple-500/20"
+          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
           : isCompleted
-            ? "bg-purple-500/[0.03]"
+            ? "bg-emerald-500/[0.03]"
             : ""
       }`}
     >
@@ -197,7 +197,7 @@ function PhaseRow({
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           >
-            <Loader2 size={18} className="text-purple-400" />
+            <Loader2 size={18} className="text-emerald-400" />
           </motion.div>
         ) : (
           <Icon size={18} className="text-white/25" />
@@ -209,7 +209,7 @@ function PhaseRow({
         <p
           className={`text-sm font-medium ${
             isActive
-              ? "text-purple-400"
+              ? "text-emerald-400"
               : isCompleted
                 ? "text-white/60"
                 : "text-white/25"

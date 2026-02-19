@@ -20,7 +20,7 @@ interface SubmissionPipelineProps {
 
 const PIPELINE_COLUMNS = [
   { key: "DRAFT", label: "Draft", color: "bg-slate-400" },
-  { key: "SUBMITTED", label: "Submitted", color: "bg-blue-400" },
+  { key: "SUBMITTED", label: "Submitted", color: "bg-emerald-400" },
   { key: "UNDER_REVIEW", label: "Under Review", color: "bg-amber-400" },
   { key: "APPROVED", label: "Approved", color: "bg-emerald-400" },
   { key: "REJECTED", label: "Rejected", color: "bg-red-400" },

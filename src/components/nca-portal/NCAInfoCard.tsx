@@ -66,7 +66,7 @@ export default function NCAInfoCard({
         ${onClick ? "cursor-pointer" : ""}
         ${
           selected
-            ? "border-blue-500 bg-blue-500/[0.04] dark:bg-blue-500/[0.06] ring-1 ring-blue-500/30"
+            ? "border-emerald-500 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06] ring-1 ring-emerald-500/30"
             : "border-slate-200 dark:border-navy-700 bg-white dark:bg-navy-800 hover:border-slate-300 dark:hover:border-navy-600"
         }
       `}
@@ -94,7 +94,7 @@ export default function NCAInfoCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 <Globe size={10} aria-hidden="true" />
                 Portal
@@ -116,7 +116,7 @@ export default function NCAInfoCard({
         </div>
         {selected && (
           <div
-            className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0"
+            className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
             aria-hidden="true"
           >
             <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3 text-white">

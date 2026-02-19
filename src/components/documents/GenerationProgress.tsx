@@ -148,7 +148,7 @@ export function GenerationProgress({
               </div>
               <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/[0.06] overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300"
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 />

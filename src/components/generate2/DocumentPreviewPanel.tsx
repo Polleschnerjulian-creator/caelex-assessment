@@ -103,14 +103,14 @@ export function DocumentPreviewPanel({
               </span>
             )}
             {evidencePlaceholderCount > 0 && (
-              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <BookOpen size={12} />
                 {evidencePlaceholderCount} Evidence
               </span>
             )}
             <button
               onClick={onExportPdf}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
             >
               <Download size={14} />
               PDF
@@ -144,7 +144,7 @@ export function DocumentPreviewPanel({
                       return (
                         <p
                           key={blockIdx}
-                          className="text-sm text-blue-300 bg-blue-500/10 px-3 py-2 rounded border border-blue-500/20"
+                          className="text-sm text-emerald-300 bg-emerald-500/10 px-3 py-2 rounded border border-emerald-500/20"
                         >
                           {text}
                         </p>
@@ -241,7 +241,7 @@ export function DocumentPreviewPanel({
                   }
                   if (block.type === "alert") {
                     const alertColors = {
-                      info: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+                      info: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
                       warning:
                         "bg-amber-500/10 text-amber-300 border-amber-500/20",
                       error: "bg-red-500/10 text-red-300 border-red-500/20",
@@ -346,7 +346,7 @@ export function DocumentPreviewPanel({
       {/* Generate button */}
       <button
         onClick={onGenerate}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
       >
         <FileText size={16} />
         {canResume

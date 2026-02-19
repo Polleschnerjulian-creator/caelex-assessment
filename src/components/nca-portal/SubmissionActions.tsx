@@ -13,7 +13,7 @@ interface SubmissionActionsProps {
 const PRIORITY_OPTIONS = [
   { value: "URGENT", label: "Urgent", color: "text-red-400" },
   { value: "HIGH", label: "High", color: "text-amber-400" },
-  { value: "NORMAL", label: "Normal", color: "text-blue-400" },
+  { value: "NORMAL", label: "Normal", color: "text-emerald-400" },
   { value: "LOW", label: "Low", color: "text-slate-400" },
 ];
 
@@ -107,7 +107,7 @@ export default function SubmissionActions({
                 disabled={isUpdating}
                 className={`
                   w-full text-left px-3 py-2 text-sm transition-colors
-                  ${opt.value === currentPriority ? "bg-blue-50 dark:bg-blue-500/10" : "hover:bg-slate-50 dark:hover:bg-white/[0.04]"}
+                  ${opt.value === currentPriority ? "bg-emerald-50 dark:bg-emerald-500/10" : "hover:bg-slate-50 dark:hover:bg-white/[0.04]"}
                   ${opt.color}
                 `}
               >
@@ -127,7 +127,7 @@ export default function SubmissionActions({
                 handleStatusUpdate("RECEIVED", "Receipt confirmed")
               }
               disabled={isUpdating}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors disabled:opacity-50"
             >
               <CheckCircle size={14} />
               Mark as Received
@@ -156,7 +156,7 @@ export default function SubmissionActions({
                 handleStatusUpdate("SUBMITTED", "Resubmitted with updates")
               }
               disabled={isUpdating}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg transition-colors disabled:opacity-50"
             >
               <RotateCcw size={14} />
               Resend

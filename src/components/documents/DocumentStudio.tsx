@@ -342,7 +342,7 @@ export default function DocumentStudio() {
               <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
                 {t("documentStudio.title")}
               </h1>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium uppercase tracking-wider flex items-center gap-1">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wider flex items-center gap-1">
                 <Zap size={10} />
                 AI
               </span>

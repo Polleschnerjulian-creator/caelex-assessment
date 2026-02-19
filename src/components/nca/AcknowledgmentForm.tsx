@@ -102,7 +102,7 @@ export function AcknowledgmentForm({
               value={ncaReference}
               onChange={(e) => setNcaReference(e.target.value)}
               placeholder="e.g., NCA-2026-001234"
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               required
             />
             <p className="text-xs text-slate-500 mt-1">
@@ -119,7 +119,7 @@ export function AcknowledgmentForm({
               value={acknowledgedBy}
               onChange={(e) => setAcknowledgedBy(e.target.value)}
               placeholder="e.g., Dr. Schmidt, Space Division"
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
             <p className="text-xs text-slate-500 mt-1">
               Name or department of the NCA contact (optional)
@@ -135,7 +135,7 @@ export function AcknowledgmentForm({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional notes about the acknowledgment..."
               rows={3}
-              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
             />
           </div>
 

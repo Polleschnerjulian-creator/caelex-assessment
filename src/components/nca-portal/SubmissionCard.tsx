@@ -23,7 +23,7 @@ interface SubmissionCardProps {
 const PRIORITY_COLORS: Record<string, string> = {
   URGENT: "bg-red-500/10 text-red-400 border-red-500/20",
   HIGH: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  NORMAL: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  NORMAL: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   LOW: "bg-slate-500/10 text-slate-400 border-slate-500/20",
 };
 
@@ -75,7 +75,7 @@ export default function SubmissionCard({
       aria-label={`Submission to ${ncaAuthorityName}${reportTitle ? `: ${reportTitle}` : ""}, Priority: ${priority}, ${daysInStatus} days in status${isUrgent ? ", Urgent" : ""}`}
       className={`
         block bg-white dark:bg-navy-800/50 border rounded-lg p-3
-        hover:border-blue-500/30 transition-all duration-150 cursor-pointer group
+        hover:border-emerald-500/30 transition-all duration-150 cursor-pointer group
         ${isUrgent ? "border-red-500/30 dark:border-red-500/20" : "border-slate-200 dark:border-navy-700"}
       `}
     >

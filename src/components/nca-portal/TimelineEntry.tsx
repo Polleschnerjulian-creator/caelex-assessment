@@ -20,8 +20,8 @@ interface TimelineEntryProps {
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "text-slate-400",
-  SUBMITTED: "text-blue-400",
-  RECEIVED: "text-cyan-400",
+  SUBMITTED: "text-emerald-400",
+  RECEIVED: "text-emerald-300",
   UNDER_REVIEW: "text-amber-400",
   INFORMATION_REQUESTED: "text-orange-400",
   ACKNOWLEDGED: "text-emerald-400",
@@ -47,14 +47,14 @@ export default function TimelineEntry({
       return (
         <ArrowRight
           size={16}
-          className={STATUS_COLORS[status] || "text-blue-400"}
+          className={STATUS_COLORS[status] || "text-emerald-400"}
         />
       );
     }
     if (type === "correspondence") {
       const direction = metadata?.direction as string;
       if (direction === "INBOUND")
-        return <ArrowDownLeft size={16} className="text-blue-400" />;
+        return <ArrowDownLeft size={16} className="text-emerald-400" />;
       return <ArrowUpRight size={16} className="text-slate-400" />;
     }
     return <FileText size={16} className="text-slate-400" />;
@@ -66,11 +66,11 @@ export default function TimelineEntry({
       if (status === "APPROVED" || status === "ACKNOWLEDGED")
         return "border-emerald-500/30";
       if (status === "REJECTED") return "border-red-500/30";
-      return "border-blue-500/30";
+      return "border-emerald-500/30";
     }
     if (type === "correspondence") {
       const direction = metadata?.direction as string;
-      if (direction === "INBOUND") return "border-blue-500/20";
+      if (direction === "INBOUND") return "border-emerald-500/20";
       return "border-slate-500/20";
     }
     return "border-slate-200 dark:border-navy-700";

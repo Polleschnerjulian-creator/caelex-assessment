@@ -139,8 +139,8 @@ export function SubmissionWizard({
         <div className="p-4 border-b border-navy-700 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Send className="w-5 h-5 text-blue-400" />
+              <div className="p-2 bg-emerald-500/10 rounded-lg">
+                <Send className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-200">
@@ -168,7 +168,7 @@ export function SubmissionWizard({
                     s < step
                       ? "bg-green-500 text-white"
                       : s === step
-                        ? "bg-blue-500 text-white"
+                        ? "bg-emerald-500 text-white"
                         : "bg-navy-700 text-slate-400"
                   }`}
                 >
@@ -208,7 +208,7 @@ export function SubmissionWizard({
                     onClick={() => setSelectedAuthority(authority.value)}
                     className={`w-full p-3 rounded-lg border text-left transition-colors ${
                       selectedAuthority === authority.value
-                        ? "bg-blue-500/10 border-blue-500/50 text-blue-400"
+                        ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400"
                         : "bg-navy-900 border-navy-600 hover:border-navy-500 text-slate-300"
                     }`}
                   >
@@ -239,8 +239,8 @@ export function SubmissionWizard({
                 Select Submission Method
               </h4>
               {selectedAuthorityInfo?.portalUrl && (
-                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-sm text-blue-400">
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <p className="text-sm text-emerald-400">
                     <strong>{selectedAuthorityInfo.label}</strong> has an online
                     portal:
                   </p>
@@ -248,7 +248,7 @@ export function SubmissionWizard({
                     href={selectedAuthorityInfo.portalUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-300 hover:underline flex items-center gap-1 mt-1"
+                    className="text-sm text-emerald-300 hover:underline flex items-center gap-1 mt-1"
                   >
                     <ExternalLink className="w-3 h-3" />
                     {selectedAuthorityInfo.portalUrl}
@@ -264,7 +264,7 @@ export function SubmissionWizard({
                       onClick={() => setSubmissionMethod(method.value)}
                       className={`w-full p-3 rounded-lg border text-left transition-colors ${
                         submissionMethod === method.value
-                          ? "bg-blue-500/10 border-blue-500/50"
+                          ? "bg-emerald-500/10 border-emerald-500/50"
                           : "bg-navy-900 border-navy-600 hover:border-navy-500"
                       }`}
                     >
@@ -272,7 +272,7 @@ export function SubmissionWizard({
                         <Icon
                           className={`w-5 h-5 ${
                             submissionMethod === method.value
-                              ? "text-blue-400"
+                              ? "text-emerald-400"
                               : "text-slate-500"
                           }`}
                         />
@@ -280,7 +280,7 @@ export function SubmissionWizard({
                           <div
                             className={`font-medium ${
                               submissionMethod === method.value
-                                ? "text-blue-400"
+                                ? "text-emerald-400"
                                 : "text-slate-300"
                             }`}
                           >
@@ -341,7 +341,7 @@ export function SubmissionWizard({
                   onChange={(e) => setCoverLetter(e.target.value)}
                   placeholder="Add any notes or cover letter content..."
                   rows={4}
-                  className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full px-4 py-2 bg-navy-900 border border-navy-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
                 />
               </div>
 
@@ -380,7 +380,7 @@ export function SubmissionWizard({
             <button
               onClick={() => setStep(step + 1)}
               disabled={!canProceed()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-navy-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-navy-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
             >
               Continue
               <ChevronRight className="w-4 h-4" />

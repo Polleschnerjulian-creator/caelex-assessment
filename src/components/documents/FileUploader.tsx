@@ -225,7 +225,7 @@ export default function FileUploader({
     if (file.type === "application/pdf")
       return <FileText className="w-12 h-12 text-red-500" />;
     if (file.type.startsWith("image/"))
-      return <ImageIcon className="w-12 h-12 text-blue-500" />;
+      return <ImageIcon className="w-12 h-12 text-emerald-500" />;
     return <File className="w-12 h-12 text-slate-500 dark:text-white/60" />;
   };
 
@@ -336,8 +336,8 @@ export default function FileUploader({
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
             ) : (
-              <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-500/20">
-                <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+              <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/20">
+                <Loader2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-spin" />
               </div>
             )}
             <div className="flex-1">
@@ -356,7 +356,7 @@ export default function FileUploader({
           <div className="h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
-                status === "success" ? "bg-emerald-500" : "bg-blue-500"
+                status === "success" ? "bg-emerald-500" : "bg-emerald-500"
               }`}
               style={{ width: `${progress}%` }}
               role="progressbar"

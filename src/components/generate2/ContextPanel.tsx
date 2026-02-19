@@ -35,7 +35,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-navy-700">
         <div className="flex items-center gap-2">
-          <BookOpen size={16} className="text-purple-400" />
+          <BookOpen size={16} className="text-emerald-400" />
           <h2 className="text-sm font-semibold text-white">Context</h2>
         </div>
       </div>
@@ -91,7 +91,7 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
           <div className="space-y-1.5">
             <Link
               href={moduleLink}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-purple-400 transition-colors"
+              className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors"
             >
               <ExternalLink size={12} />
               {meta.category === "debris"
@@ -100,14 +100,14 @@ export function ContextPanel({ meta, readiness }: ContextPanelProps) {
             </Link>
             <Link
               href={questionnaireLink}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-purple-400 transition-colors"
+              className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors"
             >
               <ExternalLink size={12} />
               Assessment Questionnaire
             </Link>
             <Link
               href="/dashboard/tracker"
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-purple-400 transition-colors"
+              className="flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors"
             >
               <ExternalLink size={12} />
               Compliance Tracker

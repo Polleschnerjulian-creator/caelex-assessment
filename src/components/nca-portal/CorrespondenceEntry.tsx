@@ -62,23 +62,25 @@ export default function CorrespondenceEntry({
         flex gap-3 p-3 rounded-lg border transition-colors
         ${
           isInbound
-            ? "bg-blue-50/50 dark:bg-blue-500/[0.04] border-blue-200/50 dark:border-blue-500/10"
+            ? "bg-emerald-50/50 dark:bg-emerald-500/[0.04] border-emerald-200/50 dark:border-emerald-500/10"
             : "bg-white dark:bg-navy-800/50 border-slate-200 dark:border-navy-700"
         }
-        ${!isRead && isInbound ? "ring-1 ring-blue-400/30" : ""}
+        ${!isRead && isInbound ? "ring-1 ring-emerald-400/30" : ""}
       `}
       aria-label={`${isInbound ? "Inbound" : "Outbound"} ${messageType.toLowerCase().replace(/_/g, " ")}: ${subject}`}
     >
       <div
         className={`
           w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-          ${isInbound ? "bg-blue-500/10" : "bg-slate-100 dark:bg-white/[0.06]"}
+          ${isInbound ? "bg-emerald-500/10" : "bg-slate-100 dark:bg-white/[0.06]"}
         `}
       >
         <Icon
           size={16}
           className={
-            isInbound ? "text-blue-400" : "text-slate-500 dark:text-slate-400"
+            isInbound
+              ? "text-emerald-400"
+              : "text-slate-500 dark:text-slate-400"
           }
           aria-hidden="true"
         />
@@ -89,7 +91,7 @@ export default function CorrespondenceEntry({
           <div className="flex items-center gap-2 min-w-0">
             <DirectionIcon
               size={12}
-              className={isInbound ? "text-blue-400" : "text-slate-400"}
+              className={isInbound ? "text-emerald-400" : "text-slate-400"}
               aria-hidden="true"
             />
             <span className="sr-only">
@@ -101,7 +103,7 @@ export default function CorrespondenceEntry({
             {!isRead && isInbound && (
               <>
                 <span
-                  className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"
+                  className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"
                   aria-hidden="true"
                 />
                 <span className="sr-only">(Unread)</span>

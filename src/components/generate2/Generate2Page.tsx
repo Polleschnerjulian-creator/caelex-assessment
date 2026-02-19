@@ -500,7 +500,7 @@ export function Generate2Page() {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-80px)]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-400">Loading Generate 2.0...</p>
         </div>
       </div>

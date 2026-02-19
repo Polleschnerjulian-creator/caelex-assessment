@@ -29,7 +29,7 @@ export function DocumentTypeCard({
       onClick={onClick}
       className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-200 group ${
         isSelected
-          ? "bg-purple-500/10 border-purple-500/40 ring-1 ring-purple-500/20"
+          ? "bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/20"
           : "bg-navy-800/50 border-navy-700/50 hover:bg-navy-800 hover:border-navy-600"
       }`}
     >

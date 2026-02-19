@@ -14,8 +14,8 @@ const STATS_CONFIG = [
     key: "activeSubmissions",
     label: "Active Submissions",
     icon: Send,
-    color: "text-blue-400",
-    bgColor: "bg-blue-500/10",
+    color: "text-emerald-400",
+    bgColor: "bg-emerald-500/10",
   },
   {
     key: "pendingFollowUps",

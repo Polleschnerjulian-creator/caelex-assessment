@@ -33,7 +33,7 @@ export function DocumentSelectorPanel({
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-navy-700">
         <div className="flex items-center gap-2">
-          <FileText size={16} className="text-purple-400" />
+          <FileText size={16} className="text-emerald-400" />
           <h2 className="text-sm font-semibold text-white">NCA Documents</h2>
         </div>
         <p className="text-xs text-slate-500 mt-1">
@@ -86,7 +86,7 @@ export function DocumentSelectorPanel({
         <button
           onClick={onGeneratePackage}
           disabled={isPackageGenerating}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
         >
           <Package size={14} />
           {isPackageGenerating ? "Generating..." : "Generate Full Package"}
