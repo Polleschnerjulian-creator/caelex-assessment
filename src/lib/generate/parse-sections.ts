@@ -17,6 +17,7 @@ export type ParsedSectionContent =
   | { type: "list"; items: string[]; ordered?: boolean }
   | { type: "table"; headers: string[]; rows: string[][] }
   | { type: "keyValue"; items: Array<{ key: string; value: string }> }
+  | { type: "spacer"; height?: number }
   | { type: "divider" }
   | {
       type: "alert";

@@ -14,6 +14,7 @@ import type {
   ReadinessResult,
   SectionDefinition,
 } from "@/lib/generate/types";
+import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
@@ -49,6 +50,13 @@ export function Generate2Page() {
   >("init");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resumeData, setResumeData] = useState<{
+    documentId: string;
+    sectionContents: string[];
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    startTime: number;
+  } | null>(null);
 
   // Load readiness scores and existing documents
   useEffect(() => {
@@ -140,41 +148,65 @@ export function Generate2Page() {
     }
   }
 
-  async function handleGenerate() {
+  async function handleGenerate(resume = false) {
     if (!selectedType) return;
 
     setError(null);
     setIsGenerating(true);
     setPanelState("generating");
-    setGenerationPhase("init");
-    setCompletedSections(0);
-    setCurrentSection(0);
 
     const sectionDefs = SECTION_DEFINITIONS[selectedType];
-    const sectionContents: string[] = [];
-    let totalInputTokens = 0;
-    let totalOutputTokens = 0;
-    const startTime = Date.now();
+    let documentId: string;
+    let sectionContents: string[];
+    let totalInputTokens: number;
+    let totalOutputTokens: number;
+    let startTime: number;
+    let startFromSection: number;
+
+    if (resume && resumeData) {
+      // Resume from where we left off
+      documentId = resumeData.documentId;
+      sectionContents = [...resumeData.sectionContents];
+      totalInputTokens = resumeData.totalInputTokens;
+      totalOutputTokens = resumeData.totalOutputTokens;
+      startTime = resumeData.startTime;
+      startFromSection = sectionContents.length;
+      setGenerationPhase("sections");
+    } else {
+      // Fresh start
+      sectionContents = [];
+      totalInputTokens = 0;
+      totalOutputTokens = 0;
+      startTime = Date.now();
+      startFromSection = 0;
+      setGenerationPhase("init");
+      setCompletedSections(0);
+      setCurrentSection(0);
+      setResumeData(null);
+      documentId = ""; // will be set after init
+    }
 
     try {
-      // 1. Initialize
-      const initRes = await fetch("/api/generate2/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ documentType: selectedType }),
-      });
+      if (!resume || !resumeData) {
+        // 1. Initialize
+        const initRes = await fetch("/api/generate2/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ documentType: selectedType }),
+        });
 
-      if (!initRes.ok) {
-        const err = await initRes.json();
-        throw new Error(err.error || "Failed to initialize");
+        if (!initRes.ok) {
+          const err = await initRes.json();
+          throw new Error(err.error || "Failed to initialize");
+        }
+
+        const initData = await initRes.json();
+        documentId = initData.documentId;
+        setGenerationPhase("sections");
       }
 
-      const initData = await initRes.json();
-      const documentId = initData.documentId;
-      setGenerationPhase("sections");
-
-      // 2. Generate each section
-      for (let i = 0; i < sectionDefs.length; i++) {
+      // 2. Generate each section (starting from where we left off)
+      for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
         const sectionRes = await fetch(
@@ -268,11 +300,22 @@ export function Generate2Page() {
       });
       setCompletedDocs((prev) => new Set([...prev, selectedType]));
       setPanelState("completed");
+      setResumeData(null);
     } catch (err) {
       console.error("Generation failed:", err);
       const message = err instanceof Error ? err.message : "Generation failed";
       setError(message);
       setPanelState("pre-generation");
+      // Save state for resume
+      if (documentId && sectionContents.length > 0) {
+        setResumeData({
+          documentId,
+          sectionContents,
+          totalInputTokens,
+          totalOutputTokens,
+          startTime,
+        });
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -308,10 +351,144 @@ export function Generate2Page() {
     }
   }
 
-  function handleGeneratePackage() {
+  async function handleGeneratePackage() {
     setIsPackageGenerating(true);
-    // TODO: Implement sequential package generation
-    setTimeout(() => setIsPackageGenerating(false), 1000);
+    setError(null);
+
+    try {
+      // 1. Create the package
+      const pkgRes = await fetch("/api/generate2/package", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ language: "en" }),
+      });
+
+      if (!pkgRes.ok) {
+        const err = await pkgRes
+          .json()
+          .catch(() => ({ error: "Failed to create package" }));
+        throw new Error(err.error || "Failed to create package");
+      }
+
+      const { packageId, documentTypes } = (await pkgRes.json()) as {
+        packageId: string;
+        documentTypes: NCADocumentType[];
+      };
+
+      // 2. Generate each document type sequentially
+      const typesToGenerate = (documentTypes || ALL_NCA_DOC_TYPES).filter(
+        (t) => !completedDocs.has(t),
+      );
+
+      for (const docType of typesToGenerate) {
+        const sectionDefs = SECTION_DEFINITIONS[docType];
+        setSelectedType(docType);
+        setSections(sectionDefs);
+        setPanelState("generating");
+        setGenerationPhase("init");
+        setCompletedSections(0);
+        setCurrentSection(0);
+
+        // Init
+        const initRes = await fetch("/api/generate2/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ documentType: docType, packageId }),
+        });
+
+        if (!initRes.ok) {
+          console.error(`Failed to init ${docType}, skipping`);
+          continue;
+        }
+
+        const { documentId } = await initRes.json();
+        setGenerationPhase("sections");
+
+        // Generate sections
+        const sectionContents: string[] = [];
+        let totalInputTokens = 0;
+        let totalOutputTokens = 0;
+        const startTime = Date.now();
+        let failed = false;
+
+        for (let i = 0; i < sectionDefs.length; i++) {
+          setCurrentSection(i);
+          try {
+            const sectionRes = await fetch(
+              `/api/generate2/documents/${documentId}/section`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...csrfHeaders(),
+                },
+                body: JSON.stringify({
+                  sectionIndex: i,
+                  sectionTitle: sectionDefs[i].title,
+                  sectionNumber: sectionDefs[i].number,
+                }),
+              },
+            );
+
+            if (!sectionRes.ok) {
+              console.error(
+                `Section ${i + 1} of ${docType} failed, skipping document`,
+              );
+              failed = true;
+              break;
+            }
+
+            const sectionData = await sectionRes.json();
+            sectionContents.push(sectionData.content);
+            totalInputTokens += sectionData.inputTokens || 0;
+            totalOutputTokens += sectionData.outputTokens || 0;
+            setCompletedSections(i + 1);
+          } catch {
+            console.error(
+              `Section ${i + 1} of ${docType} errored, skipping document`,
+            );
+            failed = true;
+            break;
+          }
+        }
+
+        if (failed) continue;
+
+        // Finalize
+        setGenerationPhase("finalizing");
+        const fullContent = sectionContents.filter(Boolean).join("\n\n");
+        const parsedSections = parseSectionsFromMarkdown(fullContent);
+
+        await fetch(`/api/generate2/documents/${documentId}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            parsedSections,
+            rawContent: fullContent,
+            actionRequiredCount: (
+              fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
+            ).length,
+            evidencePlaceholderCount: (
+              fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
+            ).length,
+            totalInputTokens,
+            totalOutputTokens,
+            generationTimeMs: Date.now() - startTime,
+          }),
+        });
+
+        setCompletedDocs((prev) => new Set([...prev, docType]));
+      }
+
+      setPanelState("empty");
+    } catch (err) {
+      console.error("Package generation failed:", err);
+      setError(
+        err instanceof Error ? err.message : "Package generation failed",
+      );
+    } finally {
+      setIsPackageGenerating(false);
+    }
   }
 
   const selectedMeta = selectedType ? NCA_DOC_TYPE_MAP[selectedType] : null;
@@ -361,7 +538,8 @@ export function Generate2Page() {
           evidencePlaceholderCount={documentState.evidencePlaceholderCount}
           documentId={documentState.id}
           error={error}
-          onGenerate={handleGenerate}
+          canResume={!!resumeData}
+          onGenerate={() => handleGenerate(!!resumeData)}
           onExportPdf={handleExportPdf}
         />
       </div>

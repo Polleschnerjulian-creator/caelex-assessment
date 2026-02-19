@@ -29,6 +29,7 @@ interface DocumentPreviewPanelProps {
   evidencePlaceholderCount: number;
   documentId: string | null;
   error: string | null;
+  canResume?: boolean;
   onGenerate: () => void;
   onExportPdf: () => void;
 }
@@ -48,6 +49,7 @@ export function DocumentPreviewPanel({
   evidencePlaceholderCount,
   documentId,
   error,
+  canResume,
   onGenerate,
   onExportPdf,
 }: DocumentPreviewPanelProps) {
@@ -347,7 +349,9 @@ export function DocumentPreviewPanel({
         className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors"
       >
         <FileText size={16} />
-        Generate {meta.shortTitle}
+        {canResume
+          ? `Resume ${meta.shortTitle}`
+          : `Generate ${meta.shortTitle}`}
       </button>
       <p className="text-xs text-slate-600 text-center mt-2">
         Estimated time: ~{Math.ceil(sections.length * 0.3)} min

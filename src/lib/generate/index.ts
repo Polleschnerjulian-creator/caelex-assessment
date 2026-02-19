@@ -12,18 +12,16 @@ import { logAuditEvent } from "@/lib/audit";
 import { collectGenerate2Data } from "./data-collector";
 import { buildGenerate2Prompt, buildSectionPrompt } from "./prompt-builder";
 import { computeReadiness } from "./readiness";
-import { parseMarkdownToSections } from "@/lib/astra/document-generator/content-structurer";
 import { SECTION_DEFINITIONS } from "./section-definitions";
 import { NCA_DOC_TYPE_MAP } from "./types";
 import type {
   NCADocumentType,
   Generate2InitResult,
   Generate2SectionResult,
-  Generate2CompleteResult,
 } from "./types";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6";
+const MODEL = process.env.GENERATION_MODEL || "claude-sonnet-4-6";
 const MAX_TOKENS_PER_SECTION = 3072;
 const PROMPT_VERSION = "gen2-v1.0";
 
@@ -127,10 +125,16 @@ export async function generateSection(
     throw new Error("Document prompt context not found");
   }
 
-  const { systemPrompt, userMessage } = JSON.parse(doc.rawContent) as {
-    systemPrompt: string;
-    userMessage: string;
-  };
+  let parsed: { systemPrompt: string; userMessage: string };
+  try {
+    parsed = JSON.parse(doc.rawContent) as {
+      systemPrompt: string;
+      userMessage: string;
+    };
+  } catch {
+    throw new Error("Document prompt context is malformed JSON");
+  }
+  const { systemPrompt, userMessage } = parsed;
 
   // Build section-specific prompt
   const sectionPrompt = buildSectionPrompt(
@@ -186,108 +190,6 @@ export async function generateSection(
   }
 
   throw lastError || new Error("Section generation failed after retries");
-}
-
-/**
- * Finalize a chunked generation: assemble sections, count markers, mark COMPLETED.
- */
-export async function finalizeGeneration(
-  documentId: string,
-  userId: string,
-  sectionContents: string[],
-  totalInputTokens: number,
-  totalOutputTokens: number,
-  generationTimeMs: number,
-): Promise<Generate2CompleteResult> {
-  // Filter out null/undefined values and ensure all entries are strings
-  const validContents = sectionContents
-    .map((s) => (typeof s === "string" ? s : ""))
-    .filter((s) => s.length > 0);
-
-  const fullContent = validContents.join("\n\n");
-
-  console.log(
-    `[finalizeGeneration] Parsing ${validContents.length} sections, totalChars=${fullContent.length}`,
-  );
-
-  const sections = parseMarkdownToSections(fullContent);
-
-  console.log(
-    `[finalizeGeneration] Parsed into ${sections.length} report sections`,
-  );
-
-  // Count [ACTION REQUIRED] and [EVIDENCE:] markers
-  const actionRequiredCount = (
-    fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
-  ).length;
-  const evidencePlaceholderCount = (
-    fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
-  ).length;
-
-  // If no sections were parsed (AI didn't use ## SECTION: markers),
-  // create a single section from the raw content as fallback
-  const finalSections =
-    sections.length > 0
-      ? sections
-      : [
-          {
-            title: "Generated Content",
-            content: [
-              { type: "text" as const, value: fullContent.substring(0, 50000) },
-            ],
-          },
-        ];
-
-  const contentJson = JSON.parse(JSON.stringify(finalSections));
-
-  console.log(`[finalizeGeneration] Updating DB for doc ${documentId}`);
-
-  await prisma.nCADocument.update({
-    where: { id: documentId },
-    data: {
-      status: "COMPLETED",
-      content: contentJson,
-      rawContent: fullContent,
-      modelUsed: MODEL,
-      inputTokens: totalInputTokens,
-      outputTokens: totalOutputTokens,
-      generationTimeMs,
-      actionRequiredCount,
-      evidencePlaceholderCount,
-    },
-  });
-
-  console.log(`[finalizeGeneration] DB updated, logging audit event`);
-
-  // Audit log in a try-catch so it doesn't block the response
-  try {
-    await logAuditEvent({
-      action: "DOCUMENT_GENERATED",
-      userId,
-      entityType: "NCADocument",
-      entityId: documentId,
-      metadata: {
-        inputTokens: totalInputTokens,
-        outputTokens: totalOutputTokens,
-        generationTimeMs,
-        sectionCount: finalSections.length,
-        actionRequiredCount,
-        evidencePlaceholderCount,
-        phase: "complete",
-      },
-    });
-  } catch (auditErr) {
-    console.error(
-      "[finalizeGeneration] Audit log failed (non-blocking):",
-      auditErr,
-    );
-  }
-
-  return {
-    content: finalSections,
-    actionRequiredCount,
-    evidencePlaceholderCount,
-  };
 }
 
 /**

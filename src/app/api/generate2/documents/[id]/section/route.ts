@@ -41,22 +41,15 @@ export async function POST(
       );
     }
 
-    // Verify the document belongs to this user
+    // Verify the document belongs to this user AND is in GENERATING state (atomic check)
     const doc = await prisma.nCADocument.findFirst({
-      where: { id: documentId, userId: session.user.id },
-      select: { id: true, status: true },
+      where: { id: documentId, userId: session.user.id, status: "GENERATING" },
+      select: { id: true, content: true },
     });
 
     if (!doc) {
       return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 },
-      );
-    }
-
-    if (doc.status !== "GENERATING") {
-      return NextResponse.json(
-        { error: "Document is not in generating state" },
+        { error: "Document not found or not in generating state" },
         { status: 400 },
       );
     }
@@ -67,6 +60,18 @@ export async function POST(
       sectionTitle,
       sectionNumber,
     );
+
+    // Save section content incrementally for error recovery
+    const existingSections = Array.isArray(doc.content) ? doc.content : [];
+    const updatedSections = [...existingSections];
+    updatedSections[sectionIndex] = {
+      raw: result.content,
+      title: sectionTitle,
+    };
+    await prisma.nCADocument.update({
+      where: { id: documentId },
+      data: { content: updatedSections },
+    });
 
     return NextResponse.json(result);
   } catch (error) {
