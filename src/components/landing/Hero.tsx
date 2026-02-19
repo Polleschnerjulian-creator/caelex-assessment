@@ -82,20 +82,20 @@ export default function Hero() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-black text-[14px] font-medium rounded-full transition-all duration-200 hover:bg-white/90"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-black text-body-lg font-medium rounded-full transition-all duration-200 hover:bg-white/90"
                 >
                   Start Assessment
                 </Link>
                 <Link
                   href="/demo"
-                  className="inline-flex items-center justify-center px-6 py-3 text-white text-[14px] font-medium rounded-full border border-white/25 transition-all duration-200 hover:bg-white/5 hover:border-white/40"
+                  className="inline-flex items-center justify-center px-6 py-3 text-white text-body-lg font-medium rounded-full border border-white/25 transition-all duration-200 hover:bg-white/5 hover:border-white/40"
                 >
                   Request Demo
                 </Link>
               </div>
 
               {/* Summary */}
-              <p className="text-[13px] text-white/40 leading-[1.7] max-w-[400px]">
+              <p className="text-body text-white/40 leading-[1.7] max-w-[400px]">
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
@@ -116,7 +116,7 @@ export default function Hero() {
               {MODULES.map((module, i) => (
                 <li
                   key={module}
-                  className="text-[13px] md:text-[14px] text-white/60 whitespace-nowrap font-medium list-none"
+                  className="text-body md:text-body-lg text-white/60 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (

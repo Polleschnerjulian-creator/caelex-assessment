@@ -101,17 +101,17 @@ export default function AstraSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
-          <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
+          <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
             AI Agent
           </span>
           <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
             Meet ASTRA.
           </h2>
-          <p className="text-[18px] md:text-[20px] text-white/70 mb-4 font-medium">
+          <p className="text-heading md:text-heading text-white/70 mb-4 font-medium">
             22 tools. 5 categories. The most comprehensive AI compliance engine
             ever built for space.
           </p>
-          <p className="text-[15px] md:text-[16px] text-white/40 max-w-[900px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-white/40 max-w-[900px] mx-auto leading-relaxed">
             ASTRA doesn&apos;t just answer questions — it runs gap analyses,
             generates audit-ready documents, compares jurisdictions, estimates
             compliance costs, and builds your optimal regulatory path. Trained
@@ -144,11 +144,11 @@ export default function AstraSection() {
                     className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
                     aria-hidden="true"
                   />
-                  <span className="text-[13px] font-medium text-emerald-400">
+                  <span className="text-body font-medium text-emerald-400">
                     ASTRA
                   </span>
                 </div>
-                <span className="text-[12px] text-white/30">
+                <span className="text-small text-white/30">
                   AI Compliance Agent
                 </span>
               </div>
@@ -165,7 +165,7 @@ export default function AstraSection() {
                   >
                     {/* User Prompt */}
                     <div className="flex justify-end">
-                      <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md bg-white/[0.08] text-[13px] text-white/80">
+                      <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-br-md bg-white/[0.08] text-body text-white/80">
                         {example.prompt}
                       </div>
                     </div>
@@ -178,11 +178,11 @@ export default function AstraSection() {
                             className="w-1.5 h-1.5 rounded-full bg-emerald-400"
                             aria-hidden="true"
                           />
-                          <span className="text-[10px] font-medium text-emerald-400/70 uppercase tracking-wider">
+                          <span className="text-micro font-medium text-emerald-400/70 uppercase tracking-wider">
                             ASTRA
                           </span>
                         </div>
-                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-[13px] text-white/60 leading-relaxed">
+                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-body text-white/60 leading-relaxed">
                           {example.response}
                         </div>
                       </div>
@@ -199,7 +199,7 @@ export default function AstraSection() {
                     boxShadow: "0 0 20px rgba(16, 185, 129, 0.05)",
                   }}
                 >
-                  <span className="text-[13px] text-white/30 flex-1">
+                  <span className="text-body text-white/30 flex-1">
                     Ask ASTRA anything about space compliance...
                   </span>
                   <div
@@ -251,20 +251,20 @@ export default function AstraSection() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-[14px] font-medium text-white">
+                      <h4 className="text-body-lg font-medium text-white">
                         {cap.name}
                       </h4>
                       {cap.isNew && (
-                        <span className="px-1.5 py-0.5 text-[10px] sm:text-[9px] font-medium text-emerald-400 bg-emerald-500/15 rounded uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 text-micro sm:text-micro font-medium text-emerald-400 bg-emerald-500/15 rounded uppercase tracking-wider">
                           New
                         </span>
                       )}
                     </div>
-                    <p className="text-[12px] text-white/40 leading-relaxed">
+                    <p className="text-small text-white/40 leading-relaxed">
                       {cap.description}
                     </p>
                   </div>
-                  <span className="px-2 py-1 text-[11px] font-medium text-white/50 bg-white/[0.06] rounded-md">
+                  <span className="px-2 py-1 text-caption font-medium text-white/50 bg-white/[0.06] rounded-md">
                     {cap.tools} tools
                   </span>
                 </div>
@@ -281,7 +281,7 @@ export default function AstraSection() {
               {knowledgeDomains.map((domain) => (
                 <span
                   key={domain}
-                  className="px-2.5 py-1 text-[10px] text-emerald-400/70 bg-emerald-500/[0.06] border border-emerald-500/[0.15] rounded-full"
+                  className="px-2.5 py-1 text-micro text-emerald-400/70 bg-emerald-500/[0.06] border border-emerald-500/[0.15] rounded-full"
                 >
                   {domain}
                 </span>
@@ -299,14 +299,14 @@ export default function AstraSection() {
         >
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Ask ASTRA
           </Link>
-          <p className="text-[13px] text-white/30 mt-4">
+          <p className="text-body text-white/30 mt-4">
             Available in every module. Context-aware to your mission profile.
           </p>
-          <p className="text-[11px] text-white/20 mt-2">
+          <p className="text-caption text-white/20 mt-2">
             ASTRA is an AI system. Outputs are AI-generated and do not
             constitute legal advice. Always verify with qualified professionals.
           </p>

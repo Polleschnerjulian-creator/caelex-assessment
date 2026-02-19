@@ -83,7 +83,7 @@ export default function JurisdictionCompare() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="text-[11px] text-white/30">03 / 14</span>
+        <span className="text-caption text-white/30">03 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -94,14 +94,14 @@ export default function JurisdictionCompare() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block text-[11px] text-white/40 tracking-widest uppercase mb-4">
+          <span className="inline-block text-caption text-white/40 tracking-widest uppercase mb-4">
             Jurisdiction Comparison
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
             Where should you{" "}
             <span className="text-white/50">apply for authorization?</span>
           </h2>
-          <p className="text-[15px] text-white/40 max-w-[600px] mx-auto">
+          <p className="text-subtitle text-white/40 max-w-[600px] mx-auto">
             Compare processing times, insurance requirements, and favorability
             scores across 10 European jurisdictions.
           </p>
@@ -129,17 +129,17 @@ export default function JurisdictionCompare() {
                   {jurisdiction.flag}
                 </span>
                 <div>
-                  <div className="text-[15px] font-medium text-white">
+                  <div className="text-subtitle font-medium text-white">
                     {jurisdiction.name}
                   </div>
-                  <div className="text-[10px] text-white/40">
+                  <div className="text-micro text-white/40">
                     {jurisdiction.law}
                   </div>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="space-y-2 text-[12px]">
+              <div className="space-y-2 text-small">
                 <div className="flex items-center justify-between">
                   <span className="text-white/40 flex items-center gap-1.5">
                     <Clock size={12} aria-hidden="true" />
@@ -170,10 +170,10 @@ export default function JurisdictionCompare() {
               {/* Favorability Score */}
               <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                  <span className="text-micro text-white/40 uppercase tracking-wider">
                     Favorability
                   </span>
-                  <span className="text-[13px] font-medium text-emerald-400">
+                  <span className="text-body font-medium text-emerald-400">
                     {jurisdiction.favorability}%
                   </span>
                 </div>
@@ -201,7 +201,7 @@ export default function JurisdictionCompare() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-3 text-[11px] text-emerald-400/80"
+                  className="mt-3 text-caption text-emerald-400/80"
                 >
                   {jurisdiction.highlight}
                 </motion.div>
@@ -217,12 +217,12 @@ export default function JurisdictionCompare() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="text-center"
         >
-          <p className="text-[13px] text-white/40 mb-4">
+          <p className="text-body text-white/40 mb-4">
             Also covering: Belgium, Austria, Denmark, Italy, Norway
           </p>
           <Link
             href="/assessment/space-law"
-            className="inline-flex items-center gap-2 text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors"
           >
             <span>Compare all 10 jurisdictions</span>
             <ChevronRight size={14} aria-hidden="true" />

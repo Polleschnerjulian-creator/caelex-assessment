@@ -69,25 +69,25 @@ export default function Navigation() {
                 {/* Links */}
                 <Link
                   href="/#platform"
-                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
                 >
                   Platform
                 </Link>
                 <Link
                   href="/resources"
-                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
                 >
                   Resources
                 </Link>
                 <Link
                   href="/security"
-                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
                 >
                   Security
                 </Link>
                 <Link
                   href="/pricing"
-                  className="hidden md:block text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
                 >
                   Pricing
                 </Link>
@@ -96,19 +96,19 @@ export default function Navigation() {
                 <div className="hidden md:flex items-center gap-4">
                   <Link
                     href="/login"
-                    className="text-[13px] text-white/50 hover:text-white transition-colors duration-300"
+                    className="text-body text-white/50 hover:text-white transition-colors duration-300"
                   >
                     Log in
                   </Link>
                   <Link
                     href="/demo"
-                    className="text-[13px] font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
+                    className="text-body font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
                   >
                     Request Demo
                   </Link>
                   <Link
                     href="/assessment"
-                    className="text-[13px] font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
+                    className="text-body font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
                   >
                     Start Assessment
                   </Link>
@@ -170,14 +170,14 @@ export default function Navigation() {
                 <Link
                   href="/assessment"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-colors"
                 >
                   Start Assessment
                 </Link>
                 <Link
                   href="/demo"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/80 text-[14px] font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/80 text-body-lg font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
                 >
                   Request Demo
                 </Link>
@@ -185,42 +185,42 @@ export default function Navigation() {
                 <Link
                   href="/#platform"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Platform
                 </Link>
                 <Link
                   href="/resources"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Resources
                 </Link>
                 <Link
                   href="/security"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Security
                 </Link>
                 <Link
                   href="/about"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   About
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link
                   href="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Contact
                 </Link>
@@ -229,14 +229,14 @@ export default function Navigation() {
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-[13px] text-white/60 hover:text-white border border-white/[0.08] hover:border-white/20 transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white/60 hover:text-white border border-white/[0.08] hover:border-white/20 transition-colors"
                   >
                     Log in
                   </Link>
                   <Link
                     href="/signup"
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-[13px] text-white bg-white/[0.08] hover:bg-white/[0.12] transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white bg-white/[0.08] hover:bg-white/[0.12] transition-colors"
                   >
                     Sign up
                   </Link>

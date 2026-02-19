@@ -272,17 +272,17 @@ function KPICard({
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-[32px] font-semibold text-white leading-none">
+          <p className="text-display font-semibold text-white leading-none">
             {value}
           </p>
-          <p className="text-[11px] uppercase tracking-wider text-white/50 mt-2">
+          <p className="text-caption uppercase tracking-wider text-white/50 mt-2">
             {label}
           </p>
         </div>
         {trend && trendValue && (
           <div className={`flex items-center gap-1 ${trendColor}`}>
             <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="text-[11px]">{trendValue}</span>
+            <span className="text-caption">{trendValue}</span>
             <span className="sr-only">
               Trend:{" "}
               {trend === "up"
@@ -316,7 +316,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-[11px] uppercase tracking-[0.2em] text-white/40">
+      <h2 className="text-caption uppercase tracking-[0.2em] text-white/40">
         {title}
       </h2>
       {action}
@@ -340,8 +340,8 @@ function EmptyState({
       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
         <Icon className="w-6 h-6 text-white/30" />
       </div>
-      <h3 className="text-[14px] font-medium text-white/80 mb-1">{title}</h3>
-      <p className="text-[12px] text-white/50 mb-4 max-w-[240px]">
+      <h3 className="text-body-lg font-medium text-white/80 mb-1">{title}</h3>
+      <p className="text-small text-white/50 mb-4 max-w-[240px]">
         {description}
       </p>
       {action}
@@ -382,15 +382,15 @@ function DeadlineItem({
         }`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] text-white/80 truncate">{deadline.title}</p>
-        <p className="text-[10px] text-white/40">
+        <p className="text-small text-white/80 truncate">{deadline.title}</p>
+        <p className="text-micro text-white/40">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
             : t("common.overdue")}
         </p>
       </div>
       <span
-        className={`text-[9px] uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
+        className={`text-micro uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
       >
         {t(`common.${deadline.priority}`)}
       </span>
@@ -412,11 +412,11 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
         className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-[10px] text-white/90 font-medium">
+        <span className="text-micro text-white/90 font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-[9px] text-white/40">{module}</span>
+      <span className="text-micro text-white/40">{module}</span>
       <span className="sr-only">{risk} risk</span>
     </div>
   );
@@ -437,7 +437,7 @@ function QuickActionButton({
       className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
     >
       <Icon className="w-5 h-5 text-white/60 group-hover:text-emerald-400 transition-colors" />
-      <span className="text-[10px] text-white/50 group-hover:text-white/70 transition-colors">
+      <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
         {label}
       </span>
     </Link>
@@ -481,10 +481,10 @@ function ActivityItem({
         <Icon className="w-4 h-4 text-white/50" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] text-white/80 truncate">
+        <p className="text-small text-white/80 truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
-        <p className="text-[10px] text-white/40 mt-0.5">
+        <p className="text-micro text-white/40 mt-0.5">
           {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -848,7 +848,7 @@ function DashboardContent() {
                 className="w-5 h-5 text-green-400"
                 aria-hidden="true"
               />
-              <span className="text-[14px] text-white font-medium">
+              <span className="text-body-lg text-white font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
@@ -877,10 +877,10 @@ function DashboardContent() {
                 aria-hidden="true"
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-[14px] font-medium text-white mb-1">
+                <h3 className="text-body-lg font-medium text-white mb-1">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/60">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -888,7 +888,7 @@ function DashboardContent() {
                 <button
                   onClick={handleImportFromLocalStorage}
                   disabled={importing}
-                  className="bg-emerald-500 text-white text-[12px] font-medium px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="bg-emerald-500 text-white text-small font-medium px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {importing ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -914,7 +914,7 @@ function DashboardContent() {
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-[28px] font-medium text-white mb-1"
+            className="text-display font-medium text-white mb-1"
           >
             {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
@@ -922,7 +922,7 @@ function DashboardContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-[14px] text-white/60"
+            className="text-body-lg text-white/60"
           >
             {t("dashboard.commandCenter")}
           </motion.p>
@@ -1001,23 +1001,23 @@ function DashboardContent() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/5 border border-dashed border-white/20 rounded-xl p-10 text-center mb-8"
           >
-            <h2 className="text-[16px] font-medium text-white mb-2">
+            <h2 className="text-title font-medium text-white mb-2">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-[13px] text-white/60 mb-6 max-w-md mx-auto">
+            <p className="text-body text-white/60 mb-6 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="bg-emerald-500 text-white font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
+                className="bg-emerald-500 text-white font-medium text-body px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-2"
               >
                 <PlayCircle size={16} aria-hidden="true" />
                 {t("dashboard.runAssessmentAction")}
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="border border-white/20 text-white/70 font-medium text-[13px] px-6 py-2.5 rounded-lg hover:bg-white/5 transition-all"
+                className="border border-white/20 text-white/70 font-medium text-body px-6 py-2.5 rounded-lg hover:bg-white/5 transition-all"
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
@@ -1065,7 +1065,7 @@ function DashboardContent() {
             action={
               <Link
                 href="/dashboard/audit-center"
-                className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
                 {t("common.viewAll")}{" "}
                 <ChevronRight className="w-3 h-3" aria-hidden="true" />
@@ -1086,7 +1086,7 @@ function DashboardContent() {
               action={
                 <Link
                   href="/assessment"
-                  className="text-[12px] text-emerald-400 hover:text-emerald-300"
+                  className="text-small text-emerald-400 hover:text-emerald-300"
                 >
                   {t("dashboard.runAssessmentAction")}
                 </Link>
@@ -1135,7 +1135,7 @@ function DashboardContent() {
                               : "bg-green-500/60"
                       }`}
                     />
-                    <span className="text-[9px] text-white/40">
+                    <span className="text-micro text-white/40">
                       {t(`common.${level}`)}
                     </span>
                   </div>
@@ -1192,10 +1192,10 @@ function DashboardContent() {
                 onClick={(e) => e.stopPropagation()}
                 className="bg-dark-bg border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
-                <h2 className="text-[18px] font-medium text-white mb-2">
+                <h2 className="text-heading font-medium text-white mb-2">
                   {t("dashboard.selectOperatorType")}
                 </h2>
-                <p className="text-[13px] text-white/60 mb-6">
+                <p className="text-body text-white/60 mb-6">
                   {t("dashboard.selectOperatorDescription")}
                 </p>
                 <label htmlFor="operator-type-select" className="sr-only">
@@ -1205,7 +1205,7 @@ function DashboardContent() {
                   id="operator-type-select"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-[14px] mb-6 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">
                     {t("dashboard.selectOperatorPlaceholder")}
@@ -1220,14 +1220,14 @@ function DashboardContent() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-[13px] hover:bg-white/5 transition-all"
+                    className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-body hover:bg-white/5 transition-all"
                   >
                     {t("common.cancel")}
                   </button>
                   <button
                     onClick={handleImport}
                     disabled={!selectedOperator || importing}
-                    className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-[13px] hover:bg-emerald-600 transition-all disabled:opacity-50"
+                    className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-body hover:bg-emerald-600 transition-all disabled:opacity-50"
                   >
                     {importing ? t("common.importing") : t("common.import")}
                   </button>

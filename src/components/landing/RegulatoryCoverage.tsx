@@ -73,16 +73,16 @@ const colorClasses = {
     glow: "group-hover:shadow-emerald-500/10",
   },
   cyan: {
-    bg: "bg-cyan-500/10",
-    border: "border-cyan-500/20",
-    text: "text-cyan-400",
-    glow: "group-hover:shadow-cyan-500/10",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    text: "text-emerald-400",
+    glow: "group-hover:shadow-emerald-500/10",
   },
   purple: {
-    bg: "bg-purple-500/10",
-    border: "border-purple-500/20",
-    text: "text-purple-400",
-    glow: "group-hover:shadow-purple-500/10",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    text: "text-emerald-400",
+    glow: "group-hover:shadow-emerald-500/10",
   },
 };
 
@@ -98,7 +98,7 @@ export default function RegulatoryCoverage() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="text-[11px] text-white/30">02 / 14</span>
+        <span className="text-caption text-white/30">02 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -109,14 +109,14 @@ export default function RegulatoryCoverage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block text-[11px] text-white/40 tracking-widest uppercase mb-4">
+          <span className="inline-block text-caption text-white/40 tracking-widest uppercase mb-4">
             Regulatory Coverage
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
             Three Frameworks.{" "}
             <span className="text-white/50">One Platform.</span>
           </h2>
-          <p className="text-[15px] text-white/40 max-w-[600px] mx-auto">
+          <p className="text-subtitle text-white/40 max-w-[600px] mx-auto">
             Comprehensive compliance management across EU regulations and 10
             national jurisdictions.
           </p>
@@ -146,10 +146,10 @@ export default function RegulatoryCoverage() {
                     />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-medium text-white mb-1">
+                    <h3 className="text-heading font-medium text-white mb-1">
                       {reg.title}
                     </h3>
-                    <span className={`font-mono text-[11px] ${colors.text}`}>
+                    <span className={`text-caption ${colors.text}`}>
                       {reg.subtitle}
                     </span>
                   </div>
@@ -159,10 +159,10 @@ export default function RegulatoryCoverage() {
                 <div className="flex gap-4 mb-6 pb-6 border-b border-white/10">
                   {reg.stats.map((stat, j) => (
                     <div key={j} className="flex-1 text-center">
-                      <div className="text-[20px] font-light text-white mb-0.5">
+                      <div className="text-heading font-light text-white mb-0.5">
                         {stat.value}
                       </div>
-                      <div className="text-[9px] text-white/30 uppercase tracking-wider">
+                      <div className="text-micro text-white/30 uppercase tracking-wider">
                         {stat.label}
                       </div>
                     </div>
@@ -174,7 +174,7 @@ export default function RegulatoryCoverage() {
                   {reg.features.map((feature, j) => (
                     <li
                       key={j}
-                      className="flex items-center gap-2 text-[13px] text-white/50"
+                      className="flex items-center gap-2 text-body text-white/50"
                     >
                       <span
                         className={`w-1 h-1 rounded-full ${colors.bg} ${colors.text}`}
@@ -197,8 +197,8 @@ export default function RegulatoryCoverage() {
           className="mt-12 flex flex-wrap items-center justify-center gap-8 text-center"
         >
           <div>
-            <div className="text-[28px] font-light text-white">170+</div>
-            <div className="text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-display font-light text-white">170+</div>
+            <div className="text-micro text-white/30 uppercase tracking-wider">
               Total Requirements
             </div>
           </div>
@@ -207,8 +207,8 @@ export default function RegulatoryCoverage() {
             aria-hidden="true"
           />
           <div>
-            <div className="text-[28px] font-light text-white">8</div>
-            <div className="text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-display font-light text-white">8</div>
+            <div className="text-micro text-white/30 uppercase tracking-wider">
               Compliance Modules
             </div>
           </div>
@@ -217,8 +217,8 @@ export default function RegulatoryCoverage() {
             aria-hidden="true"
           />
           <div>
-            <div className="text-[28px] font-light text-white">2030</div>
-            <div className="text-[10px] text-white/30 uppercase tracking-wider">
+            <div className="text-display font-light text-white">2030</div>
+            <div className="text-micro text-white/30 uppercase tracking-wider">
               Key Deadline
             </div>
           </div>

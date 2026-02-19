@@ -30,7 +30,7 @@ type TabId = (typeof tabs)[number]["id"];
 // Mock data for dashboard tab
 const dashboardStats = [
   { value: "45%", label: "Compliant", color: "text-emerald-400" },
-  { value: "67", label: "Applicable Articles", color: "text-blue-400" },
+  { value: "67", label: "Applicable Articles", color: "text-emerald-400" },
   { value: "12", label: "Documents", color: "text-white" },
   { value: "1,642", label: "Days until 2030", color: "text-amber-400" },
 ];
@@ -174,7 +174,7 @@ const urgencyColors = {
 const statusIcons = {
   compliant: { icon: CheckCircle2, color: "text-emerald-400" },
   in_progress: { icon: Clock, color: "text-amber-400" },
-  not_started: { icon: XCircle, color: "text-white/20" },
+  not_started: { icon: XCircle, color: "text-white/50" },
 };
 
 const docStatusConfig = {
@@ -194,11 +194,11 @@ function DashboardTab() {
             className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 md:p-4"
           >
             <p
-              className={`text-[20px] md:text-[24px] font-light ${stat.color}`}
+              className={`text-heading md:text-display-sm font-light ${stat.color}`}
             >
               {stat.value}
             </p>
-            <p className="text-[10px] text-white/35 mt-1 uppercase tracking-wider">
+            <p className="text-micro text-white/35 mt-1 uppercase tracking-wider">
               {stat.label}
             </p>
           </div>
@@ -219,7 +219,7 @@ function DashboardTab() {
                 className="text-white/30 flex-shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-[12px] md:text-[13px] text-white/60 flex-1 min-w-0 truncate">
+              <span className="text-small md:text-body text-white/60 flex-1 min-w-0 truncate">
                 {mod.name}
               </span>
               <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
@@ -232,18 +232,18 @@ function DashboardTab() {
                   aria-valuemax={100}
                 >
                   <div
-                    className="h-full bg-blue-500/60 rounded-full"
+                    className="h-full bg-emerald-500/60 rounded-full"
                     style={{ width: `${mod.progress}%` }}
                   />
                 </div>
-                <span className="text-[11px] text-white/30 w-8 text-right">
+                <span className="text-caption text-white/30 w-8 text-right">
                   {mod.progress}%
                 </span>
               </div>
               <span
-                className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ${
+                className={`text-micro px-2 py-0.5 rounded-full flex-shrink-0 ${
                   mod.progress > 0
-                    ? "bg-blue-500/10 text-blue-400/60"
+                    ? "bg-emerald-500/10 text-emerald-400/60"
                     : "bg-white/[0.04] text-white/25"
                 }`}
               >
@@ -275,14 +275,14 @@ function DocumentsTab() {
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <p className="text-[12px] text-white/60 truncate">
+                  <p className="text-small text-white/60 truncate">
                     {doc.name}
                   </p>
-                  <p className="text-[10px] text-white/25">{doc.count} files</p>
+                  <p className="text-micro text-white/25">{doc.count} files</p>
                 </div>
               </div>
               <span
-                className={`text-[11px] sm:text-[10px] md:text-[9px] px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
+                className={`text-caption sm:text-micro md:text-micro px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${config.color}`}
               >
                 {config.label}
               </span>
@@ -303,15 +303,15 @@ function TimelineTab() {
             key={i}
             className="flex items-center gap-4 bg-white/[0.02] border border-white/[0.04] rounded-lg px-4 py-3"
           >
-            <span className="text-[11px] text-white/30 w-16 flex-shrink-0">
+            <span className="text-caption text-white/30 w-16 flex-shrink-0">
               {deadline.date}
             </span>
             <div className="w-px h-5 bg-white/[0.08]" />
-            <p className="text-[12px] text-white/55 flex-1 min-w-0 truncate">
+            <p className="text-small text-white/55 flex-1 min-w-0 truncate">
               {deadline.title}
             </p>
             <span
-              className={`text-[11px] sm:text-[10px] md:text-[9px] px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
+              className={`text-caption sm:text-micro md:text-micro px-2 py-0.5 rounded-full flex-shrink-0 ${urgencyColors[deadline.urgency]}`}
             >
               {deadline.urgency}
             </span>
@@ -339,13 +339,13 @@ function TrackerTab() {
                 className={`${statusConfig.color} flex-shrink-0`}
                 aria-hidden="true"
               />
-              <span className="font-mono text-[11px] text-white/40 w-12 flex-shrink-0">
+              <span className="text-caption text-white/40 w-12 flex-shrink-0">
                 {article.number}
               </span>
-              <p className="text-[12px] text-white/55 flex-1 min-w-0 truncate">
+              <p className="text-small text-white/55 flex-1 min-w-0 truncate">
                 {article.title}
               </p>
-              <span className="text-[10px] text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block">
+              <span className="text-micro text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block">
                 {article.module}
               </span>
             </div>
@@ -385,7 +385,7 @@ export default function PlatformPreview() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-[11px] text-white/30">05 / 12</span>
+        <span className="text-caption text-white/30">05 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
@@ -396,7 +396,7 @@ export default function PlatformPreview() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
             Your Compliance Command Center
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto mb-4">
@@ -404,7 +404,7 @@ export default function PlatformPreview() {
             <br />
             <span className="text-white/50">Complete visibility.</span>
           </h2>
-          <p className="text-[14px] text-white/40 max-w-[450px] mx-auto">
+          <p className="text-body-lg text-white/40 max-w-[450px] mx-auto">
             Track every article, every deadline, every document — in real time.
           </p>
         </motion.div>
@@ -441,7 +441,7 @@ export default function PlatformPreview() {
                       aria-selected={activeTab === tab.id}
                       aria-controls={`tabpanel-${tab.id}`}
                       id={`tab-${tab.id}`}
-                      className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
+                      className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-small font-medium transition-all duration-200 ${
                         activeTab === tab.id
                           ? "bg-white/[0.08] text-white"
                           : "text-white/35 hover:text-white/60 hover:bg-white/[0.03]"
@@ -482,7 +482,7 @@ export default function PlatformPreview() {
 
           {/* Glow effect behind the card */}
           <div
-            className="absolute -inset-10 bg-blue-500/[0.03] rounded-full blur-3xl pointer-events-none -z-10"
+            className="absolute -inset-10 bg-emerald-500/[0.03] rounded-full blur-3xl pointer-events-none -z-10"
             aria-hidden="true"
           />
         </motion.div>

@@ -21,7 +21,7 @@ export default function ProblemStatement() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-[11px] text-white/30">02 / 12</span>
+        <span className="text-caption text-white/30">02 / 12</span>
       </motion.div>
 
       <div className="max-w-[1000px] mx-auto">
@@ -54,7 +54,7 @@ export default function ProblemStatement() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-[13px] text-white/40 mt-8 max-w-[400px]"
+          className="text-body text-white/40 mt-8 max-w-[400px]"
         >
           Effective January 1, 2030. Applicable to all operators launching from,
           or providing services within, the European Union.

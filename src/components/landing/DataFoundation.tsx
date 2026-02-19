@@ -20,7 +20,7 @@ export default function DataFoundation() {
       <div className="max-w-[600px] mx-auto px-6 md:px-8 text-center">
         {/* Label */}
         <ScrollReveal>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-8">
+          <p className="text-caption uppercase tracking-[0.3em] text-white/60 mb-8">
             SOURCE
           </p>
         </ScrollReveal>
@@ -36,7 +36,7 @@ export default function DataFoundation() {
         <div className="space-y-0">
           {dataPoints.map((point, index) => (
             <ScrollReveal key={index} delay={0.1 + index * 0.1}>
-              <p className="text-[14px] text-white/70 leading-[2.5]">
+              <p className="text-body-lg text-white/70 leading-[2.5]">
                 <span className="text-white font-medium">{point.number}</span>
                 {point.text}
               </p>
@@ -51,7 +51,7 @@ export default function DataFoundation() {
 
         {/* Source line */}
         <ScrollReveal delay={0.8}>
-          <p className="text-[12px] text-white/30">
+          <p className="text-small text-white/30">
             All data sourced directly from{" "}
             <a
               href="https://eur-lex.europa.eu"
@@ -67,9 +67,7 @@ export default function DataFoundation() {
 
         {/* Reference */}
         <ScrollReveal delay={0.9}>
-          <p className="font-mono text-[11px] text-white/10 mt-2">
-            COM(2025) 335 final
-          </p>
+          <p className="text-caption text-white/40 mt-2">COM(2025) 335 final</p>
         </ScrollReveal>
       </div>
     </section>

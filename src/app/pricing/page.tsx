@@ -541,7 +541,7 @@ export default function PricingPage() {
               <br />
               <span className="text-emerald-400">for space operators</span>
             </h1>
-            <p className="text-[18px] md:text-[20px] text-white/60 max-w-[650px] mx-auto mb-12 leading-relaxed">
+            <p className="text-heading text-white/60 max-w-[650px] mx-auto mb-12 leading-relaxed">
               Map requirements, track deadlines, prepare documentation, and
               monitor regulatory changes — continuously, not as a one-time
               consulting project.
@@ -554,7 +554,7 @@ export default function PricingPage() {
             >
               <button
                 onClick={() => setBillingPeriod("monthly")}
-                className={`px-6 py-3 rounded-xl text-[15px] font-medium transition-all duration-300 ${
+                className={`px-6 py-3 rounded-xl text-subtitle font-medium transition-all duration-300 ${
                   billingPeriod === "monthly"
                     ? "bg-white text-black shadow-lg"
                     : "text-white/60 hover:text-white"
@@ -564,7 +564,7 @@ export default function PricingPage() {
               </button>
               <button
                 onClick={() => setBillingPeriod("yearly")}
-                className={`px-6 py-3 rounded-xl text-[15px] font-medium transition-all duration-300 flex items-center gap-2 ${
+                className={`px-6 py-3 rounded-xl text-subtitle font-medium transition-all duration-300 flex items-center gap-2 ${
                   billingPeriod === "yearly"
                     ? "bg-white text-black shadow-lg"
                     : "text-white/60 hover:text-white"
@@ -572,7 +572,7 @@ export default function PricingPage() {
               >
                 Yearly
                 <span
-                  className={`text-[11px] px-2.5 py-1 rounded-full font-semibold ${
+                  className={`text-caption px-2.5 py-1 rounded-full font-semibold ${
                     billingPeriod === "yearly"
                       ? "bg-emerald-500 text-white"
                       : "bg-emerald-500/20 text-emerald-400"
@@ -610,7 +610,7 @@ export default function PricingPage() {
                 >
                   {plan.highlighted && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-emerald-500 px-4 py-2 rounded-full shadow-lg">
+                      <span className="inline-flex items-center gap-1.5 text-small font-semibold text-white bg-emerald-500 px-4 py-2 rounded-full shadow-lg">
                         <Sparkles size={14} />
                         Most Popular
                       </span>
@@ -641,17 +641,17 @@ export default function PricingPage() {
                             }
                           />
                         </div>
-                        <h3 className="text-[22px] font-medium text-white">
+                        <h3 className="text-display-sm font-medium text-white">
                           {plan.name}
                         </h3>
                       </div>
 
-                      <p className="text-[15px] text-white/50 mb-6 leading-relaxed min-h-[48px]">
+                      <p className="text-subtitle text-white/50 mb-6 leading-relaxed min-h-[48px]">
                         {plan.description}
                       </p>
 
                       {/* Value Statement (replaces fake savings) */}
-                      <p className="text-[13px] text-emerald-400/80 mb-6 pb-6 border-b border-white/[0.06]">
+                      <p className="text-body text-emerald-400/80 mb-6 pb-6 border-b border-white/[0.06]">
                         {plan.valueStatement}
                       </p>
 
@@ -659,33 +659,33 @@ export default function PricingPage() {
                       <div className="mb-8">
                         {plan.priceLabel ? (
                           <div className="flex items-baseline gap-2">
-                            <span className="text-[16px] text-white/40">
+                            <span className="text-title text-white/40">
                               {plan.priceLabel}
                             </span>
-                            <span className="text-[48px] font-light tracking-[-0.02em] text-white">
+                            <span className="text-display-lg font-light tracking-[-0.02em] text-white">
                               €{price?.toLocaleString("de-DE")}
                             </span>
-                            <span className="text-[16px] text-white/40">
+                            <span className="text-title text-white/40">
                               /month
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-baseline gap-1">
-                            <span className="text-[48px] font-light tracking-[-0.02em] text-white">
+                            <span className="text-display-lg font-light tracking-[-0.02em] text-white">
                               €{price?.toLocaleString("de-DE")}
                             </span>
-                            <span className="text-[16px] text-white/40">
+                            <span className="text-title text-white/40">
                               /month
                             </span>
                           </div>
                         )}
                         {billingPeriod === "yearly" && price && (
-                          <p className="text-[14px] text-white/40 mt-2">
+                          <p className="text-body-lg text-white/40 mt-2">
                             €{(price * 12).toLocaleString("de-DE")} billed
                             annually
                           </p>
                         )}
-                        <p className="text-[12px] text-white/30 mt-1">
+                        <p className="text-small text-white/30 mt-1">
                           All prices excl. VAT (zzgl. MwSt.)
                         </p>
                       </div>
@@ -693,9 +693,9 @@ export default function PricingPage() {
                       {/* CTA */}
                       <Link
                         href={plan.ctaHref}
-                        className={`w-full text-center py-4 rounded-xl text-[15px] font-semibold transition-all duration-300 mb-8 block ${
+                        className={`w-full text-center py-4 rounded-xl text-subtitle font-semibold transition-all duration-300 mb-8 block ${
                           plan.highlighted
-                            ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
+                            ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
                             : "bg-white/[0.08] text-white hover:bg-white/[0.12] border border-white/[0.1]"
                         }`}
                       >
@@ -708,7 +708,7 @@ export default function PricingPage() {
                           {plan.features.map((feature) => (
                             <li
                               key={feature}
-                              className="flex items-start gap-3 text-[15px]"
+                              className="flex items-start gap-3 text-subtitle"
                             >
                               <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <Check size={12} className="text-emerald-400" />
@@ -719,7 +719,7 @@ export default function PricingPage() {
                           {plan.notIncluded.map((feature) => (
                             <li
                               key={feature}
-                              className="flex items-start gap-3 text-[15px]"
+                              className="flex items-start gap-3 text-subtitle"
                             >
                               <div className="w-5 h-5 rounded-full bg-white/[0.05] flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <X size={12} className="text-white/30" />
@@ -741,7 +741,7 @@ export default function PricingPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-16 flex flex-wrap items-center justify-center gap-8 text-[15px] text-white/50"
+            className="mt-16 flex flex-wrap items-center justify-center gap-8 text-subtitle text-white/50"
           >
             <div className="flex items-center gap-2">
               <Shield size={18} className="text-emerald-400" />
@@ -774,13 +774,13 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
               Compliance Scope
             </span>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
               What authorization under the EU Space Act requires
             </h2>
-            <p className="text-[17px] text-white/50 leading-relaxed max-w-[700px] mx-auto">
+            <p className="text-heading text-white/50 leading-relaxed max-w-[700px] mx-auto">
               Each workstream requires specialized regulatory expertise. Caelex
               automates the mapping, tracking, documentation, and monitoring
               across all of them.
@@ -803,7 +803,7 @@ export default function PricingPage() {
                       <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                         <Icon size={20} className="text-emerald-400" />
                       </div>
-                      <h3 className="text-[15px] font-medium text-white">
+                      <h3 className="text-subtitle font-medium text-white">
                         {workstream.title}
                       </h3>
                     </div>
@@ -811,7 +811,7 @@ export default function PricingPage() {
                       {workstream.items.map((item) => (
                         <li
                           key={item}
-                          className="text-[14px] text-white/50 flex items-start gap-2"
+                          className="text-body-lg text-white/50 flex items-start gap-2"
                         >
                           <span className="text-emerald-400/60 mt-1.5">•</span>
                           {item}
@@ -831,13 +831,13 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="mt-10 text-center"
           >
-            <p className="text-[15px] text-white/40 leading-relaxed max-w-[800px] mx-auto">
+            <p className="text-subtitle text-white/40 leading-relaxed max-w-[800px] mx-auto">
               Traditionally, operators hire consultants at €250–400/hour or
               build internal compliance teams. Caelex automates the mapping,
               tracking, documentation, and monitoring across all workstreams —
               continuously.
             </p>
-            <p className="text-[13px] text-white/30 mt-4">
+            <p className="text-body text-white/30 mt-4">
               Source: EU Space Act (COM/2025/335), Titles II–IV
             </p>
           </motion.div>
@@ -863,13 +863,13 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
               Your Estimate
             </span>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
               Already budgeting for compliance?
             </h2>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-heading text-white/50 leading-relaxed">
               Enter your own estimates to see how Caelex compares.
             </p>
           </motion.div>
@@ -879,7 +879,7 @@ export default function PricingPage() {
               {/* Input Fields */}
               <div className="space-y-8">
                 <div>
-                  <label className="block text-[15px] text-white/70 mb-3">
+                  <label className="block text-subtitle text-white/70 mb-3">
                     Estimated consulting/legal hours for authorization
                   </label>
                   <input
@@ -887,16 +887,16 @@ export default function PricingPage() {
                     placeholder="e.g. 300"
                     value={estimatedHours}
                     onChange={(e) => setEstimatedHours(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-[16px] placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <p className="text-[13px] text-white/40 mt-2">
+                  <p className="text-body text-white/40 mt-2">
                     The authorization process spans 6+ months across multiple
                     workstreams
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[15px] text-white/70 mb-3">
+                  <label className="block text-subtitle text-white/70 mb-3">
                     Average hourly rate of your regulatory counsel (€)
                   </label>
                   <input
@@ -904,9 +904,9 @@ export default function PricingPage() {
                     placeholder="e.g. 300"
                     value={hourlyRate}
                     onChange={(e) => setHourlyRate(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-[16px] placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <p className="text-[13px] text-white/40 mt-2">
+                  <p className="text-body text-white/40 mt-2">
                     Specialized space law: typically €250–400/h
                   </p>
                 </div>
@@ -919,20 +919,20 @@ export default function PricingPage() {
                     {/* Consulting Estimate */}
                     <div className="py-4 border-b border-white/[0.08]">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-[15px] text-white/60">
+                        <span className="text-subtitle text-white/60">
                           Consulting estimate
                         </span>
-                        <span className="text-[20px] text-white/70">
+                        <span className="text-heading text-white/70">
                           €{consultingEstimate.toLocaleString("de-DE")}
                         </span>
                       </div>
-                      <p className="text-[13px] text-white/40">
+                      <p className="text-body text-white/40">
                         Based on your inputs — one-time engagement
                       </p>
-                      <p className="text-[13px] text-white/40 mt-1">
+                      <p className="text-body text-white/40 mt-1">
                         + Ongoing monitoring after initial authorization
                       </p>
-                      <p className="text-[13px] text-white/40">
+                      <p className="text-body text-white/40">
                         + Re-engagement when regulations change
                       </p>
                     </div>
@@ -940,24 +940,24 @@ export default function PricingPage() {
                     {/* Caelex */}
                     <div className="py-4 border-b border-white/[0.08]">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-[15px] text-white/60">
+                        <span className="text-subtitle text-white/60">
                           Caelex Professional
                         </span>
-                        <span className="text-[20px] font-medium text-emerald-400">
+                        <span className="text-heading font-medium text-emerald-400">
                           €{caelexAnnual.toLocaleString("de-DE")}/year
                         </span>
                       </div>
-                      <p className="text-[13px] text-white/40">
+                      <p className="text-body text-white/40">
                         Continuous — includes regulatory updates
                       </p>
                       <div className="mt-3 space-y-1">
-                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
                           <Check size={14} /> Compliance mapping automated
                         </p>
-                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
                           <Check size={14} /> Document templates pre-built
                         </p>
-                        <p className="text-[13px] text-emerald-400/80 flex items-center gap-2">
+                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
                           <Check size={14} /> Regulatory changes tracked
                           automatically
                         </p>
@@ -967,7 +967,7 @@ export default function PricingPage() {
                     {/* Savings/Comparison Line */}
                     <div className="rounded-xl p-5 bg-emerald-500/10 border border-emerald-500/20">
                       {savings > 0 ? (
-                        <p className="text-[15px] text-emerald-400 leading-relaxed">
+                        <p className="text-subtitle text-emerald-400 leading-relaxed">
                           Caelex costs{" "}
                           <strong>
                             €{savings.toLocaleString("de-DE")} less
@@ -976,7 +976,7 @@ export default function PricingPage() {
                           continuous, not one-time.
                         </p>
                       ) : (
-                        <p className="text-[15px] text-white/60 leading-relaxed">
+                        <p className="text-subtitle text-white/60 leading-relaxed">
                           Caelex provides continuous automated compliance at a
                           comparable cost to your consulting estimate — with
                           ongoing monitoring included.
@@ -986,7 +986,7 @@ export default function PricingPage() {
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-[15px] text-white/30 text-center">
+                    <p className="text-subtitle text-white/30 text-center">
                       Enter your estimates to see the comparison
                     </p>
                   </div>
@@ -995,7 +995,7 @@ export default function PricingPage() {
             </div>
 
             {/* Fine Print */}
-            <p className="text-[13px] text-white/30 mt-8 pt-6 border-t border-white/[0.06] leading-relaxed">
+            <p className="text-body text-white/30 mt-8 pt-6 border-t border-white/[0.06] leading-relaxed">
               This is a simple estimate based on your inputs. Caelex complements
               but does not fully replace legal counsel — you may still need
               specialized advice for NCA filings and specific regulatory
@@ -1011,13 +1011,13 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="mt-8 text-center"
           >
-            <p className="text-[13px] text-white/30 leading-relaxed max-w-[800px] mx-auto">
+            <p className="text-body text-white/30 leading-relaxed max-w-[800px] mx-auto">
               The EU Commission estimates total annual compliance costs from the
               Space Act at €322.8M across the industry, with authorization
               requirements costing ~€100,000 per product line in fees alone —
               before consulting and preparation costs.
             </p>
-            <p className="text-[12px] text-white/20 mt-2">
+            <p className="text-small text-white/50 mt-2">
               Source: EU Commission Impact Assessment, COM/2025/335
             </p>
           </motion.div>
@@ -1035,7 +1035,7 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
               Compare Plans
             </span>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white">
@@ -1048,16 +1048,16 @@ export default function PricingPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.08]">
-                    <th className="text-left py-6 px-6 text-[15px] text-white/50 font-medium">
+                    <th className="text-left py-6 px-6 text-subtitle text-white/50 font-medium">
                       Feature
                     </th>
-                    <th className="text-center py-6 px-4 text-[15px] text-white/60 font-medium w-[140px]">
+                    <th className="text-center py-6 px-4 text-subtitle text-white/60 font-medium w-[140px]">
                       Essentials
                     </th>
-                    <th className="text-center py-6 px-4 text-[15px] text-emerald-400 font-semibold bg-emerald-500/[0.05] w-[140px]">
+                    <th className="text-center py-6 px-4 text-subtitle text-emerald-400 font-semibold bg-emerald-500/[0.05] w-[140px]">
                       Professional
                     </th>
-                    <th className="text-center py-6 px-4 text-[15px] text-white/60 font-medium w-[140px]">
+                    <th className="text-center py-6 px-4 text-subtitle text-white/60 font-medium w-[140px]">
                       Enterprise
                     </th>
                   </tr>
@@ -1071,7 +1071,7 @@ export default function PricingPage() {
                       >
                         <td
                           colSpan={4}
-                          className="py-4 px-6 text-[15px] font-semibold text-white"
+                          className="py-4 px-6 text-subtitle font-semibold text-white"
                         >
                           <div className="flex items-center gap-3">
                             <category.icon
@@ -1087,7 +1087,7 @@ export default function PricingPage() {
                           key={feature.name}
                           className="border-b border-white/[0.04]"
                         >
-                          <td className="py-4 px-6 pl-12 text-[15px] text-white/60">
+                          <td className="py-4 px-6 pl-12 text-subtitle text-white/60">
                             {feature.name}
                           </td>
                           <td className="py-4 px-4 text-center">
@@ -1098,10 +1098,10 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/20">—</span>
+                                <span className="text-white/50">—</span>
                               )
                             ) : (
-                              <span className="text-[14px] text-white/50">
+                              <span className="text-body-lg text-white/50">
                                 {feature.essentials}
                               </span>
                             )}
@@ -1114,10 +1114,10 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/20">—</span>
+                                <span className="text-white/50">—</span>
                               )
                             ) : (
-                              <span className="text-[14px] font-medium text-emerald-400">
+                              <span className="text-body-lg font-medium text-emerald-400">
                                 {feature.professional}
                               </span>
                             )}
@@ -1130,10 +1130,10 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/20">—</span>
+                                <span className="text-white/50">—</span>
                               )
                             ) : (
-                              <span className="text-[14px] text-white/50">
+                              <span className="text-body-lg text-white/50">
                                 {feature.enterprise}
                               </span>
                             )}
@@ -1160,7 +1160,7 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
               FAQ
             </span>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
@@ -1189,7 +1189,7 @@ export default function PricingPage() {
                       <div className="hidden sm:flex w-12 h-12 rounded-xl items-center justify-center flex-shrink-0 bg-emerald-500/10">
                         <Icon size={20} className="text-emerald-400" />
                       </div>
-                      <span className="flex-1 text-[15px] sm:text-[17px] font-medium text-white">
+                      <span className="flex-1 text-subtitle sm:text-heading font-medium text-white">
                         {faq.question}
                       </span>
                       {isExpanded ? (
@@ -1208,7 +1208,7 @@ export default function PricingPage() {
                           className="overflow-hidden"
                         >
                           <div className="px-6 pb-6 pl-6 sm:pl-[88px]">
-                            <p className="text-[15px] sm:text-[16px] text-white/60 leading-relaxed">
+                            <p className="text-subtitle sm:text-title text-white/60 leading-relaxed">
                               {faq.answer}
                             </p>
                           </div>
@@ -1243,7 +1243,7 @@ export default function PricingPage() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-semibold mb-8 bg-amber-500/15 border border-amber-500/25 text-amber-400">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-body font-semibold mb-8 bg-amber-500/15 border border-amber-500/25 text-amber-400">
                 <Clock size={16} />
                 Don&apos;t wait until 2029
               </div>
@@ -1251,7 +1251,7 @@ export default function PricingPage() {
               <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
                 Start your compliance journey today
               </h2>
-              <p className="text-[18px] text-white/50 mb-12 max-w-[550px] mx-auto leading-relaxed">
+              <p className="text-heading text-white/50 mb-12 max-w-[550px] mx-auto leading-relaxed">
                 The authorization process takes 6+ months. The earlier you start
                 mapping requirements and preparing documentation, the smoother
                 your path to compliance.
@@ -1260,20 +1260,20 @@ export default function PricingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
                 <Link
                   href="/contact?plan=professional"
-                  className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-emerald-500 text-white text-[16px] font-semibold transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-emerald-500 text-white text-title font-semibold transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]"
                 >
                   Start Free Trial
                   <ArrowRight size={20} />
                 </Link>
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] text-white text-[16px] font-semibold transition-all duration-300 hover:bg-white/[0.1]"
+                  className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] text-white text-title font-semibold transition-all duration-300 hover:bg-white/[0.1]"
                 >
                   Try Free Assessment
                 </Link>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-[15px] text-white/50">
+              <div className="flex items-center justify-center gap-2 text-subtitle text-white/50">
                 <Shield size={18} className="text-emerald-400" />
                 30-day money-back guarantee • No questions asked
               </div>
@@ -1289,30 +1289,30 @@ export default function PricingPage() {
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
             <div>
-              <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
+              <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={119} />
               </div>
-              <div className="text-[15px] text-white/50">Articles Mapped</div>
+              <div className="text-subtitle text-white/50">Articles Mapped</div>
             </div>
             <div>
-              <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
+              <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={10} />
               </div>
-              <div className="text-[15px] text-white/50">Jurisdictions</div>
+              <div className="text-subtitle text-white/50">Jurisdictions</div>
             </div>
             <div>
-              <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
+              <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={47} />
               </div>
-              <div className="text-[15px] text-white/50">
+              <div className="text-subtitle text-white/50">
                 Document Templates
               </div>
             </div>
             <div>
-              <div className="text-[42px] font-light tracking-tight text-emerald-400 mb-2">
+              <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={8} />
               </div>
-              <div className="text-[15px] text-white/50">
+              <div className="text-subtitle text-white/50">
                 Compliance Modules
               </div>
             </div>

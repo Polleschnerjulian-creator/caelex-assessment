@@ -168,7 +168,7 @@ export default function Modules() {
           >
             <div>
               <span
-                className="text-[11px] uppercase tracking-[0.2em] text-white/30 block mb-4"
+                className="text-caption uppercase tracking-[0.2em] text-white/30 block mb-4"
                 aria-hidden="true"
               >
                 07 / 14 — Platform
@@ -182,13 +182,13 @@ export default function Modules() {
               </h2>
             </div>
             <div className="hidden md:flex items-center gap-4">
-              <span className="text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
+              <span className="text-micro text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
                 EU Space Act
               </span>
-              <span className="text-[10px] text-cyan-400/60 bg-cyan-500/10 px-2 py-1 rounded">
+              <span className="text-micro text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
                 NIS2
               </span>
-              <span className="text-[10px] text-purple-400/60 bg-purple-500/10 px-2 py-1 rounded">
+              <span className="text-micro text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded">
                 10 National Laws
               </span>
             </div>
@@ -216,7 +216,7 @@ export default function Modules() {
                     href={`/modules/${module.slug}`}
                     className={`block h-full rounded-xl p-6 transition-all duration-500 ${
                       isNIS2
-                        ? "bg-cyan-500/5 border border-cyan-500/20 hover:bg-cyan-500/10 hover:border-cyan-500/30"
+                        ? "bg-emerald-500/5 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/30"
                         : "bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]"
                     }`}
                   >
@@ -225,29 +225,31 @@ export default function Modules() {
                       <div
                         className={`p-2.5 rounded-lg transition-colors ${
                           isNIS2
-                            ? "bg-cyan-500/10 group-hover:bg-cyan-500/20"
+                            ? "bg-emerald-500/10 group-hover:bg-emerald-500/20"
                             : "bg-white/[0.04] group-hover:bg-white/[0.06]"
                         }`}
                       >
                         <Icon
                           size={18}
-                          className={isNIS2 ? "text-cyan-400" : "text-white/60"}
+                          className={
+                            isNIS2 ? "text-emerald-400" : "text-white/60"
+                          }
                           aria-hidden="true"
                         />
                       </div>
                       <div className="flex items-center gap-2">
                         {isNIS2 && (
-                          <span className="text-[10px] sm:text-[9px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-micro sm:text-micro text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                             NIS2
                           </span>
                         )}
                         {isMulti && (
-                          <span className="text-[10px] sm:text-[9px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-micro sm:text-micro text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                             ALL
                           </span>
                         )}
                         <span
-                          className="text-[11px] text-white/20"
+                          className="text-caption text-white/50"
                           aria-hidden="true"
                         >
                           {module.id}
@@ -257,8 +259,8 @@ export default function Modules() {
 
                     {/* Module name */}
                     <h3
-                      className={`text-[15px] font-medium mb-2 tracking-[-0.01em] ${
-                        isNIS2 ? "text-cyan-50" : "text-white"
+                      className={`text-subtitle font-medium mb-2 tracking-[-0.01em] ${
+                        isNIS2 ? "text-emerald-50" : "text-white"
                       }`}
                     >
                       {module.name}
@@ -266,8 +268,8 @@ export default function Modules() {
 
                     {/* Article range */}
                     <p
-                      className={`text-[10px] mb-4 ${
-                        isNIS2 ? "text-cyan-400/60" : "text-white/40"
+                      className={`text-micro mb-4 ${
+                        isNIS2 ? "text-emerald-400/60" : "text-white/40"
                       }`}
                     >
                       {module.articleRange}
@@ -275,8 +277,8 @@ export default function Modules() {
 
                     {/* Description */}
                     <p
-                      className={`text-[13px] leading-[1.6] mb-5 ${
-                        isNIS2 ? "text-cyan-100/50" : "text-white/50"
+                      className={`text-body leading-[1.6] mb-5 ${
+                        isNIS2 ? "text-emerald-100/50" : "text-white/50"
                       }`}
                     >
                       {module.description}
@@ -284,19 +286,19 @@ export default function Modules() {
 
                     {/* Features */}
                     <div
-                      className={`pt-4 border-t ${isNIS2 ? "border-cyan-500/10" : "border-white/[0.06]"}`}
+                      className={`pt-4 border-t ${isNIS2 ? "border-emerald-500/10" : "border-white/[0.06]"}`}
                     >
                       <div className="grid grid-cols-2 gap-2">
                         {module.features.map((feature, i) => (
                           <div
                             key={i}
-                            className={`flex items-center gap-2 text-[11px] ${
-                              isNIS2 ? "text-cyan-200/30" : "text-white/30"
+                            className={`flex items-center gap-2 text-caption ${
+                              isNIS2 ? "text-emerald-200/30" : "text-white/30"
                             }`}
                           >
                             <span
                               className={`w-1 h-1 rounded-full ${
-                                isNIS2 ? "bg-cyan-400/40" : "bg-white/20"
+                                isNIS2 ? "bg-emerald-400/40" : "bg-white/20"
                               }`}
                               aria-hidden="true"
                             />
@@ -309,8 +311,8 @@ export default function Modules() {
                     {/* Hover indicator */}
                     <div className="mt-5 overflow-hidden h-4">
                       <span
-                        className={`block text-[12px] transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5 ${
-                          isNIS2 ? "text-cyan-400/50" : "text-white/30"
+                        className={`block text-small transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5 ${
+                          isNIS2 ? "text-emerald-400/50" : "text-white/30"
                         }`}
                       >
                         <span>Explore module</span>
@@ -335,26 +337,26 @@ export default function Modules() {
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 py-8 border-t border-white/[0.06]">
             <div className="text-center">
-              <p className="text-[24px] font-light text-white">8</p>
-              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-display-sm font-light text-white">8</p>
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
                 Modules
               </p>
             </div>
             <div className="text-center">
-              <p className="text-[24px] font-light text-white">170+</p>
-              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-display-sm font-light text-white">170+</p>
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
                 Requirements
               </p>
             </div>
             <div className="text-center">
-              <p className="text-[24px] font-light text-white">3</p>
-              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-display-sm font-light text-white">3</p>
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
                 Frameworks
               </p>
             </div>
             <div className="text-center">
-              <p className="text-[24px] font-light text-white">10</p>
-              <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-display-sm font-light text-white">10</p>
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
                 Jurisdictions
               </p>
             </div>

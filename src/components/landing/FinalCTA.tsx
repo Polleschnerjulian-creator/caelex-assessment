@@ -30,7 +30,7 @@ export default function FinalCTA() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-[11px] text-white/30">12 / 12</span>
+        <span className="text-caption text-white/30">12 / 12</span>
       </motion.div>
 
       <div className="max-w-[700px] text-center">
@@ -50,7 +50,7 @@ export default function FinalCTA() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-[15px] text-white/50 mb-10 max-w-[520px] mx-auto leading-[1.6]"
+          className="text-subtitle text-white/50 mb-10 max-w-[520px] mx-auto leading-[1.6]"
         >
           Join satellite operators across Europe who are using Caelex to
           navigate the most comprehensive space regulation in history.
@@ -66,7 +66,7 @@ export default function FinalCTA() {
           {benefits.map((benefit, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 text-[13px] text-white/40"
+              className="flex items-center gap-2 text-body text-white/40"
             >
               <CheckCircle2
                 size={14}
@@ -88,7 +88,7 @@ export default function FinalCTA() {
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <Link
               href="/assessment"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-[15px] font-medium rounded-full transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-subtitle font-medium rounded-full transition-all duration-300 hover:bg-white/90 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
             >
               <span>Start Free Assessment</span>
               <ArrowRight
@@ -99,7 +99,7 @@ export default function FinalCTA() {
             </Link>
             <Link
               href="/contact"
-              className="group inline-flex items-center gap-3 px-8 py-4 text-white/80 text-[15px] font-medium rounded-full border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+              className="group inline-flex items-center gap-3 px-8 py-4 text-white/80 text-subtitle font-medium rounded-full border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
             >
               <span>Schedule a Demo</span>
               <ArrowRight
@@ -109,7 +109,7 @@ export default function FinalCTA() {
               />
             </Link>
           </div>
-          <span className="text-[12px] sm:text-[11px] text-white/25">
+          <span className="text-small sm:text-caption text-white/25">
             No credit card required. Free compliance assessment.
           </span>
         </motion.div>
@@ -121,12 +121,12 @@ export default function FinalCTA() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-12 pt-10 border-t border-white/[0.06]"
         >
-          <p className="text-[13px] text-white/35 mb-4">
+          <p className="text-body text-white/35 mb-4">
             Need a custom deployment or have compliance questions?
           </p>
           <a
             href="mailto:cs@caelex.eu"
-            className="inline-flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-body text-white/50 hover:text-white transition-colors"
           >
             <span>Talk to our team</span>
             <span className="text-white/30">cs@caelex.eu</span>

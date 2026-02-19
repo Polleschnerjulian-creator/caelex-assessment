@@ -19,7 +19,7 @@ export default function Problem() {
           {/* Left Column */}
           <ScrollReveal>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-8">
+              <p className="text-caption uppercase tracking-[0.3em] text-white/60 mb-8">
                 THE CHALLENGE
               </p>
               <h2 className="text-[clamp(1.8rem,3vw,2.5rem)] font-medium text-white tracking-[-0.02em] leading-[1.2]">
@@ -33,7 +33,7 @@ export default function Problem() {
             {paragraphs.map((paragraph, index) => (
               <ScrollReveal key={index} delay={index * 0.1}>
                 <div className="border-l border-white/12 pl-6 mb-8 hover:border-white/[0.15] transition-all duration-500">
-                  <p className="text-[16px] text-white/45 leading-[1.8]">
+                  <p className="text-title text-white/45 leading-[1.8]">
                     {paragraph}
                   </p>
                 </div>
@@ -42,7 +42,7 @@ export default function Problem() {
 
             {/* Final standalone line */}
             <ScrollReveal delay={0.3}>
-              <p className="text-white font-medium text-[17px] mt-4 pl-6">
+              <p className="text-white font-medium text-heading mt-4 pl-6">
                 Most operators don&apos;t know where to start.
               </p>
             </ScrollReveal>

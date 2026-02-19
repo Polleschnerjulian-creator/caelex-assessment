@@ -71,16 +71,16 @@ const categories = [
 
 const colorClasses = {
   blue: {
-    dot: "bg-blue-400/60",
-    title: "text-blue-400/80",
+    dot: "bg-emerald-400/60",
+    title: "text-emerald-400/80",
   },
   emerald: {
     dot: "bg-emerald-400/60",
     title: "text-emerald-400/80",
   },
   purple: {
-    dot: "bg-purple-400/60",
-    title: "text-purple-400/80",
+    dot: "bg-emerald-400/60",
+    title: "text-emerald-400/80",
   },
 };
 
@@ -129,7 +129,7 @@ export default function WhatWeCover() {
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
             Everything that governs space. Covered.
           </h2>
-          <p className="text-[15px] md:text-[16px] text-white/40 max-w-[700px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-white/40 max-w-[700px] mx-auto leading-relaxed">
             Each module includes guided assessments, gap analysis, and
             auto-generated compliance documents — tailored to your mission
             profile.
@@ -157,7 +157,7 @@ export default function WhatWeCover() {
                     aria-hidden="true"
                   />
                   <h3
-                    className={`text-[13px] font-medium uppercase tracking-wider ${colors.title}`}
+                    className={`text-body font-medium uppercase tracking-wider ${colors.title}`}
                   >
                     {category.title}
                   </h3>
@@ -191,10 +191,10 @@ export default function WhatWeCover() {
                       />
 
                       <div className="relative">
-                        <h4 className="text-[15px] font-medium text-white mb-1">
+                        <h4 className="text-subtitle font-medium text-white mb-1">
                           {module.name}
                         </h4>
-                        <p className="text-[13px] text-white/40">
+                        <p className="text-body text-white/40">
                           {module.description}
                         </p>
                       </div>
@@ -211,7 +211,7 @@ export default function WhatWeCover() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center text-[14px] text-white/30 mt-16 md:mt-20"
+          className="text-center text-body-lg text-white/30 mt-16 md:mt-20"
         >
           From assessment to audit-ready documentation — in minutes, not months.
         </motion.p>

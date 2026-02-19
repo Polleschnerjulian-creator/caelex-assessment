@@ -71,7 +71,7 @@ export default function ValueProposition() {
           transition={{ duration: 0.6 }}
           className="text-center mb-24"
         >
-          <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
             Why Caelex
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[700px] mx-auto">
@@ -90,7 +90,7 @@ export default function ValueProposition() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <span className="text-[10px] uppercase tracking-[0.25em] text-red-400/60 block mb-8">
+              <span className="text-micro uppercase tracking-[0.25em] text-red-400/60 block mb-8">
                 Without Caelex
               </span>
             </motion.div>
@@ -114,10 +114,10 @@ export default function ValueProposition() {
                       />
                     </div>
                     <div>
-                      <h3 className="text-[15px] font-medium text-white/90 mb-2">
+                      <h3 className="text-subtitle font-medium text-white/90 mb-2">
                         {point.title}
                       </h3>
-                      <p className="text-[13px] text-white/45 leading-[1.7]">
+                      <p className="text-body text-white/45 leading-[1.7]">
                         {point.description}
                       </p>
                     </div>
@@ -134,7 +134,7 @@ export default function ValueProposition() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
-              <span className="text-[10px] uppercase tracking-[0.25em] text-blue-400/60 block mb-8">
+              <span className="text-micro uppercase tracking-[0.25em] text-emerald-400/60 block mb-8">
                 With Caelex
               </span>
             </motion.div>
@@ -150,18 +150,18 @@ export default function ValueProposition() {
                     transition={{ duration: 0.5, delay: 0.25 + i * 0.1 }}
                     className="flex gap-5"
                   >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500/[0.08] border border-blue-500/[0.12] flex items-center justify-center">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/[0.12] flex items-center justify-center">
                       <Icon
                         size={18}
-                        className="text-blue-400/60"
+                        className="text-emerald-400/60"
                         aria-hidden="true"
                       />
                     </div>
                     <div>
-                      <h3 className="text-[15px] font-medium text-white/90 mb-2">
+                      <h3 className="text-subtitle font-medium text-white/90 mb-2">
                         {solution.title}
                       </h3>
-                      <p className="text-[13px] text-white/45 leading-[1.7]">
+                      <p className="text-body text-white/45 leading-[1.7]">
                         {solution.description}
                       </p>
                     </div>
@@ -181,24 +181,24 @@ export default function ValueProposition() {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <div>
-              <p className="text-[28px] font-light text-white mb-2">90%</p>
-              <p className="text-[13px] text-white/40 leading-[1.6]">
+              <p className="text-display font-light text-white mb-2">90%</p>
+              <p className="text-body text-white/40 leading-[1.6]">
                 less time spent on regulatory analysis compared to manual legal
                 review
               </p>
             </div>
             <div>
-              <p className="text-[28px] font-light text-white mb-2">
+              <p className="text-display font-light text-white mb-2">
                 Real-time
               </p>
-              <p className="text-[13px] text-white/40 leading-[1.6]">
+              <p className="text-body text-white/40 leading-[1.6]">
                 compliance tracking with automated deadline alerts and status
                 updates
               </p>
             </div>
             <div>
-              <p className="text-[28px] font-light text-white mb-2">1-click</p>
-              <p className="text-[13px] text-white/40 leading-[1.6]">
+              <p className="text-display font-light text-white mb-2">1-click</p>
+              <p className="text-body text-white/40 leading-[1.6]">
                 report generation for NCA submissions, audit trails, and
                 compliance certificates
               </p>

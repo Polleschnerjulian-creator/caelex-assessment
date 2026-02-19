@@ -76,7 +76,7 @@ function DataStream({ text, index, total }: DataStreamProps) {
 
   return (
     <span
-      className="absolute whitespace-nowrap font-mono text-[10px] text-white transition-opacity duration-500"
+      className="absolute whitespace-nowrap text-micro text-white transition-opacity duration-500"
       style={{
         opacity: isFlashing ? 0.06 : baseOpacity,
         left: "50%",

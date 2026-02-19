@@ -50,10 +50,10 @@ export default function TrustBar() {
               >
                 <Icon size={14} className="text-white/25" aria-hidden="true" />
                 <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1.5">
-                  <span className="text-[12px] sm:text-[11px] text-white/45 tracking-wide">
+                  <span className="text-small sm:text-caption text-white/45 tracking-wide">
                     {item.label}
                   </span>
-                  <span className="text-[11px] sm:text-[10px] text-white/25">
+                  <span className="text-caption sm:text-micro text-white/25">
                     {item.detail}
                   </span>
                 </div>
