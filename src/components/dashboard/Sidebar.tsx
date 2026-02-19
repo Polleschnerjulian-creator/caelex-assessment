@@ -590,6 +590,16 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 )}
               />
             </ModuleGroup>
+
+            {/* Standalone module items */}
+            <div className="mt-1 space-y-0.5">
+              <CompactModuleItem
+                href="/dashboard/incidents"
+                icon={<AlertTriangle size={14} strokeWidth={1.5} />}
+                label={t("sidebar.incidents")}
+                onClick={handleNavClick}
+              />
+            </div>
           </div>
 
           {/* AI Agent Section */}
@@ -665,13 +675,6 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 {t("sidebar.digitalTwin")}
-              </NavItem>
-              <NavItem
-                href="/dashboard/incidents"
-                icon={<AlertTriangle size={16} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-              >
-                {t("sidebar.incidents")}
               </NavItem>
               <NavItem
                 href="/dashboard/regulatory-feed"
