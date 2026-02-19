@@ -80,10 +80,10 @@ export default function Navigation() {
                   Resources
                 </Link>
                 <Link
-                  href="/security"
+                  href="/modules"
                   className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
                 >
-                  Security
+                  Modules
                 </Link>
                 <Link
                   href="/pricing"
@@ -197,11 +197,11 @@ export default function Navigation() {
                   Resources
                 </Link>
                 <Link
-                  href="/security"
+                  href="/modules"
                   onClick={() => setMobileOpen(false)}
                   className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
-                  Security
+                  Modules
                 </Link>
                 <Link
                   href="/about"
