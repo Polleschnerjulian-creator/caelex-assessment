@@ -2,8 +2,6 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import Image from "next/image";
-
 const categories = [
   {
     title: "Operations & Licensing",
@@ -91,32 +89,9 @@ export default function WhatWeCover() {
   return (
     <section
       ref={ref}
-      className="relative py-24 md:py-32 overflow-hidden"
+      className="relative py-24 md:py-32 overflow-hidden bg-black"
       aria-label="What we cover"
     >
-      {/* Background Image */}
-      <div className="absolute inset-0" aria-hidden="true">
-        <Image
-          src="/images/what-we-cover-bg.png"
-          alt=""
-          fill
-          className="object-cover object-center"
-          quality={90}
-        />
-      </div>
-
-      {/* Top gradient for smooth transition from Hero */}
-      <div
-        className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent pointer-events-none"
-        aria-hidden="true"
-      />
-
-      {/* Bottom gradient fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none"
-        aria-hidden="true"
-      />
-
       {/* Content */}
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
