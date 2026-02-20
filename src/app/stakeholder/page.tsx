@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,6 +21,20 @@ type AuthError = {
 };
 
 export default function StakeholderLandingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1E] flex items-center justify-center">
+          <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+        </div>
+      }
+    >
+      <StakeholderLandingContent />
+    </Suspense>
+  );
+}
+
+function StakeholderLandingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
