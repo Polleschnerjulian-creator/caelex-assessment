@@ -2,6 +2,7 @@ import Hero from "@/components/landing/Hero";
 import WhatWeCover from "@/components/landing/WhatWeCover";
 import HowItWorks from "@/components/landing/HowItWorks";
 import AstraSection from "@/components/landing/AstraSection";
+import EcosystemSection from "@/components/landing/EcosystemSection";
 import { SoftwareApplicationJsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
@@ -12,6 +13,7 @@ export default function Home() {
       <WhatWeCover />
       <HowItWorks />
       <AstraSection />
+      <EcosystemSection />
     </main>
   );
 }
