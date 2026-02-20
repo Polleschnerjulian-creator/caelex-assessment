@@ -136,7 +136,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
 
   return (
     <Link href={config.href}>
-      <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-white/15 transition-colors group">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/15 transition-colors group">
         <div className="flex items-start justify-between mb-4">
           <div
             className={`p-2 rounded-lg bg-${config.color}-500/10 text-${config.color}-400`}
@@ -146,7 +146,9 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
           {getStatusIcon(module.status)}
         </div>
 
-        <h3 className="font-semibold text-white mb-1">{config.label}</h3>
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+          {config.label}
+        </h3>
         <p className="text-sm text-slate-400 mb-4">
           {getStatusLabel(module.status)}
         </p>
@@ -161,7 +163,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
               {module.score}%
             </span>
           </div>
-          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="h-1.5 bg-slate-50 dark:bg-white/[0.06] rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor(module.score)} transition-all duration-500`}
               style={{ width: `${module.score}%` }}
@@ -183,7 +185,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
 
         {/* Next deadline */}
         {module.nextDeadline && (
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
             <div className="flex items-center gap-2 text-xs">
               <Clock className="w-3.5 h-3.5 text-slate-500" />
               <span className="text-slate-400">

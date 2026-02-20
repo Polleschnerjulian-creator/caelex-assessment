@@ -36,8 +36,8 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-3 shadow-xl">
-        <p className="text-white/45 text-caption uppercase tracking-wider mb-2">
+      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 shadow-xl">
+        <p className="text-slate-500 dark:text-white/45 text-caption uppercase tracking-wider mb-2">
           {label}
         </p>
         {payload.map((entry, index) => (
@@ -46,10 +46,10 @@ const CustomTooltip = ({
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-white/70 text-small capitalize">
+            <span className="text-slate-700 dark:text-white/70 text-small capitalize">
               {entry.name}:
             </span>
-            <span className="text-white text-small font-medium">
+            <span className="text-slate-900 dark:text-white text-small font-medium">
               {entry.value}%
             </span>
           </div>
@@ -74,7 +74,7 @@ const CustomLegend = ({
             className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: entry.color }}
           />
-          <span className="text-caption text-white/45 capitalize">
+          <span className="text-caption text-slate-500 dark:text-white/45 capitalize">
             {entry.value}
           </span>
         </div>

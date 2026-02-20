@@ -40,9 +40,13 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-white text-body font-medium">{data.name}</p>
-        <p className="text-white/70 text-small">{data.progress}% complete</p>
+      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 shadow-xl">
+        <p className="text-slate-900 dark:text-white text-body font-medium">
+          {data.name}
+        </p>
+        <p className="text-slate-700 dark:text-white/70 text-small">
+          {data.progress}% complete
+        </p>
       </div>
     );
   }

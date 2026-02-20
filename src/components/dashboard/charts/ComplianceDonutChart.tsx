@@ -24,9 +24,11 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-white text-body font-medium">{payload[0].name}</p>
-        <p className="text-white/70 text-small">
+      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 shadow-xl">
+        <p className="text-slate-900 dark:text-white text-body font-medium">
+          {payload[0].name}
+        </p>
+        <p className="text-slate-700 dark:text-white/70 text-small">
           {payload[0].value}% compliant
         </p>
       </div>
@@ -75,7 +77,7 @@ export default function ComplianceDonutChart({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
-          className="text-[42px] font-bold text-white"
+          className="text-[42px] font-bold text-slate-900 dark:text-white"
         >
           {totalScore}%
         </motion.span>
@@ -83,7 +85,7 @@ export default function ComplianceDonutChart({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.4 }}
-          className="text-caption uppercase tracking-wider text-white/45"
+          className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45"
         >
           Overall
         </motion.span>
@@ -104,7 +106,9 @@ export default function ComplianceDonutChart({
               className="w-2.5 h-2.5 rounded-full"
               style={{ backgroundColor: segment.color }}
             />
-            <span className="text-caption text-white/45">{segment.name}</span>
+            <span className="text-caption text-slate-500 dark:text-white/45">
+              {segment.name}
+            </span>
           </div>
         ))}
       </div>

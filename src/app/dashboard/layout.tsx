@@ -26,7 +26,7 @@ export default function DashboardLayout({
       <OrganizationProvider>
         <ToastProvider>
           <AstraProvider>
-            <div className="dark min-h-screen bg-dark-surface">
+            <div className="min-h-screen bg-light-bg dark:bg-dark-surface">
               <div className="lg:grid lg:grid-cols-[260px_1fr]">
                 {/* Sidebar */}
                 <Sidebar

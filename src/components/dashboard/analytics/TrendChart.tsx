@@ -94,8 +94,10 @@ export function TrendChart({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+          {title}
+        </h3>
         {subtitle && <p className="text-sm text-slate-400 mb-4">{subtitle}</p>}
         <div
           className="flex items-center justify-center text-slate-500"
@@ -108,10 +110,12 @@ export function TrendChart({
   }
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            {title}
+          </h3>
           {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
         </div>
         <div
@@ -250,10 +254,10 @@ export function TrendChart({
 
       {/* Current score */}
       {chartData.points.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-white/10">
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-400">Current Score</span>
-            <span className="text-lg font-semibold text-white">
+            <span className="text-lg font-semibold text-slate-900 dark:text-white">
               {chartData.points[chartData.points.length - 1].score.toFixed(0)}%
             </span>
           </div>
@@ -297,7 +301,9 @@ export function MiniTrendChart({
   }, [data]);
 
   if (data.length < 2) {
-    return <div className="w-20 h-6 bg-white/[0.06] rounded" />;
+    return (
+      <div className="w-20 h-6 bg-slate-50 dark:bg-white/[0.06] rounded" />
+    );
   }
 
   const strokeColor = chartData.trend >= 0 ? "#22C55E" : "#EF4444";

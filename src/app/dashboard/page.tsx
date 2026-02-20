@@ -232,7 +232,7 @@ const DEMO_RISK_HEATMAP = [
 function ChartSkeleton() {
   return (
     <div className="h-[280px] w-full flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+      <Loader2 className="w-8 h-8 text-slate-300 dark:text-white/20 animate-spin" />
     </div>
   );
 }
@@ -261,21 +261,21 @@ function KPICard({
       ? "text-green-400"
       : trend === "down"
         ? "text-red-400"
-        : "text-white/45";
+        : "text-slate-500 dark:text-white/45";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 relative overflow-hidden"
+      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-display font-semibold text-white leading-none">
+          <p className="text-display font-semibold text-slate-900 dark:text-white leading-none">
             {value}
           </p>
-          <p className="text-caption uppercase tracking-wider text-white/45 mt-2">
+          <p className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45 mt-2">
             {label}
           </p>
         </div>
@@ -316,7 +316,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-caption uppercase tracking-[0.2em] text-white/45">
+      <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
         {title}
       </h2>
       {action}
@@ -337,11 +337,13 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-white/30" />
+      <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-slate-400 dark:text-white/30" />
       </div>
-      <h3 className="text-body-lg font-medium text-white/70 mb-1">{title}</h3>
-      <p className="text-small text-white/45 mb-4 max-w-[240px]">
+      <h3 className="text-body-lg font-medium text-slate-700 dark:text-white/70 mb-1">
+        {title}
+      </h3>
+      <p className="text-small text-slate-500 dark:text-white/45 mb-4 max-w-[240px]">
         {description}
       </p>
       {action}
@@ -382,8 +384,10 @@ function DeadlineItem({
         }`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-small text-white/70 truncate">{deadline.title}</p>
-        <p className="text-micro text-white/45">
+        <p className="text-small text-slate-700 dark:text-white/70 truncate">
+          {deadline.title}
+        </p>
+        <p className="text-micro text-slate-500 dark:text-white/45">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
             : t("common.overdue")}
@@ -412,11 +416,13 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
         className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-micro text-white/90 font-medium">
+        <span className="text-micro text-slate-800 dark:text-white/90 font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-micro text-white/45">{module}</span>
+      <span className="text-micro text-slate-500 dark:text-white/45">
+        {module}
+      </span>
       <span className="sr-only">{risk} risk</span>
     </div>
   );
@@ -434,10 +440,10 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
+      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:hover:border-white/20 transition-all group"
     >
-      <Icon className="w-5 h-5 text-white/45 group-hover:text-emerald-400 transition-colors" />
-      <span className="text-micro text-white/45 group-hover:text-white/70 transition-colors">
+      <Icon className="w-5 h-5 text-slate-500 dark:text-white/45 group-hover:text-emerald-400 transition-colors" />
+      <span className="text-micro text-slate-500 dark:text-white/45 group-hover:text-slate-700 dark:group-hover:text-white/70 transition-colors">
         {label}
       </span>
     </Link>
@@ -473,18 +479,18 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-white/10 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-white/10 last:border-0">
       <div
-        className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0"
+        className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
       >
-        <Icon className="w-4 h-4 text-white/45" />
+        <Icon className="w-4 h-4 text-slate-500 dark:text-white/45" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-small text-white/70 truncate">
+        <p className="text-small text-slate-700 dark:text-white/70 truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
-        <p className="text-micro text-white/45 mt-0.5">
+        <p className="text-micro text-slate-500 dark:text-white/45 mt-0.5">
           {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -811,16 +817,22 @@ function DashboardContent() {
         aria-label="Loading dashboard"
       >
         <div className="animate-pulse space-y-6 max-w-[1400px]">
-          <div className="h-8 bg-white/5 rounded w-1/3" />
-          <div className="h-4 bg-white/5 rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/2" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-white/5 rounded-xl" />
+              <div
+                key={i}
+                className="h-32 bg-slate-200 dark:bg-white/5 rounded-xl"
+              />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-[340px] bg-white/5 rounded-xl" />
+              <div
+                key={i}
+                className="h-[340px] bg-slate-200 dark:bg-white/5 rounded-xl"
+              />
             ))}
           </div>
           <span className="sr-only">Loading dashboard data...</span>
@@ -848,13 +860,13 @@ function DashboardContent() {
                 className="w-5 h-5 text-green-400"
                 aria-hidden="true"
               />
-              <span className="text-body-lg text-white font-medium">
+              <span className="text-body-lg text-slate-900 dark:text-white font-medium">
                 {t("dashboard.assessmentImported")}
               </span>
               <button
                 onClick={() => setShowSuccessToast(false)}
                 aria-label="Dismiss notification"
-                className="text-white/45 hover:text-white/70"
+                className="text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -877,10 +889,10 @@ function DashboardContent() {
                 aria-hidden="true"
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-body-lg font-medium text-white mb-1">
+                <h3 className="text-body-lg font-medium text-slate-900 dark:text-white mb-1">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-body text-white/45">
+                <p className="text-body text-slate-500 dark:text-white/45">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -914,7 +926,7 @@ function DashboardContent() {
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-display font-medium text-white mb-1"
+            className="text-display font-medium text-slate-900 dark:text-white mb-1"
           >
             {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
@@ -922,7 +934,7 @@ function DashboardContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="text-body-lg text-white/45"
+            className="text-body-lg text-slate-500 dark:text-white/45"
           >
             {t("dashboard.commandCenter")}
           </motion.p>
@@ -999,12 +1011,12 @@ function DashboardContent() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center mb-10"
+            className="bg-slate-50 border border-dashed border-slate-300 dark:bg-white/5 dark:border-white/20 rounded-xl p-8 text-center mb-10"
           >
-            <h2 className="text-title font-medium text-white mb-2">
+            <h2 className="text-title font-medium text-slate-900 dark:text-white mb-2">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-body text-white/45 mb-6 max-w-md mx-auto">
+            <p className="text-body text-slate-500 dark:text-white/45 mb-6 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
@@ -1017,7 +1029,7 @@ function DashboardContent() {
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="border border-white/20 text-white/70 font-medium text-body px-6 py-2.5 rounded-lg hover:bg-white/5 transition-all"
+                className="border border-slate-300 text-slate-700 dark:border-white/20 dark:text-white/70 font-medium text-body px-6 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
@@ -1073,7 +1085,7 @@ function DashboardContent() {
             }
           />
           {recentActivity.length > 0 ? (
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-slate-200 dark:divide-white/10">
               {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -1119,7 +1131,7 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-white/10">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-slate-200 dark:border-white/10">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
@@ -1135,7 +1147,7 @@ function DashboardContent() {
                               : "bg-green-500/60"
                       }`}
                     />
-                    <span className="text-micro text-white/45">
+                    <span className="text-micro text-slate-500 dark:text-white/45">
                       {t(`common.${level}`)}
                     </span>
                   </div>
@@ -1190,12 +1202,12 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-dark-bg border border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+                className="bg-white border border-slate-200 dark:bg-dark-bg dark:border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
-                <h2 className="text-heading font-medium text-white mb-2">
+                <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
                   {t("dashboard.selectOperatorType")}
                 </h2>
-                <p className="text-body text-white/45 mb-6">
+                <p className="text-body text-slate-500 dark:text-white/45 mb-6">
                   {t("dashboard.selectOperatorDescription")}
                 </p>
                 <label htmlFor="operator-type-select" className="sr-only">
@@ -1205,7 +1217,7 @@ function DashboardContent() {
                   id="operator-type-select"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 dark:bg-white/5 dark:border-white/10 dark:text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">
                     {t("dashboard.selectOperatorPlaceholder")}
@@ -1220,7 +1232,7 @@ function DashboardContent() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-white/10 text-white/45 py-2.5 rounded-lg text-body hover:bg-white/5 transition-all"
+                    className="flex-1 border border-slate-200 text-slate-500 dark:border-white/10 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                   >
                     {t("common.cancel")}
                   </button>
@@ -1249,11 +1261,14 @@ export default function DashboardPage() {
       fallback={
         <div className="min-h-screen" role="status" aria-live="polite">
           <div className="animate-pulse space-y-6 max-w-[1400px]">
-            <div className="h-8 bg-white/5 rounded w-1/3" />
-            <div className="h-4 bg-white/5 rounded w-1/2" />
+            <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-1/3" />
+            <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-1/2" />
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-white/5 rounded-xl" />
+                <div
+                  key={i}
+                  className="h-32 bg-slate-200 dark:bg-white/5 rounded-xl"
+                />
               ))}
             </div>
             <span className="sr-only">Loading dashboard...</span>

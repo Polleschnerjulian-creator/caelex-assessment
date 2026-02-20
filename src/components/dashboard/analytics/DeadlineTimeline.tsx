@@ -32,8 +32,8 @@ export function DeadlineTimeline({
 
   if (deadlineAlerts.length === 0) {
     return (
-      <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           Upcoming Deadlines
         </h3>
         <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -46,9 +46,11 @@ export function DeadlineTimeline({
   }
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">Upcoming Deadlines</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          Upcoming Deadlines
+        </h3>
         <Link
           href="/dashboard/timeline"
           className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
@@ -151,7 +153,7 @@ function DeadlineItem({
     <div className="relative flex gap-4">
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-5 top-10 bottom-0 w-px bg-white/[0.06]" />
+        <div className="absolute left-5 top-10 bottom-0 w-px bg-slate-50 dark:bg-white/[0.06]" />
       )}
 
       {/* Icon */}
@@ -165,11 +167,13 @@ function DeadlineItem({
       <div className="flex-1 pb-4">
         <Link
           href={alert.link || "#"}
-          className="block hover:bg-white/[0.06]/50 rounded-lg -ml-2 px-2 py-1 transition-colors"
+          className="block hover:bg-slate-50 dark:hover:bg-white/[0.06]/50 rounded-lg -ml-2 px-2 py-1 transition-colors"
         >
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h4 className="text-sm font-medium text-white">{alert.title}</h4>
+              <h4 className="text-sm font-medium text-slate-900 dark:text-white">
+                {alert.title}
+              </h4>
               <p className="text-xs text-slate-400 mt-0.5">
                 {alert.description}
               </p>

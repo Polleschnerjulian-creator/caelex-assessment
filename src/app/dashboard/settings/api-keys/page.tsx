@@ -162,8 +162,10 @@ export default function ApiKeysPage() {
       <div className="">
         <div className="max-w-[800px]">
           <div className="text-center py-16">
-            <Key className="w-8 h-8 text-white/20 mx-auto mb-3" />
-            <p className="text-body-lg text-white/45">{t("apiKeys.joinOrg")}</p>
+            <Key className="w-8 h-8 text-slate-300 dark:text-white/20 mx-auto mb-3" />
+            <p className="text-body-lg text-slate-500 dark:text-white/45">
+              {t("apiKeys.joinOrg")}
+            </p>
           </div>
         </div>
       </div>
@@ -198,10 +200,10 @@ export default function ApiKeysPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-body-lg font-medium text-white mb-1">
+                <p className="text-body-lg font-medium text-slate-900 dark:text-white mb-1">
                   {t("apiKeys.saveKeyNow")}
                 </p>
-                <p className="text-small text-white/45 mb-3">
+                <p className="text-small text-slate-500 dark:text-white/45 mb-3">
                   {t("apiKeys.saveKeyWarning")}
                 </p>
                 <div className="flex items-center gap-2">
@@ -210,19 +212,22 @@ export default function ApiKeysPage() {
                   </code>
                   <button
                     onClick={copyKey}
-                    className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 transition-colors flex-shrink-0"
+                    className="p-2.5 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 transition-colors flex-shrink-0"
                   >
                     {copied ? (
                       <Check size={16} className="text-emerald-400" />
                     ) : (
-                      <Copy size={16} className="text-white/45" />
+                      <Copy
+                        size={16}
+                        className="text-slate-500 dark:text-white/45"
+                      />
                     )}
                   </button>
                 </div>
               </div>
               <button
                 onClick={() => setNewKey(null)}
-                className="text-white/45 hover:text-white/70 p-1"
+                className="text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 p-1"
               >
                 <X size={14} />
               </button>
@@ -234,15 +239,15 @@ export default function ApiKeysPage() {
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-5 h-5 text-white/30 animate-spin" />
+              <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
             </div>
           ) : keys.length === 0 ? (
             <div className="text-center py-16 px-6">
-              <Key className="w-8 h-8 text-white/20 mx-auto mb-3" />
-              <p className="text-body-lg text-white/45 mb-1">
+              <Key className="w-8 h-8 text-slate-300 dark:text-white/20 mx-auto mb-3" />
+              <p className="text-body-lg text-slate-500 dark:text-white/45 mb-1">
                 {t("apiKeys.noKeysYet")}
               </p>
-              <p className="text-small text-white/30">
+              <p className="text-small text-slate-400 dark:text-white/30">
                 {t("apiKeys.noKeysDescription")}
               </p>
             </div>
@@ -278,7 +283,9 @@ export default function ApiKeysPage() {
                         <Shield
                           size={14}
                           className={
-                            key.isActive ? "text-emerald-400" : "text-white/20"
+                            key.isActive
+                              ? "text-emerald-400"
+                              : "text-slate-300 dark:text-white/20"
                           }
                         />
                         <span className="text-body text-slate-900 dark:text-white font-medium">
@@ -292,7 +299,7 @@ export default function ApiKeysPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <code className="text-small font-mono text-white/45">
+                      <code className="text-small font-mono text-slate-500 dark:text-white/45">
                         {key.keyPrefix}...
                       </code>
                     </td>
@@ -301,20 +308,20 @@ export default function ApiKeysPage() {
                         {key.scopes.slice(0, 3).map((scope) => (
                           <span
                             key={scope}
-                            className="text-micro px-1.5 py-0.5 rounded bg-white/10 text-white/45"
+                            className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/45"
                           >
                             {scope}
                           </span>
                         ))}
                         {key.scopes.length > 3 && (
-                          <span className="text-micro text-white/30">
+                          <span className="text-micro text-slate-400 dark:text-white/30">
                             +{key.scopes.length - 3}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-small text-white/45">
+                      <span className="text-small text-slate-500 dark:text-white/45">
                         {key.lastUsedAt
                           ? new Date(key.lastUsedAt).toLocaleDateString()
                           : t("common.never")}
@@ -327,7 +334,7 @@ export default function ApiKeysPage() {
                             <button
                               onClick={() => handleRotate(key.id)}
                               disabled={actionLoading === key.id}
-                              className="p-1.5 rounded-lg text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
                               title={t("apiKeys.rotate")}
                             >
                               {actionLoading === key.id ? (
@@ -339,7 +346,7 @@ export default function ApiKeysPage() {
                             <button
                               onClick={() => handleRevoke(key.id)}
                               disabled={actionLoading === key.id}
-                              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                               title={t("apiKeys.revoke")}
                             >
                               <Trash2 size={14} />
@@ -363,18 +370,18 @@ export default function ApiKeysPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-dark-bg border border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
+              className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
             >
-              <h2 className="text-heading font-medium text-white mb-1">
+              <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
                 {t("apiKeys.createApiKey")}
               </h2>
-              <p className="text-body text-white/45 mb-6">
+              <p className="text-body text-slate-500 dark:text-white/45 mb-6">
                 {t("apiKeys.createApiKeyDescription")}
               </p>
 
               {/* Name */}
               <div className="mb-4">
-                <label className="text-small text-white/45 mb-1.5 block">
+                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
                   {t("apiKeys.keyName")}
                 </label>
                 <input
@@ -382,20 +389,20 @@ export default function ApiKeysPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder={t("apiKeys.keyNamePlaceholder")}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
 
               {/* Scopes */}
               <div className="mb-4">
-                <label className="text-small text-white/45 mb-1.5 block">
+                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
                   {t("apiKeys.scopes")}
                 </label>
                 <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
                   {scopes.map((s) => (
                     <label
                       key={s.scope}
-                      className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] cursor-pointer border border-white/5"
+                      className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.04] cursor-pointer border border-slate-100 dark:border-white/5"
                     >
                       <input
                         type="checkbox"
@@ -404,10 +411,10 @@ export default function ApiKeysPage() {
                         className="mt-0.5 accent-emerald-500"
                       />
                       <div>
-                        <p className="text-small text-white/70 font-medium">
+                        <p className="text-small text-slate-700 dark:text-white/70 font-medium">
                           {s.scope}
                         </p>
-                        <p className="text-micro text-white/45">
+                        <p className="text-micro text-slate-500 dark:text-white/45">
                           {s.description}
                         </p>
                       </div>
@@ -418,7 +425,7 @@ export default function ApiKeysPage() {
 
               {/* Rate Limit */}
               <div className="mb-6">
-                <label className="text-small text-white/45 mb-1.5 block">
+                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
                   {t("apiKeys.rateLimit")}
                 </label>
                 <input
@@ -427,7 +434,7 @@ export default function ApiKeysPage() {
                   onChange={(e) =>
                     setNewRateLimit(parseInt(e.target.value) || 1000)
                   }
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
 
@@ -435,7 +442,7 @@ export default function ApiKeysPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="flex-1 border border-white/10 text-white/45 py-2.5 rounded-lg text-body hover:bg-white/5 transition-all"
+                  className="flex-1 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                 >
                   {t("common.cancel")}
                 </button>

@@ -302,7 +302,7 @@ function MetricCard({
       ) : change < 0 ? (
         <ArrowDownRight size={14} className="text-red-500" />
       ) : (
-        <Minus size={14} className="text-white/45" />
+        <Minus size={14} className="text-slate-500 dark:text-white/45" />
       )
     ) : null;
 
@@ -312,14 +312,14 @@ function MetricCard({
         ? "text-emerald-500"
         : change < 0
           ? "text-red-500"
-          : "text-white/45"
+          : "text-slate-500 dark:text-white/45"
       : "";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 hover:border-white/10 transition-colors"
+      className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-5 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
     >
       <div className="flex items-start justify-between mb-4">
         <div
@@ -344,14 +344,14 @@ function MetricCard({
         )}
       </div>
 
-      <p className="text-small text-white/45 uppercase tracking-wider mb-1">
+      <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
         {title}
       </p>
 
       {loading ? (
-        <div className="h-8 w-24 bg-white/5 animate-pulse rounded" />
+        <div className="h-8 w-24 bg-slate-50 dark:bg-white/5 animate-pulse rounded" />
       ) : (
-        <p className="text-[28px] font-light text-white tracking-tight">
+        <p className="text-[28px] font-light text-slate-900 dark:text-white tracking-tight">
           {typeof value === "number" ? value.toLocaleString("de-DE") : value}
         </p>
       )}
@@ -364,7 +364,9 @@ function MetricCard({
             {change}%
           </span>
           {changeLabel && (
-            <span className="text-caption text-white/30">{changeLabel}</span>
+            <span className="text-caption text-slate-400 dark:text-white/30">
+              {changeLabel}
+            </span>
           )}
         </div>
       )}
@@ -402,10 +404,14 @@ function AlertCard({ alert }: { alert: AlertItem }) {
       <div className="flex items-start gap-3">
         <Icon size={18} className={config.iconColor} />
         <div className="flex-1 min-w-0">
-          <p className="text-body font-medium text-white">{alert.title}</p>
-          <p className="text-small text-white/45 mt-0.5">{alert.description}</p>
+          <p className="text-body font-medium text-slate-900 dark:text-white">
+            {alert.title}
+          </p>
+          <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
+            {alert.description}
+          </p>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-caption text-white/30">
+            <span className="text-caption text-slate-400 dark:text-white/30">
               {alert.timestamp}
             </span>
             {alert.actionLabel && (
@@ -435,15 +441,15 @@ function TimeRangeSelector({
   ];
 
   return (
-    <div className="flex items-center gap-1 bg-white/[0.03] rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-slate-50 dark:bg-white/[0.03] rounded-lg p-1">
       {options.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={`px-3 py-1.5 text-small font-medium rounded-lg transition-colors ${
             value === opt.value
-              ? "bg-white/10text-white"
-              : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+              ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
+              : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.05]"
           }`}
         >
           {opt.label}
@@ -470,7 +476,7 @@ function TabButton({
       className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium rounded-lg transition-all ${
         active
           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-          : "text-white/45 hover:text-white hover:bg-white/[0.03]"
+          : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.03]"
       }`}
     >
       {icon}
@@ -491,8 +497,10 @@ function ErrorState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <AlertTriangle size={32} className="text-amber-500 mb-3" />
-      <p className="text-body-lg text-white mb-1">Failed to load data</p>
-      <p className="text-small text-white/45">{message}</p>
+      <p className="text-body-lg text-slate-900 dark:text-white mb-1">
+        Failed to load data
+      </p>
+      <p className="text-small text-slate-500 dark:text-white/45">{message}</p>
     </div>
   );
 }
@@ -575,13 +583,13 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* DAU Trend */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-subtitle font-medium text-white">
+              <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
                 Daily Active Users
               </h3>
-              <p className="text-small text-white/45 mt-0.5">
+              <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
                 User engagement over time
               </p>
             </div>
@@ -627,7 +635,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-white/30">
+              <div className="flex items-center justify-center h-full text-slate-400 dark:text-white/30">
                 <p className="text-body">
                   No DAU data available for this period
                 </p>
@@ -637,13 +645,13 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Top Events */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-subtitle font-medium text-white">
+              <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
                 Top Events
               </h3>
-              <p className="text-small text-white/45 mt-0.5">
+              <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
                 Most frequent user actions
               </p>
             </div>
@@ -651,12 +659,12 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
           <div className="space-y-3">
             {metrics?.engagement.topEvents.slice(0, 8).map((event, i) => (
               <div key={event.type} className="flex items-center gap-4">
-                <span className="text-small text-white/45 w-32 truncate">
+                <span className="text-small text-slate-500 dark:text-white/45 w-32 truncate">
                   {event.type
                     .replace(/_/g, " ")
                     .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </span>
-                <div className="flex-1 h-6 bg-white/5 rounded-full overflow-hidden">
+                <div className="flex-1 h-6 bg-slate-50 dark:bg-white/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all bg-emerald-500"
                     style={{
@@ -664,7 +672,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
                     }}
                   />
                 </div>
-                <span className="text-small text-white w-16 text-right">
+                <span className="text-small text-slate-900 dark:text-white w-16 text-right">
                   {event.count}
                 </span>
               </div>
@@ -675,30 +683,32 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-4">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Engagement Summary
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-body text-white/45">Total Assessments</span>
-              <span className="text-body-lg font-medium text-white">
+              <span className="text-body text-slate-500 dark:text-white/45">
+                Total Assessments
+              </span>
+              <span className="text-body-lg font-medium text-slate-900 dark:text-white">
                 {metrics?.engagement.assessments || 0}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-body text-white/45">
+              <span className="text-body text-slate-500 dark:text-white/45">
                 Documents Uploaded
               </span>
-              <span className="text-body-lg font-medium text-white">
+              <span className="text-body-lg font-medium text-slate-900 dark:text-white">
                 {metrics?.engagement.documents || 0}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-body text-white/45">
+              <span className="text-body text-slate-500 dark:text-white/45">
                 Active Organizations
               </span>
-              <span className="text-body-lg font-medium text-white">
+              <span className="text-body-lg font-medium text-slate-900 dark:text-white">
                 {metrics?.organizations.active || 0}
               </span>
             </div>
@@ -706,9 +716,9 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Alerts */}
-        <div className="lg:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+        <div className="lg:col-span-2 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-subtitle font-medium text-white">
+            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
               Alerts & Insights
             </h3>
             {alerts.length > 0 && (
@@ -724,7 +734,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-white/30">
+            <div className="text-center py-8 text-slate-400 dark:text-white/30">
               <CheckCircle2 size={32} className="mx-auto mb-2 opacity-50" />
               <p className="text-body">All metrics looking healthy</p>
             </div>
@@ -787,8 +797,8 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* MRR Trend */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             MRR Trend
           </h3>
           <div className="h-[300px]">
@@ -839,7 +849,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-white/30">
+              <div className="flex items-center justify-center h-full text-slate-400 dark:text-white/30">
                 <p className="text-body">No MRR data available</p>
               </div>
             )}
@@ -847,8 +857,8 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Revenue by Plan */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Revenue by Plan
           </h3>
           {breakdown.length > 0 ? (
@@ -898,10 +908,10 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
                         backgroundColor: planColors[plan.plan] || "#6B7280",
                       }}
                     />
-                    <span className="text-caption text-white/45">
+                    <span className="text-caption text-slate-500 dark:text-white/45">
                       {plan.plan}
                     </span>
-                    <span className="text-caption text-white ml-auto">
+                    <span className="text-caption text-slate-900 dark:text-white ml-auto">
                       {plan.customers}
                     </span>
                   </div>
@@ -909,7 +919,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full text-white/30">
+            <div className="flex items-center justify-center h-full text-slate-400 dark:text-white/30">
               <p className="text-body">No subscription data available</p>
             </div>
           )}
@@ -918,34 +928,36 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Churn & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             Churn Rate
           </p>
-          <p className="text-display font-light text-white">
+          <p className="text-display font-light text-slate-900 dark:text-white">
             {metrics?.churnRate || 0}%
           </p>
-          <p className="text-small text-white/30 mt-2">
+          <p className="text-small text-slate-400 dark:text-white/30 mt-2">
             {metrics?.churnedSubscriptions || 0} churned this period
           </p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             New Subscriptions
           </p>
           <p className="text-display font-light text-emerald-400">
             {metrics?.newSubscriptions || 0}
           </p>
-          <p className="text-small text-white/30 mt-2">Added this period</p>
+          <p className="text-small text-slate-400 dark:text-white/30 mt-2">
+            Added this period
+          </p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             Customer LTV
           </p>
-          <p className="text-display font-light text-white">
+          <p className="text-display font-light text-slate-900 dark:text-white">
             €{(metrics?.ltv || 0).toLocaleString("de-DE")}
           </p>
-          <p className="text-small text-white/30 mt-2">
+          <p className="text-small text-slate-400 dark:text-white/30 mt-2">
             Estimated lifetime value
           </p>
         </div>
@@ -1010,8 +1022,8 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Module Usage */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Module Usage
           </h3>
           {usage?.modules && usage.modules.length > 0 ? (
@@ -1054,15 +1066,15 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-white/30">
+            <div className="flex items-center justify-center h-[300px] text-slate-400 dark:text-white/30">
               <p className="text-body">No module usage data available</p>
             </div>
           )}
         </div>
 
         {/* Page Views Trend */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Page Views Over Time
           </h3>
           {trends?.pageViews && trends.pageViews.length > 0 ? (
@@ -1108,7 +1120,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-white/30">
+            <div className="flex items-center justify-center h-[300px] text-slate-400 dark:text-white/30">
               <p className="text-body">No page view data available</p>
             </div>
           )}
@@ -1116,8 +1128,8 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* Assessment Breakdown */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-white mb-4">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Assessment Breakdown
         </h3>
         {metrics?.assessments.breakdown &&
@@ -1126,10 +1138,12 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
             {metrics.assessments.breakdown.map((assessment) => (
               <div
                 key={assessment.type}
-                className="bg-white/[0.03] rounded-lg p-4"
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-lg p-4"
               >
-                <p className="text-body text-white/45">{assessment.type}</p>
-                <p className="text-[28px] font-light text-white mt-1">
+                <p className="text-body text-slate-500 dark:text-white/45">
+                  {assessment.type}
+                </p>
+                <p className="text-[28px] font-light text-slate-900 dark:text-white mt-1">
                   {assessment.count}
                 </p>
                 <p className="text-small text-emerald-400">
@@ -1139,7 +1153,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-white/30">
+          <div className="text-center py-8 text-slate-400 dark:text-white/30">
             <BarChart3 size={32} className="mx-auto mb-2 opacity-50" />
             <p className="text-body">No assessment data available</p>
           </div>
@@ -1202,8 +1216,8 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Plan Distribution */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Customers by Plan
           </h3>
           {segments?.byPlan && segments.byPlan.length > 0 ? (
@@ -1247,10 +1261,10 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                         backgroundColor: planColors[plan.plan] || "#6B7280",
                       }}
                     />
-                    <span className="text-caption text-white/45">
+                    <span className="text-caption text-slate-500 dark:text-white/45">
                       {plan.plan}
                     </span>
-                    <span className="text-caption text-white ml-auto">
+                    <span className="text-caption text-slate-900 dark:text-white ml-auto">
                       {plan.count}
                     </span>
                   </div>
@@ -1258,41 +1272,41 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-white/30">
+            <div className="flex items-center justify-center h-[300px] text-slate-400 dark:text-white/30">
               <p className="text-body">No plan data available</p>
             </div>
           )}
         </div>
 
         {/* Conversion Funnel */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Conversion Funnel
           </h3>
           {funnel.length > 0 ? (
             <div className="space-y-3">
               {funnel.map((stage, i) => (
                 <div key={stage.stage} className="flex items-center gap-4">
-                  <span className="text-small text-white/45 w-20">
+                  <span className="text-small text-slate-500 dark:text-white/45 w-20">
                     {stage.stage}
                   </span>
-                  <div className="flex-1 h-8 bg-white/5 rounded-lg overflow-hidden">
+                  <div className="flex-1 h-8 bg-slate-50 dark:bg-white/5 rounded-lg overflow-hidden">
                     <div
                       className="h-full rounded-lg transition-all bg-gradient-to-r from-emerald-500 to-emerald-600"
                       style={{ width: `${stage.rate}%` }}
                     />
                   </div>
-                  <span className="text-small text-white w-12 text-right">
+                  <span className="text-small text-slate-900 dark:text-white w-12 text-right">
                     {stage.count}
                   </span>
-                  <span className="text-caption text-white/30 w-10 text-right">
+                  <span className="text-caption text-slate-400 dark:text-white/30 w-10 text-right">
                     {stage.rate}%
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[200px] text-white/30">
+            <div className="flex items-center justify-center h-[200px] text-slate-400 dark:text-white/30">
               <p className="text-body">No funnel data available</p>
             </div>
           )}
@@ -1300,31 +1314,31 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* Top Customers */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-white mb-4">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Top Customers by Activity
         </h3>
         {topCustomers.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-white/[0.06]">
-                  <th className="pb-3 text-caption text-white/45 font-medium">
+                <tr className="text-left border-b border-slate-100 dark:border-white/[0.06]">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium">
                     Organization
                   </th>
-                  <th className="pb-3 text-caption text-white/45 font-medium">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium">
                     Plan
                   </th>
-                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium text-right">
                     MRR
                   </th>
-                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium text-right">
                     Users
                   </th>
-                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium text-right">
                     Assessments
                   </th>
-                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
+                  <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium text-right">
                     Joined
                   </th>
                 </tr>
@@ -1333,9 +1347,9 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                 {topCustomers.slice(0, 5).map((customer) => (
                   <tr
                     key={customer.name}
-                    className="border-b border-white/[0.04]"
+                    className="border-b border-slate-100 dark:border-white/[0.04]"
                   >
-                    <td className="py-3 text-body text-white">
+                    <td className="py-3 text-body text-slate-900 dark:text-white">
                       {customer.name}
                     </td>
                     <td className="py-3">
@@ -1345,22 +1359,22 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                             ? "bg-emerald-500/10 text-emerald-400"
                             : customer.plan === "professional"
                               ? "bg-blue-500/10 text-blue-400"
-                              : "bg-white/5 text-white/45"
+                              : "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45"
                         }`}
                       >
                         {customer.plan}
                       </span>
                     </td>
-                    <td className="py-3 text-body text-white text-right">
+                    <td className="py-3 text-body text-slate-900 dark:text-white text-right">
                       €{customer.mrr}
                     </td>
-                    <td className="py-3 text-body text-white/45 text-right">
+                    <td className="py-3 text-body text-slate-500 dark:text-white/45 text-right">
                       {customer.users}
                     </td>
-                    <td className="py-3 text-body text-white/45 text-right">
+                    <td className="py-3 text-body text-slate-500 dark:text-white/45 text-right">
                       {customer.assessments}
                     </td>
-                    <td className="py-3 text-small text-white/30 text-right">
+                    <td className="py-3 text-small text-slate-400 dark:text-white/30 text-right">
                       {customer.joinedAt}
                     </td>
                   </tr>
@@ -1369,7 +1383,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
             </table>
           </div>
         ) : (
-          <div className="text-center py-8 text-white/30">
+          <div className="text-center py-8 text-slate-400 dark:text-white/30">
             <Users size={32} className="mx-auto mb-2 opacity-50" />
             <p className="text-body">No customer data available</p>
           </div>
@@ -1426,18 +1440,18 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Traffic Sources */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Traffic Sources
           </h3>
           {sources.length > 0 ? (
             <div className="space-y-3">
               {sources.slice(0, 8).map((source) => (
                 <div key={source.source} className="flex items-center gap-4">
-                  <span className="text-small text-white/45 w-24 truncate">
+                  <span className="text-small text-slate-500 dark:text-white/45 w-24 truncate">
                     {source.source}
                   </span>
-                  <div className="flex-1 h-6 bg-white/5 rounded-full overflow-hidden">
+                  <div className="flex-1 h-6 bg-slate-50 dark:bg-white/5 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -1446,25 +1460,25 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                       }}
                     />
                   </div>
-                  <span className="text-small text-white w-16 text-right">
+                  <span className="text-small text-slate-900 dark:text-white w-16 text-right">
                     {source.visits}
                   </span>
-                  <span className="text-caption text-white/30 w-10 text-right">
+                  <span className="text-caption text-slate-400 dark:text-white/30 w-10 text-right">
                     {source.percentage}%
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[200px] text-white/30">
+            <div className="flex items-center justify-center h-[200px] text-slate-400 dark:text-white/30">
               <p className="text-body">No traffic source data available</p>
             </div>
           )}
         </div>
 
         {/* Traffic Trend */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Traffic Over Time
           </h3>
           {trends?.traffic && trends.traffic.length > 0 ? (
@@ -1512,7 +1526,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[250px] text-white/30">
+            <div className="flex items-center justify-center h-[250px] text-slate-400 dark:text-white/30">
               <p className="text-body">No traffic trend data available</p>
             </div>
           )}
@@ -1522,8 +1536,8 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Channels & Geography */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Channel Attribution */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Channel Attribution
           </h3>
           {channels.length > 0 ? (
@@ -1533,14 +1547,14 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                   key={channel.channel}
                   className="flex items-center justify-between"
                 >
-                  <span className="text-body text-white/45">
+                  <span className="text-body text-slate-500 dark:text-white/45">
                     {channel.channel}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-body text-white">
+                    <span className="text-body text-slate-900 dark:text-white">
                       {channel.visits}
                     </span>
-                    <span className="text-caption text-white/30 w-10 text-right">
+                    <span className="text-caption text-slate-400 dark:text-white/30 w-10 text-right">
                       {channel.percentage}%
                     </span>
                   </div>
@@ -1548,36 +1562,39 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[150px] text-white/30">
+            <div className="flex items-center justify-center h-[150px] text-slate-400 dark:text-white/30">
               <p className="text-body">No channel data available</p>
             </div>
           )}
         </div>
 
         {/* Geography */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Top Countries
           </h3>
           {geography.length > 0 ? (
             <div className="space-y-3">
               {geography.slice(0, 6).map((country) => (
                 <div key={country.code} className="flex items-center gap-4">
-                  <Globe size={14} className="text-white/30" />
-                  <span className="text-body text-white flex-1">
+                  <Globe
+                    size={14}
+                    className="text-slate-400 dark:text-white/30"
+                  />
+                  <span className="text-body text-slate-900 dark:text-white flex-1">
                     {country.country}
                   </span>
-                  <span className="text-small text-white/45">
+                  <span className="text-small text-slate-500 dark:text-white/45">
                     {country.visits}
                   </span>
-                  <span className="text-caption text-white/30 w-10 text-right">
+                  <span className="text-caption text-slate-400 dark:text-white/30 w-10 text-right">
                     {country.percentage}%
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[150px] text-white/30">
+            <div className="flex items-center justify-center h-[150px] text-slate-400 dark:text-white/30">
               <p className="text-body">No geographic data available</p>
             </div>
           )}
@@ -1635,8 +1652,8 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* API Performance Trend */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-white mb-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
           API Performance
         </h3>
         {trends?.api && trends.api.length > 0 ? (
@@ -1698,7 +1715,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-[300px] text-white/30">
+          <div className="flex items-center justify-center h-[300px] text-slate-400 dark:text-white/30">
             <p className="text-body">No API performance data available</p>
           </div>
         )}
@@ -1706,8 +1723,8 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Health */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-4">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             System Health
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -1721,16 +1738,19 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
                 unit: "",
               },
             ].map((metric) => (
-              <div key={metric.name} className="bg-white/[0.03] rounded-lg p-4">
-                <p className="text-caption text-white/45 uppercase tracking-wider">
+              <div
+                key={metric.name}
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-lg p-4"
+              >
+                <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   {metric.name}
                 </p>
-                <p className="text-display-sm font-light text-white mt-1">
+                <p className="text-display-sm font-light text-slate-900 dark:text-white mt-1">
                   {metric.value}
                   {metric.unit}
                 </p>
                 {metric.unit === "%" && (
-                  <div className="mt-2 h-1 bg-white/10rounded-full overflow-hidden">
+                  <div className="mt-2 h-1 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
                         metric.value > 80
@@ -1749,8 +1769,8 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Top Endpoints */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-4">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Top Endpoints
           </h3>
           {endpoints.length > 0 ? (
@@ -1758,13 +1778,13 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
               {endpoints.slice(0, 6).map((endpoint) => (
                 <div
                   key={endpoint.endpoint}
-                  className="flex items-center justify-between p-3 bg-white/[0.03] rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/[0.03] rounded-lg"
                 >
-                  <span className="text-small text-white truncate flex-1">
+                  <span className="text-small text-slate-900 dark:text-white truncate flex-1">
                     {endpoint.endpoint}
                   </span>
                   <div className="flex items-center gap-4">
-                    <span className="text-caption text-white/45">
+                    <span className="text-caption text-slate-500 dark:text-white/45">
                       {endpoint.calls} calls
                     </span>
                     <span className="text-caption font-mono text-emerald-400">
@@ -1780,7 +1800,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[200px] text-white/30">
+            <div className="flex items-center justify-center h-[200px] text-slate-400 dark:text-white/30">
               <p className="text-body">No endpoint data available</p>
             </div>
           )}
@@ -1789,8 +1809,8 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Error Types */}
       {errors && errors.types.length > 0 && (
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-4">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Error Distribution
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1802,7 +1822,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
                 <p className="text-caption text-red-400 truncate">
                   {error.type}
                 </p>
-                <p className="text-heading-lg font-light text-white mt-1">
+                <p className="text-heading-lg font-light text-slate-900 dark:text-white mt-1">
                   {error.count}
                 </p>
               </div>
@@ -1851,16 +1871,16 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-white/[0.06] bg-dark-surface/80 backdrop-blur-xl sticky top-0 z-20">
+      <div className="border-b border-slate-100 dark:border-white/[0.06] bg-light-bg/80 dark:bg-dark-surface/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-heading-lg font-medium text-white">
+              <h1 className="text-heading-lg font-medium text-slate-900 dark:text-white">
                 CEO Analytics
               </h1>
-              <p className="text-small text-white/45 mt-0.5">
+              <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
                 Last updated:{" "}
                 {lastUpdated.toLocaleTimeString("de-DE", {
                   hour: "2-digit",
@@ -1873,7 +1893,7 @@ export default function AnalyticsPage() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10text-white text-body font-medium rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-900 dark:text-white text-body font-medium rounded-lg transition-colors disabled:opacity-50"
               >
                 <RefreshCw
                   size={14}

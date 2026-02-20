@@ -676,7 +676,7 @@ function DebrisPageContent() {
                     {/* Altitude */}
                     {form.orbitType && form.orbitType !== "GEO" && (
                       <div>
-                        <label className="block text-small text-white/45 mb-2">
+                        <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                           Altitude (km)
                         </label>
                         <input
@@ -691,14 +691,14 @@ function DebrisPageContent() {
                             }))
                           }
                           placeholder="e.g., 550"
-                          className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                          className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                         />
                       </div>
                     )}
 
                     {/* Satellite Count */}
                     <div>
-                      <label className="block text-small text-white/45 mb-2">
+                      <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                         Number of Satellites
                       </label>
                       <input
@@ -711,10 +711,10 @@ function DebrisPageContent() {
                             satelliteCount: parseInt(e.target.value) || 1,
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                       {form.satelliteCount && form.satelliteCount > 1 && (
-                        <p className="text-caption text-white/70 mt-1">
+                        <p className="text-caption text-slate-600 dark:text-white/70 mt-1">
                           Tier: {getConstellationTier(form.satelliteCount)}
                         </p>
                       )}
@@ -722,7 +722,7 @@ function DebrisPageContent() {
 
                     {/* Maneuverability */}
                     <div>
-                      <label className="block text-small text-white/45 mb-2">
+                      <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                         Maneuverability *
                       </label>
                       <select
@@ -735,7 +735,7 @@ function DebrisPageContent() {
                             hasPropulsion: e.target.value !== "none",
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select capability...</option>
                         <option value="full">
@@ -750,7 +750,7 @@ function DebrisPageContent() {
 
                     {/* Mission Duration */}
                     <div>
-                      <label className="block text-small text-white/45 mb-2">
+                      <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                         Mission Duration (years)
                       </label>
                       <input
@@ -764,13 +764,13 @@ function DebrisPageContent() {
                               parseInt(e.target.value) || 5,
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
                     {/* Deorbit Strategy */}
                     <div>
-                      <label className="block text-small text-white/45 mb-2">
+                      <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                         Deorbit Strategy *
                       </label>
                       <select
@@ -782,7 +782,7 @@ function DebrisPageContent() {
                           }))
                         }
                         disabled={!form.orbitType}
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15] disabled:opacity-50"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] disabled:opacity-50"
                       >
                         <option value="">Select strategy...</option>
                         {availableDeorbitStrategies.map((strategy) => (
@@ -804,7 +804,7 @@ function DebrisPageContent() {
                     {form.deorbitStrategy &&
                       form.deorbitStrategy !== "passive_decay" && (
                         <div>
-                          <label className="block text-small text-white/45 mb-2">
+                          <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                             Deorbit Timeline (years post-mission)
                           </label>
                           <input
@@ -821,20 +821,20 @@ function DebrisPageContent() {
                               }))
                             }
                             placeholder="e.g., 5"
-                            className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                            className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                           />
                         </div>
                       )}
 
                     {/* CA Service Provider */}
                     <div>
-                      <label className="block text-small text-white/45 mb-2">
+                      <label className="block text-small text-slate-500 dark:text-white/45 mb-2">
                         CA Service Provider
                       </label>
                       <select
                         value={caServiceProvider}
                         onChange={(e) => setCaServiceProvider(e.target.value)}
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select or enter...</option>
                         <option value="EUSST">
@@ -864,11 +864,11 @@ function DebrisPageContent() {
                             hasPassivationCapability: e.target.checked,
                           }))
                         }
-                        className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
+                        className="w-4 h-4 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded"
                       />
                       <label
                         htmlFor="passivation"
-                        className="text-body text-white/45"
+                        className="text-body text-slate-500 dark:text-white/45"
                       >
                         Has passivation capability (can deplete energy sources
                         at EOL)
@@ -932,7 +932,7 @@ function DebrisPageContent() {
                   {assessments.length > 0 && (
                     <button
                       onClick={() => setShowNewAssessment(false)}
-                      className="px-4 py-2 text-body text-white/45 hover:text-white/70 transition-colors"
+                      className="px-4 py-2 text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
                     >
                       Cancel
                     </button>
@@ -945,7 +945,7 @@ function DebrisPageContent() {
                       !form.hasManeuverability ||
                       !form.deorbitStrategy
                     }
-                    className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-white/90 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-slate-800 dark:hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {creating ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -1325,7 +1325,7 @@ function DebrisPageContent() {
                   <button
                     onClick={generatePlan}
                     disabled={generatingPlan}
-                    className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium text-body-lg hover:bg-white/90 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg font-medium text-body-lg hover:bg-slate-800 dark:hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {generatingPlan ? (
                       <Loader2 size={16} className="animate-spin" />

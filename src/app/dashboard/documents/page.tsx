@@ -350,7 +350,7 @@ function DocumentsPageContent() {
                 </div>
                 <div>
                   <p
-                    className={`text-2xl font-semibold ${stats.expired > 0 ? "text-red-400" : "text-white"}`}
+                    className={`text-2xl font-semibold ${stats.expired > 0 ? "text-red-400" : "text-slate-900 dark:text-white"}`}
                   >
                     {stats.expired}
                   </p>
@@ -418,8 +418,8 @@ function DocumentsPageContent() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
+                  ? "bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white"
+                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5"
               }
             `}
           >
@@ -458,7 +458,7 @@ function DocumentsPageContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search documents..."
-                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <label htmlFor="doc-category-filter" className="sr-only">
@@ -519,7 +519,7 @@ function DocumentsPageContent() {
                         {docs.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
                               <div className="text-slate-500 dark:text-white/45">

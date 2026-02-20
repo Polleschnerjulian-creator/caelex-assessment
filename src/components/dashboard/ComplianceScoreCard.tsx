@@ -65,14 +65,14 @@ const statusBarColors: Record<string, string> = {
   compliant: "bg-emerald-500",
   partial: "bg-amber-500",
   non_compliant: "bg-red-500",
-  not_started: "bg-white/10",
+  not_started: "bg-slate-200 dark:bg-white/10",
 };
 
 const priorityColors: Record<string, string> = {
   critical: "bg-red-500/20 text-red-400 border-red-500/30",
   high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   medium: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  low: "bg-white/10 text-white/45 border-white/10",
+  low: "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/10 dark:text-white/45 dark:border-white/10",
 };
 
 export default function ComplianceScoreCard() {
@@ -105,10 +105,10 @@ export default function ComplianceScoreCard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8"
+        className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 mb-8"
       >
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-white/30 animate-spin" />
+          <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
         </div>
       </motion.div>
     );
@@ -124,12 +124,12 @@ export default function ComplianceScoreCard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-8"
+      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 mb-8"
     >
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-caption uppercase tracking-[0.2em] text-white/45">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
             {t("dashboard.complianceScore")}
           </h2>
         </div>
@@ -137,12 +137,12 @@ export default function ComplianceScoreCard() {
           <DownloadReportButton />
           <Link
             href="/dashboard/compliance-methodology"
-            className="flex items-center gap-1 text-caption text-white/30 hover:text-white/70 transition-colors"
+            className="flex items-center gap-1 text-caption text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             <HelpCircle className="w-3 h-3" />
             <span>{t("dashboard.methodology")}</span>
           </Link>
-          <div className="flex items-center gap-1 text-caption text-white/30">
+          <div className="flex items-center gap-1 text-caption text-slate-400 dark:text-white/30">
             <TrendingUp className="w-3 h-3" />
             <span>{t("dashboard.updatedLive")}</span>
           </div>
@@ -177,10 +177,10 @@ export default function ComplianceScoreCard() {
             </svg>
           </div>
           <div>
-            <p className="text-[36px] font-semibold text-white leading-none">
+            <p className="text-[36px] font-semibold text-slate-900 dark:text-white leading-none">
               {data.overall}
             </p>
-            <p className="text-caption text-white/45 mt-1">
+            <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
               {t("dashboard.outOf100")}
             </p>
           </div>
@@ -190,16 +190,16 @@ export default function ComplianceScoreCard() {
         <div className="space-y-2.5">
           {Object.entries(data.breakdown).map(([key, mod]) => (
             <div key={key} className="flex items-center gap-3">
-              <span className="text-caption text-white/45 w-24 truncate">
+              <span className="text-caption text-slate-500 dark:text-white/45 w-24 truncate">
                 {t(moduleKeyMap[key] || `modules.${key}`)}
               </span>
-              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${statusBarColors[mod.status]}`}
                   style={{ width: `${mod.score}%` }}
                 />
               </div>
-              <span className="text-caption text-white/45 w-8 text-right">
+              <span className="text-caption text-slate-500 dark:text-white/45 w-8 text-right">
                 {mod.score}
               </span>
             </div>
@@ -208,7 +208,7 @@ export default function ComplianceScoreCard() {
 
         {/* Right: Top Recommendations */}
         <div>
-          <p className="text-micro font-medium uppercase tracking-wider text-white/45 mb-2">
+          <p className="text-micro font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 mb-2">
             {t("dashboard.topRecommendations")}
           </p>
           {topRecommendations.length > 0 ? (
@@ -223,7 +223,9 @@ export default function ComplianceScoreCard() {
                   >
                     {t(`common.${rec.priority}`)}
                   </span>
-                  <span className="text-white/45">{rec.action}</span>
+                  <span className="text-slate-500 dark:text-white/45">
+                    {rec.action}
+                  </span>
                 </div>
               ))}
             </div>

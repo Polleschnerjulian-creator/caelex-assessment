@@ -82,10 +82,12 @@ export function ComplianceScoreCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-white">Compliance Score</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Compliance Score
+          </h2>
           <p className="text-sm text-slate-400">EU Space Act Compliance</p>
         </div>
         <div
@@ -107,7 +109,7 @@ export function ComplianceScoreCard({
               fill="none"
               stroke="currentColor"
               strokeWidth="12"
-              className="text-white/20"
+              className="text-slate-300 dark:text-white/20"
             />
             {/* Progress circle */}
             <motion.circle
@@ -134,7 +136,7 @@ export function ComplianceScoreCard({
           {/* Score in center */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              className="text-4xl font-bold text-white"
+              className="text-4xl font-bold text-slate-900 dark:text-white"
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}

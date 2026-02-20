@@ -257,7 +257,7 @@ function ScoreGauge({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[42px] font-light text-white tracking-tight">
+        <span className="text-[42px] font-light text-slate-900 dark:text-white tracking-tight">
           {score}
         </span>
         <span
@@ -299,7 +299,7 @@ function KPICard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 hover:border-white/10 transition-colors"
+      className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -314,10 +314,10 @@ function KPICard({
             ) : trend < 0 ? (
               <ArrowDownRight size={12} className="text-red-500" />
             ) : (
-              <Minus size={12} className="text-white/45" />
+              <Minus size={12} className="text-slate-500 dark:text-white/45" />
             )}
             <span
-              className={`text-caption font-medium ${trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-500" : "text-white/45"}`}
+              className={`text-caption font-medium ${trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-500" : "text-slate-500 dark:text-white/45"}`}
             >
               {trend > 0 ? "+" : ""}
               {trend}
@@ -325,14 +325,16 @@ function KPICard({
           </div>
         )}
       </div>
-      <p className="text-caption text-white/45 uppercase tracking-wider mb-0.5">
+      <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-0.5">
         {title}
       </p>
-      <p className="text-heading-lg font-light text-white tracking-tight">
+      <p className="text-heading-lg font-light text-slate-900 dark:text-white tracking-tight">
         {value}
       </p>
       {subtitle && (
-        <p className="text-caption text-white/45 mt-0.5">{subtitle}</p>
+        <p className="text-caption text-slate-500 dark:text-white/45 mt-0.5">
+          {subtitle}
+        </p>
       )}
     </motion.div>
   );
@@ -355,7 +357,7 @@ function TabButton({
       className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium rounded-lg transition-all ${
         active
           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-          : "text-white/45 hover:text-white hover:bg-white/[0.03]"
+          : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.03]"
       }`}
     >
       {icon}
@@ -381,9 +383,13 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <Layers size={32} className="text-white/20 mb-3" />
-      <p className="text-body-lg text-white mb-1">{title}</p>
-      <p className="text-small text-white/45 max-w-md">{description}</p>
+      <Layers size={32} className="text-slate-300 dark:text-white/20 mb-3" />
+      <p className="text-body-lg text-slate-900 dark:text-white mb-1">
+        {title}
+      </p>
+      <p className="text-small text-slate-500 dark:text-white/45 max-w-md">
+        {description}
+      </p>
     </div>
   );
 }
@@ -393,7 +399,7 @@ function SeverityBadge({ severity }: { severity: string }) {
     critical: "bg-red-500/10 text-red-400 border-red-500/20",
     high: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    low: "bg-white/5 text-white/45 border-white/10",
+    low: "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-white/10",
   };
 
   return (
@@ -410,7 +416,8 @@ function StatusBadge({ status }: { status: string }) {
     compliant: "bg-emerald-500/10 text-emerald-400",
     partial: "bg-amber-500/10 text-amber-400",
     non_compliant: "bg-red-500/10 text-red-400",
-    not_started: "bg-white/5 text-white/45",
+    not_started:
+      "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45",
     mostly_compliant: "bg-blue-500/10 text-blue-400",
   };
 
@@ -440,24 +447,26 @@ function OverviewTab({ state }: { state: TwinState }) {
   return (
     <div className="space-y-6">
       {/* Trajectory Chart */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-subtitle font-medium text-white">
+            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
               Compliance Trajectory
             </h3>
-            <p className="text-small text-white/45">
+            <p className="text-small text-slate-500 dark:text-white/45">
               12-month history + 90-day forecast
             </p>
           </div>
           <div className="flex items-center gap-4 text-caption">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-0.5 bg-emerald-500 rounded" />
-              <span className="text-white/45">History</span>
+              <span className="text-slate-500 dark:text-white/45">History</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-0.5 bg-emerald-500/50 rounded border border-dashed border-emerald-500" />
-              <span className="text-white/45">Forecast</span>
+              <span className="text-slate-500 dark:text-white/45">
+                Forecast
+              </span>
             </div>
           </div>
         </div>
@@ -509,23 +518,23 @@ function OverviewTab({ state }: { state: TwinState }) {
 
       {/* Module Breakdown */}
       <div>
-        <h3 className="text-subtitle font-medium text-white mb-3">
+        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
           Module Breakdown
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {state.modules.map((m) => (
             <div
               key={m.id}
-              className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 hover:border-white/10 transition-colors"
+              className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-body font-medium text-white">
+                <span className="text-body font-medium text-slate-900 dark:text-white">
                   {m.name}
                 </span>
                 <StatusBadge status={m.status} />
               </div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-display-sm font-light text-white">
+                <span className="text-display-sm font-light text-slate-900 dark:text-white">
                   {m.score}
                 </span>
                 {m.trend !== 0 && (
@@ -542,13 +551,13 @@ function OverviewTab({ state }: { state: TwinState }) {
                   </span>
                 )}
               </div>
-              <div className="w-full bg-white/[0.06] rounded-full h-1.5 mb-2">
+              <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 mb-2">
                 <div
                   className={`h-1.5 rounded-full ${m.score >= 80 ? "bg-emerald-500" : m.score >= 50 ? "bg-amber-500" : "bg-red-500"}`}
                   style={{ width: `${m.score}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-caption text-white/45">
+              <div className="flex items-center justify-between text-caption text-slate-500 dark:text-white/45">
                 <span>Weight: {Math.round(m.weight * 100)}%</span>
                 {m.nextDeadline && (
                   <span>
@@ -564,7 +573,7 @@ function OverviewTab({ state }: { state: TwinState }) {
       {/* Alerts */}
       {state.alerts.length > 0 && (
         <div>
-          <h3 className="text-subtitle font-medium text-white mb-3">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
             Active Alerts
           </h3>
           <div className="space-y-2">
@@ -576,7 +585,7 @@ function OverviewTab({ state }: { state: TwinState }) {
                     ? "bg-red-500/5 border-red-500/20"
                     : alert.severity === "high"
                       ? "bg-amber-500/5 border-amber-500/20"
-                      : "bg-white/[0.02] border-white/[0.06]"
+                      : "bg-slate-50 dark:bg-white/[0.02] border-slate-100 dark:border-white/[0.06]"
                 }`}
               >
                 <AlertTriangle
@@ -586,17 +595,17 @@ function OverviewTab({ state }: { state: TwinState }) {
                       ? "text-red-500 mt-0.5"
                       : alert.severity === "high"
                         ? "text-amber-500 mt-0.5"
-                        : "text-white/45 mt-0.5"
+                        : "text-slate-500 dark:text-white/45 mt-0.5"
                   }
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-body font-medium text-white">
+                    <span className="text-body font-medium text-slate-900 dark:text-white">
                       {alert.title}
                     </span>
                     <SeverityBadge severity={alert.severity} />
                   </div>
-                  <p className="text-small text-white/45 mt-0.5">
+                  <p className="text-small text-slate-500 dark:text-white/45 mt-0.5">
                     {alert.description}
                   </p>
                 </div>
@@ -616,46 +625,52 @@ function OverviewTab({ state }: { state: TwinState }) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Requirements
           </p>
-          <p className="text-heading-lg font-light text-white">
+          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
             {state.requirements.compliant}/{state.requirements.total}
           </p>
-          <p className="text-caption text-white/45">covered</p>
+          <p className="text-caption text-slate-500 dark:text-white/45">
+            covered
+          </p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Evidence Gaps
           </p>
-          <p className="text-heading-lg font-light text-white">
+          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
             {state.evidence.total - state.evidence.accepted}
           </p>
-          <p className="text-caption text-white/45">missing or expired</p>
+          <p className="text-caption text-slate-500 dark:text-white/45">
+            missing or expired
+          </p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Days Since Incident
           </p>
-          <p className="text-heading-lg font-light text-white">
+          <p className="text-heading-lg font-light text-slate-900 dark:text-white">
             {state.incidents.open === 0 ? "—" : state.incidents.open}
           </p>
-          <p className="text-caption text-white/45">
+          <p className="text-caption text-slate-500 dark:text-white/45">
             {state.incidents.open === 0 ? "no active" : "open"}
           </p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 text-center">
-          <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             30d Velocity
           </p>
           <p
-            className={`text-heading-lg font-light ${state.velocity.thirtyDay > 0 ? "text-emerald-400" : state.velocity.thirtyDay < 0 ? "text-red-400" : "text-white"}`}
+            className={`text-heading-lg font-light ${state.velocity.thirtyDay > 0 ? "text-emerald-400" : state.velocity.thirtyDay < 0 ? "text-red-400" : "text-slate-900 dark:text-white"}`}
           >
             {state.velocity.thirtyDay > 0 ? "+" : ""}
             {state.velocity.thirtyDay}
           </p>
-          <p className="text-caption text-white/45">pts/month</p>
+          <p className="text-caption text-slate-500 dark:text-white/45">
+            pts/month
+          </p>
         </div>
       </div>
     </div>
@@ -680,8 +695,8 @@ function FrameworksTab() {
     <div className="space-y-6">
       {/* Radar Chart */}
       {data.radarData.length >= 3 && (
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-white mb-4">
+        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Framework Radar
           </h3>
           <div className="h-[320px]">
@@ -711,29 +726,29 @@ function FrameworksTab() {
       )}
 
       {/* Comparison Table */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/[0.06]">
-          <h3 className="text-subtitle font-medium text-white">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
             Framework Comparison
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="text-left px-6 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-white/[0.06]">
+                <th className="text-left px-6 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Framework
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Score
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Requirements
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Last Assessed
                 </th>
               </tr>
@@ -742,9 +757,9 @@ function FrameworksTab() {
               {data.frameworks.map((f) => (
                 <tr
                   key={f.id}
-                  className="border-b border-white/[0.04] hover:bg-white/[0.02]"
+                  className="border-b border-slate-100 dark:border-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.02]"
                 >
-                  <td className="px-6 py-3 text-body text-white font-medium">
+                  <td className="px-6 py-3 text-body text-slate-900 dark:text-white font-medium">
                     {f.name}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -757,10 +772,10 @@ function FrameworksTab() {
                   <td className="px-4 py-3 text-center">
                     <StatusBadge status={f.status} />
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
                     {f.requirementsCompliant}/{f.requirementsTotal}
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
                     {f.lastAssessed
                       ? new Date(f.lastAssessed).toLocaleDateString()
                       : "—"}
@@ -799,13 +814,13 @@ function RiskTab() {
   return (
     <div className="space-y-6">
       {/* Bubble Chart */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-subtitle font-medium text-white">
+            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
               Risk Landscape
             </h3>
-            <p className="text-small text-white/45">
+            <p className="text-small text-slate-500 dark:text-white/45">
               X: Readiness (score) | Y: Criticality (weight) | Size: Financial
               exposure
             </p>
@@ -817,7 +832,9 @@ function RiskTab() {
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: riskColors[zone] }}
                 />
-                <span className="text-white/45 capitalize">{zone}</span>
+                <span className="text-slate-500 dark:text-white/45 capitalize">
+                  {zone}
+                </span>
               </div>
             ))}
           </div>
@@ -886,32 +903,32 @@ function RiskTab() {
       </div>
 
       {/* Financial Exposure Table */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/[0.06]">
-          <h3 className="text-subtitle font-medium text-white">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
             Financial Exposure
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="text-left px-6 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-white/[0.06]">
+                <th className="text-left px-6 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Framework
                 </th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-right px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Max Penalty
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Score
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Risk Factor
                 </th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-right px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Adjusted Risk
                 </th>
-                <th className="text-center px-4 py-3 text-caption font-medium text-white/45 uppercase tracking-wider">
+                <th className="text-center px-4 py-3 text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   Zone
                 </th>
               </tr>
@@ -920,18 +937,18 @@ function RiskTab() {
               {data.map((entry) => (
                 <tr
                   key={entry.id}
-                  className="border-b border-white/[0.04] hover:bg-white/[0.02]"
+                  className="border-b border-slate-100 dark:border-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.02]"
                 >
-                  <td className="px-6 py-3 text-body text-white font-medium">
+                  <td className="px-6 py-3 text-body text-slate-900 dark:text-white font-medium">
                     {entry.name}
                   </td>
-                  <td className="px-4 py-3 text-right text-small text-white/45">
+                  <td className="px-4 py-3 text-right text-small text-slate-500 dark:text-white/45">
                     EUR {(entry.maxPenalty / 1_000_000).toFixed(1)}M
                   </td>
-                  <td className="px-4 py-3 text-center text-body font-medium text-white">
+                  <td className="px-4 py-3 text-center text-body font-medium text-slate-900 dark:text-white">
                     {entry.readiness}
                   </td>
-                  <td className="px-4 py-3 text-center text-small text-white/45">
+                  <td className="px-4 py-3 text-center text-small text-slate-500 dark:text-white/45">
                     {entry.riskFactor}%
                   </td>
                   <td
@@ -945,9 +962,9 @@ function RiskTab() {
                   </td>
                 </tr>
               ))}
-              <tr className="bg-white/[0.03]">
+              <tr className="bg-slate-50 dark:bg-white/[0.03]">
                 <td
-                  className="px-6 py-3 text-body text-white font-semibold"
+                  className="px-6 py-3 text-body text-slate-900 dark:text-white font-semibold"
                   colSpan={4}
                 >
                   Total Estimated Risk Exposure
@@ -1082,13 +1099,13 @@ function ScenariosTab() {
   return (
     <div className="space-y-6">
       {/* Scenario Builder */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-white mb-4">
+      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Scenario Builder
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="text-caption text-white/45 uppercase tracking-wider block mb-1.5">
+            <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
               Scenario Type
             </label>
             <select
@@ -1098,7 +1115,7 @@ function ScenariosTab() {
                 setParams({});
                 setResult(null);
               }}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-body text-white focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
             >
               {scenarioTypes.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -1108,7 +1125,7 @@ function ScenariosTab() {
             </select>
           </div>
           <div>
-            <label className="text-caption text-white/45 uppercase tracking-wider block mb-1.5">
+            <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
               Scenario Name
             </label>
             <input
@@ -1116,7 +1133,7 @@ function ScenariosTab() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Expand to Italy"
-              className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-body text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
             />
           </div>
         </div>
@@ -1126,7 +1143,7 @@ function ScenariosTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {currentScenario.paramFields.map((field) => (
               <div key={field.key}>
-                <label className="text-caption text-white/45 uppercase tracking-wider block mb-1.5">
+                <label className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider block mb-1.5">
                   {field.label}
                 </label>
                 {field.type === "select" ? (
@@ -1135,7 +1152,7 @@ function ScenariosTab() {
                     onChange={(e) =>
                       setParams({ ...params, [field.key]: e.target.value })
                     }
-                    className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-body text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="">Select...</option>
                     {field.options?.map((o) => (
@@ -1154,7 +1171,7 @@ function ScenariosTab() {
                         [field.key]: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-body text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 ) : field.type === "checkbox" ? (
                   <label className="flex items-center gap-2 mt-1.5">
@@ -1164,9 +1181,11 @@ function ScenariosTab() {
                       onChange={(e) =>
                         setParams({ ...params, [field.key]: e.target.checked })
                       }
-                      className="rounded border-white/20 bg-white/[0.05] text-emerald-500 focus:ring-emerald-500"
+                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/[0.05] text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-small text-white/45">Include</span>
+                    <span className="text-small text-slate-500 dark:text-white/45">
+                      Include
+                    </span>
                   </label>
                 ) : null}
               </div>
@@ -1177,7 +1196,7 @@ function ScenariosTab() {
         <button
           onClick={handleRun}
           disabled={running || !name.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 text-white rounded-lg text-body font-medium transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-100 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-white/30 text-white rounded-lg text-body font-medium transition-colors"
         >
           {running ? (
             <RefreshCw size={14} className="animate-spin" />
@@ -1193,32 +1212,32 @@ function ScenariosTab() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6"
+          className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6"
         >
-          <h3 className="text-subtitle font-medium text-white mb-4">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Simulation Results
           </h3>
 
           {/* Score Comparison */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-white/[0.03] rounded-xl">
-              <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Baseline
               </p>
-              <p className="text-display font-light text-white">
+              <p className="text-display font-light text-slate-900 dark:text-white">
                 {simResult.baselineScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-white/[0.03] rounded-xl">
-              <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Projected
               </p>
               <p className="text-display font-light text-blue-400">
                 {simResult.projectedScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-white/[0.03] rounded-xl">
-              <p className="text-caption text-white/45 uppercase tracking-wider mb-1">
+            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+              <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Delta
               </p>
               <p
@@ -1232,11 +1251,11 @@ function ScenariosTab() {
 
           {/* Financial Impact */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="p-3 bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-white/45 mb-0.5">
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
+              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
                 Current Exposure
               </p>
-              <p className="text-body-lg text-white font-medium">
+              <p className="text-body-lg text-slate-900 dark:text-white font-medium">
                 EUR{" "}
                 {(
                   simResult.financialImpact.currentExposure / 1_000_000
@@ -1244,8 +1263,8 @@ function ScenariosTab() {
                 M
               </p>
             </div>
-            <div className="p-3 bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-white/45 mb-0.5">
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
+              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
                 Projected Exposure
               </p>
               <p className="text-body-lg text-amber-400 font-medium">
@@ -1256,8 +1275,8 @@ function ScenariosTab() {
                 M
               </p>
             </div>
-            <div className="p-3 bg-white/[0.02] rounded-lg">
-              <p className="text-caption text-white/45 mb-0.5">
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
+              <p className="text-caption text-slate-500 dark:text-white/45 mb-0.5">
                 Additional Risk
               </p>
               <p
@@ -1270,15 +1289,15 @@ function ScenariosTab() {
           </div>
 
           {/* Risk Assessment */}
-          <div className="p-4 bg-white/[0.02] rounded-lg mb-4">
+          <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <Info size={14} className="text-white/45" />
-              <span className="text-small font-medium text-white">
+              <Info size={14} className="text-slate-500 dark:text-white/45" />
+              <span className="text-small font-medium text-slate-900 dark:text-white">
                 Risk Assessment
               </span>
               <SeverityBadge severity={simResult.riskAssessment.level} />
             </div>
-            <p className="text-small text-white/45">
+            <p className="text-small text-slate-500 dark:text-white/45">
               {simResult.riskAssessment.summary}
             </p>
           </div>
@@ -1286,7 +1305,7 @@ function ScenariosTab() {
           {/* New Requirements */}
           {simResult.newRequirements.length > 0 && (
             <div className="mb-4">
-              <p className="text-small font-medium text-white mb-2">
+              <p className="text-small font-medium text-slate-900 dark:text-white mb-2">
                 New Requirements ({simResult.newRequirements.length})
               </p>
               <div className="space-y-1.5">
@@ -1298,8 +1317,12 @@ function ScenariosTab() {
                     <span
                       className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${req.type === "new" ? "bg-amber-500" : req.type === "removed" ? "bg-emerald-500" : "bg-blue-500"}`}
                     />
-                    <span className="text-white/70">{req.title}</span>
-                    <span className="text-white/30">— {req.framework}</span>
+                    <span className="text-slate-700 dark:text-white/70">
+                      {req.title}
+                    </span>
+                    <span className="text-slate-400 dark:text-white/30">
+                      — {req.framework}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1309,14 +1332,14 @@ function ScenariosTab() {
           {/* Recommendations */}
           {simResult.recommendations.length > 0 && (
             <div>
-              <p className="text-small font-medium text-white mb-2">
+              <p className="text-small font-medium text-slate-900 dark:text-white mb-2">
                 Recommendations
               </p>
               <ul className="space-y-1">
                 {simResult.recommendations.map((rec, i) => (
                   <li
                     key={i}
-                    className="text-small text-white/45 flex items-start gap-2"
+                    className="text-small text-slate-500 dark:text-white/45 flex items-start gap-2"
                   >
                     <span className="text-emerald-500 mt-0.5">•</span>
                     {rec}
@@ -1331,27 +1354,27 @@ function ScenariosTab() {
       {/* Saved Scenarios */}
       {!loading && scenarios && scenarios.length > 0 && (
         <div>
-          <h3 className="text-subtitle font-medium text-white mb-3">
+          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
             Saved Scenarios
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {scenarios.map((s) => (
               <div
                 key={s.id}
-                className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 hover:border-white/10 transition-colors"
+                className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-body font-medium text-white">
+                  <span className="text-body font-medium text-slate-900 dark:text-white">
                     {s.name}
                   </span>
                   <button
                     onClick={() => handleDelete(s.id)}
-                    className="text-white/30 hover:text-red-400 transition-colors"
+                    className="text-slate-400 dark:text-white/30 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
-                <div className="flex items-center gap-3 text-small text-white/45">
+                <div className="flex items-center gap-3 text-small text-slate-500 dark:text-white/45">
                   <span className="capitalize">
                     {s.scenarioType.replace(/_/g, " ")}
                   </span>
@@ -1413,7 +1436,7 @@ function TimelineTab() {
     CRITICAL: "bg-red-500",
     HIGH: "bg-amber-500",
     MEDIUM: "bg-blue-500",
-    LOW: "bg-white/30",
+    LOW: "bg-slate-400 dark:bg-white/30",
   };
 
   const typeIcons: Record<string, typeof Clock> = {
@@ -1437,7 +1460,7 @@ function TimelineTab() {
     <div className="space-y-6">
       {Object.entries(grouped).map(([month, entries]) => (
         <div key={month}>
-          <h3 className="text-body font-medium text-white/45 uppercase tracking-wider mb-3">
+          <h3 className="text-body font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">
             {month}
           </h3>
           <div className="space-y-2">
@@ -1446,21 +1469,26 @@ function TimelineTab() {
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/[0.06] rounded-lg hover:border-white/10 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-lg hover:border-slate-200 dark:hover:border-white/10 transition-colors"
                 >
                   <div
                     className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityColors[entry.priority] || priorityColors.MEDIUM}`}
                   />
-                  <Icon size={14} className="text-white/45 flex-shrink-0" />
+                  <Icon
+                    size={14}
+                    className="text-slate-500 dark:text-white/45 flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
-                    <span className="text-body text-white">{entry.title}</span>
+                    <span className="text-body text-slate-900 dark:text-white">
+                      {entry.title}
+                    </span>
                     {entry.module && (
-                      <span className="text-caption text-white/45 ml-2">
+                      <span className="text-caption text-slate-500 dark:text-white/45 ml-2">
                         ({entry.module})
                       </span>
                     )}
                   </div>
-                  <span className="text-small text-white/45 flex-shrink-0">
+                  <span className="text-small text-slate-500 dark:text-white/45 flex-shrink-0">
                     {new Date(entry.date).toLocaleDateString()}
                   </span>
                   <span
@@ -1469,7 +1497,7 @@ function TimelineTab() {
                         ? "bg-emerald-500/10 text-emerald-400"
                         : entry.status === "OVERDUE"
                           ? "bg-red-500/10 text-red-400"
-                          : "bg-white/5 text-white/45"
+                          : "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45"
                     }`}
                   >
                     {entry.status.replace(/_/g, " ").toLowerCase()}
@@ -1541,10 +1569,10 @@ export default function DigitalTwinPage() {
             <Layers size={20} className="text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-heading-lg font-semibold text-white">
+            <h1 className="text-heading-lg font-semibold text-slate-900 dark:text-white">
               {t("digitalTwin.title")}
             </h1>
-            <p className="text-body text-white/45">
+            <p className="text-body text-slate-500 dark:text-white/45">
               {t("digitalTwin.description")}
             </p>
           </div>
@@ -1557,8 +1585,12 @@ export default function DigitalTwinPage() {
       ) : error ? (
         <div className="text-center py-12">
           <AlertTriangle size={32} className="text-amber-500 mx-auto mb-3" />
-          <p className="text-body-lg text-white mb-1">Failed to load data</p>
-          <p className="text-small text-white/45 mb-4">{error}</p>
+          <p className="text-body-lg text-slate-900 dark:text-white mb-1">
+            Failed to load data
+          </p>
+          <p className="text-small text-slate-500 dark:text-white/45 mb-4">
+            {error}
+          </p>
           <button
             onClick={refetch}
             className="text-small text-emerald-400 hover:text-emerald-300"
@@ -1653,7 +1685,7 @@ export default function DigitalTwinPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}
