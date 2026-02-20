@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   Check,
-  X,
   Zap,
   Building2,
   Rocket,
@@ -88,20 +87,28 @@ const plans = [
     valueStatement:
       "Automates compliance mapping at a fraction of consulting rates",
     features: [
-      "Full Compliance Assessment",
-      "1 Jurisdiction Coverage",
-      "Basic Dashboard",
+      "EU Space Act Assessment (119 articles)",
+      "NIS2 Directive Assessment",
+      "National Space Law — 1 jurisdiction",
+      "Operator Type Classification (7 types)",
+      "Basic Gap Analysis",
+      "Basic Compliance Dashboard",
+      "4 Core Modules (Auth, Debris, Cyber, Insurance)",
+      "Real-time Compliance Status",
+      "Deadline Tracking & Alerts",
       "Up to 3 Spacecraft",
-      "Document Templates",
-      "Email Support",
-      "Monthly Reports",
+      "Debris Mitigation Plan Templates",
+      "End-of-Life Planning",
+      "Document Vault (5 GB)",
+      "10 Document Templates",
+      "Monthly Automated Reports",
+      "3 Team Members",
+      "Basic Role-Based Access",
+      "Audit Logs (30 days)",
+      "Email Support (48h response)",
+      "Self-Service Onboarding",
     ],
-    notIncluded: [
-      "Multi-jurisdiction",
-      "API Access",
-      "Custom Workflows",
-      "Dedicated Support",
-    ],
+    notIncluded: [],
   },
   {
     name: "Professional",
@@ -115,18 +122,29 @@ const plans = [
     valueStatement:
       "Replaces manual compliance work typically done at €250–400/h",
     features: [
-      "Everything in Essentials",
-      "All 10 Jurisdictions",
+      "Everything in Essentials, plus:",
+      "All 10 European Jurisdictions",
+      "Detailed Gap Analysis + Remediation Roadmap",
+      "Full Dashboard — all 8 Compliance Modules",
+      "Mission Timeline & Lifecycle Tracking",
+      "Risk Indicators & Heatmap",
       "Unlimited Spacecraft",
-      "Full Compliance Dashboard",
-      "Document Vault (50GB)",
-      "NCA Submission Workflow",
-      "ASTRA AI Assistant",
-      "Team Access (up to 25)",
-      "API Access",
-      "Priority Email Support",
-      "Weekly Reports",
-      "Audit Trail",
+      "Constellation Support",
+      "Custom Debris Mitigation Plans",
+      "Collision Avoidance Alerts",
+      "NCA Submission Workflow & Packages",
+      "ASTRA AI Compliance Assistant",
+      "Document Vault (50 GB)",
+      "50+ Document Templates",
+      "Full Audit Trail",
+      "Weekly Automated Reports",
+      "Up to 25 Team Members",
+      "Full RBAC (Owner, Admin, Manager, Member, Viewer)",
+      "REST API v1 Access",
+      "Security Audit Logs (1 year)",
+      "Priority Email Support (24h response)",
+      "Guided Onboarding",
+      "Quarterly Training Sessions",
     ],
     notIncluded: [],
   },
@@ -142,18 +160,29 @@ const plans = [
     ctaHref: "/contact?plan=enterprise",
     valueStatement: "Continuous compliance automation with dedicated support",
     features: [
-      "Everything in Professional",
-      "Unlimited Everything",
+      "Everything in Professional, plus:",
+      "All Jurisdictions + Custom Regulations",
+      "Custom Gap Analysis & Dashboard",
+      "Unlimited Spacecraft & Objects",
+      "Certified Debris Mitigation Plans",
+      "Full Collision Avoidance Suite",
       "Custom Integrations",
-      "SSO / SAML / OIDC",
-      "On-Premise Option",
+      "SSO / SAML / OIDC Authentication",
+      "On-Premise Deployment Option",
+      "Unlimited Document Storage",
+      "Custom Document Templates",
+      "White-Label Reports",
+      "Daily Automated Reports",
+      "Unlimited Team Members",
+      "Custom Role Configuration",
+      "Unlimited Security Audit Logs",
+      "Multi-Organization Management",
       "Dedicated Account Manager",
       "Custom SLA (99.95%)",
-      "Training & Onboarding",
-      "Multi-Org Management",
-      "White-Label Reports",
-      "24/7 Phone Support",
-      "Compliance Consulting",
+      "24/7 Phone Support (4h response)",
+      "White-Glove Onboarding",
+      "Monthly Training Sessions",
+      "Compliance Consulting Included",
     ],
     notIncluded: [],
   },
@@ -496,20 +525,8 @@ export default function PricingPage() {
   );
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  // User-driven estimate inputs
-  const [estimatedHours, setEstimatedHours] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
-
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
-
-  // Calculate user estimate (only when both inputs have values)
-  const hours = parseInt(estimatedHours) || 0;
-  const rate = parseInt(hourlyRate) || 0;
-  const consultingEstimate = hours * rate;
-  const caelexAnnual = 11988; // Professional yearly
-  const hasEstimate = hours > 0 && rate > 0;
-  const savings = consultingEstimate - caelexAnnual;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -704,29 +721,34 @@ export default function PricingPage() {
 
                       {/* Features */}
                       <div className="pt-8 border-t border-white/[0.08] flex-1">
-                        <ul className="space-y-4">
-                          {plan.features.map((feature) => (
-                            <li
-                              key={feature}
-                              className="flex items-start gap-3 text-subtitle"
-                            >
-                              <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <Check size={12} className="text-emerald-400" />
-                              </div>
-                              <span className="text-white/70">{feature}</span>
-                            </li>
-                          ))}
-                          {plan.notIncluded.map((feature) => (
-                            <li
-                              key={feature}
-                              className="flex items-start gap-3 text-subtitle"
-                            >
-                              <div className="w-5 h-5 rounded-full bg-white/[0.05] flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <X size={12} className="text-white/30" />
-                              </div>
-                              <span className="text-white/30">{feature}</span>
-                            </li>
-                          ))}
+                        <ul className="space-y-3">
+                          {plan.features.map((feature) => {
+                            const isInheritLabel = feature.endsWith("plus:");
+                            if (isInheritLabel) {
+                              return (
+                                <li
+                                  key={feature}
+                                  className="text-small font-semibold text-emerald-400/80 uppercase tracking-wider mb-1"
+                                >
+                                  {feature}
+                                </li>
+                              );
+                            }
+                            return (
+                              <li
+                                key={feature}
+                                className="flex items-start gap-3 text-body-lg"
+                              >
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <Check
+                                    size={12}
+                                    className="text-emerald-400"
+                                  />
+                                </div>
+                                <span className="text-white/70">{feature}</span>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     </div>
@@ -839,186 +861,6 @@ export default function PricingPage() {
             </p>
             <p className="text-body text-white/30 mt-4">
               Source: EU Space Act (COM/2025/335), Titles II–IV
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ================================================================== */}
-      {/* YOUR ESTIMATE (User-Driven Comparison) */}
-      {/* ================================================================== */}
-      <section className="relative py-24 px-6 md:px-12">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)",
-          }}
-        />
-
-        <div className="relative z-10 max-w-[900px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-              Your Estimate
-            </span>
-            <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
-              Already budgeting for compliance?
-            </h2>
-            <p className="text-heading text-white/45 leading-relaxed">
-              Enter your own estimates to see how Caelex compares.
-            </p>
-          </motion.div>
-
-          <GlassCard className="p-6 sm:p-10" hover={false}>
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-              {/* Input Fields */}
-              <div className="space-y-8">
-                <div>
-                  <label className="block text-subtitle text-white/70 mb-3">
-                    Estimated consulting/legal hours for authorization
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 300"
-                    value={estimatedHours}
-                    onChange={(e) => setEstimatedHours(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
-                  />
-                  <p className="text-body text-white/45 mt-2">
-                    The authorization process spans 6+ months across multiple
-                    workstreams
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-subtitle text-white/70 mb-3">
-                    Average hourly rate of your regulatory counsel (€)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 300"
-                    value={hourlyRate}
-                    onChange={(e) => setHourlyRate(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
-                  />
-                  <p className="text-body text-white/45 mt-2">
-                    Specialized space law: typically €250–400/h
-                  </p>
-                </div>
-              </div>
-
-              {/* Results - Only show when both inputs have values */}
-              <div className="space-y-6">
-                {hasEstimate ? (
-                  <>
-                    {/* Consulting Estimate */}
-                    <div className="py-4 border-b border-white/[0.08]">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-subtitle text-white/45">
-                          Consulting estimate
-                        </span>
-                        <span className="text-heading text-white/70">
-                          €{consultingEstimate.toLocaleString("de-DE")}
-                        </span>
-                      </div>
-                      <p className="text-body text-white/45">
-                        Based on your inputs — one-time engagement
-                      </p>
-                      <p className="text-body text-white/45 mt-1">
-                        + Ongoing monitoring after initial authorization
-                      </p>
-                      <p className="text-body text-white/45">
-                        + Re-engagement when regulations change
-                      </p>
-                    </div>
-
-                    {/* Caelex */}
-                    <div className="py-4 border-b border-white/[0.08]">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-subtitle text-white/45">
-                          Caelex Professional
-                        </span>
-                        <span className="text-heading font-medium text-emerald-400">
-                          €{caelexAnnual.toLocaleString("de-DE")}/year
-                        </span>
-                      </div>
-                      <p className="text-body text-white/45">
-                        Continuous — includes regulatory updates
-                      </p>
-                      <div className="mt-3 space-y-1">
-                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
-                          <Check size={14} /> Compliance mapping automated
-                        </p>
-                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
-                          <Check size={14} /> Document templates pre-built
-                        </p>
-                        <p className="text-body text-emerald-400/80 flex items-center gap-2">
-                          <Check size={14} /> Regulatory changes tracked
-                          automatically
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Savings/Comparison Line */}
-                    <div className="rounded-xl p-6 bg-emerald-500/10 border border-emerald-500/20">
-                      {savings > 0 ? (
-                        <p className="text-subtitle text-emerald-400 leading-relaxed">
-                          Caelex costs{" "}
-                          <strong>
-                            €{savings.toLocaleString("de-DE")} less
-                          </strong>{" "}
-                          than your consulting estimate — and it&apos;s
-                          continuous, not one-time.
-                        </p>
-                      ) : (
-                        <p className="text-subtitle text-white/45 leading-relaxed">
-                          Caelex provides continuous automated compliance at a
-                          comparable cost to your consulting estimate — with
-                          ongoing monitoring included.
-                        </p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-subtitle text-white/30 text-center">
-                      Enter your estimates to see the comparison
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Fine Print */}
-            <p className="text-body text-white/30 mt-8 pt-6 border-t border-white/[0.06] leading-relaxed">
-              This is a simple estimate based on your inputs. Caelex complements
-              but does not fully replace legal counsel — you may still need
-              specialized advice for NCA filings and specific regulatory
-              questions. Authorization fees to national competent authorities
-              are separate and not included in this comparison.
-            </p>
-          </GlassCard>
-
-          {/* Credibility Anchor */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-8 text-center"
-          >
-            <p className="text-body text-white/30 leading-relaxed max-w-[800px] mx-auto">
-              The EU Commission estimates total annual compliance costs from the
-              Space Act at €322.8M across the industry, with authorization
-              requirements costing ~€100,000 per product line in fees alone —
-              before consulting and preparation costs.
-            </p>
-            <p className="text-small text-white/45 mt-2">
-              Source: EU Commission Impact Assessment, COM/2025/335
             </p>
           </motion.div>
         </div>
