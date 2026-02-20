@@ -8,6 +8,7 @@ export const COMMENTABLE_ENTITIES = [
   "workflow",
   "incident",
   "assessment",
+  "data_room",
 ] as const;
 
 export type CommentableEntity = (typeof COMMENTABLE_ENTITIES)[number];

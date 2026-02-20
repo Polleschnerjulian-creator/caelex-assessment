@@ -87,6 +87,16 @@ export const WEBHOOK_EVENTS = {
   "member.joined": "Member joined organization",
   "member.left": "Member left organization",
   "member.role_changed": "Member role changed",
+
+  // Network
+  "network.stakeholder_invited": "Stakeholder invited to network",
+  "network.stakeholder_activated": "Stakeholder activated portal access",
+  "network.stakeholder_revoked": "Stakeholder access revoked",
+  "network.data_room_created": "Data room created",
+  "network.data_room_document_added": "Document added to data room",
+  "network.data_room_accessed": "Data room accessed by stakeholder",
+  "network.attestation_signed": "Compliance attestation signed",
+  "network.attestation_revoked": "Compliance attestation revoked",
 } as const;
 
 export type WebhookEvent = keyof typeof WEBHOOK_EVENTS;

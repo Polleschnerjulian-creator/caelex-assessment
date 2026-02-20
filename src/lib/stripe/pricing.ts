@@ -118,6 +118,7 @@ export const ALL_MODULES = [
   "timeline",
   "insurance",
   "audit-center",
+  "network",
 ];
 
 /**

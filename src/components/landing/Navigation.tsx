@@ -69,7 +69,7 @@ export default function Navigation() {
               <div className="flex items-center gap-6">
                 {/* Links */}
                 <Link
-                  href="/#platform"
+                  href="/platform"
                   className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
                 >
                   Platform
@@ -178,7 +178,7 @@ export default function Navigation() {
                 </Link>
                 <div className="h-px bg-white/[0.06] my-3" />
                 <Link
-                  href="/#platform"
+                  href="/platform"
                   onClick={() => setMobileOpen(false)}
                   className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >

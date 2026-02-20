@@ -17,7 +17,8 @@ export type PermissionCategory =
   | "spacecraft"
   | "documents"
   | "incidents"
-  | "api";
+  | "api"
+  | "network";
 
 export type PermissionAction =
   | "read"
@@ -31,7 +32,8 @@ export type PermissionAction =
   | "generate"
   | "submit"
   | "export"
-  | "manage";
+  | "manage"
+  | "attest";
 
 export type Permission = string;
 
@@ -90,6 +92,12 @@ export const ALL_PERMISSIONS: string[] = [
   // API
   "api:read",
   "api:manage",
+
+  // Network
+  "network:read",
+  "network:write",
+  "network:manage",
+  "network:attest",
 ];
 
 // ─── Role Permission Matrix ───
@@ -140,6 +148,11 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     // API
     "api:read",
     "api:manage",
+    // Network
+    "network:read",
+    "network:write",
+    "network:manage",
+    "network:attest",
   ],
 
   MANAGER: [
@@ -168,6 +181,10 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     // Incidents
     "incidents:read",
     "incidents:write",
+    // Network
+    "network:read",
+    "network:write",
+    "network:attest",
   ],
 
   MEMBER: [
@@ -188,6 +205,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     // Incidents
     "incidents:read",
     "incidents:write",
+    // Network
+    "network:read",
   ],
 
   VIEWER: [
@@ -203,6 +222,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "documents:read",
     // Incidents
     "incidents:read",
+    // Network
+    "network:read",
   ],
 };
 
@@ -333,6 +354,12 @@ export const PERMISSION_DESCRIPTIONS: Record<string, string> = {
   // API
   "api:read": "View API keys",
   "api:manage": "Create and manage API keys",
+
+  // Network
+  "network:read": "View stakeholder engagements and data rooms",
+  "network:write": "Create engagements and manage data rooms",
+  "network:manage": "Rotate tokens, revoke access, manage security",
+  "network:attest": "Create and manage compliance attestations",
 };
 
 // ─── Role Descriptions ───
@@ -424,4 +451,5 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   documents: "Documents",
   incidents: "Incidents",
   api: "API Access",
+  network: "Compliance Network",
 };

@@ -51,7 +51,18 @@ export type AuditAction =
   | "evidence_document_linked"
   | "evidence_document_unlinked"
   | "audit_package_exported"
-  | "hash_chain_verified";
+  | "hash_chain_verified"
+  | "stakeholder_invited"
+  | "stakeholder_updated"
+  | "stakeholder_revoked"
+  | "stakeholder_token_rotated"
+  | "data_room_created"
+  | "data_room_updated"
+  | "data_room_closed"
+  | "data_room_document_added"
+  | "data_room_document_removed"
+  | "attestation_signed"
+  | "attestation_revoked";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -72,7 +83,10 @@ export type AuditEntityType =
   | "supplier_request"
   | "nis2_assessment"
   | "nis2_requirement"
-  | "compliance_evidence";
+  | "compliance_evidence"
+  | "stakeholder_engagement"
+  | "data_room"
+  | "compliance_attestation";
 
 export interface AuditLogEntry {
   userId: string;

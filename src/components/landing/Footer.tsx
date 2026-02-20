@@ -6,7 +6,7 @@ import { CaelexIcon } from "@/components/ui/Logo";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
 const productLinks = [
-  { label: "Platform", href: "/#modules" },
+  { label: "Platform", href: "/platform" },
   { label: "Assessment", href: "/assessment" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Pricing", href: "/pricing" },

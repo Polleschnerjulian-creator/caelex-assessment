@@ -1785,6 +1785,7 @@ model Document {
   comments                DocumentComment[]
   shares                  DocumentShare[]
   complianceEvidenceLinks ComplianceEvidenceDocument[] // Audit Center: evidence-to-document links
+  dataRoomDocuments       DataRoomDocument[] // Network: data room links
 
   @@index([userId, category])
   @@index([expiryDate])
@@ -2440,6 +2441,9 @@ model Organization {
   regulatoryUpdateReads RegulatoryUpdateRead[] // Regulatory feed read tracking
   ncaDocuments          NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages        NCADocPackage[] // Generate 2.0: NCA submission packages
+  stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
+  dataRooms              DataRoom[] // Network: secure data rooms
+  attestations           ComplianceAttestation[] // Network: compliance attestations
 
   @@index([slug])
   @@index([plan])
@@ -4345,4 +4349,236 @@ model NCADocPackage {
 
   @@index([userId])
   @@index([organizationId])
+}
+
+// ============================================
+// MULTI-STAKEHOLDER COMPLIANCE NETWORK
+// ============================================
+
+enum StakeholderType {
+  LEGAL_COUNSEL
+  INSURER
+  AUDITOR
+  SUPPLIER
+  NCA
+  CONSULTANT
+  LAUNCH_PROVIDER
+}
+
+enum EngagementStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  REVOKED
+}
+
+enum AttestationType {
+  LEGAL_REVIEW
+  AUDIT_CLEARANCE
+  INSURANCE_BINDING
+  SUPPLIER_CERT
+  NCA_APPROVAL
+  COMPLIANCE_SIGN_OFF
+}
+
+enum DataRoomAccessLevel {
+  VIEW_ONLY
+  COMMENT
+  CONTRIBUTE
+  FULL_ACCESS
+}
+
+// ─── Stakeholder Engagement ───
+model StakeholderEngagement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Stakeholder Identity
+  type          StakeholderType
+  companyName   String
+  contactName   String
+  contactEmail  String
+  contactPhone  String?
+  jurisdiction  String?
+  licenseNumber String?
+  website       String?
+
+  // Engagement Scope
+  scope       String   @db.Text
+  contractRef String?
+  retainerStart DateTime?
+  retainerEnd   DateTime?
+
+  // Access
+  status         EngagementStatus @default(INVITED)
+  accessToken    String           @unique
+  tokenExpiresAt DateTime
+  lastAccessAt   DateTime?
+  accessCount    Int              @default(0)
+
+  // Security
+  ipAllowlist String[]  @default([])
+  mfaRequired Boolean   @default(false)
+  isRevoked   Boolean   @default(false)
+  revokedAt   DateTime?
+  revokedBy   String?
+
+  // Relations
+  dataRooms    DataRoom[]
+  attestations ComplianceAttestation[]
+  accessLogs   StakeholderAccessLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, type])
+  @@index([accessToken])
+  @@index([status])
+  @@index([contactEmail])
+}
+
+// ─── Secure Data Room ───
+model DataRoom {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  engagementId String
+  engagement   StakeholderEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  // Room Config
+  name        String
+  description String? @db.Text
+  purpose     String?
+
+  // Access Control
+  accessLevel  DataRoomAccessLevel @default(VIEW_ONLY)
+  watermark    Boolean             @default(true)
+  downloadable Boolean             @default(false)
+  printable    Boolean             @default(false)
+  expiresAt    DateTime?
+
+  // Encryption
+  encryptionKeyId String?
+
+  // Status
+  isActive Boolean   @default(true)
+  closedAt DateTime?
+  closedBy String?
+
+  // Relations
+  documents  DataRoomDocument[]
+  accessLogs DataRoomAccessLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([engagementId])
+}
+
+// ─── Data Room Document ───
+model DataRoomDocument {
+  id         String   @id @default(cuid())
+  dataRoomId String
+  dataRoom   DataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  addedBy   String
+  note      String?
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([dataRoomId, documentId])
+  @@index([dataRoomId])
+}
+
+// ─── Compliance Attestation ───
+model ComplianceAttestation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  engagementId String
+  engagement   StakeholderEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  // Attestation Details
+  type      AttestationType
+  title     String
+  statement String          @db.Text
+  scope     String          @db.Text
+
+  // Signer Info
+  signerName  String
+  signerTitle String
+  signerEmail String
+  signerOrg   String
+
+  // Cryptographic Proof
+  signatureHash String
+  previousHash  String?
+  ipAddress     String?
+  userAgent     String?
+
+  // Validity
+  issuedAt      DateTime  @default(now())
+  validUntil    DateTime?
+  isRevoked     Boolean   @default(false)
+  revokedAt     DateTime?
+  revokedReason String?
+
+  // Optional entity link
+  entityType String?
+  entityId   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId, type])
+  @@index([engagementId])
+  @@index([signatureHash])
+}
+
+// ─── Stakeholder Access Log ───
+model StakeholderAccessLog {
+  id           String                @id @default(cuid())
+  engagementId String
+  engagement   StakeholderEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  action     String
+  entityType String?
+  entityId   String?
+
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([engagementId, createdAt])
+}
+
+// ─── Data Room Access Log ───
+model DataRoomAccessLog {
+  id         String   @id @default(cuid())
+  dataRoomId String
+  dataRoom   DataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+
+  action     String
+  documentId String?
+
+  actorType String
+  actorId   String
+
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([dataRoomId, createdAt])
 }

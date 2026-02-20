@@ -36,6 +36,7 @@ import {
   FileSearch,
   Orbit,
   Sparkles,
+  Users,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -257,6 +258,7 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
   "/dashboard/audit-center": "audit-center",
+  "/dashboard/network": "network",
 };
 
 // Module groups configuration
@@ -687,6 +689,22 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 {t("sidebar.missionControl")}
+              </NavItem>
+            </div>
+          </div>
+
+          {/* Network Section */}
+          <div className="mt-5">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+              {t("sidebar.network") || "Network"}
+            </p>
+            <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/network"
+                icon={<Users size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                {t("sidebar.complianceNetwork") || "Compliance Network"}
               </NavItem>
             </div>
           </div>
