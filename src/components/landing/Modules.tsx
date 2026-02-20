@@ -66,7 +66,7 @@ const MODULES = [
   },
   {
     id: "04",
-    slug: "debris",
+    slug: "debris-mitigation",
     name: "Debris Mitigation & Safety",
     description:
       "Space debris mitigation planning, collision avoidance procedures, and end-of-life disposal compliance.",

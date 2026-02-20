@@ -340,6 +340,21 @@ export const moduleMetadata: ModuleInfo[] = [
     ],
   },
   {
+    slug: "registration",
+    title: "Space Object Registration & URSO Compliance",
+    h1: "Space Object Registration & URSO Compliance",
+    description:
+      "Streamline URSO registration and space object tracking under the EU Space Act. Automated data validation, submission preparation, and lifecycle management.",
+    keywords: [
+      "space object registration",
+      "URSO registration",
+      "Union Register of Space Objects",
+      "satellite registration",
+    ],
+    regulations: ["EU Space Act Art. 24", "Registration Convention"],
+    jurisdictions: ["EU", "National Registries"],
+  },
+  {
     slug: "cybersecurity",
     title: "Space Cybersecurity & NIS2 Compliance",
     h1: "Space Cybersecurity & NIS2 Compliance",
@@ -429,6 +444,25 @@ export const moduleMetadata: ModuleInfo[] = [
     ],
     regulations: ["EU Space Act Art. 17-20", "National Supervision Frameworks"],
     jurisdictions: ["EU", "National Competent Authorities"],
+  },
+  {
+    slug: "regulatory-intelligence",
+    title: "Space Regulatory Intelligence & Change Tracking",
+    h1: "Space Regulatory Intelligence & Change Tracking",
+    description:
+      "Track every regulatory change that affects your space operations. AI-powered monitoring of EU Space Act delegated acts, NIS2 updates, and national law changes.",
+    keywords: [
+      "space regulatory intelligence",
+      "regulatory change tracking",
+      "EU Space Act updates",
+      "space law monitoring",
+    ],
+    regulations: [
+      "EU Space Act Art. 104, 114-119",
+      "NIS2 Implementing Acts",
+      "National Space Laws",
+    ],
+    jurisdictions: ["EU", "All Monitored Jurisdictions"],
   },
   {
     slug: "export-control",

@@ -186,7 +186,7 @@ export const MODULE_DETAILS: ModuleDetail[] = [
     comingSoon: false,
   },
   {
-    slug: "debris",
+    slug: "debris-mitigation",
     id: "05",
     name: "Debris Mitigation & Safety",
     headline: "Plan compliant end-of-life and collision avoidance.",
@@ -338,6 +338,241 @@ export const MODULE_DETAILS: ModuleDetail[] = [
       "Automated impact scoring per operator profile",
       "Digest emails with relevant updates",
       "Compliance timeline auto-adjustment",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "export-control",
+    id: "09",
+    name: "Export Control",
+    headline:
+      "Navigate ITAR, EAR, and EU dual-use export controls for space technology.",
+    description:
+      "Space technology often falls under export control regimes including ITAR (US), EAR (US), and EU dual-use regulations. Understanding which regime applies and obtaining necessary licenses is critical for international operations.",
+    articleRange: "ITAR, EAR, EU Dual-Use Reg.",
+    icon: "PackageCheck",
+    keyCapabilities: [
+      {
+        title: "Jurisdiction Determination",
+        description:
+          "Determine whether your technology falls under ITAR, EAR, or EU dual-use regulations based on technical parameters and end-use analysis.",
+      },
+      {
+        title: "Classification Engine",
+        description:
+          "Automated USML/CCL/EU dual-use classification screening with detailed rationale and supporting documentation.",
+      },
+      {
+        title: "License Management",
+        description:
+          "Track export license applications, approvals, and conditions across multiple regulatory regimes in a single workflow.",
+      },
+      {
+        title: "Technology Control Plans",
+        description:
+          "Generate and maintain technology control plans for international collaborations, transfers, and manufacturing.",
+      },
+    ],
+    automations: [
+      "Automated screening against denied party lists",
+      "License expiry and condition tracking",
+      "Compliance audit trail generation",
+      "Regulatory change alerts for export regimes",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "spectrum",
+    id: "10",
+    name: "Spectrum Management",
+    headline: "Manage satellite frequency coordination and ITU compliance.",
+    description:
+      "Radio frequency spectrum is a limited resource governed by ITU Radio Regulations. Satellite operators must coordinate frequencies, file with the ITU, and comply with national spectrum authorities.",
+    articleRange: "ITU Radio Regulations",
+    icon: "Radio",
+    keyCapabilities: [
+      {
+        title: "Frequency Coordination",
+        description:
+          "Manage the ITU coordination process for your satellite network filings, including interference analysis and bilateral negotiations.",
+      },
+      {
+        title: "ITU Filing Tracker",
+        description:
+          "Track all ITU filing milestones — from API submission through coordination, notification, and bringing into use deadlines.",
+      },
+      {
+        title: "National Spectrum Licensing",
+        description:
+          "Navigate national spectrum authority requirements for landing rights and earth station licenses across target markets.",
+      },
+      {
+        title: "Interference Mitigation",
+        description:
+          "Document interference mitigation strategies and power flux density compliance for regulatory submissions.",
+      },
+    ],
+    automations: [
+      "ITU deadline tracking with automated reminders",
+      "Coordination status dashboard across filings",
+      "Regulatory requirement mapping per jurisdiction",
+      "Filing document generation and validation",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "nis2",
+    id: "11",
+    name: "NIS2 Compliance",
+    headline: "Full NIS2 Directive compliance for space essential entities.",
+    description:
+      "The NIS2 Directive (EU 2022/2555) establishes cybersecurity requirements for essential and important entities, including space operators. This module provides comprehensive NIS2 compliance guidance specific to the space sector.",
+    articleRange: "NIS2 Art. 21, 23, 27, 29",
+    icon: "Lock",
+    keyCapabilities: [
+      {
+        title: "Entity Classification",
+        description:
+          "Determine your entity classification (essential vs. important) under NIS2 based on sector, size, and criticality criteria.",
+      },
+      {
+        title: "Security Measures Assessment",
+        description:
+          "Gap analysis against all Art. 21(2) security measures (a)–(j) with space-sector-specific control mappings.",
+      },
+      {
+        title: "Incident Reporting Workflows",
+        description:
+          "Structured workflows meeting the 24h early warning, 72h notification, and 1-month final report requirements.",
+      },
+      {
+        title: "Supply Chain Security",
+        description:
+          "Evaluate and document supply chain security measures for critical space system components and services.",
+      },
+    ],
+    automations: [
+      "Automated entity classification questionnaire",
+      "Pre-mapped controls to Art. 21(2) measures",
+      "Incident timeline enforcement and reminders",
+      "Management liability documentation",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "copuos-iadc",
+    id: "12",
+    name: "COPUOS & IADC Guidelines",
+    headline: "Align with international space sustainability best practices.",
+    description:
+      "UN COPUOS Long-Term Sustainability Guidelines and IADC Space Debris Mitigation Guidelines represent international best practices for responsible space operations. Many national laws reference these guidelines.",
+    articleRange: "COPUOS LTS, IADC Guidelines",
+    icon: "Globe2",
+    keyCapabilities: [
+      {
+        title: "COPUOS LTS Mapping",
+        description:
+          "Map your operations against all 21 COPUOS Long-Term Sustainability guidelines with structured compliance evidence.",
+      },
+      {
+        title: "IADC Compliance Check",
+        description:
+          "Systematic assessment against IADC Space Debris Mitigation Guidelines with gap identification and remediation guidance.",
+      },
+      {
+        title: "Best Practice Analysis",
+        description:
+          "Compare your practices against international standards and identify areas for voluntary improvement beyond minimum requirements.",
+      },
+      {
+        title: "Obligation Tracking",
+        description:
+          "Track voluntary commitments, national law references to COPUOS/IADC, and evolving guideline interpretations.",
+      },
+    ],
+    automations: [
+      "Automated guideline mapping from mission profile",
+      "Cross-reference with national law requirements",
+      "Compliance evidence collection workflows",
+      "Periodic review and update reminders",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "uk-space-act",
+    id: "13",
+    name: "UK Space Industry Act",
+    headline: "Navigate the UK Space Industry Act 2018 licensing framework.",
+    description:
+      "The UK Space Industry Act 2018 established a comprehensive regulatory framework for space activities in the UK. The UK Space Agency (UKSA) is the licensing authority for launches and orbital operations.",
+    articleRange: "UK Space Industry Act 2018",
+    icon: "Building2",
+    keyCapabilities: [
+      {
+        title: "UK License Requirements",
+        description:
+          "Determine which UK license types apply to your activities — launch, orbital operation, range, or return — and map all requirements.",
+      },
+      {
+        title: "UKSA Application Guidance",
+        description:
+          "Step-by-step guidance through the UKSA application process with document checklists and submission preparation.",
+      },
+      {
+        title: "Insurance & Liability",
+        description:
+          "Analyze UK-specific insurance requirements, liability caps, and government indemnification provisions.",
+      },
+      {
+        title: "Range Safety Assessment",
+        description:
+          "Document range safety compliance for UK launch activities including safety case preparation and hazard analysis.",
+      },
+    ],
+    automations: [
+      "Pre-filled UKSA application templates",
+      "License condition tracking and reminders",
+      "Insurance requirement calculations",
+      "Compliance reporting to UKSA",
+    ],
+    comingSoon: false,
+  },
+  {
+    slug: "us-regulatory",
+    id: "14",
+    name: "US Regulatory",
+    headline: "Navigate FAA, FCC, and NOAA requirements for US market access.",
+    description:
+      "US space regulation involves multiple agencies: FAA for launches, FCC for spectrum, and NOAA for remote sensing. Understanding the US regulatory landscape is essential for market access and partnerships.",
+    articleRange: "FAA, FCC, NOAA",
+    icon: "Landmark",
+    keyCapabilities: [
+      {
+        title: "FAA Launch Licensing",
+        description:
+          "Navigate FAA Part 450 launch and reentry licensing requirements, including safety analysis and environmental review processes.",
+      },
+      {
+        title: "FCC Spectrum Licensing",
+        description:
+          "Understand FCC satellite licensing for Ka/Ku/V-band and other frequencies, including market access petitions and earth station licensing.",
+      },
+      {
+        title: "NOAA Remote Sensing",
+        description:
+          "Address NOAA licensing requirements for commercial remote sensing systems, including data distribution and shutter control provisions.",
+      },
+      {
+        title: "Multi-Agency Coordination",
+        description:
+          "Manage parallel licensing processes across FAA, FCC, and NOAA with unified timeline and document tracking.",
+      },
+    ],
+    automations: [
+      "Regulatory requirement mapping across agencies",
+      "Application timeline coordination",
+      "License condition monitoring and compliance",
+      "Regulatory update tracking for all three agencies",
     ],
     comingSoon: false,
   },
