@@ -74,13 +74,13 @@ export default function OptionCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h3
-            className={`text-[15px] font-medium mb-1 ${
+            className={`text-subtitle font-medium mb-1 ${
               isSelected ? "text-emerald-400" : "text-white"
             }`}
           >
             {label}
           </h3>
-          <p className="text-[14px] text-white/50 leading-relaxed">
+          <p className="text-body-lg text-white/45 leading-relaxed">
             {description}
           </p>
         </div>

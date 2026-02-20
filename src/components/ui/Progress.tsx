@@ -40,10 +40,10 @@ export function Progress({
   return (
     <div className={`space-y-1.5 ${className}`}>
       {(showLabel || showValue) && (
-        <div className="flex justify-between items-center text-[12px]">
-          {showLabel && <span className="text-white/60">{label}</span>}
+        <div className="flex justify-between items-center text-small">
+          {showLabel && <span className="text-white/45">{label}</span>}
           {showValue && (
-            <span className="text-white/80 font-medium tabular-nums">
+            <span className="text-white/70 font-medium tabular-nums">
               {Math.round(percent)}%
             </span>
           )}
@@ -140,7 +140,7 @@ export function CircularProgress({
         />
       </svg>
       {showValue && (
-        <span className="absolute text-[12px] font-medium text-white tabular-nums">
+        <span className="absolute text-small font-medium text-white tabular-nums">
           {Math.round(percent)}%
         </span>
       )}

@@ -176,13 +176,13 @@ export default function RegulatoryFeedPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-[11px] text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
+          <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             {t("regulatoryFeed.title")}
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
             {t("regulatoryFeed.title")}
           </h1>
-          <p className="text-[14px] text-slate-500 dark:text-white/50">
+          <p className="text-body-lg text-slate-500 dark:text-white/45">
             {t("regulatoryFeed.subtitle")}
           </p>
         </div>
@@ -219,10 +219,10 @@ export default function RegulatoryFeedPage() {
                   setSeverityFilter(sev);
                   setPage(1);
                 }}
-                className={`text-[12px] px-3 py-1.5 rounded-full font-medium transition-all ${
+                className={`text-small px-3 py-1.5 rounded-full font-medium transition-all ${
                   isActive
                     ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                    : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/50 border border-transparent hover:bg-slate-200 dark:hover:bg-white/[0.08]"
+                    : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border border-transparent hover:bg-slate-200 dark:hover:bg-white/[0.08]"
                 }`}
               >
                 {sev === "ALL"
@@ -240,7 +240,7 @@ export default function RegulatoryFeedPage() {
                 setModuleFilter(e.target.value);
                 setPage(1);
               }}
-              className="text-[12px] px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/60 border border-slate-200 dark:border-white/10 appearance-none pr-7 cursor-pointer"
+              className="text-small px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 border border-slate-200 dark:border-white/10 appearance-none pr-7 cursor-pointer"
             >
               <option value="">{t("regulatoryFeed.filterByModule")}</option>
               {Object.entries(MODULE_LABELS).map(([key, label]) => (
@@ -251,7 +251,7 @@ export default function RegulatoryFeedPage() {
             </select>
             <ChevronDown
               size={12}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40 pointer-events-none"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45 pointer-events-none"
             />
           </div>
         </div>
@@ -261,7 +261,7 @@ export default function RegulatoryFeedPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2
               size={24}
-              className="animate-spin text-slate-400 dark:text-white/40"
+              className="animate-spin text-slate-400 dark:text-white/45"
             />
           </div>
         ) : updates.length === 0 ? (
@@ -293,17 +293,17 @@ export default function RegulatoryFeedPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="text-[13px] px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/60 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
             >
               Previous
             </button>
-            <span className="text-[13px] text-slate-500 dark:text-white/40 px-3">
+            <span className="text-body text-slate-500 dark:text-white/45 px-3">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="text-[13px] px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/60 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
             >
               Next
             </button>
@@ -327,7 +327,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-4">
-      <p className="text-[11px] text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
+      <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
         {label}
       </p>
       <p
@@ -388,14 +388,14 @@ function FeedItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span
-              className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${config.bg} ${config.color}`}
+              className={`text-micro font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${config.bg} ${config.color}`}
             >
               {config.label}
             </span>
-            <span className="text-[10px] font-mono text-slate-400 dark:text-white/30">
+            <span className="text-micro font-mono text-slate-400 dark:text-white/30">
               {update.celexNumber}
             </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/40">
+            <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45">
               {DOC_TYPE_LABELS[update.documentType] || update.documentType}
             </span>
             {update.isRead && (
@@ -405,17 +405,17 @@ function FeedItem({
               />
             )}
           </div>
-          <h3 className="text-[14px] font-medium text-slate-900 dark:text-white/90 line-clamp-2 leading-snug">
+          <h3 className="text-body-lg font-medium text-slate-900 dark:text-white/90 line-clamp-2 leading-snug">
             {update.title}
           </h3>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className="text-[11px] text-slate-400 dark:text-white/30">
+            <span className="text-caption text-slate-400 dark:text-white/30">
               {formatDate(update.publishedAt)}
             </span>
             {update.affectedModules.map((mod) => (
               <span
                 key={mod}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                className="text-micro px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
               >
                 {MODULE_LABELS[mod] || mod}
               </span>
@@ -445,10 +445,10 @@ function FeedItem({
             <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-white/5">
               {/* Match Reason */}
               <div className="mb-3">
-                <p className="text-[11px] font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider mb-1">
+                <p className="text-caption font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                   {t("regulatoryFeed.matchReason")}
                 </p>
-                <p className="text-[13px] text-slate-600 dark:text-white/60">
+                <p className="text-body text-slate-600 dark:text-white/45">
                   {update.matchReason}
                 </p>
               </div>
@@ -459,7 +459,7 @@ function FeedItem({
                   href={update.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-blue-500 hover:text-blue-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-small font-medium text-blue-500 hover:text-blue-400 transition-colors"
                 >
                   <ExternalLink size={12} />
                   {t("regulatoryFeed.viewOnEurLex")}
@@ -471,7 +471,7 @@ function FeedItem({
                       onMarkRead();
                     }}
                     disabled={markingRead}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500 dark:text-white/40 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-small font-medium text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors disabled:opacity-50"
                   >
                     {markingRead ? (
                       <Loader2 size={12} className="animate-spin" />
@@ -503,7 +503,7 @@ function EmptyState({ t }: { t: (key: string) => string }) {
       <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
         {t("regulatoryFeed.noUpdates")}
       </h3>
-      <p className="text-[14px] text-slate-500 dark:text-white/40 max-w-md mx-auto">
+      <p className="text-body-lg text-slate-500 dark:text-white/45 max-w-md mx-auto">
         {t("regulatoryFeed.noUpdatesDescription")}
       </p>
     </div>

@@ -145,7 +145,7 @@ export default function EUSpaceActPage() {
             <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               EU Space Act Overview
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed mb-8">
+            <p className="text-title text-white/45 leading-relaxed mb-8">
               The European Union Space Act (COM(2025) 335) establishes the first
               comprehensive regulatory framework for commercial space activities
               in Europe. It introduces mandatory authorization, safety
@@ -156,7 +156,7 @@ export default function EUSpaceActPage() {
               href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[14px] text-emerald-400/70 hover:text-emerald-400 transition-colors"
+              className="inline-flex items-center gap-2 text-body-lg text-emerald-400/70 hover:text-emerald-400 transition-colors"
             >
               <span>Read the full legal text</span>
               <ExternalLink size={14} />
@@ -186,7 +186,7 @@ export default function EUSpaceActPage() {
                 <div className="text-[36px] font-medium text-white mb-1">
                   {stat.value}
                 </div>
-                <div className="text-[12px] text-white/40 uppercase tracking-wider">
+                <div className="text-small text-white/45 uppercase tracking-wider">
                   {stat.label}
                 </div>
               </motion.div>
@@ -198,7 +198,7 @@ export default function EUSpaceActPage() {
       {/* Why It Matters */}
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
+          <h2 className="text-small text-white/45 uppercase tracking-wider mb-8">
             Why It Matters
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
@@ -213,11 +213,11 @@ export default function EUSpaceActPage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <AlertTriangle className="text-amber-400" size={20} />
-                <h3 className="text-[16px] font-medium text-amber-400">
+                <h3 className="text-title font-medium text-amber-400">
                   Before the EU Space Act
                 </h3>
               </div>
-              <ul className="space-y-3 text-[14px] text-white/60">
+              <ul className="space-y-3 text-body-lg text-white/45">
                 <li>
                   • Fragmented national regulations across 27 member states
                 </li>
@@ -238,11 +238,11 @@ export default function EUSpaceActPage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <Check className="text-emerald-400" size={20} />
-                <h3 className="text-[16px] font-medium text-emerald-400">
+                <h3 className="text-title font-medium text-emerald-400">
                   After the EU Space Act
                 </h3>
               </div>
-              <ul className="space-y-3 text-[14px] text-white/60">
+              <ul className="space-y-3 text-body-lg text-white/45">
                 <li>• Single market for space services across the EU</li>
                 <li>• One authorization valid in all member states</li>
                 <li>• Harmonized debris mitigation requirements</li>
@@ -257,10 +257,10 @@ export default function EUSpaceActPage() {
       {/* Scope */}
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-3">
+          <h2 className="text-small text-white/45 uppercase tracking-wider mb-3">
             Who Is Affected?
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             The regulation applies to any space activity conducted from EU
             territory, by EU-registered entities, or serving EU customers.
           </p>
@@ -281,12 +281,10 @@ export default function EUSpaceActPage() {
                   <Check size={14} className="text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-[14px] font-medium text-white mb-1">
+                  <h3 className="text-body-lg font-medium text-white mb-1">
                     {item.title}
                   </h3>
-                  <p className="text-[13px] text-white/40">
-                    {item.description}
-                  </p>
+                  <p className="text-body text-white/45">{item.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -297,10 +295,10 @@ export default function EUSpaceActPage() {
       {/* Structure */}
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-3">
+          <h2 className="text-small text-white/45 uppercase tracking-wider mb-3">
             Structure of the Regulation
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             The EU Space Act is organized into 10 chapters covering all aspects
             of space operations.
           </p>
@@ -318,20 +316,20 @@ export default function EUSpaceActPage() {
                 }}
               >
                 <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
-                  <span className="text-[14px] text-white/60">
+                  <span className="text-body-lg text-white/45">
                     {chapter.number}
                   </span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-[15px] font-medium text-white">
+                    <h3 className="text-subtitle font-medium text-white">
                       {chapter.title}
                     </h3>
-                    <span className="text-[10px] text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded">
+                    <span className="text-micro text-emerald-400/60 bg-emerald-500/10 px-2 py-0.5 rounded">
                       Art. {chapter.articles}
                     </span>
                   </div>
-                  <p className="text-[13px] text-white/40">
+                  <p className="text-body text-white/45">
                     {chapter.description}
                   </p>
                 </div>
@@ -344,7 +342,7 @@ export default function EUSpaceActPage() {
       {/* Key Obligations */}
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
+          <h2 className="text-small text-white/45 uppercase tracking-wider mb-8">
             Key Obligations Summary
           </h2>
           <div
@@ -354,9 +352,9 @@ export default function EUSpaceActPage() {
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <div className="space-y-8 text-[15px] text-white/70 leading-relaxed">
+            <div className="space-y-8 text-subtitle text-white/70 leading-relaxed">
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   1. Mandatory Authorization
                 </h3>
                 <p>
@@ -369,7 +367,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   2. Registration Requirements
                 </h3>
                 <p>
@@ -381,7 +379,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   3. Debris Mitigation
                 </h3>
                 <p>
@@ -393,7 +391,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   4. Cybersecurity
                 </h3>
                 <p>
@@ -405,7 +403,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   5. Environmental Reporting
                 </h3>
                 <p>
@@ -417,7 +415,7 @@ export default function EUSpaceActPage() {
                 </p>
               </div>
               <div>
-                <h3 className="text-[17px] font-medium text-white mb-3">
+                <h3 className="text-title font-medium text-white mb-3">
                   6. Insurance & Liability
                 </h3>
                 <p>
@@ -435,7 +433,7 @@ export default function EUSpaceActPage() {
       {/* Penalties */}
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
-          <h2 className="text-[12px] text-white/40 uppercase tracking-wider mb-8">
+          <h2 className="text-small text-white/45 uppercase tracking-wider mb-8">
             Enforcement & Penalties
           </h2>
           <div
@@ -444,31 +442,31 @@ export default function EUSpaceActPage() {
               boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <p className="text-[15px] text-white/70 leading-relaxed mb-6">
+            <p className="text-subtitle text-white/70 leading-relaxed mb-6">
               Non-compliance can result in significant penalties, including:
             </p>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
-                <div className="text-[24px] font-medium text-red-400 mb-2">
+                <div className="text-display-sm font-medium text-red-400 mb-2">
                   Up to 2%
                 </div>
-                <p className="text-[13px] text-white/50">
+                <p className="text-body text-white/45">
                   of annual global turnover for serious violations
                 </p>
               </div>
               <div>
-                <div className="text-[24px] font-medium text-red-400 mb-2">
+                <div className="text-display-sm font-medium text-red-400 mb-2">
                   €10M+
                 </div>
-                <p className="text-[13px] text-white/50">
+                <p className="text-body text-white/45">
                   fixed penalties for specific breaches
                 </p>
               </div>
               <div>
-                <div className="text-[24px] font-medium text-red-400 mb-2">
+                <div className="text-display-sm font-medium text-red-400 mb-2">
                   Revocation
                 </div>
-                <p className="text-[13px] text-white/50">
+                <p className="text-body text-white/45">
                   of authorization for repeated non-compliance
                 </p>
               </div>
@@ -480,23 +478,23 @@ export default function EUSpaceActPage() {
       {/* CTA */}
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-medium mb-4">
+          <h2 className="text-display-sm font-medium mb-4">
             Understand your obligations
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             Take our free assessment to identify which requirements apply to
             your specific operations.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/assessment"
-              className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+              className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
             >
               Start Assessment
             </Link>
             <Link
               href="/resources/timeline"
-              className="inline-flex items-center gap-2 text-[15px] text-white/60 hover:text-emerald-400 transition-colors"
+              className="inline-flex items-center gap-2 text-subtitle text-white/45 hover:text-emerald-400 transition-colors"
             >
               View Timeline
               <ChevronRight size={16} />

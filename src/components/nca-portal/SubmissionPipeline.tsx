@@ -81,7 +81,7 @@ export default function SubmissionPipeline({
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   {column.label}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/40 font-medium">
+                <span className="text-micro px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45 font-medium">
                   {items.length}
                 </span>
               </div>

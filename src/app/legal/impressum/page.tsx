@@ -20,16 +20,16 @@ export default function ImpressumPage() {
       {/* Content */}
       <div className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
-          <h1 className="text-[32px] font-light tracking-[-0.02em] mb-8">
+          <h1 className="text-display font-light tracking-[-0.02em] mb-8">
             Impressum
           </h1>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-8">
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Angaben gemäß § 5 DDG
               </h2>
-              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
+              <div className="text-body-lg text-white/45 leading-relaxed space-y-1">
                 <p>Julian Polleschner</p>
                 <p>Einzelunternehmer</p>
                 <p>Am Maselakepark 37</p>
@@ -39,20 +39,20 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Kontakt
               </h2>
-              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
+              <div className="text-body-lg text-white/45 leading-relaxed space-y-1">
                 <p>E-Mail: cs@caelex.eu</p>
                 <p>Telefon: +49 1636726480</p>
               </div>
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Umsatzsteuer
               </h2>
-              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
+              <div className="text-body-lg text-white/45 leading-relaxed space-y-1">
                 <p>
                   Gemäß § 19 UStG wird keine Umsatzsteuer erhoben
                   (Kleinunternehmerregelung).
@@ -61,10 +61,10 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
               </h2>
-              <div className="text-[14px] text-white/60 leading-relaxed space-y-1">
+              <div className="text-body-lg text-white/45 leading-relaxed space-y-1">
                 <p>Julian Polleschner</p>
                 <p>Am Maselakepark 37</p>
                 <p>13587 Berlin</p>
@@ -72,17 +72,17 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 EU-Streitschlichtung
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Die Europäische Kommission stellt eine Plattform zur
                 Online-Streitbeilegung (OS) bereit:{" "}
                 <a
                   href="https://ec.europa.eu/consumers/odr/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/80 hover:text-white underline"
+                  className="text-white/70 hover:text-white underline"
                 >
                   https://ec.europa.eu/consumers/odr/
                 </a>
@@ -93,10 +93,10 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Verbraucherstreitbeilegung/Universalschlichtungsstelle
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wir sind nicht bereit oder verpflichtet, an
                 Streitbeilegungsverfahren vor einer
                 Verbraucherschlichtungsstelle teilzunehmen.
@@ -104,10 +104,10 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Haftung für Inhalte
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene
                 Inhalte auf diesen Seiten nach den allgemeinen Gesetzen
                 verantwortlich. Nach §§ 8 bis 10 TMG sind wir als
@@ -127,10 +127,10 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Haftung für Links
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Unser Angebot enthält Links zu externen Websites Dritter, auf
                 deren Inhalte wir keinen Einfluss haben. Deshalb können wir für
                 diese fremden Inhalte auch keine Gewähr übernehmen. Für die
@@ -149,10 +149,10 @@ export default function ImpressumPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Urheberrecht
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Die durch die Seitenbetreiber erstellten Inhalte und Werke auf
                 diesen Seiten unterliegen dem deutschen Urheberrecht. Die
                 Vervielfältigung, Bearbeitung, Verbreitung und jede Art der
@@ -172,7 +172,7 @@ export default function ImpressumPage() {
             </section>
           </div>
 
-          <p className="text-[12px] text-white/30 mt-12">Stand: Februar 2026</p>
+          <p className="text-small text-white/30 mt-12">Stand: Februar 2026</p>
         </div>
       </div>
     </main>

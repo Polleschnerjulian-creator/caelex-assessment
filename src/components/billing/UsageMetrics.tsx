@@ -49,7 +49,7 @@ export default function UsageMetrics({
 
   return (
     <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
-      <h3 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-5">
+      <h3 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-5">
         Usage
       </h3>
 
@@ -59,10 +59,10 @@ export default function UsageMetrics({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <metric.icon
-                  className="w-4 h-4 text-slate-400 dark:text-white/40"
+                  className="w-4 h-4 text-slate-400 dark:text-white/45"
                   aria-hidden="true"
                 />
-                <span className="text-[13px] text-slate-600 dark:text-white/60">
+                <span className="text-body text-slate-600 dark:text-white/45">
                   {metric.label}
                 </span>
               </div>
@@ -74,7 +74,7 @@ export default function UsageMetrics({
                   />
                 )}
                 <span
-                  className={`text-[13px] font-medium ${
+                  className={`text-body font-medium ${
                     metric.exceeded
                       ? "text-amber-600 dark:text-amber-400"
                       : "text-slate-900 dark:text-white"
@@ -115,7 +115,7 @@ export default function UsageMetrics({
 
             {/* Warning */}
             {metric.exceeded && (
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1.5">
+              <p className="text-caption text-amber-600 dark:text-amber-400 mt-1.5">
                 You&apos;ve reached your limit. Upgrade for more.
               </p>
             )}

@@ -435,13 +435,13 @@ export default function IncidentsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <p className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-1">
+          <p className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-1">
             {t("incidents.mono")}
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             {t("incidents.title")}
           </h1>
-          <p className="text-[14px] text-slate-500 dark:text-white/50 mt-1">
+          <p className="text-body-lg text-slate-500 dark:text-white/45 mt-1">
             {t("incidents.description")}
           </p>
         </div>
@@ -459,10 +459,10 @@ export default function IncidentsPage() {
                 <AlertTriangle size={16} className="text-red-400" />
               </div>
               <div>
-                <p className="text-[13px] font-medium text-red-400">
+                <p className="text-body font-medium text-red-400">
                   Critical Deadline Alert
                 </p>
-                <p className="text-[12px] text-red-400/70">
+                <p className="text-small text-red-400/70">
                   One or more NIS2 reporting deadlines are less than 2 hours
                   away. Immediate action required.
                 </p>
@@ -511,7 +511,7 @@ export default function IncidentsPage() {
             >
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon size={14} className={stat.color} />
-                <span className="text-[11px] text-slate-500 dark:text-white/40 uppercase tracking-wider">
+                <span className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   {stat.label}
                 </span>
               </div>
@@ -525,17 +525,17 @@ export default function IncidentsPage() {
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-[11px] text-slate-500 dark:text-white/40 mr-1">
+            <span className="text-caption text-slate-500 dark:text-white/45 mr-1">
               Severity:
             </span>
             {SEVERITY_FILTERS.map((s) => (
               <button
                 key={s}
                 onClick={() => setSeverityFilter(s)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
                   severityFilter === s
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 border border-transparent"
+                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-transparent"
                 }`}
               >
                 {s === "ALL" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -543,17 +543,17 @@ export default function IncidentsPage() {
             ))}
           </div>
           <div className="flex items-center gap-1 ml-4">
-            <span className="text-[11px] text-slate-500 dark:text-white/40 mr-1">
+            <span className="text-caption text-slate-500 dark:text-white/45 mr-1">
               Category:
             </span>
             {CATEGORY_FILTERS.map((c) => (
               <button
                 key={c}
                 onClick={() => setCategoryFilter(c)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-lg text-caption font-medium transition-colors ${
                   categoryFilter === c
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 border border-transparent"
+                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-transparent"
                 }`}
               >
                 {c === "ALL" ? "All" : CATEGORY_LABELS[c] || c}
@@ -567,7 +567,7 @@ export default function IncidentsPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2
               size={24}
-              className="animate-spin text-slate-400 dark:text-white/40"
+              className="animate-spin text-slate-400 dark:text-white/45"
             />
           </div>
         )}
@@ -582,10 +582,10 @@ export default function IncidentsPage() {
                 strokeWidth={1.5}
               />
             </div>
-            <h3 className="text-[15px] font-medium text-slate-700 dark:text-white/70 mb-1">
+            <h3 className="text-subtitle font-medium text-slate-700 dark:text-white/70 mb-1">
               No active incidents
             </h3>
-            <p className="text-[13px] text-slate-500 dark:text-white/40">
+            <p className="text-body text-slate-500 dark:text-white/45">
               All clear. No incidents require attention.
             </p>
           </div>
@@ -620,23 +620,23 @@ export default function IncidentsPage() {
                     />
 
                     {/* Number */}
-                    <span className="text-[12px] font-mono text-slate-500 dark:text-white/40 w-28 shrink-0">
+                    <span className="text-small font-mono text-slate-500 dark:text-white/45 w-28 shrink-0">
                       {incident.incidentNumber}
                     </span>
 
                     {/* Title */}
-                    <span className="text-[13px] text-slate-900 dark:text-white/90 font-medium flex-1 truncate">
+                    <span className="text-body text-slate-900 dark:text-white/90 font-medium flex-1 truncate">
                       {incident.title}
                     </span>
 
                     {/* Category tag */}
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/40 shrink-0">
+                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45 shrink-0">
                       {CATEGORY_LABELS[incident.category] || incident.category}
                     </span>
 
                     {/* Workflow state */}
                     <span
-                      className={`text-[11px] font-medium shrink-0 ${wf.color}`}
+                      className={`text-caption font-medium shrink-0 ${wf.color}`}
                     >
                       {wf.label}
                     </span>
@@ -671,7 +671,7 @@ export default function IncidentsPage() {
                     {/* Countdown */}
                     {urgentMs !== null && urgentMs > 0 && (
                       <span
-                        className={`text-[11px] shrink-0 ${getCountdownColor(
+                        className={`text-caption shrink-0 ${getCountdownColor(
                           urgentMs > 0
                             ? (urgentMs / (72 * 60 * 60 * 1000)) * 100
                             : 0,
@@ -682,7 +682,7 @@ export default function IncidentsPage() {
                       </span>
                     )}
                     {urgentMs !== null && urgentMs <= 0 && (
-                      <span className="text-[11px] text-red-400 animate-pulse shrink-0">
+                      <span className="text-caption text-red-400 animate-pulse shrink-0">
                         OVERDUE
                       </span>
                     )}
@@ -716,14 +716,14 @@ export default function IncidentsPage() {
                             <div className="flex items-center justify-center py-8">
                               <Loader2
                                 size={20}
-                                className="animate-spin text-slate-400 dark:text-white/40"
+                                className="animate-spin text-slate-400 dark:text-white/45"
                               />
                             </div>
                           ) : expandedData ? (
                             <>
                               {/* Workflow track */}
                               <div>
-                                <h4 className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                <h4 className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
                                   Workflow Progress
                                 </h4>
                                 <div className="flex items-center gap-0">
@@ -744,7 +744,7 @@ export default function IncidentsPage() {
                                       >
                                         <div className="flex flex-col items-center">
                                           <div
-                                            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
+                                            className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium ${
                                               isActive
                                                 ? "bg-emerald-500 text-white ring-2 ring-emerald-500/30"
                                                 : isPast
@@ -800,7 +800,7 @@ export default function IncidentsPage() {
                                             actionLoading ===
                                             `workflow-${incident.id}-${t.event}`
                                           }
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
                                         >
                                           {actionLoading ===
                                           `workflow-${incident.id}-${t.event}` ? (
@@ -822,7 +822,7 @@ export default function IncidentsPage() {
                               {/* NIS2 Phase tracker */}
                               {expandedData.nis2Phases.length > 0 && (
                                 <div>
-                                  <h4 className="text-[11px] tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
+                                  <h4 className="text-caption tracking-widest text-slate-500 dark:text-white/30 uppercase mb-3">
                                     NIS2 Reporting Phases
                                   </h4>
                                   <div className="space-y-2">
@@ -874,16 +874,16 @@ export default function IncidentsPage() {
                                           ) : (
                                             <Clock
                                               size={16}
-                                              className="text-slate-400 dark:text-white/40 shrink-0"
+                                              className="text-slate-400 dark:text-white/45 shrink-0"
                                             />
                                           )}
 
                                           {/* Phase info */}
                                           <div className="flex-1 min-w-0">
-                                            <p className="text-[12px] font-medium text-slate-900 dark:text-white/90">
+                                            <p className="text-small font-medium text-slate-900 dark:text-white/90">
                                               {phase.phaseName}
                                             </p>
-                                            <p className="text-[10px] text-slate-500 dark:text-white/40">
+                                            <p className="text-micro text-slate-500 dark:text-white/45">
                                               Due:{" "}
                                               {new Date(
                                                 phase.deadline,
@@ -893,12 +893,12 @@ export default function IncidentsPage() {
 
                                           {/* Countdown / status */}
                                           {isSubmitted ? (
-                                            <span className="text-[11px] text-green-400 font-medium shrink-0">
+                                            <span className="text-caption text-green-400 font-medium shrink-0">
                                               Submitted
                                             </span>
                                           ) : (
                                             <span
-                                              className={`text-[11px] shrink-0 ${getCountdownColor(
+                                              className={`text-caption shrink-0 ${getCountdownColor(
                                                 pctRemaining,
                                                 isOverdue,
                                               )}`}
@@ -921,7 +921,7 @@ export default function IncidentsPage() {
                                                   actionLoading ===
                                                   `draft-${incident.id}-${phase.phase}`
                                                 }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-slate-600 dark:text-white/60 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-slate-600 dark:text-white/45 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
                                               >
                                                 {actionLoading ===
                                                 `draft-${incident.id}-${phase.phase}` ? (
@@ -945,7 +945,7 @@ export default function IncidentsPage() {
                                                   actionLoading ===
                                                   `submit-${incident.id}-${phase.phase}`
                                                 }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors disabled:opacity-50"
                                               >
                                                 {actionLoading ===
                                                 `submit-${incident.id}-${phase.phase}` ? (
@@ -968,7 +968,7 @@ export default function IncidentsPage() {
                               )}
 
                               {/* Details summary */}
-                              <div className="text-[12px] text-slate-500 dark:text-white/40">
+                              <div className="text-small text-slate-500 dark:text-white/45">
                                 Detected:{" "}
                                 {new Date(incident.detectedAt).toLocaleString()}{" "}
                                 | Category:{" "}
@@ -978,7 +978,7 @@ export default function IncidentsPage() {
                               </div>
                             </>
                           ) : (
-                            <p className="text-[13px] text-slate-500 dark:text-white/40 text-center py-4">
+                            <p className="text-body text-slate-500 dark:text-white/45 text-center py-4">
                               Failed to load incident details.
                             </p>
                           )}

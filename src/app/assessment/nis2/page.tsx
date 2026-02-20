@@ -10,9 +10,7 @@ const NIS2AssessmentWizard = dynamic(
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[13px] text-white/50">
-            Loading NIS2 assessment...
-          </p>
+          <p className="text-body text-white/45">Loading NIS2 assessment...</p>
         </div>
       </div>
     ),

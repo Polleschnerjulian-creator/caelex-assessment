@@ -71,24 +71,24 @@ export default function Lifecycle() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">06 / 12</span>
+        <span className="text-caption text-white/25">06 / 12</span>
       </motion.div>
 
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
         >
-          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/45 block mb-6">
             The Journey
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto">
             From first assessment
             <br />
-            <span className="text-white/50">to full compliance.</span>
+            <span className="text-white/45">to full compliance.</span>
           </h2>
         </motion.div>
 
@@ -100,8 +100,8 @@ export default function Lifecycle() {
               return (
                 <motion.div
                   key={step.number}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                 >
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-500 h-full">
@@ -110,11 +110,11 @@ export default function Lifecycle() {
                       <div className="p-2.5 rounded-lg bg-white/[0.04]">
                         <Icon
                           size={16}
-                          className="text-white/50"
+                          className="text-white/45"
                           aria-hidden="true"
                         />
                       </div>
-                      <span className="text-micro uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-1 rounded-full">
+                      <span className="text-micro uppercase tracking-[0.15em] text-white/25 bg-white/[0.04] px-2 py-1 rounded-full">
                         {step.tag}
                       </span>
                     </div>
@@ -122,7 +122,7 @@ export default function Lifecycle() {
                     {/* Step number + title */}
                     <div className="mb-3">
                       <span
-                        className="text-micro text-white/50 block mb-1"
+                        className="text-micro text-white/45 block mb-1"
                         aria-hidden="true"
                       >
                         {step.number}
@@ -133,10 +133,10 @@ export default function Lifecycle() {
                     </div>
 
                     {/* Description */}
-                    <p className="text-body text-white/50 leading-[1.5] mb-2">
+                    <p className="text-body text-white/45 leading-[1.5] mb-2">
                       {step.description}
                     </p>
-                    <p className="text-caption text-white/30 leading-[1.5]">
+                    <p className="text-caption text-white/25 leading-[1.5]">
                       {step.detail}
                     </p>
                   </div>
@@ -165,7 +165,7 @@ export default function Lifecycle() {
                     aria-hidden="true"
                   >
                     <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-                      <Icon size={14} className="text-white/50" />
+                      <Icon size={14} className="text-white/45" />
                     </div>
                     {i < steps.length - 1 && (
                       <div className="w-px flex-1 bg-white/[0.06] mt-2" />
@@ -178,14 +178,14 @@ export default function Lifecycle() {
                       <h3 className="text-subtitle font-medium text-white">
                         {step.title}
                       </h3>
-                      <span className="text-micro uppercase tracking-[0.15em] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded-full">
+                      <span className="text-micro uppercase tracking-[0.15em] text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full">
                         {step.tag}
                       </span>
                     </div>
-                    <p className="text-body text-white/50 leading-[1.5]">
+                    <p className="text-body text-white/45 leading-[1.5]">
                       {step.description}
                     </p>
-                    <p className="text-caption text-white/30 leading-[1.5] mt-1">
+                    <p className="text-caption text-white/25 leading-[1.5] mt-1">
                       {step.detail}
                     </p>
                   </div>

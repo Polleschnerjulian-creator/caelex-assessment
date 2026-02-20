@@ -48,7 +48,7 @@ const PLAN_STYLES: Record<string, { bg: string; text: string; icon?: string }> =
     },
     FREE: {
       bg: "bg-slate-50 dark:bg-white/[0.06] border-slate-200 dark:border-white/10",
-      text: "text-slate-600 dark:text-white/50",
+      text: "text-slate-600 dark:text-white/45",
     },
   };
 
@@ -95,7 +95,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
         className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
         role="status"
       >
-        <p className="text-[14px] text-slate-500 dark:text-white/50">
+        <p className="text-body-lg text-slate-500 dark:text-white/45">
           No organizations found matching your filters.
         </p>
       </div>
@@ -110,37 +110,37 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
             <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Organization
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Owner
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Plan
               </th>
               <th
                 scope="col"
-                className="text-center px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-center px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Members
               </th>
               <th
                 scope="col"
-                className="text-center px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-center px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Spacecraft
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Created
               </th>
@@ -163,15 +163,15 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-white/10 dark:to-white/5 flex items-center justify-center flex-shrink-0">
                         <Building2
                           size={14}
-                          className="text-slate-500 dark:text-white/50"
+                          className="text-slate-500 dark:text-white/45"
                           aria-hidden="true"
                         />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-slate-900 dark:text-white truncate">
+                        <p className="text-body font-medium text-slate-900 dark:text-white truncate">
                           {org.name}
                         </p>
-                        <p className="text-[11px] text-slate-500 dark:text-white/40 font-mono">
+                        <p className="text-caption text-slate-500 dark:text-white/45 font-mono">
                           {org.slug}
                         </p>
                       </div>
@@ -182,11 +182,11 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     <div className="min-w-0">
                       {ownerName && (
-                        <p className="text-[13px] text-slate-700 dark:text-white/80 truncate">
+                        <p className="text-body text-slate-700 dark:text-white/70 truncate">
                           {ownerName}
                         </p>
                       )}
-                      <p className="text-[12px] text-slate-500 dark:text-white/50 truncate">
+                      <p className="text-small text-slate-500 dark:text-white/45 truncate">
                         {ownerEmail}
                       </p>
                     </div>
@@ -205,7 +205,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                           )
                         }
                         disabled={loadingId === org.id}
-                        className={`px-2 py-1 border rounded-md text-[12px] font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${planStyle.bg} ${planStyle.text}`}
+                        className={`px-2 py-1 border rounded-lg text-small font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${planStyle.bg} ${planStyle.text}`}
                       >
                         {PLANS.map((p) => (
                           <option key={p} value={p}>
@@ -227,13 +227,13 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                     <div className="flex items-center justify-center gap-1.5">
                       <Users
                         size={13}
-                        className="text-slate-400 dark:text-white/40"
+                        className="text-slate-400 dark:text-white/45"
                         aria-hidden="true"
                       />
-                      <span className="text-[13px] text-slate-700 dark:text-white/80">
+                      <span className="text-body text-slate-700 dark:text-white/70">
                         {org._count.members}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-white/30">
+                      <span className="text-caption text-slate-400 dark:text-white/30">
                         / {org.maxUsers}
                       </span>
                     </div>
@@ -244,13 +244,13 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                     <div className="flex items-center justify-center gap-1.5">
                       <Rocket
                         size={13}
-                        className="text-slate-400 dark:text-white/40"
+                        className="text-slate-400 dark:text-white/45"
                         aria-hidden="true"
                       />
-                      <span className="text-[13px] text-slate-700 dark:text-white/80">
+                      <span className="text-body text-slate-700 dark:text-white/70">
                         {org._count.spacecraft}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-white/30">
+                      <span className="text-caption text-slate-400 dark:text-white/30">
                         / {org.maxSpacecraft}
                       </span>
                     </div>
@@ -260,7 +260,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     <time
                       dateTime={org.createdAt}
-                      className="text-[12px] text-slate-500 dark:text-white/50"
+                      className="text-small text-slate-500 dark:text-white/45"
                     >
                       {new Date(org.createdAt).toLocaleDateString("en-US", {
                         month: "short",

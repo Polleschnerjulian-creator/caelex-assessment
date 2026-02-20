@@ -477,7 +477,7 @@ function UkSpacePageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
             UK Space Industry Act Compliance
           </h1>
           <p className="text-slate-600 dark:text-white/70 mt-1">
@@ -514,7 +514,7 @@ function UkSpacePageContent() {
                     <div className="text-sm font-medium text-slate-900 dark:text-white">
                       {config.label}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                    <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                       {config.section}
                     </div>
                   </div>
@@ -563,7 +563,7 @@ function UkSpacePageContent() {
                     <h3 className="font-medium text-slate-900 dark:text-white">
                       {config.label}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-white/60">
+                    <p className="text-sm text-slate-600 dark:text-white/45">
                       {score.byCategory[category] ?? 0}% compliant
                     </p>
                   </div>
@@ -585,7 +585,7 @@ function UkSpacePageContent() {
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
                     ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
+                    : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 <div
@@ -605,7 +605,7 @@ function UkSpacePageContent() {
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{step.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45">
                     {step.description}
                   </div>
                 </div>
@@ -654,7 +654,7 @@ function UkSpacePageContent() {
                                 assessment.spacecraftName ||
                                 "Untitled"}
                             </div>
-                            <div className="text-sm text-slate-600 dark:text-white/60">
+                            <div className="text-sm text-slate-600 dark:text-white/45">
                               {
                                 operatorTypeConfig[
                                   assessment.operatorType as UkOperatorType
@@ -669,7 +669,7 @@ function UkSpacePageContent() {
                               <div className="text-lg font-bold text-slate-900 dark:text-white">
                                 {assessment.complianceScore}%
                               </div>
-                              <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                                 Compliance
                               </div>
                             </div>
@@ -750,7 +750,7 @@ function UkSpacePageContent() {
                         className={`p-3 rounded-lg border text-center transition-colors ${
                           form.operatorType === type
                             ? "bg-emerald-500/20 border-emerald-500 text-white"
-                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
+                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/45 hover:border-slate-600"
                         }`}
                       >
                         <Icon className="w-6 h-6 mx-auto mb-2" />
@@ -781,7 +781,7 @@ function UkSpacePageContent() {
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         form.activityTypes.includes(activity)
                           ? "bg-emerald-500/20 border-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
+                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/45 hover:border-slate-600"
                       }`}
                     >
                       {config.label}
@@ -922,7 +922,7 @@ function UkSpacePageContent() {
             {/* Actions */}
             <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
               {createError && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                   <AlertTriangle size={14} className="flex-shrink-0" />
                   {createError}
                 </div>
@@ -930,7 +930,7 @@ function UkSpacePageContent() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowNewAssessment(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -969,7 +969,7 @@ function UkSpacePageContent() {
                 <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {stats.total}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-white/60">
+                <div className="text-sm text-slate-600 dark:text-white/45">
                   Applicable Requirements
                 </div>
               </div>
@@ -995,7 +995,7 @@ function UkSpacePageContent() {
                 <div className="text-2xl font-bold text-slate-400">
                   {stats.notAssessed}
                 </div>
-                <div className="text-sm text-slate-500 dark:text-white/60">
+                <div className="text-sm text-slate-500 dark:text-white/45">
                   Not Assessed
                 </div>
               </div>
@@ -1062,7 +1062,7 @@ function UkSpacePageContent() {
                           >
                             {catConfig.label}
                           </span>
-                          <span className="text-sm text-slate-600 dark:text-white/60">
+                          <span className="text-sm text-slate-600 dark:text-white/45">
                             {requirement.sectionRef}
                           </span>
                           {requirement.bindingLevel === "mandatory" && (
@@ -1079,11 +1079,11 @@ function UkSpacePageContent() {
                         <h3 className="font-medium text-slate-900 dark:text-white mb-1">
                           {requirement.title}
                         </h3>
-                        <p className="text-sm text-slate-600 dark:text-white/60 mb-3">
+                        <p className="text-sm text-slate-600 dark:text-white/45 mb-3">
                           {requirement.complianceQuestion}
                         </p>
 
-                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/50">
+                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/45">
                           {requirement.caaGuidanceRef && (
                             <span className="flex items-center gap-1">
                               <FileText className="w-3 h-3" />
@@ -1121,7 +1121,7 @@ function UkSpacePageContent() {
                               className={`p-2 rounded-lg transition-colors ${
                                 status === s
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
+                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                               }`}
                               title={config.label}
                             >
@@ -1162,7 +1162,7 @@ function UkSpacePageContent() {
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Gap Analysis
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/60">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/45">
                   <AlertCircle className="w-4 h-4" />
                   {gapAnalysis.length} gaps identified
                 </div>
@@ -1174,7 +1174,7 @@ function UkSpacePageContent() {
                   <p className="text-slate-900 dark:text-white font-medium">
                     No gaps identified
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-white/60">
+                  <p className="text-sm text-slate-600 dark:text-white/45">
                     All assessed requirements are compliant
                   </p>
                 </div>
@@ -1205,11 +1205,11 @@ function UkSpacePageContent() {
                             >
                               {gap.priority.toUpperCase()} PRIORITY
                             </span>
-                            <span className="text-xs text-slate-500 dark:text-white/50">
+                            <span className="text-xs text-slate-500 dark:text-white/45">
                               Effort: {gap.estimatedEffort}
                             </span>
                             {gap.caaGuidanceRef && (
-                              <span className="text-xs text-slate-500 dark:text-white/50">
+                              <span className="text-xs text-slate-500 dark:text-white/45">
                                 {gap.caaGuidanceRef}
                               </span>
                             )}
@@ -1217,11 +1217,11 @@ function UkSpacePageContent() {
                           <p className="text-slate-900 dark:text-white font-medium mb-1">
                             {gap.gap}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/60">
+                          <p className="text-sm text-slate-600 dark:text-white/45">
                             {gap.recommendation}
                           </p>
                           {gap.dependencies.length > 0 && (
-                            <div className="mt-2 text-xs text-slate-500 dark:text-white/50">
+                            <div className="mt-2 text-xs text-slate-500 dark:text-white/45">
                               Dependencies: {gap.dependencies.join(", ")}
                             </div>
                           )}
@@ -1247,7 +1247,7 @@ function UkSpacePageContent() {
             <div className="flex justify-between">
               <button
                 onClick={() => setActiveStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Assessment
@@ -1288,7 +1288,7 @@ function UkSpacePageContent() {
                       <div className="text-4xl font-bold text-slate-900 dark:text-white">
                         {score.overall}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Overall Score
                       </div>
                     </div>
@@ -1296,7 +1296,7 @@ function UkSpacePageContent() {
                       <div className="text-4xl font-bold text-amber-400">
                         {score.mandatory}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Mandatory
                       </div>
                     </div>
@@ -1314,7 +1314,7 @@ function UkSpacePageContent() {
                       >
                         {selectedAssessment.riskLevel?.toUpperCase() || "N/A"}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Risk Level
                       </div>
                     </div>
@@ -1324,7 +1324,7 @@ function UkSpacePageContent() {
                 {/* Required Licenses Summary */}
                 {requiredLicenses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-sm font-medium text-slate-600 dark:text-white/60 mb-3">
+                    <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
                       Required CAA Licenses
                     </h3>
                     <div className="flex justify-center gap-4">
@@ -1362,7 +1362,7 @@ function UkSpacePageContent() {
             <div className="flex justify-start">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Gap Analysis

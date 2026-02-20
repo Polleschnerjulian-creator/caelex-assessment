@@ -372,14 +372,14 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="text-[11px] uppercase tracking-[0.2em] text-white/30 mb-4 block">
+      <span className="text-caption uppercase tracking-[0.2em] text-white/30 mb-4 block">
         {eyebrow}
       </span>
       <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-[15px] md:text-[16px] text-white/40 leading-relaxed max-w-[650px] mx-auto">
+        <p className="text-subtitle md:text-title text-white/45 leading-relaxed max-w-[650px] mx-auto">
           {subtitle}
         </p>
       )}
@@ -411,13 +411,13 @@ function StatusBadge({
     },
     "coming-soon": {
       label: "In Vorbereitung",
-      className: "bg-white/10 text-white/50 border-white/10",
+      className: "bg-white/10 text-white/45 border-white/10",
     },
   };
   const { label, className } = config[status];
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${className}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-medium border ${className}`}
     >
       {label}
     </span>
@@ -446,7 +446,7 @@ function HeroSection() {
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 text-center">
         <motion.div {...fadeUp(isInView, 0)}>
-          <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
+          <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
             Corporate Governance
           </span>
         </motion.div>
@@ -457,12 +457,12 @@ function HeroSection() {
         >
           Verantwortung ist kein Feature
           <br />
-          <span className="text-white/50">— es ist unser Fundament.</span>
+          <span className="text-white/45">— es ist unser Fundament.</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
-          className="text-[18px] md:text-[20px] text-white/50 max-w-[700px] mx-auto mb-14 leading-relaxed"
+          className="text-heading md:text-heading-lg text-white/45 max-w-[700px] mx-auto mb-14 leading-relaxed"
         >
           Caelex verwaltet sensible Compliance-Daten der europäischen
           Raumfahrtindustrie. Das verpflichtet uns zu den höchsten Standards bei
@@ -479,10 +479,10 @@ function HeroSection() {
               key={metric.label}
               className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-xl px-5 py-4"
             >
-              <div className="text-[24px] md:text-[28px] font-medium text-white tracking-[-0.02em]">
+              <div className="text-display-sm md:text-[28px] font-medium text-white tracking-[-0.02em]">
                 {metric.value}
               </div>
-              <div className="text-[12px] text-white/40 mt-1">
+              <div className="text-small text-white/45 mt-1">
                 {metric.label}
               </div>
             </div>
@@ -529,10 +529,10 @@ function FrameworkSection() {
                     />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-medium text-white">
+                    <h3 className="text-heading font-medium text-white">
                       {pillar.title}
                     </h3>
-                    <span className="text-[12px] text-white/30 uppercase tracking-wider">
+                    <span className="text-small text-white/30 uppercase tracking-wider">
                       {pillar.subtitle}
                     </span>
                   </div>
@@ -545,7 +545,7 @@ function FrameworkSection() {
                         className="text-emerald-500/50 mt-1 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-[13px] text-white/50 leading-[1.6]">
+                      <span className="text-body text-white/45 leading-[1.6]">
                         {item}
                       </span>
                     </li>
@@ -583,16 +583,16 @@ function CodexSection() {
                 <div className="flex gap-5 md:gap-8">
                   <div className="shrink-0">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                      <span className="text-[16px] font-medium text-emerald-400 font-mono">
+                      <span className="text-title font-medium text-emerald-400 font-mono">
                         {article.number}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-[16px] md:text-[18px] font-medium text-white mb-2">
+                    <h3 className="text-title md:text-heading font-medium text-white mb-2">
                       {article.title}
                     </h3>
-                    <p className="text-[13px] md:text-[14px] text-white/45 leading-[1.8]">
+                    <p className="text-body md:text-body-lg text-white/45 leading-[1.8]">
                       {article.text}
                     </p>
                   </div>
@@ -663,12 +663,12 @@ function ESGSection() {
                       />
                     </div>
                     <div>
-                      <h3 className="text-[18px] font-medium text-white">
+                      <h3 className="text-heading font-medium text-white">
                         {pillar.title}
                       </h3>
                     </div>
                   </div>
-                  <p className="text-[12px] text-white/30 uppercase tracking-wider mb-6">
+                  <p className="text-small text-white/30 uppercase tracking-wider mb-6">
                     {pillar.subtitle}
                   </p>
 
@@ -679,11 +679,11 @@ function ESGSection() {
                           <div
                             className={`w-1.5 h-1.5 rounded-full ${colors.dotBg}`}
                           />
-                          <span className="text-[14px] font-medium text-white">
+                          <span className="text-body-lg font-medium text-white">
                             {commitment.title}
                           </span>
                         </div>
-                        <p className="text-[13px] text-white/40 leading-[1.6] ml-3.5">
+                        <p className="text-body text-white/45 leading-[1.6] ml-3.5">
                           {commitment.description}
                         </p>
                       </div>
@@ -717,12 +717,12 @@ function ComplianceFrameworkSection() {
             <motion.div key={fw.name} {...fadeUp(isInView, 0.15 + i * 0.06)}>
               <GlassCard className="p-6 h-full">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-[16px] font-medium text-white">
+                  <h3 className="text-title font-medium text-white">
                     {fw.name}
                   </h3>
                   <StatusBadge status={fw.status} />
                 </div>
-                <p className="text-[13px] text-white/45 leading-[1.7]">
+                <p className="text-body text-white/45 leading-[1.7]">
                   {fw.description}
                 </p>
               </GlassCard>
@@ -733,7 +733,7 @@ function ComplianceFrameworkSection() {
         <motion.div {...fadeUp(isInView, 0.5)} className="text-center mt-8">
           <Link
             href="/security"
-            className="inline-flex items-center gap-2 text-[14px] text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-2 text-body-lg text-emerald-400 hover:text-emerald-300 transition-colors"
           >
             Technische Sicherheitsdetails
             <ArrowRight size={14} aria-hidden="true" />
@@ -775,11 +775,11 @@ function RiskManagementSection() {
                   <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors">
                     <category.icon
                       size={20}
-                      className="text-white/50"
+                      className="text-white/45"
                       aria-hidden="true"
                     />
                   </div>
-                  <h3 className="text-[18px] font-medium text-white">
+                  <h3 className="text-heading font-medium text-white">
                     {category.title}
                   </h3>
                 </div>
@@ -791,7 +791,7 @@ function RiskManagementSection() {
                         className="text-emerald-500/60 mt-0.5 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-[13px] text-white/50 leading-[1.6]">
+                      <span className="text-body text-white/45 leading-[1.6]">
                         {measure}
                       </span>
                     </li>
@@ -830,11 +830,11 @@ function EthicalPoliciesSection() {
                   <div className="p-2.5 rounded-lg bg-white/[0.04]">
                     <policy.icon
                       size={20}
-                      className="text-white/50"
+                      className="text-white/45"
                       aria-hidden="true"
                     />
                   </div>
-                  <h3 className="text-[16px] font-medium text-white">
+                  <h3 className="text-title font-medium text-white">
                     {policy.title}
                   </h3>
                 </div>
@@ -846,7 +846,7 @@ function EthicalPoliciesSection() {
                         className="text-emerald-500/60 mt-0.5 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-[13px] text-white/50 leading-[1.6]">
+                      <span className="text-body text-white/45 leading-[1.6]">
                         {point}
                       </span>
                     </li>
@@ -891,19 +891,19 @@ function ReportingSection() {
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
                   <channel.icon
                     size={20}
-                    className="text-white/50"
+                    className="text-white/45"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[18px] font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-white mb-2">
                   {channel.title}
                 </h3>
-                <p className="text-[13px] text-white/45 leading-[1.7] mb-5 flex-1">
+                <p className="text-body text-white/45 leading-[1.7] mb-5 flex-1">
                   {channel.description}
                 </p>
                 <a
                   href={`mailto:${channel.email}`}
-                  className="inline-flex items-center gap-2 text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
                 >
                   <Mail size={14} aria-hidden="true" />
                   {channel.email}
@@ -949,12 +949,12 @@ function DocumentsSection() {
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-[14px] font-medium text-white">
+                        <span className="text-body-lg font-medium text-white">
                           {doc.title}
                         </span>
                         <StatusBadge status={doc.status} />
                       </div>
-                      <p className="text-[12px] text-white/35 mt-0.5 truncate">
+                      <p className="text-small text-white/25 mt-0.5 truncate">
                         {doc.description}
                       </p>
                     </div>
@@ -967,7 +967,7 @@ function DocumentsSection() {
                     >
                       <ExternalLink
                         size={16}
-                        className="text-white/40"
+                        className="text-white/45"
                         aria-hidden="true"
                       />
                     </Link>
@@ -1000,14 +1000,14 @@ function CTASection() {
             <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
               Fragen zu unserer Governance?
             </h2>
-            <p className="text-[17px] text-white/50 max-w-[560px] mx-auto mb-10 leading-relaxed">
+            <p className="text-title text-white/45 max-w-[560px] mx-auto mb-10 leading-relaxed">
               Wir stehen für offenen Dialog — zu Governance, Datenschutz oder
               unserer Arbeitsweise.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/contact"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[15px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               >
                 Kontakt aufnehmen
                 <ArrowRight
@@ -1018,7 +1018,7 @@ function CTASection() {
               </Link>
               <Link
                 href="/security"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/80 text-[15px] font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/70 text-subtitle font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
               >
                 Security & Compliance
                 <Server size={16} aria-hidden="true" />

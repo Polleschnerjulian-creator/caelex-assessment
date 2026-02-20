@@ -64,7 +64,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
                     <th
                       scope="col"
                       key={i}
-                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
+                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/45 border-b border-slate-200 dark:border-white/10"
                     >
                       {str(h)}
                     </th>
@@ -81,7 +81,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
                   {(Array.isArray(row) ? row : []).map((cell, ci) => (
                     <td
                       key={ci}
-                      className="px-3 py-2 text-slate-700 dark:text-white/60 break-words"
+                      className="px-3 py-2 text-slate-700 dark:text-white/45 break-words"
                     >
                       {str(cell)}
                     </td>
@@ -101,7 +101,7 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
               <span className="font-medium text-slate-700 dark:text-white/70 min-w-[140px]">
                 {str(item?.key)}:
               </span>
-              <span className="text-slate-600 dark:text-white/50 break-words">
+              <span className="text-slate-600 dark:text-white/45 break-words">
                 {str(item?.value)}
               </span>
             </div>

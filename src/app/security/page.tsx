@@ -275,14 +275,14 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="text-[11px] uppercase tracking-[0.2em] text-white/30 mb-4 block">
+      <span className="text-caption uppercase tracking-[0.2em] text-white/30 mb-4 block">
         {eyebrow}
       </span>
       <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-[15px] md:text-[16px] text-white/40 leading-relaxed max-w-[650px] mx-auto">
+        <p className="text-subtitle md:text-title text-white/45 leading-relaxed max-w-[650px] mx-auto">
           {subtitle}
         </p>
       )}
@@ -312,7 +312,7 @@ function HeroSection() {
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 text-center">
         <motion.div {...fadeUp(isInView, 0)}>
-          <span className="inline-block text-[12px] font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
+          <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
             Security & Compliance
           </span>
         </motion.div>
@@ -323,12 +323,12 @@ function HeroSection() {
         >
           Deine Compliance-Daten
           <br />
-          <span className="text-white/50">in sicheren Händen</span>
+          <span className="text-white/45">in sicheren Händen</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
-          className="text-[18px] md:text-[20px] text-white/50 max-w-[650px] mx-auto mb-10 leading-relaxed"
+          className="text-heading md:text-heading-lg text-white/45 max-w-[650px] mx-auto mb-10 leading-relaxed"
         >
           Enterprise-Sicherheit für die sensibelsten Daten der
           Raumfahrt-Regulierung. Gehostet in der EU, Ende-zu-Ende verschlüsselt,
@@ -343,7 +343,7 @@ function HeroSection() {
           {trustBadges.map((badge) => (
             <div
               key={badge.label}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-[12px] text-white/60"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-small text-white/45"
             >
               <badge.icon
                 size={14}
@@ -362,14 +362,14 @@ function HeroSection() {
         >
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-[14px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-body-lg font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
           >
             Kostenloses Assessment starten
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
           >
             Security-Team kontaktieren
           </Link>
@@ -410,10 +410,10 @@ function InfrastructureSection() {
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[18px] font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-[14px] text-white/45 leading-[1.7]">
+                <p className="text-body-lg text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -445,14 +445,14 @@ function ApplicationSecuritySection() {
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-white/50"
+                    className="text-white/45"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[13px] text-white/45 leading-[1.7]">
+                <p className="text-body text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -495,10 +495,10 @@ function GDPRSection() {
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[13px] text-white/45 leading-[1.7]">
+                <p className="text-body text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -536,7 +536,7 @@ function AISecuritySection() {
                   aria-hidden="true"
                 />
               </div>
-              <h3 className="text-[18px] font-medium text-white">
+              <h3 className="text-heading font-medium text-white">
                 ASTRA — Verantwortungsvolle KI
               </h3>
             </div>
@@ -554,10 +554,10 @@ function AISecuritySection() {
                     aria-hidden="true"
                   />
                   <div>
-                    <span className="text-[14px] font-medium text-white">
+                    <span className="text-body-lg font-medium text-white">
                       {item.label}
                     </span>
-                    <p className="text-[13px] text-white/45 mt-0.5 leading-[1.6]">
+                    <p className="text-body text-white/45 mt-0.5 leading-[1.6]">
                       {item.description}
                     </p>
                   </div>
@@ -591,14 +591,14 @@ function AuditSection() {
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
                   <item.icon
                     size={20}
-                    className="text-white/50"
+                    className="text-white/45"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[18px] font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-[14px] text-white/45 leading-[1.7]">
+                <p className="text-body-lg text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -630,14 +630,14 @@ function EnterpriseSection() {
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-white/50"
+                    className="text-white/45"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-[15px] font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-[13px] text-white/45 leading-[1.7]">
+                <p className="text-body text-white/45 leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -667,14 +667,14 @@ function CTASection() {
             <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
               Bereit für sichere Space Compliance?
             </h2>
-            <p className="text-[17px] text-white/50 max-w-[520px] mx-auto mb-10 leading-relaxed">
+            <p className="text-title text-white/45 max-w-[520px] mx-auto mb-10 leading-relaxed">
               Starte mit einem kostenlosen Assessment oder sprich mit unserem
               Team über Enterprise-Sicherheit.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/assessment"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[15px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               >
                 Kostenloses Assessment
                 <ArrowRight
@@ -685,7 +685,7 @@ function CTASection() {
               </Link>
               <Link
                 href="/contact"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/80 text-[15px] font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/70 text-subtitle font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
               >
                 Vertrieb kontaktieren
               </Link>

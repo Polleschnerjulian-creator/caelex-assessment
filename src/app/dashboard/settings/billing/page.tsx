@@ -230,7 +230,7 @@ function BillingContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
+        <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
       </div>
     );
   }
@@ -248,10 +248,10 @@ function BillingContent() {
               <CreditCard className="w-5 h-5 text-slate-600 dark:text-white/70" />
             </div>
             <div>
-              <h1 className="text-[24px] font-medium text-slate-900 dark:text-white">
+              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
                 Billing & Subscription
               </h1>
-              <p className="text-[14px] text-slate-600 dark:text-white/70">
+              <p className="text-body-lg text-slate-600 dark:text-white/70">
                 Manage your subscription plan and billing information
               </p>
             </div>
@@ -272,7 +272,7 @@ function BillingContent() {
             ) : (
               <XCircle className="w-5 h-5 flex-shrink-0" />
             )}
-            <p className="text-[14px]">{message.text}</p>
+            <p className="text-body-lg">{message.text}</p>
             <button
               onClick={() => setMessage(null)}
               className="ml-auto text-current hover:opacity-70"
@@ -302,7 +302,7 @@ function BillingContent() {
 
         {/* Pricing Table */}
         <div>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
             AVAILABLE PLANS
           </p>
           <PricingTable
@@ -314,36 +314,36 @@ function BillingContent() {
 
         {/* FAQ */}
         <div className="mt-12">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
             FREQUENTLY ASKED QUESTIONS
           </p>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-6">
               <div>
-                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
                   What happens when I upgrade?
                 </p>
-                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
                   You&apos;ll be charged the prorated amount for the remainder
                   of your current billing period. Your new plan features will be
                   available immediately.
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
                   Can I cancel anytime?
                 </p>
-                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
                   Yes, you can cancel your subscription at any time. You&apos;ll
                   retain access to your current plan until the end of your
                   billing period.
                 </p>
               </div>
               <div>
-                <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
                   What payment methods do you accept?
                 </p>
-                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
                   We accept all major credit cards (Visa, Mastercard, American
                   Express) and SEPA Direct Debit for EU customers.
                 </p>
@@ -359,7 +359,7 @@ function BillingContent() {
 function BillingFallback() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
+      <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
     </div>
   );
 }

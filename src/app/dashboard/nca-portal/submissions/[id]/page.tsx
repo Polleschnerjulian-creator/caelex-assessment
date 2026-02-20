@@ -170,7 +170,7 @@ export default function SubmissionDetailPage() {
           </h1>
           <div className="flex items-center gap-2 mt-1">
             <span
-              className={`text-[10px] px-2 py-0.5 rounded font-medium ${statusBadge.color}`}
+              className={`text-micro px-2 py-0.5 rounded font-medium ${statusBadge.color}`}
             >
               {statusBadge.label}
             </span>
@@ -256,7 +256,7 @@ export default function SubmissionDetailPage() {
                 <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
                   <p className="font-medium">Follow-up Required</p>
                   {submission.followUpDeadline && (
-                    <p className="text-[10px] mt-0.5">
+                    <p className="text-micro mt-0.5">
                       Due:{" "}
                       {new Date(
                         submission.followUpDeadline,

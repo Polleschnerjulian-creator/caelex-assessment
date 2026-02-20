@@ -274,20 +274,20 @@ export default function OnboardingOverlay() {
 
                     <h2
                       id="onboarding-title"
-                      className="text-[22px] font-semibold text-slate-900 dark:text-white mb-2"
+                      className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
                     >
                       Welcome to Caelex
                       {firstName !== "there" ? `, ${firstName}` : ""}
                     </h2>
 
-                    <p className="text-[14px] text-slate-600 dark:text-white/60 mb-2">
+                    <p className="text-body-lg text-slate-600 dark:text-white/45 mb-2">
                       Let&apos;s set up your compliance workspace in 30 seconds
                     </p>
 
                     {session?.user?.name && (
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] mb-8">
                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                          <span className="text-micro font-medium text-emerald-600 dark:text-emerald-400">
                             {session.user.name
                               .split(" ")
                               .map((n) => n[0])
@@ -296,7 +296,7 @@ export default function OnboardingOverlay() {
                               .slice(0, 2)}
                           </span>
                         </div>
-                        <span className="text-[12px] text-slate-700 dark:text-white/70">
+                        <span className="text-small text-slate-700 dark:text-white/70">
                           {session.user.name}
                         </span>
                       </div>
@@ -307,7 +307,7 @@ export default function OnboardingOverlay() {
                       className="
                         w-full flex items-center justify-center gap-2
                         bg-emerald-600 hover:bg-emerald-700 text-white
-                        text-[14px] font-medium px-6 py-3 rounded-xl
+                        text-body-lg font-medium px-6 py-3 rounded-xl
                         transition-all duration-200
                         shadow-sm shadow-emerald-500/20
                       "
@@ -342,11 +342,11 @@ export default function OnboardingOverlay() {
                     <div className="text-center mb-6">
                       <h2
                         id="onboarding-title"
-                        className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2"
+                        className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
                       >
                         Assessment Results Found
                       </h2>
-                      <p className="text-[14px] text-slate-600 dark:text-white/60">
+                      <p className="text-body-lg text-slate-600 dark:text-white/45">
                         We found your assessment results! Import them to
                         auto-populate your compliance dashboard.
                       </p>
@@ -360,7 +360,7 @@ export default function OnboardingOverlay() {
                         className="flex items-center gap-2 justify-center text-emerald-600 dark:text-emerald-400 mb-4"
                       >
                         <CheckCircle size={16} />
-                        <span className="text-[13px] font-medium">
+                        <span className="text-body font-medium">
                           Assessment imported successfully!
                         </span>
                       </motion.div>
@@ -370,7 +370,7 @@ export default function OnboardingOverlay() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-center text-[13px] text-red-500 dark:text-red-400 mb-4"
+                        className="text-center text-body text-red-500 dark:text-red-400 mb-4"
                       >
                         {importError}
                       </motion.div>
@@ -384,7 +384,7 @@ export default function OnboardingOverlay() {
                           className="
                             w-full flex items-center justify-center gap-2
                             bg-emerald-600 hover:bg-emerald-700 text-white
-                            text-[14px] font-medium px-6 py-3 rounded-xl
+                            text-body-lg font-medium px-6 py-3 rounded-xl
                             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                             shadow-sm shadow-emerald-500/20
                           "
@@ -407,8 +407,8 @@ export default function OnboardingOverlay() {
                           disabled={importing}
                           className="
                             w-full flex items-center justify-center gap-2
-                            text-slate-600 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/70
-                            text-[13px] px-6 py-2.5 rounded-xl
+                            text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70
+                            text-body px-6 py-2.5 rounded-xl
                             transition-all duration-200
                             hover:bg-slate-50 dark:hover:bg-white/[0.03]
                           "
@@ -445,11 +445,11 @@ export default function OnboardingOverlay() {
                     <div className="text-center mb-6">
                       <h2
                         id="onboarding-title"
-                        className="text-[20px] font-semibold text-slate-900 dark:text-white mb-2"
+                        className="text-heading-lg font-semibold text-slate-900 dark:text-white mb-2"
                       >
                         Your workspace is ready!
                       </h2>
-                      <p className="text-[14px] text-slate-600 dark:text-white/60">
+                      <p className="text-body-lg text-slate-600 dark:text-white/45">
                         Here&apos;s what to do next:
                       </p>
                     </div>
@@ -481,10 +481,10 @@ export default function OnboardingOverlay() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-slate-900 dark:text-white">
                             Start Authorization
                           </p>
-                          <p className="text-[12px] text-slate-500 dark:text-white/40">
+                          <p className="text-small text-slate-500 dark:text-white/45">
                             Begin the EU Space Act authorization process
                           </p>
                         </div>
@@ -520,10 +520,10 @@ export default function OnboardingOverlay() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-slate-900 dark:text-white">
                             Upload Documents
                           </p>
-                          <p className="text-[12px] text-slate-500 dark:text-white/40">
+                          <p className="text-small text-slate-500 dark:text-white/45">
                             Add compliance documents and evidence
                           </p>
                         </div>
@@ -557,10 +557,10 @@ export default function OnboardingOverlay() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium text-slate-900 dark:text-white">
+                          <p className="text-body font-medium text-slate-900 dark:text-white">
                             Set Deadlines
                           </p>
-                          <p className="text-[12px] text-slate-500 dark:text-white/40">
+                          <p className="text-small text-slate-500 dark:text-white/45">
                             Configure compliance milestones and reminders
                           </p>
                         </div>
@@ -577,7 +577,7 @@ export default function OnboardingOverlay() {
                       className="
                         w-full flex items-center justify-center gap-2
                         bg-emerald-600 hover:bg-emerald-700 text-white
-                        text-[14px] font-medium px-6 py-3 rounded-xl
+                        text-body-lg font-medium px-6 py-3 rounded-xl
                         transition-all duration-200
                         shadow-sm shadow-emerald-500/20
                       "

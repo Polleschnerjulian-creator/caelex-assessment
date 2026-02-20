@@ -43,7 +43,7 @@ const values = [
     title: "Trust",
     description:
       "We handle sensitive compliance data. Security and reliability aren't features — they're foundations.",
-    gradient: "from-emerald-500/20 to-green-500/20",
+    gradient: "from-emerald-500/20 to-emerald-400/20",
     iconColor: "text-emerald-400",
   },
   {
@@ -104,7 +104,7 @@ function SectionHeader({
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4"
+        className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4"
       >
         {label}
       </motion.span>
@@ -123,7 +123,7 @@ function SectionHeader({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className={`text-[15px] md:text-[16px] text-white/40 leading-relaxed ${center ? "max-w-[600px] mx-auto" : "max-w-[600px]"}`}
+          className={`text-subtitle md:text-title text-white/45 leading-relaxed ${center ? "max-w-[600px] mx-auto" : "max-w-[600px]"}`}
         >
           {description}
         </motion.p>
@@ -179,7 +179,7 @@ export default function AboutPage() {
               animate={heroInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-[12px] text-white/60 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-small text-white/45 mb-8">
                 <MapPin size={14} className="text-emerald-400" />
                 <span>Berlin, Germany</span>
                 <span className="w-1 h-1 rounded-full bg-white/30" />
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 </span>
               </h1>
 
-              <p className="text-[17px] md:text-[18px] text-white/50 leading-relaxed max-w-[520px] mb-8">
+              <p className="text-title md:text-heading text-white/45 leading-relaxed max-w-[520px] mb-8">
                 Caelex is the first regulatory compliance platform designed
                 specifically for the European space industry. We help satellite
                 operators, launch providers, and space companies navigate
@@ -204,14 +204,14 @@ export default function AboutPage() {
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-[14px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-body-lg font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
                 >
                   Start Free Assessment
                   <ArrowRight size={16} />
                 </Link>
                 <Link
                   href="/demo"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
                 >
                   Request Demo
                 </Link>
@@ -236,10 +236,10 @@ export default function AboutPage() {
                     <div className="text-[36px] md:text-[42px] font-light tracking-[-0.02em] text-white mb-1">
                       {stat.value}
                     </div>
-                    <div className="text-[14px] font-medium text-white/80 mb-1">
+                    <div className="text-body-lg font-medium text-white/70 mb-1">
                       {stat.label}
                     </div>
-                    <div className="text-[12px] text-white/40">
+                    <div className="text-small text-white/45">
                       {stat.sublabel}
                     </div>
                   </GlassCard>
@@ -273,14 +273,14 @@ export default function AboutPage() {
                 center={false}
               />
               <div className="mt-8 space-y-5">
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-subtitle text-white/45 leading-relaxed">
                   The EU Space Act introduces 119 regulatory articles covering
                   authorization, registration, environmental assessment,
                   cybersecurity, debris mitigation, and insurance.
                   Non-compliance can result in penalties of up to 2% of global
                   turnover.
                 </p>
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-subtitle text-white/45 leading-relaxed">
                   We believe compliance shouldn't be a barrier to innovation.
                   Caelex transforms complex regulatory requirements into guided
                   workflows, automated tracking, and actionable insights.
@@ -308,14 +308,14 @@ export default function AboutPage() {
                       <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                         <module.icon size={18} className="text-emerald-400" />
                       </div>
-                      <span className="text-[12px] text-white/70 leading-tight">
+                      <span className="text-small text-white/70 leading-tight">
                         {module.name}
                       </span>
                     </motion.div>
                   ))}
                 </div>
                 <div className="mt-6 pt-6 border-t border-white/[0.06] text-center">
-                  <span className="text-[13px] text-white/40">
+                  <span className="text-body text-white/45">
                     One platform. Complete EU Space Act coverage.
                   </span>
                 </div>
@@ -349,10 +349,10 @@ export default function AboutPage() {
                   >
                     <value.icon size={26} className={value.iconColor} />
                   </div>
-                  <h3 className="text-[18px] font-medium text-white mb-3">
+                  <h3 className="text-heading font-medium text-white mb-3">
                     {value.title}
                   </h3>
-                  <p className="text-[14px] text-white/40 leading-relaxed">
+                  <p className="text-body-lg text-white/45 leading-relaxed">
                     {value.description}
                   </p>
                 </GlassCard>
@@ -385,18 +385,18 @@ export default function AboutPage() {
                 center={false}
               />
               <div className="mt-8 space-y-5">
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-subtitle text-white/45 leading-relaxed">
                   Today, space companies manage compliance with spreadsheets,
                   email chains, and expensive consultants charging 200-500 EUR
                   per hour. Documentation lives in scattered folders. Deadlines
                   are tracked manually.
                 </p>
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-subtitle text-white/45 leading-relaxed">
                   This approach worked when space was a niche industry. But with
                   150+ new European space startups since 2020 and comprehensive
                   regulation coming, the old way doesn't scale.
                 </p>
-                <p className="text-[15px] text-white/50 leading-relaxed">
+                <p className="text-subtitle text-white/45 leading-relaxed">
                   We believe every satellite operator — from a 10-person startup
                   to a multinational corporation — should have access to
                   enterprise-grade compliance infrastructure.
@@ -444,10 +444,10 @@ export default function AboutPage() {
                         <item.icon size={22} className="text-emerald-400" />
                       </div>
                       <div>
-                        <h4 className="text-[15px] font-medium text-white mb-1">
+                        <h4 className="text-subtitle font-medium text-white mb-1">
                           {item.title}
                         </h4>
-                        <p className="text-[13px] text-white/40 leading-relaxed">
+                        <p className="text-body text-white/45 leading-relaxed">
                           {item.description}
                         </p>
                       </div>
@@ -498,18 +498,18 @@ export default function AboutPage() {
                     <GlassCard className="p-5">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <Calendar size={14} className="text-white/40" />
-                          <span className="text-[13px] font-medium text-white/60">
+                          <Calendar size={14} className="text-white/45" />
+                          <span className="text-body font-medium text-white/45">
                             {item.year}
                           </span>
                         </div>
                         {item.status === "current" && (
-                          <span className="px-2 py-0.5 text-[10px] font-medium text-emerald-400 bg-emerald-500/15 rounded-full uppercase tracking-wider">
+                          <span className="px-2 py-0.5 text-micro font-medium text-emerald-400 bg-emerald-500/15 rounded-full uppercase tracking-wider">
                             Current
                           </span>
                         )}
                       </div>
-                      <p className="text-[15px] text-white mt-2">
+                      <p className="text-subtitle text-white mt-2">
                         {item.event}
                       </p>
                     </GlassCard>
@@ -535,7 +535,7 @@ export default function AboutPage() {
           <GlassCard className="p-8 md:p-12" hover={false}>
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
+                <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
                   Built in Berlin
                 </span>
                 <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-6">
@@ -543,7 +543,7 @@ export default function AboutPage() {
                   <br />
                   global ambition.
                 </h2>
-                <p className="text-[15px] text-white/50 leading-relaxed mb-8">
+                <p className="text-subtitle text-white/45 leading-relaxed mb-8">
                   We're headquartered in Berlin, at the heart of Europe's
                   growing space ecosystem. Being close to EU institutions,
                   national space agencies, and the NewSpace community means we
@@ -560,10 +560,10 @@ export default function AboutPage() {
                       key={item.label}
                       className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                     >
-                      <div className="text-[11px] text-white/40 uppercase tracking-wider mb-1">
+                      <div className="text-caption text-white/45 uppercase tracking-wider mb-1">
                         {item.label}
                       </div>
-                      <div className="text-[15px] font-medium text-white">
+                      <div className="text-subtitle font-medium text-white">
                         {item.value}
                       </div>
                     </div>
@@ -578,7 +578,7 @@ export default function AboutPage() {
                       size={64}
                       className="text-emerald-400/50 mx-auto mb-4"
                     />
-                    <p className="text-[14px] text-white/40">
+                    <p className="text-body-lg text-white/45">
                       Serving space operators across Europe
                     </p>
                   </div>
@@ -600,7 +600,7 @@ export default function AboutPage() {
             <h2 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] text-white mb-6">
               Join us on this journey
             </h2>
-            <p className="text-[16px] text-white/50 mb-10 max-w-[500px] mx-auto">
+            <p className="text-title text-white/45 mb-10 max-w-[500px] mx-auto">
               Whether you're a space company looking for compliance solutions or
               want to shape the future of space regulation — we'd love to hear
               from you.
@@ -608,14 +608,14 @@ export default function AboutPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[15px] font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]"
               >
                 Get in Touch
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/careers"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[15px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-subtitle font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
               >
                 View Open Positions
               </Link>

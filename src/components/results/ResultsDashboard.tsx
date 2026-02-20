@@ -80,14 +80,14 @@ export default function ResultsDashboard({
         >
           <Link
             href="/"
-            className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             <span>Home</span>
           </Link>
           <button
             onClick={onRestart}
-            className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
           >
             <RotateCcw size={14} aria-hidden="true" />
             <span>Start over</span>
@@ -100,13 +100,13 @@ export default function ResultsDashboard({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-4">
             Assessment Complete
           </span>
           <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-light tracking-[-0.02em] text-white mb-4">
             Your Compliance Profile
           </h1>
-          <p className="text-[15px] text-white/70 max-w-xl mx-auto">
+          <p className="text-subtitle text-white/70 max-w-xl mx-auto">
             Based on your answers, here&apos;s how the EU Space Act (COM(2025)
             335) applies to your operations.
           </p>
@@ -118,7 +118,7 @@ export default function ResultsDashboard({
             role="alert"
             className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center"
           >
-            <p className="text-[14px] text-red-400">{pdfError}</p>
+            <p className="text-body-lg text-red-400">{pdfError}</p>
           </div>
         )}
 
@@ -151,16 +151,16 @@ export default function ResultsDashboard({
           className="mt-20 text-center"
         >
           <div className="bg-white/[0.05] border border-white/[0.12] rounded-xl p-10 max-w-2xl mx-auto">
-            <h3 className="text-[18px] font-light text-white mb-3">
+            <h3 className="text-heading font-light text-white mb-3">
               Need help with compliance?
             </h3>
-            <p className="text-[14px] text-white/70 mb-6">
+            <p className="text-body-lg text-white/70 mb-6">
               Caelex is building comprehensive compliance software for space
               operators. Get notified when we launch.
             </p>
             <button
               onClick={handleDownloadClick}
-              className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
+              className="inline-flex items-center gap-2 bg-white text-black text-body font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
             >
               <FileDown size={14} aria-hidden="true" />
               Get the Full Report
@@ -196,7 +196,7 @@ export default function ResultsDashboard({
               className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin mx-auto mb-4"
               aria-hidden="true"
             />
-            <p className="text-[14px] text-white/80">
+            <p className="text-body-lg text-white/70">
               Generating your report...
             </p>
           </div>

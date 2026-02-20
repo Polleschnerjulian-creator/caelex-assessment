@@ -101,18 +101,18 @@ export default function SubmissionCard({
 
       <div className="flex items-center gap-2 flex-wrap">
         <span
-          className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${priorityStyle}`}
+          className={`text-micro px-1.5 py-0.5 rounded border font-medium ${priorityStyle}`}
         >
           {priority}
         </span>
 
-        <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+        <span className="flex items-center gap-1 text-micro text-slate-500 dark:text-slate-400">
           <Clock size={10} aria-hidden="true" />
           {daysInStatus}d
         </span>
 
         {correspondenceCount > 0 && (
-          <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1 text-micro text-slate-500 dark:text-slate-400">
             <MessageSquare size={10} aria-hidden="true" />
             <span className="sr-only">Messages:</span>
             {correspondenceCount}

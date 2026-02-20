@@ -48,6 +48,7 @@ const config: Config = {
         subtitle: ["15px", { lineHeight: "1.5" }],
         title: ["16px", { lineHeight: "1.4" }],
         heading: ["18px", { lineHeight: "1.3" }],
+        "heading-lg": ["20px", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
         "display-sm": ["24px", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
         display: ["32px", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
         "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.03em" }],

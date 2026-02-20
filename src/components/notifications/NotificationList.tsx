@@ -134,7 +134,7 @@ export function NotificationList() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-white">Notifications</h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/45">
             {unreadCount > 0
               ? `${unreadCount} unread notification${unreadCount !== 1 ? "s" : ""}`
               : "You&apos;re all caught up"}
@@ -169,7 +169,7 @@ export function NotificationList() {
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
             filter === "all"
               ? "bg-white/10 text-white"
-              : "text-white/60 hover:text-white hover:bg-white/5"
+              : "text-white/45 hover:text-white hover:bg-white/5"
           }`}
         >
           All
@@ -182,12 +182,12 @@ export function NotificationList() {
           className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
             filter === "unread"
               ? "bg-white/10 text-white"
-              : "text-white/60 hover:text-white hover:bg-white/5"
+              : "text-white/45 hover:text-white hover:bg-white/5"
           }`}
         >
           Unread
           {unreadCount > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-blue-500/20 text-blue-400 rounded-full">
+            <span className="ml-1.5 px-1.5 py-0.5 text-micro bg-blue-500/20 text-blue-400 rounded-full">
               {unreadCount}
             </span>
           )}
@@ -197,7 +197,7 @@ export function NotificationList() {
       {/* Notification List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-white/40" />
+          <Loader2 size={24} className="animate-spin text-white/45" />
         </div>
       ) : notifications.length === 0 ? (
         <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
@@ -207,7 +207,7 @@ export function NotificationList() {
           <h3 className="text-lg font-medium text-white mb-1">
             No Notifications
           </h3>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-white/45">
             {filter === "unread"
               ? "You&apos;ve read all your notifications"
               : "You don&apos;t have any notifications yet"}
@@ -237,7 +237,7 @@ export function NotificationList() {
           >
             Previous
           </button>
-          <span className="text-sm text-white/50">
+          <span className="text-sm text-white/45">
             {offset + 1} - {Math.min(offset + limit, total)} of {total}
           </span>
           <button

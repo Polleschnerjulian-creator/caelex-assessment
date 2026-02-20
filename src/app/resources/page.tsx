@@ -151,7 +151,7 @@ export default function ResourcesPage() {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               Resources
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               Your comprehensive knowledge hub for space compliance. Access
               guides, articles, glossary terms, and regulatory information to
               navigate EU Space Act, NIS2, and national space laws.
@@ -161,36 +161,36 @@ export default function ResourcesPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[32px] font-medium text-white">
+              <div className="text-display font-medium text-white">
                 {allGuides.length}
               </div>
-              <div className="text-[13px] text-white/40">
+              <div className="text-body text-white/45">
                 Comprehensive Guides
               </div>
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[32px] font-medium text-white">
+              <div className="text-display font-medium text-white">
                 {posts.length}
               </div>
-              <div className="text-[13px] text-white/40">Blog Articles</div>
+              <div className="text-body text-white/45">Blog Articles</div>
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[32px] font-medium text-white">
+              <div className="text-display font-medium text-white">
                 {terms.length}
               </div>
-              <div className="text-[13px] text-white/40">Glossary Terms</div>
+              <div className="text-body text-white/45">Glossary Terms</div>
             </div>
             <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[32px] font-medium text-white">
+              <div className="text-display font-medium text-white">
                 {faqs.length}
               </div>
-              <div className="text-[13px] text-white/40">FAQ Questions</div>
+              <div className="text-body text-white/45">FAQ Questions</div>
             </div>
           </div>
 
           {/* Resource Categories Grid */}
           <section className="mb-20">
-            <h2 className="text-[24px] font-medium text-white mb-8">
+            <h2 className="text-display-sm font-medium text-white mb-8">
               Browse by Category
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -211,17 +211,17 @@ export default function ResourcesPage() {
                         <Icon size={24} className={colors.text} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-[18px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors">
+                        <h3 className="text-heading font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors">
                           {category.title}
                         </h3>
-                        <p className="text-[13px] text-white/40 leading-relaxed mb-3">
+                        <p className="text-body text-white/45 leading-relaxed mb-3">
                           {category.description}
                         </p>
                         <div className="flex items-center justify-between">
-                          <span className="text-[12px] text-white/30">
+                          <span className="text-small text-white/30">
                             {category.stats}
                           </span>
-                          <span className="text-[12px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                          <span className="text-small text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                             Explore <ArrowRight size={12} />
                           </span>
                         </div>
@@ -236,12 +236,12 @@ export default function ResourcesPage() {
           {/* Featured Guides */}
           <section className="mb-20">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-[24px] font-medium text-white">
+              <h2 className="text-display-sm font-medium text-white">
                 Featured Guides
               </h2>
               <Link
                 href="/guides"
-                className="text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                className="text-body text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
                 View all guides <ArrowRight size={14} />
               </Link>
@@ -253,14 +253,14 @@ export default function ResourcesPage() {
                   href={`/guides/${guide.slug}`}
                   className="group p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all"
                 >
-                  <div className="flex items-center gap-2 text-[11px] text-emerald-400/70 mb-3">
+                  <div className="flex items-center gap-2 text-caption text-emerald-400/70 mb-3">
                     <BookOpen size={12} />
                     <span>{guide.readingTime} min read</span>
                   </div>
-                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                  <h3 className="text-title font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
                     {guide.title}
                   </h3>
-                  <p className="text-[13px] text-white/40 line-clamp-2">
+                  <p className="text-body text-white/45 line-clamp-2">
                     {guide.description}
                   </p>
                 </Link>
@@ -271,12 +271,12 @@ export default function ResourcesPage() {
           {/* Latest Articles */}
           <section className="mb-20">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-[24px] font-medium text-white">
+              <h2 className="text-display-sm font-medium text-white">
                 Latest Articles
               </h2>
               <Link
                 href="/blog"
-                className="text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                className="text-body text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
                 View all articles <ArrowRight size={14} />
               </Link>
@@ -288,15 +288,15 @@ export default function ResourcesPage() {
                   href={`/blog/${post.slug}`}
                   className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
                 >
-                  <div className="flex items-center gap-2 text-[11px] text-white/40 mb-3">
+                  <div className="flex items-center gap-2 text-caption text-white/45 mb-3">
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
                       {post.category}
                     </span>
                   </div>
-                  <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                  <h3 className="text-title font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors line-clamp-2">
                     {post.title}
                   </h3>
-                  <p className="text-[13px] text-white/40 line-clamp-2">
+                  <p className="text-body text-white/45 line-clamp-2">
                     {post.description}
                   </p>
                 </Link>
@@ -306,7 +306,7 @@ export default function ResourcesPage() {
 
           {/* Quick Links */}
           <section className="p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-            <h2 className="text-[20px] font-medium text-white mb-6">
+            <h2 className="text-heading-lg font-medium text-white mb-6">
               Quick Links
             </h2>
             <div className="grid md:grid-cols-4 gap-4">
@@ -314,10 +314,10 @@ export default function ResourcesPage() {
                 href="/assessment"
                 className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
               >
-                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors">
                   Start Assessment
                 </div>
-                <div className="text-[12px] text-white/40">
+                <div className="text-small text-white/45">
                   Get your compliance profile
                 </div>
               </Link>
@@ -325,10 +325,10 @@ export default function ResourcesPage() {
                 href="/demo"
                 className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
               >
-                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors">
                   Request Demo
                 </div>
-                <div className="text-[12px] text-white/40">
+                <div className="text-small text-white/45">
                   See the platform in action
                 </div>
               </Link>
@@ -336,10 +336,10 @@ export default function ResourcesPage() {
                 href="/pricing"
                 className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
               >
-                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors">
                   Pricing
                 </div>
-                <div className="text-[12px] text-white/40">
+                <div className="text-small text-white/45">
                   Plans for every operator
                 </div>
               </Link>
@@ -347,10 +347,10 @@ export default function ResourcesPage() {
                 href="/contact"
                 className="p-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
               >
-                <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors">
+                <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors">
                   Contact
                 </div>
-                <div className="text-[12px] text-white/40">
+                <div className="text-small text-white/45">
                   Get in touch with us
                 </div>
               </Link>

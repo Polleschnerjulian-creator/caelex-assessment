@@ -214,10 +214,10 @@ export default function AssessmentResultsGate({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6" />
-          <p className="text-[15px] text-white/70 mb-2">
+          <p className="text-subtitle text-white/70 mb-2">
             Setting up your dashboard...
           </p>
-          <p className="text-[13px] text-white/40">
+          <p className="text-body text-white/45">
             Saving your compliance profile with Free tier access
           </p>
         </div>
@@ -239,14 +239,14 @@ export default function AssessmentResultsGate({
               className="w-4 h-4 text-emerald-400"
               aria-hidden="true"
             />
-            <span className="text-[13px] text-emerald-400 font-medium">
+            <span className="text-body text-emerald-400 font-medium">
               Assessment Complete
             </span>
           </div>
           <h1 className="text-[clamp(1.5rem,4vw,2.25rem)] font-medium tracking-[-0.02em] text-white mb-4">
             Your compliance profile is ready
           </h1>
-          <p className="text-[15px] text-white/50 max-w-xl mx-auto">
+          <p className="text-subtitle text-white/45 max-w-xl mx-auto">
             Create a free account to view your full results and access your
             compliance dashboard
           </p>
@@ -270,13 +270,13 @@ export default function AssessmentResultsGate({
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10 flex items-end justify-center pb-8">
                 <div className="text-center">
                   <Lock
-                    className="w-8 h-8 text-white/40 mx-auto mb-3"
+                    className="w-8 h-8 text-white/45 mx-auto mb-3"
                     aria-hidden="true"
                   />
-                  <p className="text-[14px] text-white/60 mb-1">
+                  <p className="text-body-lg text-white/45 mb-1">
                     Sign in to unlock full results
                   </p>
-                  <p className="text-[12px] text-white/40">
+                  <p className="text-small text-white/45">
                     Free tier includes dashboard access
                   </p>
                 </div>
@@ -289,10 +289,10 @@ export default function AssessmentResultsGate({
                     <Building2 className="w-6 h-6 text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="text-[16px] font-medium text-white">
+                    <h3 className="text-title font-medium text-white">
                       {result.companySummary.name || "Your Organization"}
                     </h3>
-                    <p className="text-[13px] text-white/50">
+                    <p className="text-body text-white/45">
                       {result.companySummary.establishment}
                     </p>
                   </div>
@@ -300,18 +300,18 @@ export default function AssessmentResultsGate({
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                    <div className="text-[24px] font-medium text-white">
+                    <div className="text-display-sm font-medium text-white">
                       {result.overallSummary.totalRequirements}
                     </div>
-                    <div className="text-[11px] text-white/40 uppercase">
+                    <div className="text-caption text-white/45 uppercase">
                       Requirements
                     </div>
                   </div>
                   <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                    <div className="text-[24px] font-medium text-amber-400 capitalize">
+                    <div className="text-display-sm font-medium text-amber-400 capitalize">
                       {result.overallSummary.overallRisk}
                     </div>
-                    <div className="text-[11px] text-white/40 uppercase">
+                    <div className="text-caption text-white/45 uppercase">
                       Risk Level
                     </div>
                   </div>
@@ -326,11 +326,11 @@ export default function AssessmentResultsGate({
                         className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02]"
                       >
                         <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <span className="text-[10px] text-emerald-400">
+                          <span className="text-micro text-emerald-400">
                             {i + 1}
                           </span>
                         </div>
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           {action}
                         </span>
                       </div>
@@ -341,7 +341,7 @@ export default function AssessmentResultsGate({
 
             {/* What's included */}
             <div className="mt-6 p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <h4 className="text-[13px] font-medium text-white mb-4 flex items-center gap-2">
+              <h4 className="text-body font-medium text-white mb-4 flex items-center gap-2">
                 <Sparkles
                   className="w-4 h-4 text-emerald-400"
                   aria-hidden="true"
@@ -358,7 +358,7 @@ export default function AssessmentResultsGate({
                 ].map((feature) => (
                   <div
                     key={feature}
-                    className="flex items-center gap-2.5 text-[13px] text-white/50"
+                    className="flex items-center gap-2.5 text-body text-white/45"
                   >
                     <CheckCircle
                       className="w-4 h-4 text-emerald-500/70"
@@ -388,20 +388,20 @@ export default function AssessmentResultsGate({
               <div className="flex gap-2 p-1 bg-white/[0.04] rounded-lg mb-8">
                 <button
                   onClick={() => setAuthMode("signup")}
-                  className={`flex-1 py-2.5 rounded-md text-[13px] font-medium transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-body font-medium transition-all ${
                     authMode === "signup"
                       ? "bg-emerald-500 text-white"
-                      : "text-white/50 hover:text-white"
+                      : "text-white/45 hover:text-white"
                   }`}
                 >
                   Create Account
                 </button>
                 <button
                   onClick={() => setAuthMode("login")}
-                  className={`flex-1 py-2.5 rounded-md text-[13px] font-medium transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-body font-medium transition-all ${
                     authMode === "login"
                       ? "bg-emerald-500 text-white"
-                      : "text-white/50 hover:text-white"
+                      : "text-white/45 hover:text-white"
                   }`}
                 >
                   Sign In
@@ -418,7 +418,7 @@ export default function AssessmentResultsGate({
                     <div>
                       <label
                         htmlFor="gate-name"
-                        className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                        className="block text-caption font-medium text-white/45 uppercase tracking-wider mb-2"
                       >
                         Full Name
                       </label>
@@ -432,7 +432,7 @@ export default function AssessmentResultsGate({
                           id="gate-name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-body-lg text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                           placeholder="John Doe"
                           required
                           aria-required="true"
@@ -444,7 +444,7 @@ export default function AssessmentResultsGate({
                     <div>
                       <label
                         htmlFor="gate-organization"
-                        className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                        className="block text-caption font-medium text-white/45 uppercase tracking-wider mb-2"
                       >
                         Organization
                       </label>
@@ -458,7 +458,7 @@ export default function AssessmentResultsGate({
                           id="gate-organization"
                           value={organization}
                           onChange={(e) => setOrganization(e.target.value)}
-                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-body-lg text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                           placeholder="Company name (optional)"
                           autoComplete="organization"
                         />
@@ -470,7 +470,7 @@ export default function AssessmentResultsGate({
                 <div>
                   <label
                     htmlFor="gate-email"
-                    className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                    className="block text-caption font-medium text-white/45 uppercase tracking-wider mb-2"
                   >
                     Email
                   </label>
@@ -484,7 +484,7 @@ export default function AssessmentResultsGate({
                       id="gate-email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-body-lg text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                       placeholder="you@company.com"
                       required
                       aria-required="true"
@@ -496,7 +496,7 @@ export default function AssessmentResultsGate({
                 <div>
                   <label
                     htmlFor="gate-password"
-                    className="block text-[11px] font-medium text-white/50 uppercase tracking-wider mb-2"
+                    className="block text-caption font-medium text-white/45 uppercase tracking-wider mb-2"
                   >
                     Password
                   </label>
@@ -510,7 +510,7 @@ export default function AssessmentResultsGate({
                       id="gate-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-[14px] text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-body-lg text-white placeholder-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                       placeholder={
                         authMode === "signup"
                           ? "Min. 12 characters"
@@ -526,7 +526,7 @@ export default function AssessmentResultsGate({
                     />
                   </div>
                   {authMode === "signup" && (
-                    <p className="text-[11px] text-white/30 mt-1.5">
+                    <p className="text-caption text-white/30 mt-1.5">
                       Uppercase, lowercase, number, special character
                     </p>
                   )}
@@ -534,7 +534,7 @@ export default function AssessmentResultsGate({
 
                 {error && (
                   <p
-                    className="text-red-400 text-[13px] bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5"
+                    className="text-red-400 text-body bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5"
                     role="alert"
                   >
                     {error}
@@ -544,7 +544,7 @@ export default function AssessmentResultsGate({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white py-3.5 rounded-xl text-[14px] font-medium hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white py-3.5 rounded-xl text-body-lg font-medium hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -574,7 +574,7 @@ export default function AssessmentResultsGate({
               {/* Divider */}
               <div className="flex items-center gap-4 my-6">
                 <div className="h-px bg-white/[0.08] flex-1" />
-                <span className="text-white/30 text-[11px] uppercase tracking-wider">
+                <span className="text-white/30 text-caption uppercase tracking-wider">
                   or
                 </span>
                 <div className="h-px bg-white/[0.08] flex-1" />
@@ -583,7 +583,7 @@ export default function AssessmentResultsGate({
               {/* Google */}
               <button
                 onClick={handleGoogleSignIn}
-                className="w-full flex items-center justify-center gap-3 border border-white/[0.08] text-white py-3.5 rounded-xl text-[14px] hover:bg-white/[0.04] transition-all"
+                className="w-full flex items-center justify-center gap-3 border border-white/[0.08] text-white py-3.5 rounded-xl text-body-lg hover:bg-white/[0.04] transition-all"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path
@@ -607,7 +607,7 @@ export default function AssessmentResultsGate({
               </button>
 
               {/* Security note */}
-              <p className="text-center text-[11px] text-white/30 mt-6 flex items-center justify-center gap-1.5">
+              <p className="text-center text-caption text-white/30 mt-6 flex items-center justify-center gap-1.5">
                 <Shield className="w-3 h-3" aria-hidden="true" />
                 Your data is encrypted and secure
               </p>

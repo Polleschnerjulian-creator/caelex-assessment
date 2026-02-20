@@ -333,7 +333,7 @@ export default function DocumentStudio() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/documents"
-            className="p-2 text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -347,7 +347,7 @@ export default function DocumentStudio() {
                 AI
               </span>
             </div>
-            <p className="text-sm text-slate-500 dark:text-white/50 mt-0.5">
+            <p className="text-sm text-slate-500 dark:text-white/45 mt-0.5">
               {t("documentStudio.subtitle")}
             </p>
           </div>
@@ -380,7 +380,7 @@ export default function DocumentStudio() {
               }`}
             >
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold ${
                   isActive
                     ? "bg-emerald-500 text-white"
                     : isCompleted

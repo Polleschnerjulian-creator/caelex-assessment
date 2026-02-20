@@ -37,7 +37,7 @@ const STATUS_CONFIG = {
   PENDING: {
     icon: Clock,
     label: "Pending",
-    color: "text-slate-400 dark:text-white/40",
+    color: "text-slate-400 dark:text-white/45",
     bg: "bg-slate-100 dark:bg-white/[0.06]",
   },
   GENERATING: {
@@ -124,20 +124,20 @@ export function GeneratedDocumentCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] flex-shrink-0">
-            <FileText size={18} className="text-slate-500 dark:text-white/50" />
+            <FileText size={18} className="text-slate-500 dark:text-white/45" />
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {title}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-white/40 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-white/45 mt-0.5">
               {typeLabel}
             </p>
           </div>
         </div>
 
         <div
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-medium ${statusConfig.bg} ${statusConfig.color}`}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-caption font-medium ${statusConfig.bg} ${statusConfig.color}`}
         >
           <StatusIcon
             size={12}
@@ -157,7 +157,7 @@ export function GeneratedDocumentCard({
             <>
               <Link
                 href={`/dashboard/documents/generate/${id}`}
-                className="p-1.5 rounded-lg text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 dark:text-white/45 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
                 title="View"
               >
                 <FileText size={14} />
@@ -165,7 +165,7 @@ export function GeneratedDocumentCard({
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="p-1.5 rounded-lg text-slate-400 dark:text-white/40 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg text-slate-400 dark:text-white/45 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
                 title="Download PDF"
               >
                 {downloading ? (
@@ -179,7 +179,7 @@ export function GeneratedDocumentCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="p-1.5 rounded-lg text-slate-400 dark:text-white/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
+            className="p-1.5 rounded-lg text-slate-400 dark:text-white/45 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
             title="Delete"
           >
             {deleting ? (

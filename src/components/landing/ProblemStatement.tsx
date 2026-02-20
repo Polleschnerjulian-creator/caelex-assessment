@@ -21,20 +21,20 @@ export default function ProblemStatement() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">02 / 12</span>
+        <span className="text-caption text-white/25">02 / 12</span>
       </motion.div>
 
       <div className="max-w-[1000px] mx-auto">
         {/* Large statement */}
         <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 1, delay: 0.2 }}
           className="text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.35] text-white/90"
         >
           The EU Space Act introduces the most comprehensive regulatory
           framework for commercial space operations in history.{" "}
-          <span className="text-white/40">
+          <span className="text-white/45">
             From authorization requirements to debris mitigation, cybersecurity
             mandates to environmental footprint declarations — understanding
             what applies to your mission is no longer optional.
@@ -51,10 +51,10 @@ export default function ProblemStatement() {
 
         {/* Small supporting text */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-body text-white/40 mt-8 max-w-[400px]"
+          className="text-body text-white/45 mt-8 max-w-[400px]"
         >
           Effective January 1, 2030. Applicable to all operators launching from,
           or providing services within, the European Union.

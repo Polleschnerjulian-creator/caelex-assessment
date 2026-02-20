@@ -74,7 +74,7 @@ export default function ComponentDataFields({
             step="0.001"
             required
           />
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/45 text-xs mt-1">
             Delivered mass of the component
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function ComponentDataFields({
             min="0"
             step="0.5"
           />
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/45 text-xs mt-1">
             Design lifetime or qualification life
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function ComponentDataFields({
             placeholder="e.g., 3"
             min="0"
           />
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/45 text-xs mt-1">
             Number of units consumed during testing
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function ComponentDataFields({
             max="100"
             step="0.1"
           />
-          <p className="text-white/40 text-xs mt-1">
+          <p className="text-white/45 text-xs mt-1">
             Percentage of units scrapped during manufacturing
           </p>
         </div>

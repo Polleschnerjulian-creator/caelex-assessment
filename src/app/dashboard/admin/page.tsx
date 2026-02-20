@@ -71,17 +71,17 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[24px] font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-display-sm font-semibold text-slate-900 dark:text-white">
             Administration
           </h1>
-          <p className="text-[13px] text-slate-600 dark:text-white/60 mt-1">
+          <p className="text-body text-slate-600 dark:text-white/45 mt-1">
             Manage users, organizations, and platform settings
           </p>
         </div>
 
         <button
           onClick={() => setShowQuickUpgrade(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-medium rounded-lg transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium rounded-lg transition-colors shadow-sm"
         >
           <Zap size={16} />
           Quick Upgrade
@@ -149,10 +149,10 @@ export default function AdminDashboard() {
           className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
         />
         <div>
-          <p className="text-[13px] font-medium text-slate-900 dark:text-white">
+          <p className="text-body font-medium text-slate-900 dark:text-white">
             Admin Audit Trail
           </p>
-          <p className="text-[13px] text-slate-600 dark:text-white/60 mt-0.5">
+          <p className="text-body text-slate-600 dark:text-white/45 mt-0.5">
             All administrative actions are logged to the audit trail with
             timestamps, previous values, and reason fields.
           </p>
@@ -197,13 +197,13 @@ function StatCard({
           {icon}
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50">
+          <p className="text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45">
             {label}
           </p>
           {loading ? (
             <div className="w-12 h-7 bg-slate-100 dark:bg-white/10 rounded animate-pulse mt-1" />
           ) : (
-            <p className="text-[22px] font-semibold text-slate-900 dark:text-white">
+            <p className="text-heading-lg font-semibold text-slate-900 dark:text-white">
               {value.toLocaleString()}
             </p>
           )}
@@ -240,13 +240,13 @@ function ActionCard({
           className="text-slate-400 dark:text-white/30 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
         />
       </div>
-      <h3 className="text-[15px] font-semibold text-slate-900 dark:text-white mb-1">
+      <h3 className="text-subtitle font-semibold text-slate-900 dark:text-white mb-1">
         {title}
       </h3>
-      <p className="text-[13px] text-slate-600 dark:text-white/60 mb-3">
+      <p className="text-body text-slate-600 dark:text-white/45 mb-3">
         {description}
       </p>
-      <p className="text-[12px] text-slate-500 dark:text-white/40">{stat}</p>
+      <p className="text-small text-slate-500 dark:text-white/45">{stat}</p>
     </Link>
   );
 }

@@ -429,18 +429,18 @@ function WizardOptionCard({
               className={
                 isSelected
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-500 dark:text-white/50"
+                  : "text-slate-500 dark:text-white/45"
               }
             />
           </div>
         )}
         <div className="flex-1 min-w-0">
           <h3
-            className={`text-[14px] font-medium ${isSelected ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-white"}`}
+            className={`text-body-lg font-medium ${isSelected ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-white"}`}
           >
             {label}
           </h3>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 leading-relaxed">
+          <p className="text-body text-slate-500 dark:text-white/45 leading-relaxed">
             {description}
           </p>
         </div>
@@ -595,7 +595,7 @@ function InlineAssessmentWizard({
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
               NIS2 Scoping Assessment
             </h2>
-            <p className="text-[11px] text-slate-400 dark:text-white/30">
+            <p className="text-caption text-slate-400 dark:text-white/30">
               Step {currentStep} of {totalSteps} — Determine your entity
               classification
             </p>
@@ -606,7 +606,7 @@ function InlineAssessmentWizard({
           className="p-2 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
           aria-label="Close wizard"
         >
-          <X size={16} className="text-slate-400 dark:text-white/40" />
+          <X size={16} className="text-slate-400 dark:text-white/45" />
         </button>
       </div>
 
@@ -634,13 +634,13 @@ function InlineAssessmentWizard({
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
               {outOfScope.message}
             </h3>
-            <p className="text-sm text-slate-500 dark:text-white/50 max-w-md mx-auto mb-8 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-white/45 max-w-md mx-auto mb-8 leading-relaxed">
               {outOfScope.detail}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={handleBack}
-                className="px-4 py-2 text-sm text-slate-600 dark:text-white/60 border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
               >
                 Change Answer
               </button>
@@ -664,14 +664,14 @@ function InlineAssessmentWizard({
               transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <div className="mb-6 text-center max-w-xl mx-auto">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
+                <span className="text-micro uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
                   Question {String(currentStep).padStart(2, "0")}
                 </span>
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
                   {currentQuestion.title}
                 </h3>
                 {currentQuestion.subtitle && (
-                  <p className="text-sm text-slate-500 dark:text-white/40 leading-relaxed">
+                  <p className="text-sm text-slate-500 dark:text-white/45 leading-relaxed">
                     {currentQuestion.subtitle}
                   </p>
                 )}
@@ -709,7 +709,7 @@ function InlineAssessmentWizard({
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
           <button
             onClick={currentStep === 1 ? onCancel : handleBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             <ArrowLeft size={14} />
             {currentStep === 1 ? "Cancel" : "Back"}
@@ -1043,7 +1043,7 @@ export default function NIS2AssessmentDetailPage() {
     return (
       <FeatureGate module="nis2">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/40" />
+          <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45" />
         </div>
       </FeatureGate>
     );
@@ -1055,7 +1055,7 @@ export default function NIS2AssessmentDetailPage() {
         <div className="space-y-4">
           <button
             onClick={() => router.push("/dashboard/modules/nis2")}
-            className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to NIS2
@@ -1101,7 +1101,7 @@ export default function NIS2AssessmentDetailPage() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.push("/dashboard/modules/nis2")}
-            className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to NIS2
@@ -1141,7 +1141,7 @@ export default function NIS2AssessmentDetailPage() {
             <h3 className="text-sm font-medium text-red-400 mb-2">
               Delete this assessment?
             </h3>
-            <p className="text-xs text-slate-500 dark:text-white/40 mb-4">
+            <p className="text-xs text-slate-500 dark:text-white/45 mb-4">
               This will permanently delete &ldquo;
               {assessment.assessmentName || "Untitled"}&rdquo; and all its
               requirement tracking data. This action cannot be undone.
@@ -1161,7 +1161,7 @@ export default function NIS2AssessmentDetailPage() {
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+                className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
               >
                 Cancel
               </button>
@@ -1207,7 +1207,7 @@ export default function NIS2AssessmentDetailPage() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="w-5 h-5 text-white/45 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
               </div>
             </motion.button>
           )}
@@ -1234,12 +1234,12 @@ export default function NIS2AssessmentDetailPage() {
                   <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                     Smart Recommendations
                   </h2>
-                  <p className="text-[11px] text-slate-400 dark:text-white/30">
+                  <p className="text-caption text-slate-400 dark:text-white/30">
                     AI-generated insights based on your assessment profile
                   </p>
                 </div>
                 {recommendations.autoAssessedCount > 0 && (
-                  <span className="ml-auto text-[11px] bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-full px-2.5 py-1 font-medium">
+                  <span className="ml-auto text-caption bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-full px-2.5 py-1 font-medium">
                     {recommendations.autoAssessedCount} auto-assessed
                   </span>
                 )}
@@ -1251,14 +1251,14 @@ export default function NIS2AssessmentDetailPage() {
                 <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+                    <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
                       ISO 27001 Coverage
                     </span>
                   </div>
                   <div className="text-2xl font-bold text-slate-900 dark:text-white">
                     {recommendations.iso27001Coverage.percentage}%
                   </div>
-                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                  <div className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
                     {recommendations.iso27001Coverage.count} of{" "}
                     {recommendations.iso27001Coverage.total} requirements
                   </div>
@@ -1276,7 +1276,7 @@ export default function NIS2AssessmentDetailPage() {
                 <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="w-4 h-4 text-red-400" />
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+                    <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
                       Critical Gaps
                     </span>
                   </div>
@@ -1285,7 +1285,7 @@ export default function NIS2AssessmentDetailPage() {
                   >
                     {recommendations.criticalGaps.length}
                   </div>
-                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                  <div className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
                     {recommendations.criticalGaps.length > 0
                       ? "Require immediate attention"
                       : "No critical gaps remaining"}
@@ -1296,14 +1296,14 @@ export default function NIS2AssessmentDetailPage() {
                 <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
                   <div className="flex items-center gap-2 mb-2">
                     <Layers className="w-4 h-4 text-green-400" />
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+                    <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
                       EU Space Act Overlap
                     </span>
                   </div>
                   <div className="text-2xl font-bold text-green-400">
                     {recommendations.euSpaceActOverlap.count}
                   </div>
-                  <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                  <div className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
                     {recommendations.euSpaceActOverlap.count > 0
                       ? "Dual-compliance synergies"
                       : "No overlapping requirements"}
@@ -1318,10 +1318,10 @@ export default function NIS2AssessmentDetailPage() {
                     key={idx}
                     className="flex items-start gap-3 bg-slate-50/60 dark:bg-white/[0.015] rounded-lg px-4 py-3 border border-slate-100/80 dark:border-white/[0.04]"
                   >
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center text-[10px] font-bold mt-0.5">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center text-micro font-bold mt-0.5">
                       {idx + 1}
                     </span>
-                    <p className="text-xs text-slate-600 dark:text-white/60 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-white/45 leading-relaxed">
                       {rec}
                     </p>
                   </div>
@@ -1332,7 +1332,7 @@ export default function NIS2AssessmentDetailPage() {
               {recommendations.totalImplementationWeeks > 0 && (
                 <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center gap-3">
                   <Clock className="w-4 h-4 text-slate-400 dark:text-white/30" />
-                  <span className="text-xs text-slate-500 dark:text-white/40">
+                  <span className="text-xs text-slate-500 dark:text-white/45">
                     Estimated total implementation time:{" "}
                     <span className="font-semibold text-slate-700 dark:text-white/70">
                       {recommendations.totalImplementationWeeks} weeks
@@ -1362,7 +1362,7 @@ export default function NIS2AssessmentDetailPage() {
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                   Implementation Roadmap
                 </h2>
-                <p className="text-[11px] text-slate-400 dark:text-white/30">
+                <p className="text-caption text-slate-400 dark:text-white/30">
                   {recommendations.implementationPhases.length} phases &middot;{" "}
                   {recommendations.implementationPhases.reduce(
                     (sum, p) => sum + p.requirements.length,
@@ -1426,7 +1426,7 @@ export default function NIS2AssessmentDetailPage() {
                   <div className={`text-lg font-bold ${sev.color}`}>
                     {sev.count}
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-white/40">
+                  <div className="text-micro text-slate-500 dark:text-white/45">
                     {sev.label} outstanding
                   </div>
                 </div>
@@ -1498,26 +1498,26 @@ export default function NIS2AssessmentDetailPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+                          <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
                             Phase {phase.phase}
                           </span>
                           <h3 className="text-sm font-medium text-slate-900 dark:text-white">
                             {phase.name}
                           </h3>
                         </div>
-                        <p className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                        <p className="text-caption text-slate-400 dark:text-white/30 mt-0.5">
                           {phase.description}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0 ml-4">
                       <div className="text-right hidden sm:block">
-                        <div className="text-xs text-slate-500 dark:text-white/40">
+                        <div className="text-xs text-slate-500 dark:text-white/45">
                           {phase.requirements.length} req
                           {phase.requirements.length !== 1 ? "s" : ""}
                         </div>
                         {phase.totalWeeks > 0 && (
-                          <div className="text-[10px] text-slate-400 dark:text-white/25">
+                          <div className="text-micro text-slate-400 dark:text-white/25">
                             ~{phase.totalWeeks} weeks
                           </div>
                         )}
@@ -1559,29 +1559,29 @@ export default function NIS2AssessmentDetailPage() {
                                 className="px-5 py-3 flex items-center justify-between gap-4"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <span className="text-[10px] font-mono text-slate-400 dark:text-white/25 flex-shrink-0 w-[70px]">
+                                  <span className="text-micro font-mono text-slate-400 dark:text-white/25 flex-shrink-0 w-[70px]">
                                     {pr.articleRef}
                                   </span>
                                   <div className="min-w-0 flex-1">
                                     <div className="text-xs text-slate-700 dark:text-white/70 truncate">
                                       {pr.title}
                                     </div>
-                                    <div className="text-[10px] text-slate-400 dark:text-white/25 mt-0.5">
+                                    <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
                                       {pr.rationale}
                                     </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                  <span className="text-[10px] text-slate-400 dark:text-white/25 hidden sm:inline">
+                                  <span className="text-micro text-slate-400 dark:text-white/25 hidden sm:inline">
                                     {pr.category}
                                   </span>
                                   <span
-                                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${sevColors[pr.severity] || ""}`}
+                                    className={`text-micro font-medium px-1.5 py-0.5 rounded ${sevColors[pr.severity] || ""}`}
                                   >
                                     {pr.severity}
                                   </span>
                                   {pr.estimatedWeeks > 0 && (
-                                    <span className="text-[10px] text-slate-400 dark:text-white/25">
+                                    <span className="text-micro text-slate-400 dark:text-white/25">
                                       {pr.estimatedWeeks}w
                                     </span>
                                   )}
@@ -1651,7 +1651,7 @@ export default function NIS2AssessmentDetailPage() {
                         setNameInput(assessment.assessmentName || "");
                         setEditingName(true);
                       }}
-                      className="p-1 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      className="p-1 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 transition-colors"
                     >
                       <Pencil size={14} />
                     </button>
@@ -1666,7 +1666,7 @@ export default function NIS2AssessmentDetailPage() {
 
           {/* Classification Reason */}
           {assessment.classificationReason && (
-            <p className="text-xs text-slate-500 dark:text-white/40 leading-relaxed mb-5 border-l-2 border-slate-200 dark:border-white/10 pl-3">
+            <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed mb-5 border-l-2 border-slate-200 dark:border-white/10 pl-3">
               {assessment.classificationReason}
             </p>
           )}
@@ -1675,7 +1675,7 @@ export default function NIS2AssessmentDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {/* Compliance Progress */}
             <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
+              <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Compliance
               </div>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -1691,39 +1691,39 @@ export default function NIS2AssessmentDetailPage() {
 
             {/* Requirements */}
             <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
+              <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Requirements
               </div>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">
                 {compliantReqs}/{totalReqs}
               </div>
-              <div className="text-[11px] text-slate-400 dark:text-white/30 mt-1">
+              <div className="text-caption text-slate-400 dark:text-white/30 mt-1">
                 {notAssessedReqs > 0 && `${notAssessedReqs} pending`}
               </div>
             </div>
 
             {/* Risk Level */}
             <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
+              <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Risk Level
               </div>
               <div className={`text-2xl font-bold ${risk.color}`}>
                 {risk.label}
               </div>
-              <div className="text-[11px] text-slate-400 dark:text-white/30 mt-1">
+              <div className="text-caption text-slate-400 dark:text-white/30 mt-1">
                 {assessment.organizationSize || "unknown"} entity
               </div>
             </div>
 
             {/* EU Space Act Overlaps */}
             <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
+              <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Overlaps
               </div>
               <div className="text-2xl font-bold text-green-400">
                 {assessment.euSpaceActOverlapCount || 0}
               </div>
-              <div className="text-[11px] text-green-400/60 mt-1">
+              <div className="text-caption text-green-400/60 mt-1">
                 EU Space Act
               </div>
             </div>
@@ -1768,42 +1768,42 @@ export default function NIS2AssessmentDetailPage() {
           {/* Space Activities */}
           <div className="mt-4 flex flex-wrap gap-2">
             {assessment.operatesGroundInfra && (
-              <span className="text-[11px] bg-cyan-500/10 text-cyan-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-cyan-500/10 text-cyan-400 rounded-lg px-2 py-1">
                 Ground Infra
               </span>
             )}
             {assessment.operatesSatComms && (
-              <span className="text-[11px] bg-cyan-500/10 text-cyan-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-cyan-500/10 text-cyan-400 rounded-lg px-2 py-1">
                 SatCom
               </span>
             )}
             {assessment.manufacturesSpacecraft && (
-              <span className="text-[11px] bg-cyan-500/10 text-cyan-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-cyan-500/10 text-cyan-400 rounded-lg px-2 py-1">
                 Spacecraft Mfg
               </span>
             )}
             {assessment.providesLaunchServices && (
-              <span className="text-[11px] bg-cyan-500/10 text-cyan-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-cyan-500/10 text-cyan-400 rounded-lg px-2 py-1">
                 Launch Services
               </span>
             )}
             {assessment.providesEOData && (
-              <span className="text-[11px] bg-cyan-500/10 text-cyan-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-cyan-500/10 text-cyan-400 rounded-lg px-2 py-1">
                 Earth Observation
               </span>
             )}
             {assessment.hasISO27001 && (
-              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-emerald-500/10 text-emerald-400 rounded-lg px-2 py-1">
                 ISO 27001
               </span>
             )}
             {assessment.hasExistingCSIRT && (
-              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-emerald-500/10 text-emerald-400 rounded-lg px-2 py-1">
                 CSIRT
               </span>
             )}
             {assessment.hasRiskManagement && (
-              <span className="text-[11px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
+              <span className="text-caption bg-emerald-500/10 text-emerald-400 rounded-lg px-2 py-1">
                 Risk Mgmt
               </span>
             )}
@@ -1834,7 +1834,7 @@ export default function NIS2AssessmentDetailPage() {
                 >
                   <StatusIcon className={`w-4 h-4 ${sc.color} mx-auto mb-1`} />
                   <div className={`text-lg font-bold ${sc.color}`}>{count}</div>
-                  <div className="text-[10px] text-slate-500 dark:text-white/40">
+                  <div className="text-micro text-slate-500 dark:text-white/45">
                     {sc.label}
                   </div>
                 </div>
@@ -1849,7 +1849,7 @@ export default function NIS2AssessmentDetailPage() {
             <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
               <FileText
                 size={16}
-                className="text-slate-400 dark:text-white/40"
+                className="text-slate-400 dark:text-white/45"
               />
               Requirements ({totalReqs})
             </h2>
@@ -1901,20 +1901,20 @@ export default function NIS2AssessmentDetailPage() {
                         <StatusIcon
                           className={`w-4 h-4 ${sc.color} flex-shrink-0`}
                         />
-                        <span className="text-[11px] font-mono text-slate-400 dark:text-white/30 flex-shrink-0">
+                        <span className="text-caption font-mono text-slate-400 dark:text-white/30 flex-shrink-0">
                           {meta?.articleRef || req.requirementId}
                         </span>
-                        <span className="text-sm text-slate-900 dark:text-white/80 truncate">
+                        <span className="text-sm text-slate-900 dark:text-white/70 truncate">
                           {meta?.title || req.requirementId}
                         </span>
                         {!isExpanded && fields.length > 0 && (
-                          <span className="text-[10px] text-slate-400 dark:text-white/30 flex-shrink-0">
+                          <span className="text-micro text-slate-400 dark:text-white/30 flex-shrink-0">
                             {completedFields}/{fields.length}
                           </span>
                         )}
                         {meta?.severity && (
                           <span
-                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${severityColors[meta.severity] || ""} flex-shrink-0`}
+                            className={`text-micro font-medium px-1.5 py-0.5 rounded ${severityColors[meta.severity] || ""} flex-shrink-0`}
                           >
                             {meta.severity}
                           </span>
@@ -1922,7 +1922,7 @@ export default function NIS2AssessmentDetailPage() {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         <span
-                          className={`text-[11px] font-medium ${sc.color} hidden sm:inline`}
+                          className={`text-caption font-medium ${sc.color} hidden sm:inline`}
                         >
                           {sc.label}
                         </span>
@@ -1956,7 +1956,7 @@ export default function NIS2AssessmentDetailPage() {
                         {/* Compliance Question */}
                         {meta?.complianceQuestion && (
                           <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3">
-                            <div className="text-[10px] uppercase tracking-wider text-emerald-400/60 mb-1">
+                            <div className="text-micro uppercase tracking-wider text-emerald-400/60 mb-1">
                               Compliance Question
                             </div>
                             <p className="text-sm text-slate-700 dark:text-white/70">
@@ -1967,7 +1967,7 @@ export default function NIS2AssessmentDetailPage() {
 
                         {/* Description */}
                         {meta?.description && (
-                          <p className="text-xs text-slate-500 dark:text-white/50 leading-relaxed">
+                          <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
                             {meta.description}
                           </p>
                         )}
@@ -1975,7 +1975,7 @@ export default function NIS2AssessmentDetailPage() {
                         {/* Space-Specific Guidance */}
                         {meta?.spaceSpecificGuidance && (
                           <div className="border-l-2 border-cyan-500/30 pl-3">
-                            <div className="text-[10px] uppercase tracking-wider text-cyan-400/60 mb-1">
+                            <div className="text-micro uppercase tracking-wider text-cyan-400/60 mb-1">
                               Space Sector Guidance
                             </div>
                             <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
@@ -1987,7 +1987,7 @@ export default function NIS2AssessmentDetailPage() {
                         {/* Sub-question form */}
                         {fields.length > 0 && (
                           <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
-                            <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/40 mb-3">
+                            <p className="text-micro uppercase tracking-wider text-slate-500 dark:text-white/45 mb-3">
                               Assessment Details
                             </p>
                             <AssessmentFieldForm
@@ -2008,7 +2008,7 @@ export default function NIS2AssessmentDetailPage() {
                         {suggested && suggested !== req.status && (
                           <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
                             <Sparkles size={14} className="text-blue-400" />
-                            <span className="text-[12px] text-blue-400/80">
+                            <span className="text-small text-blue-400/80">
                               ASTRA suggests:{" "}
                               <span className="font-medium capitalize">
                                 {statusConfig[suggested as ReqStatusValue]
@@ -2023,7 +2023,7 @@ export default function NIS2AssessmentDetailPage() {
                                   suggested as ReqStatusValue,
                                 )
                               }
-                              className="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-md hover:bg-blue-500/20 transition-colors"
+                              className="ml-auto text-caption bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg hover:bg-blue-500/20 transition-colors"
                             >
                               Accept
                             </button>
@@ -2034,12 +2034,12 @@ export default function NIS2AssessmentDetailPage() {
                         {(meta?.euSpaceActRef || meta?.iso27001Ref) && (
                           <div className="flex flex-wrap gap-2">
                             {meta.euSpaceActRef && (
-                              <span className="text-[10px] bg-green-500/10 text-green-400 rounded-md px-2 py-1">
+                              <span className="text-micro bg-green-500/10 text-green-400 rounded-lg px-2 py-1">
                                 EU Space Act {meta.euSpaceActRef}
                               </span>
                             )}
                             {meta.iso27001Ref && (
-                              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-1">
+                              <span className="text-micro bg-emerald-500/10 text-emerald-400 rounded-lg px-2 py-1">
                                 ISO 27001 {meta.iso27001Ref}
                               </span>
                             )}
@@ -2049,14 +2049,14 @@ export default function NIS2AssessmentDetailPage() {
                         {/* Tips */}
                         {meta?.tips && meta.tips.length > 0 && (
                           <div>
-                            <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
+                            <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
                               Implementation Tips
                             </div>
                             <ul className="space-y-1">
                               {meta.tips.map((tip, i) => (
                                 <li
                                   key={i}
-                                  className="text-xs text-slate-500 dark:text-white/40 flex items-start gap-2"
+                                  className="text-xs text-slate-500 dark:text-white/45 flex items-start gap-2"
                                 >
                                   <span className="text-emerald-400 mt-0.5">
                                     &bull;
@@ -2072,14 +2072,14 @@ export default function NIS2AssessmentDetailPage() {
                         {meta?.evidenceRequired &&
                           meta.evidenceRequired.length > 0 && (
                             <div>
-                              <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
+                              <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1.5">
                                 Evidence Required
                               </div>
                               <ul className="space-y-1">
                                 {meta.evidenceRequired.map((ev, i) => (
                                   <li
                                     key={i}
-                                    className="text-xs text-slate-500 dark:text-white/40 flex items-start gap-2"
+                                    className="text-xs text-slate-500 dark:text-white/45 flex items-start gap-2"
                                   >
                                     <CheckCircle2
                                       size={12}
@@ -2109,7 +2109,7 @@ export default function NIS2AssessmentDetailPage() {
 
                         {/* Status buttons */}
                         <div className="pt-3 border-t border-slate-200 dark:border-white/[0.06]">
-                          <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30 mb-2">
+                          <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-2">
                             Set Status
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -2137,7 +2137,7 @@ export default function NIS2AssessmentDetailPage() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                     isActive
                                       ? `${btnSc.bgColor} ${btnSc.color} ring-1 ring-current`
-                                      : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                                      : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
                                   } disabled:opacity-50`}
                                 >
                                   {btnSc.label}
@@ -2149,7 +2149,7 @@ export default function NIS2AssessmentDetailPage() {
 
                         {/* User notes */}
                         {req.notes && (
-                          <p className="text-xs text-slate-500 dark:text-white/40 border-l-2 border-slate-200 dark:border-white/10 pl-2 italic">
+                          <p className="text-xs text-slate-500 dark:text-white/45 border-l-2 border-slate-200 dark:border-white/10 pl-2 italic">
                             {req.notes}
                           </p>
                         )}
@@ -2168,7 +2168,7 @@ export default function NIS2AssessmentDetailPage() {
             <h3 className="text-sm font-medium text-slate-700 dark:text-white/70 mb-1">
               No requirements applicable
             </h3>
-            <p className="text-xs text-slate-500 dark:text-white/40">
+            <p className="text-xs text-slate-500 dark:text-white/45">
               This entity classification does not have applicable NIS2
               requirements.
             </p>

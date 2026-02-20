@@ -73,10 +73,10 @@ export function DeleteAccountCard({
             <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h2 className="text-[11px] uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+            <h2 className="text-caption uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               DANGER ZONE
             </h2>
-            <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+            <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
               Permanent account deletion
             </p>
           </div>
@@ -86,10 +86,10 @@ export function DeleteAccountCard({
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[14px] text-red-700 dark:text-red-300 font-medium mb-1">
+              <p className="text-body-lg text-red-700 dark:text-red-300 font-medium mb-1">
                 This action is irreversible
               </p>
-              <p className="text-[13px] text-red-600/80 dark:text-red-400/80">
+              <p className="text-body text-red-600/80 dark:text-red-400/80">
                 Deleting your account will permanently remove all your data,
                 assessments, documents, and settings. This cannot be undone.
               </p>
@@ -99,7 +99,7 @@ export function DeleteAccountCard({
 
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-[13px] font-medium transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-body font-medium transition-colors"
         >
           <Trash2 className="w-4 h-4" />
           Delete Account
@@ -124,11 +124,11 @@ export function DeleteAccountCard({
                 <div>
                   <h3
                     id="delete-account-title"
-                    className="text-[16px] font-medium text-slate-900 dark:text-white"
+                    className="text-title font-medium text-slate-900 dark:text-white"
                   >
                     Delete Account
                   </h3>
-                  <p className="text-[13px] text-slate-500 dark:text-white/50">
+                  <p className="text-body text-slate-500 dark:text-white/45">
                     {session?.user?.email}
                   </p>
                 </div>
@@ -137,10 +137,10 @@ export function DeleteAccountCard({
 
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
-              <p className="text-[14px] text-slate-600 dark:text-white/70">
+              <p className="text-body-lg text-slate-600 dark:text-white/70">
                 You are about to permanently delete your account. This will:
               </p>
-              <ul className="text-[13px] text-slate-600 dark:text-white/60 space-y-1.5 list-disc list-inside">
+              <ul className="text-body text-slate-600 dark:text-white/45 space-y-1.5 list-disc list-inside">
                 <li>Delete all your assessments and compliance data</li>
                 <li>Remove all uploaded documents</li>
                 <li>Cancel any active subscriptions</li>
@@ -153,7 +153,7 @@ export function DeleteAccountCard({
                 <div>
                   <label
                     htmlFor="delete-account-password"
-                    className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5"
+                    className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5"
                   >
                     Enter your password
                   </label>
@@ -166,7 +166,7 @@ export function DeleteAccountCard({
                       aria-required="true"
                       autoComplete="current-password"
                       placeholder="Your current password"
-                      className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                      className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
                     />
                     <button
                       type="button"
@@ -190,7 +190,7 @@ export function DeleteAccountCard({
               <div>
                 <label
                   htmlFor="delete-account-confirmation"
-                  className="block text-[13px] font-medium text-slate-700 dark:text-white/80 mb-1.5"
+                  className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5"
                 >
                   Type{" "}
                   <span className="font-mono text-red-600 dark:text-red-400">
@@ -205,7 +205,7 @@ export function DeleteAccountCard({
                   onChange={(e) => setConfirmation(e.target.value)}
                   aria-required="true"
                   placeholder="DELETE MY ACCOUNT"
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono"
+                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono"
                 />
               </div>
 
@@ -215,7 +215,7 @@ export function DeleteAccountCard({
                   role="alert"
                   className="p-3 rounded-lg bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30"
                 >
-                  <p className="text-[13px] text-red-600 dark:text-red-400">
+                  <p className="text-body text-red-600 dark:text-red-400">
                     {error}
                   </p>
                 </div>
@@ -231,14 +231,14 @@ export function DeleteAccountCard({
                   setConfirmation("");
                   setError(null);
                 }}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium text-slate-700 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                className="px-4 py-2 rounded-lg text-body font-medium text-slate-700 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={!canDelete || isDeleting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-body font-medium transition-colors"
               >
                 {isDeleting ? (
                   <>

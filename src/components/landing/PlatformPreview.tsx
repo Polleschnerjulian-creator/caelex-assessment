@@ -174,7 +174,7 @@ const urgencyColors = {
 const statusIcons = {
   compliant: { icon: CheckCircle2, color: "text-emerald-400" },
   in_progress: { icon: Clock, color: "text-amber-400" },
-  not_started: { icon: XCircle, color: "text-white/50" },
+  not_started: { icon: XCircle, color: "text-white/45" },
 };
 
 const docStatusConfig = {
@@ -198,7 +198,7 @@ function DashboardTab() {
             >
               {stat.value}
             </p>
-            <p className="text-micro text-white/35 mt-1 uppercase tracking-wider">
+            <p className="text-micro text-white/25 mt-1 uppercase tracking-wider">
               {stat.label}
             </p>
           </div>
@@ -216,10 +216,10 @@ function DashboardTab() {
             >
               <Icon
                 size={14}
-                className="text-white/30 flex-shrink-0"
+                className="text-white/25 flex-shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-small md:text-body text-white/60 flex-1 min-w-0 truncate">
+              <span className="text-small md:text-body text-white/70 flex-1 min-w-0 truncate">
                 {mod.name}
               </span>
               <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
@@ -236,7 +236,7 @@ function DashboardTab() {
                     style={{ width: `${mod.progress}%` }}
                   />
                 </div>
-                <span className="text-caption text-white/30 w-8 text-right">
+                <span className="text-caption text-white/25 w-8 text-right">
                   {mod.progress}%
                 </span>
               </div>
@@ -275,7 +275,7 @@ function DocumentsTab() {
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <p className="text-small text-white/60 truncate">
+                  <p className="text-small text-white/70 truncate">
                     {doc.name}
                   </p>
                   <p className="text-micro text-white/25">{doc.count} files</p>
@@ -303,11 +303,11 @@ function TimelineTab() {
             key={i}
             className="flex items-center gap-4 bg-white/[0.02] border border-white/[0.04] rounded-lg px-4 py-3"
           >
-            <span className="text-caption text-white/30 w-16 flex-shrink-0">
+            <span className="text-caption text-white/25 w-16 flex-shrink-0">
               {deadline.date}
             </span>
             <div className="w-px h-5 bg-white/[0.08]" />
-            <p className="text-small text-white/55 flex-1 min-w-0 truncate">
+            <p className="text-small text-white/45 flex-1 min-w-0 truncate">
               {deadline.title}
             </p>
             <span
@@ -339,10 +339,10 @@ function TrackerTab() {
                 className={`${statusConfig.color} flex-shrink-0`}
                 aria-hidden="true"
               />
-              <span className="text-caption text-white/40 w-12 flex-shrink-0">
+              <span className="text-caption text-white/45 w-12 flex-shrink-0">
                 {article.number}
               </span>
-              <p className="text-small text-white/55 flex-1 min-w-0 truncate">
+              <p className="text-small text-white/45 flex-1 min-w-0 truncate">
                 {article.title}
               </p>
               <span className="text-micro text-white/25 bg-white/[0.04] px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:block">
@@ -385,34 +385,34 @@ export default function PlatformPreview() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">05 / 12</span>
+        <span className="text-caption text-white/25">05 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/45 block mb-6">
             Your Compliance Command Center
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto mb-4">
             One platform.
             <br />
-            <span className="text-white/50">Complete visibility.</span>
+            <span className="text-white/45">Complete visibility.</span>
           </h2>
-          <p className="text-body-lg text-white/40 max-w-[450px] mx-auto">
+          <p className="text-body-lg text-white/45 max-w-[450px] mx-auto">
             Track every article, every deadline, every document — in real time.
           </p>
         </motion.div>
 
         {/* Platform mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="relative"
         >
@@ -444,7 +444,7 @@ export default function PlatformPreview() {
                       className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-small font-medium transition-all duration-200 ${
                         activeTab === tab.id
                           ? "bg-white/[0.08] text-white"
-                          : "text-white/35 hover:text-white/60 hover:bg-white/[0.03]"
+                          : "text-white/25 hover:text-white/70 hover:bg-white/[0.03]"
                       }`}
                     >
                       <Icon size={14} aria-hidden="true" />
@@ -459,8 +459,8 @@ export default function PlatformPreview() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
                   className="min-h-[320px] md:min-h-[380px]"

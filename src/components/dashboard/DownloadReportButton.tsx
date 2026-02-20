@@ -34,7 +34,7 @@ export default function DownloadReportButton() {
     <button
       onClick={handleDownload}
       disabled={generating}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white/80 hover:bg-white/10 hover:border-white/15 transition-all text-[12px] disabled:opacity-50"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/45 hover:text-white/70 hover:bg-white/10 hover:border-white/15 transition-all text-small disabled:opacity-50"
     >
       {generating ? (
         <Loader2 size={14} className="animate-spin" />

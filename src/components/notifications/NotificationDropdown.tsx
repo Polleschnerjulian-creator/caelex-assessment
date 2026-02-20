@@ -130,7 +130,7 @@ export function NotificationDropdown({
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-white">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/20 text-blue-400 rounded-full">
+            <span className="px-1.5 py-0.5 text-micro font-medium bg-blue-500/20 text-blue-400 rounded-full">
               {unreadCount} new
             </span>
           )}
@@ -140,7 +140,7 @@ export function NotificationDropdown({
             <button
               onClick={handleMarkAllAsRead}
               disabled={isMarkingAll}
-              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white disabled:opacity-50"
+              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white disabled:opacity-50"
               title="Mark all as read"
             >
               {isMarkingAll ? (
@@ -152,7 +152,7 @@ export function NotificationDropdown({
           )}
           <Link
             href="/dashboard/settings/notifications"
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
             title="Notification settings"
             onClick={onClose}
           >
@@ -160,7 +160,7 @@ export function NotificationDropdown({
           </Link>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
           >
             <X size={16} />
           </button>
@@ -171,14 +171,14 @@ export function NotificationDropdown({
       <div className="max-h-[400px] overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-white/40" />
+            <Loader2 size={24} className="animate-spin text-white/45" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-12 px-4">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
               <Check size={24} className="text-white/30" />
             </div>
-            <p className="text-sm text-white/50">You&apos;re all caught up!</p>
+            <p className="text-sm text-white/45">You&apos;re all caught up!</p>
             <p className="text-xs text-white/30 mt-1">No new notifications</p>
           </div>
         ) : (

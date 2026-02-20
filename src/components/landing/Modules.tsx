@@ -161,14 +161,14 @@ export default function Modules() {
       <div className="px-6 md:px-12 mb-16">
         <div className="max-w-[1400px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6 }}
             className="flex items-end justify-between"
           >
             <div>
               <span
-                className="text-caption uppercase tracking-[0.2em] text-white/30 block mb-4"
+                className="text-caption uppercase tracking-[0.2em] text-white/25 block mb-4"
                 aria-hidden="true"
               >
                 07 / 14 — Platform
@@ -176,7 +176,7 @@ export default function Modules() {
               <h2 className="text-[clamp(1.75rem,3.5vw,2.5rem)] font-light tracking-[-0.02em] text-white">
                 Eight modules.
                 <br />
-                <span className="text-white/50">
+                <span className="text-white/45">
                   Complete regulatory coverage.
                 </span>
               </h2>
@@ -207,8 +207,8 @@ export default function Modules() {
               return (
                 <motion.div
                   key={module.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.5, delay: 0.2 + index * 0.05 }}
                   className="group"
                 >
@@ -232,7 +232,7 @@ export default function Modules() {
                         <Icon
                           size={18}
                           className={
-                            isNIS2 ? "text-emerald-400" : "text-white/60"
+                            isNIS2 ? "text-emerald-400" : "text-white/70"
                           }
                           aria-hidden="true"
                         />
@@ -249,7 +249,7 @@ export default function Modules() {
                           </span>
                         )}
                         <span
-                          className="text-caption text-white/50"
+                          className="text-caption text-white/45"
                           aria-hidden="true"
                         >
                           {module.id}
@@ -269,7 +269,7 @@ export default function Modules() {
                     {/* Article range */}
                     <p
                       className={`text-micro mb-4 ${
-                        isNIS2 ? "text-emerald-400/60" : "text-white/40"
+                        isNIS2 ? "text-emerald-400/60" : "text-white/45"
                       }`}
                     >
                       {module.articleRange}
@@ -278,7 +278,7 @@ export default function Modules() {
                     {/* Description */}
                     <p
                       className={`text-body leading-[1.6] mb-5 ${
-                        isNIS2 ? "text-emerald-100/50" : "text-white/50"
+                        isNIS2 ? "text-emerald-100/50" : "text-white/45"
                       }`}
                     >
                       {module.description}
@@ -293,7 +293,7 @@ export default function Modules() {
                           <div
                             key={i}
                             className={`flex items-center gap-2 text-caption ${
-                              isNIS2 ? "text-emerald-200/30" : "text-white/30"
+                              isNIS2 ? "text-emerald-200/30" : "text-white/25"
                             }`}
                           >
                             <span
@@ -312,7 +312,7 @@ export default function Modules() {
                     <div className="mt-5 overflow-hidden h-4">
                       <span
                         className={`block text-small transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5 ${
-                          isNIS2 ? "text-emerald-400/50" : "text-white/30"
+                          isNIS2 ? "text-emerald-400/50" : "text-white/25"
                         }`}
                       >
                         <span>Explore module</span>
@@ -338,25 +338,25 @@ export default function Modules() {
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 py-8 border-t border-white/[0.06]">
             <div className="text-center">
               <p className="text-display-sm font-light text-white">8</p>
-              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/25 mt-1">
                 Modules
               </p>
             </div>
             <div className="text-center">
               <p className="text-display-sm font-light text-white">170+</p>
-              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/25 mt-1">
                 Requirements
               </p>
             </div>
             <div className="text-center">
               <p className="text-display-sm font-light text-white">3</p>
-              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/25 mt-1">
                 Frameworks
               </p>
             </div>
             <div className="text-center">
               <p className="text-display-sm font-light text-white">10</p>
-              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/30 mt-1">
+              <p className="text-caption sm:text-micro uppercase tracking-[0.2em] text-white/25 mt-1">
                 Jurisdictions
               </p>
             </div>

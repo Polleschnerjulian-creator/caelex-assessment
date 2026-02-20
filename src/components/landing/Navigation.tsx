@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
+import Button from "@/components/ui/Button";
 import { Menu, X } from "lucide-react";
 
 export default function Navigation() {
@@ -69,25 +70,25 @@ export default function Navigation() {
                 {/* Links */}
                 <Link
                   href="/#platform"
-                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
                 >
                   Platform
                 </Link>
                 <Link
                   href="/resources"
-                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
                 >
                   Resources
                 </Link>
                 <Link
                   href="/modules"
-                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
                 >
                   Modules
                 </Link>
                 <Link
                   href="/pricing"
-                  className="hidden md:block text-body text-white/50 hover:text-white transition-colors duration-300"
+                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
                 >
                   Pricing
                 </Link>
@@ -96,22 +97,16 @@ export default function Navigation() {
                 <div className="hidden md:flex items-center gap-4">
                   <Link
                     href="/login"
-                    className="text-body text-white/50 hover:text-white transition-colors duration-300"
+                    className="text-body text-white/45 hover:text-white transition-colors duration-300"
                   >
                     Log in
                   </Link>
-                  <Link
-                    href="/demo"
-                    className="text-body font-medium text-white/80 px-5 py-2.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all duration-300"
-                  >
+                  <Button href="/demo" variant="white-outline" size="sm">
                     Request Demo
-                  </Link>
-                  <Link
-                    href="/assessment"
-                    className="text-body font-medium text-black bg-white px-5 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300"
-                  >
+                  </Button>
+                  <Button href="/assessment" variant="white" size="sm">
                     Start Assessment
-                  </Link>
+                  </Button>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -161,7 +156,7 @@ export default function Navigation() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, delay: 0.05 }}
-              className="relative mt-20 mx-6 p-6 rounded-xl bg-[#111] border border-white/[0.08]"
+              className="relative mt-20 mx-6 p-6 rounded-xl bg-dark-surface border border-white/[0.08]"
               role="navigation"
               aria-label="Mobile navigation"
             >
@@ -177,7 +172,7 @@ export default function Navigation() {
                 <Link
                   href="/demo"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/80 text-body-lg font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/70 text-body-lg font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
                 >
                   Request Demo
                 </Link>
@@ -185,42 +180,42 @@ export default function Navigation() {
                 <Link
                   href="/#platform"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Platform
                 </Link>
                 <Link
                   href="/resources"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Resources
                 </Link>
                 <Link
                   href="/modules"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Modules
                 </Link>
                 <Link
                   href="/about"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   About
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link
                   href="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
+                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
                   Contact
                 </Link>
@@ -229,7 +224,7 @@ export default function Navigation() {
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white/60 hover:text-white border border-white/[0.08] hover:border-white/20 transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white/70 hover:text-white border border-white/[0.08] hover:border-white/20 transition-colors"
                   >
                     Log in
                   </Link>

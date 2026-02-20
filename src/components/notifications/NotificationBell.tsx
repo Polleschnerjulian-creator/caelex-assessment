@@ -69,7 +69,7 @@ export function NotificationBell({ className = "" }: NotificationBellProps) {
         {/* Badge */}
         {!isLoading && unreadCount > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full"
+            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-micro font-bold bg-red-500 text-white rounded-full"
             aria-live="polite"
             aria-atomic="true"
           >

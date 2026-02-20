@@ -76,7 +76,7 @@ export default function EmailGate({
                 <button
                   onClick={onClose}
                   aria-label="Close dialog"
-                  className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/[0.08]"
+                  className="absolute top-4 right-4 p-2 text-white/45 hover:text-white transition-colors rounded-lg hover:bg-white/[0.08]"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
@@ -85,16 +85,16 @@ export default function EmailGate({
                   className="w-12 h-12 rounded-xl bg-white/[0.08] flex items-center justify-center mb-4"
                   aria-hidden="true"
                 >
-                  <FileDown className="w-6 h-6 text-white/80" />
+                  <FileDown className="w-6 h-6 text-white/70" />
                 </div>
 
                 <h2
                   id="email-gate-title"
-                  className="text-[18px] font-light text-white mb-2"
+                  className="text-heading font-light text-white mb-2"
                 >
                   Get Your Compliance Report
                 </h2>
-                <p className="text-[14px] text-white/70">
+                <p className="text-body-lg text-white/70">
                   Enter your email to download your personalized EU Space Act
                   compliance report.
                 </p>
@@ -104,12 +104,12 @@ export default function EmailGate({
               <form onSubmit={handleSubmit} className="px-6 pb-6">
                 {/* Email (required) */}
                 <div className="mb-4">
-                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
+                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
                     Email <span className="text-white/70">*</span>
                   </label>
                   <div className="relative">
                     <Mail
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -121,11 +121,11 @@ export default function EmailGate({
                         if (emailError) setEmailError(null);
                       }}
                       placeholder="you@company.com"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-[14px] text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                   {emailError && (
-                    <p role="alert" className="mt-1.5 text-[12px] text-red-400">
+                    <p role="alert" className="mt-1.5 text-small text-red-400">
                       {emailError}
                     </p>
                   )}
@@ -133,12 +133,12 @@ export default function EmailGate({
 
                 {/* Company (optional) */}
                 <div className="mb-4">
-                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
-                    Company <span className="text-white/40">(optional)</span>
+                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
+                    Company <span className="text-white/45">(optional)</span>
                   </label>
                   <div className="relative">
                     <Building
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -146,19 +146,19 @@ export default function EmailGate({
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="Your organization"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-[14px] text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* Role (optional) */}
                 <div className="mb-6">
-                  <label className="block text-[10px] uppercase tracking-[0.15em] text-white/50 mb-2">
-                    Role <span className="text-white/40">(optional)</span>
+                  <label className="block text-micro uppercase tracking-[0.15em] text-white/45 mb-2">
+                    Role <span className="text-white/45">(optional)</span>
                   </label>
                   <div className="relative">
                     <User
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45"
                       aria-hidden="true"
                     />
                     <input
@@ -166,7 +166,7 @@ export default function EmailGate({
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                       placeholder="Your role"
-                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-[14px] text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.12] rounded-lg text-body-lg text-white placeholder-white/40 focus:outline-none focus:border-white/[0.25] transition-colors"
                     />
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export default function EmailGate({
                       )}
                     </div>
                   </div>
-                  <span className="text-[13px] text-white/70 group-hover:text-white transition-colors">
+                  <span className="text-body text-white/70 group-hover:text-white transition-colors">
                     Notify me when Caelex launches (we&apos;ll never spam you)
                   </span>
                 </label>
@@ -205,7 +205,7 @@ export default function EmailGate({
                 <button
                   type="submit"
                   disabled={isSubmitting || !email}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-white text-black text-[13px] font-medium px-6 py-3 rounded-full hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-white text-black text-body font-medium px-6 py-3 rounded-full hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -224,7 +224,7 @@ export default function EmailGate({
                 </button>
 
                 {/* Privacy note */}
-                <p className="text-[11px] text-white/50 text-center mt-4">
+                <p className="text-caption text-white/45 text-center mt-4">
                   We respect your privacy. Your data is not stored or shared.
                 </p>
               </form>

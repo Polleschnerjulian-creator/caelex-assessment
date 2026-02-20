@@ -319,10 +319,10 @@ export default function UnifiedAssessmentWizard() {
             className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6"
             aria-hidden="true"
           />
-          <p className="text-[15px] text-white/70 mb-2">
+          <p className="text-subtitle text-white/70 mb-2">
             Generating your compliance profile...
           </p>
-          <p className="text-[13px] text-white/40">
+          <p className="text-body text-white/45">
             Analyzing EU Space Act, NIS2, and National Space Laws
           </p>
         </div>
@@ -335,12 +335,12 @@ export default function UnifiedAssessmentWizard() {
     return (
       <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-[14px] mb-6" role="alert">
+          <p className="text-red-400 text-body-lg mb-6" role="alert">
             {calculationError}
           </p>
           <button
             onClick={handleRestart}
-            className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+            className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
           >
             Start Over
           </button>
@@ -390,7 +390,7 @@ export default function UnifiedAssessmentWizard() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
-                className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
               >
                 <ArrowLeft size={14} aria-hidden="true" />
                 <span>Back</span>
@@ -404,7 +404,7 @@ export default function UnifiedAssessmentWizard() {
               >
                 <Link
                   href="/assessment"
-                  className="flex items-center gap-2 text-[13px] text-white/50 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
                 >
                   <ArrowLeft size={14} aria-hidden="true" />
                   <span>All assessments</span>
@@ -413,7 +413,7 @@ export default function UnifiedAssessmentWizard() {
             )}
           </AnimatePresence>
 
-          <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
             Unified Compliance Assessment
           </span>
         </div>
@@ -421,10 +421,10 @@ export default function UnifiedAssessmentWizard() {
         {/* Phase indicator */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[12px] font-medium text-white/60">
+            <span className="text-small font-medium text-white/45">
               Phase {progress.phase} of 8: {progress.phaseName}
             </span>
-            <span className="text-[12px] text-white/40">
+            <span className="text-small text-white/45">
               Question {state.currentStep} of {totalSteps}
             </span>
           </div>
@@ -488,7 +488,7 @@ export default function UnifiedAssessmentWizard() {
             >
               {/* Question header */}
               <div className="mb-8 text-center max-w-2xl mx-auto">
-                <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
+                <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
                   {currentQuestion.phaseName}
                 </span>
 
@@ -497,13 +497,13 @@ export default function UnifiedAssessmentWizard() {
                 </h2>
 
                 {currentQuestion.subtitle && (
-                  <p className="text-[14px] text-white/50 leading-relaxed">
+                  <p className="text-body-lg text-white/45 leading-relaxed">
                     {currentQuestion.subtitle}
                   </p>
                 )}
 
                 {currentQuestion.helpText && (
-                  <p className="text-[12px] text-emerald-400/60 mt-3 leading-relaxed">
+                  <p className="text-small text-emerald-400/60 mt-3 leading-relaxed">
                     {currentQuestion.helpText}
                   </p>
                 )}
@@ -536,7 +536,7 @@ export default function UnifiedAssessmentWizard() {
                   <div className="mt-6 flex justify-center">
                     <button
                       onClick={handleTextContinue}
-                      className="flex items-center gap-2 px-8 py-3.5 rounded-full text-[14px] font-medium bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all"
+                      className="flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all"
                     >
                       {currentQuestion.required && !textInput
                         ? "Skip"
@@ -602,11 +602,11 @@ export default function UnifiedAssessmentWizard() {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-[14px] font-medium text-white group-hover:text-emerald-400 transition-colors">
+                            <h3 className="text-body-lg font-medium text-white group-hover:text-emerald-400 transition-colors">
                               {option.label}
                             </h3>
                             {option.description && (
-                              <p className="text-[12px] text-white/50 mt-0.5 leading-relaxed">
+                              <p className="text-small text-white/45 mt-0.5 leading-relaxed">
                                 {option.description}
                               </p>
                             )}
@@ -666,11 +666,11 @@ export default function UnifiedAssessmentWizard() {
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-[15px] font-medium text-white group-hover:text-emerald-400 transition-colors">
+                              <h3 className="text-subtitle font-medium text-white group-hover:text-emerald-400 transition-colors">
                                 {option.label}
                               </h3>
                               {option.description && (
-                                <p className="text-[13px] text-white/50 mt-1 leading-relaxed">
+                                <p className="text-body text-white/45 mt-1 leading-relaxed">
                                   {option.description}
                                 </p>
                               )}
@@ -695,7 +695,7 @@ export default function UnifiedAssessmentWizard() {
                           "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
                       }}
                     >
-                      <span className="text-[12px] text-emerald-400/70">
+                      <span className="text-small text-emerald-400/70">
                         {multiSelect.length} /{" "}
                         {currentQuestion.maxSelections || 10} selected
                       </span>
@@ -785,14 +785,14 @@ export default function UnifiedAssessmentWizard() {
                             )}
                             <div className="flex-1 min-w-0">
                               <h3
-                                className={`text-[14px] font-medium ${
+                                className={`text-body-lg font-medium ${
                                   isSelected ? "text-emerald-400" : "text-white"
                                 }`}
                               >
                                 {option.label}
                               </h3>
                               {option.description && (
-                                <p className="text-[12px] text-white/50 mt-0.5 leading-relaxed">
+                                <p className="text-small text-white/45 mt-0.5 leading-relaxed">
                                   {option.description}
                                 </p>
                               )}
@@ -841,12 +841,12 @@ export default function UnifiedAssessmentWizard() {
                         y: 0,
                       }}
                       className={`
-                        flex items-center gap-2 px-8 py-3.5 rounded-full text-[14px] font-medium transition-all
+                        flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium transition-all
                         ${
                           multiSelect.length >=
                           (currentQuestion.minSelections || 1)
                             ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
-                            : "bg-white/10 text-white/40 cursor-not-allowed"
+                            : "bg-white/10 text-white/45 cursor-not-allowed"
                         }
                       `}
                     >

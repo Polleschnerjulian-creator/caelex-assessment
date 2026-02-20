@@ -71,7 +71,7 @@ export default function NIS2ClassificationCard({
             <IconComponent className={`w-6 h-6 ${config.color}`} />
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-1">
+            <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-1">
               NIS2 Entity Classification
             </div>
             <h3 className={`text-xl font-semibold ${config.color}`}>
@@ -79,11 +79,11 @@ export default function NIS2ClassificationCard({
             </h3>
           </div>
         </div>
-        <span className="text-[11px] text-white/30">{articleRef}</span>
+        <span className="text-caption text-white/30">{articleRef}</span>
       </div>
 
       {/* Description */}
-      <p className="text-sm text-white/60 mb-4">{config.description}</p>
+      <p className="text-sm text-white/45 mb-4">{config.description}</p>
 
       {/* Reason */}
       <div className="bg-white/[0.04] rounded-xl p-4 mb-4">
@@ -99,7 +99,7 @@ export default function NIS2ClassificationCard({
       {/* Profile summary */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white/[0.03] rounded-lg p-3">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+          <div className="text-micro uppercase tracking-wider text-white/45 mb-1">
             Sector
           </div>
           <div className="text-sm text-white font-medium capitalize">
@@ -107,7 +107,7 @@ export default function NIS2ClassificationCard({
           </div>
         </div>
         <div className="bg-white/[0.03] rounded-lg p-3">
-          <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+          <div className="text-micro uppercase tracking-wider text-white/45 mb-1">
             Organization Size
           </div>
           <div className="text-sm text-white font-medium capitalize">

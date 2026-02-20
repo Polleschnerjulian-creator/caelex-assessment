@@ -67,10 +67,10 @@ export default function UsersAdminPage() {
             />
           </div>
           <div>
-            <h1 className="text-[22px] font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-heading-lg font-semibold text-slate-900 dark:text-white">
               User Management
             </h1>
-            <p className="text-[13px] text-slate-600 dark:text-white/60">
+            <p className="text-body text-slate-600 dark:text-white/45">
               {total} total users
             </p>
           </div>
@@ -83,14 +83,14 @@ export default function UsersAdminPage() {
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
           />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name, email, or organization..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-shadow"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-shadow"
           />
         </div>
 
@@ -101,7 +101,7 @@ export default function UsersAdminPage() {
             setRoleFilter(e.target.value);
             setPage(0);
           }}
-          className="px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
+          className="px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
         >
           <option value="">All Roles</option>
           <option value="user">User</option>
@@ -116,7 +116,7 @@ export default function UsersAdminPage() {
             setActiveFilter(e.target.value);
             setPage(0);
           }}
-          className="px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-[13px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
+          className="px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
         >
           <option value="">All Status</option>
           <option value="true">Active</option>
@@ -129,7 +129,7 @@ export default function UsersAdminPage() {
         <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12">
           <div className="flex items-center justify-center gap-3">
             <div className="w-5 h-5 border-2 border-slate-300 dark:border-white/20 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="text-[13px] text-slate-500 dark:text-white/60">
+            <span className="text-body text-slate-500 dark:text-white/45">
               Loading users...
             </span>
           </div>
@@ -141,7 +141,7 @@ export default function UsersAdminPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-[13px] text-slate-600 dark:text-white/60">
+          <p className="text-body text-slate-600 dark:text-white/45">
             Showing {page * LIMIT + 1} to {Math.min((page + 1) * LIMIT, total)}{" "}
             of {total}
           </p>
@@ -153,7 +153,7 @@ export default function UsersAdminPage() {
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-[13px] text-slate-600 dark:text-white/60 min-w-[80px] text-center">
+            <span className="text-body text-slate-600 dark:text-white/45 min-w-[80px] text-center">
               Page {page + 1} of {totalPages}
             </span>
             <button

@@ -30,7 +30,7 @@ export default function Error({
           An unexpected error occurred. Our team has been notified.
         </p>
         {error.digest && (
-          <p className="text-xs text-white/40 mb-6 font-mono">
+          <p className="text-xs text-white/45 mb-6 font-mono">
             Error ID: {error.digest}
           </p>
         )}

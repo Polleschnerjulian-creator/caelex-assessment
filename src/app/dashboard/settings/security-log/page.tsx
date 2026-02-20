@@ -186,31 +186,31 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[14px] font-medium text-slate-900 dark:text-white">
+              <span className="text-body-lg font-medium text-slate-900 dark:text-white">
                 {eventLabel}
               </span>
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${riskConfig.bg} ${riskConfig.color}`}
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium ${riskConfig.bg} ${riskConfig.color}`}
               >
                 {riskConfig.label}
               </span>
             </div>
-            <p className="text-[13px] text-slate-600 dark:text-white/60 mt-1 line-clamp-1">
+            <p className="text-body text-slate-600 dark:text-white/45 mt-1 line-clamp-1">
               {log.description}
             </p>
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               {log.ipAddress && (
-                <span className="text-[11px] text-slate-400 dark:text-white/30 flex items-center gap-1">
+                <span className="text-caption text-slate-400 dark:text-white/30 flex items-center gap-1">
                   <Globe className="w-3 h-3" />
                   {log.ipAddress}
                 </span>
               )}
               {log.city && log.country && (
-                <span className="text-[11px] text-slate-400 dark:text-white/30">
+                <span className="text-caption text-slate-400 dark:text-white/30">
                   {log.city}, {log.country}
                 </span>
               )}
-              <span className="text-[11px] text-slate-400 dark:text-white/30 flex items-center gap-1">
+              <span className="text-caption text-slate-400 dark:text-white/30 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {formatRelativeTime(log.createdAt)}
               </span>
@@ -233,37 +233,37 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
         <div className="px-4 pb-4 pt-0 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <div>
-              <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
+              <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
                 Date & Time
               </p>
-              <p className="text-[13px] text-slate-700 dark:text-white/70">
+              <p className="text-body text-slate-700 dark:text-white/70">
                 {formatFullDate(log.createdAt)}
               </p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
+              <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
                 Device
               </p>
-              <p className="text-[13px] text-slate-700 dark:text-white/70">
+              <p className="text-body text-slate-700 dark:text-white/70">
                 {device.name}
               </p>
             </div>
             {log.ipAddress && (
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
+                <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
                   IP Address
                 </p>
-                <p className="text-[13px] text-slate-700 dark:text-white/70 font-mono">
+                <p className="text-body text-slate-700 dark:text-white/70 font-mono">
                   {log.ipAddress}
                 </p>
               </div>
             )}
             {log.city && log.country && (
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
+                <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
                   Location
                 </p>
-                <p className="text-[13px] text-slate-700 dark:text-white/70">
+                <p className="text-body text-slate-700 dark:text-white/70">
                   {log.city}, {log.country}
                   {log.countryCode && ` (${log.countryCode})`}
                 </p>
@@ -271,13 +271,13 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
             )}
             {log.targetType && (
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
+                <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
                   Target
                 </p>
-                <p className="text-[13px] text-slate-700 dark:text-white/70">
+                <p className="text-body text-slate-700 dark:text-white/70">
                   {log.targetType}
                   {log.targetId && (
-                    <span className="text-slate-400 dark:text-white/40">
+                    <span className="text-slate-400 dark:text-white/45">
                       {" "}
                       ({log.targetId.slice(0, 8)}...)
                     </span>
@@ -288,10 +288,10 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
           </div>
           {log.metadata && Object.keys(log.metadata).length > 0 && (
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-white/30 mb-2">
+              <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-2">
                 Additional Details
               </p>
-              <pre className="text-[12px] text-slate-600 dark:text-white/50 bg-white dark:bg-white/[0.04] p-3 rounded-lg overflow-x-auto">
+              <pre className="text-small text-slate-600 dark:text-white/45 bg-white dark:bg-white/[0.04] p-3 rounded-lg overflow-x-auto">
                 {JSON.stringify(log.metadata, null, 2)}
               </pre>
             </div>
@@ -360,7 +360,7 @@ export default function SecurityLogPage() {
         {/* Back Link */}
         <Link
           href="/dashboard/settings"
-          className="inline-flex items-center gap-1.5 text-[13px] text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70 transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors mb-6"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to Settings
@@ -373,10 +373,10 @@ export default function SecurityLogPage() {
               <Shield className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <h1 className="text-[24px] font-medium text-slate-900 dark:text-white">
+              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
                 Security Log
               </h1>
-              <p className="text-[14px] text-slate-600 dark:text-white/70 mt-0.5">
+              <p className="text-body-lg text-slate-600 dark:text-white/70 mt-0.5">
                 Review your account security activity
               </p>
             </div>
@@ -385,7 +385,7 @@ export default function SecurityLogPage() {
           <button
             onClick={() => fetchLogs(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
@@ -396,9 +396,9 @@ export default function SecurityLogPage() {
 
         {/* Risk Level Filters */}
         <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-          <div className="flex items-center gap-1.5 text-slate-500 dark:text-white/50 mr-2">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-white/45 mr-2">
             <Filter className="w-4 h-4" />
-            <span className="text-[13px]">Filter:</span>
+            <span className="text-body">Filter:</span>
           </div>
           {[
             { key: "all", label: "All" },
@@ -426,7 +426,7 @@ export default function SecurityLogPage() {
             <button
               key={filter.key}
               onClick={() => setRiskFilter(filter.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                 riskFilter === filter.key
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
                   : "bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-white/[0.06]"
@@ -436,7 +436,7 @@ export default function SecurityLogPage() {
                 {filter.label}
               </span>
               <span
-                className={`tabular-nums ${riskFilter === filter.key ? "text-white/70 dark:text-slate-900/70" : "text-slate-400 dark:text-white/40"}`}
+                className={`tabular-nums ${riskFilter === filter.key ? "text-white/70 dark:text-slate-900/70" : "text-slate-400 dark:text-white/45"}`}
               >
                 {riskCounts[filter.key as keyof typeof riskCounts]}
               </span>
@@ -447,17 +447,17 @@ export default function SecurityLogPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
+            <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
           </div>
         ) : error ? (
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
             <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-            <p className="text-[14px] text-red-600 dark:text-red-400">
+            <p className="text-body-lg text-red-600 dark:text-red-400">
               {error}
             </p>
             <button
               onClick={() => fetchLogs()}
-              className="mt-4 px-4 py-2 rounded-lg bg-red-500 text-white text-[13px] font-medium hover:bg-red-600 transition-colors"
+              className="mt-4 px-4 py-2 rounded-lg bg-red-500 text-white text-body font-medium hover:bg-red-600 transition-colors"
             >
               Try Again
             </button>
@@ -465,12 +465,12 @@ export default function SecurityLogPage() {
         ) : filteredLogs.length === 0 ? (
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
             <Shield className="w-10 h-10 text-slate-300 dark:text-white/20 mx-auto mb-4" />
-            <h3 className="text-[16px] font-medium text-slate-900 dark:text-white mb-2">
+            <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
               {riskFilter === "all"
                 ? "No Security Events"
                 : `No ${riskFilter.toLowerCase()} risk events`}
             </h3>
-            <p className="text-[13px] text-slate-500 dark:text-white/50">
+            <p className="text-body text-slate-500 dark:text-white/45">
               {riskFilter === "all"
                 ? "Your security log is empty. Activity will appear here as you use your account."
                 : "No events match the selected risk level filter."}
@@ -487,7 +487,7 @@ export default function SecurityLogPage() {
         {/* Footer Note */}
         {!loading && !error && logs.length > 0 && (
           <div className="mt-8 p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg">
-            <p className="text-[12px] text-slate-500 dark:text-white/50">
+            <p className="text-small text-slate-500 dark:text-white/45">
               Security logs are retained for 365 days. If you notice any
               suspicious activity, please change your password immediately and
               contact support.

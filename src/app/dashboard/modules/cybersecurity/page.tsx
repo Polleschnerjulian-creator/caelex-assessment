@@ -767,13 +767,13 @@ function CybersecurityPageContent() {
     <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
           MODULE 04
         </p>
-        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
+        <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
           Cybersecurity & Resilience
         </h1>
-        <p className="text-[14px] text-slate-600 dark:text-white/70">
+        <p className="text-body-lg text-slate-600 dark:text-white/70">
           NIS2-aligned cybersecurity assessment (Art. 74-95)
         </p>
       </div>
@@ -782,16 +782,16 @@ function CybersecurityPageContent() {
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-semibold text-slate-900 dark:text-white">
+            <p className="text-display font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.maturityScore || 0}%
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
               maturity score
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
             <p
-              className={`text-[18px] font-medium ${
+              className={`text-heading font-medium ${
                 maturityInfo.color === "red"
                   ? "text-red-600 dark:text-red-400"
                   : maturityInfo.color === "orange"
@@ -805,15 +805,15 @@ function CybersecurityPageContent() {
             >
               {maturityInfo.label.split(" ")[0]}
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
               maturity level
             </p>
           </div>
           <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
-            <p className="text-[32px] font-semibold text-green-600 dark:text-green-400">
+            <p className="text-display font-semibold text-green-600 dark:text-green-400">
               {metrics.compliant}/{metrics.total}
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
               requirements compliant
             </p>
           </div>
@@ -830,13 +830,13 @@ function CybersecurityPageContent() {
                   className="text-emerald-600 dark:text-emerald-400"
                 />
               )}
-              <p className="text-[14px] font-medium text-slate-900 dark:text-white">
+              <p className="text-body-lg font-medium text-slate-900 dark:text-white">
                 {selectedAssessment.isSimplifiedRegime
                   ? "Simplified"
                   : "Standard"}
               </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-white/60 mt-1">
+            <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
               compliance regime
             </p>
           </div>
@@ -868,7 +868,7 @@ function CybersecurityPageContent() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-caption ${
                     activeStep === index
                       ? "bg-white text-black"
                       : activeStep > index
@@ -884,11 +884,11 @@ function CybersecurityPageContent() {
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
-                    className={`text-[13px] font-medium ${activeStep === index ? "text-white" : "text-white/60"}`}
+                    className={`text-body font-medium ${activeStep === index ? "text-white" : "text-white/45"}`}
                   >
                     {step.label}
                   </p>
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-caption text-white/45">
                     {step.description}
                   </p>
                 </div>
@@ -920,12 +920,12 @@ function CybersecurityPageContent() {
             {assessments.length > 0 && !showNewAssessment && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-caption uppercase tracking-[0.2em] text-white/30">
                     Your Security Assessments
                   </p>
                   <button
                     onClick={() => setShowNewAssessment(true)}
-                    className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                    className="flex items-center gap-2 text-small text-white/45 hover:text-white/70 transition-colors"
                   >
                     <Plus size={14} />
                     New Assessment
@@ -949,17 +949,17 @@ function CybersecurityPageContent() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <Shield size={18} className="text-white/60" />
-                          <span className="text-[15px] font-medium text-white">
+                          <Shield size={18} className="text-white/45" />
+                          <span className="text-subtitle font-medium text-white">
                             {assessment.assessmentName || "Unnamed Assessment"}
                           </span>
                           {assessment.isSimplifiedRegime && (
-                            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
+                            <span className="text-micro uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
                               Simplified
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-[12px] text-white/70">
+                        <div className="flex items-center gap-4 text-small text-white/70">
                           <span className="flex items-center gap-1.5">
                             {organizationSizeConfig[
                               assessment.organizationSize as OrganizationSize
@@ -970,7 +970,7 @@ function CybersecurityPageContent() {
                           </span>
                         </div>
                       </div>
-                      <ChevronRight size={18} className="text-white/60" />
+                      <ChevronRight size={18} className="text-white/45" />
                     </div>
                   </button>
                 ))}
@@ -981,10 +981,10 @@ function CybersecurityPageContent() {
             {(assessments.length === 0 || showNewAssessment) && (
               <div className="space-y-6">
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                  <h2 className="text-[16px] font-medium text-white mb-4">
+                  <h2 className="text-title font-medium text-white mb-4">
                     Security Profile
                   </h2>
-                  <p className="text-[13px] text-white/60 mb-6">
+                  <p className="text-body text-white/45 mb-6">
                     Define your organization&apos;s security profile to
                     determine applicable requirements.
                   </p>
@@ -992,7 +992,7 @@ function CybersecurityPageContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Assessment Name */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Assessment Name (optional)
                       </label>
                       <input
@@ -1000,13 +1000,13 @@ function CybersecurityPageContent() {
                         value={assessmentName}
                         onChange={(e) => setAssessmentName(e.target.value)}
                         placeholder="e.g., Main Operations Assessment"
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       />
                     </div>
 
                     {/* Organization Size */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Organization Size *
                       </label>
                       <select
@@ -1018,7 +1018,7 @@ function CybersecurityPageContent() {
                               .value as OrganizationSize,
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       >
                         <option value="">Select size...</option>
                         {Object.entries(organizationSizeConfig).map(
@@ -1033,7 +1033,7 @@ function CybersecurityPageContent() {
 
                     {/* Space Segment Complexity */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Space Segment Complexity *
                       </label>
                       <select
@@ -1045,7 +1045,7 @@ function CybersecurityPageContent() {
                               .value as SpaceSegmentComplexity,
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       >
                         <option value="">Select complexity...</option>
                         {Object.entries(spaceSegmentConfig).map(
@@ -1062,7 +1062,7 @@ function CybersecurityPageContent() {
                     {form.spaceSegmentComplexity &&
                       form.spaceSegmentComplexity !== "ground_only" && (
                         <div>
-                          <label className="block text-[12px] text-white/60 mb-2">
+                          <label className="block text-small text-white/45 mb-2">
                             Number of Satellites
                           </label>
                           <input
@@ -1078,14 +1078,14 @@ function CybersecurityPageContent() {
                               }))
                             }
                             placeholder="e.g., 5"
-                            className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                            className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                           />
                         </div>
                       )}
 
                     {/* Data Sensitivity */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Data Sensitivity Level *
                       </label>
                       <select
@@ -1097,7 +1097,7 @@ function CybersecurityPageContent() {
                               .value as DataSensitivityLevel,
                           }))
                         }
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       >
                         <option value="">Select sensitivity...</option>
                         {Object.entries(dataSensitivityConfig).map(
@@ -1112,7 +1112,7 @@ function CybersecurityPageContent() {
 
                     {/* Ground Station Count */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Ground Station Count
                       </label>
                       <input
@@ -1128,13 +1128,13 @@ function CybersecurityPageContent() {
                           }))
                         }
                         placeholder="e.g., 2"
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       />
                     </div>
 
                     {/* Critical Suppliers */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Critical Supplier Count
                       </label>
                       <input
@@ -1150,7 +1150,7 @@ function CybersecurityPageContent() {
                           }))
                         }
                         placeholder="e.g., 5"
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       />
                     </div>
                   </div>
@@ -1170,7 +1170,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Processes personal data
                         </span>
                       </label>
@@ -1187,7 +1187,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Handles government data
                         </span>
                       </label>
@@ -1204,7 +1204,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Has dedicated security team
                         </span>
                       </label>
@@ -1223,7 +1223,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Has incident response plan
                         </span>
                       </label>
@@ -1240,7 +1240,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Has business continuity plan
                         </span>
                       </label>
@@ -1257,7 +1257,7 @@ function CybersecurityPageContent() {
                           }
                           className="w-4 h-4 bg-white/[0.05] border border-white/[0.08] rounded"
                         />
-                        <span className="text-[13px] text-white/60">
+                        <span className="text-body text-white/45">
                           Supplier security assessed
                         </span>
                       </label>
@@ -1266,7 +1266,7 @@ function CybersecurityPageContent() {
 
                   {/* Existing Certifications */}
                   <div className="mt-6">
-                    <label className="block text-[12px] text-white/60 mb-3">
+                    <label className="block text-small text-white/45 mb-3">
                       Existing Certifications
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -1283,12 +1283,12 @@ function CybersecurityPageContent() {
                               existingCertifications: next,
                             }));
                           }}
-                          className={`px-3 py-1.5 rounded-lg text-[12px] border transition-all ${
+                          className={`px-3 py-1.5 rounded-lg text-small border transition-all ${
                             (form.existingCertifications || []).includes(
                               cert.id,
                             )
                               ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
-                              : "bg-white/[0.04] border-white/10 text-white/60 hover:border-white/[0.1]"
+                              : "bg-white/[0.04] border-white/10 text-white/45 hover:border-white/[0.1]"
                           }`}
                         >
                           {cert.label}
@@ -1315,13 +1315,13 @@ function CybersecurityPageContent() {
                       )}
                       <div>
                         <p
-                          className={`text-[14px] font-medium ${previewSimplified ? "text-green-400" : "text-emerald-400"}`}
+                          className={`text-body-lg font-medium ${previewSimplified ? "text-green-400" : "text-emerald-400"}`}
                         >
                           {previewSimplified
                             ? "Eligible for Simplified Regime (Art. 86-88)"
                             : "Standard Compliance Regime"}
                         </p>
-                        <p className="text-[12px] text-white/60 mt-0.5">
+                        <p className="text-small text-white/45 mt-0.5">
                           {previewSimplified
                             ? "Reduced requirements for micro/small operators with limited space segments"
                             : "Full compliance requirements apply based on your organization profile"}
@@ -1334,7 +1334,7 @@ function CybersecurityPageContent() {
                 {/* Preview applicable requirements */}
                 {previewRequirements.length > 0 && (
                   <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                    <h3 className="text-[14px] font-medium text-white mb-4">
+                    <h3 className="text-body-lg font-medium text-white mb-4">
                       Applicable Requirements Preview
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1351,17 +1351,17 @@ function CybersecurityPageContent() {
                             key={cat}
                             className="bg-white/[0.04] rounded-lg p-3"
                           >
-                            <p className="text-[11px] text-white/70 uppercase tracking-wider mb-1">
+                            <p className="text-caption text-white/70 uppercase tracking-wider mb-1">
                               {config.label}
                             </p>
-                            <p className="text-[18px] font-semibold text-white">
+                            <p className="text-heading font-semibold text-white">
                               {count}
                             </p>
                           </div>
                         );
                       })}
                     </div>
-                    <p className="text-[12px] text-white/70 mt-4">
+                    <p className="text-small text-white/70 mt-4">
                       {previewRequirements.length} total requirements will apply
                     </p>
                   </div>
@@ -1372,7 +1372,7 @@ function CybersecurityPageContent() {
                   {assessments.length > 0 && (
                     <button
                       onClick={() => setShowNewAssessment(false)}
-                      className="px-4 py-2 text-[13px] text-white/60 hover:text-white/60 transition-colors"
+                      className="px-4 py-2 text-body text-white/45 hover:text-white/70 transition-colors"
                     >
                       Cancel
                     </button>
@@ -1385,7 +1385,7 @@ function CybersecurityPageContent() {
                       !form.spaceSegmentComplexity ||
                       !form.dataSensitivityLevel
                     }
-                    className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-[13px] hover:bg-white/90 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {creating ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -1397,7 +1397,7 @@ function CybersecurityPageContent() {
                 </div>
 
                 {createError && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                     <AlertTriangle size={14} className="flex-shrink-0" />
                     {createError}
                   </div>
@@ -1418,13 +1418,13 @@ function CybersecurityPageContent() {
           >
             {!selectedAssessment ? (
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
-                <p className="text-[14px] text-white/60 mb-4">
+                <AlertCircle size={32} className="mx-auto text-white/45 mb-3" />
+                <p className="text-body-lg text-white/45 mb-4">
                   No assessment selected. Create a security profile first.
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
+                  className="text-body text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Security Profile
                 </button>
@@ -1435,10 +1435,10 @@ function CybersecurityPageContent() {
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-[16px] font-medium text-white mb-1">
+                      <h2 className="text-title font-medium text-white mb-1">
                         Security Maturity
                       </h2>
-                      <p className="text-[13px] text-white/60">
+                      <p className="text-body text-white/45">
                         {maturityInfo.description}
                       </p>
                     </div>
@@ -1447,7 +1447,7 @@ function CybersecurityPageContent() {
                         {selectedAssessment.maturityScore || 0}%
                       </p>
                       <p
-                        className={`text-[12px] font-medium ${
+                        className={`text-small font-medium ${
                           maturityInfo.color === "red"
                             ? "text-red-400"
                             : maturityInfo.color === "orange"
@@ -1494,10 +1494,10 @@ function CybersecurityPageContent() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className={`px-3 py-2 rounded-lg text-[12px] transition-all ${
+                    className={`px-3 py-2 rounded-lg text-small transition-all ${
                       activeCategory === null
                         ? "bg-white/[0.08] text-white"
-                        : "bg-white/[0.04] text-white/60 hover:bg-white/[0.04]"
+                        : "bg-white/[0.04] text-white/45 hover:bg-white/[0.04]"
                     }`}
                   >
                     All ({requirements.length})
@@ -1511,10 +1511,10 @@ function CybersecurityPageContent() {
                         <button
                           key={cat}
                           onClick={() => setActiveCategory(cat)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] transition-all ${
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-small transition-all ${
                             activeCategory === cat
                               ? "bg-white/[0.08] text-white"
-                              : "bg-white/[0.04] text-white/60 hover:bg-white/[0.04]"
+                              : "bg-white/[0.04] text-white/45 hover:bg-white/[0.04]"
                           }`}
                         >
                           {categoryIcons[cat]}
@@ -1593,10 +1593,10 @@ function CybersecurityPageContent() {
                               <div className="flex items-start justify-between gap-4 mb-2">
                                 <div>
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-mono text-[11px] text-white/70">
+                                    <span className="font-mono text-caption text-white/70">
                                       {req.articleRef}
                                     </span>
-                                    <h3 className="text-[14px] font-medium text-white">
+                                    <h3 className="text-body-lg font-medium text-white">
                                       {req.title}
                                     </h3>
                                     <span
@@ -1618,7 +1618,7 @@ function CybersecurityPageContent() {
                                       )}
                                   </div>
                                   {!isExpanded && fields.length > 0 && (
-                                    <p className="text-[11px] text-slate-500 dark:text-white/40 mt-1">
+                                    <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
                                       {completedFields}/{fields.length} fields
                                       completed
                                     </p>
@@ -1636,7 +1636,7 @@ function CybersecurityPageContent() {
                                   }
                                   onClick={(e) => e.stopPropagation()}
                                   aria-label={`Compliance status for ${req.title}`}
-                                  className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statConfig.color === "green" ? "text-green-400" : statConfig.color === "yellow" ? "text-yellow-400" : statConfig.color === "red" ? "text-red-400" : "text-white/60"}`}
+                                  className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statConfig.color === "green" ? "text-green-400" : statConfig.color === "yellow" ? "text-yellow-400" : statConfig.color === "red" ? "text-red-400" : "text-white/45"}`}
                                 >
                                   <option value="not_assessed">
                                     Not Assessed
@@ -1651,20 +1651,20 @@ function CybersecurityPageContent() {
                               </div>
 
                               {/* Question */}
-                              <p className="text-[13px] text-white/70 mb-2">
+                              <p className="text-body text-white/70 mb-2">
                                 {req.complianceQuestion}
                               </p>
 
                               {/* Simplified alternative notice */}
                               {selectedAssessment.isSimplifiedRegime &&
                                 req.simplifiedAlternative && (
-                                  <p className="text-[12px] text-green-400/60 italic mb-2">
+                                  <p className="text-small text-green-400/60 italic mb-2">
                                     Simplified: {req.simplifiedAlternative}
                                   </p>
                                 )}
 
                               {/* Expand/collapse indicator */}
-                              <div className="flex items-center gap-1 text-[11px] text-white/40">
+                              <div className="flex items-center gap-1 text-caption text-white/45">
                                 {isExpanded ? (
                                   <ChevronUp size={14} aria-hidden="true" />
                                 ) : (
@@ -1692,7 +1692,7 @@ function CybersecurityPageContent() {
                                 {/* Sub-question form */}
                                 {fields.length > 0 && (
                                   <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-100 dark:border-white/[0.05]">
-                                    <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-white/40 mb-3">
+                                    <p className="text-micro uppercase tracking-wider text-slate-500 dark:text-white/45 mb-3">
                                       Assessment Details
                                     </p>
                                     <AssessmentFieldForm
@@ -1716,7 +1716,7 @@ function CybersecurityPageContent() {
                                       size={14}
                                       className="text-blue-400"
                                     />
-                                    <span className="text-[12px] text-blue-400/80">
+                                    <span className="text-small text-blue-400/80">
                                       ASTRA suggests:{" "}
                                       <span className="font-medium capitalize">
                                         {statusConfig[
@@ -1732,7 +1732,7 @@ function CybersecurityPageContent() {
                                           suggested as RequirementStatus,
                                         )
                                       }
-                                      className="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-md hover:bg-blue-500/20 transition-colors"
+                                      className="ml-auto text-caption bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg hover:bg-blue-500/20 transition-colors"
                                     >
                                       Accept
                                     </button>
@@ -1742,16 +1742,16 @@ function CybersecurityPageContent() {
                                 {/* Tips */}
                                 {req.tips.length > 0 && (
                                   <div className="p-3 bg-white/[0.04] rounded-lg">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/60 mb-2">
+                                    <p className="text-micro uppercase tracking-wider text-white/45 mb-2">
                                       Tips
                                     </p>
                                     <ul className="space-y-1">
                                       {req.tips.map((tip, i) => (
                                         <li
                                           key={i}
-                                          className="text-[12px] text-white/60 flex items-start gap-2"
+                                          className="text-small text-white/45 flex items-start gap-2"
                                         >
-                                          <span className="text-white/60">
+                                          <span className="text-white/45">
                                             •
                                           </span>
                                           {tip}
@@ -1764,18 +1764,18 @@ function CybersecurityPageContent() {
                                 {/* Evidence Required */}
                                 {req.evidenceRequired.length > 0 && (
                                   <div className="p-3 bg-white/[0.04] rounded-lg">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/60 mb-2">
+                                    <p className="text-micro uppercase tracking-wider text-white/45 mb-2">
                                       Evidence Required
                                     </p>
                                     <ul className="space-y-1">
                                       {req.evidenceRequired.map((ev, i) => (
                                         <li
                                           key={i}
-                                          className="text-[12px] text-white/60 flex items-start gap-2"
+                                          className="text-small text-white/45 flex items-start gap-2"
                                         >
                                           <CheckCircle2
                                             size={10}
-                                            className="mt-0.5 text-white/60"
+                                            className="mt-0.5 text-white/45"
                                           />
                                           {ev}
                                         </li>
@@ -1802,17 +1802,17 @@ function CybersecurityPageContent() {
                                 {/* References */}
                                 <div className="flex flex-wrap gap-2">
                                   {req.nis2Reference && (
-                                    <span className="text-[10px] px-2 py-1 rounded bg-purple-500/10 text-purple-400">
+                                    <span className="text-micro px-2 py-1 rounded bg-purple-500/10 text-purple-400">
                                       {req.nis2Reference}
                                     </span>
                                   )}
                                   {req.isoReference && (
-                                    <span className="text-[10px] px-2 py-1 rounded bg-emerald-500/10 text-emerald-400">
+                                    <span className="text-micro px-2 py-1 rounded bg-emerald-500/10 text-emerald-400">
                                       {req.isoReference}
                                     </span>
                                   )}
                                   {req.implementationTimeWeeks && (
-                                    <span className="text-[10px] px-2 py-1 rounded bg-white/[0.05] text-white/60">
+                                    <span className="text-micro px-2 py-1 rounded bg-white/[0.05] text-white/45">
                                       ~{req.implementationTimeWeeks} weeks to
                                       implement
                                     </span>
@@ -1842,13 +1842,13 @@ function CybersecurityPageContent() {
           >
             {!selectedAssessment ? (
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
-                <AlertCircle size={32} className="mx-auto text-white/60 mb-3" />
-                <p className="text-[14px] text-white/60 mb-4">
+                <AlertCircle size={32} className="mx-auto text-white/45 mb-3" />
+                <p className="text-body-lg text-white/45 mb-4">
                   No assessment selected. Create a security profile first.
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
+                  className="text-body text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to Security Profile
                 </button>
@@ -1856,10 +1856,10 @@ function CybersecurityPageContent() {
             ) : !generatedFramework ? (
               <div className="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
                 <FileText size={48} className="mx-auto text-white/10 mb-4" />
-                <h2 className="text-[18px] font-medium text-white mb-2">
+                <h2 className="text-heading font-medium text-white mb-2">
                   Generate Cybersecurity Framework
                 </h2>
-                <p className="text-[13px] text-white/60 mb-6 max-w-md mx-auto">
+                <p className="text-body text-white/45 mb-6 max-w-md mx-auto">
                   Based on your security profile and compliance assessment,
                   generate a comprehensive cybersecurity framework document with
                   gap analysis and recommendations.
@@ -1869,7 +1869,7 @@ function CybersecurityPageContent() {
                   <button
                     onClick={generateFramework}
                     disabled={generatingFramework}
-                    className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium text-[14px] hover:bg-white/90 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium text-body-lg hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {generatingFramework ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -1879,7 +1879,7 @@ function CybersecurityPageContent() {
                     Generate Framework
                   </button>
 
-                  <p className="text-[11px] text-white/60">
+                  <p className="text-caption text-white/45">
                     Maturity Score: {selectedAssessment.maturityScore || 0}% •{" "}
                     {requirements.length} requirements assessed
                   </p>
@@ -1891,10 +1891,10 @@ function CybersecurityPageContent() {
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-[18px] font-medium text-white mb-1">
+                      <h2 className="text-heading font-medium text-white mb-1">
                         Cybersecurity Framework
                       </h2>
-                      <p className="text-[12px] text-white/70">
+                      <p className="text-small text-white/70">
                         Generated{" "}
                         {new Date(
                           generatedFramework.generatedAt,
@@ -1904,7 +1904,7 @@ function CybersecurityPageContent() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => exportFrameworkPDF(generatedFramework)}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-white text-black hover:bg-white/90 transition-colors"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-small font-medium bg-white text-black hover:bg-white/90 transition-colors"
                       >
                         <Download size={14} />
                         Export PDF
@@ -1922,7 +1922,7 @@ function CybersecurityPageContent() {
                           a.click();
                           URL.revokeObjectURL(url);
                         }}
-                        className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-small text-white/45 hover:text-white/70 transition-colors"
                       >
                         <Download size={14} />
                         JSON
@@ -1932,45 +1932,45 @@ function CybersecurityPageContent() {
 
                   {/* Maturity Overview */}
                   <div className="mb-6 p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-4">
+                    <h3 className="text-body font-medium text-white mb-4">
                       Maturity Assessment
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <p className="text-[32px] font-semibold text-white">
+                        <p className="text-display font-semibold text-white">
                           {generatedFramework.maturityAssessment.overallScore}%
                         </p>
-                        <p className="text-[11px] text-white/70">
+                        <p className="text-caption text-white/70">
                           Overall Score
                         </p>
                       </div>
                       <div>
-                        <p className="text-[16px] font-medium text-white">
+                        <p className="text-title font-medium text-white">
                           {generatedFramework.maturityAssessment.maturityLevel}
                         </p>
-                        <p className="text-[11px] text-white/70">
+                        <p className="text-caption text-white/70">
                           Maturity Level
                         </p>
                       </div>
                       <div>
-                        <p className="text-[16px] font-semibold text-green-400">
+                        <p className="text-title font-semibold text-green-400">
                           {generatedFramework.complianceStatus.compliant}
                         </p>
-                        <p className="text-[11px] text-white/70">Compliant</p>
+                        <p className="text-caption text-white/70">Compliant</p>
                       </div>
                       <div>
-                        <p className="text-[16px] font-semibold text-red-400">
+                        <p className="text-title font-semibold text-red-400">
                           {generatedFramework.complianceStatus.nonCompliant +
                             generatedFramework.complianceStatus.notAssessed}
                         </p>
-                        <p className="text-[11px] text-white/70">Gaps</p>
+                        <p className="text-caption text-white/70">Gaps</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Category Scores */}
                   <div className="mb-6 p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-4">
+                    <h3 className="text-body font-medium text-white mb-4">
                       Scores by Category
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1984,13 +1984,13 @@ function CybersecurityPageContent() {
                             key={cat}
                             className="p-3 bg-white/[0.04] rounded-lg"
                           >
-                            <p className="text-[10px] text-white/70 uppercase tracking-wider mb-1">
+                            <p className="text-micro text-white/70 uppercase tracking-wider mb-1">
                               {config?.label || cat}
                             </p>
-                            <p className="text-[20px] font-semibold text-white">
+                            <p className="text-heading-lg font-semibold text-white">
                               {scores.score}%
                             </p>
-                            <p className="text-[10px] text-white/60">
+                            <p className="text-micro text-white/45">
                               {scores.compliant}/{scores.total} compliant
                             </p>
                           </div>
@@ -2003,13 +2003,13 @@ function CybersecurityPageContent() {
                   {(generatedFramework.gapAnalysis.critical.length > 0 ||
                     generatedFramework.gapAnalysis.major.length > 0) && (
                     <div className="mb-6 p-4 bg-white/[0.04] rounded-lg">
-                      <h3 className="text-[13px] font-medium text-white mb-4">
+                      <h3 className="text-body font-medium text-white mb-4">
                         Gap Analysis
                       </h3>
 
                       {generatedFramework.gapAnalysis.critical.length > 0 && (
                         <div className="mb-4">
-                          <p className="text-[11px] uppercase tracking-wider text-red-400/60 mb-2">
+                          <p className="text-caption uppercase tracking-wider text-red-400/60 mb-2">
                             Critical Gaps (
                             {generatedFramework.gapAnalysis.critical.length})
                           </p>
@@ -2025,14 +2025,14 @@ function CybersecurityPageContent() {
                                       size={14}
                                       className="text-red-400"
                                     />
-                                    <span className="text-[12px] text-white/60">
+                                    <span className="text-small text-white/45">
                                       {gap.title}
                                     </span>
-                                    <span className="font-mono text-[10px] text-white/70">
+                                    <span className="font-mono text-micro text-white/70">
                                       {gap.articleRef}
                                     </span>
                                   </div>
-                                  <span className="text-[10px] text-white/70">
+                                  <span className="text-micro text-white/70">
                                     ~{gap.implementationWeeks}w
                                   </span>
                                 </div>
@@ -2044,7 +2044,7 @@ function CybersecurityPageContent() {
 
                       {generatedFramework.gapAnalysis.major.length > 0 && (
                         <div>
-                          <p className="text-[11px] uppercase tracking-wider text-orange-400/60 mb-2">
+                          <p className="text-caption uppercase tracking-wider text-orange-400/60 mb-2">
                             Major Gaps (
                             {generatedFramework.gapAnalysis.major.length})
                           </p>
@@ -2061,21 +2061,21 @@ function CybersecurityPageContent() {
                                       size={14}
                                       className="text-orange-400"
                                     />
-                                    <span className="text-[12px] text-white/60">
+                                    <span className="text-small text-white/45">
                                       {gap.title}
                                     </span>
-                                    <span className="font-mono text-[10px] text-white/70">
+                                    <span className="font-mono text-micro text-white/70">
                                       {gap.articleRef}
                                     </span>
                                   </div>
-                                  <span className="text-[10px] text-white/70">
+                                  <span className="text-micro text-white/70">
                                     ~{gap.implementationWeeks}w
                                   </span>
                                 </div>
                               ))}
                             {generatedFramework.gapAnalysis.major.length >
                               5 && (
-                              <p className="text-[11px] text-white/60 text-center">
+                              <p className="text-caption text-white/45 text-center">
                                 +
                                 {generatedFramework.gapAnalysis.major.length -
                                   5}{" "}
@@ -2090,9 +2090,9 @@ function CybersecurityPageContent() {
 
                   {/* Implementation Timeline */}
                   <div className="mb-6 p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-4">
+                    <h3 className="text-body font-medium text-white mb-4">
                       Implementation Timeline
-                      <span className="ml-2 text-[11px] text-white/70 font-normal">
+                      <span className="ml-2 text-caption text-white/70 font-normal">
                         (~
                         {
                           generatedFramework.implementationPlan
@@ -2108,14 +2108,14 @@ function CybersecurityPageContent() {
                             key={i}
                             className="p-3 bg-white/[0.04] rounded-lg"
                           >
-                            <p className="text-[12px] font-medium text-white mb-2">
+                            <p className="text-small font-medium text-white mb-2">
                               {phase.name}
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {phase.requirements.map((req) => (
                                 <span
                                   key={req.id}
-                                  className={`text-[10px] px-2 py-1 rounded ${
+                                  className={`text-micro px-2 py-1 rounded ${
                                     req.priority === "critical"
                                       ? "bg-red-500/10 text-red-400"
                                       : req.priority === "major"
@@ -2135,14 +2135,14 @@ function CybersecurityPageContent() {
 
                   {/* Recommendations */}
                   <div className="p-4 bg-white/[0.04] rounded-lg">
-                    <h3 className="text-[13px] font-medium text-white mb-4">
+                    <h3 className="text-body font-medium text-white mb-4">
                       Recommendations
                     </h3>
                     <ul className="space-y-2">
                       {generatedFramework.recommendations.map((rec, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-3 text-[12px] text-white/70"
+                          className="flex items-start gap-3 text-small text-white/70"
                         >
                           <Info
                             size={14}
@@ -2159,7 +2159,7 @@ function CybersecurityPageContent() {
                 <div className="flex justify-center">
                   <button
                     onClick={() => setGeneratedFramework(null)}
-                    className="text-[12px] text-white/70 hover:text-white/70 transition-colors"
+                    className="text-small text-white/70 hover:text-white/70 transition-colors"
                   >
                     Regenerate Framework
                   </button>

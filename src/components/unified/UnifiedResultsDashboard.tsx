@@ -87,13 +87,13 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
+          <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
             Unified Compliance Profile
           </span>
           <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
             Your Regulatory Landscape
           </h1>
-          <p className="text-[15px] text-white/50 max-w-2xl mx-auto">
+          <p className="text-subtitle text-white/45 max-w-2xl mx-auto">
             Complete analysis across EU Space Act, NIS2 Directive, and National
             Space Laws
           </p>
@@ -120,18 +120,18 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                   <Building2 className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div>
-                  <h2 className="text-[18px] font-medium text-white">
+                  <h2 className="text-heading font-medium text-white">
                     {result.companySummary.name || "Your Organization"}
                   </h2>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="flex items-center gap-1.5 text-[13px] text-white/50">
+                    <span className="flex items-center gap-1.5 text-body text-white/45">
                       <MapPin size={12} />
                       {result.companySummary.establishment}
                       {result.companySummary.isEU && (
                         <span className="text-emerald-400/70">(EU)</span>
                       )}
                     </span>
-                    <span className="flex items-center gap-1.5 text-[13px] text-white/50">
+                    <span className="flex items-center gap-1.5 text-body text-white/45">
                       <Users size={12} />
                       {result.companySummary.size}
                     </span>
@@ -144,7 +144,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 {result.companySummary.activities.map((activity) => (
                   <span
                     key={activity}
-                    className="px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-medium text-white/70 uppercase tracking-wider"
+                    className="px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] text-caption font-medium text-white/70 uppercase tracking-wider"
                   >
                     {activity}
                   </span>
@@ -169,11 +169,11 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <FileText className="w-5 h-5 text-white/40 mb-3" />
+            <FileText className="w-5 h-5 text-white/45 mb-3" />
             <div className="text-[28px] font-medium text-white">
               {result.overallSummary.totalRequirements}
             </div>
-            <div className="text-[12px] text-white/40 uppercase tracking-wider">
+            <div className="text-small text-white/45 uppercase tracking-wider">
               Total Requirements
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             >
               {result.overallSummary.overallRisk}
             </div>
-            <div className="text-[12px] text-white/40 uppercase tracking-wider">
+            <div className="text-small text-white/45 uppercase tracking-wider">
               Risk Level
             </div>
           </div>
@@ -204,12 +204,12 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <Clock className="w-5 h-5 text-white/40 mb-3" />
+            <Clock className="w-5 h-5 text-white/45 mb-3" />
             <div className="text-[28px] font-medium text-white">
               {result.overallSummary.estimatedMonths}
-              <span className="text-[16px] text-white/50 ml-1">mo</span>
+              <span className="text-title text-white/45 ml-1">mo</span>
             </div>
-            <div className="text-[12px] text-white/40 uppercase tracking-wider">
+            <div className="text-small text-white/45 uppercase tracking-wider">
               Est. Timeline
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <Target className="w-5 h-5 text-white/40 mb-3" />
+            <Target className="w-5 h-5 text-white/45 mb-3" />
             <div className="text-[28px] font-medium text-white">
               {
                 [
@@ -232,7 +232,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 ].filter(Boolean).length
               }
             </div>
-            <div className="text-[12px] text-white/40 uppercase tracking-wider">
+            <div className="text-small text-white/45 uppercase tracking-wider">
               Frameworks Apply
             </div>
           </div>
@@ -267,14 +267,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                     }`}
                   >
                     <Satellite
-                      className={`w-6 h-6 ${result.euSpaceAct.applies ? "text-amber-400" : "text-white/40"}`}
+                      className={`w-6 h-6 ${result.euSpaceAct.applies ? "text-amber-400" : "text-white/45"}`}
                     />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-[16px] font-medium text-white">
+                    <h3 className="text-title font-medium text-white">
                       EU Space Act
                     </h3>
-                    <p className="text-[13px] text-white/50">
+                    <p className="text-body text-white/45">
                       {result.euSpaceAct.applies
                         ? `${result.euSpaceAct.regime.charAt(0).toUpperCase() + result.euSpaceAct.regime.slice(1)} Regime • ${result.euSpaceAct.applicableArticleCount} Articles`
                         : "Not applicable"}
@@ -283,18 +283,18 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 </div>
                 <div className="flex items-center gap-3">
                   {result.euSpaceAct.applies ? (
-                    <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-[11px] font-medium uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-caption font-medium uppercase tracking-wider">
                       Applies 2030
                     </span>
                   ) : (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white/40 text-[11px] font-medium uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white/45 text-caption font-medium uppercase tracking-wider">
                       Exempt
                     </span>
                   )}
                   {expandedSections.euSpaceAct ? (
-                    <ChevronUp className="w-5 h-5 text-white/40" />
+                    <ChevronUp className="w-5 h-5 text-white/45" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-white/40" />
+                    <ChevronDown className="w-5 h-5 text-white/45" />
                   )}
                 </div>
               </button>
@@ -307,7 +307,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                       <div className="space-y-5">
                         {/* Regime explanation */}
                         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <p className="text-[13px] text-white/70 leading-relaxed">
+                          <p className="text-body text-white/70 leading-relaxed">
                             {result.euSpaceAct.regimeReason}
                           </p>
                         </div>
@@ -315,34 +315,34 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         {/* Stats grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-white">
+                            <div className="text-heading-lg font-medium text-white">
                               {result.euSpaceAct.applicableArticleCount}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Articles
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-white">
+                            <div className="text-heading-lg font-medium text-white">
                               {result.euSpaceAct.moduleCount}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Modules
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-amber-400 capitalize">
+                            <div className="text-heading-lg font-medium text-amber-400 capitalize">
                               {result.euSpaceAct.regime}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Regime
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-white">
+                            <div className="text-heading-lg font-medium text-white">
                               {result.euSpaceAct.operatorTypes.length}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Op. Types
                             </div>
                           </div>
@@ -351,7 +351,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         {/* Deadlines */}
                         {result.euSpaceAct.keyDeadlines.length > 0 && (
                           <div>
-                            <h4 className="text-[12px] font-medium text-white/60 uppercase tracking-wider mb-3">
+                            <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
                               Key Deadlines
                             </h4>
                             <div className="space-y-2">
@@ -359,7 +359,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                                 (deadline, i) => (
                                   <div
                                     key={i}
-                                    className="flex items-center gap-3 text-[13px]"
+                                    className="flex items-center gap-3 text-body"
                                   >
                                     <Calendar
                                       size={14}
@@ -368,7 +368,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                                     <span className="text-white/70">
                                       {deadline.date}
                                     </span>
-                                    <span className="text-white/50">
+                                    <span className="text-white/45">
                                       {deadline.description}
                                     </span>
                                   </div>
@@ -381,7 +381,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         {/* Priority actions */}
                         {result.euSpaceAct.priorityActions.length > 0 && (
                           <div>
-                            <h4 className="text-[12px] font-medium text-white/60 uppercase tracking-wider mb-3">
+                            <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
                               Priority Actions
                             </h4>
                             <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                                 (action, i) => (
                                   <div
                                     key={i}
-                                    className="flex items-start gap-3 text-[13px]"
+                                    className="flex items-start gap-3 text-body"
                                   >
                                     <Zap
                                       size={14}
@@ -407,7 +407,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                       </div>
                     ) : (
                       <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <p className="text-[13px] text-white/50 leading-relaxed">
+                        <p className="text-body text-white/45 leading-relaxed">
                           {result.euSpaceAct.regimeReason}
                         </p>
                       </div>
@@ -445,14 +445,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                     }`}
                   >
                     <Shield
-                      className={`w-6 h-6 ${result.nis2.applies ? "text-emerald-400" : "text-white/40"}`}
+                      className={`w-6 h-6 ${result.nis2.applies ? "text-emerald-400" : "text-white/45"}`}
                     />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-[16px] font-medium text-white">
+                    <h3 className="text-title font-medium text-white">
                       NIS2 Directive
                     </h3>
-                    <p className="text-[13px] text-white/50">
+                    <p className="text-body text-white/45">
                       {result.nis2.applies
                         ? `${result.nis2.entityClassification.charAt(0).toUpperCase() + result.nis2.entityClassification.slice(1)} Entity • ${result.nis2.requirementCount} Requirements`
                         : "Not applicable"}
@@ -461,18 +461,18 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 </div>
                 <div className="flex items-center gap-3">
                   {result.nis2.applies ? (
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-[11px] font-medium uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-caption font-medium uppercase tracking-wider">
                       In Force
                     </span>
                   ) : (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white/40 text-[11px] font-medium uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-white/[0.06] text-white/45 text-caption font-medium uppercase tracking-wider">
                       Out of Scope
                     </span>
                   )}
                   {expandedSections.nis2 ? (
-                    <ChevronUp className="w-5 h-5 text-white/40" />
+                    <ChevronUp className="w-5 h-5 text-white/45" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-white/40" />
+                    <ChevronDown className="w-5 h-5 text-white/45" />
                   )}
                 </div>
               </button>
@@ -485,7 +485,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                       <div className="space-y-5">
                         {/* Classification explanation */}
                         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <p className="text-[13px] text-white/70 leading-relaxed">
+                          <p className="text-body text-white/70 leading-relaxed">
                             {result.nis2.classificationReason}
                           </p>
                         </div>
@@ -493,34 +493,34 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         {/* Stats grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-white">
+                            <div className="text-heading-lg font-medium text-white">
                               {result.nis2.requirementCount}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Requirements
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-red-400">
+                            <div className="text-heading-lg font-medium text-red-400">
                               {result.nis2.complianceGapCount}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Gaps
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-emerald-400 capitalize">
+                            <div className="text-heading-lg font-medium text-emerald-400 capitalize">
                               {result.nis2.entityClassification}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Classification
                             </div>
                           </div>
                           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center">
-                            <div className="text-[20px] font-medium text-white">
+                            <div className="text-heading-lg font-medium text-white">
                               {result.nis2.estimatedReadiness}%
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-micro text-white/45 uppercase tracking-wider">
                               Readiness
                             </div>
                           </div>
@@ -528,8 +528,8 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
                         {/* Readiness bar */}
                         <div>
-                          <div className="flex justify-between text-[12px] mb-2">
-                            <span className="text-white/50">
+                          <div className="flex justify-between text-small mb-2">
+                            <span className="text-white/45">
                               Compliance Readiness
                             </span>
                             <span className="text-emerald-400">
@@ -549,14 +549,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         {/* Priority actions */}
                         {result.nis2.priorityActions.length > 0 && (
                           <div>
-                            <h4 className="text-[12px] font-medium text-white/60 uppercase tracking-wider mb-3">
+                            <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
                               Priority Actions
                             </h4>
                             <div className="space-y-2">
                               {result.nis2.priorityActions.map((action, i) => (
                                 <div
                                   key={i}
-                                  className="flex items-start gap-3 text-[13px]"
+                                  className="flex items-start gap-3 text-body"
                                 >
                                   <Zap
                                     size={14}
@@ -573,7 +573,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                       </div>
                     ) : (
                       <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <p className="text-[13px] text-white/50 leading-relaxed">
+                        <p className="text-body text-white/45 leading-relaxed">
                           {result.nis2.classificationReason}
                         </p>
                       </div>
@@ -611,14 +611,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                     }`}
                   >
                     <Globe
-                      className={`w-6 h-6 ${result.nationalSpaceLaw.analyzedCount > 0 ? "text-blue-400" : "text-white/40"}`}
+                      className={`w-6 h-6 ${result.nationalSpaceLaw.analyzedCount > 0 ? "text-blue-400" : "text-white/45"}`}
                     />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-[16px] font-medium text-white">
+                    <h3 className="text-title font-medium text-white">
                       National Space Laws
                     </h3>
-                    <p className="text-[13px] text-white/50">
+                    <p className="text-body text-white/45">
                       {result.nationalSpaceLaw.analyzedCount > 0
                         ? `${result.nationalSpaceLaw.analyzedCount} Jurisdictions Analyzed`
                         : "No jurisdictions selected"}
@@ -627,14 +627,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 </div>
                 <div className="flex items-center gap-3">
                   {result.nationalSpaceLaw.recommendedJurisdiction && (
-                    <span className="px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-[11px] font-medium uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-caption font-medium uppercase tracking-wider">
                       {result.nationalSpaceLaw.recommendedJurisdictionName}
                     </span>
                   )}
                   {expandedSections.nationalLaw ? (
-                    <ChevronUp className="w-5 h-5 text-white/40" />
+                    <ChevronUp className="w-5 h-5 text-white/45" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-white/40" />
+                    <ChevronDown className="w-5 h-5 text-white/45" />
                   )}
                 </div>
               </button>
@@ -649,18 +649,18 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                         <div className="p-4 rounded-xl bg-blue-500/[0.08] border border-blue-500/20">
                           <div className="flex items-center gap-2 mb-2">
                             <CheckCircle size={16} className="text-blue-400" />
-                            <span className="text-[13px] font-medium text-blue-400">
+                            <span className="text-body font-medium text-blue-400">
                               Recommendation
                             </span>
                           </div>
-                          <p className="text-[13px] text-white/70 leading-relaxed">
+                          <p className="text-body text-white/70 leading-relaxed">
                             {result.nationalSpaceLaw.recommendationReason}
                           </p>
                         </div>
 
                         {/* Jurisdiction scores */}
                         <div>
-                          <h4 className="text-[12px] font-medium text-white/60 uppercase tracking-wider mb-3">
+                          <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
                             Jurisdiction Comparison
                           </h4>
                           <div className="space-y-3">
@@ -671,15 +671,15 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                               >
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-3">
-                                    <span className="text-[11px] font-medium text-white/40 w-5">
+                                    <span className="text-caption font-medium text-white/45 w-5">
                                       #{i + 1}
                                     </span>
-                                    <span className="text-[14px] font-medium text-white">
+                                    <span className="text-body-lg font-medium text-white">
                                       {jur.name}
                                     </span>
                                   </div>
                                   <span
-                                    className={`text-[14px] font-medium ${
+                                    className={`text-body-lg font-medium ${
                                       jur.score >= 70
                                         ? "text-emerald-400"
                                         : jur.score >= 50
@@ -709,7 +709,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                       </div>
                     ) : (
                       <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                        <p className="text-[13px] text-white/50 leading-relaxed">
+                        <p className="text-body text-white/45 leading-relaxed">
                           {result.nationalSpaceLaw.recommendationReason}
                         </p>
                       </div>
@@ -737,7 +737,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             >
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-[15px] font-medium text-emerald-400">
+                <h3 className="text-subtitle font-medium text-emerald-400">
                   Immediate Actions Required
                 </h3>
               </div>
@@ -745,11 +745,11 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                 {result.overallSummary.immediateActions.map((action, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-[11px] font-medium text-emerald-400">
+                      <span className="text-caption font-medium text-emerald-400">
                         {i + 1}
                       </span>
                     </div>
-                    <p className="text-[13px] text-white/70 leading-relaxed">
+                    <p className="text-body text-white/70 leading-relaxed">
                       {action}
                     </p>
                   </div>
@@ -778,7 +778,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         >
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-3 w-full max-w-md mx-auto px-8 py-5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[16px] font-medium hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all duration-300 group"
+            className="flex items-center justify-center gap-3 w-full max-w-md mx-auto px-8 py-5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-title font-medium hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all duration-300 group"
           >
             <LayoutDashboard size={20} />
             Go to Dashboard
@@ -787,7 +787,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
               className="group-hover:translate-x-1 transition-transform"
             />
           </Link>
-          <p className="text-center text-[12px] text-white/40 mt-3">
+          <p className="text-center text-small text-white/45 mt-3">
             Track your compliance progress and manage all requirements
           </p>
         </motion.div>
@@ -811,14 +811,14 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
           >
             <Download size={14} />
             Export JSON
           </button>
           <button
             onClick={onRestart}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-[13px] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
           >
             <RotateCcw size={14} />
             Start Over
@@ -830,7 +830,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-white/25 text-[11px] tracking-[0.05em] mt-12"
+          className="text-center text-white/25 text-caption tracking-[0.05em] mt-12"
         >
           Assessment ID: {result.assessmentId} • Generated{" "}
           {new Date(result.completedAt).toLocaleDateString()}

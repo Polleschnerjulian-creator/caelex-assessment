@@ -294,13 +294,13 @@ function DocumentsPageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
+          <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-2">
             DOCUMENTS
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Document Vault
           </h1>
-          <p className="text-slate-500 dark:text-white/60 mt-1">
+          <p className="text-slate-500 dark:text-white/45 mt-1">
             Secure storage for compliance documents and certificates
           </p>
         </div>
@@ -323,7 +323,7 @@ function DocumentsPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.total}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Total Documents
                   </p>
                 </div>
@@ -344,7 +344,7 @@ function DocumentsPageContent() {
                     className={
                       stats.expired > 0
                         ? "text-red-400"
-                        : "text-slate-400 dark:text-white/40"
+                        : "text-slate-400 dark:text-white/45"
                     }
                   />
                 </div>
@@ -354,7 +354,7 @@ function DocumentsPageContent() {
                   >
                     {stats.expired}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Expired
                   </p>
                 </div>
@@ -372,7 +372,7 @@ function DocumentsPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.expiringThisMonth}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Expiring Soon
                   </p>
                 </div>
@@ -390,7 +390,7 @@ function DocumentsPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.completeness}%
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Completeness
                   </p>
                 </div>
@@ -419,7 +419,7 @@ function DocumentsPageContent() {
               ${
                 activeStep === step.id
                   ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/50 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
+                  : "text-slate-500 dark:text-white/45 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
               }
             `}
           >
@@ -446,7 +446,7 @@ function DocumentsPageContent() {
                 <div className="flex-1 relative">
                   <Search
                     size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
                     aria-hidden="true"
                   />
                   <label htmlFor="doc-search" className="sr-only">
@@ -510,7 +510,7 @@ function DocumentsPageContent() {
                             {categoryIcons[category] || <FileText size={16} />}
                           </div>
                           {catInfo?.label || category}
-                          <span className="text-slate-400 dark:text-white/40 text-sm font-normal ml-2">
+                          <span className="text-slate-400 dark:text-white/45 text-sm font-normal ml-2">
                             {docs.length} document{docs.length !== 1 ? "s" : ""}
                           </span>
                         </CardTitle>
@@ -522,7 +522,7 @@ function DocumentsPageContent() {
                             className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-white/[0.04] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="text-slate-500 dark:text-white/60">
+                              <div className="text-slate-500 dark:text-white/45">
                                 {categoryIcons[doc.category] || (
                                   <FileText size={16} />
                                 )}
@@ -532,11 +532,11 @@ function DocumentsPageContent() {
                                   {doc.name}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-slate-400 dark:text-white/40">
+                                  <span className="text-xs text-slate-400 dark:text-white/45">
                                     {formatFileSize(doc.fileSize)}
                                   </span>
                                   {doc.regulatoryRef && (
-                                    <span className="text-xs text-slate-400 dark:text-white/40">
+                                    <span className="text-xs text-slate-400 dark:text-white/45">
                                       | {doc.regulatoryRef}
                                     </span>
                                   )}
@@ -561,7 +561,7 @@ function DocumentsPageContent() {
                               >
                                 <Eye
                                   size={14}
-                                  className="text-slate-400 dark:text-white/40"
+                                  className="text-slate-400 dark:text-white/45"
                                   aria-hidden="true"
                                 />
                               </button>
@@ -572,7 +572,7 @@ function DocumentsPageContent() {
                               >
                                 <Download
                                   size={14}
-                                  className="text-slate-400 dark:text-white/40"
+                                  className="text-slate-400 dark:text-white/45"
                                   aria-hidden="true"
                                 />
                               </button>
@@ -601,7 +601,7 @@ function DocumentsPageContent() {
                   {/* Metadata form */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Document Name *
                       </label>
                       <input
@@ -615,7 +615,7 @@ function DocumentsPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Category *
                       </label>
                       <select
@@ -636,7 +636,7 @@ function DocumentsPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Issue Date
                       </label>
                       <input
@@ -652,7 +652,7 @@ function DocumentsPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Expiry Date
                       </label>
                       <input
@@ -668,7 +668,7 @@ function DocumentsPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Linked Module
                       </label>
                       <select
@@ -691,7 +691,7 @@ function DocumentsPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Regulatory Reference
                       </label>
                       <input
@@ -708,7 +708,7 @@ function DocumentsPageContent() {
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Description
                       </label>
                       <textarea
@@ -792,7 +792,7 @@ function DocumentsPageContent() {
                             <p className="font-medium text-slate-900 dark:text-white">
                               {doc.name}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-white/50">
+                            <p className="text-xs text-slate-500 dark:text-white/45">
                               Expired:{" "}
                               {new Date(doc.expiryDate!).toLocaleDateString()}
                               {doc.regulatoryRef && ` | ${doc.regulatoryRef}`}
@@ -823,10 +823,10 @@ function DocumentsPageContent() {
                         size={48}
                         className="mx-auto text-emerald-400/50 mb-4"
                       />
-                      <p className="text-slate-500 dark:text-white/60">
+                      <p className="text-slate-500 dark:text-white/45">
                         No documents expiring soon
                       </p>
-                      <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
+                      <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
                         All your documents are up to date
                       </p>
                     </div>
@@ -859,7 +859,7 @@ function DocumentsPageContent() {
                                 <p className="font-medium text-slate-900 dark:text-white">
                                   {doc.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-white/50">
+                                <p className="text-xs text-slate-500 dark:text-white/45">
                                   {
                                     categoryDisplayInfo.find(
                                       (c) => c.id === doc.category,
@@ -881,7 +881,7 @@ function DocumentsPageContent() {
                                 >
                                   {days} days
                                 </span>
-                                <p className="text-xs text-slate-400 dark:text-white/40">
+                                <p className="text-xs text-slate-400 dark:text-white/45">
                                   {new Date(
                                     doc.expiryDate!,
                                   ).toLocaleDateString()}
@@ -912,7 +912,7 @@ function DocumentsPageContent() {
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                         Overall Compliance
                       </h3>
-                      <p className="text-sm text-slate-500 dark:text-white/50">
+                      <p className="text-sm text-slate-500 dark:text-white/45">
                         Document completeness across all modules
                       </p>
                     </div>
@@ -971,7 +971,7 @@ function DocumentsPageContent() {
                             <h4 className="font-medium text-slate-900 dark:text-white">
                               {module.module}
                             </h4>
-                            <p className="text-xs text-slate-500 dark:text-white/50">
+                            <p className="text-xs text-slate-500 dark:text-white/45">
                               {module.present} of {module.required} required
                               documents
                             </p>
@@ -1009,7 +1009,7 @@ function DocumentsPageContent() {
 
                       {module.missing.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5">
-                          <p className="text-xs text-slate-400 dark:text-white/40 mb-2">
+                          <p className="text-xs text-slate-400 dark:text-white/45 mb-2">
                             Missing documents:
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1053,7 +1053,7 @@ function DocumentsPageContent() {
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/60"
+                  className="text-slate-500 dark:text-white/45"
                   aria-hidden="true"
                 />
               </button>
@@ -1063,7 +1063,7 @@ function DocumentsPageContent() {
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Document Name *
                   </label>
                   <input
@@ -1077,7 +1077,7 @@ function DocumentsPageContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Category *
                   </label>
                   <select
@@ -1097,7 +1097,7 @@ function DocumentsPageContent() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Issue Date
                   </label>
                   <input
@@ -1113,7 +1113,7 @@ function DocumentsPageContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Expiry Date
                   </label>
                   <input
@@ -1131,7 +1131,7 @@ function DocumentsPageContent() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Linked Module
                   </label>
                   <select
@@ -1154,7 +1154,7 @@ function DocumentsPageContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Regulatory Reference
                   </label>
                   <input
@@ -1172,7 +1172,7 @@ function DocumentsPageContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                   Description
                 </label>
                 <textarea

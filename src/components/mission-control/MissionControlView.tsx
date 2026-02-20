@@ -197,7 +197,7 @@ export default function MissionControlView() {
             className="w-8 h-8 text-white/20 animate-spin mx-auto mb-3"
             aria-hidden="true"
           />
-          <p className="text-[12px] text-white/40">
+          <p className="text-small text-white/45">
             {t("missionControl.loadingSatellites")}
           </p>
         </div>
@@ -223,7 +223,7 @@ export default function MissionControlView() {
         {/* Top overlay: title + search + filters */}
         <div className="absolute top-4 left-4 right-4 flex items-center gap-3 z-20 pointer-events-none">
           <div className="pointer-events-auto">
-            <h1 className="text-[16px] font-medium text-white/90 whitespace-nowrap">
+            <h1 className="text-title font-medium text-white/90 whitespace-nowrap">
               {t("missionControl.title")}
             </h1>
           </div>
@@ -251,7 +251,7 @@ export default function MissionControlView() {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder={t("missionControl.searchPlaceholder")}
-                className="w-full pl-9 pr-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/20"
+                className="w-full pl-9 pr-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-small text-white placeholder-white/30 focus:outline-none focus:border-white/20"
               />
             </div>
 
@@ -280,10 +280,10 @@ export default function MissionControlView() {
                         }`}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] text-white/90 truncate">
+                        <p className="text-small text-white/90 truncate">
                           {sat.name}
                         </p>
-                        <p className="text-[10px] text-white/40">
+                        <p className="text-micro text-white/45">
                           {sat.noradId} · {sat.cosparId} · {sat.orbitType}
                         </p>
                       </div>
@@ -325,7 +325,7 @@ export default function MissionControlView() {
               searchQuery.trim().length >= 2 &&
               searchResults.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg px-4 py-3">
-                  <p className="text-[11px] text-white/40">
+                  <p className="text-caption text-white/45">
                     {t("missionControl.noResults")}
                   </p>
                 </div>
@@ -336,10 +336,10 @@ export default function MissionControlView() {
           {fleet.length > 0 && (
             <button
               onClick={handleFleetOnlyToggle}
-              className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] transition-all border ${
+              className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-caption transition-all border ${
                 fleetOnly
                   ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
-                  : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-emerald-400"
+                  : "bg-black/60 backdrop-blur-md border-white/10 text-white/45 hover:text-emerald-400"
               }`}
             >
               <span className="relative flex h-2 w-2">
@@ -354,10 +354,10 @@ export default function MissionControlView() {
           {/* Filter button */}
           <button
             onClick={() => setShowFilters((p) => !p)}
-            className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] transition-all border ${
+            className={`pointer-events-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-caption transition-all border ${
               showFilters
                 ? "bg-white/10 border-white/20 text-white"
-                : "bg-black/60 backdrop-blur-md border-white/10 text-white/50 hover:text-white/70"
+                : "bg-black/60 backdrop-blur-md border-white/10 text-white/45 hover:text-white/70"
             }`}
           >
             <SlidersHorizontal size={14} aria-hidden="true" />
@@ -400,7 +400,7 @@ export default function MissionControlView() {
       {organization && (
         <button
           onClick={() => setShowAddForm(true)}
-          className="absolute bottom-16 right-4 z-20 flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-900/40 transition-all hover:scale-105 text-[12px] font-medium"
+          className="absolute bottom-16 right-4 z-20 flex items-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-900/40 transition-all hover:scale-105 text-small font-medium"
           title="Add spacecraft"
         >
           <Plus size={16} />

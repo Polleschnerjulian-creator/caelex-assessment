@@ -132,7 +132,7 @@ export function SpacecraftList({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-white">Spacecraft Fleet</h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/45">
             {total} spacecraft in your organization
           </p>
         </div>
@@ -150,7 +150,7 @@ export function SpacecraftList({
         <form onSubmit={handleSearch} className="relative flex-1 min-w-[200px]">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/45"
             aria-hidden="true"
           />
           <input
@@ -243,7 +243,7 @@ export function SpacecraftList({
           <h3 className="text-lg font-medium text-white mb-2">
             No Spacecraft Found
           </h3>
-          <p className="text-sm text-white/60 mb-4">
+          <p className="text-sm text-white/45 mb-4">
             {search || statusFilter || orbitFilter
               ? "Try adjusting your filters"
               : "Add your first spacecraft to get started"}
@@ -282,7 +282,7 @@ export function SpacecraftList({
                     </span>
                     <SpacecraftStatusBadge status={sc.status} size="sm" />
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-white/50 mt-0.5">
+                  <div className="flex items-center gap-3 text-xs text-white/45 mt-0.5">
                     {sc.cosparId && <span>COSPAR: {sc.cosparId}</span>}
                     {sc.noradId && <span>NORAD: {sc.noradId}</span>}
                     <span>
@@ -294,13 +294,13 @@ export function SpacecraftList({
                 </div>
 
                 {/* Mission Type */}
-                <div className="hidden md:block text-sm text-white/60">
+                <div className="hidden md:block text-sm text-white/45">
                   {missionTypes.find((m) => m.value === sc.missionType)
                     ?.label || sc.missionType}
                 </div>
 
                 {/* Launch Date */}
-                <div className="hidden lg:block text-sm text-white/50">
+                <div className="hidden lg:block text-sm text-white/45">
                   {sc.launchDate
                     ? new Date(sc.launchDate).toLocaleDateString()
                     : "TBD"}
@@ -315,7 +315,7 @@ export function SpacecraftList({
                     aria-expanded={menuOpen === sc.id}
                     aria-haspopup="true"
                     aria-label={`Actions for ${sc.name}`}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
                   >
                     <MoreVertical size={16} aria-hidden="true" />
                   </button>

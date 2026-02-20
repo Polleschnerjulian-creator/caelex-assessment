@@ -242,7 +242,7 @@ function RegistrationPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-medium text-white flex items-center gap-3">
             <Satellite
               className="w-7 h-7 text-emerald-400"
               aria-hidden="true"

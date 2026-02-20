@@ -204,7 +204,7 @@ export default function NCAPortalClient() {
                   <p className="text-sm text-slate-900 dark:text-white truncate">
                     {entry.subject}
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-micro text-slate-400">
                     {entry.ncaAuthority} &middot;{" "}
                     {new Date(entry.createdAt).toLocaleDateString()}
                   </p>

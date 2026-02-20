@@ -177,7 +177,7 @@ export default function TimelinePage() {
             <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               Compliance Timeline
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               Key dates and deadlines for EU Space Act implementation. Plan your
               compliance roadmap with these critical milestones.
             </p>
@@ -190,7 +190,7 @@ export default function TimelinePage() {
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <AlertCircle size={18} className="text-amber-400" />
-            <h2 className="text-[12px] text-amber-400 uppercase tracking-wider">
+            <h2 className="text-small text-amber-400 uppercase tracking-wider">
               Critical Deadlines
             </h2>
           </div>
@@ -208,21 +208,21 @@ export default function TimelinePage() {
                     boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
                   }}
                 >
-                  <div className="flex items-center gap-2 text-[12px] text-amber-400 mb-3">
+                  <div className="flex items-center gap-2 text-small text-amber-400 mb-3">
                     <Calendar size={14} />
                     <span>{deadline.date}</span>
                   </div>
-                  <h3 className="text-[17px] font-medium text-white mb-2">
+                  <h3 className="text-title font-medium text-white mb-2">
                     {deadline.title}
                   </h3>
-                  <p className="text-[13px] text-white/50 mb-4">
+                  <p className="text-body text-white/45 mb-4">
                     {deadline.description}
                   </p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-[28px] font-medium text-amber-400">
                       {days > 0 ? days : 0}
                     </span>
-                    <span className="text-[12px] text-white/40">
+                    <span className="text-small text-white/45">
                       {deadline.daysLabel}
                     </span>
                   </div>
@@ -237,8 +237,8 @@ export default function TimelinePage() {
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <Clock size={18} className="text-white/40" />
-            <h2 className="text-[12px] text-white/40 uppercase tracking-wider">
+            <Clock size={18} className="text-white/45" />
+            <h2 className="text-small text-white/45 uppercase tracking-wider">
               Full Implementation Timeline
             </h2>
           </div>
@@ -288,31 +288,31 @@ export default function TimelinePage() {
                     }}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[12px] text-white/40">
+                      <span className="text-small text-white/45">
                         {event.date}
                       </span>
                       {event.critical && (
-                        <span className="text-[10px] font-medium text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-micro font-medium text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded uppercase tracking-wider">
                           Critical
                         </span>
                       )}
                       {event.status === "completed" && (
-                        <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-micro font-medium text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wider">
                           Completed
                         </span>
                       )}
                     </div>
-                    <h3 className="text-[16px] font-medium text-white mb-2">
+                    <h3 className="text-title font-medium text-white mb-2">
                       {event.title}
                     </h3>
-                    <p className="text-[14px] text-white/50 mb-4">
+                    <p className="text-body-lg text-white/45 mb-4">
                       {event.description}
                     </p>
                     <ul className="space-y-2">
                       {event.details.map((detail, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-2 text-[13px] text-white/40"
+                          className="flex items-start gap-2 text-body text-white/45"
                         >
                           <span className="text-emerald-400/60 mt-1">•</span>
                           <span>{detail}</span>
@@ -330,16 +330,16 @@ export default function TimelinePage() {
       {/* CTA */}
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-medium mb-4">
+          <h2 className="text-display-sm font-medium mb-4">
             Don&apos;t wait until the deadline
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             Start your compliance journey today. Our assessment helps you
             identify requirements and build a realistic timeline.
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Start Assessment
           </Link>

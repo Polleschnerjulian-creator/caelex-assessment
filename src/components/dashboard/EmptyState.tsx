@@ -23,7 +23,7 @@ export default function EmptyState({
     if (!actionLabel) return null;
 
     const className =
-      "inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors";
+      "inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-body font-medium px-5 py-2.5 rounded-lg transition-colors";
 
     if (actionHref) {
       return (
@@ -49,10 +49,10 @@ export default function EmptyState({
       <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mb-5">
         <div className="text-slate-400 dark:text-white/30">{icon}</div>
       </div>
-      <h3 className="text-[16px] font-medium text-slate-900 dark:text-white/80 mb-1.5">
+      <h3 className="text-title font-medium text-slate-900 dark:text-white/70 mb-1.5">
         {title}
       </h3>
-      <p className="text-[14px] text-slate-500 dark:text-white/40 max-w-sm mx-auto mb-6">
+      <p className="text-body-lg text-slate-500 dark:text-white/45 max-w-sm mx-auto mb-6">
         {description}
       </p>
       {renderAction()}

@@ -70,7 +70,7 @@ function renderMarkdown(text: string): React.ReactNode {
           parts.push(
             <code
               key={partKey++}
-              className="px-1 py-0.5 rounded bg-white/10 text-cyan-300 text-[11px] font-mono"
+              className="px-1 py-0.5 rounded bg-white/10 text-cyan-300 text-caption font-mono"
             >
               {codeMatch[1]}
             </code>,
@@ -152,7 +152,7 @@ function renderMarkdown(text: string): React.ReactNode {
     }
     if (trimmed.startsWith("# ")) {
       elements.push(
-        <h2 key={key++} className="font-bold text-white mt-3 mb-2">
+        <h2 key={key++} className="font-medium text-white mt-3 mb-2">
           {processInlineMarkdown(trimmed.slice(2))}
         </h2>,
       );
@@ -227,19 +227,19 @@ function SourceBadge({ source }: { source: AstraSource }) {
       href={source.url || "#"}
       target={source.url ? "_blank" : undefined}
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.03] border ${confidenceColor} transition-colors cursor-pointer group`}
+      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.03] border ${confidenceColor} transition-colors cursor-pointer group`}
       title={`${source.regulation} ${source.article}${source.title ? ` - ${source.title}` : ""}`}
     >
-      <span className="text-[10px] text-white/60 group-hover:text-white/80 transition-colors">
+      <span className="text-micro text-white/45 group-hover:text-white/70 transition-colors">
         {source.regulation}
       </span>
-      <span className="text-[10px] font-medium text-cyan-400">
+      <span className="text-micro font-medium text-cyan-400">
         {source.article}
       </span>
       {source.url && (
         <ExternalLink
           size={9}
-          className="text-white/30 group-hover:text-white/50"
+          className="text-white/30 group-hover:text-white/70"
         />
       )}
     </a>
@@ -259,13 +259,13 @@ function ActionButton({
     high: "bg-cyan-500/15 border-cyan-500/30 hover:bg-cyan-500/25 text-cyan-400",
     medium:
       "bg-white/[0.04] border-white/10 hover:bg-white/[0.08] text-white/70",
-    low: "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-white/50",
+    low: "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-white/45",
   }[action.priority];
 
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${priorityStyles} transition-all text-[11px] font-medium`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${priorityStyles} transition-all text-caption font-medium`}
     >
       {action.label}
       <ArrowRight size={12} />
@@ -290,7 +290,7 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
     <div className="mt-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
       <div className="flex items-center gap-2 mb-2">
         <Shield size={14} className="text-cyan-400" />
-        <span className="text-[11px] font-medium text-white/80">
+        <span className="text-caption font-medium text-white/70">
           Compliance Impact: {impact.module}
         </span>
         {impact.riskLevel && (
@@ -304,8 +304,8 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
 
       <div className="flex items-center gap-4 mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/40">Current:</span>
-          <span className="text-[12px] font-medium text-white">
+          <span className="text-micro text-white/45">Current:</span>
+          <span className="text-small font-medium text-white">
             {impact.currentScore}%
           </span>
         </div>
@@ -313,9 +313,9 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
           <>
             <ArrowRight size={12} className="text-white/20" />
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white/40">Projected:</span>
+              <span className="text-micro text-white/45">Projected:</span>
               <span
-                className={`text-[12px] font-medium ${isImprovement ? "text-green-400" : "text-amber-400"}`}
+                className={`text-small font-medium ${isImprovement ? "text-green-400" : "text-amber-400"}`}
               >
                 {impact.projectedScore}%
               </span>
@@ -332,11 +332,11 @@ function ComplianceImpactCard({ impact }: { impact: ComplianceImpact }) {
 
       {impact.affectedArticles.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          <span className="text-[9px] text-white/40">Affected:</span>
+          <span className="text-[9px] text-white/45">Affected:</span>
           {impact.affectedArticles.map((article, idx) => (
             <span
               key={idx}
-              className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/60"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.05] text-white/45"
             >
               {article}
             </span>
@@ -412,8 +412,8 @@ export default function AstraMessageBubble({
         {/* Text content with markdown rendering */}
         {message.content && (
           <div
-            className={`text-[12px] leading-relaxed ${
-              isAstra ? "text-white/80" : "text-cyan-100 whitespace-pre-wrap"
+            className={`text-small leading-relaxed ${
+              isAstra ? "text-white/70" : "text-cyan-100 whitespace-pre-wrap"
             }`}
           >
             {isAstra ? renderMarkdown(message.content) : message.content}

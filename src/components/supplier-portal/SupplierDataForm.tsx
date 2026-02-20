@@ -148,9 +148,9 @@ export default function SupplierDataForm({
         {required && <span className="text-red-400 ml-1">*</span>}
       </span>
       {expandedSections[section] ? (
-        <ChevronUp className="w-5 h-5 text-white/40" aria-hidden="true" />
+        <ChevronUp className="w-5 h-5 text-white/45" aria-hidden="true" />
       ) : (
-        <ChevronDown className="w-5 h-5 text-white/40" aria-hidden="true" />
+        <ChevronDown className="w-5 h-5 text-white/45" aria-hidden="true" />
       )}
     </button>
   );
@@ -281,7 +281,7 @@ export default function SupplierDataForm({
                 }
                 className="mt-1 w-4 h-4 rounded border-white/20 bg-white/[0.04] text-blue-500 focus:ring-blue-500/50"
               />
-              <span className="text-sm text-white/60">
+              <span className="text-sm text-white/45">
                 This data contains confidential or proprietary information that
                 should be handled with additional care.
               </span>

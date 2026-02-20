@@ -113,7 +113,7 @@ export function NotificationSettings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={24} className="animate-spin text-white/40" />
+        <Loader2 size={24} className="animate-spin text-white/45" />
       </div>
     );
   }
@@ -125,7 +125,7 @@ export function NotificationSettings() {
         <h2 className="text-xl font-semibold text-white">
           Notification Settings
         </h2>
-        <p className="text-sm text-white/60">
+        <p className="text-sm text-white/45">
           Manage how and when you receive notifications
         </p>
       </div>
@@ -154,10 +154,10 @@ export function NotificationSettings() {
         <div className="p-6 space-y-4">
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
-              <Mail size={18} className="text-white/50" />
+              <Mail size={18} className="text-white/45" />
               <div>
                 <div className="text-sm text-white">Email Notifications</div>
-                <div className="text-xs text-white/50">
+                <div className="text-xs text-white/45">
                   Receive notifications via email
                 </div>
               </div>
@@ -174,10 +174,10 @@ export function NotificationSettings() {
 
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
-              <Bell size={18} className="text-white/50" />
+              <Bell size={18} className="text-white/45" />
               <div>
                 <div className="text-sm text-white">In-App Notifications</div>
-                <div className="text-xs text-white/50">
+                <div className="text-xs text-white/45">
                   Show notifications in the app
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function NotificationSettings() {
           <h3 className="text-sm font-medium text-white">
             Category Preferences
           </h3>
-          <p className="text-xs text-white/50 mt-1">
+          <p className="text-xs text-white/45 mt-1">
             Customize notifications by category
           </p>
         </div>
@@ -224,7 +224,7 @@ export function NotificationSettings() {
                       }
                       className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500 disabled:opacity-50"
                     />
-                    <span className="text-xs text-white/50">Email</span>
+                    <span className="text-xs text-white/45">Email</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -236,7 +236,7 @@ export function NotificationSettings() {
                       }
                       className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500 disabled:opacity-50"
                     />
-                    <span className="text-xs text-white/50">In-App</span>
+                    <span className="text-xs text-white/45">In-App</span>
                   </label>
                 </div>
               </div>
@@ -255,7 +255,7 @@ export function NotificationSettings() {
           <label className="flex items-center justify-between cursor-pointer">
             <div>
               <div className="text-sm text-white">Enable Quiet Hours</div>
-              <div className="text-xs text-white/50">
+              <div className="text-xs text-white/45">
                 Pause notifications during specified hours
               </div>
             </div>
@@ -275,7 +275,7 @@ export function NotificationSettings() {
           {settings.quietHoursEnabled && (
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs text-white/50 mb-1.5">
+                <label className="block text-xs text-white/45 mb-1.5">
                   Start Time
                 </label>
                 <input
@@ -291,7 +291,7 @@ export function NotificationSettings() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-white/50 mb-1.5">
+                <label className="block text-xs text-white/45 mb-1.5">
                   End Time
                 </label>
                 <input
@@ -318,7 +318,7 @@ export function NotificationSettings() {
           <label className="flex items-center justify-between cursor-pointer">
             <div>
               <div className="text-sm text-white">Enable Email Digest</div>
-              <div className="text-xs text-white/50">
+              <div className="text-xs text-white/45">
                 Receive a summary of notifications
               </div>
             </div>
@@ -334,7 +334,7 @@ export function NotificationSettings() {
 
           {settings.digestEnabled && (
             <div>
-              <label className="block text-xs text-white/50 mb-1.5">
+              <label className="block text-xs text-white/45 mb-1.5">
                 Frequency
               </label>
               <select

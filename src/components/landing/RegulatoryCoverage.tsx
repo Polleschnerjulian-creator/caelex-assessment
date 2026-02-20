@@ -98,25 +98,25 @@ export default function RegulatoryCoverage() {
     >
       {/* Section Label */}
       <div className="absolute top-8 right-6 md:right-12" aria-hidden="true">
-        <span className="text-caption text-white/30">02 / 14</span>
+        <span className="text-caption text-white/25">02 / 14</span>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block text-caption text-white/40 tracking-widest uppercase mb-4">
+          <span className="inline-block text-caption text-white/45 tracking-widest uppercase mb-4">
             Regulatory Coverage
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light text-white tracking-[-0.02em] mb-4">
             Three Frameworks.{" "}
-            <span className="text-white/50">One Platform.</span>
+            <span className="text-white/45">One Platform.</span>
           </h2>
-          <p className="text-subtitle text-white/40 max-w-[600px] mx-auto">
+          <p className="text-subtitle text-white/45 max-w-[600px] mx-auto">
             Comprehensive compliance management across EU regulations and 10
             national jurisdictions.
           </p>
@@ -131,8 +131,8 @@ export default function RegulatoryCoverage() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
                 className={`group relative p-6 rounded-xl border ${colors.border} bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 hover:shadow-xl ${colors.glow}`}
               >
@@ -162,7 +162,7 @@ export default function RegulatoryCoverage() {
                       <div className="text-heading font-light text-white mb-0.5">
                         {stat.value}
                       </div>
-                      <div className="text-micro text-white/30 uppercase tracking-wider">
+                      <div className="text-micro text-white/25 uppercase tracking-wider">
                         {stat.label}
                       </div>
                     </div>
@@ -174,7 +174,7 @@ export default function RegulatoryCoverage() {
                   {reg.features.map((feature, j) => (
                     <li
                       key={j}
-                      className="flex items-center gap-2 text-body text-white/50"
+                      className="flex items-center gap-2 text-body text-white/45"
                     >
                       <span
                         className={`w-1 h-1 rounded-full ${colors.bg} ${colors.text}`}
@@ -191,14 +191,14 @@ export default function RegulatoryCoverage() {
 
         {/* Bottom Stats */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-8 text-center"
         >
           <div>
             <div className="text-display font-light text-white">170+</div>
-            <div className="text-micro text-white/30 uppercase tracking-wider">
+            <div className="text-micro text-white/25 uppercase tracking-wider">
               Total Requirements
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-display font-light text-white">8</div>
-            <div className="text-micro text-white/30 uppercase tracking-wider">
+            <div className="text-micro text-white/25 uppercase tracking-wider">
               Compliance Modules
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function RegulatoryCoverage() {
           />
           <div>
             <div className="text-display font-light text-white">2030</div>
-            <div className="text-micro text-white/30 uppercase tracking-wider">
+            <div className="text-micro text-white/25 uppercase tracking-wider">
               Key Deadline
             </div>
           </div>

@@ -22,11 +22,11 @@ export default function SpaceLawRecommendations({
       {/* Section header */}
       <div className="flex items-center gap-3 mb-2">
         <Lightbulb className="w-4 h-4 text-blue-400" aria-hidden="true" />
-        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
           Recommendations
         </span>
       </div>
-      <p className="text-sm text-white/40 mb-6">
+      <p className="text-sm text-white/45 mb-6">
         Actionable next steps based on your assessment
       </p>
 
@@ -44,7 +44,7 @@ export default function SpaceLawRecommendations({
                 <span className="text-2xl font-bold text-blue-400/30 leading-none flex-shrink-0 select-none">
                   {index + 1}
                 </span>
-                <p className="text-sm text-white/80 leading-relaxed pt-0.5">
+                <p className="text-sm text-white/70 leading-relaxed pt-0.5">
                   {recommendation}
                 </p>
               </div>
@@ -65,12 +65,12 @@ export default function SpaceLawRecommendations({
           }}
           className="mt-6 pt-5 border-t border-white/[0.08] text-center"
         >
-          <p className="text-[12px] text-white/40 mb-2">
+          <p className="text-small text-white/45 mb-2">
             Need expert guidance on national space law compliance?
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-1.5 text-[13px] text-blue-400 hover:text-blue-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-body text-blue-400 hover:text-blue-300 transition-colors"
           >
             <span>Explore Caelex Platform</span>
             <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />

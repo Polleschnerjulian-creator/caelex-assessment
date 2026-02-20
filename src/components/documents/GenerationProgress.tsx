@@ -82,7 +82,7 @@ export function GenerationProgress({
               <h3 className="text-lg font-medium text-slate-900 dark:text-white">
                 ASTRA is generating your document
               </h3>
-              <p className="text-sm text-slate-500 dark:text-white/50 mt-1">
+              <p className="text-sm text-slate-500 dark:text-white/45 mt-1">
                 {meta?.title}
               </p>
             </div>
@@ -139,10 +139,10 @@ export function GenerationProgress({
             {/* Overall progress bar */}
             <div className="w-full">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-slate-400 dark:text-white/30">
+                <span className="text-caption text-slate-400 dark:text-white/30">
                   Overall Progress
                 </span>
-                <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="text-caption font-medium text-emerald-600 dark:text-emerald-400">
                   {progress}%
                 </span>
               </div>
@@ -170,7 +170,7 @@ export function GenerationProgress({
               <h3 className="text-lg font-medium text-slate-900 dark:text-white">
                 Document Generated
               </h3>
-              <p className="text-sm text-slate-500 dark:text-white/50 mt-1">
+              <p className="text-sm text-slate-500 dark:text-white/45 mt-1">
                 Your document is ready for review
               </p>
             </div>
@@ -267,7 +267,7 @@ function PhaseRow({
             isActive
               ? "text-emerald-700 dark:text-emerald-400"
               : isCompleted
-                ? "text-slate-600 dark:text-white/60"
+                ? "text-slate-600 dark:text-white/45"
                 : "text-slate-400 dark:text-white/25"
           }`}
         >
@@ -279,7 +279,7 @@ function PhaseRow({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-slate-500 dark:text-white/40 mt-0.5"
+              className="text-xs text-slate-500 dark:text-white/45 mt-0.5"
             >
               {subtitle}
             </motion.p>

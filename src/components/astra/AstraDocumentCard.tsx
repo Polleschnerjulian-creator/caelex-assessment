@@ -74,10 +74,10 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
           <FileText size={16} className="text-cyan-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[13px] font-medium text-white truncate">
+          <h4 className="text-body font-medium text-white truncate">
             {meta.documentTitle}
           </h4>
-          <p className="text-[11px] text-white/40">
+          <p className="text-caption text-white/45">
             {meta.articleRef} · EU Space Act
           </p>
         </div>
@@ -86,23 +86,23 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
       {/* Status & Info */}
       <div className="space-y-1.5 mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/30">Status:</span>
+          <span className="text-micro text-white/30">Status:</span>
           <span
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${status.color}`}
+            className={`text-micro font-medium px-1.5 py-0.5 rounded ${status.color}`}
           >
             {status.label}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/30">Pages:</span>
-          <span className="text-[10px] text-white/60">
+          <span className="text-micro text-white/30">Pages:</span>
+          <span className="text-micro text-white/45">
             ~{meta.estimatedPages} (estimated)
           </span>
         </div>
         {meta.articlesReferenced.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-white/30">References:</span>
-            <span className="text-[10px] text-white/60">
+            <span className="text-micro text-white/30">References:</span>
+            <span className="text-micro text-white/45">
               {meta.articlesReferenced.join(", ")}
             </span>
           </div>
@@ -113,7 +113,7 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
       <div className="flex items-center gap-2">
         <button
           onClick={handleView}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-micro text-white/45 hover:text-white/70 transition-colors"
         >
           <Eye size={10} />
           View
@@ -121,7 +121,7 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
         <button
           onClick={handleDownload}
           disabled={downloading || !documentId}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors disabled:opacity-40"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-micro text-white/45 hover:text-white/70 transition-colors disabled:opacity-40"
         >
           {downloading ? (
             <Loader2 size={10} className="animate-spin" />
@@ -132,7 +132,7 @@ export default function AstraDocumentCard({ meta }: AstraDocumentCardProps) {
         </button>
         <button
           onClick={handleEdit}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-[10px] text-white/60 hover:text-white/80 transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-lg text-micro text-white/45 hover:text-white/70 transition-colors"
         >
           <Pencil size={10} />
           Edit

@@ -27,7 +27,7 @@ export default function GuidesPage() {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               Compliance Guides
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               In-depth guides on EU Space Act, NIS2 Directive, space debris
               mitigation, export control, and satellite licensing. Expert
               knowledge for space operators navigating complex regulations.
@@ -47,20 +47,20 @@ export default function GuidesPage() {
                     <BookOpen size={28} className="text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 text-[12px] text-white/40 mb-3">
+                    <div className="flex items-center gap-3 text-small text-white/45 mb-3">
                       <span className="flex items-center gap-1">
                         <Clock size={12} />
                         {guide.readingTime} min read
                       </span>
                       <span>Comprehensive Guide</span>
                     </div>
-                    <h2 className="text-[22px] font-medium text-white mb-3 group-hover:text-emerald-400 transition-colors">
+                    <h2 className="text-heading-lg font-medium text-white mb-3 group-hover:text-emerald-400 transition-colors">
                       {guide.title}
                     </h2>
-                    <p className="text-[15px] text-white/50 leading-relaxed mb-4">
+                    <p className="text-subtitle text-white/45 leading-relaxed mb-4">
                       {guide.description}
                     </p>
-                    <div className="flex items-center gap-1 text-[14px] text-emerald-400">
+                    <div className="flex items-center gap-1 text-body-lg text-emerald-400">
                       Read guide <ArrowRight size={14} />
                     </div>
                   </div>
@@ -71,16 +71,16 @@ export default function GuidesPage() {
 
           {/* CTA Section */}
           <div className="mt-20 text-center">
-            <h2 className="text-[24px] font-medium text-white mb-4">
+            <h2 className="text-display-sm font-medium text-white mb-4">
               Need personalized guidance?
             </h2>
-            <p className="text-[15px] text-white/50 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
               Our AI-powered assessment analyzes your specific situation and
               provides tailored compliance recommendations.
             </p>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
             >
               Start Free Assessment
               <ArrowRight size={16} />

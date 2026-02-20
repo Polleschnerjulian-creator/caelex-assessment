@@ -44,7 +44,7 @@ export function DocumentSelectorPanel({
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {/* Category A — Debris */}
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
             Category A — Debris Mitigation
           </h3>
           <div className="space-y-1">
@@ -63,7 +63,7 @@ export function DocumentSelectorPanel({
 
         {/* Category B — Cybersecurity */}
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
             Category B — Cybersecurity
           </h3>
           <div className="space-y-1">

@@ -103,7 +103,7 @@ export function InviteMemberDialog({
           <button
             onClick={handleClose}
             aria-label="Close dialog"
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -166,7 +166,7 @@ export function InviteMemberDialog({
                     )}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-white/50">
+                <p className="mt-2 text-xs text-white/45">
                   Share this link with {email}. It expires in 7 days.
                 </p>
               </div>
@@ -228,7 +228,7 @@ export function InviteMemberDialog({
                   onChange={setRole}
                   excludeOwner={true}
                 />
-                <p className="mt-1.5 text-xs text-white/50">
+                <p className="mt-1.5 text-xs text-white/45">
                   Choose the level of access for this team member.
                 </p>
               </div>

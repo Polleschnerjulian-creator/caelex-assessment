@@ -421,13 +421,13 @@ function InsurancePageContent() {
     <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
           MODULE 06
         </p>
-        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
+        <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
           Insurance Navigator
         </h1>
-        <p className="text-[14px] text-slate-600 dark:text-white/70">
+        <p className="text-body-lg text-slate-600 dark:text-white/70">
           Navigate EU national insurance requirements for space operations
         </p>
       </div>
@@ -459,7 +459,7 @@ function InsurancePageContent() {
 
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg font-medium text-[13px] hover:bg-slate-800 dark:hover:bg-white/90 transition-all"
+          className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-slate-800 dark:hover:bg-white/90 transition-all"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           New Assessment
@@ -494,7 +494,7 @@ function InsurancePageContent() {
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-caption ${
                         isActive
                           ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                           : isCompleted
@@ -510,7 +510,7 @@ function InsurancePageContent() {
                     </div>
                     <div className="text-left hidden lg:block">
                       <p
-                        className={`text-[13px] font-medium ${isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/60"}`}
+                        className={`text-body font-medium ${isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/45"}`}
                       >
                         {step.name}
                       </p>
@@ -541,7 +541,7 @@ function InsurancePageContent() {
             className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
           >
             <Shield
-              className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4"
+              className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
               aria-hidden="true"
             />
             <h2 className="text-xl font-semibold mb-2">
@@ -552,7 +552,7 @@ function InsurancePageContent() {
             </p>
             <button
               onClick={() => setShowNewAssessment(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
             >
               <Plus className="w-5 h-5" aria-hidden="true" />
               Create Assessment
@@ -590,7 +590,7 @@ function InsurancePageContent() {
                             primaryJurisdiction: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {nationalInsuranceRequirements.map((req) => (
                           <option
@@ -612,7 +612,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ operatorType: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(operatorTypeConfig).map(
                           ([key, config]) => (
@@ -633,7 +633,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ companySize: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(companySizeConfig).map(
                           ([key, config]) => (
@@ -654,7 +654,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ orbitRegime: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(orbitRegimeConfig).map(
                           ([key, config]) => (
@@ -679,7 +679,7 @@ function InsurancePageContent() {
                             satelliteCount: parseInt(e.target.value) || 1,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -696,7 +696,7 @@ function InsurancePageContent() {
                             missionDurationYears: parseInt(e.target.value) || 5,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -713,7 +713,7 @@ function InsurancePageContent() {
                             satelliteValueEur: parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -731,7 +731,7 @@ function InsurancePageContent() {
                               parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -746,7 +746,7 @@ function InsurancePageContent() {
                             launchProvider: e.target.value || null,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select provider</option>
                         {commonLaunchProviders.map((p) => (
@@ -906,7 +906,7 @@ function InsurancePageContent() {
                 <div className="flex justify-end">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
                   >
                     Continue to Coverage Calculator
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -1073,14 +1073,14 @@ function InsurancePageContent() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(1)}
-                    className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
                   </button>
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
                   >
                     Continue to Policy Tracker
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -1236,7 +1236,7 @@ function InsurancePageContent() {
                                     parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-[13px] text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1252,7 +1252,7 @@ function InsurancePageContent() {
                                   premium: parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-[13px] text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1268,7 +1268,7 @@ function InsurancePageContent() {
                                   insurer: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-[13px] text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1283,7 +1283,7 @@ function InsurancePageContent() {
                                   expirationDate: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-[13px] text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                         </div>
@@ -1295,7 +1295,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1303,7 +1303,7 @@ function InsurancePageContent() {
                   <button
                     onClick={generateReport}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-[13px] transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-body transition-all"
                   >
                     {isSaving ? "Generating..." : "Generate Report"}
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -1324,7 +1324,7 @@ function InsurancePageContent() {
                 {report ? (
                   <>
                     <div className="bg-gradient-to-r from-emerald-500/20 to-purple-500/20 border border-emerald-500/30 rounded-xl p-6">
-                      <h2 className="text-xl font-bold mb-2">
+                      <h2 className="text-xl font-medium mb-2">
                         Insurance Compliance Report
                       </h2>
                       <p className="text-slate-600 dark:text-white/70">
@@ -1452,7 +1452,7 @@ function InsurancePageContent() {
                 ) : (
                   <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
                     <FileText
-                      className="w-16 h-16 text-slate-400 dark:text-white/60 mx-auto mb-4"
+                      className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
                       aria-hidden="true"
                     />
                     <h2 className="text-xl font-semibold mb-2">
@@ -1464,7 +1464,7 @@ function InsurancePageContent() {
                     </p>
                     <button
                       onClick={() => setCurrentStep(3)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-[13px] transition-all"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
                     >
                       <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                       Go to Policy Tracker
@@ -1475,7 +1475,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-4 py-2 text-[13px] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1484,7 +1484,7 @@ function InsurancePageContent() {
                     {selectedAssessment && report && (
                       <Link
                         href="/dashboard/documents/generate?type=INSURANCE_COMPLIANCE"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-[13px] transition-all"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-body transition-all"
                       >
                         <Zap className="w-4 h-4" aria-hidden="true" />
                         Generate with ASTRA
@@ -1555,7 +1555,7 @@ function InsurancePageContent() {
                         assessmentName: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   />
                 </div>
 
@@ -1571,7 +1571,7 @@ function InsurancePageContent() {
                         primaryJurisdiction: e.target.value as JurisdictionCode,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {nationalInsuranceRequirements.map((req) => (
                       <option
@@ -1596,7 +1596,7 @@ function InsurancePageContent() {
                         operatorType: e.target.value as OperatorType,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(operatorTypeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1618,7 +1618,7 @@ function InsurancePageContent() {
                         companySize: e.target.value as CompanySize,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(companySizeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1640,7 +1640,7 @@ function InsurancePageContent() {
                         orbitRegime: e.target.value as OrbitRegime,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-[14px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(orbitRegimeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1652,7 +1652,7 @@ function InsurancePageContent() {
               </div>
 
               {createError && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] mt-6">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body mt-6">
                   <AlertTriangle size={14} className="flex-shrink-0" />
                   {createError}
                 </div>
@@ -1661,14 +1661,14 @@ function InsurancePageContent() {
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowNewAssessment(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={createAssessment}
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-[13px] transition-all"
+                  className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-body transition-all"
                 >
                   {isSaving ? "Creating..." : "Create Assessment"}
                 </button>

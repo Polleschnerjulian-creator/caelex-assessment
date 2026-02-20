@@ -193,7 +193,7 @@ export default function WidgetSettingsPage() {
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
           {t("widget.title")}
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-white/60">
+        <p className="mt-1 text-sm text-slate-500 dark:text-white/45">
           {t("widget.subtitle")}
         </p>
       </div>
@@ -204,7 +204,7 @@ export default function WidgetSettingsPage() {
           <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
             {t("widget.setup")}
           </h2>
-          <p className="text-sm text-slate-500 dark:text-white/60 mb-6">
+          <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
             Create a widget configuration to embed Caelex compliance tools on
             external websites. This will generate a dedicated widget API key.
           </p>
@@ -263,7 +263,7 @@ export default function WidgetSettingsPage() {
                   <p className="font-medium text-sm text-slate-900 dark:text-white">
                     {wt.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">
                     {wt.description}
                   </p>
                 </button>
@@ -285,7 +285,7 @@ export default function WidgetSettingsPage() {
                   className={`px-6 py-3 rounded-lg border text-sm font-medium transition-colors ${
                     theme === t
                       ? "border-blue-500 bg-blue-500/5 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/60 hover:border-slate-300"
+                      : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/45 hover:border-slate-300"
                   }`}
                 >
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -300,7 +300,7 @@ export default function WidgetSettingsPage() {
               <Globe size={20} />
               {t("widget.allowedDomains")}
             </h2>
-            <p className="text-sm text-slate-500 dark:text-white/60 mb-4">
+            <p className="text-sm text-slate-500 dark:text-white/45 mb-4">
               Restrict which domains can embed your widget (CORS whitelist).
               Leave empty to allow all origins.
             </p>
@@ -368,7 +368,7 @@ export default function WidgetSettingsPage() {
               </pre>
               <button
                 onClick={() => copyToClipboard(embedCode, "embed")}
-                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-md text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/80 transition-colors"
+                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-lg text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70 transition-colors"
               >
                 {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
               </button>
@@ -382,7 +382,7 @@ export default function WidgetSettingsPage() {
               {t("widget.preview")}
             </h2>
             <div className="flex justify-center p-8 bg-slate-50 dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-white/10">
-              <div className="text-center text-sm text-slate-500 dark:text-white/40">
+              <div className="text-center text-sm text-slate-500 dark:text-white/45">
                 <Code2 size={32} className="mx-auto mb-3 opacity-50" />
                 <p>Widget preview available when running locally.</p>
                 <p className="text-xs mt-1">
@@ -418,7 +418,7 @@ export default function WidgetSettingsPage() {
                     <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-white/50 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-white/45 mt-1">
                       {stat.label}
                     </p>
                   </div>

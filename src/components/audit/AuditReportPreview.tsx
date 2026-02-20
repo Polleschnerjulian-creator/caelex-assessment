@@ -279,7 +279,7 @@ export function AuditReportPreview({
                     className="w-full bg-blue-500/50 hover:bg-blue-500 rounded-t transition-colors"
                     style={{ height: `${Math.max(height, 4)}%` }}
                   />
-                  <span className="text-[10px] text-slate-500 mt-1">
+                  <span className="text-micro text-slate-500 mt-1">
                     {new Date(day.date).toLocaleDateString("en-GB", {
                       weekday: "short",
                     })}

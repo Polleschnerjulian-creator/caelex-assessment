@@ -112,7 +112,7 @@ export default function CorrespondenceEntry({
           </div>
           <time
             dateTime={createdAt}
-            className="text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0"
+            className="text-micro text-slate-400 dark:text-slate-500 flex-shrink-0"
           >
             {new Date(createdAt).toLocaleDateString(undefined, {
               month: "short",
@@ -124,7 +124,7 @@ export default function CorrespondenceEntry({
         </div>
 
         {ncaContactName && isInbound && (
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5">
             From: {ncaContactName}
           </p>
         )}
@@ -136,7 +136,7 @@ export default function CorrespondenceEntry({
         {requiresResponse && !respondedAt && (
           <div
             className={`
-              flex items-center gap-1.5 mt-2 text-[10px] font-medium
+              flex items-center gap-1.5 mt-2 text-micro font-medium
               ${isOverdue ? "text-red-400" : "text-amber-400"}
             `}
           >

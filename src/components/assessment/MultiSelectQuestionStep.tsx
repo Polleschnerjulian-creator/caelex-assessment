@@ -88,7 +88,7 @@ export default function MultiSelectQuestionStep({
       >
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
-          <span className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
+          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
             Question {String(questionNumber).padStart(2, "0")}
           </span>
 
@@ -97,7 +97,7 @@ export default function MultiSelectQuestionStep({
           </h2>
 
           {question.subtitle && (
-            <p className="text-[15px] text-white/50 leading-relaxed">
+            <p className="text-subtitle text-white/45 leading-relaxed">
               {question.subtitle}
             </p>
           )}
@@ -110,7 +110,7 @@ export default function MultiSelectQuestionStep({
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
-            <span className="text-[12px] text-emerald-400/70">
+            <span className="text-small text-emerald-400/70">
               {localSelected.length} / {maxSelections} selected
             </span>
           </div>
@@ -190,13 +190,13 @@ export default function MultiSelectQuestionStep({
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3
-                      className={`text-[14px] font-medium mb-0.5 ${
+                      className={`text-body-lg font-medium mb-0.5 ${
                         isSelected ? "text-emerald-400" : "text-white"
                       }`}
                     >
                       {option.label}
                     </h3>
-                    <p className="text-[12px] text-white/50 leading-relaxed">
+                    <p className="text-small text-white/45 leading-relaxed">
                       {option.description}
                     </p>
                   </div>
@@ -235,11 +235,11 @@ export default function MultiSelectQuestionStep({
               y: 0,
             }}
             className={`
-              flex items-center gap-2 px-8 py-3.5 rounded-full text-[14px] font-medium transition-all
+              flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium transition-all
               ${
                 localSelected.length > 0
                   ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
-                  : "bg-white/10 text-white/40 cursor-not-allowed"
+                  : "bg-white/10 text-white/45 cursor-not-allowed"
               }
             `}
           >

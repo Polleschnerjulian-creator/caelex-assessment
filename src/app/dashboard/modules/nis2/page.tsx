@@ -390,7 +390,7 @@ function DashboardOptionCard({
               className={
                 isSelected
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-500 dark:text-white/50"
+                  : "text-slate-500 dark:text-white/45"
               }
             />
           </div>
@@ -399,7 +399,7 @@ function DashboardOptionCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h3
-            className={`text-[14px] font-medium ${
+            className={`text-body-lg font-medium ${
               isSelected
                 ? "text-emerald-700 dark:text-emerald-300"
                 : "text-slate-900 dark:text-white"
@@ -407,7 +407,7 @@ function DashboardOptionCard({
           >
             {label}
           </h3>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 leading-relaxed">
+          <p className="text-body text-slate-500 dark:text-white/45 leading-relaxed">
             {description}
           </p>
         </div>
@@ -459,13 +459,13 @@ function OutOfScopeCard({
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
         {message}
       </h3>
-      <p className="text-sm text-slate-500 dark:text-white/50 max-w-md mx-auto mb-8 leading-relaxed">
+      <p className="text-sm text-slate-500 dark:text-white/45 max-w-md mx-auto mb-8 leading-relaxed">
         {detail}
       </p>
       <div className="flex items-center justify-center gap-3">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-sm text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
         >
           Change Answer
         </button>
@@ -644,7 +644,7 @@ function NIS2Wizard({
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
               NIS2 Scoping Assessment
             </h2>
-            <p className="text-[11px] text-slate-400 dark:text-white/30">
+            <p className="text-caption text-slate-400 dark:text-white/30">
               Step {currentStep} of {totalSteps}
             </p>
           </div>
@@ -654,7 +654,7 @@ function NIS2Wizard({
           className="p-2 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
           aria-label="Close wizard"
         >
-          <X size={16} className="text-slate-400 dark:text-white/40" />
+          <X size={16} className="text-slate-400 dark:text-white/45" />
         </button>
       </div>
 
@@ -697,14 +697,14 @@ function NIS2Wizard({
             >
               {/* Question header */}
               <div className="mb-6 text-center max-w-xl mx-auto">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
+                <span className="text-micro uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
                   Question {String(currentStep).padStart(2, "0")}
                 </span>
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
                   {currentQuestion.title}
                 </h3>
                 {currentQuestion.subtitle && (
-                  <p className="text-sm text-slate-500 dark:text-white/40 leading-relaxed">
+                  <p className="text-sm text-slate-500 dark:text-white/45 leading-relaxed">
                     {currentQuestion.subtitle}
                   </p>
                 )}
@@ -739,14 +739,14 @@ function NIS2Wizard({
             className="mt-8 max-w-xl mx-auto"
           >
             <div className="border-t border-slate-100 dark:border-white/[0.06] pt-6">
-              <label className="block text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-white/40 mb-2">
+              <label className="block text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
                 Assessment Name
               </label>
               <input
                 type="text"
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
+                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
                 placeholder="e.g. Q1 2026 NIS2 Audit"
               />
             </div>
@@ -773,7 +773,7 @@ function NIS2Wizard({
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
           <button
             onClick={currentStep === 1 ? onCancel : handleBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             <ArrowLeft size={14} />
             {currentStep === 1 ? "Cancel" : "Back"}
@@ -871,7 +871,7 @@ export default function NIS2ModulePage() {
           aria-live="polite"
         >
           <Loader2
-            className="w-6 h-6 animate-spin text-slate-400 dark:text-white/40"
+            className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45"
             aria-hidden="true"
           />
           <span className="sr-only">Loading NIS2 assessments...</span>
@@ -897,7 +897,7 @@ export default function NIS2ModulePage() {
                 <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
                   NIS2 Directive
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-white/40">
+                <p className="text-sm text-slate-500 dark:text-white/45">
                   (EU) 2022/2555 — Space sector cybersecurity compliance
                 </p>
               </div>
@@ -909,7 +909,7 @@ export default function NIS2ModulePage() {
                 href="/assessment/nis2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
               >
                 Public Assessment
                 <ExternalLink size={14} />
@@ -966,7 +966,7 @@ export default function NIS2ModulePage() {
             <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
               No NIS2 assessments yet
             </h3>
-            <p className="text-sm text-slate-500 dark:text-white/40 max-w-md mx-auto mb-6">
+            <p className="text-sm text-slate-500 dark:text-white/45 max-w-md mx-auto mb-6">
               Start a NIS2 scoping assessment to determine your entity
               classification and applicable cybersecurity requirements under the
               NIS2 Directive for the space sector.
@@ -1045,7 +1045,7 @@ export default function NIS2ModulePage() {
                         <div className="text-sm font-medium text-slate-900 dark:text-white">
                           {compliantReqs}/{totalReqs}
                         </div>
-                        <div className="text-[10px] text-slate-400 dark:text-white/30 uppercase">
+                        <div className="text-micro text-slate-400 dark:text-white/30 uppercase">
                           Requirements
                         </div>
                       </div>
@@ -1058,7 +1058,7 @@ export default function NIS2ModulePage() {
                             style={{ width: `${progress}%` }}
                           />
                         </div>
-                        <div className="text-[10px] text-slate-400 dark:text-white/30 text-right mt-1">
+                        <div className="text-micro text-slate-400 dark:text-white/30 text-right mt-1">
                           {progress}%
                         </div>
                       </div>
@@ -1070,7 +1070,7 @@ export default function NIS2ModulePage() {
                             <div className="text-sm font-medium text-green-400">
                               {assessment.euSpaceActOverlapCount}
                             </div>
-                            <div className="text-[10px] text-green-400/60 uppercase">
+                            <div className="text-micro text-green-400/60 uppercase">
                               Overlaps
                             </div>
                           </div>
@@ -1093,7 +1093,7 @@ export default function NIS2ModulePage() {
           <h4 className="text-sm font-medium text-cyan-400 mb-2">
             About NIS2 for Space Operators
           </h4>
-          <p className="text-xs text-slate-500 dark:text-white/40 leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
             The NIS2 Directive (EU) 2022/2555 lists Space as a sector of high
             criticality in Annex I (Sector 11). Space operators must comply with
             Art. 21 cybersecurity risk-management measures and Art. 23 incident

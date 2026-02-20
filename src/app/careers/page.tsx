@@ -112,7 +112,7 @@ export default function CareersPage() {
             transition={{ duration: 0.6 }}
             className="max-w-[800px]"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[12px] text-emerald-400 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-small text-emerald-400 mb-6">
               <Users size={14} />
               <span>We're building the founding team</span>
             </div>
@@ -122,7 +122,7 @@ export default function CareersPage() {
               <span className="text-emerald-400">Space Compliance</span>
             </h1>
 
-            <p className="text-[18px] md:text-[20px] text-white/50 leading-relaxed max-w-[600px] mb-10">
+            <p className="text-heading md:text-heading-lg text-white/45 leading-relaxed max-w-[600px] mb-10">
               Caelex is the first compliance platform for the EU Space Act.
               We're looking for co-founders to transform the European space
               market with us.
@@ -131,14 +131,14 @@ export default function CareersPage() {
             <div className="flex flex-wrap gap-4">
               <a
                 href="#positions"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-emerald-500 text-white text-[14px] font-medium transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-emerald-500 text-white text-body-lg font-medium transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
               >
                 View Open Positions
                 <ArrowRight size={16} />
               </a>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
               >
                 Learn About Us
               </Link>
@@ -156,7 +156,7 @@ export default function CareersPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <span className="inline-block text-[11px] font-medium text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-caption font-medium text-emerald-400 uppercase tracking-[0.2em] mb-4">
               Why Join Us
             </span>
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white">
@@ -179,10 +179,10 @@ export default function CareersPage() {
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
                       <Icon size={24} className="text-emerald-400" />
                     </div>
-                    <h3 className="text-[16px] font-medium text-white mb-2">
+                    <h3 className="text-title font-medium text-white mb-2">
                       {benefit.title}
                     </h3>
-                    <p className="text-[13px] text-white/50 leading-relaxed">
+                    <p className="text-body text-white/45 leading-relaxed">
                       {benefit.description}
                     </p>
                   </GlassCard>
@@ -217,10 +217,10 @@ export default function CareersPage() {
               <Rocket size={20} className="text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-[24px] font-medium tracking-[-0.02em] text-white">
+              <h2 className="text-display-sm font-medium tracking-[-0.02em] text-white">
                 Open Positions
               </h2>
-              <p className="text-[13px] text-white/40">
+              <p className="text-body text-white/45">
                 Co-Founder opportunities
               </p>
             </div>
@@ -248,19 +248,19 @@ export default function CareersPage() {
 
                         <div className="flex-grow">
                           <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h3 className="text-[20px] font-medium text-white group-hover:text-emerald-400 transition-colors">
+                            <h3 className="text-heading-lg font-medium text-white group-hover:text-emerald-400 transition-colors">
                               {position.title}
                             </h3>
-                            <span className="px-2.5 py-1 text-[10px] font-medium text-emerald-400 bg-emerald-500/10 rounded-full uppercase tracking-wider">
+                            <span className="px-2.5 py-1 text-micro font-medium text-emerald-400 bg-emerald-500/10 rounded-full uppercase tracking-wider">
                               {position.type}
                             </span>
                           </div>
 
-                          <p className="text-[14px] text-white/50 mb-4 max-w-[600px]">
+                          <p className="text-body-lg text-white/45 mb-4 max-w-[600px]">
                             {position.description}
                           </p>
 
-                          <div className="flex flex-wrap gap-4 text-[13px] text-white/40">
+                          <div className="flex flex-wrap gap-4 text-body text-white/45">
                             <span className="flex items-center gap-1.5">
                               <MapPin size={14} />
                               {position.location}
@@ -275,7 +275,7 @@ export default function CareersPage() {
                             {position.tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="px-3 py-1 text-[11px] text-white/50 bg-white/[0.05] rounded-full"
+                                className="px-3 py-1 text-caption text-white/45 bg-white/[0.05] rounded-full"
                               >
                                 {tag}
                               </span>
@@ -287,7 +287,7 @@ export default function CareersPage() {
                           <div className="w-12 h-12 rounded-full bg-white/[0.05] flex items-center justify-center transition-all duration-300 group-hover:bg-emerald-500/20">
                             <ArrowRight
                               size={20}
-                              className="text-white/40 group-hover:text-emerald-400 transition-colors"
+                              className="text-white/45 group-hover:text-emerald-400 transition-colors"
                             />
                           </div>
                         </div>
@@ -309,10 +309,10 @@ export default function CareersPage() {
               <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
                 <Sparkles size={26} className="text-emerald-400" />
               </div>
-              <h2 className="text-[24px] font-medium text-white mb-3">
+              <h2 className="text-display-sm font-medium text-white mb-3">
                 Our Values
               </h2>
-              <p className="text-[15px] text-white/50">
+              <p className="text-subtitle text-white/45">
                 What we believe in as a team
               </p>
             </div>
@@ -328,7 +328,7 @@ export default function CareersPage() {
                   className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                 >
                   <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                  <span className="text-[14px] text-white/70">{value}</span>
+                  <span className="text-body-lg text-white/70">{value}</span>
                 </motion.div>
               ))}
             </div>
@@ -355,13 +355,13 @@ export default function CareersPage() {
             <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
               Ready to transform the space industry?
             </h2>
-            <p className="text-[16px] text-white/50 mb-8">
+            <p className="text-title text-white/45 mb-8">
               Select a position above to learn more and apply, or reach out
               directly.
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-[15px] font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-subtitle font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
             >
               Get in Touch
               <ArrowRight size={18} />

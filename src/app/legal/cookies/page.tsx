@@ -31,22 +31,22 @@ export default function CookiePolicyPage() {
           <div className="flex justify-end mb-6">
             <Link
               href="/legal/cookies-en"
-              className="text-[12px] text-white/40 hover:text-white/60 transition-colors border border-white/10 rounded-full px-3 py-1"
+              className="text-small text-white/45 hover:text-white/70 transition-colors border border-white/10 rounded-full px-3 py-1"
             >
               English Version
             </Link>
           </div>
 
-          <h1 className="text-[32px] font-light tracking-[-0.02em] mb-8">
+          <h1 className="text-display font-light tracking-[-0.02em] mb-8">
             Cookie-Richtlinie
           </h1>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-8">
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Was sind Cookies?
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Cookies sind kleine Textdateien, die auf Ihrem Computer oder
                 mobilen Gerät gespeichert werden, wenn Sie eine Website
                 besuchen. Sie ermöglichen es der Website, Ihre Aktionen und
@@ -58,33 +58,33 @@ export default function CookiePolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Wie wir Cookies verwenden
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wir verwenden verschiedene Arten von Cookies für
                 unterschiedliche Zwecke:
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Notwendige Cookies
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Diese Cookies sind für das Funktionieren der Website unbedingt
                 erforderlich und können nicht abgeschaltet werden. Sie werden
                 als Reaktion auf von Ihnen vorgenommene Aktionen gesetzt, wie
                 z.B. das Anmelden oder das Ausfüllen von Formularen.
               </p>
               <div className="mt-4 p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                <table className="w-full text-[13px]">
+                <table className="w-full text-body">
                   <thead>
-                    <tr className="text-left text-white/40">
+                    <tr className="text-left text-white/45">
                       <th className="pb-2">Cookie</th>
                       <th className="pb-2">Zweck</th>
                       <th className="pb-2">Dauer</th>
                     </tr>
                   </thead>
-                  <tbody className="text-white/60">
+                  <tbody className="text-white/45">
                     <tr>
                       <td className="py-2 pr-4">authjs.session-token</td>
                       <td className="py-2 pr-4">
@@ -106,22 +106,22 @@ export default function CookiePolicyPage() {
                 </table>
               </div>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Lokale Speicherung (localStorage)
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wir verwenden localStorage (keine Cookies) für folgende Zwecke:
               </p>
               <div className="mt-4 p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                <table className="w-full text-[13px]">
+                <table className="w-full text-body">
                   <thead>
-                    <tr className="text-left text-white/40">
+                    <tr className="text-left text-white/45">
                       <th className="pb-2">Schlüssel</th>
                       <th className="pb-2">Zweck</th>
                       <th className="pb-2">Dauer</th>
                     </tr>
                   </thead>
-                  <tbody className="text-white/60">
+                  <tbody className="text-white/45">
                     <tr>
                       <td className="py-2 pr-4">caelex-cookie-consent</td>
                       <td className="py-2 pr-4">
@@ -188,20 +188,20 @@ export default function CookiePolicyPage() {
                 </table>
               </div>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
-                <strong className="text-white/80">Hinweis:</strong> Folgende
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
+                <strong className="text-white/70">Hinweis:</strong> Folgende
                 Daten werden nur lokal in Ihrem Browser gespeichert und niemals
                 an unsere Server übertragen:
               </p>
               <div className="mt-4 p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                <table className="w-full text-[13px]">
+                <table className="w-full text-body">
                   <thead>
-                    <tr className="text-left text-white/40">
+                    <tr className="text-left text-white/45">
                       <th className="pb-2">Schlüssel</th>
                       <th className="pb-2">Zweck</th>
                     </tr>
                   </thead>
-                  <tbody className="text-white/60">
+                  <tbody className="text-white/45">
                     <tr>
                       <td className="py-2 pr-4">caelex-demo-requests</td>
                       <td className="py-2 pr-4">
@@ -225,23 +225,23 @@ export default function CookiePolicyPage() {
                 </table>
               </div>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Analyse &amp; Fehlerverfolgung (nur mit Einwilligung)
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Folgende Dienste werden nur aktiviert, wenn Sie im Cookie-Banner
                 &quot;Accept All&quot; wählen:
               </p>
               <div className="mt-4 p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                <table className="w-full text-[13px]">
+                <table className="w-full text-body">
                   <thead>
-                    <tr className="text-left text-white/40">
+                    <tr className="text-left text-white/45">
                       <th className="pb-2">Dienst</th>
                       <th className="pb-2">Zweck</th>
                       <th className="pb-2">Cookies</th>
                     </tr>
                   </thead>
-                  <tbody className="text-white/60">
+                  <tbody className="text-white/45">
                     <tr>
                       <td className="py-2 pr-4">Vercel Analytics</td>
                       <td className="py-2 pr-4">Anonyme Nutzungsstatistiken</td>
@@ -262,8 +262,8 @@ export default function CookiePolicyPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
-                <strong className="text-white/80">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
+                <strong className="text-white/70">
                   Hinweis zu Sentry Session Replay:
                 </strong>{" "}
                 Sentry kann Sitzungswiedergabedaten erfassen, einschließlich
@@ -275,55 +275,55 @@ export default function CookiePolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Cookies von Drittanbietern
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei Nutzung bestimmter Funktionen können Dienste von
                 Drittanbietern eigene Cookies setzen:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-4 space-y-2">
+              <ul className="list-disc list-inside text-body-lg text-white/45 leading-relaxed mt-4 space-y-2">
                 <li>
-                  <strong className="text-white/80">Stripe</strong>{" "}
+                  <strong className="text-white/70">Stripe</strong>{" "}
                   (Zahlungsabwicklung): Wird nur bei Upgrade auf einen
                   kostenpflichtigen Plan aktiviert
                 </li>
                 <li>
-                  <strong className="text-white/80">Google OAuth</strong>{" "}
+                  <strong className="text-white/70">Google OAuth</strong>{" "}
                   (Anmeldung): Wird nur bei Anmeldung über Google aktiviert
                 </li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Ihre Cookie-Einstellungen
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei Ihrem ersten Besuch auf unserer Website werden Sie über ein
                 Banner um Ihre Einwilligung gebeten. Sie haben zwei
                 Möglichkeiten:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-4 space-y-2">
+              <ul className="list-disc list-inside text-body-lg text-white/45 leading-relaxed mt-4 space-y-2">
                 <li>
-                  <strong className="text-white/80">Accept All</strong> –
+                  <strong className="text-white/70">Accept All</strong> –
                   Notwendige Cookies + Analyse-Dienste (Vercel Analytics,
                   Sentry)
                 </li>
                 <li>
-                  <strong className="text-white/80">Necessary Only</strong> –
+                  <strong className="text-white/70">Necessary Only</strong> –
                   Nur technisch notwendige Cookies für Authentifizierung und
                   Sicherheit
                 </li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
                 Sie können Ihre Einwilligung jederzeit widerrufen. Dafür stehen
                 Ihnen folgende Möglichkeiten zur Verfügung:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-3 space-y-2">
+              <ul className="list-disc list-inside text-body-lg text-white/45 leading-relaxed mt-3 space-y-2">
                 <li>
                   Klicken Sie auf das{" "}
-                  <strong className="text-white/80">
+                  <strong className="text-white/70">
                     Cookie-Symbol unten links
                   </strong>{" "}
                   auf der Website, um das Einwilligungsbanner erneut zu öffnen
@@ -331,7 +331,7 @@ export default function CookiePolicyPage() {
                 </li>
                 <li>
                   Löschen Sie den Eintrag{" "}
-                  <code className="text-white/80 bg-white/[0.06] px-1.5 py-0.5 rounded text-[12px]">
+                  <code className="text-white/70 bg-white/[0.06] px-1.5 py-0.5 rounded text-small">
                     caelex-cookie-consent
                   </code>{" "}
                   aus dem localStorage Ihres Browsers über die Entwicklertools
@@ -341,33 +341,33 @@ export default function CookiePolicyPage() {
                   Kontaktieren Sie uns per E-Mail an{" "}
                   <a
                     href="mailto:privacy@caelex.eu"
-                    className="text-white/80 hover:text-white underline"
+                    className="text-white/70 hover:text-white underline"
                   >
                     privacy@caelex.eu
                   </a>
                 </li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
                 Alternativ können Sie alle Website-Daten über die
                 Browser-Einstellungen löschen.
               </p>
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Cookies in Ihrem Browser verwalten
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Die meisten Webbrowser erlauben die Kontrolle von Cookies über
                 die Browsereinstellungen:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 leading-relaxed mt-4 space-y-2">
+              <ul className="list-disc list-inside text-body-lg text-white/45 leading-relaxed mt-4 space-y-2">
                 <li>
                   <a
                     href="https://support.google.com/chrome/answer/95647"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white/80 hover:text-white underline"
+                    className="text-white/70 hover:text-white underline"
                   >
                     Google Chrome
                   </a>
@@ -377,7 +377,7 @@ export default function CookiePolicyPage() {
                     href="https://support.mozilla.org/de/kb/cookies-erlauben-und-ablehnen"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white/80 hover:text-white underline"
+                    className="text-white/70 hover:text-white underline"
                   >
                     Mozilla Firefox
                   </a>
@@ -387,7 +387,7 @@ export default function CookiePolicyPage() {
                     href="https://support.apple.com/de-de/guide/safari/sfri11471/mac"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white/80 hover:text-white underline"
+                    className="text-white/70 hover:text-white underline"
                   >
                     Apple Safari
                   </a>
@@ -397,13 +397,13 @@ export default function CookiePolicyPage() {
                     href="https://support.microsoft.com/de-de/microsoft-edge/cookies-in-microsoft-edge-löschen"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white/80 hover:text-white underline"
+                    className="text-white/70 hover:text-white underline"
                   >
                     Microsoft Edge
                   </a>
                 </li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
                 Bitte beachten Sie, dass das Blockieren von Cookies die
                 Funktionalität unserer Website beeinträchtigen kann,
                 insbesondere die Anmeldung.
@@ -411,16 +411,16 @@ export default function CookiePolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Rechtsgrundlage
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Die Rechtsgrundlage für die Verwendung von technisch notwendigen
                 Cookies ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
                 Für Analyse-Dienste (Vercel Analytics, Sentry) holen wir Ihre
                 ausdrückliche Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO ein.
               </p>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
                 Gemäß den EU-Leitlinien werden Ihre Einwilligungspräferenzen
                 alle 12 Monate überprüft und aktualisiert. Nach Ablauf dieses
                 Zeitraums werden Sie erneut über das Cookie-Banner um Ihre
@@ -429,10 +429,10 @@ export default function CookiePolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Kontakt
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei Fragen zu unserer Cookie-Richtlinie können Sie uns
                 kontaktieren:
                 <br />
@@ -444,7 +444,7 @@ export default function CookiePolicyPage() {
                 E-Mail:{" "}
                 <a
                   href="mailto:cs@caelex.eu"
-                  className="text-white/80 hover:text-white underline"
+                  className="text-white/70 hover:text-white underline"
                 >
                   cs@caelex.eu
                 </a>
@@ -452,10 +452,10 @@ export default function CookiePolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-[18px] font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-white mb-4">
                 Änderungen dieser Richtlinie
               </h2>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wir können diese Cookie-Richtlinie von Zeit zu Zeit
                 aktualisieren. Änderungen werden auf dieser Seite
                 veröffentlicht.
@@ -463,7 +463,7 @@ export default function CookiePolicyPage() {
             </section>
           </div>
 
-          <p className="text-[12px] text-white/30 mt-12">Stand: Februar 2026</p>
+          <p className="text-small text-white/30 mt-12">Stand: Februar 2026</p>
         </div>
       </div>
     </main>

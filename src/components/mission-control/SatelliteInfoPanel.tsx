@@ -57,7 +57,7 @@ export default function SatelliteInfoPanel({
       {/* Header */}
       <div className="flex items-start justify-between px-4 py-3 border-b border-white/10">
         <div className="flex-1 min-w-0 mr-3">
-          <h3 className="text-[14px] font-medium text-white truncate">
+          <h3 className="text-body-lg font-medium text-white truncate">
             {satellite.name}
           </h3>
           {isFleet && (
@@ -69,7 +69,7 @@ export default function SatelliteInfoPanel({
         <button
           onClick={onClose}
           aria-label="Close satellite info"
-          className="text-white/40 hover:text-white/70 transition-colors mt-0.5"
+          className="text-white/45 hover:text-white/70 transition-colors mt-0.5"
         >
           <X size={16} aria-hidden="true" />
         </button>
@@ -79,10 +79,10 @@ export default function SatelliteInfoPanel({
       <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100%-48px)]">
         {fields.map((field) => (
           <div key={field.label}>
-            <p className="text-[9px] uppercase tracking-wider text-white/35 mb-0.5">
+            <p className="text-[9px] uppercase tracking-wider text-white/25 mb-0.5">
               {field.label}
             </p>
-            <p className="text-[13px] text-white/90">{field.value}</p>
+            <p className="text-body text-white/90">{field.value}</p>
           </div>
         ))}
 
@@ -91,7 +91,7 @@ export default function SatelliteInfoPanel({
           <div className="pt-3 mt-3 border-t border-white/5">
             <Link
               href="/dashboard/modules/registration"
-              className="flex items-center gap-2 text-[12px] text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="flex items-center gap-2 text-small text-emerald-400 hover:text-emerald-300 transition-colors"
             >
               <ExternalLink size={12} aria-hidden="true" />
               {t("missionControl.manageSpacecraft")}
@@ -105,7 +105,7 @@ export default function SatelliteInfoPanel({
             <button
               onClick={() => onAddToFleet(satellite)}
               disabled={isAdding}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 text-white rounded-lg text-[12px] font-medium transition-all"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 text-white rounded-lg text-small font-medium transition-all"
             >
               {isAdding ? (
                 <>

@@ -36,10 +36,10 @@ export default function ChecklistPreview({
       transition={{ delay: 0.2 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
           Your Next Steps
         </span>
-        <span className="text-[11px] text-white/50">
+        <span className="text-caption text-white/45">
           Top 5 of {totalItems} action items
         </span>
       </div>
@@ -56,17 +56,17 @@ export default function ChecklistPreview({
               className="p-4 flex items-start gap-4"
             >
               <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
-                <Circle className="w-4 h-4 text-white/40" />
+                <Circle className="w-4 h-4 text-white/45" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] text-white/90 leading-relaxed">
+                <p className="text-body-lg text-white/90 leading-relaxed">
                   {item.requirement}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-[10px] text-white/70 bg-white/[0.08] px-2 py-0.5 rounded">
+                  <span className="text-micro text-white/70 bg-white/[0.08] px-2 py-0.5 rounded">
                     Art. {item.articles}
                   </span>
-                  <span className="text-[11px] text-white/50">
+                  <span className="text-caption text-white/45">
                     {item.module.replace(/_/g, " ")}
                   </span>
                 </div>
@@ -78,7 +78,7 @@ export default function ChecklistPreview({
         {/* More items indicator */}
         {remainingItems > 0 && (
           <div className="px-4 py-3 bg-white/[0.03] border-t border-white/[0.08]">
-            <p className="text-[13px] text-white/60 text-center">
+            <p className="text-body text-white/45 text-center">
               Your full compliance checklist contains{" "}
               <span className="text-white font-medium">
                 {totalItems} action items
@@ -90,12 +90,12 @@ export default function ChecklistPreview({
 
         {/* CTA */}
         <div className="p-6 border-t border-white/[0.12] text-center">
-          <p className="text-[13px] text-white/70 mb-4">
+          <p className="text-body text-white/70 mb-4">
             Get the complete checklist with deadlines and article references.
           </p>
           <button
             onClick={onDownloadClick}
-            className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-5 py-2 rounded-full hover:bg-white/90 transition-all"
+            className="inline-flex items-center gap-2 bg-white text-black text-body font-medium px-5 py-2 rounded-full hover:bg-white/90 transition-all"
           >
             <FileDown size={14} aria-hidden="true" />
             Download PDF Report

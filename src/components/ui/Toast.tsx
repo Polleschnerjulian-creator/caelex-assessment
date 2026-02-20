@@ -113,11 +113,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 {icons[toast.type]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-white">
+                <p className="text-body font-medium text-white">
                   {toast.title}
                 </p>
                 {toast.message && (
-                  <p className="text-[12px] text-white/60 mt-0.5 line-clamp-2">
+                  <p className="text-small text-white/45 mt-0.5 line-clamp-2">
                     {toast.message}
                   </p>
                 )}
@@ -125,7 +125,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 onClick={() => removeToast(toast.id)}
                 aria-label="Dismiss notification"
-                className="flex-shrink-0 text-white/60 hover:text-white/70 transition-colors"
+                className="flex-shrink-0 text-white/45 hover:text-white/70 transition-colors"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>

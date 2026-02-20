@@ -97,12 +97,12 @@ function renderMarkdown(content: string): string {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      return `<h2 id="${id}" class="text-[24px] font-medium text-white mt-12 mb-4 scroll-mt-32">${text}</h2>`;
+      return `<h2 id="${id}" class="text-display-sm font-medium text-white mt-12 mb-4 scroll-mt-32">${text}</h2>`;
     })
     // H3 headings
     .replace(
       /^### (.+)$/gm,
-      '<h3 class="text-[18px] font-medium text-white mt-8 mb-3">$1</h3>',
+      '<h3 class="text-heading font-medium text-white mt-8 mb-3">$1</h3>',
     )
     // Bold
     .replace(
@@ -112,20 +112,20 @@ function renderMarkdown(content: string): string {
     // Italic
     .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
     // Lists
-    .replace(/^- (.+)$/gm, '<li class="ml-4 text-white/60">$1</li>')
+    .replace(/^- (.+)$/gm, '<li class="ml-4 text-white/45">$1</li>')
     // Paragraphs
     .replace(
       /\n\n/g,
-      '</p><p class="text-[15px] text-white/60 leading-relaxed mb-4">',
+      '</p><p class="text-subtitle text-white/45 leading-relaxed mb-4">',
     )
     // Tables
     .replace(
       /\|(.+)\|/g,
-      '<tr class="border-b border-white/[0.08]"><td class="px-4 py-2 text-[13px] text-white/60">$1</td></tr>',
+      '<tr class="border-b border-white/[0.08]"><td class="px-4 py-2 text-body text-white/45">$1</td></tr>',
     );
 
   // Wrap in paragraph
-  html = `<p class="text-[15px] text-white/60 leading-relaxed mb-4">${html}</p>`;
+  html = `<p class="text-subtitle text-white/45 leading-relaxed mb-4">${html}</p>`;
 
   // Fix list wrapping
   html = html.replace(
@@ -179,7 +179,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Back Link */}
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-[13px] text-white/40 hover:text-white/60 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white/70 transition-colors mb-8"
           >
             <ArrowLeft size={14} />
             Back to Blog
@@ -190,7 +190,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <article>
               {/* Header */}
               <header className="mb-12">
-                <div className="flex items-center gap-3 text-[12px] text-white/40 mb-4">
+                <div className="flex items-center gap-3 text-small text-white/45 mb-4">
                   <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400">
                     {post.category}
                   </span>
@@ -212,7 +212,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   {post.title}
                 </h1>
 
-                <p className="text-[17px] text-white/50 leading-relaxed">
+                <p className="text-title text-white/45 leading-relaxed">
                   {post.description}
                 </p>
               </header>
@@ -232,7 +232,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 rounded-full bg-white/[0.06] text-[12px] text-white/50"
+                      className="px-3 py-1 rounded-full bg-white/[0.06] text-small text-white/45"
                     >
                       {tag}
                     </span>
@@ -242,16 +242,16 @@ export default async function BlogPostPage({ params }: PageProps) {
 
               {/* CTA */}
               <div className="mt-12 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
-                <h3 className="text-[20px] font-medium text-white mb-3">
+                <h3 className="text-heading-lg font-medium text-white mb-3">
                   Ready to assess your compliance?
                 </h3>
-                <p className="text-[14px] text-white/50 mb-6">
+                <p className="text-body-lg text-white/45 mb-6">
                   Get your personalized regulatory profile across EU Space Act,
                   NIS2, and national space laws in minutes.
                 </p>
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-[14px] font-medium hover:bg-emerald-400 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-colors"
                 >
                   Start Free Assessment
                   <ArrowRight size={16} />
@@ -264,7 +264,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               {/* Table of Contents */}
               {toc.length > 0 && (
                 <div className="sticky top-32 p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h4 className="text-[14px] font-medium text-white mb-4">
+                  <h4 className="text-body-lg font-medium text-white mb-4">
                     In this article
                   </h4>
                   <nav className="space-y-2">
@@ -272,7 +272,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                       <a
                         key={item.id}
                         href={`#${item.id}`}
-                        className="block text-[13px] text-white/40 hover:text-white/70 transition-colors"
+                        className="block text-body text-white/45 hover:text-white/70 transition-colors"
                       >
                         {item.text}
                       </a>
@@ -284,7 +284,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h4 className="text-[14px] font-medium text-white mb-4">
+                  <h4 className="text-body-lg font-medium text-white mb-4">
                     Related Articles
                   </h4>
                   <div className="space-y-4">
@@ -294,10 +294,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                         href={`/blog/${relatedPost.slug}`}
                         className="block group"
                       >
-                        <h5 className="text-[13px] text-white/60 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                        <h5 className="text-body text-white/45 group-hover:text-emerald-400 transition-colors line-clamp-2">
                           {relatedPost.title}
                         </h5>
-                        <span className="text-[11px] text-white/30">
+                        <span className="text-caption text-white/30">
                           {relatedPost.readingTime} min read
                         </span>
                       </Link>

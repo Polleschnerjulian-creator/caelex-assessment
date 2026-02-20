@@ -67,7 +67,7 @@ export function GenerationProgress({
             <h3 className="text-lg font-medium text-white">
               ASTRA is generating your document
             </h3>
-            <p className="text-sm text-white/50 mt-1">
+            <p className="text-sm text-white/45 mt-1">
               {phase === "init"
                 ? "Preparing assessment data..."
                 : phase === "finalizing"
@@ -131,10 +131,10 @@ export function GenerationProgress({
           {/* Overall progress bar */}
           <div className="w-full">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-white/30">
+              <span className="text-caption text-white/30">
                 Overall Progress
               </span>
-              <span className="text-[11px] font-medium text-emerald-400">
+              <span className="text-caption font-medium text-emerald-400">
                 {progress}%
               </span>
             </div>
@@ -211,7 +211,7 @@ function PhaseRow({
             isActive
               ? "text-emerald-400"
               : isCompleted
-                ? "text-white/60"
+                ? "text-white/45"
                 : "text-white/25"
           }`}
         >
@@ -223,7 +223,7 @@ function PhaseRow({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-white/40 mt-0.5"
+              className="text-xs text-white/45 mt-0.5"
             >
               {subtitle}
             </motion.p>

@@ -261,7 +261,7 @@ function KPICard({
       ? "text-green-400"
       : trend === "down"
         ? "text-red-400"
-        : "text-white/40";
+        : "text-white/45";
 
   return (
     <motion.div
@@ -275,7 +275,7 @@ function KPICard({
           <p className="text-display font-semibold text-white leading-none">
             {value}
           </p>
-          <p className="text-caption uppercase tracking-wider text-white/50 mt-2">
+          <p className="text-caption uppercase tracking-wider text-white/45 mt-2">
             {label}
           </p>
         </div>
@@ -316,7 +316,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-caption uppercase tracking-[0.2em] text-white/40">
+      <h2 className="text-caption uppercase tracking-[0.2em] text-white/45">
         {title}
       </h2>
       {action}
@@ -341,7 +341,7 @@ function EmptyState({
         <Icon className="w-6 h-6 text-white/30" />
       </div>
       <h3 className="text-body-lg font-medium text-white/70 mb-1">{title}</h3>
-      <p className="text-small text-white/50 mb-4 max-w-[240px]">
+      <p className="text-small text-white/45 mb-4 max-w-[240px]">
         {description}
       </p>
       {action}
@@ -383,7 +383,7 @@ function DeadlineItem({
       />
       <div className="flex-1 min-w-0">
         <p className="text-small text-white/70 truncate">{deadline.title}</p>
-        <p className="text-micro text-white/40">
+        <p className="text-micro text-white/45">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
             : t("common.overdue")}
@@ -416,7 +416,7 @@ function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-micro text-white/40">{module}</span>
+      <span className="text-micro text-white/45">{module}</span>
       <span className="sr-only">{risk} risk</span>
     </div>
   );
@@ -436,8 +436,8 @@ function QuickActionButton({
       href={href}
       className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
     >
-      <Icon className="w-5 h-5 text-white/60 group-hover:text-emerald-400 transition-colors" />
-      <span className="text-micro text-white/50 group-hover:text-white/70 transition-colors">
+      <Icon className="w-5 h-5 text-white/45 group-hover:text-emerald-400 transition-colors" />
+      <span className="text-micro text-white/45 group-hover:text-white/70 transition-colors">
         {label}
       </span>
     </Link>
@@ -478,13 +478,13 @@ function ActivityItem({
         className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
       >
-        <Icon className="w-4 h-4 text-white/50" />
+        <Icon className="w-4 h-4 text-white/45" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-small text-white/70 truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
-        <p className="text-micro text-white/40 mt-0.5">
+        <p className="text-micro text-white/45 mt-0.5">
           {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -813,7 +813,7 @@ function DashboardContent() {
         <div className="animate-pulse space-y-6 max-w-[1400px]">
           <div className="h-8 bg-white/5 rounded w-1/3" />
           <div className="h-4 bg-white/5 rounded w-1/2" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-32 bg-white/5 rounded-xl" />
             ))}
@@ -854,7 +854,7 @@ function DashboardContent() {
               <button
                 onClick={() => setShowSuccessToast(false)}
                 aria-label="Dismiss notification"
-                className="text-white/50 hover:text-white/70"
+                className="text-white/45 hover:text-white/70"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -880,7 +880,7 @@ function DashboardContent() {
                 <h3 className="text-body-lg font-medium text-white mb-1">
                   {t("dashboard.assessmentResultsAvailable")}
                 </h3>
-                <p className="text-body text-white/60">
+                <p className="text-body text-white/45">
                   {t("dashboard.importAssessmentDescription")}
                 </p>
               </div>
@@ -910,19 +910,19 @@ function DashboardContent() {
         )}
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="text-display font-medium text-white mb-1"
           >
             {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-body-lg text-white/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.05 }}
+            className="text-body-lg text-white/45"
           >
             {t("dashboard.commandCenter")}
           </motion.p>
@@ -952,7 +952,7 @@ function DashboardContent() {
         )}
 
         {/* ROW 1: KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           <KPICard
             value={`${progressPercent}%`}
             label={t("dashboard.overallCompliance")}
@@ -999,12 +999,12 @@ function DashboardContent() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center mb-8"
+            className="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center mb-10"
           >
             <h2 className="text-title font-medium text-white mb-2">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-body text-white/60 mb-6 max-w-md mx-auto">
+            <p className="text-body text-white/45 mb-6 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
@@ -1026,7 +1026,7 @@ function DashboardContent() {
         )}
 
         {/* ROW 2: Compliance Overview + Module Progress */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
           <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.complianceOverview")} />
             <ComplianceDonutChart
@@ -1043,7 +1043,7 @@ function DashboardContent() {
         </div>
 
         {/* ROW 3: Timeline + Radar */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
           <GlassCard hover={false} className="p-6">
             <SectionHeader title={t("dashboard.complianceTimeline")} />
             <ComplianceTimelineChart
@@ -1059,7 +1059,7 @@ function DashboardContent() {
         </div>
 
         {/* ROW 4: Recent Activity */}
-        <GlassCard hover={false} className="p-6 mb-8">
+        <GlassCard hover={false} className="p-6 mb-10">
           <SectionHeader
             title={t("dashboard.recentActivity")}
             action={
@@ -1135,7 +1135,7 @@ function DashboardContent() {
                               : "bg-green-500/60"
                       }`}
                     />
-                    <span className="text-micro text-white/40">
+                    <span className="text-micro text-white/45">
                       {t(`common.${level}`)}
                     </span>
                   </div>
@@ -1195,7 +1195,7 @@ function DashboardContent() {
                 <h2 className="text-heading font-medium text-white mb-2">
                   {t("dashboard.selectOperatorType")}
                 </h2>
-                <p className="text-body text-white/60 mb-6">
+                <p className="text-body text-white/45 mb-6">
                   {t("dashboard.selectOperatorDescription")}
                 </p>
                 <label htmlFor="operator-type-select" className="sr-only">
@@ -1220,7 +1220,7 @@ function DashboardContent() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-white/10 text-white/60 py-2.5 rounded-lg text-body hover:bg-white/5 transition-all"
+                    className="flex-1 border border-white/10 text-white/45 py-2.5 rounded-lg text-body hover:bg-white/5 transition-all"
                   >
                     {t("common.cancel")}
                   </button>
@@ -1251,7 +1251,7 @@ export default function DashboardPage() {
           <div className="animate-pulse space-y-6 max-w-[1400px]">
             <div className="h-8 bg-white/5 rounded w-1/3" />
             <div className="h-4 bg-white/5 rounded w-1/2" />
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="h-32 bg-white/5 rounded-xl" />
               ))}

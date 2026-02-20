@@ -75,12 +75,12 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
     <div className="w-[320px] flex-shrink-0 border-l border-white/10 bg-dark-bg flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-12 border-b border-white/10 flex-shrink-0">
-        <span className="text-[13px] font-medium text-white/80">
+        <span className="text-body font-medium text-white/70">
           Tools & Functions
         </span>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+          className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
           aria-label="Close tool browser"
         >
           <X size={14} />
@@ -99,7 +99,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tools..."
-            className="w-full bg-white/[0.04] border border-white/10 rounded-md pl-8 pr-3 py-1.5 text-[11px] text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
+            className="w-full bg-white/[0.04] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-caption text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/30"
           />
         </div>
       </div>
@@ -117,10 +117,10 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                 className="w-full flex items-center gap-2 px-4 py-1.5 text-left hover:bg-white/[0.02] transition-colors"
               >
                 <span className="text-cyan-400/60">{meta?.icon}</span>
-                <span className="text-[11px] font-medium text-white/60 flex-1">
+                <span className="text-caption font-medium text-white/45 flex-1">
                   {meta?.label || cat}
                 </span>
-                <span className="text-[10px] text-white/25 mr-1">
+                <span className="text-micro text-white/25 mr-1">
                   {tools.length}
                 </span>
                 <ChevronDown
@@ -139,18 +139,18 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                     return (
                       <div
                         key={tool.name}
-                        className="mx-2 mb-1 rounded-md border border-white/[0.05] bg-white/[0.01]"
+                        className="mx-2 mb-1 rounded-lg border border-white/[0.05] bg-white/[0.01]"
                       >
                         <button
                           onClick={() =>
                             setExpandedTool(isToolExpanded ? null : tool.name)
                           }
-                          className="w-full text-left px-3 py-2 hover:bg-white/[0.02] transition-colors rounded-md"
+                          className="w-full text-left px-3 py-2 hover:bg-white/[0.02] transition-colors rounded-lg"
                         >
-                          <div className="text-[11px] font-medium text-white/70">
+                          <div className="text-caption font-medium text-white/70">
                             {humanizeToolName(tool.name)}
                           </div>
-                          <div className="text-[10px] text-white/30 mt-0.5 line-clamp-2">
+                          <div className="text-micro text-white/30 mt-0.5 line-clamp-2">
                             {tool.description}
                           </div>
                         </button>
@@ -166,7 +166,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                                 const isRequired = requiredParams.includes(key);
                                 return (
                                   <div key={key} className="flex gap-1.5">
-                                    <span className="text-[10px] font-mono text-cyan-400/60">
+                                    <span className="text-micro font-mono text-cyan-400/60">
                                       {key}
                                       {isRequired && (
                                         <span className="text-red-400/60">
@@ -174,7 +174,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
                                         </span>
                                       )}
                                     </span>
-                                    <span className="text-[10px] text-white/20">
+                                    <span className="text-micro text-white/20">
                                       {(s.type as string) || "object"}
                                     </span>
                                   </div>
@@ -193,7 +193,7 @@ export default function AstraToolBrowser({ onClose }: AstraToolBrowserProps) {
         })}
 
         {/* Total tools count */}
-        <div className="px-4 py-3 text-[10px] text-white/15 text-center">
+        <div className="px-4 py-3 text-micro text-white/15 text-center">
           {ALL_TOOLS.length} tools available
         </div>
       </div>

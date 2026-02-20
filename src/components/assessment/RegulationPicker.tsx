@@ -24,12 +24,12 @@ export default function RegulationPicker() {
         <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
           <Link
             href="/"
-            className="text-white/50 hover:text-emerald-400 transition-colors duration-300 text-[13px] flex items-center gap-2"
+            className="text-white/45 hover:text-emerald-400 transition-colors duration-300 text-body flex items-center gap-2"
           >
             <ArrowRight className="w-3.5 h-3.5 rotate-180" aria-hidden="true" />
             Back to home
           </Link>
-          <div className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <div className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
             Compliance Assessment
           </div>
         </div>
@@ -48,15 +48,15 @@ export default function RegulationPicker() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <span className="inline-block text-[11px] font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-6">
+            <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-6">
               Compliance Assessment
             </span>
             <h1 className="text-[clamp(1.75rem,5vw,3rem)] font-medium tracking-[-0.02em] text-white leading-[1.2] mb-5">
               Your complete regulatory profile.
               <br />
-              <span className="text-white/50">In one assessment.</span>
+              <span className="text-white/45">In one assessment.</span>
             </h1>
-            <p className="text-[14px] md:text-[16px] text-white/40 max-w-2xl mx-auto leading-[1.6]">
+            <p className="text-body-lg md:text-title text-white/45 max-w-2xl mx-auto leading-[1.6]">
               Get a comprehensive analysis across EU Space Act, NIS2 Directive,
               and National Space Laws — all in one go.
             </p>
@@ -96,10 +96,10 @@ export default function RegulationPicker() {
                       <Layers className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="text-[22px] font-medium text-white tracking-[-0.01em]">
+                      <h3 className="text-heading-lg font-medium text-white tracking-[-0.01em]">
                         Unified Compliance Profile
                       </h3>
-                      <p className="text-[13px] text-emerald-400/70 tracking-[0.05em] mt-1">
+                      <p className="text-body text-emerald-400/70 tracking-[0.05em] mt-1">
                         All-in-One Assessment
                       </p>
                     </div>
@@ -107,14 +107,14 @@ export default function RegulationPicker() {
 
                   {/* Badge */}
                   <div className="mb-6">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-wider bg-gradient-to-r from-emerald-500/20 to-blue-500/20 text-white">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-caption font-medium uppercase tracking-wider bg-gradient-to-r from-emerald-500/20 to-blue-500/20 text-white">
                       <Sparkles className="w-3.5 h-3.5" />
                       Complete Profile
                     </span>
                   </div>
 
                   {/* Description */}
-                  <p className="text-[15px] text-white/60 leading-[1.7] max-w-2xl mb-8">
+                  <p className="text-subtitle text-white/45 leading-[1.7] max-w-2xl mb-8">
                     Complete regulatory profile covering EU Space Act, NIS2
                     Directive, and National Space Laws in a single comprehensive
                     assessment. Get personalized recommendations across all
@@ -125,19 +125,19 @@ export default function RegulationPicker() {
                   <div className="flex flex-wrap gap-3 mb-8">
                     <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08]">
                       <Satellite className="w-4 h-4 text-amber-400" />
-                      <span className="text-[12px] text-white/70">
+                      <span className="text-small text-white/70">
                         EU Space Act
                       </span>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08]">
                       <Shield className="w-4 h-4 text-emerald-400" />
-                      <span className="text-[12px] text-white/70">
+                      <span className="text-small text-white/70">
                         NIS2 Directive
                       </span>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08]">
                       <Globe className="w-4 h-4 text-blue-400" />
-                      <span className="text-[12px] text-white/70">
+                      <span className="text-small text-white/70">
                         10 Jurisdictions
                       </span>
                     </div>
@@ -155,7 +155,7 @@ export default function RegulationPicker() {
                     ].map((feature) => (
                       <div
                         key={feature}
-                        className="flex items-center gap-3 text-[13px] text-white/50"
+                        className="flex items-center gap-3 text-body text-white/45"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                         {feature}
@@ -169,7 +169,7 @@ export default function RegulationPicker() {
                       <div className="text-[28px] font-medium text-white">
                         3
                       </div>
-                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-caption sm:text-micro text-white/45 uppercase tracking-[0.1em]">
                         Frameworks
                       </div>
                     </div>
@@ -177,7 +177,7 @@ export default function RegulationPicker() {
                       <div className="text-[28px] font-medium text-white">
                         ~35
                       </div>
-                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-caption sm:text-micro text-white/45 uppercase tracking-[0.1em]">
                         Questions
                       </div>
                     </div>
@@ -185,7 +185,7 @@ export default function RegulationPicker() {
                       <div className="text-[28px] font-medium text-white">
                         8-10
                       </div>
-                      <div className="text-[11px] sm:text-[10px] text-white/40 uppercase tracking-[0.1em]">
+                      <div className="text-caption sm:text-micro text-white/45 uppercase tracking-[0.1em]">
                         Minutes
                       </div>
                     </div>
@@ -193,11 +193,11 @@ export default function RegulationPicker() {
 
                   {/* CTA */}
                   <div className="flex items-center gap-4">
-                    <span className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 text-white text-[15px] font-medium group-hover:bg-emerald-400 group-hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300">
+                    <span className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 text-white text-subtitle font-medium group-hover:bg-emerald-400 group-hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300">
                       Start Assessment
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
-                    <span className="text-[13px] text-white/40">
+                    <span className="text-body text-white/45">
                       Free · No account required
                     </span>
                   </div>
@@ -211,7 +211,7 @@ export default function RegulationPicker() {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.5 }}
-            className="text-center text-white/25 text-[12px] sm:text-[11px] tracking-[0.05em] mt-10"
+            className="text-center text-white/25 text-small sm:text-caption tracking-[0.05em] mt-10"
           >
             No data stored · 100% client-side processing · Results exportable
           </motion.p>

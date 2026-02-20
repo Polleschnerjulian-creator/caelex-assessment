@@ -91,10 +91,10 @@ export default function AdminAuditPage() {
               <Shield className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-[24px] font-medium text-white">
+              <h1 className="text-display-sm font-medium text-white">
                 {t("audit.auditLogs")}
               </h1>
-              <p className="text-[14px] text-white/60">
+              <p className="text-body-lg text-white/45">
                 {t("audit.completeAuditTrail")}
               </p>
             </div>

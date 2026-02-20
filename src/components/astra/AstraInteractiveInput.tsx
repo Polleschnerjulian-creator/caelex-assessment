@@ -63,7 +63,7 @@ export default function AstraInteractiveInput({
                   onClick={() => handleChipSelect(option)}
                   disabled={submitted}
                   className={`
-                    flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium
+                    flex items-center gap-1.5 px-3 py-1.5 rounded-full text-caption font-medium
                     transition-all duration-150
                     ${
                       isSelected
@@ -94,7 +94,7 @@ export default function AstraInteractiveInput({
               options.find((o) => o.type === "text_input")?.label ||
               "Eingabe..."
             }
-            className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-[11px] text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/30"
+            className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-caption text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/30"
           />
           <button
             onClick={handleTextSubmit}
@@ -110,7 +110,7 @@ export default function AstraInteractiveInput({
       {hasTextInput && submitted && selectedValue && (
         <div className="flex items-center gap-1.5 mt-1.5 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
           <Check size={10} className="text-cyan-400" />
-          <span className="text-[11px] text-cyan-300">{selectedValue}</span>
+          <span className="text-caption text-cyan-300">{selectedValue}</span>
         </div>
       )}
     </div>

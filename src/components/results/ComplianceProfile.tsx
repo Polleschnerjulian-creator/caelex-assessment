@@ -23,7 +23,7 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
       <div className="bg-white/[0.05] border border-white/[0.12] rounded-xl p-6 md:p-8">
         {/* Header */}
         <div className="mb-6">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-2">
+          <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-2">
             EU Space Act Compliance Profile
           </span>
           <div className="h-px bg-white/[0.12]" />
@@ -36,10 +36,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
               key={index}
               className="bg-white/[0.04] border border-white/[0.10] rounded-lg p-4"
             >
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/50 mb-1">
+              <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-1">
                 {item.label}
               </div>
-              <div className="text-[15px] text-white">{item.value}</div>
+              <div className="text-subtitle text-white">{item.value}</div>
             </div>
           ))}
         </div>
@@ -47,10 +47,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
         {/* Article count */}
         <div className="bg-white/[0.04] border border-white/[0.10] rounded-lg p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[14px] text-white/70">
+            <span className="text-body-lg text-white/70">
               Articles with obligations
             </span>
-            <span className="text-[15px] text-white font-medium">
+            <span className="text-subtitle text-white font-medium">
               {result.applicableCount} of {result.totalArticles}
             </span>
           </div>
@@ -70,7 +70,7 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
             />
           </div>
           <div className="text-right mt-2">
-            <span className="text-[12px] text-white/50">
+            <span className="text-small text-white/45">
               {result.applicablePercentage}%
             </span>
           </div>
@@ -79,18 +79,18 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
         {/* Authorization info */}
         <div className="mt-6 pt-6 border-t border-white/[0.12] grid sm:grid-cols-2 gap-4">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/50 mb-1">
+            <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-1">
               Authorization Path
             </div>
-            <div className="text-[14px] text-white/80">
+            <div className="text-body-lg text-white/70">
               {result.authorizationPath}
             </div>
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/50 mb-1">
+            <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-1">
               Estimated Authorization Cost
             </div>
-            <div className="text-[14px] text-white/80">
+            <div className="text-body-lg text-white/70">
               {result.estimatedAuthorizationCost}
             </div>
           </div>
@@ -99,8 +99,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
         {/* Key deadline */}
         <div className="mt-6 p-4 bg-white/[0.04] border border-white/[0.15] rounded-lg">
           <div className="flex items-center gap-4">
-            <div className="text-[20px] font-light text-white">1 Jan 2030</div>
-            <div className="text-[13px] text-white/70">
+            <div className="text-heading-lg font-light text-white">
+              1 Jan 2030
+            </div>
+            <div className="text-body text-white/70">
               Application date — prepare now
             </div>
           </div>
@@ -117,10 +119,10 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
                 <Check size={12} className="text-white" />
               </div>
               <div>
-                <p className="text-[14px] text-white font-medium">
+                <p className="text-body-lg text-white font-medium">
                   Light Regime Eligible
                 </p>
-                <p className="text-[13px] text-white/70 mt-1">
+                <p className="text-body text-white/70 mt-1">
                   {result.regimeReason}
                 </p>
               </div>
@@ -136,13 +138,13 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
                 className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0"
                 aria-hidden="true"
               >
-                <span className="text-white text-[10px] font-bold">!</span>
+                <span className="text-white text-micro font-bold">!</span>
               </div>
               <div>
-                <p className="text-[14px] text-white font-medium">
+                <p className="text-body-lg text-white font-medium">
                   Third Country Operator Requirements
                 </p>
-                <p className="text-[13px] text-white/70 mt-1">
+                <p className="text-body text-white/70 mt-1">
                   You must designate an EU legal representative (Art. 16) and
                   register with EUSPA
                 </p>

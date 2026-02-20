@@ -78,18 +78,18 @@ export default function EUSpaceActCrossRef({
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <ArrowRight className="h-4 w-4 text-blue-400" aria-hidden="true" />
-          <h3 className="text-xs uppercase tracking-widest text-white/40">
+          <h3 className="text-xs uppercase tracking-widest text-white/45">
             EU Space Act Cross-Reference
           </h3>
         </div>
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-white/45">
           How the EU Space Act (2030) will interact with national provisions
         </p>
       </div>
 
       {/* Overall Relationship */}
       {preview.overallRelationship && (
-        <p className="text-sm text-white/50 mb-6 leading-relaxed">
+        <p className="text-sm text-white/45 mb-6 leading-relaxed">
           {preview.overallRelationship}
         </p>
       )}
@@ -134,7 +134,7 @@ export default function EUSpaceActCrossRef({
               </div>
 
               {/* Description */}
-              <p className="text-sm text-white/50 leading-relaxed">
+              <p className="text-sm text-white/45 leading-relaxed">
                 {notes.description}
               </p>
 
@@ -144,7 +144,7 @@ export default function EUSpaceActCrossRef({
                   {notes.keyChanges.map((change, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-2 text-sm text-white/40"
+                      className="flex items-start gap-2 text-sm text-white/45"
                     >
                       <span
                         className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-white/30"

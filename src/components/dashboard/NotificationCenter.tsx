@@ -221,7 +221,7 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/80 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+        className="relative p-2 text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04]"
         aria-label={`${t("notifications.notifications")}${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -249,7 +249,7 @@ export default function NotificationCenter() {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <h3 className="text-[14px] font-medium text-white">
+            <h3 className="text-body-lg font-medium text-white">
               {t("notifications.notifications")}
             </h3>
             <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function NotificationCenter() {
                 <button
                   onClick={markAllRead}
                   disabled={actionLoading === "all"}
-                  className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 disabled:opacity-50"
+                  className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1 disabled:opacity-50"
                 >
                   {actionLoading === "all" ? (
                     <Loader2
@@ -274,7 +274,7 @@ export default function NotificationCenter() {
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close"
-                className="text-white/40 hover:text-white/60 p-0.5"
+                className="text-white/45 hover:text-white/70 p-0.5"
               >
                 <X size={14} aria-hidden="true" />
               </button>
@@ -297,7 +297,7 @@ export default function NotificationCenter() {
                   className="w-8 h-8 text-white/20 mb-3"
                   aria-hidden="true"
                 />
-                <p className="text-[13px] text-white/50">
+                <p className="text-body text-white/45">
                   {t("notifications.noNotifications")}
                 </p>
               </div>
@@ -308,7 +308,7 @@ export default function NotificationCenter() {
                 return (
                   <div key={group}>
                     <div className="px-4 py-2 bg-white/[0.02]">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+                      <p className="text-micro font-medium uppercase tracking-wider text-white/45">
                         {group}
                       </p>
                     </div>
@@ -324,14 +324,14 @@ export default function NotificationCenter() {
                       >
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`text-[12px] leading-snug ${n.read ? "text-white/60" : "text-white/90 font-medium"}`}
+                            className={`text-small leading-snug ${n.read ? "text-white/45" : "text-white/90 font-medium"}`}
                           >
                             {n.title}
                           </p>
-                          <p className="text-[11px] text-white/40 mt-0.5 line-clamp-2">
+                          <p className="text-caption text-white/45 mt-0.5 line-clamp-2">
                             {n.message}
                           </p>
-                          <p className="text-[10px] text-white/30 mt-1">
+                          <p className="text-micro text-white/30 mt-1">
                             {formatRelativeTime(n.createdAt)}
                           </p>
                         </div>

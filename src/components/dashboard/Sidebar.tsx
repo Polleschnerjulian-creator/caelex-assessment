@@ -65,26 +65,26 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
       onClick={onClick}
       aria-current={isActive ? "page" : undefined}
       className={`
-        group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px]
+        group flex items-center gap-3 px-3 py-2 rounded-lg text-body
         transition-all duration-150
         ${
           isActive
             ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-            : "text-slate-800 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+            : "text-slate-800 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         }
       `}
     >
       {icon && (
         <span
           aria-hidden="true"
-          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/60 group-hover:text-slate-700 dark:group-hover:text-white/60"}`}
+          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/45 group-hover:text-slate-700 dark:group-hover:text-white/70"}`}
         >
           {icon}
         </span>
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70">
+        <span className="text-micro px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70">
           {badge}
         </span>
       )}
@@ -123,14 +123,14 @@ function CompactModuleItem({
         locked ? `${label} (requires ${requiredPlan} plan)` : undefined
       }
       className={`
-        group flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px]
+        group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-small
         transition-all duration-150
         ${
           locked
-            ? "text-slate-400 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/40 hover:bg-slate-50 dark:hover:bg-white/[0.06] cursor-default"
+            ? "text-slate-400 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/45 hover:bg-slate-50 dark:hover:bg-white/[0.06] cursor-default"
             : isActive
               ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-              : "text-slate-700 dark:text-white/50 hover:text-slate-900 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+              : "text-slate-700 dark:text-white/45 hover:text-slate-900 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         }
       `}
     >
@@ -141,7 +141,7 @@ function CompactModuleItem({
             ? "text-slate-300 dark:text-white/20"
             : isActive
               ? "text-emerald-700 dark:text-emerald-400"
-              : "text-slate-500 dark:text-white/50 group-hover:text-slate-600 dark:group-hover:text-white/60"
+              : "text-slate-500 dark:text-white/45 group-hover:text-slate-600 dark:group-hover:text-white/70"
         }`}
       >
         {icon}
@@ -150,7 +150,7 @@ function CompactModuleItem({
       {locked && (
         <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
-            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/40">
+            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/45">
               {requiredPlan}
             </span>
           )}
@@ -190,12 +190,12 @@ function ModuleGroup({
         aria-expanded={isExpanded}
         aria-controls={panelId}
         className={`
-          w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-medium uppercase tracking-wider
+          w-full flex items-center gap-2 px-3 py-2 rounded-lg text-caption font-medium uppercase tracking-wider
           transition-all duration-150
           ${
             hasActiveItem
               ? "text-emerald-700 dark:text-emerald-400/90"
-              : "text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70"
+              : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
           }
           hover:bg-slate-50 dark:hover:bg-white/[0.06]
         `}
@@ -211,10 +211,10 @@ function ModuleGroup({
         <span className="flex-1 text-left">{title}</span>
         <span
           aria-label={`${count} modules`}
-          className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+          className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50"
+              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45"
           }`}
         >
           {count}
@@ -395,7 +395,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
         >
           <X size={20} aria-hidden="true" />
         </button>
@@ -404,7 +404,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
           <Link href="/" className="flex items-center gap-2">
             <Logo size={22} className="text-slate-900 dark:text-white" />
-            <span className="text-[10px] text-slate-500 dark:text-white/60 tracking-wider">
+            <span className="text-micro text-slate-500 dark:text-white/45 tracking-wider">
               v0.1
             </span>
           </Link>
@@ -417,7 +417,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         >
           {/* Overview Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
               {t("sidebar.overview")}
             </p>
             <div className="space-y-0.5">
@@ -440,7 +440,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Compliance Modules Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
               {t("sidebar.complianceModules")}
             </p>
 
@@ -594,7 +594,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* AI Agent Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
               {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
@@ -610,7 +610,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Resources Section */}
           <div>
-            <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
               {t("sidebar.resources")}
             </p>
             <div className="space-y-0.5">
@@ -694,7 +694,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Admin — only for admin role users */}
           {user?.role === "admin" && (
             <div className="mt-5">
-              <p className="px-3 mb-2 text-[11px] font-medium text-slate-500 dark:text-white/50 uppercase tracking-wider">
+              <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
                 {t("sidebar.admin")}
               </p>
               <div className="space-y-0.5">
@@ -736,14 +736,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           <button
             onClick={handleLogout}
             className="
-              w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px]
-              text-slate-700 dark:text-white/60 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10
+              w-full flex items-center gap-3 px-3 py-2 rounded-lg text-body
+              text-slate-700 dark:text-white/45 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10
               transition-all duration-150
             "
           >
             <LogOut
               size={16}
-              className="text-slate-500 dark:text-white/60"
+              className="text-slate-500 dark:text-white/45"
               aria-hidden="true"
             />
             <span>{t("sidebar.signOut")}</span>
@@ -763,7 +763,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <span className="text-[12px] font-medium text-slate-600 dark:text-white/60">
+                <span className="text-small font-medium text-slate-600 dark:text-white/45">
                   {initials}
                 </span>
               )}
@@ -771,10 +771,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-slate-900 dark:text-white truncate">
+              <p className="text-body font-medium text-slate-900 dark:text-white truncate">
                 {user?.name || t("common.user")}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-white/70 truncate">
+              <p className="text-caption text-slate-500 dark:text-white/70 truncate">
                 {user?.email || ""}
               </p>
             </div>

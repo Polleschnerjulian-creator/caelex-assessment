@@ -194,18 +194,18 @@ export function PasskeyManagementCard() {
       <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-            <Fingerprint className="w-5 h-5 text-slate-400 dark:text-white/40" />
+            <Fingerprint className="w-5 h-5 text-slate-400 dark:text-white/45" />
           </div>
           <div>
-            <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+            <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
               PASSKEYS
             </h2>
-            <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+            <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
               Passwordless sign-in
             </p>
           </div>
         </div>
-        <p className="text-[14px] text-slate-500 dark:text-white/50">
+        <p className="text-body-lg text-slate-500 dark:text-white/45">
           Your browser or device doesn&apos;t support passkeys. Try using a
           modern browser like Chrome, Safari, or Edge.
         </p>
@@ -221,17 +221,17 @@ export function PasskeyManagementCard() {
           <Fingerprint className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         </div>
         <div className="flex-1">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             PASSKEYS
           </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
             Sign in with Face ID, Touch ID, or security keys
           </p>
         </div>
         {!showRegisterForm && (
           <button
             onClick={() => setShowRegisterForm(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Passkey
@@ -251,7 +251,7 @@ export function PasskeyManagementCard() {
             <div>
               <label
                 htmlFor="passkey-device-name"
-                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
               >
                 Device Name (optional)
               </label>
@@ -261,9 +261,9 @@ export function PasskeyManagementCard() {
                 value={newDeviceName}
                 onChange={(e) => setNewDeviceName(e.target.value)}
                 placeholder="e.g., MacBook Pro, iPhone"
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
+                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
               />
-              <p className="text-[11px] text-slate-400 dark:text-white/30 mt-1.5">
+              <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
                 Give your passkey a name to identify it later
               </p>
             </div>
@@ -272,7 +272,7 @@ export function PasskeyManagementCard() {
               <button
                 onClick={registerPasskey}
                 disabled={isRegistering}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
               >
                 {isRegistering ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -286,7 +286,7 @@ export function PasskeyManagementCard() {
                   setShowRegisterForm(false);
                   setNewDeviceName("");
                 }}
-                className="px-4 py-2.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
                 Cancel
               </button>
@@ -306,10 +306,10 @@ export function PasskeyManagementCard() {
             ) : passkeys.length === 0 ? (
               <div className="text-center py-8">
                 <Fingerprint className="w-12 h-12 mx-auto text-slate-300 dark:text-white/20 mb-3" />
-                <p className="text-[14px] text-slate-500 dark:text-white/50 mb-1">
+                <p className="text-body-lg text-slate-500 dark:text-white/45 mb-1">
                   No passkeys registered
                 </p>
-                <p className="text-[12px] text-slate-400 dark:text-white/30">
+                <p className="text-small text-slate-400 dark:text-white/30">
                   Add a passkey to sign in without a password using Face ID,
                   Touch ID, or a security key.
                 </p>
@@ -339,7 +339,7 @@ export function PasskeyManagementCard() {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded px-2 py-1 text-[13px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded px-2 py-1 text-body text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === "Enter") renamePasskey(passkey.id);
@@ -375,10 +375,10 @@ export function PasskeyManagementCard() {
                         </div>
                       ) : (
                         <>
-                          <p className="text-[13px] text-slate-900 dark:text-white font-medium truncate">
+                          <p className="text-body text-slate-900 dark:text-white font-medium truncate">
                             {passkey.deviceName || "Unnamed Passkey"}
                           </p>
-                          <p className="text-[11px] text-slate-400 dark:text-white/30">
+                          <p className="text-caption text-slate-400 dark:text-white/30">
                             Added {formatDate(passkey.createdAt)}
                             {passkey.lastUsedAt &&
                               ` • Last used ${formatDate(passkey.lastUsedAt)}`}
@@ -394,7 +394,7 @@ export function PasskeyManagementCard() {
                             setEditingId(passkey.id);
                             setEditName(passkey.deviceName || "");
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                           title="Rename"
                           aria-label={`Rename passkey ${passkey.deviceName || "Unnamed Passkey"}`}
                         >

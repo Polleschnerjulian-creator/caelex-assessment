@@ -111,7 +111,7 @@ export default function AuditFilters({
             <div className="absolute z-20 top-full left-0 mt-2 w-64 max-h-64 overflow-y-auto bg-[#0F1629] border border-white/10 rounded-lg shadow-xl">
               <div className="p-2">
                 {availableActions.length === 0 ? (
-                  <p className="text-sm text-white/50 p-2">
+                  <p className="text-sm text-white/45 p-2">
                     No actions available
                   </p>
                 ) : (
@@ -164,7 +164,7 @@ export default function AuditFilters({
             <div className="absolute z-20 top-full left-0 mt-2 w-64 max-h-64 overflow-y-auto bg-[#0F1629] border border-white/10 rounded-lg shadow-xl">
               <div className="p-2">
                 {availableUsers.length === 0 ? (
-                  <p className="text-sm text-white/50 p-2">
+                  <p className="text-sm text-white/45 p-2">
                     No users available
                   </p>
                 ) : (
@@ -184,7 +184,7 @@ export default function AuditFilters({
                           {user.name || user.email.split("@")[0]}
                         </span>
                         {user.name && (
-                          <span className="text-xs text-white/40 block truncate">
+                          <span className="text-xs text-white/45 block truncate">
                             {user.email}
                           </span>
                         )}
@@ -199,20 +199,20 @@ export default function AuditFilters({
 
         {/* Date range */}
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-white/40" />
+          <Calendar className="w-4 h-4 text-white/45" />
           <input
             type="date"
             value={filters.dateRange.from || ""}
             onChange={(e) => updateDateRange("from", e.target.value)}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             placeholder="From"
           />
-          <span className="text-white/40">to</span>
+          <span className="text-white/45">to</span>
           <input
             type="date"
             value={filters.dateRange.to || ""}
             onChange={(e) => updateDateRange("to", e.target.value)}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             placeholder="To"
           />
         </div>
@@ -221,7 +221,7 @@ export default function AuditFilters({
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-white/50 hover:text-white/70 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-white/45 hover:text-white/70 transition-colors"
           >
             <X className="w-4 h-4" />
             Clear all

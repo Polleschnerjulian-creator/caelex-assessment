@@ -216,10 +216,10 @@ function SecurityCard() {
           <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
         </div>
         <div>
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             {t("settings.security")}
           </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
             {t("settings.sessionManagement")}
           </p>
         </div>
@@ -228,14 +228,14 @@ function SecurityCard() {
       {/* Active Sessions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[14px] font-medium text-slate-900 dark:text-white">
+          <h3 className="text-body-lg font-medium text-slate-900 dark:text-white">
             {t("settings.activeSessions")}
           </h3>
           {sessions.length > 0 && (
             <button
               onClick={handleRevokeAll}
               disabled={revokingAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {revokingAll ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -249,11 +249,11 @@ function SecurityCard() {
 
         {sessionsLoading ? (
           <div className="flex items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/40 animate-spin" />
+            <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/45 animate-spin" />
           </div>
         ) : sessions.length === 0 ? (
           <div className="py-6 text-center">
-            <p className="text-[13px] text-slate-500 dark:text-white/40">
+            <p className="text-body text-slate-500 dark:text-white/45">
               {t("settings.noActiveSessions")}
             </p>
           </div>
@@ -264,35 +264,35 @@ function SecurityCard() {
                 key={s.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5"
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/50">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/45">
                   {getDeviceIcon(s.deviceType)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-slate-900 dark:text-white font-medium truncate">
+                  <p className="text-body text-slate-900 dark:text-white font-medium truncate">
                     {s.browser}
                     {s.browserVersion ? ` ${s.browserVersion}` : ""} on {s.os}
                     {s.osVersion ? ` ${s.osVersion}` : ""}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {s.ipAddress && (
-                      <span className="text-[11px] text-slate-400 dark:text-white/30 flex items-center gap-1">
+                      <span className="text-caption text-slate-400 dark:text-white/30 flex items-center gap-1">
                         <Globe className="w-3 h-3" />
                         {s.ipAddress}
                       </span>
                     )}
                     {s.city && s.country && (
-                      <span className="text-[11px] text-slate-400 dark:text-white/30">
+                      <span className="text-caption text-slate-400 dark:text-white/30">
                         {s.city}, {s.country}
                       </span>
                     )}
-                    <span className="text-[11px] text-slate-400 dark:text-white/30 flex items-center gap-1">
+                    <span className="text-caption text-slate-400 dark:text-white/30 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatRelativeTime(s.lastActiveAt)}
                     </span>
                   </div>
                 </div>
                 {s.isCurrent && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-[11px] font-medium flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-caption font-medium flex-shrink-0">
                     {t("common.current")}
                   </span>
                 )}
@@ -307,18 +307,18 @@ function SecurityCard() {
 
       {/* Password Section */}
       <div>
-        <h3 className="text-[14px] font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-          <KeyRound className="w-4 h-4 text-slate-500 dark:text-white/50" />
+        <h3 className="text-body-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-slate-500 dark:text-white/45" />
           {t("settings.password")}
         </h3>
 
         {isOAuthOnly === null || sessionsLoading ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/40 animate-spin" />
+            <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/45 animate-spin" />
           </div>
         ) : isOAuthOnly ? (
           <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5">
-            <p className="text-[13px] text-slate-600 dark:text-white/60">
+            <p className="text-body text-slate-600 dark:text-white/45">
               {t("settings.oauthNotice")}
             </p>
           </div>
@@ -326,7 +326,7 @@ function SecurityCard() {
           <div className="space-y-4">
             {/* Current Password */}
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label className="block text-body text-slate-500 dark:text-white/45 mb-1.5">
                 {t("settings.currentPassword")}
               </label>
               <div className="relative">
@@ -338,7 +338,7 @@ function SecurityCard() {
                     setPasswordError(null);
                   }}
                   placeholder={t("settings.enterCurrentPassword")}
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
                   type="button"
@@ -348,7 +348,7 @@ function SecurityCard() {
                       ? "Hide current password"
                       : "Show current password"
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 transition-colors"
                 >
                   {showCurrentPassword ? (
                     <EyeOff className="w-4 h-4" aria-hidden="true" />
@@ -361,7 +361,7 @@ function SecurityCard() {
 
             {/* New Password */}
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label className="block text-body text-slate-500 dark:text-white/45 mb-1.5">
                 {t("settings.newPassword")}
               </label>
               <div className="relative">
@@ -373,7 +373,7 @@ function SecurityCard() {
                     setPasswordError(null);
                   }}
                   placeholder={t("settings.enterNewPassword")}
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
                   type="button"
@@ -381,7 +381,7 @@ function SecurityCard() {
                   aria-label={
                     showNewPassword ? "Hide new password" : "Show new password"
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 transition-colors"
                 >
                   {showNewPassword ? (
                     <EyeOff className="w-4 h-4" aria-hidden="true" />
@@ -390,14 +390,14 @@ function SecurityCard() {
                   )}
                 </button>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-white/30 mt-1.5">
+              <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
                 {t("settings.minChars")}
               </p>
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5">
+              <label className="block text-body text-slate-500 dark:text-white/45 mb-1.5">
                 {t("settings.confirmNewPassword")}
               </label>
               <input
@@ -408,7 +408,7 @@ function SecurityCard() {
                   setPasswordError(null);
                 }}
                 placeholder={t("settings.confirmNewPasswordPlaceholder")}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
             </div>
 
@@ -418,7 +418,7 @@ function SecurityCard() {
                 role="alert"
                 className="p-3 rounded-lg bg-red-500/10 border border-red-500/30"
               >
-                <p className="text-[13px] text-red-500 dark:text-red-400">
+                <p className="text-body text-red-500 dark:text-red-400">
                   {passwordError}
                 </p>
               </div>
@@ -428,7 +428,7 @@ function SecurityCard() {
             <button
               onClick={handleChangePassword}
               disabled={changingPassword}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-body font-medium transition-colors"
             >
               {changingPassword ? (
                 <>
@@ -460,10 +460,10 @@ export default function SettingsPage() {
       <div className="max-w-[800px]">
         {/* Page Header */}
         <div className="mb-10">
-          <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-2">
+          <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-2">
             {t("settings.accountSettings")}
           </h1>
-          <p className="text-[14px] text-slate-600 dark:text-white/70">
+          <p className="text-body-lg text-slate-600 dark:text-white/70">
             {t("settings.manageAccount")}
           </p>
         </div>
@@ -475,10 +475,10 @@ export default function SettingsPage() {
               <User className="w-5 h-5 text-slate-600 dark:text-white/70" />
             </div>
             <div>
-              <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+              <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
                 {t("settings.account")}
               </h2>
-              <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+              <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
                 {t("settings.personalInfo")}
               </p>
             </div>
@@ -486,37 +486,37 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
+              <p className="text-body text-slate-500 dark:text-white/45 mb-1">
                 {t("settings.name")}
               </p>
-              <p className="text-[15px] text-slate-900 dark:text-white">
+              <p className="text-subtitle text-slate-900 dark:text-white">
                 {session?.user?.name || "—"}
               </p>
             </div>
 
             <div>
-              <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
+              <p className="text-body text-slate-500 dark:text-white/45 mb-1">
                 {t("settings.email")}
               </p>
-              <p className="text-[15px] text-slate-900 dark:text-white">
+              <p className="text-subtitle text-slate-900 dark:text-white">
                 {session?.user?.email || "—"}
               </p>
             </div>
 
             <div>
-              <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
+              <p className="text-body text-slate-500 dark:text-white/45 mb-1">
                 {t("settings.role")}
               </p>
-              <p className="text-[15px] text-slate-900 dark:text-white capitalize">
+              <p className="text-subtitle text-slate-900 dark:text-white capitalize">
                 {(session?.user as { role?: string })?.role || t("common.user")}
               </p>
             </div>
 
             <div>
-              <p className="text-[13px] text-slate-500 dark:text-white/60 mb-1">
+              <p className="text-body text-slate-500 dark:text-white/45 mb-1">
                 {t("settings.accountStatus")}
               </p>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-[12px] font-medium">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-small font-medium">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400"
                   aria-hidden="true"
@@ -549,16 +549,16 @@ export default function SettingsPage() {
                 <Key className="w-5 h-5 text-slate-600 dark:text-white/70" />
               </div>
               <div>
-                <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+                <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
                   {t("settings.apiKeys")}
                 </h2>
-                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+                <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
                   {t("settings.manageApiKeys")}
                 </p>
               </div>
             </div>
             <ChevronRight
-              className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/50 transition-colors"
+              className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors"
               aria-hidden="true"
             />
           </div>
@@ -575,16 +575,16 @@ export default function SettingsPage() {
                 <Code2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+                <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
                   {t("sidebar.widget")}
                 </h2>
-                <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+                <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
                   {t("widget.description")}
                 </p>
               </div>
             </div>
             <ChevronRight
-              className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/50 transition-colors"
+              className="w-5 h-5 text-slate-400 dark:text-white/30 group-hover:text-slate-600 dark:group-hover:text-white/70 transition-colors"
               aria-hidden="true"
             />
           </div>

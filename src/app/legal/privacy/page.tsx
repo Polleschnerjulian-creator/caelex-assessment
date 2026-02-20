@@ -31,32 +31,32 @@ export default function PrivacyPage() {
           <div className="flex justify-end mb-6">
             <Link
               href="/legal/privacy-en"
-              className="text-[12px] text-white/40 hover:text-white/60 transition-colors border border-white/10 rounded-full px-3 py-1"
+              className="text-small text-white/45 hover:text-white/70 transition-colors border border-white/10 rounded-full px-3 py-1"
             >
               English Version
             </Link>
           </div>
 
-          <h1 className="text-[32px] font-light tracking-[-0.02em] mb-4">
+          <h1 className="text-display font-light tracking-[-0.02em] mb-4">
             Datenschutzerklärung
           </h1>
-          <p className="text-[13px] text-white/40 mb-8">
+          <p className="text-body text-white/45 mb-8">
             Stand: Februar 2026 · Caelex, Berlin, Deutschland
           </p>
 
           <div className="prose prose-invert prose-sm max-w-none space-y-10">
             {/* Section 1 - Overview */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 1. Datenschutz auf einen Blick
               </h2>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Verantwortliche Stelle
               </h3>
-              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] text-[14px] text-white/60">
+              <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] text-body-lg text-white/45">
                 <p>
-                  <strong className="text-white/80">Caelex</strong>
+                  <strong className="text-white/70">Caelex</strong>
                   <br />
                   Julian Polleschner
                   <br />
@@ -83,10 +83,10 @@ export default function PrivacyPage() {
                 </p>
               </div>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Datenschutzbeauftragter
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Gemäß § 38 BDSG i.V.m. Art. 37 DSGVO ist die Benennung eines
                 Datenschutzbeauftragten für uns derzeit nicht verpflichtend. Für
                 alle Fragen zum Datenschutz wenden Sie sich bitte direkt an die
@@ -100,10 +100,10 @@ export default function PrivacyPage() {
                 .
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 Kurzübersicht der Datenverarbeitung
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Caelex ist eine Compliance-Plattform für den EU Space Act und
                 verwandte Weltraumregulierung. Wir verarbeiten personenbezogene
                 Daten ausschließlich zur Erbringung unserer Dienste, zur
@@ -113,10 +113,10 @@ export default function PrivacyPage() {
               </p>
 
               <div className="mt-4 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                <p className="text-[13px] text-emerald-400 font-medium mb-2">
+                <p className="text-body text-emerald-400 font-medium mb-2">
                   Ihre Rechte auf einen Blick
                 </p>
-                <ul className="text-[13px] text-white/60 space-y-1">
+                <ul className="text-body text-white/45 space-y-1">
                   <li>
                     • Auskunft über Ihre gespeicherten Daten (Art. 15 DSGVO)
                   </li>
@@ -137,18 +137,18 @@ export default function PrivacyPage() {
 
             {/* Section 2 - Data Collection */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 2. Datenerfassung auf dieser Website
               </h2>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 2.1 Automatisch erfasste Daten (Server-Logs)
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei jedem Zugriff auf unsere Website werden automatisch
                 technische Daten erfasst:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>IP-Adresse (anonymisiert nach 24 Stunden)</li>
                 <li>Datum und Uhrzeit des Zugriffs</li>
                 <li>Aufgerufene Seite/Ressource</li>
@@ -156,79 +156,79 @@ export default function PrivacyPage() {
                 <li>Betriebssystem</li>
                 <li>Referrer-URL</li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Rechtsgrundlage:</strong> Art.
                 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Sicherheit
                 und Stabilität der Website).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> 14
+                <strong className="text-white/70">Speicherdauer:</strong> 14
                 Tage, danach automatische Löschung.
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 2.2 Registrierung und Kundenkonto
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei der Registrierung erfassen wir:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>E-Mail-Adresse (Pflichtfeld)</li>
                 <li>Name (optional)</li>
                 <li>Unternehmen/Organisation (optional)</li>
                 <li>Passwort (bcrypt-gehasht mit 12 Runden)</li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Rechtsgrundlage:</strong> Art.
                 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> Bis
+                <strong className="text-white/70">Speicherdauer:</strong> Bis
                 zur Löschung des Kontos plus gesetzliche Aufbewahrungsfristen.
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 2.3 Compliance-Assessments
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei der Nutzung unserer Assessment-Tools verarbeiten wir:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>Antworten auf Assessment-Fragen</li>
                 <li>Berechnete Compliance-Profile</li>
                 <li>Generierte Berichte und Empfehlungen</li>
                 <li>Zeitstempel und Versionierung</li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Rechtsgrundlage:</strong> Art.
                 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> Bis
+                <strong className="text-white/70">Speicherdauer:</strong> Bis
                 zur Löschung durch den Nutzer oder Kontolöschung.
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 2.4 Kontaktformular und E-Mail
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Bei Kontaktanfragen verarbeiten wir die von Ihnen mitgeteilten
                 Daten (Name, E-Mail, Nachricht) zur Bearbeitung Ihrer Anfrage.
               </p>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Rechtsgrundlage:</strong> Art.
                 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) oder Art. 6
                 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
                 <br />
-                <strong className="text-white/80">Speicherdauer:</strong> 3
+                <strong className="text-white/70">Speicherdauer:</strong> 3
                 Jahre nach Abschluss der Anfrage.
               </p>
             </section>
 
             {/* Section 3 - Third Party Services */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 3. Drittanbieter und Auftragsverarbeiter
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mb-4">
                 Wir setzen folgende Dienstleister ein, die in unserem Auftrag
                 personenbezogene Daten verarbeiten. Mit allen Dienstleistern
                 bestehen Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO.
@@ -236,10 +236,10 @@ export default function PrivacyPage() {
 
               {/* Hosting */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Vercel Inc. — Hosting & CDN
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   440 N Barranca Ave #4133, Covina, CA 91723, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -255,7 +255,7 @@ export default function PrivacyPage() {
                     href="https://vercel.com/legal/privacy-policy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -264,10 +264,10 @@ export default function PrivacyPage() {
 
               {/* Database */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Neon Inc. — Datenbank
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   San Francisco, CA, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -283,7 +283,7 @@ export default function PrivacyPage() {
                     href="https://neon.tech/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -292,10 +292,10 @@ export default function PrivacyPage() {
 
               {/* Payments */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Stripe Inc. — Zahlungsabwicklung
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   354 Oyster Point Blvd, South San Francisco, CA 94080, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong> Verarbeitung
@@ -311,7 +311,7 @@ export default function PrivacyPage() {
                     href="https://stripe.com/de/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -320,10 +320,10 @@ export default function PrivacyPage() {
 
               {/* Email */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Resend Inc. — E-Mail-Versand
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   San Francisco, CA, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -338,7 +338,7 @@ export default function PrivacyPage() {
                     href="https://resend.com/legal/privacy-policy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -347,10 +347,10 @@ export default function PrivacyPage() {
 
               {/* File Storage */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Cloudflare Inc. — Dateispeicherung (R2)
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   101 Townsend St, San Francisco, CA 94107, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong> Speicherung
@@ -366,7 +366,7 @@ export default function PrivacyPage() {
                     href="https://www.cloudflare.com/privacypolicy/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -375,10 +375,10 @@ export default function PrivacyPage() {
 
               {/* Error Tracking */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mb-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Sentry (Functional Software Inc.) — Fehlerverfolgung
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   45 Fremont Street, San Francisco, CA 94105, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -395,7 +395,7 @@ export default function PrivacyPage() {
                     href="https://sentry.io/privacy/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -404,10 +404,10 @@ export default function PrivacyPage() {
 
               {/* Analytics */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Vercel Analytics — Nutzungsanalyse
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   <strong className="text-white/70">Zweck:</strong> Anonyme
                   Nutzungsstatistiken (nur mit Einwilligung)
                   <br />
@@ -421,7 +421,7 @@ export default function PrivacyPage() {
                     href="https://vercel.com/docs/analytics/privacy-policy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -430,10 +430,10 @@ export default function PrivacyPage() {
 
               {/* KI-Dienst */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Anthropic PBC — KI-Assistent (ASTRA)
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   548 Market St, San Francisco, CA 94104, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -456,7 +456,7 @@ export default function PrivacyPage() {
                     href="https://www.anthropic.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -465,10 +465,10 @@ export default function PrivacyPage() {
 
               {/* Event-Analyse */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   LogSnag Inc. — Event-Analyse
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong>{" "}
@@ -485,7 +485,7 @@ export default function PrivacyPage() {
                     href="https://logsnag.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -494,10 +494,10 @@ export default function PrivacyPage() {
 
               {/* Verteiltes Rate Limiting */}
               <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06] mt-4">
-                <h4 className="text-[14px] font-medium text-white mb-2">
+                <h4 className="text-body-lg font-medium text-white mb-2">
                   Upstash Inc. — Verteiltes Rate Limiting (Redis)
                 </h4>
-                <p className="text-[13px] text-white/60">
+                <p className="text-body text-white/45">
                   San Francisco, CA, USA
                   <br />
                   <strong className="text-white/70">Zweck:</strong> Verteiltes
@@ -513,7 +513,7 @@ export default function PrivacyPage() {
                     href="https://upstash.com/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-400 hover:text-emerald-300 text-[12px]"
+                    className="text-emerald-400 hover:text-emerald-300 text-small"
                   >
                     Datenschutzerklärung →
                   </a>
@@ -523,11 +523,11 @@ export default function PrivacyPage() {
 
             {/* Section 4 - International Transfers */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 4. Internationale Datenübermittlung
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Einige unserer Dienstleister haben ihren Sitz in den USA. Die
                 Übermittlung personenbezogener Daten in die USA erfolgt auf
                 Grundlage folgender Garantien:
@@ -535,10 +535,10 @@ export default function PrivacyPage() {
 
               <div className="mt-4 space-y-3">
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     EU-US Data Privacy Framework
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Für Dienstleister, die unter dem EU-US DPF zertifiziert sind
                     (Vercel, Stripe, Cloudflare), besteht ein
                     Angemessenheitsbeschluss der EU-Kommission gemäß Art. 45
@@ -547,10 +547,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Standardvertragsklauseln (SCCs)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Zusätzlich oder alternativ zum DPF haben wir mit allen
                     US-Dienstleistern die von der EU-Kommission genehmigten
                     Standardvertragsklauseln abgeschlossen (Art. 46 Abs. 2 lit.
@@ -561,10 +561,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Zusätzliche technische Maßnahmen
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Alle Daten werden während der Übertragung (TLS 1.3) und im
                     Ruhezustand (AES-256) verschlüsselt. Sensible Daten
                     (Steuernummern, Bankdaten) werden zusätzlich mit AES-256-GCM
@@ -576,19 +576,19 @@ export default function PrivacyPage() {
 
             {/* Section 5 - AI and Automated Decision Making */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 5. KI und automatisierte Entscheidungsfindung
               </h2>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 5.1 ASTRA AI-Assistent
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Unsere Plattform nutzt den KI-Assistenten "ASTRA" zur
                 Unterstützung bei Compliance-Fragen. ASTRA basiert auf Large
                 Language Models und verarbeitet Ihre Anfragen wie folgt:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>Ihre Textanfragen werden an den KI-Dienst übermittelt</li>
                 <li>
                   Antworten werden auf Basis der Eingabe und unserer
@@ -596,21 +596,21 @@ export default function PrivacyPage() {
                 </li>
                 <li>Konversationshistorie wird temporär gespeichert</li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Wichtig:</strong> ASTRA trifft
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Wichtig:</strong> ASTRA trifft
                 keine rechtlich bindenden Entscheidungen. Alle Ausgaben sind als
                 Unterstützung zu verstehen und ersetzen keine Rechtsberatung.
               </p>
 
-              <h3 className="text-[15px] font-medium text-white/90 mt-6 mb-3">
+              <h3 className="text-subtitle font-medium text-white/90 mt-6 mb-3">
                 5.2 Compliance-Assessment-Algorithmen
               </h3>
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Unsere Assessments verwenden regelbasierte Algorithmen zur
                 Bestimmung der Anwendbarkeit von Regulierungen. Diese
                 Algorithmen:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>
                   Verarbeiten Ihre Antworten deterministisch (gleiche Eingabe =
                   gleiches Ergebnis)
@@ -621,14 +621,14 @@ export default function PrivacyPage() {
                   Feststellungen
                 </li>
               </ul>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">Rechtsgrundlage:</strong> Art.
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">Rechtsgrundlage:</strong> Art.
                 6 Abs. 1 lit. b DSGVO. Es findet keine automatisierte
                 Entscheidungsfindung im Sinne von Art. 22 DSGVO statt, da keine
                 Entscheidungen mit rechtlicher Wirkung getroffen werden.
               </p>
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
-                <strong className="text-white/80">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+                <strong className="text-white/70">
                   Klarstellung zu Art. 22 DSGVO (Profiling):
                 </strong>{" "}
                 Compliance-Scoring berechnet aggregierte Prozentsätze auf Basis
@@ -641,26 +641,26 @@ export default function PrivacyPage() {
 
             {/* Section 6 - Data Retention */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 6. Speicherdauer
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mb-4">
                 Wir speichern personenbezogene Daten nur so lange, wie es für
                 die jeweiligen Zwecke erforderlich ist oder gesetzliche
                 Aufbewahrungspflichten bestehen.
               </p>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-[13px] border-collapse">
+                <table className="w-full text-body border-collapse">
                   <thead>
-                    <tr className="text-left text-white/40 border-b border-white/[0.06]">
+                    <tr className="text-left text-white/45 border-b border-white/[0.06]">
                       <th className="py-3 pr-4">Datenkategorie</th>
                       <th className="py-3 pr-4">Speicherdauer</th>
                       <th className="py-3">Rechtsgrundlage</th>
                     </tr>
                   </thead>
-                  <tbody className="text-white/60">
+                  <tbody className="text-white/45">
                     <tr className="border-b border-white/[0.06]">
                       <td className="py-3 pr-4">Kontodaten</td>
                       <td className="py-3 pr-4">Bis Kontolöschung + 30 Tage</td>
@@ -712,21 +712,21 @@ export default function PrivacyPage() {
 
             {/* Section 7 - Security */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 7. Datensicherheit
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mb-4">
                 Wir setzen umfangreiche technische und organisatorische
                 Maßnahmen zum Schutz Ihrer Daten ein:
               </p>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Verschlüsselung
                   </h4>
-                  <ul className="text-[13px] text-white/60 space-y-1">
+                  <ul className="text-body text-white/45 space-y-1">
                     <li>• TLS 1.3 für alle Verbindungen</li>
                     <li>• AES-256 für Daten im Ruhezustand</li>
                     <li>• AES-256-GCM für sensible Felder</li>
@@ -735,10 +735,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Zugriffsschutz
                   </h4>
-                  <ul className="text-[13px] text-white/60 space-y-1">
+                  <ul className="text-body text-white/45 space-y-1">
                     <li>• Rollenbasierte Zugriffskontrolle (RBAC)</li>
                     <li>• Zwei-Faktor-Authentifizierung (optional)</li>
                     <li>• Session-Management mit Timeout</li>
@@ -747,10 +747,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Infrastruktur
                   </h4>
-                  <ul className="text-[13px] text-white/60 space-y-1">
+                  <ul className="text-body text-white/45 space-y-1">
                     <li>• ISO 27001 zertifizierte Rechenzentren</li>
                     <li>• SOC 2 Type II Compliance</li>
                     <li>• Regelmäßige Sicherheitsaudits</li>
@@ -759,10 +759,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Monitoring
                   </h4>
-                  <ul className="text-[13px] text-white/60 space-y-1">
+                  <ul className="text-body text-white/45 space-y-1">
                     <li>• Vollständiger Audit-Trail</li>
                     <li>• Security-Event-Logging</li>
                     <li>• Anomalie-Erkennung</li>
@@ -774,37 +774,37 @@ export default function PrivacyPage() {
 
             {/* Section 8 - Data Breach */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 8. Datenpannen
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Im Falle einer Verletzung des Schutzes personenbezogener Daten
                 (Datenpanne) handeln wir gemäß Art. 33 und 34 DSGVO:
               </p>
 
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-3 space-y-2">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-3 space-y-2">
                 <li>
-                  <strong className="text-white/80">
+                  <strong className="text-white/70">
                     Meldung an Aufsichtsbehörde:
                   </strong>{" "}
                   Innerhalb von 72 Stunden nach Bekanntwerden, sofern ein Risiko
                   für Betroffene besteht
                 </li>
                 <li>
-                  <strong className="text-white/80">
+                  <strong className="text-white/70">
                     Benachrichtigung Betroffener:
                   </strong>{" "}
                   Unverzüglich bei hohem Risiko, mit Beschreibung der Maßnahmen
                 </li>
                 <li>
-                  <strong className="text-white/80">Dokumentation:</strong> Alle
+                  <strong className="text-white/70">Dokumentation:</strong> Alle
                   Vorfälle werden dokumentiert, einschließlich Ursache,
                   Auswirkung und ergriffener Maßnahmen
                 </li>
               </ul>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-4">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
                 Sicherheitsvorfälle können Sie melden an:{" "}
                 <a
                   href="mailto:security@caelex.eu"
@@ -817,16 +817,16 @@ export default function PrivacyPage() {
 
             {/* Section 9 - Rights */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 9. Ihre Rechte im Detail
               </h2>
 
               <div className="space-y-4">
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Auskunftsrecht (Art. 15 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, eine Bestätigung darüber zu verlangen,
                     ob wir Sie betreffende personenbezogene Daten verarbeiten,
                     und gegebenenfalls Auskunft über diese Daten sowie eine
@@ -835,10 +835,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Recht auf Berichtigung (Art. 16 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, unverzüglich die Berichtigung
                     unrichtiger Daten sowie die Vervollständigung
                     unvollständiger Daten zu verlangen.
@@ -846,10 +846,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Recht auf Löschung (Art. 17 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, die Löschung Ihrer Daten zu verlangen,
                     sofern keine gesetzlichen Aufbewahrungspflichten oder
                     berechtigten Interessen entgegenstehen. Sie können Ihr Konto
@@ -858,10 +858,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Recht auf Einschränkung (Art. 18 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, die Einschränkung der Verarbeitung zu
                     verlangen, etwa wenn Sie die Richtigkeit der Daten
                     bestreiten oder die Verarbeitung unrechtmäßig ist.
@@ -869,10 +869,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Recht auf Datenübertragbarkeit (Art. 20 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, Ihre Daten in einem strukturierten,
                     gängigen und maschinenlesbaren Format zu erhalten (JSON/CSV
                     Export in den Kontoeinstellungen verfügbar).
@@ -880,10 +880,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Widerspruchsrecht (Art. 21 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, aus Gründen, die sich aus Ihrer
                     besonderen Situation ergeben, der Verarbeitung Ihrer Daten
                     zu widersprechen, soweit diese auf berechtigtem Interesse
@@ -892,10 +892,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Widerruf der Einwilligung (Art. 7 Abs. 3 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie können erteilte Einwilligungen (z.B. für Analytics)
                     jederzeit widerrufen. Der Widerruf berührt nicht die
                     Rechtmäßigkeit der bis dahin erfolgten Verarbeitung.
@@ -903,10 +903,10 @@ export default function PrivacyPage() {
                 </div>
 
                 <div className="p-4 bg-white/[0.03] rounded-lg border border-white/[0.06]">
-                  <h4 className="text-[14px] font-medium text-white mb-2">
+                  <h4 className="text-body-lg font-medium text-white mb-2">
                     Beschwerderecht (Art. 77 DSGVO)
                   </h4>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     Sie haben das Recht, sich bei einer
                     Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig ist:
                     <br />
@@ -926,8 +926,8 @@ export default function PrivacyPage() {
                 </div>
               </div>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-6">
-                <strong className="text-white/80">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-6">
+                <strong className="text-white/70">
                   So üben Sie Ihre Rechte aus:
                 </strong>{" "}
                 Senden Sie eine E-Mail an{" "}
@@ -944,11 +944,11 @@ export default function PrivacyPage() {
 
             {/* Section 10 - Cookies */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 10. Cookies und Tracking
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Detaillierte Informationen zu den von uns verwendeten Cookies
                 finden Sie in unserer{" "}
                 <Link
@@ -963,28 +963,28 @@ export default function PrivacyPage() {
 
             {/* Section 11 - B2B */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 11. Auftragsverarbeitung (B2B)
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wenn Sie Caelex als Unternehmen nutzen und wir in Ihrem Auftrag
                 personenbezogene Daten verarbeiten (z.B. Daten Ihrer
                 Mitarbeiter), schließen wir auf Anfrage einen
                 Auftragsverarbeitungsvertrag (AVV) gemäß Art. 28 DSGVO ab.
               </p>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
                 Für Enterprise-Kunden bieten wir:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>Individuellen AVV nach Ihren Anforderungen</li>
                 <li>Technische und organisatorische Maßnahmen (TOMs)</li>
                 <li>Liste aller Unterauftragsverarbeiter</li>
                 <li>Unterstützung bei Datenschutz-Folgenabschätzungen</li>
               </ul>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
                 Kontakt:{" "}
                 <a
                   href="mailto:legal@caelex.eu"
@@ -997,17 +997,17 @@ export default function PrivacyPage() {
 
             {/* Section 12 - DPIA */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 12. Datenschutz-Folgenabschätzung (DSFA)
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Gemäß Art. 35 DSGVO führen wir Datenschutz-Folgenabschätzungen
                 (DSFA) durch, wenn eine Form der Verarbeitung voraussichtlich
                 ein hohes Risiko für die Rechte und Freiheiten natürlicher
                 Personen zur Folge hat. Dies betrifft insbesondere:
               </p>
-              <ul className="list-disc list-inside text-[14px] text-white/60 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
                 <li>
                   Einsatz von KI-gestützten Systemen (ASTRA
                   Compliance-Assistent)
@@ -1022,7 +1022,7 @@ export default function PrivacyPage() {
                 </li>
               </ul>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
                 Unsere DSFAs umfassen eine systematische Beschreibung der
                 Verarbeitungsvorgänge, eine Bewertung der Notwendigkeit und
                 Verhältnismäßigkeit sowie eine Bewertung der Risiken für die
@@ -1030,7 +1030,7 @@ export default function PrivacyPage() {
                 Bewältigung der Risiken geplanten Abhilfemaßnahmen.
               </p>
 
-              <p className="text-[14px] text-white/60 leading-relaxed mt-3">
+              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
                 Für B2B-Kunden stellen wir auf Anfrage Zusammenfassungen
                 relevanter DSFAs zur Verfügung. Kontakt:{" "}
                 <a
@@ -1044,11 +1044,11 @@ export default function PrivacyPage() {
 
             {/* Section 13 - Changes */}
             <section>
-              <h2 className="text-[20px] font-medium text-white mb-6">
+              <h2 className="text-heading-lg font-medium text-white mb-6">
                 13. Änderungen dieser Datenschutzerklärung
               </h2>
 
-              <p className="text-[14px] text-white/60 leading-relaxed">
+              <p className="text-body-lg text-white/45 leading-relaxed">
                 Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um
                 sie an geänderte Rechtslagen oder bei Änderungen des Dienstes
                 anzupassen. Die aktuelle Version ist stets auf dieser Seite
@@ -1059,25 +1059,25 @@ export default function PrivacyPage() {
           </div>
 
           <div className="mt-12 pt-8 border-t border-white/[0.06]">
-            <p className="text-[12px] text-white/30">
+            <p className="text-small text-white/30">
               Stand: Februar 2026 · Version 2.0
             </p>
             <div className="flex gap-4 mt-4">
               <Link
                 href="/legal/privacy-en"
-                className="text-[12px] text-emerald-400 hover:text-emerald-300"
+                className="text-small text-emerald-400 hover:text-emerald-300"
               >
                 English Version →
               </Link>
               <Link
                 href="/legal/cookies"
-                className="text-[12px] text-white/40 hover:text-white/60"
+                className="text-small text-white/45 hover:text-white/70"
               >
                 Cookie-Richtlinie
               </Link>
               <Link
                 href="/legal/terms"
-                className="text-[12px] text-white/40 hover:text-white/60"
+                className="text-small text-white/45 hover:text-white/70"
               >
                 AGB
               </Link>

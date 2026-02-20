@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-body font-medium text-slate-700 dark:text-white/80"
+            className="block text-body font-medium text-slate-700 dark:text-white/70"
           >
             {label}
             {props.required && (
@@ -48,7 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             border border-slate-200 dark:border-white/10
             rounded-lg
             text-body-lg text-slate-900 dark:text-white
-            placeholder:text-slate-400 dark:placeholder:text-white/60
+            placeholder:text-slate-400 dark:placeholder:text-white/45
             transition-all duration-200
             hover:border-slate-300 dark:hover:border-white/20
             focus:outline-none

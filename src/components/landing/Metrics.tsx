@@ -54,19 +54,19 @@ function AnimatedNumber({
   return (
     <div className="text-center md:text-left">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay }}
         className="font-light text-[clamp(3rem,8vw,6rem)] tracking-[-0.04em] text-white leading-none"
       >
         {displayValue}
-        <span className="text-white/40">{suffix}</span>
+        <span className="text-white/45">{suffix}</span>
       </motion.div>
       <motion.p
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay: delay + 0.2 }}
-        className="text-small text-white/40 mt-3 uppercase tracking-[0.15em]"
+        className="text-small text-white/45 mt-3 uppercase tracking-[0.15em]"
       >
         {label}
       </motion.p>
@@ -99,16 +99,16 @@ export default function Metrics() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">11 / 12</span>
+        <span className="text-caption text-white/25">11 / 12</span>
       </motion.div>
 
       <div className="max-w-[1400px] mx-auto">
         {/* Section label */}
         <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-micro uppercase tracking-[0.3em] text-white/40 block mb-16 md:mb-24"
+          className="text-micro uppercase tracking-[0.3em] text-white/45 block mb-16 md:mb-24"
         >
           The Regulation
         </motion.span>

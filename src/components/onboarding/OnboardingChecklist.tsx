@@ -48,7 +48,7 @@ export default function OnboardingChecklist({
         <h3 className="text-lg font-semibold text-white mb-2">
           Setup Complete!
         </h3>
-        <p className="text-sm text-white/60 mb-4">
+        <p className="text-sm text-white/45 mb-4">
           You&apos;ve completed all the onboarding steps. You&apos;re ready to
           start using Caelex.
         </p>
@@ -73,12 +73,12 @@ export default function OnboardingChecklist({
             </div>
             <div>
               <h3 className="font-semibold text-white">{title}</h3>
-              <p className="text-sm text-white/50">{subtitle}</p>
+              <p className="text-sm text-white/45">{subtitle}</p>
             </div>
           </div>
           <button
             onClick={onDismiss}
-            className="p-1 text-white/30 hover:text-white/60 transition-colors"
+            className="p-1 text-white/30 hover:text-white/70 transition-colors"
             aria-label="Dismiss"
           >
             <X className="w-5 h-5" />
@@ -87,7 +87,7 @@ export default function OnboardingChecklist({
 
         {/* Progress bar */}
         <div className="mt-4">
-          <div className="flex items-center justify-between text-xs text-white/50 mb-1.5">
+          <div className="flex items-center justify-between text-xs text-white/45 mb-1.5">
             <span>Progress</span>
             <span>{Math.round(progress)}% complete</span>
           </div>
@@ -119,12 +119,12 @@ export default function OnboardingChecklist({
 
       {/* Footer */}
       <div className="p-4 border-t border-white/10 flex items-center justify-between">
-        <span className="text-xs text-white/40">
+        <span className="text-xs text-white/45">
           {steps.filter((s) => s.completed).length} of {steps.length} complete
         </span>
         <button
           onClick={onSkip}
-          className="text-xs text-white/40 hover:text-white/60 transition-colors"
+          className="text-xs text-white/45 hover:text-white/70 transition-colors"
         >
           Skip for now
         </button>
@@ -176,8 +176,8 @@ function OnboardingStepItem({
           step.completed
             ? "text-emerald-400"
             : isCurrent
-              ? "text-white/60 hover:text-emerald-400"
-              : "text-white/30 hover:text-white/50"
+              ? "text-white/45 hover:text-emerald-400"
+              : "text-white/30 hover:text-white/70"
         }`}
       >
         {step.completed ? (
@@ -193,7 +193,7 @@ function OnboardingStepItem({
           <span
             className={`text-sm font-medium ${
               step.completed
-                ? "text-white/50 line-through"
+                ? "text-white/45 line-through"
                 : isCurrent
                   ? "text-white"
                   : "text-white/70"
@@ -202,14 +202,14 @@ function OnboardingStepItem({
             {step.title}
           </span>
           {isCurrent && !step.completed && (
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/20 text-emerald-400 rounded">
+            <span className="px-1.5 py-0.5 text-micro font-medium bg-emerald-500/20 text-emerald-400 rounded">
               CURRENT
             </span>
           )}
         </div>
         <p
           className={`text-xs mt-0.5 ${
-            step.completed ? "text-white/30" : "text-white/50"
+            step.completed ? "text-white/30" : "text-white/45"
           }`}
         >
           {step.description}

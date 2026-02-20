@@ -144,7 +144,7 @@ export default function PositionPage({
             </Link>
             <Link
               href="/careers"
-              className="flex items-center gap-2 text-[13px] text-white/50 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
               <span>All Positions</span>
@@ -163,16 +163,16 @@ export default function PositionPage({
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-xl bg-white/[0.05] flex items-center justify-center">
-                <Icon size={28} className="text-white/60" />
+                <Icon size={28} className="text-white/45" />
               </div>
               <div>
-                <h1 className="text-[32px] font-light tracking-[-0.02em]">
+                <h1 className="text-display font-light tracking-[-0.02em]">
                   {position.title}
                 </h1>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-6 text-[14px] text-white/50">
+            <div className="flex flex-wrap gap-6 text-body-lg text-white/45">
               <span className="flex items-center gap-2">
                 <MapPin size={16} />
                 {position.location}
@@ -201,22 +201,24 @@ export default function PositionPage({
           >
             {/* About */}
             <div>
-              <h2 className="text-[20px] font-medium mb-4">About the Role</h2>
-              <p className="text-[15px] text-white/60 leading-relaxed whitespace-pre-line">
+              <h2 className="text-heading-lg font-medium mb-4">
+                About the Role
+              </h2>
+              <p className="text-subtitle text-white/45 leading-relaxed whitespace-pre-line">
                 {position.longDescription.trim()}
               </p>
             </div>
 
             {/* Responsibilities */}
             <div>
-              <h2 className="text-[20px] font-medium mb-4">
+              <h2 className="text-heading-lg font-medium mb-4">
                 Your Responsibilities
               </h2>
               <ul className="space-y-3">
                 {position.responsibilities.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-[14px] text-white/60"
+                    className="flex items-start gap-3 text-body-lg text-white/45"
                   >
                     <Check
                       size={18}
@@ -230,12 +232,14 @@ export default function PositionPage({
 
             {/* Requirements */}
             <div>
-              <h2 className="text-[20px] font-medium mb-4">What You Bring</h2>
+              <h2 className="text-heading-lg font-medium mb-4">
+                What You Bring
+              </h2>
               <ul className="space-y-3">
                 {position.requirements.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-[14px] text-white/60"
+                    className="flex items-start gap-3 text-body-lg text-white/45"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-white/30 flex-shrink-0 mt-2" />
                     <span>{item}</span>
@@ -246,12 +250,12 @@ export default function PositionPage({
 
             {/* Nice to Have */}
             <div>
-              <h2 className="text-[20px] font-medium mb-4">Nice to Have</h2>
+              <h2 className="text-heading-lg font-medium mb-4">Nice to Have</h2>
               <ul className="space-y-3">
                 {position.niceToHave.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-[14px] text-white/40"
+                    className="flex items-start gap-3 text-body-lg text-white/45"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-white/20 flex-shrink-0 mt-2" />
                     <span>{item}</span>
@@ -262,7 +266,9 @@ export default function PositionPage({
 
             {/* What We Offer */}
             <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <h2 className="text-[20px] font-medium mb-4">What We Offer</h2>
+              <h2 className="text-heading-lg font-medium mb-4">
+                What We Offer
+              </h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   {
@@ -283,10 +289,10 @@ export default function PositionPage({
                       className="flex-shrink-0 mt-0.5 text-emerald-400/60"
                     />
                     <div>
-                      <span className="text-[14px] text-white/80">
+                      <span className="text-body-lg text-white/70">
                         {benefit.title}
                       </span>
-                      <span className="text-[14px] text-white/40">
+                      <span className="text-body-lg text-white/45">
                         {" "}
                         – {benefit.desc}
                       </span>
@@ -302,16 +308,16 @@ export default function PositionPage({
       {/* Application CTA */}
       <section className="py-16 px-6 md:px-12 border-t border-white/[0.06]">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-light tracking-[-0.02em] mb-4">
+          <h2 className="text-display-sm font-light tracking-[-0.02em] mb-4">
             Interested?
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             Apply now and tell us about yourself. We look forward to meeting
             you.
           </p>
           <Link
             href={`/careers/apply?position=${resolvedParams.id}`}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-colors"
           >
             Apply Now
             <ChevronRight size={16} />

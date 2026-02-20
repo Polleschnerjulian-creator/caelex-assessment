@@ -190,7 +190,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             <Shield size={20} className="text-blue-400" />
             Security Log
           </h2>
-          <p className="text-sm text-white/60 mt-1">
+          <p className="text-sm text-white/45 mt-1">
             View security events and activity for your account
           </p>
         </div>
@@ -211,7 +211,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
               fetchLogs();
               fetchStats();
             }}
-            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 text-white/45 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Refresh"
             aria-label="Refresh security logs"
           >
@@ -227,26 +227,26 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             <div className="text-2xl font-semibold text-white">
               {stats.totalEvents}
             </div>
-            <div className="text-sm text-white/50">Total Events (30d)</div>
+            <div className="text-sm text-white/45">Total Events (30d)</div>
           </div>
           <div className="bg-white/5 rounded-xl border border-white/10 p-4">
             <div className="text-2xl font-semibold text-red-400">
               {stats.failedLogins}
             </div>
-            <div className="text-sm text-white/50">Failed Logins</div>
+            <div className="text-sm text-white/45">Failed Logins</div>
           </div>
           <div className="bg-white/5 rounded-xl border border-white/10 p-4">
             <div className="text-2xl font-semibold text-amber-400">
               {stats.suspiciousActivity}
             </div>
-            <div className="text-sm text-white/50">Suspicious Activity</div>
+            <div className="text-sm text-white/45">Suspicious Activity</div>
           </div>
           <div className="bg-white/5 rounded-xl border border-white/10 p-4">
             <div className="text-2xl font-semibold text-white">
               {(stats.byRiskLevel["HIGH"] || 0) +
                 (stats.byRiskLevel["CRITICAL"] || 0)}
             </div>
-            <div className="text-sm text-white/50">High Risk Events</div>
+            <div className="text-sm text-white/45">High Risk Events</div>
           </div>
         </div>
       )}
@@ -258,7 +258,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             <div>
               <label
                 htmlFor="seclog-search"
-                className="block text-xs text-white/50 mb-1.5"
+                className="block text-xs text-white/45 mb-1.5"
               >
                 Search
               </label>
@@ -283,7 +283,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             <div>
               <label
                 htmlFor="seclog-risk-level"
-                className="block text-xs text-white/50 mb-1.5"
+                className="block text-xs text-white/45 mb-1.5"
               >
                 Risk Level
               </label>
@@ -315,7 +315,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
             <div>
               <label
                 htmlFor="seclog-event-type"
-                className="block text-xs text-white/50 mb-1.5"
+                className="block text-xs text-white/45 mb-1.5"
               >
                 Event Type
               </label>
@@ -344,7 +344,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
       {/* Log List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-white/40" />
+          <Loader2 size={24} className="animate-spin text-white/45" />
         </div>
       ) : logs.length === 0 ? (
         <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
@@ -354,7 +354,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
           <h3 className="text-lg font-medium text-white mb-1">
             No Security Events
           </h3>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-white/45">
             Security events will appear here as they occur
           </p>
         </div>
@@ -394,15 +394,15 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
                           {EVENT_LABELS[log.event] || log.event}
                         </span>
                         <span
-                          className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${riskConfig.bgColor} ${riskConfig.color}`}
+                          className={`px-1.5 py-0.5 text-micro font-medium rounded ${riskConfig.bgColor} ${riskConfig.color}`}
                         >
                           {riskConfig.label}
                         </span>
                       </div>
-                      <p className="text-sm text-white/60 truncate mt-0.5">
+                      <p className="text-sm text-white/45 truncate mt-0.5">
                         {log.description}
                       </p>
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-white/40">
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-white/45">
                         <span className="flex items-center gap-1">
                           <Clock size={10} />
                           {formatTime(log.createdAt)}
@@ -432,7 +432,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
                     <div className="mt-4 ml-11 p-3 bg-white/5 rounded-lg space-y-2 text-sm">
                       {log.targetType && (
                         <div className="flex justify-between">
-                          <span className="text-white/50">Target</span>
+                          <span className="text-white/45">Target</span>
                           <span className="text-white font-mono text-xs">
                             {log.targetType}
                             {log.targetId && `: ${log.targetId}`}
@@ -441,24 +441,24 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
                       )}
                       {log.userAgent && (
                         <div className="flex justify-between">
-                          <span className="text-white/50">User Agent</span>
+                          <span className="text-white/45">User Agent</span>
                           <span className="text-white/70 text-xs truncate max-w-xs">
                             {log.userAgent}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-white/50">Timestamp</span>
+                        <span className="text-white/45">Timestamp</span>
                         <span className="text-white/70">
                           {new Date(log.createdAt).toLocaleString()}
                         </span>
                       </div>
                       {log.metadata && Object.keys(log.metadata).length > 0 && (
                         <div className="pt-2 border-t border-white/5">
-                          <span className="text-white/50 text-xs">
+                          <span className="text-white/45 text-xs">
                             Additional Data
                           </span>
-                          <pre className="mt-1 p-2 bg-black/20 rounded text-[10px] text-white/60 overflow-x-auto">
+                          <pre className="mt-1 p-2 bg-black/20 rounded text-micro text-white/45 overflow-x-auto">
                             {JSON.stringify(log.metadata, null, 2)}
                           </pre>
                         </div>
@@ -482,7 +482,7 @@ export function SecurityLog({ userId, organizationId }: SecurityLogProps) {
           >
             Previous
           </button>
-          <span className="text-sm text-white/50">
+          <span className="text-sm text-white/45">
             Page {page} of {totalPages}
           </span>
           <button

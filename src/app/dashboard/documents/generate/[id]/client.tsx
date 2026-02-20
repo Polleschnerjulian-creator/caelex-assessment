@@ -80,7 +80,7 @@ export function DocumentViewClient({
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/documents"
-            className="p-2 text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -89,11 +89,11 @@ export function DocumentViewClient({
               {title}
             </h1>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-sm text-slate-500 dark:text-white/50">
+              <span className="text-sm text-slate-500 dark:text-white/45">
                 {typeLabel}
               </span>
               <span className="text-slate-300 dark:text-white/20">|</span>
-              <span className="text-sm text-slate-400 dark:text-white/40">
+              <span className="text-sm text-slate-400 dark:text-white/45">
                 {date}
               </span>
               {modelUsed && (
@@ -162,7 +162,7 @@ export function DocumentViewClient({
             size={40}
             className="text-slate-300 dark:text-white/20 mb-3"
           />
-          <p className="text-sm text-slate-500 dark:text-white/50">
+          <p className="text-sm text-slate-500 dark:text-white/45">
             {status === "GENERATING"
               ? "Document is being generated..."
               : status === "FAILED"

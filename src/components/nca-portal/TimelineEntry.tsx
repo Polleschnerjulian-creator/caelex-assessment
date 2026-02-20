@@ -94,7 +94,7 @@ export default function TimelineEntry({
           </p>
           <time
             dateTime={timestamp}
-            className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 flex-shrink-0"
+            className="flex items-center gap-1 text-micro text-slate-400 dark:text-slate-500 flex-shrink-0"
           >
             <Clock size={10} aria-hidden="true" />
             {new Date(timestamp).toLocaleDateString(undefined, {
@@ -111,7 +111,7 @@ export default function TimelineEntry({
           </p>
         )}
         {metadata?.requiresResponse === true && (
-          <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-amber-400 font-medium">
+          <span className="inline-flex items-center gap-1 mt-1 text-micro text-amber-400 font-medium">
             <AlertCircle size={10} aria-hidden="true" />
             Response required
           </span>

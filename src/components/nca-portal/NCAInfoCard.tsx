@@ -94,20 +94,20 @@ export default function NCAInfoCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 transition-colors"
+                className="flex items-center gap-1 text-micro text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 <Globe size={10} aria-hidden="true" />
                 Portal
               </a>
             )}
             {email && (
-              <span className="flex items-center gap-1 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1 text-micro text-slate-400">
                 <Mail size={10} aria-hidden="true" />
                 {email}
               </span>
             )}
             {!portalUrl && !email && (
-              <span className="flex items-center gap-1 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1 text-micro text-slate-400">
                 <Building2 size={10} aria-hidden="true" />
                 Contact via official channels
               </span>

@@ -72,7 +72,7 @@ const complianceTypeColors: Record<string, string> = {
   conditional:
     "bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400/60",
   informational:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
   enforcement:
     "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400/60",
   scope_determination:
@@ -80,16 +80,16 @@ const complianceTypeColors: Record<string, string> = {
   operational:
     "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
   voluntary:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
   monitoring:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60",
+    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
 };
 
 const priorityColors: Record<string, string> = {
   CRITICAL: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400",
   HIGH: "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
   MEDIUM: "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70",
-  LOW: "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/60",
+  LOW: "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45",
   CONDITIONAL:
     "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300/50",
 };
@@ -322,19 +322,19 @@ export default function TrackerPage() {
         {/* Header */}
         <div className="flex justify-between items-start mb-10">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+            <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
               COMPLIANCE TRACKER
             </p>
-            <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
+            <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
               EU Space Act
             </h1>
-            <p className="text-[14px] text-slate-600 dark:text-white/70">
+            <p className="text-body-lg text-slate-600 dark:text-white/70">
               Track compliance across all 119 articles and 7 modules
             </p>
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 text-[11px] px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all"
+            className="flex items-center gap-2 border border-slate-300 dark:border-white/12 text-slate-700 dark:text-white/70 text-caption px-4 py-2 rounded-lg hover:border-slate-400 dark:hover:border-white/[0.1] hover:text-slate-900 dark:hover:text-white/70 transition-all"
           >
             <Download size={13} aria-hidden="true" />
             Export
@@ -354,13 +354,13 @@ export default function TrackerPage() {
                 key={mod.id}
                 className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 text-center"
               >
-                <p className="text-[10px] text-slate-400 dark:text-white/30">
+                <p className="text-micro text-slate-400 dark:text-white/30">
                   {mod.number}
                 </p>
-                <p className="text-[18px] font-semibold text-slate-900 dark:text-white">
+                <p className="text-heading font-semibold text-slate-900 dark:text-white">
                   {pct}%
                 </p>
-                <p className="text-[9px] text-slate-500 dark:text-white/60 mt-1">
+                <p className="text-[9px] text-slate-500 dark:text-white/45 mt-1">
                   {mod.shortName}
                 </p>
               </div>
@@ -368,8 +368,8 @@ export default function TrackerPage() {
           })}
           {/* Total */}
           <div className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg p-3 text-center">
-            <p className="text-[10px] text-slate-500 dark:text-white/60">ALL</p>
-            <p className="text-[18px] font-semibold text-slate-900 dark:text-white">
+            <p className="text-micro text-slate-500 dark:text-white/45">ALL</p>
+            <p className="text-heading font-semibold text-slate-900 dark:text-white">
               {moduleProgress["total"]?.total > 0
                 ? Math.round(
                     (moduleProgress["total"].compliant /
@@ -391,7 +391,7 @@ export default function TrackerPage() {
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/60"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
               aria-hidden="true"
             />
             <label htmlFor="article-search" className="sr-only">
@@ -403,7 +403,7 @@ export default function TrackerPage() {
               placeholder="Search articles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-[13px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
+              className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-body text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
             />
           </div>
 
@@ -411,10 +411,10 @@ export default function TrackerPage() {
           <div className="flex gap-1">
             <button
               onClick={() => setModuleFilter("all")}
-              className={`px-3 py-1 rounded-full text-[11px] border transition-all ${
+              className={`px-3 py-1 rounded-full text-caption border transition-all ${
                 moduleFilter === "all"
                   ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                  : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/60"
+                  : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
               All
@@ -423,10 +423,10 @@ export default function TrackerPage() {
               <button
                 key={mod.id}
                 onClick={() => setModuleFilter(mod.id)}
-                className={`px-3 py-1 rounded-full text-[11px] border transition-all ${
+                className={`px-3 py-1 rounded-full text-caption border transition-all ${
                   moduleFilter === mod.id
                     ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                    : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/60"
+                    : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
                 }`}
               >
                 {mod.shortName}
@@ -444,7 +444,7 @@ export default function TrackerPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as ArticleStatusType | "all")
             }
-            className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-[11px] text-slate-900 dark:text-white focus:outline-none"
+            className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-caption text-slate-900 dark:text-white focus:outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="not_started">Not Started</option>
@@ -468,7 +468,7 @@ export default function TrackerPage() {
               aria-selected={viewMode === "articles"}
               aria-controls="view-articles"
               onClick={() => setViewMode("articles")}
-              className={`px-4 py-2 text-[11px] transition-all ${
+              className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "articles"
                   ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
                   : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
@@ -481,7 +481,7 @@ export default function TrackerPage() {
               aria-selected={viewMode === "checklist"}
               aria-controls="view-checklist"
               onClick={() => setViewMode("checklist")}
-              className={`px-4 py-2 text-[11px] transition-all ${
+              className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "checklist"
                   ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
                   : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
@@ -506,20 +506,20 @@ export default function TrackerPage() {
                   {collapsedGroups.has(group) ? (
                     <ChevronRight
                       size={14}
-                      className="text-slate-500 dark:text-white/60"
+                      className="text-slate-500 dark:text-white/45"
                       aria-hidden="true"
                     />
                   ) : (
                     <ChevronDown
                       size={14}
-                      className="text-slate-500 dark:text-white/60"
+                      className="text-slate-500 dark:text-white/45"
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/60">
+                  <span className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/45">
                     {group}
                   </span>
-                  <span className="text-[10px] text-slate-400 dark:text-white/30 ml-auto">
+                  <span className="text-micro text-slate-400 dark:text-white/30 ml-auto">
                     {groupArticles.length} articles
                   </span>
                 </button>
@@ -558,25 +558,25 @@ export default function TrackerPage() {
                             </span>
 
                             {/* Article Number */}
-                            <span className="text-[12px] text-slate-600 dark:text-white/70 w-[60px]">
+                            <span className="text-small text-slate-600 dark:text-white/70 w-[60px]">
                               Art. {article.number}
                             </span>
 
                             {/* Title */}
-                            <span className="text-[14px] text-slate-900 dark:text-white flex-1">
+                            <span className="text-body-lg text-slate-900 dark:text-white flex-1">
                               {article.title}
                             </span>
 
                             {/* Module Badge */}
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70">
+                            <span className="text-micro px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70">
                               {article.moduleLabel}
                             </span>
 
                             {/* Compliance Type Badge */}
                             <span
-                              className={`text-[10px] px-2 py-0.5 rounded-full ${
+                              className={`text-micro px-2 py-0.5 rounded-full ${
                                 complianceTypeColors[article.complianceType] ||
-                                "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/60"
+                                "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45"
                               }`}
                             >
                               {article.complianceType.replace(/_/g, " ")}
@@ -602,17 +602,17 @@ export default function TrackerPage() {
                           {isExpanded && (
                             <div className="px-5 pb-6 pl-[76px]">
                               {/* Summary */}
-                              <p className="text-[14px] text-slate-600 dark:text-white/60 leading-[1.7] mb-4">
+                              <p className="text-body-lg text-slate-600 dark:text-white/45 leading-[1.7] mb-4">
                                 {article.summary}
                               </p>
 
                               {/* Operator Action */}
                               {article.operatorAction !== "None" && (
                                 <div className="mb-4">
-                                  <p className="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-wider mb-1">
+                                  <p className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wider mb-1">
                                     REQUIRED ACTION
                                   </p>
-                                  <p className="text-[13px] text-slate-700 dark:text-white/70">
+                                  <p className="text-body text-slate-700 dark:text-white/70">
                                     {article.operatorAction}
                                   </p>
                                 </div>
@@ -632,7 +632,7 @@ export default function TrackerPage() {
 
                               {/* Exemptions */}
                               {article.exemptions && (
-                                <p className="text-[11px] text-white/30 mb-4">
+                                <p className="text-caption text-white/30 mb-4">
                                   {article.exemptions}
                                 </p>
                               )}
@@ -654,7 +654,7 @@ export default function TrackerPage() {
                                       e.stopPropagation();
                                       updateArticleStatus(article.id, s);
                                     }}
-                                    className={`px-3 py-1.5 rounded-lg text-[11px] border transition-all ${
+                                    className={`px-3 py-1.5 rounded-lg text-caption border transition-all ${
                                       status === s
                                         ? `${statusColors[s].bg} ${statusColors[s].border}`
                                         : "border-white/12 text-white/70 hover:border-white/[0.1]"
@@ -703,10 +703,10 @@ export default function TrackerPage() {
                 return (
                   <div key={phase} className="mb-8">
                     <div className="flex items-center justify-between mb-4 mt-8">
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">
+                      <p className="text-caption uppercase tracking-[0.2em] text-white/45">
                         {phaseLabel}
                       </p>
-                      <p className="text-[10px] text-white/30">
+                      <p className="text-micro text-white/30">
                         {completedCount}/{phaseItems.length} completed
                       </p>
                     </div>
@@ -740,22 +740,22 @@ export default function TrackerPage() {
                             {/* Content */}
                             <div className="flex-1">
                               <p
-                                className={`text-[14px] ${
+                                className={`text-body-lg ${
                                   isCompleted
-                                    ? "line-through text-white/60"
+                                    ? "line-through text-white/45"
                                     : "text-white"
                                 }`}
                               >
                                 {item.requirement}
                               </p>
-                              <p className="text-[11px] text-white/60 mt-1">
+                              <p className="text-caption text-white/45 mt-1">
                                 {item.articles} · {item.moduleLabel}
                               </p>
                             </div>
 
                             {/* Priority Badge */}
                             <span
-                              className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${
+                              className={`text-micro uppercase px-2 py-0.5 rounded-full ${
                                 priorityColors[item.priority] ||
                                 "bg-white/[0.04] text-white/70"
                               }`}

@@ -60,7 +60,7 @@ export function ReadinessRing({
         />
       </svg>
       <span
-        className={`absolute text-[10px] font-semibold ${color}`}
+        className={`absolute text-micro font-semibold ${color}`}
         style={{ fontSize: size < 36 ? 8 : 10 }}
       >
         {score}

@@ -275,7 +275,7 @@ function AuditCenterContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/40" />
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45" />
       </div>
     );
   }
@@ -317,7 +317,7 @@ function AuditCenterContent() {
             <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
               Audit Center
             </h1>
-            <p className="text-xs text-slate-500 dark:text-white/40">
+            <p className="text-xs text-slate-500 dark:text-white/45">
               Regulatory audit readiness at a glance
             </p>
           </div>
@@ -325,7 +325,7 @@ function AuditCenterContent() {
         <button
           onClick={() => fetchOverview(true)}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 border border-slate-200 dark:border-white/10 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-white/10 rounded-lg transition-colors disabled:opacity-50"
         >
           <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
           Refresh
@@ -352,7 +352,7 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
               Compliance Score
             </span>
           </div>
@@ -367,7 +367,7 @@ function AuditCenterContent() {
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-white/30 mt-2">
+          <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
             Across {overview.modules.length} modules
           </div>
         </div>
@@ -376,7 +376,7 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Archive className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
               Evidence Coverage
             </span>
           </div>
@@ -393,7 +393,7 @@ function AuditCenterContent() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
             />
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-white/30 mt-2">
+          <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
             {overview.evidenceCoverage.withEvidence} of{" "}
             {overview.evidenceCoverage.totalRequirements} requirements
           </div>
@@ -403,7 +403,7 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
               Audit Trail
             </span>
           </div>
@@ -412,7 +412,7 @@ function AuditCenterContent() {
           </div>
           {chainStatus ? (
             <div
-              className={`flex items-center gap-1 mt-3 text-[11px] ${chainStatus.valid ? "text-green-400" : "text-red-400"}`}
+              className={`flex items-center gap-1 mt-3 text-caption ${chainStatus.valid ? "text-green-400" : "text-red-400"}`}
             >
               {chainStatus.valid ? (
                 <CheckCircle2 size={12} />
@@ -424,7 +424,7 @@ function AuditCenterContent() {
                 : "Integrity issue detected"}
             </div>
           ) : (
-            <div className="text-[11px] text-slate-400 dark:text-white/30 mt-3">
+            <div className="text-caption text-slate-400 dark:text-white/30 mt-3">
               {overview.recentActivityCount} entries in last 30 days
             </div>
           )}
@@ -434,7 +434,7 @@ function AuditCenterContent() {
         <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
               Action Items
             </span>
           </div>
@@ -443,7 +443,7 @@ function AuditCenterContent() {
           >
             {overview.actionItems.length}
           </div>
-          <div className="text-[11px] text-slate-400 dark:text-white/30 mt-3">
+          <div className="text-caption text-slate-400 dark:text-white/30 mt-3">
             {overview.actionItems.length > 0
               ? "Require attention"
               : "All up to date"}
@@ -453,16 +453,16 @@ function AuditCenterContent() {
 
       {/* ─── Filter Bar ─── */}
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-white/30 mr-2">
+        <div className="flex items-center gap-1.5 text-caption text-slate-400 dark:text-white/30 mr-2">
           <Filter size={12} />
           Filter:
         </div>
         <button
           onClick={() => setRegulationFilter("all")}
-          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+          className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
             regulationFilter === "all"
               ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+              : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
           }`}
         >
           All
@@ -477,10 +477,10 @@ function AuditCenterContent() {
             <button
               key={m.regulationType}
               onClick={() => setRegulationFilter(m.regulationType)}
-              className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+              className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
                 regulationFilter === m.regulationType
                   ? `${rc.bg} ${rc.text}`
-                  : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60"
+                  : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
               }`}
             >
               {rc.label}
@@ -492,7 +492,7 @@ function AuditCenterContent() {
       {/* ─── Module Compliance Overview ─── */}
       <div className="space-y-3">
         <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
-          <Layers size={16} className="text-slate-400 dark:text-white/40" />
+          <Layers size={16} className="text-slate-400 dark:text-white/45" />
           Module Compliance ({filteredModules.length})
         </h2>
 
@@ -516,7 +516,7 @@ function AuditCenterContent() {
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded ${rc.bg} ${rc.text}`}
+                    className={`text-micro font-medium px-2 py-0.5 rounded ${rc.bg} ${rc.text}`}
                   >
                     {rc.label}
                   </span>
@@ -596,7 +596,7 @@ function AuditCenterContent() {
                             <div
                               className={`w-2 h-2 rounded-full ${s.color}`}
                             />
-                            <span className="text-[10px] text-slate-500 dark:text-white/40">
+                            <span className="text-micro text-slate-500 dark:text-white/45">
                               {s.count} {s.label}
                             </span>
                           </div>
@@ -630,7 +630,7 @@ function AuditCenterContent() {
                     </div>
 
                     {mod.lastUpdated && (
-                      <div className="text-[10px] text-slate-400 dark:text-white/25 mt-3 flex items-center gap-1">
+                      <div className="text-micro text-slate-400 dark:text-white/25 mt-3 flex items-center gap-1">
                         <Clock size={10} />
                         Last updated:{" "}
                         {new Date(mod.lastUpdated).toLocaleDateString()}
@@ -646,7 +646,7 @@ function AuditCenterContent() {
         {filteredModules.length === 0 && (
           <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-8 text-center">
             <Shield className="w-8 h-8 text-slate-400/30 dark:text-white/10 mx-auto mb-2" />
-            <p className="text-sm text-slate-500 dark:text-white/40">
+            <p className="text-sm text-slate-500 dark:text-white/45">
               No compliance modules found. Start an assessment to see data here.
             </p>
           </div>
@@ -683,7 +683,7 @@ function AuditCenterContent() {
                       {item.requirementId}
                     </span>
                     <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${
+                      className={`text-micro font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${
                         item.status === "non_compliant"
                           ? "text-red-400 bg-red-500/10"
                           : "text-slate-400 bg-slate-500/10"
@@ -694,7 +694,7 @@ function AuditCenterContent() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                     {!item.hasEvidence && (
-                      <span className="text-[10px] text-amber-400/60">
+                      <span className="text-micro text-amber-400/60">
                         No evidence
                       </span>
                     )}
@@ -710,7 +710,7 @@ function AuditCenterContent() {
             })}
             {filteredActions.length > 20 && (
               <div className="px-5 py-3 text-center">
-                <span className="text-[11px] text-slate-400 dark:text-white/30">
+                <span className="text-caption text-slate-400 dark:text-white/30">
                   + {filteredActions.length - 20} more items
                 </span>
               </div>
@@ -722,7 +722,7 @@ function AuditCenterContent() {
       {/* ─── Export Panel ─── */}
       <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-6">
         <div className="flex items-center gap-3 mb-5">
-          <Download className="w-4 h-4 text-slate-400 dark:text-white/40" />
+          <Download className="w-4 h-4 text-slate-400 dark:text-white/45" />
           <h2 className="text-sm font-medium text-slate-900 dark:text-white">
             Export & Verification
           </h2>
@@ -744,7 +744,7 @@ function AuditCenterContent() {
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Audit Report
               </div>
-              <div className="text-[10px] text-slate-400 dark:text-white/25">
+              <div className="text-micro text-slate-400 dark:text-white/25">
                 PDF with full trail
               </div>
             </div>
@@ -765,7 +765,7 @@ function AuditCenterContent() {
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Audit Trail
               </div>
-              <div className="text-[10px] text-slate-400 dark:text-white/25">
+              <div className="text-micro text-slate-400 dark:text-white/25">
                 CSV export
               </div>
             </div>
@@ -786,7 +786,7 @@ function AuditCenterContent() {
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Certificate
               </div>
-              <div className="text-[10px] text-slate-400 dark:text-white/25">
+              <div className="text-micro text-slate-400 dark:text-white/25">
                 Compliance cert
               </div>
             </div>
@@ -807,7 +807,7 @@ function AuditCenterContent() {
               <div className="text-xs font-medium text-slate-700 dark:text-white/70">
                 Verify Integrity
               </div>
-              <div className="text-[10px] text-slate-400 dark:text-white/25">
+              <div className="text-micro text-slate-400 dark:text-white/25">
                 Hash chain check
               </div>
             </div>
@@ -819,26 +819,26 @@ function AuditCenterContent() {
           overview.evidenceCoverage.byStatus.submitted >
           0 && (
           <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center gap-3 flex-wrap">
-            <span className="text-[11px] text-slate-400 dark:text-white/30">
+            <span className="text-caption text-slate-400 dark:text-white/30">
               Evidence:
             </span>
             {overview.evidenceCoverage.byStatus.accepted > 0 && (
-              <span className="text-[10px] bg-green-500/10 text-green-400 rounded-md px-2 py-0.5">
+              <span className="text-micro bg-green-500/10 text-green-400 rounded-lg px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.accepted} accepted
               </span>
             )}
             {overview.evidenceCoverage.byStatus.submitted > 0 && (
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 rounded-md px-2 py-0.5">
+              <span className="text-micro bg-emerald-500/10 text-emerald-400 rounded-lg px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.submitted} submitted
               </span>
             )}
             {overview.evidenceCoverage.byStatus.draft > 0 && (
-              <span className="text-[10px] bg-slate-500/10 text-slate-400 rounded-md px-2 py-0.5">
+              <span className="text-micro bg-slate-500/10 text-slate-400 rounded-lg px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.draft} draft
               </span>
             )}
             {overview.evidenceCoverage.byStatus.rejected > 0 && (
-              <span className="text-[10px] bg-red-500/10 text-red-400 rounded-md px-2 py-0.5">
+              <span className="text-micro bg-red-500/10 text-red-400 rounded-lg px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.rejected} rejected
               </span>
             )}

@@ -95,7 +95,7 @@ export function SpacecraftStats({ stats, isLoading }: SpacecraftStatsProps) {
                 <div className="text-2xl font-bold text-white">
                   {stat.value}
                 </div>
-                <div className="text-xs text-white/50">{stat.label}</div>
+                <div className="text-xs text-white/45">{stat.label}</div>
               </div>
             </div>
           </div>

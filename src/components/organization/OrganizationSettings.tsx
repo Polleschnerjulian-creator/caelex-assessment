@@ -173,7 +173,7 @@ export function OrganizationSettings({
           <h2 className="text-xl font-semibold text-white">
             Organization Settings
           </h2>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-white/45">
             Manage your organization profile and preferences
           </p>
         </div>
@@ -233,16 +233,16 @@ export function OrganizationSettings({
               URL Slug
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-white/50">/org/</span>
+              <span className="text-sm text-white/45">/org/</span>
               <input
                 id="org-slug"
                 type="text"
                 value={organization.slug}
                 disabled
-                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/50 cursor-not-allowed"
+                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/45 cursor-not-allowed"
               />
             </div>
-            <p className="mt-1 text-xs text-white/40">
+            <p className="mt-1 text-xs text-white/45">
               Slug cannot be changed after creation
             </p>
           </div>
@@ -445,7 +445,7 @@ export function OrganizationSettings({
           <div>
             <div className="text-2xl font-bold text-white">
               {organization._count.members}
-              <span className="text-sm font-normal text-white/50">
+              <span className="text-sm font-normal text-white/45">
                 {" "}
                 /{" "}
                 {organization.maxUsers === -1
@@ -453,12 +453,12 @@ export function OrganizationSettings({
                   : organization.maxUsers}
               </span>
             </div>
-            <div className="text-sm text-white/60">Team Members</div>
+            <div className="text-sm text-white/45">Team Members</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-white">
               {organization._count.spacecraft}
-              <span className="text-sm font-normal text-white/50">
+              <span className="text-sm font-normal text-white/45">
                 {" "}
                 /{" "}
                 {organization.maxSpacecraft === -1
@@ -466,7 +466,7 @@ export function OrganizationSettings({
                   : organization.maxSpacecraft}
               </span>
             </div>
-            <div className="text-sm text-white/60">Spacecraft</div>
+            <div className="text-sm text-white/45">Spacecraft</div>
           </div>
         </div>
       </div>
@@ -498,7 +498,7 @@ export function OrganizationSettings({
       {canDelete && (
         <div className="bg-red-500/10 rounded-xl border border-red-500/20 p-6">
           <h3 className="text-sm font-medium text-red-400 mb-2">Danger Zone</h3>
-          <p className="text-sm text-white/60 mb-4">
+          <p className="text-sm text-white/45 mb-4">
             Deleting an organization is permanent and cannot be undone. All
             members will lose access and all data will be deleted.
           </p>

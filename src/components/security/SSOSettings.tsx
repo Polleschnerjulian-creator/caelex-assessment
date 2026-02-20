@@ -225,7 +225,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={24} className="animate-spin text-white/40" />
+        <Loader2 size={24} className="animate-spin text-white/45" />
       </div>
     );
   }
@@ -239,7 +239,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
             <Shield size={20} className="text-blue-400" />
             Single Sign-On (SSO)
           </h2>
-          <p className="text-sm text-white/60 mt-1">
+          <p className="text-sm text-white/45 mt-1">
             Configure enterprise SSO for your organization
           </p>
         </div>
@@ -274,7 +274,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">SSO Enabled</h3>
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm text-white/45">
                     {connection.providerName}
                   </p>
                 </div>
@@ -317,7 +317,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
 
             {/* Last Test Info */}
             {connection.lastTestedAt && (
-              <div className="mt-4 pt-4 border-t border-white/5 text-xs text-white/40">
+              <div className="mt-4 pt-4 border-t border-white/5 text-xs text-white/45">
                 Last tested:{" "}
                 {new Date(connection.lastTestedAt).toLocaleString()} -{" "}
                 <span
@@ -341,12 +341,12 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-white/50 mb-1">Provider</div>
+                  <div className="text-white/45 mb-1">Provider</div>
                   <div className="text-white">{connection.providerName}</div>
                 </div>
                 {connection.entityId && (
                   <div>
-                    <div className="text-white/50 mb-1">Entity ID</div>
+                    <div className="text-white/45 mb-1">Entity ID</div>
                     <div className="text-white font-mono text-xs truncate">
                       {connection.entityId}
                     </div>
@@ -354,24 +354,24 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                 )}
                 {connection.issuerUrl && (
                   <div>
-                    <div className="text-white/50 mb-1">Issuer URL</div>
+                    <div className="text-white/45 mb-1">Issuer URL</div>
                     <div className="text-white font-mono text-xs truncate">
                       {connection.issuerUrl}
                     </div>
                   </div>
                 )}
                 <div>
-                  <div className="text-white/50 mb-1">Auto Provision</div>
+                  <div className="text-white/45 mb-1">Auto Provision</div>
                   <div className="text-white">
                     {connection.autoProvision ? "Enabled" : "Disabled"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-white/50 mb-1">Default Role</div>
+                  <div className="text-white/45 mb-1">Default Role</div>
                   <div className="text-white">{connection.defaultRole}</div>
                 </div>
                 <div>
-                  <div className="text-white/50 mb-1">Enforce SSO</div>
+                  <div className="text-white/45 mb-1">Enforce SSO</div>
                   <div className="text-white">
                     {connection.enforceSSO ? (
                       <span className="text-amber-400">Enforced</span>
@@ -403,7 +403,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
           <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Globe size={16} className="text-white/50" />
+                <Globe size={16} className="text-white/45" />
                 <h3 className="text-sm font-medium text-white">
                   Verified Domains
                 </h3>
@@ -411,7 +411,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
             </div>
             <div className="p-6">
               {connection.domains.length === 0 ? (
-                <p className="text-sm text-white/50">
+                <p className="text-sm text-white/45">
                   No domains configured. Add domains to enable automatic SSO for
                   users.
                 </p>
@@ -626,7 +626,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
                   <div className="text-sm text-white">Auto Provision Users</div>
-                  <div className="text-xs text-white/50">
+                  <div className="text-xs text-white/45">
                     Automatically create accounts for new SSO users
                   </div>
                 </div>
@@ -676,7 +676,7 @@ export function SSOSettings({ organizationId }: SSOSettingsProps) {
                     Enforce SSO
                     <AlertTriangle size={14} className="text-amber-400" />
                   </div>
-                  <div className="text-xs text-white/50">
+                  <div className="text-xs text-white/45">
                     Block password login for organization members
                   </div>
                 </div>

@@ -126,7 +126,7 @@ export default function DemoPage() {
                 </span>
               </h1>
 
-              <p className="text-[17px] text-white/50 leading-relaxed mb-8 max-w-lg">
+              <p className="text-title text-white/45 leading-relaxed mb-8 max-w-lg">
                 Get a personalized walkthrough of how Caelex helps satellite
                 operators, launch providers, and space service companies
                 navigate EU Space Act, NIS2, and national space law compliance.
@@ -136,10 +136,10 @@ export default function DemoPage() {
               <div className="grid grid-cols-4 gap-4 mb-8">
                 {stats.map((stat, i) => (
                   <div key={i} className="text-center">
-                    <div className="text-[24px] font-semibold text-white">
+                    <div className="text-display-sm font-semibold text-white">
                       {stat.value}
                     </div>
-                    <div className="text-[11px] text-white/40 uppercase tracking-wider">
+                    <div className="text-caption text-white/45 uppercase tracking-wider">
                       {stat.label}
                     </div>
                   </div>
@@ -147,7 +147,7 @@ export default function DemoPage() {
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex items-center gap-6 text-[13px] text-white/40">
+              <div className="flex items-center gap-6 text-body text-white/45">
                 <div className="flex items-center gap-2">
                   <CheckCircle size={14} className="text-emerald-400" />
                   <span>No credit card required</span>
@@ -181,16 +181,16 @@ export default function DemoPage() {
                         <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
                           <CheckCircle size={32} className="text-emerald-400" />
                         </div>
-                        <h3 className="text-[22px] font-medium text-white mb-3">
+                        <h3 className="text-heading-lg font-medium text-white mb-3">
                           You're on the list!
                         </h3>
-                        <p className="text-[15px] text-white/50 mb-6">
+                        <p className="text-subtitle text-white/45 mb-6">
                           We'll reach out within 24 hours to schedule your
                           personalized demo.
                         </p>
                         <Link
                           href="/assessment"
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-all"
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
                         >
                           Try Free Assessment
                           <ArrowRight size={16} />
@@ -203,10 +203,10 @@ export default function DemoPage() {
                             <Calendar size={20} className="text-white" />
                           </div>
                           <div>
-                            <h3 className="text-[18px] font-medium text-white">
+                            <h3 className="text-heading font-medium text-white">
                               Book Your Demo
                             </h3>
-                            <p className="text-[13px] text-white/40">
+                            <p className="text-body text-white/45">
                               Free • 15 minutes • No commitment
                             </p>
                           </div>
@@ -220,7 +220,7 @@ export default function DemoPage() {
                               onChange={(e) => setName(e.target.value)}
                               placeholder="Your name"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
                             />
                           </div>
                           <div>
@@ -230,7 +230,7 @@ export default function DemoPage() {
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="Work email"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
                             />
                           </div>
                           <div>
@@ -240,14 +240,14 @@ export default function DemoPage() {
                               onChange={(e) => setCompany(e.target.value)}
                               placeholder="Company name"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
                             />
                           </div>
 
                           <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-[14px] font-medium px-6 py-4 rounded-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-body-lg font-medium px-6 py-4 rounded-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
                           >
                             {submitting ? (
                               <span>Submitting...</span>
@@ -261,16 +261,16 @@ export default function DemoPage() {
                         </form>
 
                         {error && (
-                          <p className="text-[12px] text-red-400 text-center mt-3">
+                          <p className="text-small text-red-400 text-center mt-3">
                             {error}
                           </p>
                         )}
 
-                        <p className="text-[11px] text-white/30 text-center mt-4">
+                        <p className="text-caption text-white/30 text-center mt-4">
                           By submitting, you agree to our{" "}
                           <Link
                             href="/legal/privacy"
-                            className="underline hover:text-white/50"
+                            className="underline hover:text-white/70"
                           >
                             Privacy Policy
                           </Link>
@@ -294,10 +294,10 @@ export default function DemoPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-[32px] font-medium text-white mb-4">
+            <h2 className="text-display font-medium text-white mb-4">
               What You'll See in the Demo
             </h2>
-            <p className="text-[16px] text-white/50 max-w-2xl mx-auto">
+            <p className="text-title text-white/45 max-w-2xl mx-auto">
               A complete walkthrough of the platform tailored to your specific
               needs
             </p>
@@ -324,7 +324,7 @@ export default function DemoPage() {
                   <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1.5 rounded-lg bg-white/[0.06] text-[12px] text-white/40">
+                  <div className="px-4 py-1.5 rounded-lg bg-white/[0.06] text-small text-white/45">
                     app.caelex.eu/dashboard
                   </div>
                 </div>
@@ -337,7 +337,7 @@ export default function DemoPage() {
                   <div className="col-span-2 space-y-2">
                     <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.08]">
                       <CaelexIcon size={20} className="text-white" />
-                      <span className="text-[13px] font-medium text-white">
+                      <span className="text-body font-medium text-white">
                         caelex
                       </span>
                     </div>
@@ -351,10 +351,10 @@ export default function DemoPage() {
                     ].map((item, i) => (
                       <div
                         key={item}
-                        className={`p-2.5 rounded-lg text-[12px] ${
+                        className={`p-2.5 rounded-lg text-small ${
                           i === 0
                             ? "bg-white/[0.08] text-white"
-                            : "text-white/40"
+                            : "text-white/45"
                         }`}
                       >
                         {item}
@@ -367,15 +367,15 @@ export default function DemoPage() {
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-[18px] font-medium text-white">
+                        <div className="text-heading font-medium text-white">
                           Compliance Dashboard
                         </div>
-                        <div className="text-[12px] text-white/40">
+                        <div className="text-small text-white/45">
                           EU Space Act • NIS2 • National Laws
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-[11px]">
+                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-caption">
                           78% Compliant
                         </div>
                       </div>
@@ -405,11 +405,11 @@ export default function DemoPage() {
                           key={stat.label}
                           className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06]"
                         >
-                          <div className="text-[11px] text-white/40 mb-1">
+                          <div className="text-caption text-white/45 mb-1">
                             {stat.label}
                           </div>
                           <div
-                            className={`text-[18px] font-medium text-${stat.color}-400`}
+                            className={`text-heading font-medium text-${stat.color}-400`}
                           >
                             {stat.value}
                           </div>
@@ -430,10 +430,10 @@ export default function DemoPage() {
                           className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06]"
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-[12px] text-white/60">
+                            <span className="text-small text-white/45">
                               {item.module}
                             </span>
-                            <span className="text-[12px] text-white/40">
+                            <span className="text-small text-white/45">
                               {item.progress}%
                             </span>
                           </div>
@@ -478,10 +478,10 @@ export default function DemoPage() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-400/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                     <benefit.icon size={24} className="text-emerald-400" />
                   </div>
-                  <h3 className="text-[16px] font-medium text-white mb-2">
+                  <h3 className="text-title font-medium text-white mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-[13px] text-white/40 leading-relaxed">
+                  <p className="text-body text-white/45 leading-relaxed">
                     {benefit.description}
                   </p>
                 </div>
@@ -504,14 +504,14 @@ export default function DemoPage() {
                 transition={{ delay: i * 0.1 }}
                 className="p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]"
               >
-                <p className="text-[17px] text-white/70 leading-relaxed mb-6 italic">
+                <p className="text-title text-white/70 leading-relaxed mb-6 italic">
                   "{testimonial.quote}"
                 </p>
                 <div>
-                  <div className="text-[14px] font-medium text-white">
+                  <div className="text-body-lg font-medium text-white">
                     {testimonial.author}
                   </div>
-                  <div className="text-[13px] text-white/40">
+                  <div className="text-body text-white/45">
                     {testimonial.company}
                   </div>
                 </div>
@@ -530,24 +530,24 @@ export default function DemoPage() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-[32px] font-medium text-white mb-4">
+            <h2 className="text-display font-medium text-white mb-4">
               Ready to simplify your compliance?
             </h2>
-            <p className="text-[16px] text-white/50 mb-8 max-w-xl mx-auto">
+            <p className="text-title text-white/45 mb-8 max-w-xl mx-auto">
               Join leading space companies who trust Caelex for their regulatory
               compliance.
             </p>
             <div className="flex items-center justify-center gap-4">
               <Link
                 href="/assessment"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
               >
                 Start Free Assessment
                 <ArrowRight size={16} />
               </Link>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/20 text-white text-[14px] font-medium hover:border-white/40 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/20 text-white text-body-lg font-medium hover:border-white/40 transition-all"
               >
                 <Users size={16} />
                 Book Demo

@@ -21,8 +21,8 @@ const statusStyles: Record<
   simplified: {
     bg: "bg-white/[0.04]",
     border: "border-white/[0.15]",
-    text: "text-white/80",
-    badge: "bg-white/[0.10] text-white/80",
+    text: "text-white/70",
+    badge: "bg-white/[0.10] text-white/70",
   },
   recommended: {
     bg: "bg-white/[0.03]",
@@ -33,8 +33,8 @@ const statusStyles: Record<
   not_applicable: {
     bg: "bg-white/[0.02]",
     border: "border-white/[0.08]",
-    text: "text-white/50",
-    badge: "bg-white/[0.05] text-white/50",
+    text: "text-white/45",
+    badge: "bg-white/[0.05] text-white/45",
   },
 };
 
@@ -68,10 +68,10 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
       transition={{ delay: 0.1 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
           Compliance Modules
         </span>
-        <span className="text-[11px] text-white/50">
+        <span className="text-caption text-white/45">
           {modules.length} modules analyzed
         </span>
       </div>
@@ -101,26 +101,26 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
                       {IconComponent && <IconComponent className="w-4 h-4" />}
                     </div>
                     <span
-                      className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-full ${style.badge}`}
+                      className={`text-micro uppercase tracking-wider px-2 py-1 rounded-full ${style.badge}`}
                     >
                       {statusLabels[module.status]}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <h4 className="text-[14px] text-white font-medium mb-1">
+                  <h4 className="text-body-lg text-white font-medium mb-1">
                     {module.name}
                   </h4>
-                  <p className="text-[12px] text-white/60 mb-3 leading-relaxed">
+                  <p className="text-small text-white/45 mb-3 leading-relaxed">
                     {module.description}
                   </p>
 
                   {/* Stats */}
                   <div className="flex items-center justify-between pt-3 border-t border-white/[0.10]">
-                    <span className="text-[11px] text-white/50">
+                    <span className="text-caption text-white/45">
                       Relevant articles
                     </span>
-                    <span className={`text-[12px] ${style.text}`}>
+                    <span className={`text-small ${style.text}`}>
                       {module.articleCount}
                     </span>
                   </div>
@@ -129,7 +129,7 @@ export default function ModuleCards({ modules }: ModuleCardsProps) {
                 {/* Summary bar */}
                 {module.status !== "not_applicable" && (
                   <div className="px-5 py-3 bg-white/[0.03] border-t border-white/[0.08]">
-                    <p className="text-[12px] text-white/60 leading-relaxed">
+                    <p className="text-small text-white/45 leading-relaxed">
                       {module.summary}
                     </p>
                   </div>

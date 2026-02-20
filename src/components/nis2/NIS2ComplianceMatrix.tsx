@@ -41,7 +41,7 @@ export default function NIS2ComplianceMatrix({
       <div className="grid md:grid-cols-2 gap-6">
         {/* Penalties */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+          <h4 className="text-sm font-medium text-white/45 uppercase tracking-wider">
             Penalty Exposure
           </h4>
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
@@ -54,11 +54,11 @@ export default function NIS2ComplianceMatrix({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white/[0.03] rounded-lg p-3">
-              <div className="text-xs text-white/40 mb-1">Essential</div>
+              <div className="text-xs text-white/45 mb-1">Essential</div>
               <div className="text-sm text-white">{penalties.essential}</div>
             </div>
             <div className="bg-white/[0.03] rounded-lg p-3">
-              <div className="text-xs text-white/40 mb-1">Important</div>
+              <div className="text-xs text-white/45 mb-1">Important</div>
               <div className="text-sm text-white">{penalties.important}</div>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function NIS2ComplianceMatrix({
 
         {/* Registration & Authority */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+          <h4 className="text-sm font-medium text-white/45 uppercase tracking-wider">
             Registration & Supervision
           </h4>
 
@@ -90,7 +90,7 @@ export default function NIS2ComplianceMatrix({
               </span>
             </div>
             {registrationRequired && (
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-white/45">
                 Deadline: {registrationDeadline}
               </p>
             )}
@@ -98,13 +98,13 @@ export default function NIS2ComplianceMatrix({
 
           {/* Authority */}
           <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4">
-            <div className="text-xs text-white/40 mb-1">
+            <div className="text-xs text-white/45 mb-1">
               Supervisory Authority
             </div>
             <div className="text-sm text-white font-medium mb-1">
               {supervisoryAuthority}
             </div>
-            <p className="text-xs text-white/50">{supervisoryAuthorityNote}</p>
+            <p className="text-xs text-white/45">{supervisoryAuthorityNote}</p>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function NIS2ComplianceMatrix({
       {/* Key Dates */}
       {keyDates.length > 0 && (
         <div className="mt-6">
-          <h4 className="text-sm font-medium text-white/60 uppercase tracking-wider mb-3">
+          <h4 className="text-sm font-medium text-white/45 uppercase tracking-wider mb-3">
             Key Dates
           </h4>
           <div className="space-y-2">
@@ -128,7 +128,7 @@ export default function NIS2ComplianceMatrix({
                 <span className="text-sm text-blue-400 w-28 flex-shrink-0">
                   {date.date}
                 </span>
-                <span className="text-sm text-white/60">
+                <span className="text-sm text-white/45">
                   {date.description}
                 </span>
               </div>

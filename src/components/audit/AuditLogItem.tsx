@@ -209,18 +209,18 @@ export default function AuditLogItem({
                 {formatActionName(entry.action)}
               </span>
               {entry.entityType && (
-                <span className="px-2 py-0.5 text-xs bg-white/10 text-white/60 rounded">
+                <span className="px-2 py-0.5 text-xs bg-white/10 text-white/45 rounded">
                   {entry.entityType}
                 </span>
               )}
             </div>
-            <p className="text-sm text-white/60 mt-1 line-clamp-2">
+            <p className="text-sm text-white/45 mt-1 line-clamp-2">
               {entry.description}
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-white/40 flex items-center gap-1">
+            <span className="text-xs text-white/45 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {formatRelativeTime(entry.timestamp)}
             </span>
@@ -246,10 +246,10 @@ export default function AuditLogItem({
             />
           ) : (
             <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
-              <UserIcon className="w-3 h-3 text-white/50" />
+              <UserIcon className="w-3 h-3 text-white/45" />
             </div>
           )}
-          <span className="text-xs text-white/50">
+          <span className="text-xs text-white/45">
             {entry.user.name || entry.user.email.split("@")[0]}
           </span>
         </div>
@@ -267,7 +267,7 @@ export default function AuditLogItem({
               {/* Changes */}
               {entry.changes && entry.changes.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">
                     Changes
                   </h4>
                   <div className="space-y-2">
@@ -276,7 +276,7 @@ export default function AuditLogItem({
                         key={index}
                         className="flex items-start gap-2 text-xs"
                       >
-                        <span className="text-white/60 min-w-[80px]">
+                        <span className="text-white/45 min-w-[80px]">
                           {change.field}:
                         </span>
                         <span className="text-red-400/70 line-through">
@@ -295,19 +295,19 @@ export default function AuditLogItem({
               {/* Technical details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {entry.ipAddress && (
-                  <div className="flex items-center gap-2 text-white/40">
+                  <div className="flex items-center gap-2 text-white/45">
                     <MapPin className="w-3 h-3" />
                     <span>IP: {entry.ipAddress}</span>
                   </div>
                 )}
                 {entry.userAgent && (
-                  <div className="flex items-center gap-2 text-white/40">
+                  <div className="flex items-center gap-2 text-white/45">
                     <Monitor className="w-3 h-3" />
                     <span className="truncate">{entry.userAgent}</span>
                   </div>
                 )}
                 {entry.entityId && (
-                  <div className="flex items-center gap-2 text-white/40">
+                  <div className="flex items-center gap-2 text-white/45">
                     <ExternalLink className="w-3 h-3" />
                     <span className="font-mono">{entry.entityId}</span>
                   </div>
@@ -317,17 +317,17 @@ export default function AuditLogItem({
               {/* Metadata */}
               {entry.metadata && Object.keys(entry.metadata).length > 0 && (
                 <div className="mt-3 pt-3 border-t border-white/5">
-                  <h4 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">
                     Additional Data
                   </h4>
-                  <pre className="text-xs text-white/50 bg-white/5 rounded p-2 overflow-x-auto">
+                  <pre className="text-xs text-white/45 bg-white/5 rounded p-2 overflow-x-auto">
                     {JSON.stringify(entry.metadata, null, 2)}
                   </pre>
                 </div>
               )}
 
               {/* Timestamp details */}
-              <div className="mt-3 text-xs text-white/40">
+              <div className="mt-3 text-xs text-white/45">
                 {new Date(entry.timestamp).toLocaleString("en-US", {
                   weekday: "long",
                   year: "numeric",

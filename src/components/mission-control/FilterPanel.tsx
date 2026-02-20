@@ -49,13 +49,13 @@ export default function FilterPanel({
       className="absolute top-4 left-4 bottom-16 w-[280px] bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-10"
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <h3 className="text-[13px] font-medium text-white">
+        <h3 className="text-body font-medium text-white">
           {t("missionControl.filters")}
         </h3>
         <button
           onClick={onClose}
           aria-label="Close filters"
-          className="text-white/40 hover:text-white/70 transition-colors"
+          className="text-white/45 hover:text-white/70 transition-colors"
         >
           <X size={16} aria-hidden="true" />
         </button>
@@ -64,7 +64,7 @@ export default function FilterPanel({
       <div className="p-4 space-y-5 overflow-y-auto max-h-[calc(100%-48px)]">
         {/* Orbit Type */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
+          <p className="text-micro uppercase tracking-wider text-white/45 mb-2">
             {t("missionControl.orbitType")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -74,7 +74,7 @@ export default function FilterPanel({
                 <button
                   key={opt.value}
                   onClick={() => onOrbitToggle(opt.value)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] transition-all border ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-caption transition-all border ${
                     active
                       ? "bg-white/10 border-white/20 text-white"
                       : "bg-white/5 border-white/5 text-white/30"
@@ -94,7 +94,7 @@ export default function FilterPanel({
 
         {/* Object Type */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">
+          <p className="text-micro uppercase tracking-wider text-white/45 mb-2">
             {t("missionControl.objectType")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -105,7 +105,7 @@ export default function FilterPanel({
                 <button
                   key={opt.value}
                   onClick={() => onObjectToggle(opt.value)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] transition-all border ${
+                  className={`px-3 py-1.5 rounded-lg text-caption transition-all border ${
                     active
                       ? "bg-white/10 border-white/20 text-white"
                       : "bg-white/5 border-white/5 text-white/30"
@@ -124,10 +124,10 @@ export default function FilterPanel({
             onClick={onFleetOnlyToggle}
             role="switch"
             aria-checked={fleetOnly}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-[12px] transition-all border ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-small transition-all border ${
               fleetOnly
                 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                : "bg-white/5 border-white/5 text-white/50"
+                : "bg-white/5 border-white/5 text-white/45"
             }`}
           >
             <span>{t("missionControl.showFleetOnly")}</span>
@@ -148,7 +148,7 @@ export default function FilterPanel({
 
         {/* Result Count */}
         <div className="pt-3 border-t border-white/5">
-          <p className="text-[11px] text-white/40">
+          <p className="text-caption text-white/45">
             {t("missionControl.showing")}{" "}
             <span className="text-white font-medium">
               {resultCount.toLocaleString()}

@@ -388,7 +388,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               {jurisdiction.h1}
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               {content.overview}
             </p>
           </div>
@@ -398,12 +398,12 @@ export default async function JurisdictionPage({ params }: PageProps) {
             <div className="lg:col-span-2 space-y-12">
               {/* National Space Law */}
               <section>
-                <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                   <Scale size={24} className="text-emerald-400" />
                   National Space Law
                 </h2>
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <p className="text-[16px] text-white/70 font-medium mb-4">
+                  <p className="text-title text-white/70 font-medium mb-4">
                     {jurisdiction.spaceLaw}
                   </p>
                   {content.keyProvisions.length > 0 && (
@@ -411,7 +411,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                       {content.keyProvisions.map((provision, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-3 text-[14px] text-white/50"
+                          className="flex items-start gap-3 text-body-lg text-white/45"
                         >
                           <span className="text-emerald-400 mt-1">•</span>
                           {provision}
@@ -424,15 +424,15 @@ export default async function JurisdictionPage({ params }: PageProps) {
 
               {/* NCA */}
               <section>
-                <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                   <Building2 size={24} className="text-emerald-400" />
                   National Competent Authority (NCA)
                 </h2>
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <p className="text-[18px] text-white font-medium mb-2">
+                  <p className="text-heading text-white font-medium mb-2">
                     {jurisdiction.nca}
                   </p>
-                  <p className="text-[14px] text-white/50">
+                  <p className="text-body-lg text-white/45">
                     {jurisdiction.ncaFull}
                   </p>
                 </div>
@@ -441,7 +441,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
               {/* Authorization Requirements */}
               {content.authorizationRequirements.length > 0 && (
                 <section>
-                  <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                  <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                     <FileText size={24} className="text-emerald-400" />
                     Authorization Requirements
                   </h2>
@@ -449,7 +449,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                     {content.authorizationRequirements.map((req, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-3 text-[15px] text-white/60"
+                        className="flex items-start gap-3 text-subtitle text-white/45"
                       >
                         <Shield
                           size={18}
@@ -465,12 +465,12 @@ export default async function JurisdictionPage({ params }: PageProps) {
               {/* Insurance */}
               {content.insuranceRequirements && (
                 <section>
-                  <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                  <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                     <Banknote size={24} className="text-emerald-400" />
                     Insurance & Liability
                   </h2>
                   <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                    <p className="text-[15px] text-white/60 leading-relaxed">
+                    <p className="text-subtitle text-white/45 leading-relaxed">
                       {content.insuranceRequirements}
                     </p>
                   </div>
@@ -480,11 +480,11 @@ export default async function JurisdictionPage({ params }: PageProps) {
               {/* EU Space Act Relation */}
               {content.euSpaceActRelation && (
                 <section>
-                  <h2 className="text-[24px] font-medium text-white mb-6">
+                  <h2 className="text-display-sm font-medium text-white mb-6">
                     Key Differences from EU Space Act
                   </h2>
                   <div className="p-6 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                    <p className="text-[15px] text-white/60 leading-relaxed">
+                    <p className="text-subtitle text-white/45 leading-relaxed">
                       {content.euSpaceActRelation}
                     </p>
                   </div>
@@ -496,16 +496,16 @@ export default async function JurisdictionPage({ params }: PageProps) {
             <div className="space-y-8">
               {/* CTA Card */}
               <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
-                <h3 className="text-[18px] font-medium text-white mb-3">
+                <h3 className="text-heading font-medium text-white mb-3">
                   Assess Your Compliance in {jurisdiction.country}
                 </h3>
-                <p className="text-[14px] text-white/50 mb-6">
+                <p className="text-body-lg text-white/45 mb-6">
                   Get a personalized compliance profile for{" "}
                   {jurisdiction.country} regulations in minutes.
                 </p>
                 <Link
                   href="/assessment"
-                  className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-emerald-500 text-white text-[14px] font-medium hover:bg-emerald-400 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-colors"
                 >
                   Start Assessment
                   <ArrowRight size={16} />
@@ -515,10 +515,10 @@ export default async function JurisdictionPage({ params }: PageProps) {
               {/* Caelex Coverage */}
               {content.caelexModules.length > 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h3 className="text-[16px] font-medium text-white mb-4">
+                  <h3 className="text-title font-medium text-white mb-4">
                     Caelex Coverage
                   </h3>
-                  <p className="text-[13px] text-white/40 mb-4">
+                  <p className="text-body text-white/45 mb-4">
                     Relevant compliance modules for {jurisdiction.country}:
                   </p>
                   <div className="space-y-2">
@@ -526,7 +526,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
                       <Link
                         key={moduleSlug}
                         href={`/modules/${moduleSlug}`}
-                        className="block text-[14px] text-white/60 hover:text-emerald-400 transition-colors capitalize"
+                        className="block text-body-lg text-white/45 hover:text-emerald-400 transition-colors capitalize"
                       >
                         {moduleSlug.replace(/-/g, " ")}
                       </Link>
@@ -537,7 +537,7 @@ export default async function JurisdictionPage({ params }: PageProps) {
 
               {/* Other Jurisdictions */}
               <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                <h3 className="text-[16px] font-medium text-white mb-4">
+                <h3 className="text-title font-medium text-white mb-4">
                   Other Jurisdictions
                 </h3>
                 <div className="space-y-2">
@@ -548,14 +548,14 @@ export default async function JurisdictionPage({ params }: PageProps) {
                       <Link
                         key={j.slug}
                         href={`/jurisdictions/${j.slug}`}
-                        className="block text-[14px] text-white/60 hover:text-emerald-400 transition-colors"
+                        className="block text-body-lg text-white/45 hover:text-emerald-400 transition-colors"
                       >
                         {j.country}
                       </Link>
                     ))}
                   <Link
                     href="/jurisdictions"
-                    className="block text-[13px] text-emerald-400 mt-3"
+                    className="block text-body text-emerald-400 mt-3"
                   >
                     View all jurisdictions →
                   </Link>

@@ -20,7 +20,7 @@ export default function DataFoundation() {
       <div className="max-w-[600px] mx-auto px-6 md:px-8 text-center">
         {/* Label */}
         <ScrollReveal>
-          <p className="text-caption uppercase tracking-[0.3em] text-white/60 mb-8">
+          <p className="text-caption uppercase tracking-[0.3em] text-white/70 mb-8">
             SOURCE
           </p>
         </ScrollReveal>
@@ -51,13 +51,13 @@ export default function DataFoundation() {
 
         {/* Source line */}
         <ScrollReveal delay={0.8}>
-          <p className="text-small text-white/30">
+          <p className="text-small text-white/25">
             All data sourced directly from{" "}
             <a
               href="https://eur-lex.europa.eu"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline decoration-white/20 hover:text-white/60 transition-colors"
+              className="underline decoration-white/20 hover:text-white/70 transition-colors"
             >
               EUR-Lex
             </a>
@@ -67,7 +67,7 @@ export default function DataFoundation() {
 
         {/* Reference */}
         <ScrollReveal delay={0.9}>
-          <p className="text-caption text-white/40 mt-2">COM(2025) 335 final</p>
+          <p className="text-caption text-white/45 mt-2">COM(2025) 335 final</p>
         </ScrollReveal>
       </div>
     </section>

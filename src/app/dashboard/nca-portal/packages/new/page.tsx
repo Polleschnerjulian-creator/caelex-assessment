@@ -210,7 +210,7 @@ export default function PackageBuilderPage() {
                     ? "bg-emerald-500 text-white"
                     : i === step
                       ? "bg-emerald-500 text-white"
-                      : "bg-slate-200 dark:bg-white/[0.06] text-slate-500 dark:text-white/40"
+                      : "bg-slate-200 dark:bg-white/[0.06] text-slate-500 dark:text-white/45"
                 }
               `}
             >
@@ -326,7 +326,7 @@ export default function PackageBuilderPage() {
                     <p className="text-sm text-slate-900 dark:text-white truncate">
                       {doc.title}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-micro text-slate-400">
                       {doc.sourceType === "vault"
                         ? "From document vault"
                         : doc.sourceType === "generated"
@@ -339,12 +339,12 @@ export default function PackageBuilderPage() {
                     </p>
                   </div>
                   {doc.status === "missing" && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-medium">
+                    <span className="text-micro px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-medium">
                       MISSING
                     </span>
                   )}
                   {doc.status === "optional" && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 font-medium">
+                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 font-medium">
                       OPTIONAL
                     </span>
                   )}

@@ -2,8 +2,8 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import Button from "@/components/ui/Button";
 
 const steps = [
   {
@@ -42,15 +42,15 @@ export default function HowItWorks() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
             Audit-ready in three steps.
           </h2>
-          <p className="text-subtitle md:text-title text-white/40 max-w-[700px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-white/45 max-w-[700px] mx-auto leading-relaxed">
             No consultants. No spreadsheets. No guesswork. Just a structured
             path from regulatory complexity to full compliance.
           </p>
@@ -66,10 +66,10 @@ export default function HowItWorks() {
             <div className="w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             {/* Chevrons */}
             <div className="absolute top-1/2 left-1/3 -translate-y-1/2 -translate-x-1/2">
-              <ChevronRight className="w-4 h-4 text-white/50" />
+              <ChevronRight className="w-4 h-4 text-white/45" />
             </div>
             <div className="absolute top-1/2 left-2/3 -translate-y-1/2 -translate-x-1/2">
-              <ChevronRight className="w-4 h-4 text-white/50" />
+              <ChevronRight className="w-4 h-4 text-white/45" />
             </div>
           </div>
 
@@ -78,14 +78,14 @@ export default function HowItWorks() {
             {steps.map((step, index) => (
               <motion.div
                 key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.15 }}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
                 className="relative"
               >
                 {/* Large Ghost Number */}
                 <div
-                  className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/30 leading-none select-none pointer-events-none z-0"
+                  className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/25 leading-none select-none pointer-events-none z-0"
                   aria-hidden="true"
                 >
                   {step.number}
@@ -101,7 +101,7 @@ export default function HowItWorks() {
                 >
                   {/* Step Number Badge */}
                   <div className="inline-flex items-center gap-2 mb-5">
-                    <span className="text-body font-medium text-white/60">
+                    <span className="text-body font-medium text-white/70">
                       Step {step.number}
                     </span>
                   </div>
@@ -112,7 +112,7 @@ export default function HowItWorks() {
                   </h3>
 
                   {/* Description */}
-                  <p className="text-body-lg text-white/40 leading-relaxed mb-6">
+                  <p className="text-body-lg text-white/45 leading-relaxed mb-6">
                     {step.description}
                   </p>
 
@@ -128,18 +128,15 @@ export default function HowItWorks() {
 
         {/* CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="text-center mt-16 md:mt-20"
         >
-          <Link
-            href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-white text-black text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-white/90 hover:scale-[1.02]"
-          >
+          <Button href="/assessment" variant="white" size="lg">
             Start Your Assessment
-          </Link>
-          <p className="text-body text-white/30 mt-4">
+          </Button>
+          <p className="text-body text-white/25 mt-4">
             Free to start. No credit card required.
           </p>
         </motion.div>

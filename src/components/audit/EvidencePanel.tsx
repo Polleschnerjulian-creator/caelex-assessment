@@ -179,7 +179,7 @@ export default function EvidencePanel({
           className="animate-spin text-slate-400 dark:text-white/30"
           aria-hidden="true"
         />
-        <span className="text-[10px] text-slate-400 dark:text-white/25">
+        <span className="text-micro text-slate-400 dark:text-white/25">
           Loading evidence...
         </span>
       </div>
@@ -191,13 +191,13 @@ export default function EvidencePanel({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <Shield size={12} className="text-blue-400/60" aria-hidden="true" />
-          <span className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/30">
+          <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
             Compliance Evidence ({evidence.length})
           </span>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1 text-[10px] text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+          className="flex items-center gap-1 text-micro text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
         >
           {showAddForm ? <X size={10} /> : <Plus size={10} />}
           {showAddForm ? "Cancel" : "Add Evidence"}
@@ -214,7 +214,7 @@ export default function EvidencePanel({
             className="text-red-400 flex-shrink-0"
             aria-hidden="true"
           />
-          <span className="text-[10px] text-red-400">{error}</span>
+          <span className="text-micro text-red-400">{error}</span>
           <button
             onClick={() => setError(null)}
             className="ml-auto"
@@ -248,7 +248,7 @@ export default function EvidencePanel({
                   aria-label="Evidence type"
                   value={formType}
                   onChange={(e) => setFormType(e.target.value)}
-                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-slate-700 dark:text-white/60 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-slate-700 dark:text-white/45 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
                 >
                   {EVIDENCE_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -269,7 +269,7 @@ export default function EvidencePanel({
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !formTitle.trim()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-[11px] font-medium transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-caption font-medium transition-colors disabled:opacity-50"
                 >
                   {submitting ? (
                     <Loader2 size={10} className="animate-spin" />
@@ -300,7 +300,7 @@ export default function EvidencePanel({
                     className="text-slate-400 dark:text-white/25 flex-shrink-0"
                     aria-hidden="true"
                   />
-                  <span className="text-[11px] text-slate-700 dark:text-white/60 truncate">
+                  <span className="text-caption text-slate-700 dark:text-white/45 truncate">
                     {ev.title}
                   </span>
                   <span
@@ -351,7 +351,7 @@ export default function EvidencePanel({
 
       {evidence.length === 0 && !showAddForm && (
         <p
-          className="text-[10px] text-slate-400 dark:text-white/20 italic"
+          className="text-micro text-slate-400 dark:text-white/20 italic"
           role="status"
         >
           No evidence attached yet

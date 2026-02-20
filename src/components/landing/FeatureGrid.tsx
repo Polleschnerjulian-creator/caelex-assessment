@@ -74,24 +74,24 @@ export default function FeatureGrid() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">08 / 12</span>
+        <span className="text-caption text-white/25">08 / 12</span>
       </motion.div>
 
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5 }}
           className="text-center mb-20"
         >
-          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/45 block mb-6">
             Platform Capabilities
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[600px] mx-auto">
             Built for teams.
             <br />
-            <span className="text-white/50">Built for scale.</span>
+            <span className="text-white/45">Built for scale.</span>
           </h2>
         </motion.div>
 
@@ -102,16 +102,16 @@ export default function FeatureGrid() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 25 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.15 + i * 0.08 }}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.4, delay: i * 0.04 }}
                 className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
               >
                 {/* Icon */}
                 <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
                   <Icon
                     size={18}
-                    className="text-white/50"
+                    className="text-white/45"
                     aria-hidden="true"
                   />
                 </div>
@@ -128,7 +128,7 @@ export default function FeatureGrid() {
 
                 {/* Highlight */}
                 <div className="pt-4 border-t border-white/[0.06]">
-                  <p className="text-micro text-white/30 leading-[1.5]">
+                  <p className="text-micro text-white/25 leading-[1.5]">
                     {feature.highlight}
                   </p>
                 </div>

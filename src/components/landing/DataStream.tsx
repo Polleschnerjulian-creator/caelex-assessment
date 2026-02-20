@@ -48,7 +48,7 @@ export default function DataStream() {
         return (
           <div
             key={index}
-            className="absolute text-small text-white/30 whitespace-nowrap"
+            className="absolute text-small text-white/25 whitespace-nowrap"
             style={{
               left,
               animation: `float-up ${duration}s linear infinite`,

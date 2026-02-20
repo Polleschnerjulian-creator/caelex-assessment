@@ -35,7 +35,7 @@ export default function AstraToolExecutionCard({
         className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/[0.02] transition-colors"
       >
         <Wrench size={12} className="text-cyan-400 flex-shrink-0" />
-        <span className="text-[11px] text-white/60 flex-1">
+        <span className="text-caption text-white/45 flex-1">
           Used {toolCalls.length} tool{toolCalls.length !== 1 ? "s" : ""}
         </span>
         <ChevronDown
@@ -53,11 +53,11 @@ export default function AstraToolExecutionCard({
                 className="text-green-400 mt-0.5 flex-shrink-0"
               />
               <div className="min-w-0">
-                <span className="text-[11px] text-white/70 font-medium">
+                <span className="text-caption text-white/70 font-medium">
                   {humanizeToolName(call.name)}
                 </span>
                 {Object.keys(call.input).length > 0 && (
-                  <span className="text-[10px] text-white/30 ml-1.5">
+                  <span className="text-micro text-white/30 ml-1.5">
                     (
                     {Object.entries(call.input)
                       .slice(0, 3)

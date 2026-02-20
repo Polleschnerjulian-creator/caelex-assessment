@@ -65,7 +65,7 @@ export default function NIS2IncidentTimeline({
       <h3 className="text-lg font-semibold text-white mb-1">
         Incident Reporting Timeline
       </h3>
-      <p className="text-sm text-white/40 mb-6">
+      <p className="text-sm text-white/45 mb-6">
         NIS2 Art. 23 — Mandatory reporting for significant incidents
       </p>
 
@@ -106,7 +106,7 @@ export default function NIS2IncidentTimeline({
                       {timelineData.deadline}
                     </span>
                   </div>
-                  <p className="text-sm text-white/60 leading-relaxed">
+                  <p className="text-sm text-white/45 leading-relaxed">
                     {timelineData.description}
                   </p>
                 </div>

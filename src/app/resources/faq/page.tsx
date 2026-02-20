@@ -108,7 +108,7 @@ export default function FAQPage() {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               Frequently Asked Questions
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               Get answers to common questions about EU Space Act, NIS2
               Directive, space licensing, and regulatory compliance.
             </p>
@@ -116,13 +116,13 @@ export default function FAQPage() {
 
           <div className="flex flex-wrap gap-4 mb-12">
             <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-              <span className="text-[14px] text-white/60">
+              <span className="text-body-lg text-white/45">
                 <span className="text-white font-medium">{allFaqs.length}</span>{" "}
                 Questions
               </span>
             </div>
             <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-              <span className="text-[14px] text-white/60">
+              <span className="text-body-lg text-white/45">
                 <span className="text-white font-medium">
                   {categories.length}
                 </span>{" "}
@@ -139,7 +139,7 @@ export default function FAQPage() {
                 <a
                   key={category}
                   href={`#${category}`}
-                  className={`px-4 py-2 rounded-full ${colors.bg} ${colors.border} border text-[13px] ${colors.text} hover:opacity-80 transition-opacity`}
+                  className={`px-4 py-2 rounded-full ${colors.bg} ${colors.border} border text-body ${colors.text} hover:opacity-80 transition-opacity`}
                 >
                   {getCategoryLabel(category)} ({count})
                 </a>
@@ -159,7 +159,7 @@ export default function FAQPage() {
                     >
                       <HelpCircle size={20} className={colors.text} />
                     </div>
-                    <h2 className="text-[24px] font-medium text-white">
+                    <h2 className="text-display-sm font-medium text-white">
                       {getCategoryLabel(category)}
                     </h2>
                   </div>
@@ -170,16 +170,16 @@ export default function FAQPage() {
                         className="group rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.12] transition-colors"
                       >
                         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                          <h3 className="text-[16px] font-medium text-white pr-8 group-hover:text-emerald-400 transition-colors">
+                          <h3 className="text-title font-medium text-white pr-8 group-hover:text-emerald-400 transition-colors">
                             {faq.question}
                           </h3>
                           <ChevronDown
                             size={20}
-                            className="text-white/40 flex-shrink-0 transition-transform group-open:rotate-180"
+                            className="text-white/45 flex-shrink-0 transition-transform group-open:rotate-180"
                           />
                         </summary>
                         <div className="px-6 pb-6 pt-0">
-                          <p className="text-[15px] text-white/60 leading-relaxed">
+                          <p className="text-subtitle text-white/45 leading-relaxed">
                             {faq.answer}
                           </p>
                         </div>
@@ -193,23 +193,23 @@ export default function FAQPage() {
 
           <section className="mt-20 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-center">
             <HelpCircle size={32} className="text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-[24px] font-medium text-white mb-4">
+            <h2 className="text-display-sm font-medium text-white mb-4">
               Still have questions?
             </h2>
-            <p className="text-[15px] text-white/50 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
               Our AI assistant ASTRA can answer complex regulatory questions
               instantly.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/astra"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
               >
                 Ask ASTRA AI <ArrowRight size={16} />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-[14px] font-medium hover:border-white/40 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-body-lg font-medium hover:border-white/40 transition-all"
               >
                 Contact Team
               </Link>

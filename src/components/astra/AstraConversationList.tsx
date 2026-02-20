@@ -44,12 +44,12 @@ export default function AstraConversationList({
     <div className="w-[280px] flex-shrink-0 border-r border-white/10 bg-[#08080A] flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-12 border-b border-white/10 flex-shrink-0">
-        <span className="text-[13px] font-medium text-white/80">
+        <span className="text-body font-medium text-white/70">
           Conversations
         </span>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+          className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
           aria-label="Close conversation list"
         >
           <X size={14} />
@@ -60,7 +60,7 @@ export default function AstraConversationList({
       <div className="px-3 py-2 border-b border-white/[0.06]">
         <button
           onClick={resetChat}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/[0.06] hover:bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 text-[12px] font-medium transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/[0.06] hover:bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 text-small font-medium transition-colors"
         >
           <Plus size={14} />
           New Chat
@@ -76,7 +76,7 @@ export default function AstraConversationList({
         ) : conversations.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <MessageSquare size={20} className="text-white/10 mx-auto mb-2" />
-            <p className="text-[11px] text-white/20">No conversations yet</p>
+            <p className="text-caption text-white/20">No conversations yet</p>
           </div>
         ) : (
           conversations.map((conv) => {
@@ -96,7 +96,7 @@ export default function AstraConversationList({
                 >
                   <div className="flex items-center justify-between mb-0.5">
                     <span
-                      className={`text-[10px] uppercase tracking-wider font-medium ${
+                      className={`text-micro uppercase tracking-wider font-medium ${
                         isActive ? "text-cyan-400/70" : "text-white/25"
                       }`}
                     >
@@ -107,8 +107,8 @@ export default function AstraConversationList({
                     </span>
                   </div>
                   <p
-                    className={`text-[11px] line-clamp-2 ${
-                      isActive ? "text-white/70" : "text-white/40"
+                    className={`text-caption line-clamp-2 ${
+                      isActive ? "text-white/70" : "text-white/45"
                     }`}
                   >
                     {conv.lastMessage || "Empty conversation"}

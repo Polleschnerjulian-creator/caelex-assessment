@@ -71,7 +71,7 @@ export default function GlossaryPage() {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               Space Compliance Glossary
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               Comprehensive definitions for EU Space Act, NIS2 Directive,
               operator classifications, technical standards, and regulatory
               terminology. Your reference guide for space compliance.
@@ -84,7 +84,7 @@ export default function GlossaryPage() {
               <div className="text-[28px] font-medium text-white">
                 {terms.length}
               </div>
-              <div className="text-[13px] text-white/40">Total Terms</div>
+              <div className="text-body text-white/45">Total Terms</div>
             </div>
             {categories.map((cat) => (
               <div
@@ -94,7 +94,7 @@ export default function GlossaryPage() {
                 <div className="text-[28px] font-medium text-white">
                   {getTermsByCategory(cat).length}
                 </div>
-                <div className="text-[13px] text-white/40">
+                <div className="text-body text-white/45">
                   {categoryLabels[cat]}
                 </div>
               </div>
@@ -107,7 +107,7 @@ export default function GlossaryPage() {
               <a
                 key={letter}
                 href={`#letter-${letter}`}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-white/60 hover:text-emerald-400 text-[14px] font-medium transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-white/45 hover:text-emerald-400 text-body-lg font-medium transition-colors"
               >
                 {letter}
               </a>
@@ -118,7 +118,7 @@ export default function GlossaryPage() {
           <div className="flex flex-wrap gap-2 mb-12">
             <Link
               href="/glossary"
-              className="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[13px] text-emerald-400"
+              className="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-body text-emerald-400"
             >
               All Terms
             </Link>
@@ -126,7 +126,7 @@ export default function GlossaryPage() {
               <Link
                 key={cat}
                 href={`/glossary?category=${cat}`}
-                className={`px-4 py-2 rounded-full border text-[13px] transition-colors ${categoryColors[cat]}`}
+                className={`px-4 py-2 rounded-full border text-body transition-colors ${categoryColors[cat]}`}
               >
                 {categoryLabels[cat]}
               </Link>
@@ -145,7 +145,7 @@ export default function GlossaryPage() {
                 <section key={letter} id={`letter-${letter}`}>
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <span className="text-[24px] font-medium text-emerald-400">
+                      <span className="text-display-sm font-medium text-emerald-400">
                         {letter}
                       </span>
                     </div>
@@ -163,30 +163,30 @@ export default function GlossaryPage() {
                           <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                             <BookText
                               size={18}
-                              className="text-white/40 group-hover:text-emerald-400 transition-colors"
+                              className="text-white/45 group-hover:text-emerald-400 transition-colors"
                             />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <h2 className="text-[16px] font-medium text-white group-hover:text-emerald-400 transition-colors truncate">
+                              <h2 className="text-title font-medium text-white group-hover:text-emerald-400 transition-colors truncate">
                                 {term.term}
                               </h2>
                               {term.acronym && (
-                                <span className="px-2 py-0.5 rounded bg-white/[0.08] text-[11px] text-white/50">
+                                <span className="px-2 py-0.5 rounded bg-white/[0.08] text-caption text-white/45">
                                   {term.acronym}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[13px] text-white/40 leading-relaxed line-clamp-2 mb-3">
+                            <p className="text-body text-white/45 leading-relaxed line-clamp-2 mb-3">
                               {term.definition}
                             </p>
                             <div className="flex items-center justify-between">
                               <span
-                                className={`px-2 py-0.5 rounded-full text-[11px] border ${categoryColors[term.category]}`}
+                                className={`px-2 py-0.5 rounded-full text-caption border ${categoryColors[term.category]}`}
                               >
                                 {categoryLabels[term.category]}
                               </span>
-                              <span className="text-[12px] text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                              <span className="text-small text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                 Read more <ArrowRight size={12} />
                               </span>
                             </div>
@@ -203,16 +203,16 @@ export default function GlossaryPage() {
           {/* CTA Section */}
           <div className="mt-20 text-center p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]">
             <BookText size={32} className="text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-[24px] font-medium text-white mb-4">
+            <h2 className="text-display-sm font-medium text-white mb-4">
               Need help understanding compliance requirements?
             </h2>
-            <p className="text-[15px] text-white/50 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
               Our AI-powered assessment helps you navigate complex space
               regulations and understand exactly what applies to your mission.
             </p>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-[14px] font-medium hover:bg-white/90 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
             >
               Start Free Assessment
               <ArrowRight size={16} />

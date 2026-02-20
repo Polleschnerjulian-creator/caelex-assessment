@@ -17,10 +17,10 @@ export function LanguageSettingsCard() {
           />
         </div>
         <div>
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             {t("settings.language")}
           </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
             {t("settings.languageDescription")}
           </p>
         </div>
@@ -39,11 +39,11 @@ export function LanguageSettingsCard() {
               role="radio"
               aria-checked={language === code}
               className={`
-                px-4 py-3 rounded-lg border text-[13px] font-medium transition-all text-center
+                px-4 py-3 rounded-lg border text-body font-medium transition-all text-center
                 ${
                   language === code
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                    : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/60 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                    : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/45 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
                 }
               `}
             >
@@ -53,7 +53,7 @@ export function LanguageSettingsCard() {
         )}
       </div>
 
-      <p className="text-[11px] text-slate-400 dark:text-white/30 mt-3">
+      <p className="text-caption text-slate-400 dark:text-white/30 mt-3">
         {t("settings.languageNote")}
       </p>
     </div>

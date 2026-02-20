@@ -137,7 +137,7 @@ function DesktopTable({
             <tr className="bg-white/[0.04]">
               <th
                 scope="col"
-                className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-[11px] uppercase tracking-[0.15em] text-white/40 border-b border-white/[0.08] min-w-[200px]"
+                className="sticky left-0 z-10 bg-white/[0.04] px-5 py-3.5 text-caption uppercase tracking-[0.15em] text-white/45 border-b border-white/[0.08] min-w-[200px]"
               >
                 Criterion
               </th>
@@ -151,7 +151,7 @@ function DesktopTable({
                     <span className="text-base leading-none">
                       {j.flagEmoji}
                     </span>
-                    <span className="text-[11px] uppercase tracking-wider text-white/60">
+                    <span className="text-caption uppercase tracking-wider text-white/45">
                       {j.countryCode}
                     </span>
                   </div>
@@ -201,9 +201,9 @@ function GroupRows({
           colSpan={jurisdictions.length + 1}
           className="px-5 py-2.5 bg-white/[0.02] border-b border-white/[0.06]"
         >
-          <div className="flex items-center gap-2 text-white/50">
+          <div className="flex items-center gap-2 text-white/45">
             <span aria-hidden="true">{group.icon}</span>
-            <span className="text-[10px] uppercase tracking-[0.2em]">
+            <span className="text-micro uppercase tracking-[0.2em]">
               {group.label}
             </span>
           </div>
@@ -231,7 +231,7 @@ function GroupRows({
                   isEvenRow ? "bg-[#0A0F1E]" : "bg-[#0c1122]"
                 } -mx-5 -my-3 px-5 py-3`}
               >
-                <span className="text-[13px] text-white/80">
+                <span className="text-body text-white/70">
                   {criterion.label}
                 </span>
               </div>
@@ -245,18 +245,18 @@ function GroupRows({
                 >
                   {val ? (
                     <div className="flex flex-col items-center gap-1.5">
-                      <span className="text-[12px] text-white/70 leading-snug">
+                      <span className="text-small text-white/70 leading-snug">
                         {val.value}
                       </span>
                       <ScoreDots score={val.score} />
                       {val.notes && (
-                        <span className="text-[10px] text-white/35 leading-snug mt-0.5">
+                        <span className="text-micro text-white/25 leading-snug mt-0.5">
                           {val.notes}
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-[11px] text-white/20">&mdash;</span>
+                    <span className="text-caption text-white/20">&mdash;</span>
                   )}
                 </td>
               );
@@ -282,9 +282,9 @@ function MobileCards({
       {groups.map((group) => (
         <div key={group.category} className="space-y-2">
           {/* Category header */}
-          <div className="flex items-center gap-2 text-white/50 px-1 pt-3 pb-1">
+          <div className="flex items-center gap-2 text-white/45 px-1 pt-3 pb-1">
             <span aria-hidden="true">{group.icon}</span>
-            <span className="text-[10px] uppercase tracking-[0.2em]">
+            <span className="text-micro uppercase tracking-[0.2em]">
               {group.label}
             </span>
           </div>
@@ -296,7 +296,7 @@ function MobileCards({
               className="bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden"
             >
               <div className="px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
-                <span className="text-[13px] text-white/80 font-medium">
+                <span className="text-body text-white/70 font-medium">
                   {criterion.label}
                 </span>
               </div>
@@ -312,19 +312,19 @@ function MobileCards({
                         <span className="text-sm leading-none">
                           {j.flagEmoji}
                         </span>
-                        <span className="text-[11px] text-white/50 uppercase tracking-wider">
+                        <span className="text-caption text-white/45 uppercase tracking-wider">
                           {j.countryCode}
                         </span>
                       </div>
                       {val ? (
                         <div className="flex items-center gap-2 text-right min-w-0">
-                          <span className="text-[12px] text-white/70 leading-snug truncate">
+                          <span className="text-small text-white/70 leading-snug truncate">
                             {val.value}
                           </span>
                           <ScoreDots score={val.score} />
                         </div>
                       ) : (
-                        <span className="text-[11px] text-white/20">
+                        <span className="text-caption text-white/20">
                           &mdash;
                         </span>
                       )}
@@ -360,10 +360,10 @@ export default function ComparisonMatrixView({
     >
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
           Comparison Matrix
         </span>
-        <span className="text-[11px] text-white/50">
+        <span className="text-caption text-white/45">
           {matrix.criteria.length} criteria &middot; {jurisdictions.length}{" "}
           jurisdictions
         </span>

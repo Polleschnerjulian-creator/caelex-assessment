@@ -136,7 +136,7 @@ export function NotificationItem({
               >
                 {notification.title}
               </h4>
-              <p className="text-xs text-white/50 line-clamp-2 mt-0.5">
+              <p className="text-xs text-white/45 line-clamp-2 mt-0.5">
                 {notification.message}
               </p>
             </div>
@@ -151,7 +151,7 @@ export function NotificationItem({
                       e.stopPropagation();
                       onMarkAsRead(notification.id);
                     }}
-                    className="p-1 rounded hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                    className="p-1 rounded hover:bg-white/10 transition-colors text-white/45 hover:text-white"
                     title="Mark as read"
                   >
                     <Check size={14} />
@@ -163,7 +163,7 @@ export function NotificationItem({
                     e.stopPropagation();
                     onDismiss(notification.id);
                   }}
-                  className="p-1 rounded hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                  className="p-1 rounded hover:bg-white/10 transition-colors text-white/45 hover:text-white"
                   title="Dismiss"
                 >
                   <X size={14} />
@@ -174,12 +174,12 @@ export function NotificationItem({
 
           {/* Footer */}
           <div className="flex items-center gap-2 mt-2">
-            <span className="flex items-center gap-1 text-[10px] text-white/40">
+            <span className="flex items-center gap-1 text-micro text-white/45">
               <CategoryIcon size={10} />
               {notification.config.category}
             </span>
             <span className="text-white/20">·</span>
-            <span className="text-[10px] text-white/40">
+            <span className="text-micro text-white/45">
               {formatTime(notification.createdAt)}
             </span>
             {!notification.read && (

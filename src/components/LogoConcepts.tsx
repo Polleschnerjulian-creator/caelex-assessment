@@ -5,7 +5,7 @@ export default function LogoConcepts() {
     <div className="dark-section min-h-screen bg-black text-white py-16 px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-4">
             Brand Identity
           </span>
           <h1 className="text-[28px] font-light text-white mb-4">
@@ -16,7 +16,7 @@ export default function LogoConcepts() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-16">
           {/* Icon 1: Orbital C */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               01 — Orbital C
             </span>
             <div className="flex justify-center mb-4">
@@ -35,14 +35,14 @@ export default function LogoConcepts() {
                 <circle cx="52" cy="22" r="4" fill="white" />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Offenes C mit Satellit
             </p>
           </div>
 
           {/* Icon 2: Soft Square */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               02 — Soft Square
             </span>
             <div className="flex justify-center mb-4">
@@ -57,14 +57,14 @@ export default function LogoConcepts() {
                 <circle cx="48" cy="16" r="4" fill="white" />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Modern & approachable
             </p>
           </div>
 
           {/* Icon 3: Pure Orbit */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               03 — Pure Orbit
             </span>
             <div className="flex justify-center mb-4">
@@ -83,14 +83,14 @@ export default function LogoConcepts() {
                 <circle cx="54" cy="24" r="3.5" fill="white" />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Klassisch Space
             </p>
           </div>
 
           {/* Icon 4: Precision */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               04 — Precision
             </span>
             <div className="flex justify-center mb-4">
@@ -117,14 +117,14 @@ export default function LogoConcepts() {
                 <circle cx="32" cy="32" r="5" fill="white" />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Target / Präzision
             </p>
           </div>
 
           {/* Icon 5: Hex Frame */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               05 — Hex Frame
             </span>
             <div className="flex justify-center mb-4">
@@ -145,14 +145,14 @@ export default function LogoConcepts() {
                 />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Tech / Stabilität
             </p>
           </div>
 
           {/* Icon 6: Stacked Arcs */}
           <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl p-6">
-            <span className="text-[9px] text-white/40 block mb-4">
+            <span className="text-[9px] text-white/45 block mb-4">
               06 — Stacked
             </span>
             <div className="flex justify-center mb-4">
@@ -183,14 +183,14 @@ export default function LogoConcepts() {
                 <circle cx="32" cy="52" r="3" fill="white" />
               </svg>
             </div>
-            <p className="text-[10px] text-white/50 text-center">
+            <p className="text-micro text-white/45 text-center">
               Multi-Layer Compliance
             </p>
           </div>
         </div>
 
         {/* Combinations */}
-        <h2 className="text-[18px] font-light text-white mb-6 text-center">
+        <h2 className="text-heading font-light text-white mb-6 text-center">
           Mit Wordmark
         </h2>
         <div className="grid md:grid-cols-2 gap-6 mb-16">
@@ -210,7 +210,7 @@ export default function LogoConcepts() {
                 />
                 <circle cx="52" cy="22" r="4" fill="white" />
               </svg>
-              <span className="text-white text-[24px] font-light tracking-[-0.02em]">
+              <span className="text-white text-display-sm font-light tracking-[-0.02em]">
                 caelex
               </span>
             </div>
@@ -227,7 +227,7 @@ export default function LogoConcepts() {
                 />
                 <circle cx="48" cy="16" r="4" fill="white" />
               </svg>
-              <span className="text-white text-[24px] font-light tracking-[-0.02em]">
+              <span className="text-white text-display-sm font-light tracking-[-0.02em]">
                 caelex
               </span>
             </div>
@@ -235,7 +235,7 @@ export default function LogoConcepts() {
         </div>
 
         {/* Size test */}
-        <h2 className="text-[18px] font-light text-white mb-6 text-center">
+        <h2 className="text-heading font-light text-white mb-6 text-center">
           Größentest
         </h2>
         <div className="flex items-end justify-center gap-6 flex-wrap mb-16">
@@ -257,17 +257,17 @@ export default function LogoConcepts() {
                   <circle cx="52" cy="22" r="5" fill="white" />
                 </svg>
               </div>
-              <span className="block text-[9px] text-white/40">{size}px</span>
+              <span className="block text-[9px] text-white/45">{size}px</span>
             </div>
           ))}
         </div>
 
         {/* Recommendation */}
         <div className="bg-white/[0.06] border border-white/[0.15] rounded-xl p-8 max-w-xl mx-auto text-center">
-          <span className="text-[10px] text-white/50 block mb-3">
+          <span className="text-micro text-white/45 block mb-3">
             Empfehlung
           </span>
-          <h3 className="text-[18px] text-white mb-4">
+          <h3 className="text-heading text-white mb-4">
             Orbital C oder Soft Square
           </h3>
           <div className="flex justify-center gap-8 mb-4">
@@ -296,7 +296,7 @@ export default function LogoConcepts() {
               <circle cx="48" cy="16" r="4" fill="white" />
             </svg>
           </div>
-          <p className="text-[13px] text-white/60">
+          <p className="text-body text-white/45">
             Beide skalieren perfekt, sind einprägsam und professionell.
           </p>
         </div>

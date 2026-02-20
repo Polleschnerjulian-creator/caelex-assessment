@@ -84,19 +84,19 @@ export default function TargetAudience() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/45 block mb-6">
             Who it&apos;s for
           </span>
           <h2 className="text-[clamp(1.5rem,3vw,2.25rem)] font-light tracking-[-0.02em] text-white">
             All 7 operator types.{" "}
-            <span className="text-white/50">One platform.</span>
+            <span className="text-white/45">One platform.</span>
           </h2>
-          <p className="text-subtitle text-white/40 max-w-[600px] mx-auto mt-4">
+          <p className="text-subtitle text-white/45 max-w-[600px] mx-auto mt-4">
             Every category defined under the EU Space Act — from traditional
             satellite operators to the new service provider classifications.
           </p>
@@ -109,8 +109,8 @@ export default function TargetAudience() {
             return (
               <motion.div
                 key={audience.code}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.05 }}
                 className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:bg-white/[0.04] hover:border-emerald-500/20 transition-all duration-500"
               >
@@ -132,7 +132,7 @@ export default function TargetAudience() {
                 <p className="text-small text-white/45 leading-[1.6] mb-3">
                   {audience.description}
                 </p>
-                <span className="inline-block text-caption sm:text-micro md:text-micro text-white/30 uppercase tracking-wider">
+                <span className="inline-block text-caption sm:text-micro md:text-micro text-white/25 uppercase tracking-wider">
                   {audience.tag}
                 </span>
               </motion.div>
@@ -145,7 +145,7 @@ export default function TargetAudience() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-center text-body text-white/30 mt-8"
+          className="text-center text-body text-white/25 mt-8"
         >
           Plus support for multi-type operators and joint ventures
         </motion.p>

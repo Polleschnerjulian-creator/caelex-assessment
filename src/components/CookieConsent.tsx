@@ -82,12 +82,12 @@ function Toggle({
     <div className="flex items-center justify-between gap-4 py-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-medium text-white/90">{label}</span>
+          <span className="text-body font-medium text-white/90">{label}</span>
           {disabled && (
             <Lock size={12} className="text-white/30" aria-hidden="true" />
           )}
         </div>
-        <p className="text-[12px] text-white/50 mt-0.5 leading-relaxed">
+        <p className="text-small text-white/45 mt-0.5 leading-relaxed">
           {description}
         </p>
       </div>
@@ -259,10 +259,10 @@ export default function CookieConsent() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[15px] font-medium text-white tracking-[-0.01em] mb-1">
+                  <h3 className="text-subtitle font-medium text-white tracking-[-0.01em] mb-1">
                     Privacy Settings
                   </h3>
-                  <p className="text-[13px] text-white/50 leading-[1.6]">
+                  <p className="text-body text-white/45 leading-[1.6]">
                     We use essential cookies for security. Optional analytics
                     help us improve.{" "}
                     <Link
@@ -281,7 +281,7 @@ export default function CookieConsent() {
                   onClick={() => setShowDetails(!showDetails)}
                   aria-expanded={showDetails}
                   aria-controls="cookie-details"
-                  className="flex items-center gap-1.5 py-2.5 px-4 text-white/50 text-[13px] font-medium hover:text-white/70 transition-all rounded-lg hover:bg-white/[0.04]"
+                  className="flex items-center gap-1.5 py-2.5 px-4 text-white/45 text-body font-medium hover:text-white/70 transition-all rounded-lg hover:bg-white/[0.04]"
                 >
                   Customize
                   {showDetails ? (
@@ -292,7 +292,7 @@ export default function CookieConsent() {
                 </button>
                 <button
                   onClick={handleNecessaryOnly}
-                  className="py-2.5 px-5 text-white/70 rounded-xl text-[13px] font-medium transition-all hover:bg-white/[0.06]"
+                  className="py-2.5 px-5 text-white/70 rounded-xl text-body font-medium transition-all hover:bg-white/[0.06]"
                   style={{
                     background: "rgba(255,255,255,0.04)",
                     boxShadow:
@@ -303,7 +303,7 @@ export default function CookieConsent() {
                 </button>
                 <button
                   onClick={handleAcceptAll}
-                  className="py-2.5 px-5 text-white rounded-xl text-[13px] font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="py-2.5 px-5 text-white rounded-xl text-body font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: `linear-gradient(135deg, ${VANTAGE_GREEN.primary} 0%, ${VANTAGE_GREEN.light} 100%)`,
                     boxShadow: `0 0 0 1px rgba(0,102,94,0.5), 0 4px 16px ${VANTAGE_GREEN.glow}, inset 0 1px 0 rgba(255,255,255,0.1)`,
@@ -358,7 +358,7 @@ export default function CookieConsent() {
                 <div className="flex justify-end mt-5">
                   <button
                     onClick={handleSavePreferences}
-                    className="py-2.5 px-6 text-white rounded-xl text-[13px] font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="py-2.5 px-6 text-white rounded-xl text-body font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{
                       background: `linear-gradient(135deg, ${VANTAGE_GREEN.primary} 0%, ${VANTAGE_GREEN.light} 100%)`,
                       boxShadow: `0 0 0 1px rgba(0,102,94,0.5), 0 4px 16px ${VANTAGE_GREEN.glow}, inset 0 1px 0 rgba(255,255,255,0.1)`,

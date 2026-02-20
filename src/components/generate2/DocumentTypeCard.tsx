@@ -44,14 +44,14 @@ export function DocumentTypeCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-500">{meta.code}</span>
+            <span className="text-caption text-slate-500">{meta.code}</span>
             <span
-              className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${priorityStyles[meta.priority]}`}
+              className={`text-micro px-1.5 py-0.5 rounded border font-medium ${priorityStyles[meta.priority]}`}
             >
               {meta.priority}
             </span>
             {hasDocument && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+              <span className="text-micro px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
                 Done
               </span>
             )}

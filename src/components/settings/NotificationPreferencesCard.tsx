@@ -124,7 +124,7 @@ export default function NotificationPreferencesCard({
     return (
       <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/40 animate-spin" />
+          <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
         </div>
       </div>
     );
@@ -140,10 +140,10 @@ export default function NotificationPreferencesCard({
           />
         </div>
         <div>
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             NOTIFICATIONS
           </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
             Configure how and when you receive alerts
           </p>
         </div>
@@ -153,10 +153,10 @@ export default function NotificationPreferencesCard({
       <div className="mb-6 pb-6 border-b border-slate-200 dark:border-white/10">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
-            <p className="text-[14px] text-slate-900 dark:text-white font-medium">
+            <p className="text-body-lg text-slate-900 dark:text-white font-medium">
               Enable Automatic Reminders
             </p>
-            <p className="text-[13px] text-slate-500 dark:text-white/50 mt-1">
+            <p className="text-body text-slate-500 dark:text-white/45 mt-1">
               Receive deadline reminders and document expiry alerts
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function NotificationPreferencesCard({
       {/* Notification Method */}
       <div className="mb-6">
         <label
-          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+          className="flex items-center gap-2 text-body text-slate-700 dark:text-white/70 mb-3"
           id="notif-method-label"
         >
           <Mail className="w-4 h-4" aria-hidden="true" />
@@ -219,10 +219,10 @@ export default function NotificationPreferencesCard({
                   : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20"
               }`}
             >
-              <p className="text-[13px] text-slate-900 dark:text-white font-medium">
+              <p className="text-body text-slate-900 dark:text-white font-medium">
                 {method.label}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-white/50 mt-1">
+              <p className="text-caption text-slate-500 dark:text-white/45 mt-1">
                 {method.description}
               </p>
             </button>
@@ -234,7 +234,7 @@ export default function NotificationPreferencesCard({
       <div className="mb-6">
         <label
           htmlFor="notif-reminder-days"
-          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+          className="flex items-center gap-2 text-body text-slate-700 dark:text-white/70 mb-3"
         >
           <Clock className="w-4 h-4" aria-hidden="true" />
           Default Reminder Advance
@@ -248,7 +248,7 @@ export default function NotificationPreferencesCard({
               reminderDaysAdvance: parseInt(e.target.value),
             }))
           }
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         >
           {reminderOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -256,7 +256,7 @@ export default function NotificationPreferencesCard({
             </option>
           ))}
         </select>
-        <p className="text-[11px] text-slate-500 dark:text-white/40 mt-2">
+        <p className="text-caption text-slate-500 dark:text-white/45 mt-2">
           How far in advance you want to receive the first reminder
         </p>
       </div>
@@ -265,7 +265,7 @@ export default function NotificationPreferencesCard({
       <div className="mb-6">
         <label
           htmlFor="notif-email"
-          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+          className="flex items-center gap-2 text-body text-slate-700 dark:text-white/70 mb-3"
         >
           <Mail className="w-4 h-4" aria-hidden="true" />
           Notification Email
@@ -281,9 +281,9 @@ export default function NotificationPreferencesCard({
             }))
           }
           placeholder={userEmail || "Enter email address"}
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         />
-        <p className="text-[11px] text-slate-500 dark:text-white/40 mt-2">
+        <p className="text-caption text-slate-500 dark:text-white/45 mt-2">
           Leave empty to use your account email ({userEmail || "not set"})
         </p>
       </div>
@@ -292,7 +292,7 @@ export default function NotificationPreferencesCard({
       <div className="mb-6">
         <label
           htmlFor="notif-language"
-          className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-white/70 mb-3"
+          className="flex items-center gap-2 text-body text-slate-700 dark:text-white/70 mb-3"
         >
           <Globe className="w-4 h-4" aria-hidden="true" />
           Communication Language
@@ -306,7 +306,7 @@ export default function NotificationPreferencesCard({
               communicationLanguage: e.target.value,
             }))
           }
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         >
           {languages.map((lang) => (
             <option key={lang.value} value={lang.value}>
@@ -326,7 +326,7 @@ export default function NotificationPreferencesCard({
             className="w-4 h-4 text-red-400 flex-shrink-0"
             aria-hidden="true"
           />
-          <p className="text-[13px] text-red-400">{error}</p>
+          <p className="text-body text-red-400">{error}</p>
         </div>
       )}
 
@@ -340,7 +340,7 @@ export default function NotificationPreferencesCard({
             className="w-4 h-4 text-green-400 flex-shrink-0"
             aria-hidden="true"
           />
-          <p className="text-[13px] text-green-400">
+          <p className="text-body text-green-400">
             Preferences saved successfully
           </p>
         </div>
@@ -350,7 +350,7 @@ export default function NotificationPreferencesCard({
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-2.5 text-[14px] transition-colors flex items-center justify-center gap-2"
+        className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-2.5 text-body-lg transition-colors flex items-center justify-center gap-2"
       >
         {saving ? (
           <>

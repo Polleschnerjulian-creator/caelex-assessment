@@ -77,7 +77,7 @@ export function DocumentTypeSelector({ onSelect }: DocumentTypeSelectorProps) {
       <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
         Select Document Type
       </h2>
-      <p className="text-sm text-slate-500 dark:text-white/50 mb-6">
+      <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
         Choose the type of compliance document to generate
       </p>
 
@@ -89,17 +89,17 @@ export function DocumentTypeSelector({ onSelect }: DocumentTypeSelectorProps) {
             className="group text-left p-5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04] transition-all duration-200"
           >
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/60 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
                 {doc.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {doc.title}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-white/40 mt-1 line-clamp-2">
+                <p className="text-xs text-slate-500 dark:text-white/45 mt-1 line-clamp-2">
                   {doc.description}
                 </p>
-                <span className="inline-block text-[10px] text-slate-400 dark:text-white/30 mt-2">
+                <span className="inline-block text-micro text-slate-400 dark:text-white/30 mt-2">
                   {doc.regulation}
                 </span>
               </div>

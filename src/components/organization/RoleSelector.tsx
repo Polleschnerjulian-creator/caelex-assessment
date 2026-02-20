@@ -122,7 +122,7 @@ export function RoleSelector({
         {!disabled && (
           <ChevronDown
             size={sizeClasses[size].icon}
-            className={`text-white/50 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`text-white/45 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         )}
       </button>
@@ -157,7 +157,7 @@ export function RoleSelector({
                   <div className="text-sm text-white font-medium">
                     {config.label}
                   </div>
-                  <div className="text-xs text-white/50">
+                  <div className="text-xs text-white/45">
                     {config.description}
                   </div>
                 </div>

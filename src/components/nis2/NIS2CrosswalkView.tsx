@@ -68,7 +68,7 @@ export default function NIS2CrosswalkView({
           <h3 className="text-lg font-semibold text-white mb-1">
             NIS2 ↔ EU Space Act Crosswalk
           </h3>
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-white/45">
             How NIS2 obligations map to the upcoming EU Space Act
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function NIS2CrosswalkView({
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3 text-center">
           <div className="text-xl font-bold text-green-400">{overlapCount}</div>
-          <div className="text-[10px] uppercase tracking-wider text-green-400/60 mt-1">
+          <div className="text-micro uppercase tracking-wider text-green-400/60 mt-1">
             Overlapping
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function NIS2CrosswalkView({
           <div className="text-xl font-bold text-blue-400">
             {totalPotentialSavingsWeeks}
           </div>
-          <div className="text-[10px] uppercase tracking-wider text-blue-400/60 mt-1">
+          <div className="text-micro uppercase tracking-wider text-blue-400/60 mt-1">
             Weeks Saved
           </div>
           <div className="text-[9px] text-blue-400/40 mt-1 leading-tight">
@@ -109,7 +109,7 @@ export default function NIS2CrosswalkView({
               %
             </span>
           </div>
-          <div className="text-[10px] uppercase tracking-wider text-white/40 mt-1">
+          <div className="text-micro uppercase tracking-wider text-white/45 mt-1">
             Overlap Rate
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function NIS2CrosswalkView({
             >
               {/* NIS2 side */}
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-white/40">NIS2</div>
+                <div className="text-xs text-white/45">NIS2</div>
                 <div className="text-sm text-white truncate">
                   {req.nis2Article}
                 </div>
@@ -154,7 +154,7 @@ export default function NIS2CrosswalkView({
 
               {/* EU Space Act side */}
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-white/40">EU Space Act</div>
+                <div className="text-xs text-white/45">EU Space Act</div>
                 <div className="text-sm text-white truncate">
                   {req.euSpaceActArticle}
                 </div>
@@ -171,7 +171,7 @@ export default function NIS2CrosswalkView({
         })}
 
         {overlappingRequirements.length > 10 && (
-          <p className="text-center text-xs text-white/40 py-2">
+          <p className="text-center text-xs text-white/45 py-2">
             + {overlappingRequirements.length - 10} more cross-references
           </p>
         )}

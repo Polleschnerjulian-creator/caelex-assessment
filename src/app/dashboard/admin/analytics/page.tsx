@@ -302,7 +302,7 @@ function MetricCard({
       ) : change < 0 ? (
         <ArrowDownRight size={14} className="text-red-500" />
       ) : (
-        <Minus size={14} className="text-white/50" />
+        <Minus size={14} className="text-white/45" />
       )
     ) : null;
 
@@ -312,7 +312,7 @@ function MetricCard({
         ? "text-emerald-500"
         : change < 0
           ? "text-red-500"
-          : "text-white/50"
+          : "text-white/45"
       : "";
 
   return (
@@ -344,7 +344,7 @@ function MetricCard({
         )}
       </div>
 
-      <p className="text-[12px] text-white/50 uppercase tracking-wider mb-1">
+      <p className="text-small text-white/45 uppercase tracking-wider mb-1">
         {title}
       </p>
 
@@ -359,12 +359,12 @@ function MetricCard({
       {change !== undefined && (
         <div className="flex items-center gap-1.5 mt-2">
           {trendIcon}
-          <span className={`text-[12px] font-medium ${changeColor}`}>
+          <span className={`text-small font-medium ${changeColor}`}>
             {change > 0 ? "+" : ""}
             {change}%
           </span>
           {changeLabel && (
-            <span className="text-[11px] text-white/30">{changeLabel}</span>
+            <span className="text-caption text-white/30">{changeLabel}</span>
           )}
         </div>
       )}
@@ -402,14 +402,14 @@ function AlertCard({ alert }: { alert: AlertItem }) {
       <div className="flex items-start gap-3">
         <Icon size={18} className={config.iconColor} />
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium text-white">{alert.title}</p>
-          <p className="text-[12px] text-white/50 mt-0.5">
-            {alert.description}
-          </p>
+          <p className="text-body font-medium text-white">{alert.title}</p>
+          <p className="text-small text-white/45 mt-0.5">{alert.description}</p>
           <div className="flex items-center gap-3 mt-2">
-            <span className="text-[11px] text-white/30">{alert.timestamp}</span>
+            <span className="text-caption text-white/30">
+              {alert.timestamp}
+            </span>
             {alert.actionLabel && (
-              <button className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium">
+              <button className="text-caption text-emerald-400 hover:text-emerald-300 font-medium">
                 {alert.actionLabel} →
               </button>
             )}
@@ -440,10 +440,10 @@ function TimeRangeSelector({
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
-          className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+          className={`px-3 py-1.5 text-small font-medium rounded-lg transition-colors ${
             value === opt.value
               ? "bg-white/10text-white"
-              : "text-white/50 hover:text-white hover:bg-white/[0.05]"
+              : "text-white/45 hover:text-white hover:bg-white/[0.05]"
           }`}
         >
           {opt.label}
@@ -467,10 +467,10 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium rounded-lg transition-all ${
+      className={`flex items-center gap-2 px-4 py-2.5 text-body font-medium rounded-lg transition-all ${
         active
           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-          : "text-white/50 hover:text-white hover:bg-white/[0.03]"
+          : "text-white/45 hover:text-white hover:bg-white/[0.03]"
       }`}
     >
       {icon}
@@ -491,8 +491,8 @@ function ErrorState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <AlertTriangle size={32} className="text-amber-500 mb-3" />
-      <p className="text-[14px] text-white mb-1">Failed to load data</p>
-      <p className="text-[12px] text-white/50">{message}</p>
+      <p className="text-body-lg text-white mb-1">Failed to load data</p>
+      <p className="text-small text-white/45">{message}</p>
     </div>
   );
 }
@@ -578,10 +578,10 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-[15px] font-medium text-white">
+              <h3 className="text-subtitle font-medium text-white">
                 Daily Active Users
               </h3>
-              <p className="text-[12px] text-white/50 mt-0.5">
+              <p className="text-small text-white/45 mt-0.5">
                 User engagement over time
               </p>
             </div>
@@ -628,7 +628,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-white/30">
-                <p className="text-[13px]">
+                <p className="text-body">
                   No DAU data available for this period
                 </p>
               </div>
@@ -640,8 +640,10 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-[15px] font-medium text-white">Top Events</h3>
-              <p className="text-[12px] text-white/50 mt-0.5">
+              <h3 className="text-subtitle font-medium text-white">
+                Top Events
+              </h3>
+              <p className="text-small text-white/45 mt-0.5">
                 Most frequent user actions
               </p>
             </div>
@@ -649,7 +651,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
           <div className="space-y-3">
             {metrics?.engagement.topEvents.slice(0, 8).map((event, i) => (
               <div key={event.type} className="flex items-center gap-4">
-                <span className="text-[12px] text-white/50 w-32 truncate">
+                <span className="text-small text-white/45 w-32 truncate">
                   {event.type
                     .replace(/_/g, " ")
                     .replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -662,7 +664,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
                     }}
                   />
                 </div>
-                <span className="text-[12px] text-white w-16 text-right">
+                <span className="text-small text-white w-16 text-right">
                   {event.count}
                 </span>
               </div>
@@ -674,31 +676,29 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Stats Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-4">
+          <h3 className="text-subtitle font-medium text-white mb-4">
             Engagement Summary
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-white/50">
-                Total Assessments
-              </span>
-              <span className="text-[14px] font-medium text-white">
+              <span className="text-body text-white/45">Total Assessments</span>
+              <span className="text-body-lg font-medium text-white">
                 {metrics?.engagement.assessments || 0}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-white/50">
+              <span className="text-body text-white/45">
                 Documents Uploaded
               </span>
-              <span className="text-[14px] font-medium text-white">
+              <span className="text-body-lg font-medium text-white">
                 {metrics?.engagement.documents || 0}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-white/50">
+              <span className="text-body text-white/45">
                 Active Organizations
               </span>
-              <span className="text-[14px] font-medium text-white">
+              <span className="text-body-lg font-medium text-white">
                 {metrics?.organizations.active || 0}
               </span>
             </div>
@@ -708,11 +708,11 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         {/* Alerts */}
         <div className="lg:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[15px] font-medium text-white">
+            <h3 className="text-subtitle font-medium text-white">
               Alerts & Insights
             </h3>
             {alerts.length > 0 && (
-              <span className="text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 font-medium">
+              <span className="text-caption px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 font-medium">
                 {alerts.length} items
               </span>
             )}
@@ -726,7 +726,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
           ) : (
             <div className="text-center py-8 text-white/30">
               <CheckCircle2 size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-[13px]">All metrics looking healthy</p>
+              <p className="text-body">All metrics looking healthy</p>
             </div>
           )}
         </div>
@@ -788,7 +788,9 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* MRR Trend */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">MRR Trend</h3>
+          <h3 className="text-subtitle font-medium text-white mb-6">
+            MRR Trend
+          </h3>
           <div className="h-[300px]">
             {trends?.mrr && trends.mrr.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -838,7 +840,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-white/30">
-                <p className="text-[13px]">No MRR data available</p>
+                <p className="text-body">No MRR data available</p>
               </div>
             )}
           </div>
@@ -846,7 +848,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
 
         {/* Revenue by Plan */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Revenue by Plan
           </h3>
           {breakdown.length > 0 ? (
@@ -896,10 +898,10 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
                         backgroundColor: planColors[plan.plan] || "#6B7280",
                       }}
                     />
-                    <span className="text-[11px] text-white/50">
+                    <span className="text-caption text-white/45">
                       {plan.plan}
                     </span>
-                    <span className="text-[11px] text-white ml-auto">
+                    <span className="text-caption text-white ml-auto">
                       {plan.customers}
                     </span>
                   </div>
@@ -908,7 +910,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
             </>
           ) : (
             <div className="flex items-center justify-center h-full text-white/30">
-              <p className="text-[13px]">No subscription data available</p>
+              <p className="text-body">No subscription data available</p>
             </div>
           )}
         </div>
@@ -917,33 +919,33 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Churn & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-[12px] text-white/50 uppercase tracking-wider mb-2">
+          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
             Churn Rate
           </p>
-          <p className="text-[32px] font-light text-white">
+          <p className="text-display font-light text-white">
             {metrics?.churnRate || 0}%
           </p>
-          <p className="text-[12px] text-white/30 mt-2">
+          <p className="text-small text-white/30 mt-2">
             {metrics?.churnedSubscriptions || 0} churned this period
           </p>
         </div>
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-[12px] text-white/50 uppercase tracking-wider mb-2">
+          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
             New Subscriptions
           </p>
-          <p className="text-[32px] font-light text-emerald-400">
+          <p className="text-display font-light text-emerald-400">
             {metrics?.newSubscriptions || 0}
           </p>
-          <p className="text-[12px] text-white/30 mt-2">Added this period</p>
+          <p className="text-small text-white/30 mt-2">Added this period</p>
         </div>
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <p className="text-[12px] text-white/50 uppercase tracking-wider mb-2">
+          <p className="text-small text-white/45 uppercase tracking-wider mb-2">
             Customer LTV
           </p>
-          <p className="text-[32px] font-light text-white">
+          <p className="text-display font-light text-white">
             €{(metrics?.ltv || 0).toLocaleString("de-DE")}
           </p>
-          <p className="text-[12px] text-white/30 mt-2">
+          <p className="text-small text-white/30 mt-2">
             Estimated lifetime value
           </p>
         </div>
@@ -1009,7 +1011,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Module Usage */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Module Usage
           </h3>
           {usage?.modules && usage.modules.length > 0 ? (
@@ -1053,14 +1055,14 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[300px] text-white/30">
-              <p className="text-[13px]">No module usage data available</p>
+              <p className="text-body">No module usage data available</p>
             </div>
           )}
         </div>
 
         {/* Page Views Trend */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Page Views Over Time
           </h3>
           {trends?.pageViews && trends.pageViews.length > 0 ? (
@@ -1107,7 +1109,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[300px] text-white/30">
-              <p className="text-[13px]">No page view data available</p>
+              <p className="text-body">No page view data available</p>
             </div>
           )}
         </div>
@@ -1115,7 +1117,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Assessment Breakdown */}
       <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-[15px] font-medium text-white mb-4">
+        <h3 className="text-subtitle font-medium text-white mb-4">
           Assessment Breakdown
         </h3>
         {metrics?.assessments.breakdown &&
@@ -1126,11 +1128,11 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
                 key={assessment.type}
                 className="bg-white/[0.03] rounded-lg p-4"
               >
-                <p className="text-[13px] text-white/50">{assessment.type}</p>
+                <p className="text-body text-white/45">{assessment.type}</p>
                 <p className="text-[28px] font-light text-white mt-1">
                   {assessment.count}
                 </p>
-                <p className="text-[12px] text-emerald-400">
+                <p className="text-small text-emerald-400">
                   {assessment.percentage}% of total
                 </p>
               </div>
@@ -1139,7 +1141,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
         ) : (
           <div className="text-center py-8 text-white/30">
             <BarChart3 size={32} className="mx-auto mb-2 opacity-50" />
-            <p className="text-[13px]">No assessment data available</p>
+            <p className="text-body">No assessment data available</p>
           </div>
         )}
       </div>
@@ -1201,7 +1203,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Plan Distribution */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Customers by Plan
           </h3>
           {segments?.byPlan && segments.byPlan.length > 0 ? (
@@ -1245,10 +1247,10 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                         backgroundColor: planColors[plan.plan] || "#6B7280",
                       }}
                     />
-                    <span className="text-[11px] text-white/50">
+                    <span className="text-caption text-white/45">
                       {plan.plan}
                     </span>
-                    <span className="text-[11px] text-white ml-auto">
+                    <span className="text-caption text-white ml-auto">
                       {plan.count}
                     </span>
                   </div>
@@ -1257,21 +1259,21 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
             </>
           ) : (
             <div className="flex items-center justify-center h-[300px] text-white/30">
-              <p className="text-[13px]">No plan data available</p>
+              <p className="text-body">No plan data available</p>
             </div>
           )}
         </div>
 
         {/* Conversion Funnel */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Conversion Funnel
           </h3>
           {funnel.length > 0 ? (
             <div className="space-y-3">
               {funnel.map((stage, i) => (
                 <div key={stage.stage} className="flex items-center gap-4">
-                  <span className="text-[12px] text-white/50 w-20">
+                  <span className="text-small text-white/45 w-20">
                     {stage.stage}
                   </span>
                   <div className="flex-1 h-8 bg-white/5 rounded-lg overflow-hidden">
@@ -1280,10 +1282,10 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                       style={{ width: `${stage.rate}%` }}
                     />
                   </div>
-                  <span className="text-[12px] text-white w-12 text-right">
+                  <span className="text-small text-white w-12 text-right">
                     {stage.count}
                   </span>
-                  <span className="text-[11px] text-white/30 w-10 text-right">
+                  <span className="text-caption text-white/30 w-10 text-right">
                     {stage.rate}%
                   </span>
                 </div>
@@ -1291,7 +1293,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[200px] text-white/30">
-              <p className="text-[13px]">No funnel data available</p>
+              <p className="text-body">No funnel data available</p>
             </div>
           )}
         </div>
@@ -1299,7 +1301,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Top Customers */}
       <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-[15px] font-medium text-white mb-4">
+        <h3 className="text-subtitle font-medium text-white mb-4">
           Top Customers by Activity
         </h3>
         {topCustomers.length > 0 ? (
@@ -1307,22 +1309,22 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b border-white/[0.06]">
-                  <th className="pb-3 text-[11px] text-white/50 font-medium">
+                  <th className="pb-3 text-caption text-white/45 font-medium">
                     Organization
                   </th>
-                  <th className="pb-3 text-[11px] text-white/50 font-medium">
+                  <th className="pb-3 text-caption text-white/45 font-medium">
                     Plan
                   </th>
-                  <th className="pb-3 text-[11px] text-white/50 font-medium text-right">
+                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
                     MRR
                   </th>
-                  <th className="pb-3 text-[11px] text-white/50 font-medium text-right">
+                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
                     Users
                   </th>
-                  <th className="pb-3 text-[11px] text-white/50 font-medium text-right">
+                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
                     Assessments
                   </th>
-                  <th className="pb-3 text-[11px] text-white/50 font-medium text-right">
+                  <th className="pb-3 text-caption text-white/45 font-medium text-right">
                     Joined
                   </th>
                 </tr>
@@ -1333,32 +1335,32 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
                     key={customer.name}
                     className="border-b border-white/[0.04]"
                   >
-                    <td className="py-3 text-[13px] text-white">
+                    <td className="py-3 text-body text-white">
                       {customer.name}
                     </td>
                     <td className="py-3">
                       <span
-                        className={`text-[11px] px-2 py-1 rounded-full ${
+                        className={`text-caption px-2 py-1 rounded-full ${
                           customer.plan === "enterprise"
                             ? "bg-emerald-500/10 text-emerald-400"
                             : customer.plan === "professional"
                               ? "bg-blue-500/10 text-blue-400"
-                              : "bg-white/5 text-white/50"
+                              : "bg-white/5 text-white/45"
                         }`}
                       >
                         {customer.plan}
                       </span>
                     </td>
-                    <td className="py-3 text-[13px] text-white text-right">
+                    <td className="py-3 text-body text-white text-right">
                       €{customer.mrr}
                     </td>
-                    <td className="py-3 text-[13px] text-white/50 text-right">
+                    <td className="py-3 text-body text-white/45 text-right">
                       {customer.users}
                     </td>
-                    <td className="py-3 text-[13px] text-white/50 text-right">
+                    <td className="py-3 text-body text-white/45 text-right">
                       {customer.assessments}
                     </td>
-                    <td className="py-3 text-[12px] text-white/30 text-right">
+                    <td className="py-3 text-small text-white/30 text-right">
                       {customer.joinedAt}
                     </td>
                   </tr>
@@ -1369,7 +1371,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
         ) : (
           <div className="text-center py-8 text-white/30">
             <Users size={32} className="mx-auto mb-2 opacity-50" />
-            <p className="text-[13px]">No customer data available</p>
+            <p className="text-body">No customer data available</p>
           </div>
         )}
       </div>
@@ -1425,14 +1427,14 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Traffic Sources */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Traffic Sources
           </h3>
           {sources.length > 0 ? (
             <div className="space-y-3">
               {sources.slice(0, 8).map((source) => (
                 <div key={source.source} className="flex items-center gap-4">
-                  <span className="text-[12px] text-white/50 w-24 truncate">
+                  <span className="text-small text-white/45 w-24 truncate">
                     {source.source}
                   </span>
                   <div className="flex-1 h-6 bg-white/5 rounded-full overflow-hidden">
@@ -1444,10 +1446,10 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                       }}
                     />
                   </div>
-                  <span className="text-[12px] text-white w-16 text-right">
+                  <span className="text-small text-white w-16 text-right">
                     {source.visits}
                   </span>
-                  <span className="text-[11px] text-white/30 w-10 text-right">
+                  <span className="text-caption text-white/30 w-10 text-right">
                     {source.percentage}%
                   </span>
                 </div>
@@ -1455,14 +1457,14 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[200px] text-white/30">
-              <p className="text-[13px]">No traffic source data available</p>
+              <p className="text-body">No traffic source data available</p>
             </div>
           )}
         </div>
 
         {/* Traffic Trend */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Traffic Over Time
           </h3>
           {trends?.traffic && trends.traffic.length > 0 ? (
@@ -1511,7 +1513,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[250px] text-white/30">
-              <p className="text-[13px]">No traffic trend data available</p>
+              <p className="text-body">No traffic trend data available</p>
             </div>
           )}
         </div>
@@ -1521,7 +1523,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Channel Attribution */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Channel Attribution
           </h3>
           {channels.length > 0 ? (
@@ -1531,14 +1533,14 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                   key={channel.channel}
                   className="flex items-center justify-between"
                 >
-                  <span className="text-[13px] text-white/50">
+                  <span className="text-body text-white/45">
                     {channel.channel}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-[13px] text-white">
+                    <span className="text-body text-white">
                       {channel.visits}
                     </span>
-                    <span className="text-[11px] text-white/30 w-10 text-right">
+                    <span className="text-caption text-white/30 w-10 text-right">
                       {channel.percentage}%
                     </span>
                   </div>
@@ -1547,14 +1549,14 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[150px] text-white/30">
-              <p className="text-[13px]">No channel data available</p>
+              <p className="text-body">No channel data available</p>
             </div>
           )}
         </div>
 
         {/* Geography */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-6">
+          <h3 className="text-subtitle font-medium text-white mb-6">
             Top Countries
           </h3>
           {geography.length > 0 ? (
@@ -1562,13 +1564,13 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
               {geography.slice(0, 6).map((country) => (
                 <div key={country.code} className="flex items-center gap-4">
                   <Globe size={14} className="text-white/30" />
-                  <span className="text-[13px] text-white flex-1">
+                  <span className="text-body text-white flex-1">
                     {country.country}
                   </span>
-                  <span className="text-[12px] text-white/50">
+                  <span className="text-small text-white/45">
                     {country.visits}
                   </span>
-                  <span className="text-[11px] text-white/30 w-10 text-right">
+                  <span className="text-caption text-white/30 w-10 text-right">
                     {country.percentage}%
                   </span>
                 </div>
@@ -1576,7 +1578,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[150px] text-white/30">
-              <p className="text-[13px]">No geographic data available</p>
+              <p className="text-body">No geographic data available</p>
             </div>
           )}
         </div>
@@ -1634,7 +1636,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* API Performance Trend */}
       <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-        <h3 className="text-[15px] font-medium text-white mb-6">
+        <h3 className="text-subtitle font-medium text-white mb-6">
           API Performance
         </h3>
         {trends?.api && trends.api.length > 0 ? (
@@ -1697,7 +1699,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
           </div>
         ) : (
           <div className="flex items-center justify-center h-[300px] text-white/30">
-            <p className="text-[13px]">No API performance data available</p>
+            <p className="text-body">No API performance data available</p>
           </div>
         )}
       </div>
@@ -1705,7 +1707,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Health */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-4">
+          <h3 className="text-subtitle font-medium text-white mb-4">
             System Health
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -1720,10 +1722,10 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
               },
             ].map((metric) => (
               <div key={metric.name} className="bg-white/[0.03] rounded-lg p-4">
-                <p className="text-[11px] text-white/50 uppercase tracking-wider">
+                <p className="text-caption text-white/45 uppercase tracking-wider">
                   {metric.name}
                 </p>
-                <p className="text-[24px] font-light text-white mt-1">
+                <p className="text-display-sm font-light text-white mt-1">
                   {metric.value}
                   {metric.unit}
                 </p>
@@ -1748,7 +1750,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
         {/* Top Endpoints */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-4">
+          <h3 className="text-subtitle font-medium text-white mb-4">
             Top Endpoints
           </h3>
           {endpoints.length > 0 ? (
@@ -1758,18 +1760,18 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
                   key={endpoint.endpoint}
                   className="flex items-center justify-between p-3 bg-white/[0.03] rounded-lg"
                 >
-                  <span className="text-[12px] text-white truncate flex-1">
+                  <span className="text-small text-white truncate flex-1">
                     {endpoint.endpoint}
                   </span>
                   <div className="flex items-center gap-4">
-                    <span className="text-[11px] text-white/50">
+                    <span className="text-caption text-white/45">
                       {endpoint.calls} calls
                     </span>
-                    <span className="text-[11px] font-mono text-emerald-400">
+                    <span className="text-caption font-mono text-emerald-400">
                       {endpoint.avgMs}ms
                     </span>
                     {endpoint.errorRate > 0 && (
-                      <span className="text-[11px] text-red-400">
+                      <span className="text-caption text-red-400">
                         {endpoint.errorRate}% err
                       </span>
                     )}
@@ -1779,7 +1781,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-[200px] text-white/30">
-              <p className="text-[13px]">No endpoint data available</p>
+              <p className="text-body">No endpoint data available</p>
             </div>
           )}
         </div>
@@ -1788,7 +1790,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Error Types */}
       {errors && errors.types.length > 0 && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
-          <h3 className="text-[15px] font-medium text-white mb-4">
+          <h3 className="text-subtitle font-medium text-white mb-4">
             Error Distribution
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1797,10 +1799,10 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
                 key={error.type}
                 className="bg-red-500/10 border border-red-500/20 rounded-lg p-4"
               >
-                <p className="text-[11px] text-red-400 truncate">
+                <p className="text-caption text-red-400 truncate">
                   {error.type}
                 </p>
-                <p className="text-[20px] font-light text-white mt-1">
+                <p className="text-heading-lg font-light text-white mt-1">
                   {error.count}
                 </p>
               </div>
@@ -1855,10 +1857,10 @@ export default function AnalyticsPage() {
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-[20px] font-medium text-white">
+              <h1 className="text-heading-lg font-medium text-white">
                 CEO Analytics
               </h1>
-              <p className="text-[12px] text-white/50 mt-0.5">
+              <p className="text-small text-white/45 mt-0.5">
                 Last updated:{" "}
                 {lastUpdated.toLocaleTimeString("de-DE", {
                   hour: "2-digit",
@@ -1871,7 +1873,7 @@ export default function AnalyticsPage() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10text-white text-[13px] font-medium rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10text-white text-body font-medium rounded-lg transition-colors disabled:opacity-50"
               >
                 <RefreshCw
                   size={14}
@@ -1895,7 +1897,7 @@ export default function AnalyticsPage() {
                     "_blank",
                   );
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-[13px] font-medium rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-body font-medium rounded-lg transition-colors"
               >
                 <Download size={14} />
                 Export CSV

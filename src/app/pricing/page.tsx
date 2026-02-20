@@ -541,7 +541,7 @@ export default function PricingPage() {
               <br />
               <span className="text-emerald-400">for space operators</span>
             </h1>
-            <p className="text-heading text-white/60 max-w-[650px] mx-auto mb-12 leading-relaxed">
+            <p className="text-heading text-white/45 max-w-[650px] mx-auto mb-12 leading-relaxed">
               Map requirements, track deadlines, prepare documentation, and
               monitor regulatory changes — continuously, not as a one-time
               consulting project.
@@ -557,7 +557,7 @@ export default function PricingPage() {
                 className={`px-6 py-3 rounded-xl text-subtitle font-medium transition-all duration-300 ${
                   billingPeriod === "monthly"
                     ? "bg-white text-black shadow-lg"
-                    : "text-white/60 hover:text-white"
+                    : "text-white/45 hover:text-white"
                 }`}
               >
                 Monthly
@@ -567,7 +567,7 @@ export default function PricingPage() {
                 className={`px-6 py-3 rounded-xl text-subtitle font-medium transition-all duration-300 flex items-center gap-2 ${
                   billingPeriod === "yearly"
                     ? "bg-white text-black shadow-lg"
-                    : "text-white/60 hover:text-white"
+                    : "text-white/45 hover:text-white"
                 }`}
               >
                 Yearly
@@ -637,7 +637,7 @@ export default function PricingPage() {
                             className={
                               plan.highlighted
                                 ? "text-emerald-400"
-                                : "text-white/50"
+                                : "text-white/45"
                             }
                           />
                         </div>
@@ -646,7 +646,7 @@ export default function PricingPage() {
                         </h3>
                       </div>
 
-                      <p className="text-subtitle text-white/50 mb-6 leading-relaxed min-h-[48px]">
+                      <p className="text-subtitle text-white/45 mb-6 leading-relaxed min-h-[48px]">
                         {plan.description}
                       </p>
 
@@ -659,13 +659,13 @@ export default function PricingPage() {
                       <div className="mb-8">
                         {plan.priceLabel ? (
                           <div className="flex items-baseline gap-2">
-                            <span className="text-title text-white/40">
+                            <span className="text-title text-white/45">
                               {plan.priceLabel}
                             </span>
                             <span className="text-display-lg font-light tracking-[-0.02em] text-white">
                               €{price?.toLocaleString("de-DE")}
                             </span>
-                            <span className="text-title text-white/40">
+                            <span className="text-title text-white/45">
                               /month
                             </span>
                           </div>
@@ -674,13 +674,13 @@ export default function PricingPage() {
                             <span className="text-display-lg font-light tracking-[-0.02em] text-white">
                               €{price?.toLocaleString("de-DE")}
                             </span>
-                            <span className="text-title text-white/40">
+                            <span className="text-title text-white/45">
                               /month
                             </span>
                           </div>
                         )}
                         {billingPeriod === "yearly" && price && (
-                          <p className="text-body-lg text-white/40 mt-2">
+                          <p className="text-body-lg text-white/45 mt-2">
                             €{(price * 12).toLocaleString("de-DE")} billed
                             annually
                           </p>
@@ -741,7 +741,7 @@ export default function PricingPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-16 flex flex-wrap items-center justify-center gap-8 text-subtitle text-white/50"
+            className="mt-16 flex flex-wrap items-center justify-center gap-8 text-subtitle text-white/45"
           >
             <div className="flex items-center gap-2">
               <Shield size={18} className="text-emerald-400" />
@@ -780,7 +780,7 @@ export default function PricingPage() {
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
               What authorization under the EU Space Act requires
             </h2>
-            <p className="text-heading text-white/50 leading-relaxed max-w-[700px] mx-auto">
+            <p className="text-heading text-white/45 leading-relaxed max-w-[700px] mx-auto">
               Each workstream requires specialized regulatory expertise. Caelex
               automates the mapping, tracking, documentation, and monitoring
               across all of them.
@@ -811,7 +811,7 @@ export default function PricingPage() {
                       {workstream.items.map((item) => (
                         <li
                           key={item}
-                          className="text-body-lg text-white/50 flex items-start gap-2"
+                          className="text-body-lg text-white/45 flex items-start gap-2"
                         >
                           <span className="text-emerald-400/60 mt-1.5">•</span>
                           {item}
@@ -831,7 +831,7 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="mt-10 text-center"
           >
-            <p className="text-subtitle text-white/40 leading-relaxed max-w-[800px] mx-auto">
+            <p className="text-subtitle text-white/45 leading-relaxed max-w-[800px] mx-auto">
               Traditionally, operators hire consultants at €250–400/hour or
               build internal compliance teams. Caelex automates the mapping,
               tracking, documentation, and monitoring across all workstreams —
@@ -869,7 +869,7 @@ export default function PricingPage() {
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
               Already budgeting for compliance?
             </h2>
-            <p className="text-heading text-white/50 leading-relaxed">
+            <p className="text-heading text-white/45 leading-relaxed">
               Enter your own estimates to see how Caelex compares.
             </p>
           </motion.div>
@@ -889,7 +889,7 @@ export default function PricingPage() {
                     onChange={(e) => setEstimatedHours(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <p className="text-body text-white/40 mt-2">
+                  <p className="text-body text-white/45 mt-2">
                     The authorization process spans 6+ months across multiple
                     workstreams
                   </p>
@@ -906,7 +906,7 @@ export default function PricingPage() {
                     onChange={(e) => setHourlyRate(e.target.value)}
                     className="w-full px-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-title placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
                   />
-                  <p className="text-body text-white/40 mt-2">
+                  <p className="text-body text-white/45 mt-2">
                     Specialized space law: typically €250–400/h
                   </p>
                 </div>
@@ -919,20 +919,20 @@ export default function PricingPage() {
                     {/* Consulting Estimate */}
                     <div className="py-4 border-b border-white/[0.08]">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-subtitle text-white/60">
+                        <span className="text-subtitle text-white/45">
                           Consulting estimate
                         </span>
                         <span className="text-heading text-white/70">
                           €{consultingEstimate.toLocaleString("de-DE")}
                         </span>
                       </div>
-                      <p className="text-body text-white/40">
+                      <p className="text-body text-white/45">
                         Based on your inputs — one-time engagement
                       </p>
-                      <p className="text-body text-white/40 mt-1">
+                      <p className="text-body text-white/45 mt-1">
                         + Ongoing monitoring after initial authorization
                       </p>
-                      <p className="text-body text-white/40">
+                      <p className="text-body text-white/45">
                         + Re-engagement when regulations change
                       </p>
                     </div>
@@ -940,14 +940,14 @@ export default function PricingPage() {
                     {/* Caelex */}
                     <div className="py-4 border-b border-white/[0.08]">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-subtitle text-white/60">
+                        <span className="text-subtitle text-white/45">
                           Caelex Professional
                         </span>
                         <span className="text-heading font-medium text-emerald-400">
                           €{caelexAnnual.toLocaleString("de-DE")}/year
                         </span>
                       </div>
-                      <p className="text-body text-white/40">
+                      <p className="text-body text-white/45">
                         Continuous — includes regulatory updates
                       </p>
                       <div className="mt-3 space-y-1">
@@ -976,7 +976,7 @@ export default function PricingPage() {
                           continuous, not one-time.
                         </p>
                       ) : (
-                        <p className="text-subtitle text-white/60 leading-relaxed">
+                        <p className="text-subtitle text-white/45 leading-relaxed">
                           Caelex provides continuous automated compliance at a
                           comparable cost to your consulting estimate — with
                           ongoing monitoring included.
@@ -1017,7 +1017,7 @@ export default function PricingPage() {
               requirements costing ~€100,000 per product line in fees alone —
               before consulting and preparation costs.
             </p>
-            <p className="text-small text-white/50 mt-2">
+            <p className="text-small text-white/45 mt-2">
               Source: EU Commission Impact Assessment, COM/2025/335
             </p>
           </motion.div>
@@ -1048,16 +1048,16 @@ export default function PricingPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.08]">
-                    <th className="text-left py-6 px-6 text-subtitle text-white/50 font-medium">
+                    <th className="text-left py-6 px-6 text-subtitle text-white/45 font-medium">
                       Feature
                     </th>
-                    <th className="text-center py-6 px-4 text-subtitle text-white/60 font-medium w-[140px]">
+                    <th className="text-center py-6 px-4 text-subtitle text-white/45 font-medium w-[140px]">
                       Essentials
                     </th>
                     <th className="text-center py-6 px-4 text-subtitle text-emerald-400 font-semibold bg-emerald-500/[0.05] w-[140px]">
                       Professional
                     </th>
-                    <th className="text-center py-6 px-4 text-subtitle text-white/60 font-medium w-[140px]">
+                    <th className="text-center py-6 px-4 text-subtitle text-white/45 font-medium w-[140px]">
                       Enterprise
                     </th>
                   </tr>
@@ -1087,7 +1087,7 @@ export default function PricingPage() {
                           key={feature.name}
                           className="border-b border-white/[0.04]"
                         >
-                          <td className="py-4 px-6 pl-12 text-subtitle text-white/60">
+                          <td className="py-4 px-6 pl-12 text-subtitle text-white/45">
                             {feature.name}
                           </td>
                           <td className="py-4 px-4 text-center">
@@ -1098,10 +1098,10 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/50">—</span>
+                                <span className="text-white/45">—</span>
                               )
                             ) : (
-                              <span className="text-body-lg text-white/50">
+                              <span className="text-body-lg text-white/45">
                                 {feature.essentials}
                               </span>
                             )}
@@ -1114,7 +1114,7 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/50">—</span>
+                                <span className="text-white/45">—</span>
                               )
                             ) : (
                               <span className="text-body-lg font-medium text-emerald-400">
@@ -1130,10 +1130,10 @@ export default function PricingPage() {
                                   className="mx-auto text-emerald-400"
                                 />
                               ) : (
-                                <span className="text-white/50">—</span>
+                                <span className="text-white/45">—</span>
                               )
                             ) : (
-                              <span className="text-body-lg text-white/50">
+                              <span className="text-body-lg text-white/45">
                                 {feature.enterprise}
                               </span>
                             )}
@@ -1193,9 +1193,9 @@ export default function PricingPage() {
                         {faq.question}
                       </span>
                       {isExpanded ? (
-                        <ChevronUp size={22} className="text-white/40" />
+                        <ChevronUp size={22} className="text-white/45" />
                       ) : (
-                        <ChevronDown size={22} className="text-white/40" />
+                        <ChevronDown size={22} className="text-white/45" />
                       )}
                     </button>
                     <AnimatePresence>
@@ -1208,7 +1208,7 @@ export default function PricingPage() {
                           className="overflow-hidden"
                         >
                           <div className="px-6 pb-6 pl-6 sm:pl-[88px]">
-                            <p className="text-subtitle sm:text-title text-white/60 leading-relaxed">
+                            <p className="text-subtitle sm:text-title text-white/45 leading-relaxed">
                               {faq.answer}
                             </p>
                           </div>
@@ -1251,7 +1251,7 @@ export default function PricingPage() {
               <h2 className="text-[clamp(2rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
                 Start your compliance journey today
               </h2>
-              <p className="text-heading text-white/50 mb-12 max-w-[550px] mx-auto leading-relaxed">
+              <p className="text-heading text-white/45 mb-12 max-w-[550px] mx-auto leading-relaxed">
                 The authorization process takes 6+ months. The earlier you start
                 mapping requirements and preparing documentation, the smoother
                 your path to compliance.
@@ -1273,7 +1273,7 @@ export default function PricingPage() {
                 </Link>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-subtitle text-white/50">
+              <div className="flex items-center justify-center gap-2 text-subtitle text-white/45">
                 <Shield size={18} className="text-emerald-400" />
                 30-day money-back guarantee • No questions asked
               </div>
@@ -1292,19 +1292,19 @@ export default function PricingPage() {
               <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={119} />
               </div>
-              <div className="text-subtitle text-white/50">Articles Mapped</div>
+              <div className="text-subtitle text-white/45">Articles Mapped</div>
             </div>
             <div>
               <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={10} />
               </div>
-              <div className="text-subtitle text-white/50">Jurisdictions</div>
+              <div className="text-subtitle text-white/45">Jurisdictions</div>
             </div>
             <div>
               <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={47} />
               </div>
-              <div className="text-subtitle text-white/50">
+              <div className="text-subtitle text-white/45">
                 Document Templates
               </div>
             </div>
@@ -1312,7 +1312,7 @@ export default function PricingPage() {
               <div className="text-display-lg font-light tracking-tight text-emerald-400 mb-2">
                 <AnimatedCounter target={8} />
               </div>
-              <div className="text-subtitle text-white/50">
+              <div className="text-subtitle text-white/45">
                 Compliance Modules
               </div>
             </div>

@@ -51,7 +51,7 @@ export default function QuestionStep({
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
           {/* Question Number */}
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 block mb-4">
+          <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-4">
             Question {String(questionNumber).padStart(2, "0")}
           </span>
 
@@ -62,7 +62,7 @@ export default function QuestionStep({
 
           {/* Subtitle */}
           {question.subtitle && (
-            <p className="text-[15px] text-white/70 leading-relaxed">
+            <p className="text-subtitle text-white/70 leading-relaxed">
               {question.subtitle}
             </p>
           )}

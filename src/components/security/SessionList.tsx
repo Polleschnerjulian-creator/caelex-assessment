@@ -131,11 +131,11 @@ export function SessionList() {
   function getDeviceIcon(deviceType: string) {
     switch (deviceType?.toLowerCase()) {
       case "mobile":
-        return <Smartphone size={18} className="text-white/50" />;
+        return <Smartphone size={18} className="text-white/45" />;
       case "tablet":
-        return <Tablet size={18} className="text-white/50" />;
+        return <Tablet size={18} className="text-white/45" />;
       default:
-        return <Monitor size={18} className="text-white/50" />;
+        return <Monitor size={18} className="text-white/45" />;
     }
   }
 
@@ -154,12 +154,12 @@ export function SessionList() {
 
     const config = configs[method] || {
       label: method,
-      color: "text-white/50 bg-white/5",
+      color: "text-white/45 bg-white/5",
     };
 
     return (
       <span
-        className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${config.color}`}
+        className={`px-2 py-0.5 text-micro font-medium rounded-full ${config.color}`}
       >
         {config.label}
       </span>
@@ -184,7 +184,7 @@ export function SessionList() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={24} className="animate-spin text-white/40" />
+        <Loader2 size={24} className="animate-spin text-white/45" />
       </div>
     );
   }
@@ -198,14 +198,14 @@ export function SessionList() {
             <Shield size={20} className="text-blue-400" />
             Active Sessions
           </h2>
-          <p className="text-sm text-white/60 mt-1">
+          <p className="text-sm text-white/45 mt-1">
             Manage your active sessions and sign out from other devices
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={fetchSessions}
-            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 text-white/45 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             title="Refresh"
             aria-label="Refresh sessions"
           >
@@ -244,13 +244,13 @@ export function SessionList() {
             <div className="text-2xl font-semibold text-white">
               {stats.activeSessions}
             </div>
-            <div className="text-sm text-white/50">Active Sessions</div>
+            <div className="text-sm text-white/45">Active Sessions</div>
           </div>
           <div className="bg-white/5 rounded-xl border border-white/10 p-4">
             <div className="text-2xl font-semibold text-white">
               {Object.keys(stats.deviceBreakdown).length}
             </div>
-            <div className="text-sm text-white/50">Device Types</div>
+            <div className="text-sm text-white/45">Device Types</div>
           </div>
           <div className="bg-white/5 rounded-xl border border-white/10 p-4">
             <div className="text-2xl font-semibold text-white">
@@ -258,7 +258,7 @@ export function SessionList() {
                 ? formatRelativeTime(stats.lastActivity)
                 : "N/A"}
             </div>
-            <div className="text-sm text-white/50">Last Activity</div>
+            <div className="text-sm text-white/45">Last Activity</div>
           </div>
         </div>
       )}
@@ -272,7 +272,7 @@ export function SessionList() {
           <h3 className="text-lg font-medium text-white mb-1">
             No Active Sessions
           </h3>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-white/45">
             Your session history will appear here
           </p>
         </div>
@@ -302,26 +302,26 @@ export function SessionList() {
                         {session.osVersion && `${session.osVersion}`}
                       </span>
                       {session.isCurrent && (
-                        <span className="px-2 py-0.5 text-[10px] font-medium text-emerald-400 bg-emerald-500/20 rounded-full">
+                        <span className="px-2 py-0.5 text-micro font-medium text-emerald-400 bg-emerald-500/20 rounded-full">
                           Current Session
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-sm">
                       {session.city && session.country && (
-                        <span className="flex items-center gap-1 text-white/50">
+                        <span className="flex items-center gap-1 text-white/45">
                           <Globe size={12} />
                           {session.city}, {session.country}
                         </span>
                       )}
                       {session.ipAddress && (
-                        <span className="text-white/40 font-mono text-xs">
+                        <span className="text-white/45 font-mono text-xs">
                           {session.ipAddress}
                         </span>
                       )}
                       {getAuthMethodBadge(session.authMethod)}
                     </div>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-white/40">
+                    <div className="flex items-center gap-3 mt-2 text-xs text-white/45">
                       <span className="flex items-center gap-1">
                         <Clock size={10} />
                         Last active: {formatRelativeTime(session.lastActiveAt)}
@@ -362,7 +362,7 @@ export function SessionList() {
         />
         <div>
           <h4 className="text-sm font-medium text-amber-400">Security Tip</h4>
-          <p className="text-sm text-white/60 mt-1">
+          <p className="text-sm text-white/45 mt-1">
             If you see any sessions you don&apos;t recognize, sign out of them
             immediately and change your password. Consider enabling two-factor
             authentication for additional security.

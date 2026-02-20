@@ -22,7 +22,7 @@ export function Breadcrumbs({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={`flex items-center gap-1 text-[13px] ${className}`}
+      className={`flex items-center gap-1 text-body ${className}`}
     >
       {showHome && (
         <>
@@ -58,7 +58,7 @@ export function Breadcrumbs({
             ) : (
               <span
                 className={`truncate max-w-[200px] ${
-                  isLast ? "text-white/80 font-medium" : "text-white/70"
+                  isLast ? "text-white/70 font-medium" : "text-white/70"
                 }`}
                 title={item.label}
                 {...(isLast ? { "aria-current": "page" as const } : {})}

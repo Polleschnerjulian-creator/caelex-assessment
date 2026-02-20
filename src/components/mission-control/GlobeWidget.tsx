@@ -49,15 +49,15 @@ export default function GlobeWidget() {
           {!isLoading && stats && (
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/50 backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                  <span className="text-[10px] text-white/60">
+                  <span className="text-micro text-white/45">
                     {stats.total.toLocaleString()} {t("missionControl.tracked")}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/50 backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-[10px] text-white/60">
+                  <span className="text-micro text-white/45">
                     {fleet.length} {t("missionControl.yourFleet")}
                   </span>
                 </div>
@@ -73,7 +73,7 @@ export default function GlobeWidget() {
               className="w-4 h-4 text-emerald-400"
               aria-hidden="true"
             />
-            <h3 className="text-[12px] uppercase tracking-wider text-white/50">
+            <h3 className="text-small uppercase tracking-wider text-white/45">
               {t("missionControl.fleetStatus")}
             </h3>
           </div>
@@ -86,10 +86,10 @@ export default function GlobeWidget() {
                   className="flex items-center justify-between py-1.5"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[12px] text-white/80 truncate">
+                    <p className="text-small text-white/70 truncate">
                       {sc.name}
                     </p>
-                    <p className="text-[10px] text-white/35">
+                    <p className="text-micro text-white/25">
                       {sc.orbitType}{" "}
                       {sc.altitudeKm ? `· ${Math.round(sc.altitudeKm)} km` : ""}
                     </p>
@@ -100,7 +100,7 @@ export default function GlobeWidget() {
                         ? "bg-emerald-500/15 text-emerald-400"
                         : sc.status === "PRE_LAUNCH"
                           ? "bg-blue-500/15 text-blue-400"
-                          : "bg-white/5 text-white/40"
+                          : "bg-white/5 text-white/45"
                     }`}
                   >
                     {sc.status}
@@ -108,20 +108,20 @@ export default function GlobeWidget() {
                 </div>
               ))}
               {fleet.length > 4 && (
-                <p className="text-[10px] text-white/30">
+                <p className="text-micro text-white/30">
                   +{fleet.length - 4} {t("missionControl.more")}
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-[12px] text-white/40 mb-4">
+            <p className="text-small text-white/45 mb-4">
               {t("missionControl.noFleetYet")}
             </p>
           )}
 
           <Link
             href="/dashboard/mission-control"
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[12px] text-white/70 hover:text-white transition-all group"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-small text-white/70 hover:text-white transition-all group"
           >
             {t("missionControl.openMissionControl")}
             <ChevronRight

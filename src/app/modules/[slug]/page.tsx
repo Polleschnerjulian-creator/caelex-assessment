@@ -400,7 +400,7 @@ export default async function ModulePage({ params }: PageProps) {
             <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
               {moduleInfo.h1}
             </h1>
-            <p className="text-[17px] text-white/50 leading-relaxed">
+            <p className="text-title text-white/45 leading-relaxed">
               {content.overview}
             </p>
           </div>
@@ -410,7 +410,7 @@ export default async function ModulePage({ params }: PageProps) {
             <div className="lg:col-span-2 space-y-12">
               {/* Regulations Covered */}
               <section>
-                <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                   <Scale size={24} className="text-emerald-400" />
                   What regulations does this cover?
                 </h2>
@@ -418,7 +418,7 @@ export default async function ModulePage({ params }: PageProps) {
                   {moduleInfo.regulations.map((reg) => (
                     <span
                       key={reg}
-                      className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-[14px] text-white/70"
+                      className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-body-lg text-white/70"
                     >
                       {reg}
                     </span>
@@ -428,7 +428,7 @@ export default async function ModulePage({ params }: PageProps) {
 
               {/* Jurisdictions */}
               <section>
-                <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                   <Globe size={24} className="text-emerald-400" />
                   Which jurisdictions?
                 </h2>
@@ -436,7 +436,7 @@ export default async function ModulePage({ params }: PageProps) {
                   {moduleInfo.jurisdictions.map((j) => (
                     <span
                       key={j}
-                      className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[14px] text-emerald-400/80"
+                      className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-body-lg text-emerald-400/80"
                     >
                       {j}
                     </span>
@@ -447,7 +447,7 @@ export default async function ModulePage({ params }: PageProps) {
               {/* Assessment Includes */}
               {content.assessmentIncludes.length > 0 && (
                 <section>
-                  <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                  <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                     <Shield size={24} className="text-emerald-400" />
                     What does the assessment include?
                   </h2>
@@ -455,7 +455,7 @@ export default async function ModulePage({ params }: PageProps) {
                     {content.assessmentIncludes.map((item, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-3 text-[15px] text-white/60"
+                        className="flex items-start gap-3 text-subtitle text-white/45"
                       >
                         <CheckCircle
                           size={18}
@@ -471,7 +471,7 @@ export default async function ModulePage({ params }: PageProps) {
               {/* Documents Generated */}
               {content.documentsGenerated.length > 0 && (
                 <section>
-                  <h2 className="text-[24px] font-medium text-white mb-6 flex items-center gap-3">
+                  <h2 className="text-display-sm font-medium text-white mb-6 flex items-center gap-3">
                     <FileText size={24} className="text-emerald-400" />
                     What documents are generated?
                   </h2>
@@ -479,7 +479,7 @@ export default async function ModulePage({ params }: PageProps) {
                     {content.documentsGenerated.map((doc, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-3 text-[15px] text-white/60"
+                        className="flex items-start gap-3 text-subtitle text-white/45"
                       >
                         <FileText
                           size={18}
@@ -497,16 +497,16 @@ export default async function ModulePage({ params }: PageProps) {
             <div className="space-y-8">
               {/* CTA Card */}
               <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
-                <h3 className="text-[18px] font-medium text-white mb-3">
+                <h3 className="text-heading font-medium text-white mb-3">
                   Start Your Assessment
                 </h3>
-                <p className="text-[14px] text-white/50 mb-6">
+                <p className="text-body-lg text-white/45 mb-6">
                   Get your personalized {moduleInfo.title.toLowerCase()}{" "}
                   compliance profile in minutes.
                 </p>
                 <Link
                   href="/assessment"
-                  className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-emerald-500 text-white text-[14px] font-medium hover:bg-emerald-400 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-colors"
                 >
                   Start Assessment
                   <ArrowRight size={16} />
@@ -516,7 +516,7 @@ export default async function ModulePage({ params }: PageProps) {
               {/* Related Modules */}
               {relatedModuleData.length > 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h3 className="text-[16px] font-medium text-white mb-4">
+                  <h3 className="text-title font-medium text-white mb-4">
                     Related Modules
                   </h3>
                   <div className="space-y-3">
@@ -524,7 +524,7 @@ export default async function ModulePage({ params }: PageProps) {
                       <Link
                         key={m!.slug}
                         href={`/modules/${m!.slug}`}
-                        className="block text-[14px] text-white/60 hover:text-emerald-400 transition-colors"
+                        className="block text-body-lg text-white/45 hover:text-emerald-400 transition-colors"
                       >
                         {m!.title}
                       </Link>
@@ -536,7 +536,7 @@ export default async function ModulePage({ params }: PageProps) {
               {/* Related Articles */}
               {content.relatedArticles.length > 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h3 className="text-[16px] font-medium text-white mb-4">
+                  <h3 className="text-title font-medium text-white mb-4">
                     Related Articles
                   </h3>
                   <div className="space-y-3">
@@ -544,7 +544,7 @@ export default async function ModulePage({ params }: PageProps) {
                       <Link
                         key={article.slug}
                         href={`/blog/${article.slug}`}
-                        className="block text-[14px] text-white/60 hover:text-emerald-400 transition-colors"
+                        className="block text-body-lg text-white/45 hover:text-emerald-400 transition-colors"
                       >
                         {article.title}
                       </Link>

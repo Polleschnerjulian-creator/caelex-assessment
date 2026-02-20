@@ -34,7 +34,7 @@ const ROLE_STYLES: Record<string, string> = {
     "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20",
   auditor:
     "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
-  user: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/10",
+  user: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/10",
 };
 
 const PLAN_STYLES: Record<string, string> = {
@@ -44,7 +44,7 @@ const PLAN_STYLES: Record<string, string> = {
     "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20",
   STARTER:
     "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
-  FREE: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/50 border-slate-200 dark:border-white/10",
+  FREE: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/10",
 };
 
 export default function UserTable({ users, onRefresh }: Props) {
@@ -129,7 +129,7 @@ export default function UserTable({ users, onRefresh }: Props) {
         className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
         role="status"
       >
-        <p className="text-[14px] text-slate-500 dark:text-white/50">
+        <p className="text-body-lg text-slate-500 dark:text-white/45">
           No users found matching your filters.
         </p>
       </div>
@@ -144,37 +144,37 @@ export default function UserTable({ users, onRefresh }: Props) {
             <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 User
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Organization
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Plan
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Role
               </th>
               <th
                 scope="col"
-                className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Status
               </th>
               <th
                 scope="col"
-                className="text-right px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-slate-500 dark:text-white/50"
+                className="text-right px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
               >
                 Actions
               </th>
@@ -197,7 +197,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-white/10 dark:to-white/5 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[11px] font-medium text-slate-600 dark:text-white/60">
+                        <span className="text-caption font-medium text-slate-600 dark:text-white/45">
                           {user.name
                             ? user.name
                                 .split(" ")
@@ -209,10 +209,10 @@ export default function UserTable({ users, onRefresh }: Props) {
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-slate-900 dark:text-white truncate">
+                        <p className="text-body font-medium text-slate-900 dark:text-white truncate">
                           {user.name || "Unnamed User"}
                         </p>
-                        <p className="text-[12px] text-slate-500 dark:text-white/50 truncate">
+                        <p className="text-small text-slate-500 dark:text-white/45 truncate">
                           {user.email}
                         </p>
                       </div>
@@ -221,7 +221,7 @@ export default function UserTable({ users, onRefresh }: Props) {
 
                   {/* Organization */}
                   <td className="px-4 py-3.5">
-                    <p className="text-[13px] text-slate-700 dark:text-white/80 truncate">
+                    <p className="text-body text-slate-700 dark:text-white/70 truncate">
                       {orgName}
                     </p>
                   </td>
@@ -235,7 +235,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                           value={orgPlan}
                           onChange={(e) => updateOrgPlan(orgId, e.target.value)}
                           disabled={loadingId === orgId}
-                          className={`px-2 py-1 border rounded-md text-[12px] font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${PLAN_STYLES[orgPlan] || PLAN_STYLES.FREE}`}
+                          className={`px-2 py-1 border rounded-lg text-small font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${PLAN_STYLES[orgPlan] || PLAN_STYLES.FREE}`}
                         >
                           <option value="FREE">Free</option>
                           <option value="STARTER">Starter</option>
@@ -247,7 +247,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                         )}
                       </div>
                     ) : (
-                      <span className="text-[12px] text-slate-400 dark:text-white/30">
+                      <span className="text-small text-slate-400 dark:text-white/30">
                         —
                       </span>
                     )}
@@ -260,7 +260,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                       value={user.role}
                       onChange={(e) => updateUserRole(user.id, e.target.value)}
                       disabled={loadingId === user.id}
-                      className={`px-2 py-1 border rounded-md text-[12px] font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${ROLE_STYLES[user.role] || ROLE_STYLES.user}`}
+                      className={`px-2 py-1 border rounded-lg text-small font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${ROLE_STYLES[user.role] || ROLE_STYLES.user}`}
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -271,12 +271,12 @@ export default function UserTable({ users, onRefresh }: Props) {
                   {/* Status */}
                   <td className="px-4 py-3.5">
                     {user.isActive ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-[11px] font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-caption font-medium">
                         <User size={11} aria-hidden="true" />
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/40 rounded-full text-[11px] font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/45 rounded-full text-caption font-medium">
                         <UserX size={11} aria-hidden="true" />
                         Inactive
                       </span>
@@ -288,7 +288,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                     <button
                       onClick={() => toggleUserActive(user.id, user.isActive)}
                       disabled={loadingId === user.id}
-                      className={`text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                      className={`text-small font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
                         user.isActive
                           ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                           : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"

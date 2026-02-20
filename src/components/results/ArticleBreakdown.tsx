@@ -17,9 +17,9 @@ interface ArticleBreakdownProps {
 const monoDisplay: Record<string, { label: string; opacity: string }> = {
   mandatory_pre_activity: { label: "Pre-Activity", opacity: "text-white" },
   mandatory_ongoing: { label: "Ongoing", opacity: "text-white/90" },
-  design_technical: { label: "Technical", opacity: "text-white/80" },
+  design_technical: { label: "Technical", opacity: "text-white/70" },
   conditional_simplified: { label: "Conditional", opacity: "text-white/70" },
-  informational: { label: "Info", opacity: "text-white/60" },
+  informational: { label: "Info", opacity: "text-white/45" },
 };
 
 export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
@@ -54,10 +54,10 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
       transition={{ delay: 0.3 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        <span className="text-caption uppercase tracking-[0.2em] text-white/45">
           Applicable Articles
         </span>
-        <span className="text-[11px] text-white/50">
+        <span className="text-caption text-white/45">
           {articles.length} articles
         </span>
       </div>
@@ -72,7 +72,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           return (
             <div
               key={category}
-              className={`px-3 py-1.5 rounded-full text-[11px] bg-white/[0.08] border border-white/[0.12] ${display.opacity}`}
+              className={`px-3 py-1.5 rounded-full text-caption bg-white/[0.08] border border-white/[0.12] ${display.opacity}`}
             >
               {display.label}: {count}
             </div>
@@ -100,7 +100,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
                   <div className="flex items-start gap-4">
                     {/* Article number */}
                     <div className="flex-shrink-0">
-                      <span className="text-[11px] text-white/80 bg-white/[0.08] px-2 py-1 rounded">
+                      <span className="text-caption text-white/70 bg-white/[0.08] px-2 py-1 rounded">
                         Art. {article.number}
                       </span>
                     </div>
@@ -108,21 +108,21 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-[14px] text-white font-medium">
+                        <h4 className="text-body-lg text-white font-medium">
                           {article.title}
                         </h4>
                         <span
-                          className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.08] flex-shrink-0 ${display.opacity}`}
+                          className={`text-micro uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.08] flex-shrink-0 ${display.opacity}`}
                         >
                           {display.label}
                         </span>
                       </div>
-                      <p className="text-[12px] text-white/70 mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-small text-white/70 mt-1 line-clamp-2 leading-relaxed">
                         {article.summary}
                       </p>
                       {article.operator_action &&
                         article.operator_action !== "none" && (
-                          <p className="text-[11px] text-white/60 mt-2 italic">
+                          <p className="text-caption text-white/45 mt-2 italic">
                             Action: {article.operator_action}
                           </p>
                         )}
@@ -139,7 +139,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
-            className="w-full px-4 py-3 bg-white/[0.03] border-t border-white/[0.08] flex items-center justify-center gap-2 text-[13px] text-white/70 hover:text-white transition-colors"
+            className="w-full px-4 py-3 bg-white/[0.03] border-t border-white/[0.08] flex items-center justify-center gap-2 text-body text-white/70 hover:text-white transition-colors"
           >
             {isExpanded ? (
               <>
@@ -162,7 +162,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
           href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[11px] text-white/60 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-caption text-white/45 hover:text-white transition-colors"
         >
           View full regulation on EUR-Lex
           <ExternalLink className="w-3 h-3" aria-hidden="true" />

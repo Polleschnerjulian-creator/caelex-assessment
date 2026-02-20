@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
+import Button from "@/components/ui/Button";
 
 const MODULES = [
   "Authorization",
@@ -80,22 +80,16 @@ export default function Hero() {
             >
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/assessment"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-white text-black text-body-lg font-medium rounded-full transition-all duration-200 hover:bg-white/90"
-                >
+                <Button href="/assessment" variant="white" size="md">
                   Start Assessment
-                </Link>
-                <Link
-                  href="/demo"
-                  className="inline-flex items-center justify-center px-6 py-3 text-white text-body-lg font-medium rounded-full border border-white/25 transition-all duration-200 hover:bg-white/5 hover:border-white/40"
-                >
+                </Button>
+                <Button href="/demo" variant="white-outline" size="md">
                   Request Demo
-                </Link>
+                </Button>
               </div>
 
               {/* Summary */}
-              <p className="text-body text-white/40 leading-[1.7] max-w-[400px]">
+              <p className="text-body text-white/45 leading-[1.7] max-w-[400px]">
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
@@ -116,12 +110,12 @@ export default function Hero() {
               {MODULES.map((module, i) => (
                 <li
                   key={module}
-                  className="text-body md:text-body-lg text-white/60 whitespace-nowrap font-medium list-none"
+                  className="text-body md:text-body-lg text-white/70 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
                     <span
-                      className="ml-3 md:ml-4 text-white/30"
+                      className="ml-3 md:ml-4 text-white/25"
                       aria-hidden="true"
                     >
                       ·

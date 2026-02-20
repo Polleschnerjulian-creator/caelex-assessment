@@ -74,7 +74,7 @@ export function Badge({
         ${sizes[size]}
         ${style.bg}
         ${style.text}
-        rounded-md
+        rounded-lg
         font-medium
         uppercase tracking-wide
         ${className}

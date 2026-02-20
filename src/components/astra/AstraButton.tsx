@@ -29,7 +29,7 @@ export default function AstraButton({
   return (
     <Link
       href={`/dashboard/astra?${params.toString()}`}
-      className="flex items-center gap-1.5 mt-2 text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors group"
+      className="flex items-center gap-1.5 mt-2 text-micro text-cyan-400 hover:text-cyan-300 transition-colors group"
     >
       <Zap
         size={10}

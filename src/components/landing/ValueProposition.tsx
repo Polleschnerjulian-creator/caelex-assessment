@@ -66,18 +66,18 @@ export default function ValueProposition() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-24"
         >
-          <span className="text-caption uppercase tracking-[0.3em] text-white/40 block mb-6">
+          <span className="text-caption uppercase tracking-[0.3em] text-white/45 block mb-6">
             Why Caelex
           </span>
           <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-light tracking-[-0.02em] text-white leading-[1.2] max-w-[700px] mx-auto">
             Space compliance is broken.
             <br />
-            <span className="text-white/50">We automate it.</span>
+            <span className="text-white/45">We automate it.</span>
           </h2>
         </motion.div>
 
@@ -86,8 +86,8 @@ export default function ValueProposition() {
           {/* Left: The Problem */}
           <div>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <span className="text-micro uppercase tracking-[0.25em] text-red-400/60 block mb-8">
@@ -101,8 +101,8 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                     className="flex gap-5"
                   >
@@ -130,8 +130,8 @@ export default function ValueProposition() {
           {/* Right: The Solution */}
           <div>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
               <span className="text-micro uppercase tracking-[0.25em] text-emerald-400/60 block mb-8">
@@ -145,8 +145,8 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.5, delay: 0.25 + i * 0.1 }}
                     className="flex gap-5"
                   >
@@ -174,15 +174,15 @@ export default function ValueProposition() {
 
         {/* Bottom: Key differentiators */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.7 }}
           className="mt-24 pt-16 border-t border-white/[0.06]"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             <div>
               <p className="text-display font-light text-white mb-2">90%</p>
-              <p className="text-body text-white/40 leading-[1.6]">
+              <p className="text-body text-white/45 leading-[1.6]">
                 less time spent on regulatory analysis compared to manual legal
                 review
               </p>
@@ -191,14 +191,14 @@ export default function ValueProposition() {
               <p className="text-display font-light text-white mb-2">
                 Real-time
               </p>
-              <p className="text-body text-white/40 leading-[1.6]">
+              <p className="text-body text-white/45 leading-[1.6]">
                 compliance tracking with automated deadline alerts and status
                 updates
               </p>
             </div>
             <div>
               <p className="text-display font-light text-white mb-2">1-click</p>
-              <p className="text-body text-white/40 leading-[1.6]">
+              <p className="text-body text-white/45 leading-[1.6]">
                 report generation for NCA submissions, audit trails, and
                 compliance certificates
               </p>

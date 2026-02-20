@@ -226,7 +226,7 @@ export default function FileUploader({
       return <FileText className="w-12 h-12 text-red-500" />;
     if (file.type.startsWith("image/"))
       return <ImageIcon className="w-12 h-12 text-emerald-500" />;
-    return <File className="w-12 h-12 text-slate-500 dark:text-white/60" />;
+    return <File className="w-12 h-12 text-slate-500 dark:text-white/45" />;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -294,7 +294,7 @@ export default function FileUploader({
                   <p className="font-medium text-slate-900 dark:text-white">
                     {file.name}
                   </p>
-                  <p className="text-sm text-slate-500 dark:text-white/50">
+                  <p className="text-sm text-slate-500 dark:text-white/45">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export default function FileUploader({
                     e.stopPropagation();
                     setFile(null);
                   }}
-                  className="text-sm text-slate-500 dark:text-white/50 hover:text-red-500 dark:hover:text-red-400"
+                  className="text-sm text-slate-500 dark:text-white/45 hover:text-red-500 dark:hover:text-red-400"
                 >
                   Remove file
                 </button>
@@ -317,7 +317,7 @@ export default function FileUploader({
                     </span>{" "}
                     or drag and drop
                   </p>
-                  <p className="text-sm text-slate-500 dark:text-white/40 mt-1">
+                  <p className="text-sm text-slate-500 dark:text-white/45 mt-1">
                     PDF, Word, Excel, or images (max 50MB)
                   </p>
                 </div>
@@ -344,7 +344,7 @@ export default function FileUploader({
               <p className="font-medium text-slate-900 dark:text-white">
                 {file?.name}
               </p>
-              <p className="text-sm text-slate-500 dark:text-white/50">
+              <p className="text-sm text-slate-500 dark:text-white/45">
                 {getStatusMessage()}
               </p>
             </div>

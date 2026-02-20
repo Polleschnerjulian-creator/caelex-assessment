@@ -81,7 +81,7 @@ export default function AstraBulkProgress({
                 className={`flex-shrink-0 ${
                   item.checked
                     ? "text-cyan-400"
-                    : "text-white/20 hover:text-white/40"
+                    : "text-white/20 hover:text-white/45"
                 } ${isGenerating || isDone ? "cursor-not-allowed" : ""}`}
               >
                 {item.checked ? (
@@ -92,10 +92,10 @@ export default function AstraBulkProgress({
               </button>
 
               {/* Article info */}
-              <span className="text-[10px] text-white/40 w-14 flex-shrink-0">
+              <span className="text-micro text-white/45 w-14 flex-shrink-0">
                 {item.articleRef}
               </span>
-              <span className="text-[11px] text-white/60 flex-1 truncate">
+              <span className="text-caption text-white/45 flex-1 truncate">
                 {item.title}
               </span>
 
@@ -111,7 +111,7 @@ export default function AstraBulkProgress({
       {/* Progress bar (when generating) */}
       {isGenerating && (
         <div className="mb-3">
-          <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
+          <div className="flex items-center justify-between text-micro text-white/45 mb-1">
             <span>
               Generierung {completedCount}/{checkedCount}...
             </span>
@@ -132,7 +132,7 @@ export default function AstraBulkProgress({
         <button
           onClick={handleGenerate}
           disabled={isGenerating || checkedCount === 0}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 rounded-lg text-[11px] font-medium text-cyan-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 rounded-lg text-caption font-medium text-cyan-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <>
@@ -149,7 +149,7 @@ export default function AstraBulkProgress({
       {isDone && (
         <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
           <Check size={12} className="text-green-400" />
-          <span className="text-[11px] text-green-400">
+          <span className="text-caption text-green-400">
             {completedCount} Dokumente generiert (Framework-Modus)
           </span>
         </div>

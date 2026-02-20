@@ -193,7 +193,7 @@ export function OrganizationSwitcher({
           <div className="text-sm font-medium text-white truncate">
             {selectedOrg?.name}
           </div>
-          <div className="text-[11px] text-white/50 truncate">
+          <div className="text-caption text-white/45 truncate">
             {selectedOrg?.plan} Plan
           </div>
         </div>
@@ -202,7 +202,7 @@ export function OrganizationSwitcher({
         <ChevronDown
           size={16}
           aria-hidden="true"
-          className={`text-white/50 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`text-white/45 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -246,7 +246,7 @@ export function OrganizationSwitcher({
                 {/* Org Info */}
                 <div className="flex-1 text-left min-w-0">
                   <div className="text-sm text-white truncate">{org.name}</div>
-                  <div className="flex items-center gap-2 text-[11px] text-white/50">
+                  <div className="flex items-center gap-2 text-caption text-white/45">
                     <span>{org.memberCount} members</span>
                     <span>·</span>
                     <span

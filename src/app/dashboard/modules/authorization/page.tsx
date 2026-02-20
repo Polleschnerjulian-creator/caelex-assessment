@@ -287,13 +287,13 @@ function AuthorizationPageContent() {
     <div className="max-w-[1400px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-3">
+        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
           MODULE 01
         </p>
-        <h1 className="text-[24px] font-medium text-slate-900 dark:text-white mb-1">
+        <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
           Authorization Workflow
         </h1>
-        <p className="text-[14px] text-slate-600 dark:text-white/70">
+        <p className="text-body-lg text-slate-600 dark:text-white/70">
           Navigate the EU Space Act authorization process step by step
         </p>
       </div>
@@ -320,7 +320,7 @@ function AuthorizationPageContent() {
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-caption ${
                     activeStep === index
                       ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
@@ -336,11 +336,11 @@ function AuthorizationPageContent() {
                 </div>
                 <div className="text-left hidden lg:block">
                   <p
-                    className={`text-[13px] font-medium ${activeStep === index ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/60"}`}
+                    className={`text-body font-medium ${activeStep === index ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/45"}`}
                   >
                     {step.label}
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-white/60">
+                  <p className="text-caption text-slate-500 dark:text-white/45">
                     {step.description}
                   </p>
                 </div>
@@ -372,12 +372,12 @@ function AuthorizationPageContent() {
             {workflows.length > 0 && !showNewWorkflowForm && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/30">
+                  <p className="text-caption uppercase tracking-[0.2em] text-white/30">
                     Your Authorization Workflows
                   </p>
                   <button
                     onClick={() => setShowNewWorkflowForm(true)}
-                    className="flex items-center gap-2 text-[12px] text-white/60 hover:text-white/60 transition-colors"
+                    className="flex items-center gap-2 text-small text-white/45 hover:text-white/70 transition-colors"
                   >
                     <Plus size={14} />
                     New Workflow
@@ -402,14 +402,14 @@ function AuthorizationPageContent() {
                         <div className="flex items-center gap-3 mb-2">
                           <Building2
                             size={18}
-                            className="text-white/60"
+                            className="text-white/45"
                             aria-hidden="true"
                           />
-                          <span className="text-[15px] font-medium text-white">
+                          <span className="text-subtitle font-medium text-white">
                             {workflow.primaryNCAName}
                           </span>
                           <span
-                            className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            className={`text-micro uppercase tracking-wider px-2 py-0.5 rounded-full ${
                               workflowStatusFlow[
                                 workflow.status as keyof typeof workflowStatusFlow
                               ]?.bgColor || "bg-white/[0.04]"
@@ -424,7 +424,7 @@ function AuthorizationPageContent() {
                             ]?.label || workflow.status}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-[12px] text-white/70">
+                        <div className="flex items-center gap-4 text-small text-white/70">
                           <span className="flex items-center gap-1.5">
                             <Globe size={12} aria-hidden="true" />
                             {workflow.pathway.replace(/_/g, " ")}
@@ -444,7 +444,7 @@ function AuthorizationPageContent() {
                       </div>
                       <ChevronRight
                         size={18}
-                        className="text-white/60"
+                        className="text-white/45"
                         aria-hidden="true"
                       />
                     </div>
@@ -468,10 +468,10 @@ function AuthorizationPageContent() {
             {showNewWorkflowForm && (
               <div className="space-y-6">
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                  <h2 className="text-[16px] font-medium text-white mb-4">
+                  <h2 className="text-title font-medium text-white mb-4">
                     Determine Your Competent Authority
                   </h2>
-                  <p className="text-[13px] text-white/60 mb-6">
+                  <p className="text-body text-white/45 mb-6">
                     Based on your operator type and establishment, we&apos;ll
                     identify which National Competent Authority (NCA) handles
                     your authorization.
@@ -480,13 +480,13 @@ function AuthorizationPageContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Operator Type */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Operator Type
                       </label>
                       <select
                         value={formOperatorType}
                         onChange={(e) => setFormOperatorType(e.target.value)}
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       >
                         <option value="">Select operator type...</option>
                         <option value="SCO">Spacecraft Operator</option>
@@ -499,26 +499,26 @@ function AuthorizationPageContent() {
 
                     {/* Third Country Toggle */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Establishment
                       </label>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setFormIsThirdCountry(false)}
-                          className={`flex-1 py-3 rounded-lg text-[13px] transition-all ${
+                          className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             !formIsThirdCountry
                               ? "bg-white/[0.08] text-white border border-white/[0.15]"
-                              : "bg-white/[0.04] text-white/60 border border-white/10"
+                              : "bg-white/[0.04] text-white/45 border border-white/10"
                           }`}
                         >
                           EU Member State
                         </button>
                         <button
                           onClick={() => setFormIsThirdCountry(true)}
-                          className={`flex-1 py-3 rounded-lg text-[13px] transition-all ${
+                          className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             formIsThirdCountry
                               ? "bg-white/[0.08] text-white border border-white/[0.15]"
-                              : "bg-white/[0.04] text-white/60 border border-white/10"
+                              : "bg-white/[0.04] text-white/45 border border-white/10"
                           }`}
                         >
                           Third Country
@@ -529,13 +529,13 @@ function AuthorizationPageContent() {
                     {/* Country Selection (EU only) */}
                     {!formIsThirdCountry && (
                       <div>
-                        <label className="block text-[12px] text-white/60 mb-2">
+                        <label className="block text-small text-white/45 mb-2">
                           Country of Establishment
                         </label>
                         <select
                           value={formCountry}
                           onChange={(e) => setFormCountry(e.target.value)}
-                          className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                          className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                         >
                           <option value="">Select country...</option>
                           {ncas.map((nca) => (
@@ -552,7 +552,7 @@ function AuthorizationPageContent() {
                       formOperatorType === "LSO") &&
                       !formIsThirdCountry && (
                         <div>
-                          <label className="block text-[12px] text-white/60 mb-2">
+                          <label className="block text-small text-white/45 mb-2">
                             Launch Country (if different)
                           </label>
                           <select
@@ -560,7 +560,7 @@ function AuthorizationPageContent() {
                             onChange={(e) =>
                               setFormLaunchCountry(e.target.value)
                             }
-                            className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                            className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                           >
                             <option value="">Same as establishment</option>
                             {ncas.map((nca) => (
@@ -574,14 +574,14 @@ function AuthorizationPageContent() {
 
                     {/* Target Date */}
                     <div>
-                      <label className="block text-[12px] text-white/60 mb-2">
+                      <label className="block text-small text-white/45 mb-2">
                         Target Submission Date (optional)
                       </label>
                       <input
                         type="date"
                         value={formTargetDate}
                         onChange={(e) => setFormTargetDate(e.target.value)}
-                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-[14px] focus:outline-none focus:border-white/[0.15]"
+                        className="w-full bg-white/[0.05] border border-white/[0.08] text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-white/[0.15]"
                       />
                     </div>
                   </div>
@@ -598,22 +598,22 @@ function AuthorizationPageContent() {
                       <div className="p-3 rounded-xl bg-white/[0.05]">
                         <Building2
                           size={24}
-                          className="text-white/60"
+                          className="text-white/45"
                           aria-hidden="true"
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-[15px] font-medium text-white mb-1">
+                        <h3 className="text-subtitle font-medium text-white mb-1">
                           {ncaDetermination.primaryNCA.name}
                         </h3>
-                        <p className="text-[13px] text-white/60 mb-4">
+                        <p className="text-body text-white/45 mb-4">
                           {ncaDetermination.primaryNCA.country} •{" "}
                           {ncaDetermination.pathway.replace(/_/g, " ")}
                         </p>
 
                         {/* Requirements */}
                         <div className="mb-4">
-                          <p className="text-[11px] uppercase tracking-wider text-white/60 mb-2">
+                          <p className="text-caption uppercase tracking-wider text-white/45 mb-2">
                             Requirements
                           </p>
                           <ul className="space-y-1.5">
@@ -622,11 +622,11 @@ function AuthorizationPageContent() {
                               .map((req, i) => (
                                 <li
                                   key={i}
-                                  className="flex items-start gap-2 text-[12px] text-white/70"
+                                  className="flex items-start gap-2 text-small text-white/70"
                                 >
                                   <ChevronRight
                                     size={12}
-                                    className="mt-0.5 text-white/60"
+                                    className="mt-0.5 text-white/45"
                                     aria-hidden="true"
                                   />
                                   {req}
@@ -636,7 +636,7 @@ function AuthorizationPageContent() {
                         </div>
 
                         {/* Timeline & Articles */}
-                        <div className="flex items-center gap-6 text-[12px]">
+                        <div className="flex items-center gap-6 text-small">
                           <div className="flex items-center gap-2 text-white/70">
                             <Clock size={14} aria-hidden="true" />
                             <span>
@@ -672,7 +672,7 @@ function AuthorizationPageContent() {
                                 className="text-amber-400/60 mt-0.5"
                                 aria-hidden="true"
                               />
-                              <p className="text-[12px] text-white/60">
+                              <p className="text-small text-white/45">
                                 {ncaDetermination.notes}
                               </p>
                             </div>
@@ -685,7 +685,7 @@ function AuthorizationPageContent() {
                     {ncaDetermination.secondaryNCAs &&
                       ncaDetermination.secondaryNCAs.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-white/10">
-                          <p className="text-[11px] uppercase tracking-wider text-white/60 mb-3">
+                          <p className="text-caption uppercase tracking-wider text-white/45 mb-3">
                             Additional Coordination Required
                           </p>
                           <div className="flex gap-3">
@@ -699,7 +699,7 @@ function AuthorizationPageContent() {
                                   className="text-white/70"
                                   aria-hidden="true"
                                 />
-                                <span className="text-[12px] text-white/70">
+                                <span className="text-small text-white/70">
                                   {nca.name}
                                 </span>
                               </div>
@@ -710,7 +710,7 @@ function AuthorizationPageContent() {
 
                     {/* Create Button */}
                     {createError && (
-                      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px] mt-6">
+                      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body mt-6">
                         <AlertTriangle size={14} className="flex-shrink-0" />
                         {createError}
                       </div>
@@ -719,7 +719,7 @@ function AuthorizationPageContent() {
                       {workflows.length > 0 && (
                         <button
                           onClick={() => setShowNewWorkflowForm(false)}
-                          className="px-4 py-2 text-[13px] text-white/60 hover:text-white/60 transition-colors"
+                          className="px-4 py-2 text-body text-white/45 hover:text-white/70 transition-colors"
                         >
                           Cancel
                         </button>
@@ -727,7 +727,7 @@ function AuthorizationPageContent() {
                       <button
                         onClick={createWorkflow}
                         disabled={creating}
-                        className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-[13px] hover:bg-white/90 transition-all disabled:opacity-50"
+                        className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-white/90 transition-all disabled:opacity-50"
                       >
                         {creating ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -757,15 +757,15 @@ function AuthorizationPageContent() {
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
-                  className="mx-auto text-white/60 mb-3"
+                  className="mx-auto text-white/45 mb-3"
                   aria-hidden="true"
                 />
-                <p className="text-[14px] text-white/60 mb-4">
+                <p className="text-body-lg text-white/45 mb-4">
                   No workflow selected. Start by determining your NCA.
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
+                  className="text-body text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to NCA Determination
                 </button>
@@ -776,10 +776,10 @@ function AuthorizationPageContent() {
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-[16px] font-medium text-white mb-1">
+                      <h2 className="text-title font-medium text-white mb-1">
                         Document Checklist
                       </h2>
-                      <p className="text-[13px] text-white/60">
+                      <p className="text-body text-white/45">
                         {progress.ready} of {progress.total} required documents
                         ready
                       </p>
@@ -838,7 +838,7 @@ function AuthorizationPageContent() {
                             <div className="flex items-start justify-between gap-4 mb-2">
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h3 className="text-[14px] font-medium text-white">
+                                  <h3 className="text-body-lg font-medium text-white">
                                     {doc.name}
                                   </h3>
                                   {doc.required && (
@@ -848,7 +848,7 @@ function AuthorizationPageContent() {
                                   )}
                                 </div>
                                 {doc.articleRef && (
-                                  <span className="text-[11px] font-mono text-white/60">
+                                  <span className="text-caption font-mono text-white/45">
                                     {doc.articleRef}
                                   </span>
                                 )}
@@ -861,7 +861,7 @@ function AuthorizationPageContent() {
                                   updateDocumentStatus(doc.id, e.target.value)
                                 }
                                 aria-label={`Status for ${doc.name}`}
-                                className={`text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statusInfo?.color || "text-white/70"}`}
+                                className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] focus:outline-none ${statusInfo?.color || "text-white/70"}`}
                               >
                                 <option value="not_started">Not Started</option>
                                 <option value="in_progress">In Progress</option>
@@ -871,7 +871,7 @@ function AuthorizationPageContent() {
                             </div>
 
                             {doc.description && (
-                              <p className="text-[12px] text-white/60 mb-3">
+                              <p className="text-small text-white/45 mb-3">
                                 {doc.description}
                               </p>
                             )}
@@ -881,14 +881,14 @@ function AuthorizationPageContent() {
                               doc.status !== "ready" &&
                               doc.status !== "submitted" && (
                                 <div className="mt-3 p-3 bg-white/[0.04] rounded-lg">
-                                  <p className="text-[10px] uppercase tracking-wider text-white/60 mb-2">
+                                  <p className="text-micro uppercase tracking-wider text-white/45 mb-2">
                                     Tips
                                   </p>
                                   <ul className="space-y-1">
                                     {template.tips.slice(0, 2).map((tip, i) => (
                                       <li
                                         key={i}
-                                        className="text-[11px] text-white/70 flex items-start gap-2"
+                                        className="text-caption text-white/70 flex items-start gap-2"
                                       >
                                         <span className="text-white/10">•</span>
                                         {tip}
@@ -930,13 +930,13 @@ function AuthorizationPageContent() {
             <div className="bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-white/60 mb-1">
+                  <p className="text-caption uppercase tracking-wider text-white/45 mb-1">
                     EU Space Act Enforcement
                   </p>
-                  <p className="text-[32px] font-semibold text-white">
+                  <p className="text-display font-semibold text-white">
                     {daysUntilEnforcement.toLocaleString()}
                   </p>
-                  <p className="text-[13px] text-white/60">
+                  <p className="text-body text-white/45">
                     days until 01 January 2030
                   </p>
                 </div>
@@ -950,7 +950,7 @@ function AuthorizationPageContent() {
 
             {/* Key Dates Timeline */}
             <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-              <h2 className="text-[16px] font-medium text-white mb-6">
+              <h2 className="text-title font-medium text-white mb-6">
                 Key Milestones
               </h2>
 
@@ -1005,13 +1005,13 @@ function AuthorizationPageContent() {
                         }`}
                       />
                       <div>
-                        <p className="text-[11px] text-white/70 mb-1">
+                        <p className="text-caption text-white/70 mb-1">
                           {milestone.date}
                         </p>
-                        <p className="text-[14px] font-medium text-white mb-0.5">
+                        <p className="text-body-lg font-medium text-white mb-0.5">
                           {milestone.title}
                         </p>
-                        <p className="text-[12px] text-white/60">
+                        <p className="text-small text-white/45">
                           {milestone.description}
                         </p>
                       </div>
@@ -1024,10 +1024,10 @@ function AuthorizationPageContent() {
             {/* Document Deadlines */}
             {selectedWorkflow && (
               <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
-                <h2 className="text-[16px] font-medium text-white mb-4">
+                <h2 className="text-title font-medium text-white mb-4">
                   Document Deadlines
                 </h2>
-                <p className="text-[13px] text-white/60 mb-4">
+                <p className="text-body text-white/45 mb-4">
                   Set individual deadlines for each document to track your
                   progress.
                 </p>
@@ -1040,10 +1040,10 @@ function AuthorizationPageContent() {
                         key={doc.id}
                         className="flex items-center justify-between p-3 bg-white/[0.04] rounded-lg"
                       >
-                        <span className="text-[12px] text-white/60 truncate">
+                        <span className="text-small text-white/45 truncate">
                           {doc.name}
                         </span>
-                        <span className="text-[11px] text-white/70">
+                        <span className="text-caption text-white/70">
                           {doc.dueDate
                             ? new Date(doc.dueDate).toLocaleDateString()
                             : "No deadline set"}
@@ -1069,15 +1069,15 @@ function AuthorizationPageContent() {
               <div className="bg-white/[0.04] border border-dashed border-white/[0.08] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
-                  className="mx-auto text-white/60 mb-3"
+                  className="mx-auto text-white/45 mb-3"
                   aria-hidden="true"
                 />
-                <p className="text-[14px] text-white/60 mb-4">
+                <p className="text-body-lg text-white/45 mb-4">
                   No workflow selected. Start by determining your NCA.
                 </p>
                 <button
                   onClick={() => setActiveStep(0)}
-                  className="text-[13px] text-emerald-400 hover:text-emerald-300"
+                  className="text-body text-emerald-400 hover:text-emerald-300"
                 >
                   ← Go to NCA Determination
                 </button>
@@ -1088,10 +1088,10 @@ function AuthorizationPageContent() {
                 <div className="bg-white/[0.04] border border-white/10 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-[16px] font-medium text-white mb-1">
+                      <h2 className="text-title font-medium text-white mb-1">
                         Application Status
                       </h2>
-                      <p className="text-[13px] text-white/60">
+                      <p className="text-body text-white/45">
                         {selectedWorkflow.primaryNCAName}
                       </p>
                     </div>
@@ -1103,7 +1103,7 @@ function AuthorizationPageContent() {
                       }`}
                     >
                       <span
-                        className={`text-[13px] font-medium ${
+                        className={`text-body font-medium ${
                           workflowStatusFlow[
                             selectedWorkflow.status as keyof typeof workflowStatusFlow
                           ]?.color
@@ -1160,7 +1160,7 @@ function AuthorizationPageContent() {
                     {Object.entries(workflowStatusFlow)
                       .filter(([key]) => key !== "rejected")
                       .map(([key, value]) => (
-                        <span key={key} className="text-[10px] text-white/60">
+                        <span key={key} className="text-micro text-white/45">
                           {value.label}
                         </span>
                       ))}
@@ -1182,10 +1182,10 @@ function AuthorizationPageContent() {
                       key={item.label}
                       className="bg-white/[0.04] border border-white/10 rounded-xl p-4"
                     >
-                      <p className="text-[11px] text-white/60 mb-1">
+                      <p className="text-caption text-white/45 mb-1">
                         {item.label}
                       </p>
-                      <p className="text-[14px] text-white/60">
+                      <p className="text-body-lg text-white/45">
                         {item.date
                           ? new Date(item.date).toLocaleDateString()
                           : "—"}
@@ -1198,7 +1198,7 @@ function AuthorizationPageContent() {
                 <div className="flex gap-3">
                   <Link
                     href="/dashboard/documents/generate?type=AUTHORIZATION_APPLICATION"
-                    className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-lg font-medium text-[13px] transition-all"
+                    className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-lg font-medium text-body transition-all"
                   >
                     <Zap size={14} aria-hidden="true" />
                     Generate with ASTRA
@@ -1220,7 +1220,7 @@ function AuthorizationPageContent() {
                           );
                           fetchData();
                         }}
-                        className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-[13px] hover:bg-white/90 transition-all"
+                        className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-white/90 transition-all"
                       >
                         <FileCheck size={14} />
                         Mark as Submitted

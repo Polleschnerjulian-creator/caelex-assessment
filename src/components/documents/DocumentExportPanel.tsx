@@ -60,7 +60,7 @@ export function DocumentExportPanel({
       <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
         Export Document
       </h2>
-      <p className="text-sm text-slate-500 dark:text-white/50 mb-6">
+      <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
         Download your generated document as PDF
       </p>
 
@@ -75,7 +75,7 @@ export function DocumentExportPanel({
               <h3 className="text-sm font-medium text-slate-900 dark:text-white">
                 {title}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-white/40">
+              <p className="text-xs text-slate-500 dark:text-white/45">
                 {sections.length} sections
               </p>
             </div>
@@ -86,9 +86,9 @@ export function DocumentExportPanel({
             {sections.map((section, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 text-xs text-slate-600 dark:text-white/50"
+                className="flex items-center gap-2 text-xs text-slate-600 dark:text-white/45"
               >
-                <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 text-[10px] font-medium">
+                <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 text-micro font-medium">
                   {i + 1}
                 </span>
                 {typeof section.title === "string" ? section.title : "Section"}
@@ -129,7 +129,7 @@ export function DocumentExportPanel({
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
           >
             <ArrowLeft size={16} />
             Back to Editor

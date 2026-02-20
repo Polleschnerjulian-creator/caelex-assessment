@@ -110,13 +110,13 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-[11px] font-medium text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-caption font-medium text-emerald-400 uppercase tracking-[0.2em] mb-4">
               Contact
             </span>
             <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-6">
               Get in <span className="text-emerald-400">touch</span>
             </h1>
-            <p className="text-[17px] md:text-[18px] text-white/50 max-w-[500px] mx-auto">
+            <p className="text-title md:text-heading text-white/45 max-w-[500px] mx-auto">
               Questions about compliance, partnerships, or the platform? We'd
               love to hear from you.
             </p>
@@ -136,14 +136,14 @@ export default function ContactPage() {
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
                       <Icon size={22} className="text-emerald-400" />
                     </div>
-                    <h3 className="text-[16px] font-medium text-white mb-1">
+                    <h3 className="text-title font-medium text-white mb-1">
                       {method.title}
                     </h3>
-                    <p className="text-[13px] text-white/40 mb-3">
+                    <p className="text-body text-white/45 mb-3">
                       {method.description}
                     </p>
                     <p
-                      className={`text-[14px] mt-auto ${method.href ? "text-emerald-400" : "text-white/70"}`}
+                      className={`text-body-lg mt-auto ${method.href ? "text-emerald-400" : "text-white/70"}`}
                     >
                       {method.value}
                     </p>
@@ -191,16 +191,16 @@ export default function ContactPage() {
                     <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
                       <CheckCircle className="w-10 h-10 text-emerald-400" />
                     </div>
-                    <h2 className="text-[24px] font-medium mb-3">
+                    <h2 className="text-display-sm font-medium mb-3">
                       Message sent
                     </h2>
-                    <p className="text-[15px] text-white/50 mb-8">
+                    <p className="text-subtitle text-white/45 mb-8">
                       Thank you for reaching out. We'll get back to you as soon
                       as possible.
                     </p>
                     <button
                       onClick={() => setFormState("idle")}
-                      className="text-[14px] text-emerald-400 hover:text-emerald-300 transition-colors"
+                      className="text-body-lg text-emerald-400 hover:text-emerald-300 transition-colors"
                     >
                       Send another message
                     </button>
@@ -213,10 +213,10 @@ export default function ContactPage() {
                       <MessageSquare size={20} className="text-emerald-400" />
                     </div>
                     <div>
-                      <h2 className="text-[18px] font-medium text-white">
+                      <h2 className="text-heading font-medium text-white">
                         Send us a message
                       </h2>
-                      <p className="text-[13px] text-white/40">
+                      <p className="text-body text-white/45">
                         We typically respond within 24 hours
                       </p>
                     </div>
@@ -225,7 +225,7 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-[12px] text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
                           Name *
                         </label>
                         <input
@@ -235,12 +235,12 @@ export default function ContactPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, name: e.target.value })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
                           placeholder="Your name"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
                           Email *
                         </label>
                         <input
@@ -250,7 +250,7 @@ export default function ContactPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, email: e.target.value })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
                           placeholder="you@company.com"
                         />
                       </div>
@@ -258,7 +258,7 @@ export default function ContactPage() {
 
                     <div className="grid md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-[12px] text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
                           Company
                         </label>
                         <input
@@ -270,12 +270,12 @@ export default function ContactPage() {
                               company: e.target.value,
                             })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
                           placeholder="Your company"
                         />
                       </div>
                       <div>
-                        <label className="block text-[12px] text-white/40 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
                           Subject
                         </label>
                         <select
@@ -286,7 +286,7 @@ export default function ContactPage() {
                               subject: e.target.value,
                             })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-[15px] text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer"
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer"
                         >
                           <option value="" className="bg-black">
                             Select a topic
@@ -311,7 +311,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-[12px] text-white/40 uppercase tracking-wider mb-2">
+                      <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
                         Message *
                       </label>
                       <textarea
@@ -321,14 +321,14 @@ export default function ContactPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, message: e.target.value })
                         }
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none"
+                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none"
                         placeholder="How can we help you?"
                       />
                     </div>
 
                     {formState === "error" && (
                       <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                        <p className="text-[13px] text-red-400">
+                        <p className="text-body text-red-400">
                           Something went wrong. Please try again or email us
                           directly at{" "}
                           <a href="mailto:cs@caelex.eu" className="underline">
@@ -341,7 +341,7 @@ export default function ContactPage() {
                     <button
                       type="submit"
                       disabled={formState === "sending"}
-                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-xl transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-xl transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {formState === "sending" ? (
                         <>
@@ -370,16 +370,16 @@ export default function ContactPage() {
             <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
               <Sparkles size={26} className="text-emerald-400" />
             </div>
-            <h3 className="text-[20px] font-medium text-white mb-3">
+            <h3 className="text-heading-lg font-medium text-white mb-3">
               Looking for a demo?
             </h3>
-            <p className="text-[15px] text-white/50 mb-6 max-w-[400px] mx-auto">
+            <p className="text-subtitle text-white/45 mb-6 max-w-[400px] mx-auto">
               See how Caelex can streamline your EU Space Act compliance with a
               personalized demo.
             </p>
             <Link
               href="/demo"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.08] border border-white/[0.12] text-white text-[14px] font-medium transition-all duration-300 hover:bg-white/[0.12] hover:border-white/[0.2]"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.08] border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.12] hover:border-white/[0.2]"
             >
               Request Demo
             </Link>

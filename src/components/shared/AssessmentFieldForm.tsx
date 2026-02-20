@@ -41,13 +41,13 @@ function FieldRenderer({
   const [showHelp, setShowHelp] = useState(false);
 
   const inputClasses =
-    "w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] transition-colors";
+    "w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-3 py-2 text-body focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] transition-colors";
 
   return (
     <div className="flex items-start gap-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
-          <label className="text-[12px] text-slate-600 dark:text-white/60">
+          <label className="text-small text-slate-600 dark:text-white/45">
             {field.label}
           </label>
           {field.helpText && (
@@ -72,7 +72,7 @@ function FieldRenderer({
               size={13}
               className="text-emerald-400/60 flex-shrink-0 mt-0.5"
             />
-            <p className="text-[11px] text-emerald-300/70 leading-relaxed">
+            <p className="text-caption text-emerald-300/70 leading-relaxed">
               {field.helpText}
             </p>
           </div>
@@ -123,7 +123,7 @@ function FieldRenderer({
               className={inputClasses}
             />
             {field.unit && (
-              <span className="text-[11px] text-slate-500 dark:text-white/40 whitespace-nowrap">
+              <span className="text-caption text-slate-500 dark:text-white/45 whitespace-nowrap">
                 {field.unit}
               </span>
             )}

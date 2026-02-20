@@ -289,7 +289,7 @@ export default function ComplianceMethodologyPage() {
         {/* Back Link */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-[13px] text-white/50 hover:text-white/70 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white/70 mb-6 transition-colors"
         >
           <ArrowLeft size={14} />
           {t("methodology.backToDashboard")}
@@ -309,20 +309,20 @@ export default function ComplianceMethodologyPage() {
               {t("methodology.title")}
             </h1>
           </div>
-          <p className="text-[15px] text-white/60 leading-relaxed max-w-[700px]">
+          <p className="text-subtitle text-white/45 leading-relaxed max-w-[700px]">
             {t("methodology.description")}
           </p>
         </motion.div>
 
         {/* How It Works */}
         <SectionCard delay={1}>
-          <h2 className="text-[18px] font-medium text-white mb-4 flex items-center gap-2">
+          <h2 className="text-heading font-medium text-white mb-4 flex items-center gap-2">
             <Info size={18} className="text-emerald-400" />
             {t("methodology.howItWorks")}
           </h2>
-          <div className="space-y-4 text-[14px] text-white/70 leading-relaxed">
+          <div className="space-y-4 text-body-lg text-white/70 leading-relaxed">
             <p>{t("methodology.howItWorksP1")}</p>
-            <div className="bg-white/[0.03] border border-white/5 rounded-lg p-4 font-mono text-[13px] text-emerald-400">
+            <div className="bg-white/[0.03] border border-white/5 rounded-lg p-4 font-mono text-body text-emerald-400">
               Overall Score = (Auth × 0.25) + (Debris × 0.20) + (Cyber × 0.20) +
               (Insurance × 0.15) + (Environmental × 0.10) + (Reporting × 0.10)
             </div>
@@ -332,7 +332,7 @@ export default function ComplianceMethodologyPage() {
 
         {/* Grade Scale */}
         <SectionCard delay={2}>
-          <h2 className="text-[18px] font-medium text-white mb-4">
+          <h2 className="text-heading font-medium text-white mb-4">
             {t("methodology.gradeScale")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
@@ -344,11 +344,11 @@ export default function ComplianceMethodologyPage() {
                 <div
                   className={`w-10 h-10 rounded-full ${g.color} flex items-center justify-center mx-auto mb-2`}
                 >
-                  <span className="text-[18px] font-bold text-white">
+                  <span className="text-heading font-medium text-white">
                     {g.grade}
                   </span>
                 </div>
-                <p className="text-[12px] font-medium text-white mb-0.5">
+                <p className="text-small font-medium text-white mb-0.5">
                   {t(
                     `methodology.grade${g.grade}` as
                       | "methodology.gradeA"
@@ -358,8 +358,8 @@ export default function ComplianceMethodologyPage() {
                       | "methodology.gradeF",
                   )}
                 </p>
-                <p className="text-[11px] text-white/40">{g.range}</p>
-                <p className="text-[10px] text-white/30 mt-1">
+                <p className="text-caption text-white/45">{g.range}</p>
+                <p className="text-micro text-white/30 mt-1">
                   {t(
                     `methodology.grade${g.grade}Desc` as
                       | "methodology.gradeADesc"
@@ -376,11 +376,11 @@ export default function ComplianceMethodologyPage() {
 
         {/* Critical Factors */}
         <SectionCard delay={3}>
-          <h2 className="text-[18px] font-medium text-white mb-3 flex items-center gap-2">
+          <h2 className="text-heading font-medium text-white mb-3 flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-400" />
             {t("methodology.criticalFactors")}
           </h2>
-          <p className="text-[14px] text-white/60 mb-4 leading-relaxed">
+          <p className="text-body-lg text-white/45 mb-4 leading-relaxed">
             {t("methodology.criticalFactorsDesc")}
           </p>
         </SectionCard>
@@ -392,7 +392,7 @@ export default function ComplianceMethodologyPage() {
           transition={{ delay: 0.4 }}
           className="mb-6"
         >
-          <h2 className="text-[18px] font-medium text-white mb-5">
+          <h2 className="text-heading font-medium text-white mb-5">
             {t("methodology.moduleBreakdown")}
           </h2>
 
@@ -419,17 +419,17 @@ export default function ComplianceMethodologyPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-[16px] font-medium text-white">
+                        <h3 className="text-title font-medium text-white">
                           {mod.name}
                         </h3>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+                        <span className="text-caption px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
                           {t("methodology.weight", { percent: mod.weight })}
                         </span>
-                        <span className="text-[11px] text-white/30">
+                        <span className="text-caption text-white/30">
                           {mod.articles}
                         </span>
                       </div>
-                      <p className="text-[13px] text-white/50 mt-1 leading-relaxed">
+                      <p className="text-body text-white/45 mt-1 leading-relaxed">
                         {mod.description}
                       </p>
                     </div>
@@ -440,13 +440,13 @@ export default function ComplianceMethodologyPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-white/5">
-                          <th className="text-left text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2">
+                          <th className="text-left text-micro font-medium uppercase tracking-wider text-white/30 pb-2">
                             {t("methodology.scoringFactor")}
                           </th>
-                          <th className="text-center text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
+                          <th className="text-center text-micro font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
                             {t("methodology.maxPoints")}
                           </th>
-                          <th className="text-center text-[10px] font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
+                          <th className="text-center text-micro font-medium uppercase tracking-wider text-white/30 pb-2 w-20">
                             {t("common.critical")}
                           </th>
                         </tr>
@@ -458,26 +458,26 @@ export default function ComplianceMethodologyPage() {
                             className="border-b border-white/[0.03] last:border-0"
                           >
                             <td className="py-2.5">
-                              <p className="text-[13px] text-white/80 font-medium">
+                              <p className="text-body text-white/70 font-medium">
                                 {factor.name}
                               </p>
-                              <p className="text-[11px] text-white/40 mt-0.5">
+                              <p className="text-caption text-white/45 mt-0.5">
                                 {factor.detail}
                               </p>
                             </td>
                             <td className="text-center">
-                              <span className="text-[13px] text-white/60">
+                              <span className="text-body text-white/45">
                                 {factor.points}
                               </span>
                             </td>
                             <td className="text-center">
                               {factor.critical ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                <span className="inline-flex items-center gap-1 text-micro text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
                                   <AlertTriangle size={10} />
                                   {t("common.yes")}
                                 </span>
                               ) : (
-                                <span className="text-[10px] text-white/20">
+                                <span className="text-micro text-white/20">
                                   {t("common.no")}
                                 </span>
                               )}
@@ -487,10 +487,10 @@ export default function ComplianceMethodologyPage() {
                       </tbody>
                       <tfoot>
                         <tr className="border-t border-white/10">
-                          <td className="pt-2 text-[12px] text-white/50 font-medium">
+                          <td className="pt-2 text-small text-white/45 font-medium">
                             {t("common.total")}
                           </td>
-                          <td className="pt-2 text-center text-[13px] text-white/70 font-medium">
+                          <td className="pt-2 text-center text-body text-white/70 font-medium">
                             {totalPoints}
                           </td>
                           <td />
@@ -506,11 +506,11 @@ export default function ComplianceMethodologyPage() {
 
         {/* Recommendations */}
         <SectionCard delay={12}>
-          <h2 className="text-[18px] font-medium text-white mb-3 flex items-center gap-2">
+          <h2 className="text-heading font-medium text-white mb-3 flex items-center gap-2">
             <CheckCircle2 size={18} className="text-emerald-400" />
             {t("methodology.howRecommendationsWork")}
           </h2>
-          <p className="text-[14px] text-white/60 leading-relaxed">
+          <p className="text-body-lg text-white/45 leading-relaxed">
             {t("methodology.recommendationsP1")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
@@ -533,7 +533,7 @@ export default function ComplianceMethodologyPage() {
               },
               {
                 level: t("common.low"),
-                color: "bg-white/10 text-white/50 border-white/10",
+                color: "bg-white/10 text-white/45 border-white/10",
                 rule: t("methodology.priorityLowDesc"),
               },
             ].map((p) => (
@@ -541,8 +541,8 @@ export default function ComplianceMethodologyPage() {
                 key={p.level}
                 className={`text-center p-3 rounded-lg border ${p.color}`}
               >
-                <p className="text-[12px] font-medium">{p.level}</p>
-                <p className="text-[10px] opacity-70 mt-1">{p.rule}</p>
+                <p className="text-small font-medium">{p.level}</p>
+                <p className="text-micro opacity-70 mt-1">{p.rule}</p>
               </div>
             ))}
           </div>
@@ -550,13 +550,13 @@ export default function ComplianceMethodologyPage() {
 
         {/* Data Sources */}
         <SectionCard delay={13}>
-          <h2 className="text-[18px] font-medium text-white mb-3">
+          <h2 className="text-heading font-medium text-white mb-3">
             {t("methodology.dataSources")}
           </h2>
-          <p className="text-[14px] text-white/60 leading-relaxed mb-4">
+          <p className="text-body-lg text-white/45 leading-relaxed mb-4">
             {t("methodology.dataSourcesDesc")}
           </p>
-          <ul className="space-y-2 text-[13px] text-white/60">
+          <ul className="space-y-2 text-body text-white/45">
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
@@ -604,8 +604,8 @@ export default function ComplianceMethodologyPage() {
 
         {/* Disclaimer */}
         <div className="bg-white/[0.02] border border-white/5 rounded-lg p-4 mb-8">
-          <p className="text-[11px] text-white/30 leading-relaxed">
-            <strong className="text-white/50">
+          <p className="text-caption text-white/30 leading-relaxed">
+            <strong className="text-white/45">
               {t("methodology.disclaimer")}:
             </strong>{" "}
             {t("methodology.disclaimerText")}

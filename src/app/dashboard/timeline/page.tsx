@@ -295,7 +295,7 @@ function MissionTimelineGantt() {
       </CardHeader>
       <CardContent>
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-slate-500 dark:text-white/50">
+        <div className="flex flex-wrap items-center gap-4 mb-6 text-xs text-slate-500 dark:text-white/45">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-sm bg-emerald-500" />
             Active
@@ -309,7 +309,7 @@ function MissionTimelineGantt() {
             Upcoming
           </div>
           <div className="flex items-center gap-1.5">
-            <Diamond size={10} className="text-white/80" />
+            <Diamond size={10} className="text-white/70" />
             Milestone
           </div>
           {todayOffset !== null && (
@@ -331,7 +331,7 @@ function MissionTimelineGantt() {
                 style={{ left: `${offset}%` }}
               >
                 <div className="h-3 w-px bg-slate-300 dark:bg-white/20" />
-                <span className="text-[10px] text-slate-500 dark:text-white/40 mt-0.5 -translate-x-1/2">
+                <span className="text-micro text-slate-500 dark:text-white/45 mt-0.5 -translate-x-1/2">
                   {year}
                 </span>
               </div>
@@ -362,17 +362,17 @@ function MissionTimelineGantt() {
                   {/* Phase label */}
                   <div className="w-48 flex-shrink-0 pr-4">
                     <p
-                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-slate-700 dark:text-white/80"}`}
+                      className={`text-sm font-medium truncate ${hoveredPhase === phase.id ? "text-white" : "text-slate-700 dark:text-white/70"}`}
                     >
                       {phase.name}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span
-                        className={`px-1.5 py-0.5 text-[10px] rounded-full ${sl.cls}`}
+                        className={`px-1.5 py-0.5 text-micro rounded-full ${sl.cls}`}
                       >
                         {sl.text}
                       </span>
-                      <span className="text-[10px] text-slate-400 dark:text-white/40">
+                      <span className="text-micro text-slate-400 dark:text-white/45">
                         {new Date(phase.startDate).getFullYear()}&ndash;
                         {new Date(phase.endDate).getFullYear()}
                       </span>
@@ -400,7 +400,7 @@ function MissionTimelineGantt() {
 
                     {/* Phase bar */}
                     <div
-                      className={`absolute top-1.5 bottom-1.5 rounded-md ${colors.bar} ${
+                      className={`absolute top-1.5 bottom-1.5 rounded-lg ${colors.bar} ${
                         hoveredPhase === phase.id
                           ? "opacity-100 shadow-lg"
                           : "opacity-80"
@@ -434,7 +434,7 @@ function MissionTimelineGantt() {
                               <p className="font-medium text-white">
                                 {ms.label}
                               </p>
-                              <p className="text-white/50 text-[10px] mt-0.5">
+                              <p className="text-white/45 text-micro mt-0.5">
                                 {new Date(ms.date).toLocaleDateString("en-US", {
                                   month: "short",
                                   year: "numeric",
@@ -468,14 +468,14 @@ function MissionTimelineGantt() {
                     {phase.name}
                   </p>
                   <span
-                    className={`px-2 py-0.5 text-[10px] rounded-full ${sl.cls}`}
+                    className={`px-2 py-0.5 text-micro rounded-full ${sl.cls}`}
                   >
                     {sl.text}
                   </span>
                 </div>
 
                 {/* Date range */}
-                <p className="text-xs text-slate-500 dark:text-white/50 mb-2">
+                <p className="text-xs text-slate-500 dark:text-white/45 mb-2">
                   {new Date(phase.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -520,7 +520,7 @@ function MissionTimelineGantt() {
                         <span className="text-slate-700 dark:text-white/70">
                           {ms.label}
                         </span>
-                        <span className="ml-auto text-slate-400 dark:text-white/40">
+                        <span className="ml-auto text-slate-400 dark:text-white/45">
                           {new Date(ms.date).toLocaleDateString("en-US", {
                             month: "short",
                             year: "numeric",
@@ -536,7 +536,7 @@ function MissionTimelineGantt() {
         </div>
 
         {/* Summary footer */}
-        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-white/40">
+        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-white/45">
           <span>
             {phases.length} phases &middot;{" "}
             {phases.reduce((acc, p) => acc + (p.milestones?.length || 0), 0)}{" "}
@@ -747,7 +747,7 @@ function TimelinePageContent() {
           }`}
         >
           <div
-            className={`text-sm font-medium mb-1 ${isToday ? "text-emerald-400" : "text-slate-500 dark:text-white/60"}`}
+            className={`text-sm font-medium mb-1 ${isToday ? "text-emerald-400" : "text-slate-500 dark:text-white/45"}`}
           >
             {day}
           </div>
@@ -770,7 +770,7 @@ function TimelinePageContent() {
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="text-xs text-slate-400 dark:text-white/40">
+              <div className="text-xs text-slate-400 dark:text-white/45">
                 +{dayEvents.length - 3} more
               </div>
             )}
@@ -797,13 +797,13 @@ function TimelinePageContent() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-white/60 mb-2">
+          <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-2">
             TIMELINE
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Timeline & Deadlines
           </h1>
-          <p className="text-slate-500 dark:text-white/60 mt-1">
+          <p className="text-slate-500 dark:text-white/45 mt-1">
             Manage compliance deadlines and mission milestones
           </p>
         </div>
@@ -829,7 +829,7 @@ function TimelinePageContent() {
                     className={
                       stats.overdue > 0
                         ? "text-red-400"
-                        : "text-slate-400 dark:text-white/40"
+                        : "text-slate-400 dark:text-white/45"
                     }
                   />
                 </div>
@@ -839,7 +839,7 @@ function TimelinePageContent() {
                   >
                     {stats.overdue}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Overdue
                   </p>
                 </div>
@@ -857,7 +857,7 @@ function TimelinePageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.dueThisWeek}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     This Week
                   </p>
                 </div>
@@ -875,7 +875,7 @@ function TimelinePageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.dueThisMonth}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     This Month
                   </p>
                 </div>
@@ -893,7 +893,7 @@ function TimelinePageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.completionRate}%
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Completed
                   </p>
                 </div>
@@ -922,7 +922,7 @@ function TimelinePageContent() {
               ${
                 activeStep === step.id
                   ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/50 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
+                  : "text-slate-500 dark:text-white/45 hover:text-white/70 hover:bg-slate-200 dark:bg-white/5"
               }
             `}
           >
@@ -968,7 +968,7 @@ function TimelinePageContent() {
                               <p className="font-medium text-slate-900 dark:text-white">
                                 {deadline.title}
                               </p>
-                              <p className="text-xs text-slate-500 dark:text-white/50">
+                              <p className="text-xs text-slate-500 dark:text-white/45">
                                 Due:{" "}
                                 {new Date(
                                   deadline.dueDate,
@@ -1012,7 +1012,7 @@ function TimelinePageContent() {
                     >
                       <Filter
                         size={16}
-                        className="text-slate-500 dark:text-white/60"
+                        className="text-slate-500 dark:text-white/45"
                         aria-hidden="true"
                       />
                     </button>
@@ -1047,13 +1047,13 @@ function TimelinePageContent() {
                                   {deadline.title}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-slate-500 dark:text-white/50">
+                                  <span className="text-xs text-slate-500 dark:text-white/45">
                                     {new Date(
                                       deadline.dueDate,
                                     ).toLocaleDateString()}
                                   </span>
                                   {deadline.regulatoryRef && (
-                                    <span className="text-xs text-slate-400 dark:text-white/40">
+                                    <span className="text-xs text-slate-400 dark:text-white/45">
                                       | {deadline.regulatoryRef}
                                     </span>
                                   )}
@@ -1095,7 +1095,7 @@ function TimelinePageContent() {
                             >
                               {categoryIcons[cat.id]}
                             </div>
-                            <span className="text-sm text-slate-700 dark:text-white/80">
+                            <span className="text-sm text-slate-700 dark:text-white/70">
                               {cat.label}
                             </span>
                           </div>
@@ -1136,7 +1136,7 @@ function TimelinePageContent() {
                   >
                     <ChevronLeft
                       size={16}
-                      className="text-slate-500 dark:text-white/60"
+                      className="text-slate-500 dark:text-white/45"
                       aria-hidden="true"
                     />
                   </button>
@@ -1159,7 +1159,7 @@ function TimelinePageContent() {
                   >
                     <ChevronRight
                       size={16}
-                      className="text-slate-500 dark:text-white/60"
+                      className="text-slate-500 dark:text-white/45"
                       aria-hidden="true"
                     />
                   </button>
@@ -1172,7 +1172,7 @@ function TimelinePageContent() {
                     (day) => (
                       <div
                         key={day}
-                        className="py-2 text-center text-xs font-medium text-slate-500 dark:text-white/50"
+                        className="py-2 text-center text-xs font-medium text-slate-500 dark:text-white/45"
                       >
                         {day}
                       </div>
@@ -1210,7 +1210,7 @@ function TimelinePageContent() {
                         key={days}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-slate-700 dark:text-white/80">
+                        <span className="text-slate-700 dark:text-white/70">
                           {days === 1 ? "1 day before" : `${days} days before`}
                         </span>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1232,7 +1232,7 @@ function TimelinePageContent() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/80">
+                      <span className="text-slate-700 dark:text-white/70">
                         Email notifications
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1245,7 +1245,7 @@ function TimelinePageContent() {
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/80">
+                      <span className="text-slate-700 dark:text-white/70">
                         In-app notifications
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1258,7 +1258,7 @@ function TimelinePageContent() {
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/80">
+                      <span className="text-slate-700 dark:text-white/70">
                         Daily digest
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1267,7 +1267,7 @@ function TimelinePageContent() {
                       </label>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-700 dark:text-white/80">
+                      <span className="text-slate-700 dark:text-white/70">
                         Weekly summary
                       </span>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1311,7 +1311,7 @@ function TimelinePageContent() {
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/60"
+                  className="text-slate-500 dark:text-white/45"
                   aria-hidden="true"
                 />
               </button>
@@ -1319,7 +1319,7 @@ function TimelinePageContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                   Title *
                 </label>
                 <input
@@ -1334,7 +1334,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                   Description
                 </label>
                 <textarea
@@ -1352,7 +1352,7 @@ function TimelinePageContent() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Due Date *
                   </label>
                   <input
@@ -1368,7 +1368,7 @@ function TimelinePageContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                  <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                     Priority *
                   </label>
                   <select
@@ -1390,7 +1390,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                   Category *
                 </label>
                 <select
@@ -1412,7 +1412,7 @@ function TimelinePageContent() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                   Regulatory Reference
                 </label>
                 <input

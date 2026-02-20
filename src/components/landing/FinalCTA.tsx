@@ -30,27 +30,27 @@ export default function FinalCTA() {
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
       >
-        <span className="text-caption text-white/30">12 / 12</span>
+        <span className="text-caption text-white/25">12 / 12</span>
       </motion.div>
 
       <div className="max-w-[700px] text-center">
         {/* Headline */}
         <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.1 }}
           className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4"
         >
           Ready to simplify
           <br />
-          <span className="text-white/50">EU Space Act compliance?</span>
+          <span className="text-white/45">EU Space Act compliance?</span>
         </motion.h2>
 
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-subtitle text-white/50 mb-10 max-w-[520px] mx-auto leading-[1.6]"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="text-subtitle text-white/45 mb-10 max-w-[520px] mx-auto leading-[1.6]"
         >
           Join satellite operators across Europe who are using Caelex to
           navigate the most comprehensive space regulation in history.
@@ -58,15 +58,15 @@ export default function FinalCTA() {
 
         {/* Benefits checklist */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-12"
         >
           {benefits.map((benefit, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 text-body text-white/40"
+              className="flex items-center gap-2 text-body text-white/45"
             >
               <CheckCircle2
                 size={14}
@@ -80,9 +80,9 @@ export default function FinalCTA() {
 
         {/* Dual CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.25 }}
           className="flex flex-col items-center gap-5"
         >
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -99,7 +99,7 @@ export default function FinalCTA() {
             </Link>
             <Link
               href="/contact"
-              className="group inline-flex items-center gap-3 px-8 py-4 text-white/80 text-subtitle font-medium rounded-full border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+              className="group inline-flex items-center gap-3 px-8 py-4 text-white/70 text-subtitle font-medium rounded-full border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
             >
               <span>Schedule a Demo</span>
               <ArrowRight
@@ -121,15 +121,15 @@ export default function FinalCTA() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-12 pt-10 border-t border-white/[0.06]"
         >
-          <p className="text-body text-white/35 mb-4">
+          <p className="text-body text-white/25 mb-4">
             Need a custom deployment or have compliance questions?
           </p>
           <a
             href="mailto:cs@caelex.eu"
-            className="inline-flex items-center gap-2 text-body text-white/50 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
           >
             <span>Talk to our team</span>
-            <span className="text-white/30">cs@caelex.eu</span>
+            <span className="text-white/25">cs@caelex.eu</span>
           </a>
         </motion.div>
       </div>

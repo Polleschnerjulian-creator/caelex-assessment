@@ -39,10 +39,10 @@ export default function ApiDocsPage() {
               <Book className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-medium text-white">
                 API Documentation
               </h1>
-              <p className="text-white/60 text-sm">
+              <p className="text-white/45 text-sm">
                 Caelex REST API v{openApiSpec.info.version}
               </p>
             </div>
@@ -59,7 +59,7 @@ export default function ApiDocsPage() {
               className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === "reference"
                   ? "text-emerald-400"
-                  : "text-white/60 hover:text-white/80"
+                  : "text-white/45 hover:text-white/70"
               }`}
             >
               API Reference
@@ -72,7 +72,7 @@ export default function ApiDocsPage() {
               className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === "examples"
                   ? "text-emerald-400"
-                  : "text-white/60 hover:text-white/80"
+                  : "text-white/45 hover:text-white/70"
               }`}
             >
               Code Examples
@@ -237,7 +237,7 @@ function CodeExamples() {
       {/* Quick Start */}
       <section>
         <h2 className="text-xl font-semibold text-white mb-4">Quick Start</h2>
-        <p className="text-white/60 mb-4">
+        <p className="text-white/45 mb-4">
           Get started with the Caelex API in minutes. Here are examples in
           popular languages.
         </p>
@@ -376,7 +376,7 @@ func reportIncident(incident IncidentInput) error {
       {/* Webhooks */}
       <section>
         <h2 className="text-xl font-semibold text-white mb-4">Webhooks</h2>
-        <p className="text-white/60 mb-4">
+        <p className="text-white/45 mb-4">
           Receive real-time notifications when events occur in your Caelex
           account.
         </p>
@@ -471,7 +471,7 @@ app.post('/webhooks/caelex', (req, res) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="text-white/60">
+            <tbody className="text-white/45">
               <tr className="border-b border-white/5">
                 <td className="px-4 py-3">
                   <code className="text-amber-400">400</code>
@@ -547,7 +547,7 @@ function CodeBlock({
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm font-medium text-white/80"
+          className="flex items-center gap-2 text-sm font-medium text-white/70"
         >
           {isExpanded ? (
             <ChevronDown className="w-4 h-4" />
@@ -557,12 +557,12 @@ function CodeBlock({
           {title}
         </button>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/40 px-2 py-0.5 bg-white/5 rounded">
+          <span className="text-xs text-white/45 px-2 py-0.5 bg-white/5 rounded">
             {language}
           </span>
           <button
             onClick={handleCopy}
-            className="p-1.5 text-white/40 hover:text-white/70 transition-colors"
+            className="p-1.5 text-white/45 hover:text-white/70 transition-colors"
             title="Copy to clipboard"
           >
             {copied ? (
@@ -575,7 +575,7 @@ function CodeBlock({
       </div>
       {isExpanded && (
         <div className="p-4 bg-black/20 overflow-x-auto">
-          <pre className="text-sm text-white/80 font-mono whitespace-pre">
+          <pre className="text-sm text-white/70 font-mono whitespace-pre">
             <code>{code}</code>
           </pre>
         </div>

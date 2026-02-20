@@ -76,24 +76,24 @@ export default function SaveToDashboardCTA({
       <div className="bg-white/[0.04] border border-white/12 rounded-xl p-8 mt-6 text-center">
         <LayoutDashboard
           size={24}
-          className="text-white/60 mx-auto mb-4"
+          className="text-white/45 mx-auto mb-4"
           strokeWidth={1.5}
         />
 
-        <h3 className="text-[16px] font-medium text-white mb-2">
+        <h3 className="text-title font-medium text-white mb-2">
           {saved ? "Saved!" : "Save to your dashboard"}
         </h3>
 
-        <p className="text-[13px] text-white/60 mb-6">
+        <p className="text-body text-white/45 mb-6">
           {saved
             ? "Redirecting to your compliance dashboard..."
             : "Track your compliance progress and manage all EU Space Act requirements in one place."}
         </p>
 
-        {error && <p className="text-[13px] text-red-400 mb-4">{error}</p>}
+        {error && <p className="text-body text-red-400 mb-4">{error}</p>}
 
         {saved ? (
-          <div className="inline-flex items-center gap-2 text-green-400 text-[13px] font-medium">
+          <div className="inline-flex items-center gap-2 text-green-400 text-body font-medium">
             <CheckCircle size={16} />
             Assessment imported
           </div>
@@ -101,7 +101,7 @@ export default function SaveToDashboardCTA({
           <button
             onClick={handleSaveToDashboard}
             disabled={saving || !result}
-            className="inline-flex items-center gap-2 bg-white text-black text-[13px] font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 bg-white text-black text-body font-medium px-6 py-2.5 rounded-full hover:bg-white/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>
@@ -125,21 +125,21 @@ export default function SaveToDashboardCTA({
     <div className="bg-white/[0.04] border border-white/12 rounded-xl p-8 mt-6 text-center">
       <LayoutDashboard
         size={24}
-        className="text-white/60 mx-auto mb-4"
+        className="text-white/45 mx-auto mb-4"
         strokeWidth={1.5}
       />
 
-      <h3 className="text-[16px] font-medium text-white mb-2">
+      <h3 className="text-title font-medium text-white mb-2">
         Track your compliance progress
       </h3>
 
-      <p className="text-[13px] text-white/60 mb-6">
+      <p className="text-body text-white/45 mb-6">
         Save your results and manage EU Space Act compliance in one dashboard.
       </p>
 
       <Link
         href="/signup"
-        className="inline-block border border-white/[0.15] text-white text-[13px] font-medium px-6 py-2.5 rounded-full hover:bg-white hover:text-black transition-all duration-300"
+        className="inline-block border border-white/[0.15] text-white text-body font-medium px-6 py-2.5 rounded-full hover:bg-white hover:text-black transition-all duration-300"
       >
         Create Free Account →
       </Link>

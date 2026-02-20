@@ -53,7 +53,7 @@ export default function SuccessConfirmation({
           </h1>
 
           {/* Subtitle */}
-          <p className="text-white/60 mb-8">
+          <p className="text-white/45 mb-8">
             Thank you for providing environmental data for your component.
           </p>
 
@@ -61,19 +61,19 @@ export default function SuccessConfirmation({
           <div className="bg-white/[0.02] rounded-lg p-4 mb-6 text-left">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                   Supplier
                 </p>
                 <p className="text-white">{supplierName}</p>
               </div>
               <div>
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                   Component
                 </p>
                 <p className="text-white">{componentType}</p>
               </div>
               <div>
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                   Submitted
                 </p>
                 <p className="text-white">
@@ -87,7 +87,7 @@ export default function SuccessConfirmation({
                 </p>
               </div>
               <div>
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                   Reference
                 </p>
                 <p className="text-white font-mono text-xs">
@@ -118,7 +118,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">1</span>
                 </div>
-                <p className="text-white/60 text-sm">
+                <p className="text-white/45 text-sm">
                   Your data will be reviewed by the requesting party
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">2</span>
                 </div>
-                <p className="text-white/60 text-sm">
+                <p className="text-white/45 text-sm">
                   The data will be incorporated into their Environmental
                   Footprint Declaration
                 </p>
@@ -135,7 +135,7 @@ export default function SuccessConfirmation({
                 <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-blue-400 text-xs font-medium">3</span>
                 </div>
-                <p className="text-white/60 text-sm">
+                <p className="text-white/45 text-sm">
                   You may be contacted if additional information is needed
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function SuccessConfirmation({
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-white/40 text-xs">
+            <p className="text-white/45 text-xs">
               You can safely close this window. Your data has been securely
               stored.
             </p>
@@ -154,7 +154,7 @@ export default function SuccessConfirmation({
         {/* Caelex Branding */}
         <div className="mt-6 text-center">
           <p className="text-white/30 text-xs">
-            Powered by <span className="text-white/50 font-medium">Caelex</span>
+            Powered by <span className="text-white/45 font-medium">Caelex</span>
             {" · "}
             Space Compliance Platform
           </p>

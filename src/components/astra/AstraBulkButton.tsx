@@ -43,7 +43,7 @@ export default function AstraBulkButton({
     <Link
       href={`/dashboard/astra?${params.toString()}`}
       onClick={handleClick}
-      className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 rounded-lg text-[11px] font-medium text-cyan-400 hover:text-cyan-300 transition-all"
+      className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/15 border border-cyan-500/20 rounded-lg text-caption font-medium text-cyan-400 hover:text-cyan-300 transition-all"
     >
       <Zap size={12} />
       <span>ASTRA: Kategorie generieren</span>

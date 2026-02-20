@@ -50,11 +50,11 @@ export default function DisclaimerBanner({
 }: DisclaimerBannerProps) {
   if (variant === "banner") {
     return (
-      <div className="text-[10px] text-white/30 text-center py-2.5 border-b border-white/[0.04]">
+      <div className="text-micro text-white/30 text-center py-2.5 border-b border-white/[0.04]">
         For informational purposes only — not legal advice. See{" "}
         <Link
           href="/legal/terms"
-          className="underline hover:text-white/50 transition-colors"
+          className="underline hover:text-white/70 transition-colors"
         >
           full terms
         </Link>
@@ -65,7 +65,7 @@ export default function DisclaimerBanner({
 
   if (variant === "inline") {
     return (
-      <p className="text-[11px] text-white/30 leading-relaxed max-w-3xl mx-auto text-center">
+      <p className="text-caption text-white/30 leading-relaxed max-w-3xl mx-auto text-center">
         {INLINE_TEXT}
       </p>
     );
@@ -77,14 +77,14 @@ export default function DisclaimerBanner({
   return (
     <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 mt-6">
       <p className="text-xs text-white/30 leading-relaxed">
-        <strong className="text-white/40">Disclaimer:</strong> {text}
+        <strong className="text-white/45">Disclaimer:</strong> {text}
       </p>
       {showTermsLink && (
         <p className="text-xs text-white/25 mt-3">
           By using this assessment, you agree to our{" "}
           <Link
             href="/legal/terms"
-            className="underline hover:text-white/40 transition-colors"
+            className="underline hover:text-white/45 transition-colors"
           >
             Terms of Service
           </Link>

@@ -114,10 +114,10 @@ export default function DocumentViewer({
         >
           <div className="text-center">
             <Loader2
-              className="w-8 h-8 animate-spin text-slate-400 dark:text-white/40 mx-auto mb-3"
+              className="w-8 h-8 animate-spin text-slate-400 dark:text-white/45 mx-auto mb-3"
               aria-hidden="true"
             />
-            <p className="text-slate-600 dark:text-white/60">
+            <p className="text-slate-600 dark:text-white/45">
               Loading document...
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function DocumentViewer({
               className="w-12 h-12 text-slate-400 dark:text-white/30 mx-auto mb-3"
               aria-hidden="true"
             />
-            <p className="text-slate-600 dark:text-white/60 mb-2">{error}</p>
+            <p className="text-slate-600 dark:text-white/45 mb-2">{error}</p>
             <button
               onClick={handleDownload}
               className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
@@ -149,7 +149,7 @@ export default function DocumentViewer({
     if (!fileUrl) {
       return (
         <div className="flex items-center justify-center h-full">
-          <p className="text-slate-600 dark:text-white/60">
+          <p className="text-slate-600 dark:text-white/45">
             No preview available
           </p>
         </div>
@@ -165,7 +165,7 @@ export default function DocumentViewer({
             onLoadError={onDocumentLoadError}
             loading={
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-slate-400 dark:text-white/40" />
+                <Loader2 className="w-8 h-8 animate-spin text-slate-400 dark:text-white/45" />
               </div>
             }
           >
@@ -198,10 +198,10 @@ export default function DocumentViewer({
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <File className="w-16 h-16 text-slate-400 dark:text-white/30 mb-4" />
-        <p className="text-slate-600 dark:text-white/60 mb-2">
+        <p className="text-slate-600 dark:text-white/45 mb-2">
           Preview not available for this file type
         </p>
-        <p className="text-sm text-slate-500 dark:text-white/40 mb-4">
+        <p className="text-sm text-slate-500 dark:text-white/45 mb-4">
           {mimeType}
         </p>
         <button
@@ -244,7 +244,7 @@ export default function DocumentViewer({
               />
             ) : (
               <File
-                className="w-5 h-5 text-slate-400 dark:text-white/40"
+                className="w-5 h-5 text-slate-400 dark:text-white/45"
                 aria-hidden="true"
               />
             )}
@@ -252,7 +252,7 @@ export default function DocumentViewer({
               <h3 className="font-medium text-slate-900 dark:text-white">
                 {fileName}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-white/50">
+              <p className="text-xs text-slate-500 dark:text-white/45">
                 {mimeType}
               </p>
             </div>
@@ -263,17 +263,17 @@ export default function DocumentViewer({
               <>
                 <button
                   onClick={handleZoomOut}
-                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 transition-colors"
                   aria-label="Zoom out"
                 >
                   <ZoomOut size={18} aria-hidden="true" />
                 </button>
-                <span className="text-sm text-slate-600 dark:text-white/60 min-w-[60px] text-center">
+                <span className="text-sm text-slate-600 dark:text-white/45 min-w-[60px] text-center">
                   {Math.round(scale * 100)}%
                 </span>
                 <button
                   onClick={handleZoomIn}
-                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 transition-colors"
                   aria-label="Zoom in"
                 >
                   <ZoomIn size={18} aria-hidden="true" />
@@ -284,7 +284,7 @@ export default function DocumentViewer({
 
             <button
               onClick={toggleFullscreen}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 transition-colors"
               aria-label="Toggle fullscreen"
             >
               <Maximize2 size={18} aria-hidden="true" />
@@ -292,7 +292,7 @@ export default function DocumentViewer({
 
             <button
               onClick={handleDownload}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 transition-colors"
               aria-label="Download"
             >
               <Download size={18} aria-hidden="true" />
@@ -300,7 +300,7 @@ export default function DocumentViewer({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 transition-colors"
               aria-label="Close"
             >
               <X size={18} aria-hidden="true" />
@@ -323,18 +323,18 @@ export default function DocumentViewer({
               onClick={handlePrevPage}
               disabled={currentPage <= 1}
               aria-label="Previous page"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
-            <span className="text-sm text-slate-600 dark:text-white/60">
+            <span className="text-sm text-slate-600 dark:text-white/45">
               Page {currentPage} of {numPages}
             </span>
             <button
               onClick={handleNextPage}
               disabled={currentPage >= numPages}
               aria-label="Next page"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/60 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-white/45 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={18} aria-hidden="true" />
             </button>

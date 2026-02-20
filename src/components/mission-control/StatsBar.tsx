@@ -41,10 +41,10 @@ export default function StatsBar({ stats, fleetCount, t }: StatsBarProps) {
     <div className="flex items-center gap-6 px-5 py-3 bg-black/60 backdrop-blur-md border-t border-white/10">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-wider text-white/40">
+          <span className="text-micro uppercase tracking-wider text-white/45">
             {item.label}
           </span>
-          <span className={`text-[13px] font-semibold ${item.color}`}>
+          <span className={`text-body font-semibold ${item.color}`}>
             {item.value}
           </span>
         </div>

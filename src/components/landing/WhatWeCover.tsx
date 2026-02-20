@@ -121,15 +121,15 @@ export default function WhatWeCover() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
             Everything that governs space. Covered.
           </h2>
-          <p className="text-subtitle md:text-title text-white/40 max-w-[700px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-white/45 max-w-[700px] mx-auto leading-relaxed">
             Each module includes guided assessments, gap analysis, and
             auto-generated compliance documents — tailored to your mission
             profile.
@@ -145,9 +145,9 @@ export default function WhatWeCover() {
             return (
               <motion.div
                 key={category.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.1 + categoryIndex * 0.1 }}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.4, delay: categoryIndex * 0.06 }}
                 className="flex flex-col"
               >
                 {/* Category Header */}
@@ -168,11 +168,11 @@ export default function WhatWeCover() {
                   {category.modules.map((module, moduleIndex) => (
                     <motion.div
                       key={module.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={isInView ? { opacity: 1, y: 0 } : {}}
+                      initial={{ opacity: 0 }}
+                      animate={isInView ? { opacity: 1 } : {}}
                       transition={{
-                        duration: 0.4,
-                        delay: 0.2 + categoryIndex * 0.1 + moduleIndex * 0.05,
+                        duration: 0.3,
+                        delay: categoryIndex * 0.06 + moduleIndex * 0.03,
                       }}
                       className="group relative p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15] cursor-default"
                       style={{
@@ -194,7 +194,7 @@ export default function WhatWeCover() {
                         <h4 className="text-subtitle font-medium text-white mb-1">
                           {module.name}
                         </h4>
-                        <p className="text-body text-white/40">
+                        <p className="text-body text-white/45">
                           {module.description}
                         </p>
                       </div>
@@ -211,7 +211,7 @@ export default function WhatWeCover() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center text-body-lg text-white/30 mt-16 md:mt-20"
+          className="text-center text-body-lg text-white/25 mt-16 md:mt-20"
         >
           From assessment to audit-ready documentation — in minutes, not months.
         </motion.p>

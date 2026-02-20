@@ -430,7 +430,7 @@ function CopuosPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
             COPUOS/IADC Compliance
           </h1>
           <p className="text-slate-600 dark:text-white/70 mt-1">
@@ -467,7 +467,7 @@ function CopuosPageContent() {
                 <h3 className="font-medium text-slate-900 dark:text-white">
                   {config.label}
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-white/60">
+                <p className="text-sm text-slate-600 dark:text-white/45">
                   {config.description}
                 </p>
               </div>
@@ -475,7 +475,7 @@ function CopuosPageContent() {
             {score && (
               <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-white/60">
+                  <span className="text-sm text-slate-600 dark:text-white/45">
                     Compliance
                   </span>
                   <span
@@ -501,7 +501,7 @@ function CopuosPageContent() {
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
                     ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
+                    : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 <div
@@ -521,7 +521,7 @@ function CopuosPageContent() {
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{step.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45">
                     {step.description}
                   </div>
                 </div>
@@ -565,7 +565,7 @@ function CopuosPageContent() {
                               assessment.assessmentName ||
                               "Untitled"}
                           </div>
-                          <div className="text-sm text-slate-600 dark:text-white/60">
+                          <div className="text-sm text-slate-600 dark:text-white/45">
                             {
                               orbitRegimeConfig[
                                 assessment.orbitRegime as OrbitRegime
@@ -581,7 +581,7 @@ function CopuosPageContent() {
                             <div className="text-lg font-bold text-slate-900 dark:text-white">
                               {assessment.complianceScore}%
                             </div>
-                            <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                            <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                               Compliance
                             </div>
                           </div>
@@ -659,7 +659,7 @@ function CopuosPageContent() {
                       className={`p-3 rounded-lg border text-left transition-colors ${
                         form.orbitRegime === regime
                           ? "bg-emerald-500/20 border-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
+                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/45 hover:border-slate-600"
                       }`}
                     >
                       <div className="font-medium">{config.label}</div>
@@ -691,7 +691,7 @@ function CopuosPageContent() {
                         className={`p-3 rounded-lg border flex items-center gap-2 transition-colors ${
                           form.missionType === type
                             ? "bg-emerald-500/20 border-emerald-500 text-white"
-                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/60 hover:border-slate-600"
+                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/45 hover:border-slate-600"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -832,7 +832,7 @@ function CopuosPageContent() {
 
             {/* Actions */}
             {createError && (
-              <div className="flex items-center gap-2 px-4 py-3 mt-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+              <div className="flex items-center gap-2 px-4 py-3 mt-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                 <AlertTriangle size={14} className="flex-shrink-0" />
                 {createError}
               </div>
@@ -841,7 +841,7 @@ function CopuosPageContent() {
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setShowNewAssessment(false)}
-                className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -875,7 +875,7 @@ function CopuosPageContent() {
                 <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {stats.total}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-white/60">
+                <div className="text-sm text-slate-600 dark:text-white/45">
                   Applicable Guidelines
                 </div>
               </div>
@@ -901,7 +901,7 @@ function CopuosPageContent() {
                 <div className="text-2xl font-bold text-slate-400">
                   {stats.notAssessed}
                 </div>
-                <div className="text-sm text-slate-500 dark:text-white/60">
+                <div className="text-sm text-slate-500 dark:text-white/45">
                   Not Assessed
                 </div>
               </div>
@@ -958,7 +958,7 @@ function CopuosPageContent() {
                           >
                             {guideline.source}
                           </span>
-                          <span className="text-sm text-slate-600 dark:text-white/60">
+                          <span className="text-sm text-slate-600 dark:text-white/45">
                             {guideline.referenceNumber}
                           </span>
                           {guideline.bindingLevel === "mandatory" && (
@@ -975,13 +975,13 @@ function CopuosPageContent() {
                         <h3 className="font-medium text-slate-900 dark:text-white mb-1">
                           {guideline.title}
                         </h3>
-                        <p className="text-sm text-slate-600 dark:text-white/60 mb-3">
+                        <p className="text-sm text-slate-600 dark:text-white/45 mb-3">
                           {guideline.complianceQuestion}
                         </p>
 
                         {guideline.euSpaceActCrossRef &&
                           guideline.euSpaceActCrossRef.length > 0 && (
-                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/50">
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/45">
                               <ExternalLink className="w-3 h-3" />
                               EU Space Act:{" "}
                               {guideline.euSpaceActCrossRef.join(", ")}
@@ -1009,7 +1009,7 @@ function CopuosPageContent() {
                               className={`p-2 rounded-lg transition-colors ${
                                 status === s
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white"
+                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                               }`}
                               title={config.label}
                             >
@@ -1050,7 +1050,7 @@ function CopuosPageContent() {
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Gap Analysis
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/60">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/45">
                   <AlertCircle className="w-4 h-4" />
                   {gapAnalysis.length} gaps identified
                 </div>
@@ -1062,7 +1062,7 @@ function CopuosPageContent() {
                   <p className="text-slate-900 dark:text-white font-medium">
                     No gaps identified
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-white/60">
+                  <p className="text-sm text-slate-600 dark:text-white/45">
                     All assessed guidelines are compliant
                   </p>
                 </div>
@@ -1097,18 +1097,18 @@ function CopuosPageContent() {
                               >
                                 {gap.priority.toUpperCase()} PRIORITY
                               </span>
-                              <span className="text-xs text-slate-500 dark:text-white/50">
+                              <span className="text-xs text-slate-500 dark:text-white/45">
                                 Effort: {gap.estimatedEffort}
                               </span>
                             </div>
                             <p className="text-slate-900 dark:text-white font-medium mb-1">
                               {gap.gap}
                             </p>
-                            <p className="text-sm text-slate-600 dark:text-white/60">
+                            <p className="text-sm text-slate-600 dark:text-white/45">
                               {gap.recommendation}
                             </p>
                             {gap.dependencies.length > 0 && (
-                              <div className="mt-2 text-xs text-slate-500 dark:text-white/50">
+                              <div className="mt-2 text-xs text-slate-500 dark:text-white/45">
                                 Dependencies: {gap.dependencies.join(", ")}
                               </div>
                             )}
@@ -1135,7 +1135,7 @@ function CopuosPageContent() {
             <div className="flex justify-between">
               <button
                 onClick={() => setActiveStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Assessment
@@ -1176,7 +1176,7 @@ function CopuosPageContent() {
                       <div className="text-4xl font-bold text-slate-900 dark:text-white">
                         {score.overall}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Overall Score
                       </div>
                     </div>
@@ -1184,7 +1184,7 @@ function CopuosPageContent() {
                       <div className="text-4xl font-bold text-amber-400">
                         {score.mandatory}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Mandatory
                       </div>
                     </div>
@@ -1202,7 +1202,7 @@ function CopuosPageContent() {
                       >
                         {selectedAssessment.riskLevel?.toUpperCase() || "N/A"}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/60">
+                      <div className="text-sm text-slate-600 dark:text-white/45">
                         Risk Level
                       </div>
                     </div>
@@ -1228,7 +1228,7 @@ function CopuosPageContent() {
             <div className="flex justify-start">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Gap Analysis

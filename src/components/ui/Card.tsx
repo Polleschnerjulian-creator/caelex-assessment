@@ -100,7 +100,7 @@ export function CardDescription({
   className = "",
 }: CardDescriptionProps) {
   return (
-    <p className={`text-body text-slate-600 dark:text-white/60 ${className}`}>
+    <p className={`text-body text-slate-600 dark:text-white/45 ${className}`}>
       {children}
     </p>
   );

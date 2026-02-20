@@ -23,13 +23,13 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           aria-label="Open navigation menu"
           aria-expanded={false}
           aria-controls="sidebar-nav"
-          className="lg:hidden text-slate-600 dark:text-white/60 hover:text-slate-800 dark:hover:text-white/60 transition-colors"
+          className="lg:hidden text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
         >
           <Menu size={20} aria-hidden="true" />
         </button>
 
         {/* Page title */}
-        <h1 className="text-[18px] font-medium text-slate-900 dark:text-white">
+        <h1 className="text-heading font-medium text-slate-900 dark:text-white">
           {title || t("sidebar.dashboard")}
         </h1>
       </div>
@@ -39,7 +39,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-slate-300 dark:border-white/10 text-slate-700 dark:text-white/70 text-[12px] px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white/70 transition-all"
+          className="border border-slate-300 dark:border-white/10 text-slate-700 dark:text-white/70 text-small px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white/70 transition-all"
         >
           {t("topbar.runAssessment")}
         </Link>

@@ -245,7 +245,7 @@ function SupervisionPageContent() {
       case "low":
         return "text-emerald-400 bg-emerald-500/10";
       default:
-        return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
+        return "text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5";
     }
   };
 
@@ -262,7 +262,7 @@ function SupervisionPageContent() {
       case "reported":
         return "text-emerald-400 bg-emerald-500/10";
       default:
-        return "text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/5";
+        return "text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5";
     }
   };
 
@@ -280,13 +280,13 @@ function SupervisionPageContent() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/60 mb-2">
+        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/45 mb-2">
           MODULE 07
         </p>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
           Supervision & Reporting
         </h1>
-        <p className="text-slate-600 dark:text-slate-500 dark:text-white/60 mt-1">
+        <p className="text-slate-600 dark:text-slate-500 dark:text-white/45 mt-1">
           Manage NCA relationships, incidents, and compliance reporting
         </p>
       </div>
@@ -308,7 +308,7 @@ function SupervisionPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {config.primaryNCA?.countryCode || config.primaryCountry}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Primary NCA
                   </p>
                 </div>
@@ -330,7 +330,7 @@ function SupervisionPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.openIncidents}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Open Incidents
                   </p>
                 </div>
@@ -352,7 +352,7 @@ function SupervisionPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.pendingReports}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Pending Reports
                   </p>
                 </div>
@@ -374,7 +374,7 @@ function SupervisionPageContent() {
                   <p className="text-2xl font-semibold text-slate-900 dark:text-white">
                     {stats.upcomingEvents}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45">
                     Upcoming Events
                   </p>
                 </div>
@@ -404,7 +404,7 @@ function SupervisionPageContent() {
               ${
                 activeStep === step.id
                   ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/50 hover:text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:bg-white/5"
+                  : "text-slate-500 dark:text-white/45 hover:text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:bg-white/5"
               }
             `}
           >
@@ -447,7 +447,7 @@ function SupervisionPageContent() {
               <CardContent className="space-y-6">
                 {/* Primary NCA Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/70 mb-2">
                     Primary Registration Country *
                   </label>
                   <select
@@ -486,10 +486,10 @@ function SupervisionPageContent() {
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-500 dark:text-white/50">
+                          <p className="text-slate-500 dark:text-white/45">
                             Local Name
                           </p>
-                          <p className="text-slate-700 dark:text-white/80">
+                          <p className="text-slate-700 dark:text-white/70">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .authorityNameLocal
@@ -497,10 +497,10 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/50">
+                          <p className="text-slate-500 dark:text-white/45">
                             Contact Email
                           </p>
-                          <p className="text-slate-700 dark:text-white/80">
+                          <p className="text-slate-700 dark:text-white/70">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactEmail
@@ -508,10 +508,10 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/50">
+                          <p className="text-slate-500 dark:text-white/45">
                             Phone
                           </p>
-                          <p className="text-slate-700 dark:text-white/80">
+                          <p className="text-slate-700 dark:text-white/70">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactPhone
@@ -519,10 +519,10 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/50">
+                          <p className="text-slate-500 dark:text-white/45">
                             Regulatory Framework
                           </p>
-                          <p className="text-slate-700 dark:text-white/80">
+                          <p className="text-slate-700 dark:text-white/70">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .regulatoryFramework
@@ -551,7 +551,7 @@ function SupervisionPageContent() {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Full Name
                       </label>
                       <input
@@ -568,7 +568,7 @@ function SupervisionPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Role
                       </label>
                       <input
@@ -585,7 +585,7 @@ function SupervisionPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Email
                       </label>
                       <input
@@ -602,7 +602,7 @@ function SupervisionPageContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Phone
                       </label>
                       <input
@@ -628,7 +628,7 @@ function SupervisionPageContent() {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Preferred Language
                       </label>
                       <select
@@ -649,7 +649,7 @@ function SupervisionPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                         Notification Method
                       </label>
                       <select
@@ -671,7 +671,7 @@ function SupervisionPageContent() {
                 </div>
 
                 {saveConfigError && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                     <AlertTriangle size={14} className="flex-shrink-0" />
                     {saveConfigError}
                   </div>
@@ -729,15 +729,15 @@ function SupervisionPageContent() {
                               {obligation.frequency.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-white/60 mb-2">
+                          <p className="text-sm text-slate-500 dark:text-white/45 mb-2">
                             {obligation.description}
                           </p>
-                          <p className="text-xs text-slate-400 dark:text-white/40">
+                          <p className="text-xs text-slate-400 dark:text-white/45">
                             Legal basis: {obligation.legalBasis}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-slate-500 dark:text-white/50">
+                          <p className="text-xs text-slate-500 dark:text-white/45">
                             Recipients
                           </p>
                           <p className="text-xs text-slate-600 dark:text-white/70">
@@ -793,7 +793,7 @@ function SupervisionPageContent() {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                             Category *
                           </label>
                           <select
@@ -816,7 +816,7 @@ function SupervisionPageContent() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                             Severity *
                           </label>
                           <select
@@ -837,7 +837,7 @@ function SupervisionPageContent() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                             Title *
                           </label>
                           <input
@@ -855,7 +855,7 @@ function SupervisionPageContent() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                             Description *
                           </label>
                           <textarea
@@ -873,7 +873,7 @@ function SupervisionPageContent() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                            <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                               Detected At *
                             </label>
                             <input
@@ -889,7 +889,7 @@ function SupervisionPageContent() {
                             />
                           </div>
                           <div>
-                            <label className="block text-sm text-slate-500 dark:text-white/60 mb-1">
+                            <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
                               Detected By *
                             </label>
                             <input
@@ -909,7 +909,7 @@ function SupervisionPageContent() {
                       </div>
 
                       {createIncidentError && (
-                        <div className="flex items-center gap-2 px-4 py-3 mt-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                        <div className="flex items-center gap-2 px-4 py-3 mt-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                           <AlertTriangle size={14} className="flex-shrink-0" />
                           {createIncidentError}
                         </div>
@@ -949,10 +949,10 @@ function SupervisionPageContent() {
                       className="mx-auto text-slate-300 dark:text-white/20 mb-4"
                       aria-hidden="true"
                     />
-                    <p className="text-slate-500 dark:text-white/60">
+                    <p className="text-slate-500 dark:text-white/45">
                       No incidents logged
                     </p>
-                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
+                    <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
                       Click &quot;Log Incident&quot; to record a new incident
                     </p>
                   </div>
@@ -966,7 +966,7 @@ function SupervisionPageContent() {
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-xs text-slate-400 dark:text-white/40">
+                              <span className="font-mono text-xs text-slate-400 dark:text-white/45">
                                 {incident.incidentNumber}
                               </span>
                               <span
@@ -983,11 +983,11 @@ function SupervisionPageContent() {
                             <h4 className="font-medium text-slate-900 dark:text-white">
                               {incident.title}
                             </h4>
-                            <p className="text-sm text-slate-500 dark:text-white/50 mt-1 line-clamp-1">
+                            <p className="text-sm text-slate-500 dark:text-white/45 mt-1 line-clamp-1">
                               {incident.description}
                             </p>
                           </div>
-                          <div className="text-right text-xs text-slate-400 dark:text-white/40">
+                          <div className="text-right text-xs text-slate-400 dark:text-white/45">
                             <p>
                               {new Date(
                                 incident.detectedAt,
@@ -1046,10 +1046,10 @@ function SupervisionPageContent() {
                       className="mx-auto text-slate-300 dark:text-white/20 mb-4"
                       aria-hidden="true"
                     />
-                    <p className="text-slate-500 dark:text-white/60">
+                    <p className="text-slate-500 dark:text-white/45">
                       No upcoming events
                     </p>
-                    <p className="text-sm text-slate-400 dark:text-white/40 mt-1">
+                    <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
                       Calendar events will be automatically created based on
                       your reporting obligations
                     </p>
@@ -1101,7 +1101,7 @@ function SupervisionPageContent() {
                                           ? "text-red-400"
                                           : eventConfig?.color === "amber"
                                             ? "text-amber-400"
-                                            : "text-slate-500 dark:text-white/60"
+                                            : "text-slate-500 dark:text-white/45"
                                   }
                                 `}
                                 />
@@ -1111,11 +1111,11 @@ function SupervisionPageContent() {
                                   {event.title}
                                 </h4>
                                 {event.description && (
-                                  <p className="text-sm text-slate-500 dark:text-white/50 mt-1">
+                                  <p className="text-sm text-slate-500 dark:text-white/45 mt-1">
                                     {event.description}
                                   </p>
                                 )}
-                                <p className="text-xs text-slate-400 dark:text-white/40 mt-2">
+                                <p className="text-xs text-slate-400 dark:text-white/45 mt-2">
                                   Due:{" "}
                                   {new Date(event.dueDate).toLocaleDateString()}
                                 </p>
@@ -1130,7 +1130,7 @@ function SupervisionPageContent() {
                                     ? "text-red-400"
                                     : daysUntil <= 30
                                       ? "text-amber-400"
-                                      : "text-slate-500 dark:text-white/60"
+                                      : "text-slate-500 dark:text-white/45"
                                 }
                               `}
                               >
@@ -1138,7 +1138,7 @@ function SupervisionPageContent() {
                                   ? `${daysUntil} days`
                                   : "Overdue"}
                               </span>
-                              <p className="text-xs text-slate-400 dark:text-white/40 mt-1">
+                              <p className="text-xs text-slate-400 dark:text-white/45 mt-1">
                                 {eventConfig?.label}
                               </p>
                             </div>

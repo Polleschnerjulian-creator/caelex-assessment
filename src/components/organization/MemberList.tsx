@@ -157,18 +157,18 @@ export function MemberList({
                     {member.name || "Unnamed User"}
                   </span>
                   {isCurrentUser && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                    <span className="text-micro px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
                       You
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-white/50 truncate">
+                <div className="text-xs text-white/45 truncate">
                   {member.email}
                 </div>
               </div>
 
               {/* Joined Date */}
-              <div className="hidden sm:block text-xs text-white/40">
+              <div className="hidden sm:block text-xs text-white/45">
                 Joined {formatDate(member.joinedAt)}
               </div>
 
@@ -208,7 +208,7 @@ export function MemberList({
                         menuOpenFor === member.id ? null : member.id,
                       )
                     }
-                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
                   >
                     <MoreVertical size={16} />
                   </button>

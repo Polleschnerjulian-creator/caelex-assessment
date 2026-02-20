@@ -30,18 +30,18 @@ export default function SpaceLawResultsDashboard({
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link
             href="/assessment"
-            className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             <span>All assessments</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">
+            <span className="text-caption uppercase tracking-[0.2em] text-white/45">
               National Space Laws
             </span>
             <button
               onClick={onRestart}
-              className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-small text-white/45 hover:text-white transition-colors"
             >
               <RotateCcw size={12} aria-hidden="true" />
               Restart
@@ -62,7 +62,7 @@ export default function SpaceLawResultsDashboard({
           <h1 className="text-2xl font-light tracking-[-0.02em] text-white mb-2">
             Your National Space Law Compliance Profile
           </h1>
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-white/45">
             Selected: {jurisdictionSubtitle}
           </p>
         </motion.div>
@@ -154,7 +154,7 @@ export default function SpaceLawResultsDashboard({
             transition={{ delay: 0.9 }}
             className="text-center py-8"
           >
-            <p className="text-white/40 text-sm mb-4">
+            <p className="text-white/45 text-sm mb-4">
               Want to track national space law compliance?
             </p>
             <div className="flex items-center justify-center gap-4">

@@ -107,7 +107,7 @@ export default function SupplierPortalPage() {
               <h1 className="text-xl font-semibold text-white mb-2">
                 Link Expired
               </h1>
-              <p className="text-white/60 text-sm mb-6">
+              <p className="text-white/45 text-sm mb-6">
                 This data request link has expired. Please contact the
                 requesting party to receive a new link.
               </p>
@@ -118,7 +118,7 @@ export default function SupplierPortalPage() {
               <h1 className="text-xl font-semibold text-white mb-2">
                 Access Revoked
               </h1>
-              <p className="text-white/60 text-sm mb-6">
+              <p className="text-white/45 text-sm mb-6">
                 This data request has been cancelled. Please contact the
                 requesting party for more information.
               </p>
@@ -129,7 +129,7 @@ export default function SupplierPortalPage() {
               <h1 className="text-xl font-semibold text-white mb-2">
                 Invalid Link
               </h1>
-              <p className="text-white/60 text-sm mb-6">
+              <p className="text-white/45 text-sm mb-6">
                 {validation?.error ||
                   "This link is invalid or no longer active. Please check the link and try again."}
               </p>
@@ -137,7 +137,7 @@ export default function SupplierPortalPage() {
           )}
 
           <div className="pt-4 border-t border-white/10">
-            <p className="text-white/40 text-xs">
+            <p className="text-white/45 text-xs">
               Powered by Caelex Compliance Platform
             </p>
           </div>
@@ -168,12 +168,12 @@ export default function SupplierPortalPage() {
               <h1 className="text-lg font-semibold text-white">
                 Supplier Data Request
               </h1>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-white/45">
                 Environmental footprint data collection
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-white/40">Powered by</p>
+              <p className="text-xs text-white/45">Powered by</p>
               <p className="text-sm font-medium text-white">Caelex</p>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function SupplierPortalPage() {
                 Data Request from{" "}
                 {validation.request?.companyName || "Customer"}
               </h2>
-              <p className="text-white/60 text-sm mb-4">
+              <p className="text-white/45 text-sm mb-4">
                 {validation.request?.missionName
                   ? `For mission: ${validation.request.missionName}`
                   : "Environmental footprint assessment"}
@@ -201,7 +201,7 @@ export default function SupplierPortalPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                     Supplier
                   </p>
                   <p className="text-white">
@@ -209,7 +209,7 @@ export default function SupplierPortalPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                     Component Type
                   </p>
                   <p className="text-white">
@@ -218,7 +218,7 @@ export default function SupplierPortalPage() {
                 </div>
                 {validation.request?.deadline && (
                   <div>
-                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                    <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                       Deadline
                     </p>
                     <p className="text-white">
@@ -232,7 +232,7 @@ export default function SupplierPortalPage() {
 
               {validation.request?.notes && (
                 <div className="mt-4 p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                  <p className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                  <p className="text-white/45 text-xs uppercase tracking-wider mb-1">
                     Notes from requester
                   </p>
                   <p className="text-white/70 text-sm">
@@ -253,8 +253,8 @@ export default function SupplierPortalPage() {
 
         {/* Privacy Notice */}
         <div className="mt-8 p-4 bg-white/[0.02] rounded-lg border border-white/5">
-          <p className="text-white/40 text-xs">
-            <strong className="text-white/60">Privacy Notice:</strong> The data
+          <p className="text-white/45 text-xs">
+            <strong className="text-white/45">Privacy Notice:</strong> The data
             you provide will be used solely for environmental footprint
             calculations as required by EU Space Act regulations. Your data will
             be handled in accordance with GDPR requirements and will not be

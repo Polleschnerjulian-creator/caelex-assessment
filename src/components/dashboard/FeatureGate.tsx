@@ -64,7 +64,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2
           size={24}
-          className="animate-spin text-slate-400 dark:text-white/40"
+          className="animate-spin text-slate-400 dark:text-white/45"
         />
       </div>
     );
@@ -100,22 +100,22 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
         </h2>
 
         {/* Description */}
-        <p className="text-[14px] text-slate-500 dark:text-white/50 leading-relaxed mb-6">
+        <p className="text-body-lg text-slate-500 dark:text-white/45 leading-relaxed mb-6">
           {moduleDescription}
         </p>
 
         {/* Plan badge */}
         <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 mb-6">
-          <span className="text-[12px] text-slate-500 dark:text-white/40">
+          <span className="text-small text-slate-500 dark:text-white/45">
             Your plan:
           </span>
-          <span className="text-[12px] font-medium text-slate-700 dark:text-white/70">
+          <span className="text-small font-medium text-slate-700 dark:text-white/70">
             {PRICING_TIERS[plan].name}
           </span>
-          <span className="text-[12px] text-slate-400 dark:text-white/20">
+          <span className="text-small text-slate-400 dark:text-white/20">
             →
           </span>
-          <span className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+          <span className="text-small font-medium text-emerald-600 dark:text-emerald-400">
             {requiredTier.name}
             {requiredTier.price !== null && ` (€${requiredTier.price}/mo)`}
           </span>
@@ -125,14 +125,14 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
         <div className="flex flex-col items-center gap-3">
           <Link
             href="/dashboard/settings/billing"
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-medium px-6 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-body-lg font-medium px-6 py-2.5 rounded-lg transition-colors"
           >
             View Plans & Upgrade
             <ArrowRight size={16} />
           </Link>
           <Link
             href="/dashboard"
-            className="text-[13px] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+            className="text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
           >
             Back to Dashboard
           </Link>

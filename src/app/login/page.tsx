@@ -58,10 +58,10 @@ export default function LoginPage() {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden items-center justify-center">
         {/* Grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
         {/* Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/8 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/[0.08] rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
 
         {/* Content */}
@@ -70,13 +70,13 @@ export default function LoginPage() {
             <Logo size={28} className="text-white" />
           </div>
 
-          <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
+          <h2 className="text-3xl font-medium text-white mb-4 leading-tight">
             Space Compliance,
             <br />
-            <span className="text-green-400">Simplified.</span>
+            <span className="text-emerald-400">Simplified.</span>
           </h2>
 
-          <p className="text-white/50 text-[15px] leading-relaxed mb-10">
+          <p className="text-white/45 text-subtitle leading-relaxed mb-10">
             The regulatory compliance platform trusted by satellite operators,
             launch providers, and space service companies across Europe.
           </p>
@@ -89,8 +89,8 @@ export default function LoginPage() {
               "AI-powered document generation",
             ].map((feature) => (
               <div key={feature} className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <span className="text-white/60 text-sm">{feature}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-white/45 text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -110,8 +110,10 @@ export default function LoginPage() {
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-white/40 text-[14px]">
+            <h1 className="text-2xl font-medium text-white mb-2">
+              Welcome back
+            </h1>
+            <p className="text-white/45 text-body-lg">
               Sign in to access your compliance dashboard
             </p>
           </div>
@@ -120,7 +122,7 @@ export default function LoginPage() {
           <div className="flex gap-3 mb-6">
             <button
               onClick={handleGoogleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-[14px] transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path
@@ -144,7 +146,7 @@ export default function LoginPage() {
             </button>
             <button
               onClick={handleAppleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-[14px] transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg
                 width="18"
@@ -161,7 +163,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px bg-white/[0.06] flex-1" />
-            <span className="text-white/30 text-[12px] uppercase tracking-wider">
+            <span className="text-white/30 text-small uppercase tracking-wider">
               or
             </span>
             <div className="h-px bg-white/[0.06] flex-1" />
@@ -170,7 +172,7 @@ export default function LoginPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[12px] font-medium text-white/50 mb-2">
+              <label className="block text-small font-medium text-white/45 mb-2">
                 Email
               </label>
               <input
@@ -179,19 +181,19 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-[12px] font-medium text-white/50">
+                <label className="block text-small font-medium text-white/45">
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[12px] text-green-400/70 hover:text-green-400 transition-colors"
+                  className="text-small text-emerald-400/70 hover:text-emerald-400 transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -201,13 +203,13 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 pr-11 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -221,14 +223,14 @@ export default function LoginPage() {
             {error && (
               <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                <p className="text-red-400 text-[13px]">{error}</p>
+                <p className="text-red-400 text-body">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-3 rounded-lg text-[15px] transition-all duration-200 disabled:opacity-50 disabled:hover:bg-green-500 flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-3 rounded-lg text-subtitle transition-all duration-200 disabled:opacity-50 disabled:hover:bg-emerald-500 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
@@ -245,11 +247,11 @@ export default function LoginPage() {
           </form>
 
           {/* Sign up link */}
-          <p className="text-center mt-8 text-[13px] text-white/40">
+          <p className="text-center mt-8 text-body text-white/45">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="text-green-400/80 hover:text-green-400 transition-colors"
+              className="text-emerald-400/80 hover:text-emerald-400 transition-colors"
             >
               Create account
             </Link>

@@ -109,21 +109,21 @@ export default function AstraFullPage() {
             <div className="w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5">
               <ShieldCheck size={28} className="text-cyan-400" />
             </div>
-            <h2 className="text-[18px] font-semibold text-white mb-2">
+            <h2 className="text-heading font-semibold text-white mb-2">
               ASTRA AI Einwilligung
             </h2>
-            <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+            <p className="text-body text-white/45 leading-relaxed mb-3">
               ASTRA verwendet Ihre Compliance-Daten, um kontextbezogene
               regulatorische Beratung zu liefern. Ihre Eingaben werden
               verarbeitet, aber nicht zum Trainieren von KI-Modellen verwendet.
             </p>
-            <p className="text-[12px] text-amber-400/70 leading-relaxed mb-5 px-3 py-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
+            <p className="text-small text-amber-400/70 leading-relaxed mb-5 px-3 py-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/10">
               Hinweis gem. EU AI Act Art. 50: ASTRA ist ein KI-System (Large
               Language Model). Alle Antworten sind KI-generiert und stellen
               keine Rechtsberatung dar. Bitte verifizieren Sie regulatorische
               Informationen stets mit qualifizierten Fachleuten.
             </p>
-            <ul className="text-[12px] text-white/50 space-y-2 mb-6 text-left">
+            <ul className="text-small text-white/45 space-y-2 mb-6 text-left">
               <li className="flex items-start gap-2">
                 <span className="text-cyan-400 mt-0.5">&#x2022;</span>
                 <span>Gesprachsdaten werden verschlusselt gespeichert</span>
@@ -139,11 +139,11 @@ export default function AstraFullPage() {
             </ul>
             <button
               onClick={handleAcceptConsent}
-              className="px-8 py-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 text-[14px] font-medium transition-colors"
+              className="px-8 py-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/20 text-cyan-400 text-body-lg font-medium transition-colors"
             >
               Einverstanden &mdash; ASTRA aktivieren
             </button>
-            <p className="text-[10px] text-white/40 mt-4">
+            <p className="text-micro text-white/45 mt-4">
               Siehe unsere{" "}
               <a
                 href="/legal/privacy"
@@ -188,17 +188,17 @@ export default function AstraFullPage() {
             {/* Toggle Conversations */}
             <button
               onClick={() => setShowConversations(!showConversations)}
-              className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+              className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
               aria-label="Toggle conversations"
               title="Conversations"
             >
               <PanelLeftOpen size={16} />
             </button>
 
-            <div className="w-6 h-6 rounded-md bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center">
               <Zap size={12} className="text-cyan-400" />
             </div>
-            <span className="text-[13px] font-medium text-white">ASTRA</span>
+            <span className="text-body font-medium text-white">ASTRA</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium uppercase tracking-wider">
               Beta
             </span>
@@ -218,7 +218,7 @@ export default function AstraFullPage() {
             {hasUserMessages && (
               <button
                 onClick={resetChat}
-                className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+                className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-colors"
                 aria-label="New chat"
                 title="New Chat"
               >
@@ -228,10 +228,10 @@ export default function AstraFullPage() {
             {/* Toggle Tool Browser */}
             <button
               onClick={() => setShowToolBrowser(!showToolBrowser)}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-lg transition-colors ${
                 showToolBrowser
                   ? "text-cyan-400 bg-cyan-500/10"
-                  : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
+                  : "text-white/30 hover:text-white/70 hover:bg-white/[0.04]"
               }`}
               aria-label="Toggle tool browser"
               title="Tool Browser"
@@ -253,7 +253,7 @@ export default function AstraFullPage() {
               <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
                 <div className="flex items-center gap-2" role="alert">
                   <AlertCircle size={14} className="text-red-400" />
-                  <span className="text-[11px] text-red-400">{error}</span>
+                  <span className="text-caption text-red-400">{error}</span>
                 </div>
                 <button
                   onClick={clearError}

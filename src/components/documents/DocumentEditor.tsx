@@ -68,7 +68,7 @@ export function DocumentEditor({
           <h2 className="text-lg font-medium text-slate-900 dark:text-white">
             Review & Edit
           </h2>
-          <p className="text-sm text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-sm text-slate-500 dark:text-white/45 mt-0.5">
             Review the generated document and make any necessary edits
           </p>
         </div>
@@ -103,25 +103,25 @@ export function DocumentEditor({
               {expandedSection === sectionIndex ? (
                 <ChevronDown
                   size={16}
-                  className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                  className="text-slate-400 dark:text-white/45 flex-shrink-0"
                   aria-hidden="true"
                 />
               ) : (
                 <ChevronRight
                   size={16}
-                  className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                  className="text-slate-400 dark:text-white/45 flex-shrink-0"
                   aria-hidden="true"
                 />
               )}
               <FileText
                 size={14}
-                className="text-slate-400 dark:text-white/40 flex-shrink-0"
+                className="text-slate-400 dark:text-white/45 flex-shrink-0"
                 aria-hidden="true"
               />
               <span className="text-sm font-medium text-slate-900 dark:text-white flex-1">
                 {str(section.title)}
               </span>
-              <span className="text-[11px] text-slate-400 dark:text-white/30">
+              <span className="text-caption text-slate-400 dark:text-white/30">
                 {Array.isArray(section.content) ? section.content.length : 0}{" "}
                 blocks
               </span>
@@ -162,7 +162,7 @@ export function DocumentEditor({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
           New Document
@@ -252,7 +252,7 @@ function SectionContentBlock({
                     <th
                       scope="col"
                       key={i}
-                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/50 border-b border-slate-200 dark:border-white/10"
+                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/45 border-b border-slate-200 dark:border-white/10"
                     >
                       {str(h)}
                     </th>
@@ -269,7 +269,7 @@ function SectionContentBlock({
                   {(Array.isArray(row) ? row : []).map((cell, ci) => (
                     <td
                       key={ci}
-                      className="px-3 py-2 text-slate-700 dark:text-white/60"
+                      className="px-3 py-2 text-slate-700 dark:text-white/45"
                     >
                       {str(cell)}
                     </td>
@@ -289,7 +289,7 @@ function SectionContentBlock({
               <span className="font-medium text-slate-700 dark:text-white/70 min-w-[120px]">
                 {str(item?.key)}:
               </span>
-              <span className="text-slate-600 dark:text-white/50">
+              <span className="text-slate-600 dark:text-white/45">
                 {str(item?.value)}
               </span>
             </div>

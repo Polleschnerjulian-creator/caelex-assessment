@@ -3,28 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Light Mode - Default */
-  :root {
-    --bg: #ffffff;
-    --bg-subtle: #f8fafc;
-    --bg-elevated: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #1e293b;
-    --text-muted: #475569;
-    --border-default: #e2e8f0;
-  }
-
-  /* Dark Mode */
-  .dark {
-    --bg: #0a0a0b;
-    --bg-subtle: #111113;
-    --bg-elevated: #18181b;
-    --text-primary: #ffffff;
-    --text-secondary: #e2e8f0;
-    --text-muted: #94a3b8;
-    --border-default: rgba(255, 255, 255, 0.1);
-  }
-
   /* Force proper color scheme */
   .light,
   :root:not(.dark) {

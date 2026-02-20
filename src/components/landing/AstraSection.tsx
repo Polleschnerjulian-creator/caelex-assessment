@@ -96,8 +96,8 @@ export default function AstraSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -111,7 +111,7 @@ export default function AstraSection() {
             22 tools. 5 categories. The most comprehensive AI compliance engine
             ever built for space.
           </p>
-          <p className="text-subtitle md:text-title text-white/40 max-w-[900px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-white/45 max-w-[900px] mx-auto leading-relaxed">
             ASTRA doesn&apos;t just answer questions — it runs gap analyses,
             generates audit-ready documents, compares jurisdictions, estimates
             compliance costs, and builds your optimal regulatory path. Trained
@@ -148,7 +148,7 @@ export default function AstraSection() {
                     ASTRA
                   </span>
                 </div>
-                <span className="text-small text-white/30">
+                <span className="text-small text-white/25">
                   AI Compliance Agent
                 </span>
               </div>
@@ -158,14 +158,14 @@ export default function AstraSection() {
                 {chatExamples.map((example, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
                     className="space-y-3"
                   >
                     {/* User Prompt */}
                     <div className="flex justify-end">
-                      <div className="max-w-[85%] px-4 py-2.5 rounded-xl rounded-br-md bg-white/[0.08] text-body text-white/80">
+                      <div className="max-w-[85%] px-4 py-2.5 rounded-xl rounded-br-md bg-white/[0.08] text-body text-white/70">
                         {example.prompt}
                       </div>
                     </div>
@@ -182,7 +182,7 @@ export default function AstraSection() {
                             ASTRA
                           </span>
                         </div>
-                        <div className="px-4 py-2.5 rounded-xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-body text-white/60 leading-relaxed">
+                        <div className="px-4 py-2.5 rounded-xl rounded-bl-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] text-body text-white/70 leading-relaxed">
                           {example.response}
                         </div>
                       </div>
@@ -199,7 +199,7 @@ export default function AstraSection() {
                     boxShadow: "0 0 20px rgba(16, 185, 129, 0.05)",
                   }}
                 >
-                  <span className="text-body text-white/30 flex-1">
+                  <span className="text-body text-white/25 flex-1">
                     Ask ASTRA anything about space compliance...
                   </span>
                   <div
@@ -236,8 +236,8 @@ export default function AstraSection() {
             {capabilities.map((cap, i) => (
               <motion.div
                 key={cap.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
                 className="group relative p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12]"
                 style={{
@@ -260,11 +260,11 @@ export default function AstraSection() {
                         </span>
                       )}
                     </div>
-                    <p className="text-small text-white/40 leading-relaxed">
+                    <p className="text-small text-white/45 leading-relaxed">
                       {cap.description}
                     </p>
                   </div>
-                  <span className="px-2 py-1 text-caption font-medium text-white/50 bg-white/[0.06] rounded-md">
+                  <span className="px-2 py-1 text-caption font-medium text-white/45 bg-white/[0.06] rounded-lg">
                     {cap.tools} tools
                   </span>
                 </div>
@@ -292,8 +292,8 @@ export default function AstraSection() {
 
         {/* CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 1.0 }}
           className="text-center"
         >
@@ -303,7 +303,7 @@ export default function AstraSection() {
           >
             Ask ASTRA
           </Link>
-          <p className="text-body text-white/30 mt-4">
+          <p className="text-body text-white/25 mt-4">
             Available in every module. Context-aware to your mission profile.
           </p>
           <p className="text-caption text-white/20 mt-2">

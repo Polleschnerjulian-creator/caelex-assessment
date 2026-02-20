@@ -98,10 +98,10 @@ export default function SignupPage() {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden items-center justify-center">
         {/* Grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
         {/* Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/8 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/[0.08] rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
 
         {/* Content */}
@@ -110,13 +110,13 @@ export default function SignupPage() {
             <Logo size={28} className="text-white" />
           </div>
 
-          <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
+          <h2 className="text-3xl font-medium text-white mb-4 leading-tight">
             Start Your
             <br />
-            <span className="text-green-400">Compliance Journey.</span>
+            <span className="text-emerald-400">Compliance Journey.</span>
           </h2>
 
-          <p className="text-white/50 text-[15px] leading-relaxed mb-10">
+          <p className="text-white/45 text-subtitle leading-relaxed mb-10">
             Join space operators across Europe who use Caelex to navigate EU
             Space Act, NIS2, and national space law compliance.
           </p>
@@ -129,10 +129,10 @@ export default function SignupPage() {
               { value: "51", label: "NIS2 requirements" },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="text-2xl font-bold text-green-400 mb-1">
+                <div className="text-2xl font-semibold text-emerald-400 mb-1">
                   {stat.value}
                 </div>
-                <div className="text-white/40 text-xs">{stat.label}</div>
+                <div className="text-white/45 text-xs">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -152,10 +152,10 @@ export default function SignupPage() {
 
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-medium text-white mb-2">
               Create your account
             </h1>
-            <p className="text-white/40 text-[14px]">
+            <p className="text-white/45 text-body-lg">
               Get started with space compliance in minutes
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function SignupPage() {
           <div className="flex gap-3 mb-6">
             <button
               onClick={handleGoogleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-[14px] transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path
@@ -188,7 +188,7 @@ export default function SignupPage() {
             </button>
             <button
               onClick={handleAppleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-[14px] transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg
                 width="18"
@@ -205,7 +205,7 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px bg-white/[0.06] flex-1" />
-            <span className="text-white/30 text-[12px] uppercase tracking-wider">
+            <span className="text-white/30 text-small uppercase tracking-wider">
               or
             </span>
             <div className="h-px bg-white/[0.06] flex-1" />
@@ -216,7 +216,7 @@ export default function SignupPage() {
             {/* Name + Organization row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[12px] font-medium text-white/50 mb-2">
+                <label className="block text-small font-medium text-white/45 mb-2">
                   Full Name
                 </label>
                 <input
@@ -225,12 +225,12 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Max Mustermann"
-                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                   required
                 />
               </div>
               <div>
-                <label className="block text-[12px] font-medium text-white/50 mb-2">
+                <label className="block text-small font-medium text-white/45 mb-2">
                   Organization
                 </label>
                 <input
@@ -238,13 +238,13 @@ export default function SignupPage() {
                   value={organization}
                   onChange={(e) => setOrganization(e.target.value)}
                   placeholder="Optional"
-                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-white/50 mb-2">
+              <label className="block text-small font-medium text-white/45 mb-2">
                 Email
               </label>
               <input
@@ -253,13 +253,13 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-white/50 mb-2">
+              <label className="block text-small font-medium text-white/45 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -268,13 +268,13 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
-                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 pr-11 text-[15px] focus:border-green-500/40 focus:outline-none focus:ring-1 focus:ring-green-500/20 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -290,9 +290,9 @@ export default function SignupPage() {
                   {passwordChecks.map((check) => (
                     <span
                       key={check.label}
-                      className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border transition-all ${
+                      className={`inline-flex items-center gap-1 text-caption px-2 py-0.5 rounded-full border transition-all ${
                         check.met
-                          ? "bg-green-500/10 border-green-500/20 text-green-400"
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                           : "bg-white/[0.02] border-white/[0.06] text-white/30"
                       }`}
                     >
@@ -319,16 +319,16 @@ export default function SignupPage() {
                     className="sr-only peer"
                     required
                   />
-                  <div className="w-4 h-4 rounded border border-white/[0.15] bg-white/[0.03] peer-checked:bg-green-500 peer-checked:border-green-500 transition-all flex items-center justify-center">
+                  <div className="w-4 h-4 rounded border border-white/[0.15] bg-white/[0.03] peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
                     {acceptTerms && <Check className="w-3 h-3 text-black" />}
                   </div>
                 </div>
-                <span className="text-[13px] text-white/50 group-hover:text-white/60 transition-colors">
+                <span className="text-body text-white/45 group-hover:text-white/70 transition-colors">
                   Ich akzeptiere die{" "}
                   <a
                     href="/legal/terms"
                     target="_blank"
-                    className="text-green-400/70 hover:text-green-400 underline decoration-green-400/20"
+                    className="text-emerald-400/70 hover:text-emerald-400 underline decoration-emerald-400/20"
                   >
                     AGB
                   </a>{" "}
@@ -336,7 +336,7 @@ export default function SignupPage() {
                   <a
                     href="/legal/privacy"
                     target="_blank"
-                    className="text-green-400/70 hover:text-green-400 underline decoration-green-400/20"
+                    className="text-emerald-400/70 hover:text-emerald-400 underline decoration-emerald-400/20"
                   >
                     Datenschutzerkl&auml;rung
                   </a>{" "}
@@ -352,13 +352,13 @@ export default function SignupPage() {
                     onChange={(e) => setAcceptAnalytics(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-4 h-4 rounded border border-white/[0.15] bg-white/[0.03] peer-checked:bg-green-500 peer-checked:border-green-500 transition-all flex items-center justify-center">
+                  <div className="w-4 h-4 rounded border border-white/[0.15] bg-white/[0.03] peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
                     {acceptAnalytics && (
                       <Check className="w-3 h-3 text-black" />
                     )}
                   </div>
                 </div>
-                <span className="text-[13px] text-white/50 group-hover:text-white/60 transition-colors">
+                <span className="text-body text-white/45 group-hover:text-white/70 transition-colors">
                   Ich stimme der anonymisierten Nutzungsanalyse zu (optional)
                 </span>
               </label>
@@ -367,14 +367,14 @@ export default function SignupPage() {
             {error && (
               <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                <p className="text-red-400 text-[13px]">{error}</p>
+                <p className="text-red-400 text-body">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-3 rounded-lg text-[15px] transition-all duration-200 disabled:opacity-50 disabled:hover:bg-green-500 flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-3 rounded-lg text-subtitle transition-all duration-200 disabled:opacity-50 disabled:hover:bg-emerald-500 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
@@ -391,11 +391,11 @@ export default function SignupPage() {
           </form>
 
           {/* Sign in link */}
-          <p className="text-center mt-8 text-[13px] text-white/40">
+          <p className="text-center mt-8 text-body text-white/45">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-green-400/80 hover:text-green-400 transition-colors"
+              className="text-emerald-400/80 hover:text-emerald-400 transition-colors"
             >
               Sign in
             </Link>

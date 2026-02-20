@@ -249,10 +249,10 @@ export function MfaSetupCard() {
           />
         </div>
         <div>
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70">
             TWO-FACTOR AUTHENTICATION
           </h2>
-          <p className="text-[13px] text-slate-500 dark:text-white/50 mt-0.5">
+          <p className="text-body text-slate-500 dark:text-white/45 mt-0.5">
             Add an extra layer of security to your account
           </p>
         </div>
@@ -274,10 +274,10 @@ export function MfaSetupCard() {
                     <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[14px] font-medium text-emerald-800 dark:text-emerald-300">
+                    <p className="text-body-lg font-medium text-emerald-800 dark:text-emerald-300">
                       Two-factor authentication is enabled
                     </p>
-                    <p className="text-[12px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <p className="text-small text-emerald-600 dark:text-emerald-400 mt-0.5">
                       {status.remainingBackupCodes} backup codes remaining
                     </p>
                   </div>
@@ -288,10 +288,10 @@ export function MfaSetupCard() {
                   <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
                     <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-[13px] text-amber-800 dark:text-amber-300">
+                      <p className="text-body text-amber-800 dark:text-amber-300">
                         Low backup codes
                       </p>
-                      <p className="text-[12px] text-amber-600 dark:text-amber-400 mt-1">
+                      <p className="text-small text-amber-600 dark:text-amber-400 mt-1">
                         Consider regenerating your backup codes to ensure you
                         can always access your account.
                       </p>
@@ -303,14 +303,14 @@ export function MfaSetupCard() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => setShowRegenerateBackupCodes(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Regenerate Backup Codes
                   </button>
                   <button
                     onClick={() => setShowDisableConfirm(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Disable MFA
@@ -319,14 +319,14 @@ export function MfaSetupCard() {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-[14px] text-slate-600 dark:text-white/70">
+                <p className="text-body-lg text-slate-600 dark:text-white/70">
                   Two-factor authentication adds an additional layer of security
                   by requiring a verification code from your authenticator app
                   when signing in.
                 </p>
                 <button
                   onClick={startSetup}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
                 >
                   <Shield className="w-4 h-4" />
                   Enable Two-Factor Authentication
@@ -343,10 +343,10 @@ export function MfaSetupCard() {
             className="space-y-4"
           >
             <div className="p-4 bg-red-50 dark:bg-red-500/10 rounded-lg border border-red-200 dark:border-red-500/20">
-              <p className="text-[14px] font-medium text-red-800 dark:text-red-300 mb-2">
+              <p className="text-body-lg font-medium text-red-800 dark:text-red-300 mb-2">
                 Disable Two-Factor Authentication?
               </p>
-              <p className="text-[13px] text-red-600 dark:text-red-400">
+              <p className="text-body text-red-600 dark:text-red-400">
                 This will make your account less secure. Enter your password to
                 confirm.
               </p>
@@ -355,7 +355,7 @@ export function MfaSetupCard() {
             <div>
               <label
                 htmlFor="mfa-disable-password"
-                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
               >
                 Password
               </label>
@@ -369,14 +369,14 @@ export function MfaSetupCard() {
                   setError(null);
                 }}
                 placeholder="Enter your password"
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
               />
             </div>
 
             {error && (
               <p
                 role="alert"
-                className="text-[13px] text-red-500 dark:text-red-400"
+                className="text-body text-red-500 dark:text-red-400"
               >
                 {error}
               </p>
@@ -386,7 +386,7 @@ export function MfaSetupCard() {
               <button
                 onClick={disableMfa}
                 disabled={isDisabling}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
               >
                 {isDisabling ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -401,7 +401,7 @@ export function MfaSetupCard() {
                   setDisablePassword("");
                   setError(null);
                 }}
-                className="px-4 py-2.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
                 Cancel
               </button>
@@ -415,7 +415,7 @@ export function MfaSetupCard() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
           >
-            <p className="text-[14px] text-slate-600 dark:text-white/70">
+            <p className="text-body-lg text-slate-600 dark:text-white/70">
               Enter your current authenticator code to generate new backup
               codes. Your old backup codes will be invalidated.
             </p>
@@ -423,7 +423,7 @@ export function MfaSetupCard() {
             <div>
               <label
                 htmlFor="mfa-regenerate-code"
-                className="block text-[13px] text-slate-500 dark:text-white/60 mb-1.5"
+                className="block text-body text-slate-500 dark:text-white/45 mb-1.5"
               >
                 Authenticator Code
               </label>
@@ -439,14 +439,14 @@ export function MfaSetupCard() {
                   setError(null);
                 }}
                 placeholder="000000"
-                className="w-full max-w-[200px] bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-widest"
+                className="w-full max-w-[200px] bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-widest"
               />
             </div>
 
             {error && (
               <p
                 role="alert"
-                className="text-[13px] text-red-500 dark:text-red-400"
+                className="text-body text-red-500 dark:text-red-400"
               >
                 {error}
               </p>
@@ -456,7 +456,7 @@ export function MfaSetupCard() {
               <button
                 onClick={regenerateBackupCodes}
                 disabled={regenerating || regenerateCode.length !== 6}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-[13px] font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
               >
                 {regenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -471,7 +471,7 @@ export function MfaSetupCard() {
                   setRegenerateCode("");
                   setError(null);
                 }}
-                className="px-4 py-2.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                className="px-4 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
               >
                 Cancel
               </button>
@@ -488,10 +488,10 @@ export function MfaSetupCard() {
             {setupStep === "qr" && (
               <>
                 <div className="text-center">
-                  <p className="text-[14px] text-slate-600 dark:text-white/70 mb-4">
+                  <p className="text-body-lg text-slate-600 dark:text-white/70 mb-4">
                     Scan this QR code with your authenticator app
                     <br />
-                    <span className="text-[12px] text-slate-400 dark:text-white/40">
+                    <span className="text-small text-slate-400 dark:text-white/45">
                       (Google Authenticator, Authy, 1Password, etc.)
                     </span>
                   </p>
@@ -514,11 +514,11 @@ export function MfaSetupCard() {
                 {/* Manual Entry */}
                 {secret && (
                   <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-white/10">
-                    <p className="text-[12px] text-slate-500 dark:text-white/50 mb-2">
+                    <p className="text-small text-slate-500 dark:text-white/45 mb-2">
                       Or enter this code manually:
                     </p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 p-2 bg-white dark:bg-white/[0.04] rounded text-[12px] font-mono text-slate-900 dark:text-white break-all">
+                      <code className="flex-1 p-2 bg-white dark:bg-white/[0.04] rounded text-small font-mono text-slate-900 dark:text-white break-all">
                         {secret}
                       </code>
                       <button
@@ -542,7 +542,7 @@ export function MfaSetupCard() {
 
                 <button
                   onClick={() => setSetupStep("verify")}
-                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-medium transition-colors"
+                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
                 >
                   Continue
                 </button>
@@ -553,7 +553,7 @@ export function MfaSetupCard() {
               <>
                 <div className="text-center">
                   <QrCode className="w-12 h-12 mx-auto text-emerald-500 mb-4" />
-                  <p className="text-[14px] text-slate-600 dark:text-white/70">
+                  <p className="text-body-lg text-slate-600 dark:text-white/70">
                     Enter the 6-digit code from your authenticator app
                   </p>
                 </div>
@@ -574,14 +574,14 @@ export function MfaSetupCard() {
                       setError(null);
                     }}
                     placeholder="000000"
-                    className="w-full text-center bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-[20px] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-[0.5em]"
+                    className="w-full text-center bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-heading-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-[0.5em]"
                   />
                 </div>
 
                 {error && (
                   <p
                     role="alert"
-                    className="text-[13px] text-red-500 dark:text-red-400 text-center"
+                    className="text-body text-red-500 dark:text-red-400 text-center"
                   >
                     {error}
                   </p>
@@ -590,14 +590,14 @@ export function MfaSetupCard() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setSetupStep("qr")}
-                    className="flex-1 py-2.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                    className="flex-1 py-2.5 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                   >
                     Back
                   </button>
                   <button
                     onClick={verifySetup}
                     disabled={verifying || verificationCode.length !== 6}
-                    className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-[13px] font-medium transition-colors"
+                    className="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-body font-medium transition-colors"
                   >
                     {verifying ? (
                       <Loader2 className="w-4 h-4 animate-spin mx-auto" />
@@ -613,10 +613,10 @@ export function MfaSetupCard() {
               <>
                 <div className="text-center">
                   <Key className="w-12 h-12 mx-auto text-emerald-500 mb-4" />
-                  <p className="text-[14px] font-medium text-slate-900 dark:text-white mb-2">
+                  <p className="text-body-lg font-medium text-slate-900 dark:text-white mb-2">
                     Save Your Backup Codes
                   </p>
-                  <p className="text-[13px] text-slate-500 dark:text-white/50">
+                  <p className="text-body text-slate-500 dark:text-white/45">
                     Store these codes in a safe place. Each code can only be
                     used once.
                   </p>
@@ -627,7 +627,7 @@ export function MfaSetupCard() {
                     {backupCodes.map((code, index) => (
                       <code
                         key={index}
-                        className="p-2 bg-white dark:bg-white/[0.04] rounded text-center text-[13px] font-mono text-slate-900 dark:text-white"
+                        className="p-2 bg-white dark:bg-white/[0.04] rounded text-center text-body font-mono text-slate-900 dark:text-white"
                       >
                         {code}
                       </code>
@@ -635,7 +635,7 @@ export function MfaSetupCard() {
                   </div>
                   <button
                     onClick={copyBackupCodes}
-                    className="w-full mt-3 inline-flex items-center justify-center gap-2 py-2 rounded-lg text-[13px] font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                    className="w-full mt-3 inline-flex items-center justify-center gap-2 py-2 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                   >
                     {backupCodesCopied ? (
                       <>
@@ -652,7 +652,7 @@ export function MfaSetupCard() {
                 </div>
 
                 <div className="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/20">
-                  <p className="text-[12px] text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                  <p className="text-small text-amber-700 dark:text-amber-300 flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     Keep these codes safe. You won&apos;t be able to see them
                     again after closing this dialog.
@@ -661,7 +661,7 @@ export function MfaSetupCard() {
 
                 <button
                   onClick={finishSetup}
-                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-medium transition-colors"
+                  className="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
                 >
                   I&apos;ve Saved My Codes
                 </button>
@@ -679,7 +679,7 @@ export function MfaSetupCard() {
                   setVerificationCode("");
                   setError(null);
                 }}
-                className="w-full py-2 text-[13px] text-slate-500 dark:text-white/50 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                className="w-full py-2 text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
               >
                 Cancel Setup
               </button>

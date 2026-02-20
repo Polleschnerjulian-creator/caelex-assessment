@@ -163,7 +163,7 @@ export default function LCADataFields({
               min="0"
               step="0.1"
             />
-            <p className="text-white/40 text-xs mt-1">
+            <p className="text-white/45 text-xs mt-1">
               Total energy consumed to manufacture one unit
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function LCADataFields({
               min="0"
               step="0.01"
             />
-            <p className="text-white/40 text-xs mt-1">
+            <p className="text-white/45 text-xs mt-1">
               Total mass of raw materials before processing
             </p>
           </div>
@@ -362,7 +362,7 @@ export default function LCADataFields({
               placeholder="e.g., 5000"
               min="0"
             />
-            <p className="text-white/40 text-xs mt-1">
+            <p className="text-white/45 text-xs mt-1">
               Approximate distance from manufacturing to integration site
             </p>
           </div>

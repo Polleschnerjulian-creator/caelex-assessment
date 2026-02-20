@@ -84,14 +84,14 @@ export default function KeyboardShortcutsHelp({
                   <h2 className="text-lg font-semibold text-white">
                     Keyboard Shortcuts
                   </h2>
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm text-white/45">
                     Quick navigation and actions
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+                className="p-2 rounded-lg text-white/45 hover:text-white hover:bg-white/5 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -103,7 +103,7 @@ export default function KeyboardShortcutsHelp({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {categories.map((category) => (
                   <div key={category.name}>
-                    <h3 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">
+                    <h3 className="text-sm font-medium text-white/45 uppercase tracking-wider mb-3">
                       {category.name}
                     </h3>
                     <div className="space-y-2">
@@ -125,7 +125,7 @@ export default function KeyboardShortcutsHelp({
 
               {/* Footer tip */}
               <div className="mt-6 pt-4 border-t border-white/10">
-                <p className="text-xs text-white/40 text-center">
+                <p className="text-xs text-white/45 text-center">
                   Press <KeyBadge>Shift</KeyBadge> + <KeyBadge>?</KeyBadge> to
                   open this dialog anytime
                 </p>
@@ -173,7 +173,7 @@ export function KeyboardShortcutsTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/50 hover:text-white/70 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/45 hover:text-white/70 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
       title="Keyboard Shortcuts (Shift + ?)"
     >
       <Keyboard className="w-4 h-4" />

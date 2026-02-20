@@ -137,20 +137,20 @@ function renderMarkdown(content: string): string {
     // Lists
     .replace(
       /^- (.+)$/gm,
-      '<li class="ml-4 text-white/60 leading-relaxed">$1</li>',
+      '<li class="ml-4 text-white/45 leading-relaxed">$1</li>',
     )
     .replace(
       /^\d+\. (.+)$/gm,
-      '<li class="ml-4 text-white/60 leading-relaxed list-decimal">$1</li>',
+      '<li class="ml-4 text-white/45 leading-relaxed list-decimal">$1</li>',
     )
     // Paragraphs
     .replace(
       /\n\n/g,
-      '</p><p class="text-[15px] text-white/60 leading-relaxed mb-4">',
+      '</p><p class="text-subtitle text-white/45 leading-relaxed mb-4">',
     );
 
   // Wrap in paragraph
-  html = `<p class="text-[15px] text-white/60 leading-relaxed mb-4">${html}</p>`;
+  html = `<p class="text-subtitle text-white/45 leading-relaxed mb-4">${html}</p>`;
 
   // Fix list wrapping
   html = html.replace(
@@ -202,7 +202,7 @@ export default async function GlossaryTermPage({ params }: PageProps) {
           {/* Back Link */}
           <Link
             href="/glossary"
-            className="inline-flex items-center gap-2 text-[13px] text-white/40 hover:text-white/60 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white/70 transition-colors mb-8"
           >
             <ArrowLeft size={14} />
             Back to Glossary
@@ -215,22 +215,22 @@ export default async function GlossaryTermPage({ params }: PageProps) {
               <header className="mb-10">
                 <div className="flex items-center gap-3 mb-4">
                   <span
-                    className={`px-3 py-1 rounded-full text-[12px] border ${categoryColors[term.category]}`}
+                    className={`px-3 py-1 rounded-full text-small border ${categoryColors[term.category]}`}
                   >
                     {categoryLabels[term.category]}
                   </span>
                   {term.acronym && (
-                    <span className="px-3 py-1 rounded-full bg-white/[0.08] text-[12px] text-white/60">
+                    <span className="px-3 py-1 rounded-full bg-white/[0.08] text-small text-white/45">
                       {term.acronym}
                     </span>
                   )}
                 </div>
 
-                <h1 className="text-[36px] md:text-[48px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+                <h1 className="text-[36px] md:text-display-lg font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
                   {term.term}
                 </h1>
 
-                <p className="text-[18px] text-white/70 leading-relaxed p-6 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                <p className="text-heading text-white/70 leading-relaxed p-6 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
                   {term.definition}
                 </p>
               </header>
@@ -246,7 +246,7 @@ export default async function GlossaryTermPage({ params }: PageProps) {
               {/* Related Articles */}
               {term.relatedArticles && term.relatedArticles.length > 0 && (
                 <div className="mt-10 p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h3 className="text-[16px] font-medium text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-title font-medium text-white mb-4 flex items-center gap-2">
                     <ExternalLink size={16} className="text-emerald-400" />
                     Related EU Space Act Articles
                   </h3>
@@ -254,7 +254,7 @@ export default async function GlossaryTermPage({ params }: PageProps) {
                     {term.relatedArticles.map((article) => (
                       <span
                         key={article}
-                        className="px-3 py-1.5 rounded-lg bg-white/[0.06] text-[13px] text-white/60"
+                        className="px-3 py-1.5 rounded-lg bg-white/[0.06] text-body text-white/45"
                       >
                         {article}
                       </span>
@@ -270,10 +270,10 @@ export default async function GlossaryTermPage({ params }: PageProps) {
                     href={`/glossary/${prevTerm.slug}`}
                     className="group p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all"
                   >
-                    <div className="text-[12px] text-white/40 mb-1 flex items-center gap-1">
+                    <div className="text-small text-white/45 mb-1 flex items-center gap-1">
                       <ArrowLeft size={12} /> Previous
                     </div>
-                    <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors truncate">
+                    <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors truncate">
                       {prevTerm.term}
                     </div>
                   </Link>
@@ -285,10 +285,10 @@ export default async function GlossaryTermPage({ params }: PageProps) {
                     href={`/glossary/${nextTerm.slug}`}
                     className="group p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-right"
                   >
-                    <div className="text-[12px] text-white/40 mb-1 flex items-center gap-1 justify-end">
+                    <div className="text-small text-white/45 mb-1 flex items-center gap-1 justify-end">
                       Next <ArrowRight size={12} />
                     </div>
-                    <div className="text-[14px] text-white group-hover:text-emerald-400 transition-colors truncate">
+                    <div className="text-body-lg text-white group-hover:text-emerald-400 transition-colors truncate">
                       {nextTerm.term}
                     </div>
                   </Link>
@@ -301,7 +301,7 @@ export default async function GlossaryTermPage({ params }: PageProps) {
               {/* Related Terms */}
               {relatedTerms.length > 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] sticky top-32">
-                  <h3 className="text-[16px] font-medium text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-title font-medium text-white mb-4 flex items-center gap-2">
                     <Tag size={16} className="text-emerald-400" />
                     Related Terms
                   </h3>
@@ -313,11 +313,11 @@ export default async function GlossaryTermPage({ params }: PageProps) {
                         className="block p-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[14px] text-white/70 group-hover:text-emerald-400 transition-colors">
+                          <span className="text-body-lg text-white/70 group-hover:text-emerald-400 transition-colors">
                             {related.term}
                           </span>
                           {related.acronym && (
-                            <span className="text-[11px] text-white/40">
+                            <span className="text-caption text-white/45">
                               {related.acronym}
                             </span>
                           )}
@@ -331,15 +331,15 @@ export default async function GlossaryTermPage({ params }: PageProps) {
               {/* CTA */}
               <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
                 <BookText size={24} className="text-emerald-400 mb-4" />
-                <h3 className="text-[16px] font-medium text-white mb-2">
+                <h3 className="text-title font-medium text-white mb-2">
                   Assess Your Compliance
                 </h3>
-                <p className="text-[13px] text-white/50 mb-4">
+                <p className="text-body text-white/45 mb-4">
                   Understand how regulations apply to your specific mission.
                 </p>
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors"
+                  className="inline-flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors"
                 >
                   Start Assessment <ArrowRight size={14} />
                 </Link>

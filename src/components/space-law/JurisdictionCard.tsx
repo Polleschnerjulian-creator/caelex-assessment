@@ -85,17 +85,17 @@ export default function JurisdictionCard({
             </h3>
           </div>
           <div className="flex items-center gap-2 ml-11">
-            <span className="text-sm text-white/50">{legislation.name}</span>
+            <span className="text-sm text-white/45">{legislation.name}</span>
             <span className="text-xs text-white/30">
               {legislation.yearEnacted}
             </span>
             <span
-              className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+              className={`text-micro uppercase tracking-wider px-2 py-0.5 rounded-full ${
                 legislation.status === "enacted"
                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                   : legislation.status === "draft"
                     ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                    : "bg-white/[0.06] text-white/40 border border-white/[0.1]"
+                    : "bg-white/[0.06] text-white/45 border border-white/[0.1]"
               }`}
             >
               {legislation.status}
@@ -110,7 +110,7 @@ export default function JurisdictionCard({
           <span className={`text-xl font-bold ${scoreColor.text}`}>
             {favorabilityScore}
           </span>
-          <span className="text-[9px] uppercase tracking-wider text-white/40">
+          <span className="text-[9px] uppercase tracking-wider text-white/45">
             score
           </span>
         </div>
@@ -132,7 +132,7 @@ export default function JurisdictionCard({
       {/* Score bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          <span className="text-micro uppercase tracking-[0.15em] text-white/45">
             Favorability
           </span>
           <span className={`text-xs ${scoreColor.text}`}>
@@ -166,7 +166,7 @@ export default function JurisdictionCard({
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
             <Clock className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Timeline
             </span>
           </div>
@@ -182,7 +182,7 @@ export default function JurisdictionCard({
               className="w-3.5 h-3.5 text-blue-400"
               aria-hidden="true"
             />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Estimated Cost
             </span>
           </div>
@@ -193,7 +193,7 @@ export default function JurisdictionCard({
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
             <Shield className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Insurance
             </span>
           </div>
@@ -201,11 +201,11 @@ export default function JurisdictionCard({
             {insurance.mandatory ? (
               <span className="text-amber-400">Mandatory</span>
             ) : (
-              <span className="text-white/60">Not mandatory</span>
+              <span className="text-white/45">Not mandatory</span>
             )}
           </div>
           {insurance.mandatory && insurance.minimumCoverage && (
-            <div className="text-xs text-white/40 mt-0.5">
+            <div className="text-xs text-white/45 mt-0.5">
               Min: {insurance.minimumCoverage}
             </div>
           )}
@@ -215,7 +215,7 @@ export default function JurisdictionCard({
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
             <Orbit className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Debris Mitigation
             </span>
           </div>
@@ -223,11 +223,11 @@ export default function JurisdictionCard({
             {debris.deorbitRequired ? (
               <span className="text-amber-400">Deorbit required</span>
             ) : (
-              <span className="text-white/60">No deorbit mandate</span>
+              <span className="text-white/45">No deorbit mandate</span>
             )}
           </div>
           {debris.deorbitRequired && debris.deorbitTimeline && (
-            <div className="text-xs text-white/40 mt-0.5">
+            <div className="text-xs text-white/45 mt-0.5">
               {debris.deorbitTimeline}
             </div>
           )}
@@ -240,16 +240,16 @@ export default function JurisdictionCard({
               className="w-3.5 h-3.5 text-blue-400"
               aria-hidden="true"
             />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Requirements
             </span>
           </div>
           <div className="text-sm text-white font-medium">
             <span className="text-red-400">{mandatoryRequirements}</span>
-            <span className="text-white/40"> mandatory</span>
+            <span className="text-white/45"> mandatory</span>
             <span className="text-white/20 mx-1">/</span>
             <span>{totalRequirements}</span>
-            <span className="text-white/40"> total</span>
+            <span className="text-white/45"> total</span>
           </div>
         </div>
 
@@ -257,7 +257,7 @@ export default function JurisdictionCard({
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
             <Shield className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
-            <span className="text-[10px] uppercase tracking-[0.12em] text-white/40">
+            <span className="text-micro uppercase tracking-[0.12em] text-white/45">
               Gov. Indemnification
             </span>
           </div>
@@ -265,7 +265,7 @@ export default function JurisdictionCard({
             {insurance.governmentIndemnification ? (
               <span className="text-emerald-400">Yes</span>
             ) : (
-              <span className="text-white/40">No</span>
+              <span className="text-white/45">No</span>
             )}
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function JurisdictionCard({
 
       {/* Authority section */}
       <div className="border-t border-white/[0.06] pt-5 mb-5">
-        <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">
+        <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-3">
           Licensing Authority
         </div>
         <div className="text-sm text-white font-medium mb-2">
@@ -306,14 +306,14 @@ export default function JurisdictionCard({
       {/* Favorability factors */}
       {favorabilityFactors.length > 0 && (
         <div className="border-t border-white/[0.06] pt-5">
-          <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">
+          <div className="text-micro uppercase tracking-[0.15em] text-white/45 mb-3">
             Favorability Factors
           </div>
           <div className="flex flex-wrap gap-2">
             {favorabilityFactors.map((factor, i) => (
               <span
                 key={i}
-                className="text-[11px] text-white/60 bg-white/[0.04] border border-white/[0.08] rounded-full px-3 py-1"
+                className="text-caption text-white/45 bg-white/[0.04] border border-white/[0.08] rounded-full px-3 py-1"
               >
                 {factor}
               </span>

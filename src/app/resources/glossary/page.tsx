@@ -227,7 +227,7 @@ export default function GlossaryPage() {
                 Space Law Glossary
               </h1>
             </div>
-            <p className="text-[17px] text-white/50 leading-relaxed mb-8">
+            <p className="text-title text-white/45 leading-relaxed mb-8">
               {glossaryTerms.length} essential terms for understanding EU Space
               Act compliance and space regulation terminology.
             </p>
@@ -249,7 +249,7 @@ export default function GlossaryPage() {
                 placeholder="Search terms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-transparent pl-12 pr-4 py-3 text-[15px] text-white placeholder:text-white/30 focus:outline-none"
+                className="w-full bg-transparent pl-12 pr-4 py-3 text-subtitle text-white placeholder:text-white/30 focus:outline-none"
               />
             </div>
           </motion.div>
@@ -261,7 +261,7 @@ export default function GlossaryPage() {
         <div className="max-w-[900px] mx-auto">
           {Object.keys(termsByLetter).length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-white/40">
+              <p className="text-white/45">
                 No terms found matching &quot;{searchTerm}&quot;
               </p>
             </div>
@@ -275,7 +275,7 @@ export default function GlossaryPage() {
                 className="mb-12"
               >
                 <div className="sticky top-16 bg-black/90 backdrop-blur-sm py-3 mb-4 z-10">
-                  <span className="text-[24px] font-medium text-emerald-400/80">
+                  <span className="text-display-sm font-medium text-emerald-400/80">
                     {letter}
                   </span>
                 </div>
@@ -289,21 +289,21 @@ export default function GlossaryPage() {
                           "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
                       }}
                     >
-                      <h3 className="text-[16px] font-medium text-white mb-2">
+                      <h3 className="text-title font-medium text-white mb-2">
                         {item.term}
                       </h3>
-                      <p className="text-[14px] text-white/50 leading-relaxed mb-3">
+                      <p className="text-body-lg text-white/45 leading-relaxed mb-3">
                         {item.definition}
                       </p>
                       {item.related.length > 0 && (
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[11px] text-white/30">
+                          <span className="text-caption text-white/30">
                             Related:
                           </span>
                           {item.related.map((rel) => (
                             <span
                               key={rel}
-                              className="text-[11px] text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded"
+                              className="text-caption text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded"
                             >
                               {rel}
                             </span>
@@ -322,16 +322,16 @@ export default function GlossaryPage() {
       {/* CTA */}
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto text-center">
-          <h2 className="text-[24px] font-medium mb-4">
+          <h2 className="text-display-sm font-medium mb-4">
             Ready to assess your compliance?
           </h2>
-          <p className="text-[15px] text-white/50 mb-8">
+          <p className="text-subtitle text-white/45 mb-8">
             Use our free tool to understand which EU Space Act requirements
             apply to you.
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-[15px] font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
           >
             Start Assessment
           </Link>

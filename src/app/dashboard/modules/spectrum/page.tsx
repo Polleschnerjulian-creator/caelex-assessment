@@ -160,9 +160,9 @@ const getStatusColor = (status: ComplianceStatus): string => {
     case "non_compliant":
       return "bg-red-500/10 text-red-400 border-red-500/30";
     case "not_applicable":
-      return "bg-slate-500/10 text-slate-600 dark:text-white/60 border-slate-500/30";
+      return "bg-slate-500/10 text-slate-600 dark:text-white/45 border-slate-500/30";
     default:
-      return "bg-slate-500/10 text-slate-600 dark:text-white/60 border-slate-500/30";
+      return "bg-slate-500/10 text-slate-600 dark:text-white/45 border-slate-500/30";
   }
 };
 
@@ -235,7 +235,7 @@ function WizardStep1({
         <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
           Select Service Types
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/60">
+        <p className="text-sm text-slate-600 dark:text-white/45">
           Which radiocommunication services will your network provide?
         </p>
       </div>
@@ -272,7 +272,7 @@ function WizardStep1({
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
                   {st.label}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                   {st.description}
                 </p>
               </div>
@@ -324,7 +324,7 @@ function WizardStep2({
         <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
           Select Frequency Bands
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/60">
+        <p className="text-sm text-slate-600 dark:text-white/45">
           Which frequency bands will your network use?
         </p>
       </div>
@@ -362,12 +362,12 @@ function WizardStep2({
                   <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {fb.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     {fb.usage}
                   </p>
                 </div>
               </div>
-              <span className="text-xs text-slate-500 dark:text-white/50">
+              <span className="text-xs text-slate-500 dark:text-white/45">
                 {fb.range}
               </span>
             </div>
@@ -426,7 +426,7 @@ function WizardStep3({
         <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
           Orbit & Network Details
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/60">
+        <p className="text-sm text-slate-600 dark:text-white/45">
           Define your satellite network characteristics.
         </p>
       </div>
@@ -451,7 +451,7 @@ function WizardStep3({
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
                   {orbit.label}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                   {orbit.description}
                 </p>
               </button>
@@ -566,7 +566,7 @@ function WizardStep4({
         <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
           Licensing Jurisdictions
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/60">
+        <p className="text-sm text-slate-600 dark:text-white/45">
           Select the jurisdictions where you need spectrum licenses.
         </p>
       </div>
@@ -591,7 +591,7 @@ function WizardStep4({
                   <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {j.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     {j.description}
                   </p>
                 </div>
@@ -627,7 +627,7 @@ function WizardStep4({
         </h4>
         <div className="space-y-2 text-xs">
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/60">
+            <span className="text-slate-600 dark:text-white/45">
               Service Types:
             </span>
             <span className="text-slate-900 dark:text-white">
@@ -636,7 +636,7 @@ function WizardStep4({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/60">
+            <span className="text-slate-600 dark:text-white/45">
               Frequency Bands:
             </span>
             <span className="text-slate-900 dark:text-white">
@@ -645,7 +645,7 @@ function WizardStep4({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/60">
+            <span className="text-slate-600 dark:text-white/45">
               Orbit Type:
             </span>
             <span className="text-slate-900 dark:text-white">
@@ -653,7 +653,7 @@ function WizardStep4({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/60">
+            <span className="text-slate-600 dark:text-white/45">
               Satellites:
             </span>
             <span className="text-slate-900 dark:text-white">
@@ -727,7 +727,7 @@ function FilingStatusCard({
         {status.replace(/_/g, " ")}
       </div>
       {date && (
-        <p className="text-xs text-slate-500 dark:text-white/50 mt-2">
+        <p className="text-xs text-slate-500 dark:text-white/45 mt-2">
           {new Date(date).toLocaleDateString()}
         </p>
       )}
@@ -908,7 +908,7 @@ export default function SpectrumManagementPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
-          <p className="text-slate-600 dark:text-white/60">
+          <p className="text-slate-600 dark:text-white/45">
             Loading Spectrum Management Module...
           </p>
         </div>
@@ -921,7 +921,7 @@ export default function SpectrumManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white flex items-center gap-2">
             <Radio className="w-6 h-6 text-purple-500" />
             Spectrum & ITU Compliance
           </h1>
@@ -1008,7 +1008,7 @@ export default function SpectrumManagementPage() {
               </div>
 
               {createAssessmentError && (
-                <div className="flex items-center gap-2 px-4 py-3 mx-4 sm:mx-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[13px]">
+                <div className="flex items-center gap-2 px-4 py-3 mx-4 sm:mx-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                   <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                   {createAssessmentError}
                 </div>
@@ -1023,7 +1023,7 @@ export default function SpectrumManagementPage() {
                       setWizardStep((s) => s - 1);
                     }
                   }}
-                  className="px-4 py-2 text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   {wizardStep === 1 ? "Cancel" : "Back"}
                 </button>
@@ -1073,7 +1073,7 @@ export default function SpectrumManagementPage() {
           <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
             No Spectrum Assessment Yet
           </h3>
-          <p className="text-sm text-slate-600 dark:text-white/60 mb-4">
+          <p className="text-sm text-slate-600 dark:text-white/45 mb-4">
             Create an assessment to track your ITU filings and spectrum
             compliance.
           </p>
@@ -1130,7 +1130,7 @@ export default function SpectrumManagementPage() {
 
             {/* Network Info */}
             <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-slate-600 dark:text-white/60 mb-3">
+              <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
                 Network Details
               </h3>
               <div className="space-y-2">
@@ -1163,7 +1163,7 @@ export default function SpectrumManagementPage() {
 
             {/* Status Summary */}
             <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
-              <h3 className="text-sm font-medium text-slate-600 dark:text-white/60 mb-3">
+              <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
                 Requirements Status
               </h3>
               <div className="grid grid-cols-2 gap-2">
@@ -1171,7 +1171,7 @@ export default function SpectrumManagementPage() {
                   <div className="text-lg font-bold text-green-400">
                     {stats.compliant}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     Compliant
                   </div>
                 </div>
@@ -1179,7 +1179,7 @@ export default function SpectrumManagementPage() {
                   <div className="text-lg font-bold text-amber-400">
                     {stats.partial}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     Partial
                   </div>
                 </div>
@@ -1187,7 +1187,7 @@ export default function SpectrumManagementPage() {
                   <div className="text-lg font-bold text-red-400">
                     {stats.nonCompliant}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     Non-Compliant
                   </div>
                 </div>
@@ -1195,7 +1195,7 @@ export default function SpectrumManagementPage() {
                   <div className="text-lg font-bold text-slate-400">
                     {stats.notAssessed}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50">
+                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                     Not Assessed
                   </div>
                 </div>
@@ -1231,7 +1231,7 @@ export default function SpectrumManagementPage() {
                 date={null}
               />
             </div>
-            <div className="flex items-center gap-2 mt-4 text-xs text-slate-500 dark:text-white/50">
+            <div className="flex items-center gap-2 mt-4 text-xs text-slate-500 dark:text-white/45">
               <ArrowRight className="w-4 h-4" />
               <span>
                 Filing process progresses: API → Coordination → Notification →
@@ -1250,7 +1250,7 @@ export default function SpectrumManagementPage() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab
                       ? "bg-emerald-600 text-white"
-                      : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white"
+                      : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {tab === "all" ? "All Sources" : tab}
@@ -1261,7 +1261,7 @@ export default function SpectrumManagementPage() {
 
           {/* Status Filter */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-600 dark:text-white/60">Filter:</span>
+            <span className="text-slate-600 dark:text-white/45">Filter:</span>
             <select
               value={statusFilter}
               onChange={(e) =>
@@ -1281,7 +1281,7 @@ export default function SpectrumManagementPage() {
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
               <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
-                <p className="text-slate-600 dark:text-white/60">
+                <p className="text-slate-600 dark:text-white/45">
                   No requirements match the current filters.
                 </p>
               </div>
@@ -1299,7 +1299,7 @@ export default function SpectrumManagementPage() {
                           {req.requirement?.title || req.requirementId}
                         </h4>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-white/50 dark:text-white/50 line-clamp-2 mb-2">
+                      <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45 line-clamp-2 mb-2">
                         {req.requirement?.description}
                       </p>
                       <div className="flex items-center gap-3 text-xs">

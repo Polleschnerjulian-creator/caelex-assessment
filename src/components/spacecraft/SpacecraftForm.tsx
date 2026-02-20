@@ -179,7 +179,7 @@ export function SpacecraftForm({
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/45 hover:text-white"
           >
             <X size={18} />
           </button>

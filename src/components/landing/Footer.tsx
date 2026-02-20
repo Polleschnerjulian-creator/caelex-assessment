@@ -126,7 +126,7 @@ export default function Footer() {
               <h2 className="text-title font-medium text-white mb-2">
                 Stay ahead of space regulatory changes
               </h2>
-              <p className="text-body text-white/40 leading-relaxed">
+              <p className="text-body text-white/45 leading-relaxed">
                 Get updates on EU Space Act, NIS2, and national space laws.
                 Compliance insights and deadline reminders. Unsubscribe anytime.
               </p>
@@ -134,7 +134,7 @@ export default function Footer() {
 
             {subscribed ? (
               <div
-                className="flex items-center gap-2 text-green-400 text-body"
+                className="flex items-center gap-2 text-emerald-400 text-body"
                 role="status"
                 aria-live="polite"
               >
@@ -159,7 +159,7 @@ export default function Footer() {
                     placeholder="your@email.com"
                     required
                     aria-required="true"
-                    className="flex-1 md:w-[280px] bg-white/[0.06] border border-white/10 rounded-l-lg px-4 py-2.5 text-body text-white placeholder:text-white/30 outline-none focus:border-white/30 transition-colors"
+                    className="flex-1 md:w-[280px] bg-white/[0.06] border border-white/10 rounded-l-lg px-4 py-2.5 text-body text-white placeholder:text-white/25 outline-none focus:border-white/30 transition-colors"
                   />
                   <button
                     type="submit"
@@ -188,12 +188,12 @@ export default function Footer() {
                     }}
                     className="mt-0.5 w-3.5 h-3.5 rounded border-white/20 bg-white/[0.06] accent-white cursor-pointer"
                   />
-                  <span className="text-caption text-white/40 leading-relaxed group-hover:text-white/50 transition-colors">
+                  <span className="text-caption text-white/45 leading-relaxed group-hover:text-white/45 transition-colors">
                     I agree to receive regulatory updates from Caelex. You can
                     unsubscribe at any time.{" "}
                     <Link
                       href="/legal/privacy"
-                      className="underline hover:text-white/60"
+                      className="underline hover:text-white/70"
                     >
                       Privacy Policy
                     </Link>
@@ -222,7 +222,7 @@ export default function Footer() {
                 caelex
               </span>
             </div>
-            <p className="text-body text-white/40 leading-relaxed mb-4">
+            <p className="text-body text-white/45 leading-relaxed mb-4">
               Space Regulatory Compliance Platform.
               <br />
               EU Space Act · NIS2 · National Laws
@@ -230,7 +230,7 @@ export default function Footer() {
 
             <a
               href="mailto:cs@caelex.eu"
-              className="text-body text-white/50 hover:text-white transition-colors block mb-6"
+              className="text-body text-white/45 hover:text-white transition-colors block mb-6"
             >
               cs@caelex.eu
             </a>
@@ -241,7 +241,7 @@ export default function Footer() {
                 href="https://linkedin.com/company/caelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on LinkedIn"
               >
                 <LinkedInIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -250,7 +250,7 @@ export default function Footer() {
                 href="https://x.com/caboracaelex"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on X"
               >
                 <XIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -259,7 +259,7 @@ export default function Footer() {
                 href="https://instagram.com/caelex.eu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
                 aria-label="Follow Caelex on Instagram"
               >
                 <InstagramIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -269,7 +269,7 @@ export default function Footer() {
 
           {/* Product */}
           <nav aria-label="Product links">
-            <h3 className="text-caption text-white/40 uppercase tracking-wider mb-4">
+            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
               Product
             </h3>
             <ul className="space-y-3">
@@ -277,7 +277,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-body text-white/50 hover:text-white transition-colors"
+                    className="text-body text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -288,7 +288,7 @@ export default function Footer() {
 
           {/* Legal */}
           <nav aria-label="Legal links">
-            <h3 className="text-caption text-white/40 uppercase tracking-wider mb-4">
+            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
               Legal
             </h3>
             <ul className="space-y-3">
@@ -296,7 +296,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-body text-white/50 hover:text-white transition-colors"
+                    className="text-body text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -307,7 +307,7 @@ export default function Footer() {
                   onClick={() =>
                     window.dispatchEvent(new Event("show-cookie-consent"))
                   }
-                  className="text-body text-white/50 hover:text-white transition-colors"
+                  className="text-body text-white/45 hover:text-white transition-colors"
                 >
                   Cookie Settings
                 </button>
@@ -317,7 +317,7 @@ export default function Footer() {
 
           {/* Resources */}
           <nav aria-label="Resource links">
-            <h3 className="text-caption text-white/40 uppercase tracking-wider mb-4">
+            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
               Resources
             </h3>
             <ul className="space-y-3">
@@ -325,7 +325,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-body text-white/50 hover:text-white transition-colors"
+                    className="text-body text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -336,7 +336,7 @@ export default function Footer() {
 
           {/* Company */}
           <nav aria-label="Company links">
-            <h3 className="text-caption text-white/40 uppercase tracking-wider mb-4">
+            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
               Company
             </h3>
             <ul className="space-y-3">
@@ -344,7 +344,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-body text-white/50 hover:text-white transition-colors"
+                    className="text-body text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -361,7 +361,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <div className="flex items-center gap-4">
-              <span className="text-small text-white/30">
+              <span className="text-small text-white/25">
                 © {new Date().getFullYear()} Caelex. All rights reserved.
               </span>
             </div>
@@ -375,7 +375,7 @@ export default function Footer() {
                 href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/30 hover:text-white/50 transition-colors"
+                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
               >
                 EU Space Act
               </a>
@@ -383,7 +383,7 @@ export default function Footer() {
                 href="https://eur-lex.europa.eu/eli/dir/2022/2555/oj"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/30 hover:text-white/50 transition-colors"
+                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
               >
                 NIS2 Directive
               </a>
@@ -391,7 +391,7 @@ export default function Footer() {
                 href="https://www.euspa.europa.eu/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/30 hover:text-white/50 transition-colors"
+                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
               >
                 EUSPA
               </a>
@@ -399,7 +399,7 @@ export default function Footer() {
                 href="https://www.esa.int/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/30 hover:text-white/50 transition-colors"
+                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
               >
                 ESA
               </a>
@@ -407,7 +407,7 @@ export default function Footer() {
           </div>
 
           {/* Disclaimer */}
-          <p className="text-caption sm:text-micro text-white/50 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
+          <p className="text-caption sm:text-micro text-white/45 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
             This platform provides regulatory guidance based on the EU Space Act
             (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space
             laws across European jurisdictions. Information provided does not
