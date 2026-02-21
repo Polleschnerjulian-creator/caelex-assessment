@@ -433,9 +433,15 @@ export async function clearFailedAttempts(userId: string): Promise<void> {
   });
 }
 
-// Generate unlock token
+// Hash a token for storage (same pattern as stakeholder tokens)
+function hashUnlockToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+// Generate unlock token — stores only the SHA-256 hash in DB
 export async function generateUnlockToken(userId: string): Promise<string> {
   const token = crypto.randomBytes(32).toString("hex");
+  const tokenHash = hashUnlockToken(token);
   const expires = new Date(
     Date.now() + UNLOCK_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
   );
@@ -443,7 +449,7 @@ export async function generateUnlockToken(userId: string): Promise<string> {
   await prisma.user.update({
     where: { id: userId },
     data: {
-      unlockToken: token,
+      unlockToken: tokenHash,
       unlockTokenExpires: expires,
     },
   });
@@ -451,14 +457,15 @@ export async function generateUnlockToken(userId: string): Promise<string> {
   return token;
 }
 
-// Verify and use unlock token
+// Verify and use unlock token — hashes the input and compares against stored hash
 export async function verifyUnlockToken(token: string): Promise<{
   success: boolean;
   userId?: string;
   error?: string;
 }> {
+  const tokenHash = hashUnlockToken(token);
   const user = await prisma.user.findUnique({
-    where: { unlockToken: token },
+    where: { unlockToken: tokenHash },
     select: { id: true, unlockTokenExpires: true },
   });
 

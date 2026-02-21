@@ -34,12 +34,52 @@ export async function POST(request: NextRequest) {
     const referral = formData.get("referral") as string;
     const resumeFile = formData.get("resume") as File | null;
 
-    // Prepare attachments
+    // Prepare attachments (with file validation)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    const ALLOWED_MIME_TYPES = new Set([
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]);
+    const ALLOWED_EXTENSIONS = new Set([".pdf", ".doc", ".docx"]);
+
     const attachments: { filename: string; content: Buffer }[] = [];
     if (resumeFile) {
+      // Validate file size
+      if (resumeFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: "Resume file exceeds maximum size of 10 MB" },
+          { status: 400 },
+        );
+      }
+
+      // Validate MIME type
+      if (!ALLOWED_MIME_TYPES.has(resumeFile.type)) {
+        return NextResponse.json(
+          {
+            error: "Resume must be a PDF or Word document (.pdf, .doc, .docx)",
+          },
+          { status: 400 },
+        );
+      }
+
+      // Validate file extension
+      const ext = resumeFile.name.toLowerCase().match(/\.[^.]+$/)?.[0] || "";
+      if (!ALLOWED_EXTENSIONS.has(ext)) {
+        return NextResponse.json(
+          {
+            error: "Resume must be a PDF or Word document (.pdf, .doc, .docx)",
+          },
+          { status: 400 },
+        );
+      }
+
+      // Sanitize filename (strip path components and special characters)
+      const safeName = resumeFile.name.replace(/[^\w.\-]/g, "_");
+
       const buffer = Buffer.from(await resumeFile.arrayBuffer());
       attachments.push({
-        filename: resumeFile.name,
+        filename: safeName,
         content: buffer,
       });
     }

@@ -602,10 +602,15 @@ export function verifySignature(
   secret: string,
 ): boolean {
   const expectedSignature = generateSignature(payload, secret);
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature),
-  );
+  const sigBuf = Buffer.from(signature);
+  const expBuf = Buffer.from(expectedSignature);
+
+  // timingSafeEqual throws if buffers differ in length; check first
+  if (sigBuf.length !== expBuf.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(sigBuf, expBuf);
 }
 
 // ─── Cleanup ───

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { createUnsubscribeToken } from "@/lib/signed-token";
 
 const REENGAGEMENT_STAGES = [
   {
@@ -18,7 +19,7 @@ const REENGAGEMENT_STAGES = [
 
 function renderReengagementEmail(stage: number, userName: string): string {
   const baseUrl = process.env.AUTH_URL || "https://app.caelex.eu";
-  const unsubscribeUrl = `${baseUrl}/api/newsletter/unsubscribe?token=${Buffer.from(userName).toString("base64url")}`;
+  const unsubscribeUrl = `${baseUrl}/api/newsletter/unsubscribe?token=${createUnsubscribeToken(userName)}`;
 
   const templates: Record<number, string> = {
     1: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;">

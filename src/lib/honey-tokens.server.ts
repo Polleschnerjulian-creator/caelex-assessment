@@ -16,6 +16,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { logSecurityEvent } from "@/lib/services/security-audit-service";
+import { validateExternalUrl } from "@/lib/url-validation";
 import {
   SecurityAuditEventType,
   RiskLevel,
@@ -232,9 +233,10 @@ async function sendHoneyTokenAlerts(
     }
   }
 
-  // Send webhook alert if configured
+  // Send webhook alert if configured (with SSRF protection)
   if (honeyToken.alertWebhookUrl) {
     try {
+      validateExternalUrl(honeyToken.alertWebhookUrl, "Honey token webhook");
       await fetch(honeyToken.alertWebhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

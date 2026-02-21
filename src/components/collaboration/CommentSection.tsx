@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
@@ -349,11 +350,15 @@ function CommentItem({
     }
   };
 
-  // Format content with mentions highlighted
-  const formattedContent = comment.content.replace(
+  // Format content with mentions highlighted, then sanitize to prevent XSS
+  const rawFormatted = comment.content.replace(
     /@\[([^\]]+)\]\(([^)]+)\)/g,
     (_, name) => `<span class="text-emerald-400">@${name}</span>`,
   );
+  const formattedContent = DOMPurify.sanitize(rawFormatted, {
+    ALLOWED_TAGS: ["span"],
+    ALLOWED_ATTR: ["class"],
+  });
 
   return (
     <motion.div

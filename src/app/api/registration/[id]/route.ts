@@ -86,7 +86,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { organizationId, ...updateData } = body;
+    const { organizationId } = body;
 
     if (!organizationId) {
       return NextResponse.json(
@@ -105,6 +105,30 @@ export async function PATCH(
 
     if (!membership) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    // Explicitly pick only allowed fields to prevent mass assignment
+    const allowedFields = [
+      "objectName",
+      "objectType",
+      "cosparId",
+      "noradId",
+      "orbitType",
+      "launchDate",
+      "launchState",
+      "launchSite",
+      "operatingEntity",
+      "ownerCountry",
+      "nodeName",
+      "registrationDate",
+      "notes",
+    ] as const;
+
+    const updateData: Record<string, unknown> = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field];
+      }
     }
 
     const registration = await updateRegistration(

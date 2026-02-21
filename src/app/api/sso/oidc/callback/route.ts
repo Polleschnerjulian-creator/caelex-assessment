@@ -52,11 +52,13 @@ export async function GET(request: NextRequest) {
       return redirectWithError("SSO not configured for this organization");
     }
 
-    // Get base URL
+    // Get base URL from env (never trust Host header to prevent host injection)
     const headersList = await headers();
-    const host = headersList.get("host") || "localhost:3000";
-    const protocol = headersList.get("x-forwarded-proto") || "https";
-    const baseUrl = `${protocol}://${host}`;
+    const baseUrl =
+      process.env.APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      process.env.AUTH_URL ||
+      `https://${headersList.get("host") || "localhost:3000"}`;
 
     // Exchange code for tokens
     const tokenEndpoint = getTokenEndpoint(
@@ -266,6 +268,11 @@ function parseJwtPayload(jwt: string): Record<string, unknown> {
 }
 
 function redirectWithError(message: string): NextResponse {
+  const baseUrl =
+    process.env.APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    process.env.AUTH_URL ||
+    "http://localhost:3000";
   const errorUrl = `/login?error=${encodeURIComponent(message)}`;
-  return NextResponse.redirect(new URL(errorUrl, "http://localhost:3000"));
+  return NextResponse.redirect(new URL(errorUrl, baseUrl));
 }

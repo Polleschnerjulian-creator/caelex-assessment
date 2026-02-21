@@ -13,6 +13,7 @@ import {
 } from "@prisma/client";
 import { logSecurityEvent } from "./security-audit-service";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { validateExternalUrl } from "@/lib/url-validation";
 import { createSignedToken } from "@/lib/signed-token";
 import crypto from "crypto";
 
@@ -448,6 +449,9 @@ async function testOIDCConnection(
         ? "https://accounts.google.com/.well-known/openid-configuration"
         : `${connection.issuerUrl}/.well-known/openid-configuration`;
 
+    // SSRF protection: validate that the discovery URL is not internal
+    validateExternalUrl(discoveryUrl, "OIDC discovery");
+
     // Fetch OIDC discovery document
     const response = await fetch(discoveryUrl, {
       headers: { Accept: "application/json" },
@@ -727,9 +731,20 @@ export async function decryptSecret(encrypted: string): Promise<string> {
   // Secrets hitting this path should be re-encrypted by updating the SSO connection.
   if (parts.length === 2) {
     console.warn(
-      "[SSO] DEPRECATED: Decrypting legacy AES-256-CBC secret. " +
-        "Re-save the SSO connection to migrate to AES-256-GCM.",
+      "[SSO] SECURITY: Decrypting legacy AES-256-CBC secret. " +
+        "This encryption mode is vulnerable to padding oracle attacks. " +
+        "Re-save the SSO connection IMMEDIATELY to migrate to AES-256-GCM.",
     );
+
+    // Log security event for visibility
+    logSecurityEvent({
+      event: "SSO_UPDATED",
+      description:
+        "Legacy AES-256-CBC encrypted secret accessed — migration to AES-256-GCM required",
+      riskLevel: "MEDIUM",
+      metadata: { legacyEncryption: "AES-256-CBC", action: "migration_needed" },
+    }).catch(() => {}); // best-effort logging
+
     const key = process.env.SSO_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
     if (!key) {
       throw new Error(

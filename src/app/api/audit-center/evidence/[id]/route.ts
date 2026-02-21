@@ -138,19 +138,40 @@ export async function PATCH(
       },
     });
 
-    // Link new documents if provided
+    // Link new documents if provided (with ownership verification)
     if (
       body.addDocumentIds &&
       Array.isArray(body.addDocumentIds) &&
       body.addDocumentIds.length > 0
     ) {
-      await prisma.complianceEvidenceDocument.createMany({
-        data: body.addDocumentIds.map((docId: string) => ({
-          evidenceId: id,
-          documentId: docId,
-        })),
-        skipDuplicates: true,
+      // Verify all documents belong to users in the same organization
+      const orgMembers = await prisma.organizationMember.findMany({
+        where: { organizationId },
+        select: { userId: true },
       });
+      const orgUserIds = orgMembers.map((m) => m.userId);
+
+      const docs = await prisma.document.findMany({
+        where: {
+          id: { in: body.addDocumentIds },
+          userId: { in: orgUserIds },
+        },
+        select: { id: true },
+      });
+      const validDocIds = new Set(docs.map((d) => d.id));
+      const verifiedDocIds = body.addDocumentIds.filter((docId: string) =>
+        validDocIds.has(docId),
+      );
+
+      if (verifiedDocIds.length > 0) {
+        await prisma.complianceEvidenceDocument.createMany({
+          data: verifiedDocIds.map((docId: string) => ({
+            evidenceId: id,
+            documentId: docId,
+          })),
+          skipDuplicates: true,
+        });
+      }
     }
 
     // Unlink documents if provided

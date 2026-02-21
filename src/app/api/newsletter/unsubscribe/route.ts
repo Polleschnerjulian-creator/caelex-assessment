@@ -1,14 +1,16 @@
 /**
  * Newsletter One-Click Unsubscribe
  *
- * GET /api/newsletter/unsubscribe?token=<base64url-encoded-email>
+ * GET /api/newsletter/unsubscribe?token=<hmac-signed-token>
  *
- * Token is a base64url-encoded email address.
+ * Token format: base64url(email).base64url(hmac-sha256(email, secret))
+ * Verified server-side to prevent forgery.
  * Returns an HTML page confirming the unsubscription.
  */
 
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyUnsubscribeToken } from "@/lib/signed-token";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -24,21 +26,30 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Decode token (base64url-encoded email)
-  let email: string;
-  try {
-    email = Buffer.from(token, "base64url").toString("utf-8");
-  } catch {
+  // Verify HMAC-signed token (falls back to legacy base64 for existing links)
+  let email: string | null = verifyUnsubscribeToken(token);
+
+  // Legacy fallback: plain base64 tokens (from before HMAC was added)
+  if (!email) {
+    try {
+      const decoded = Buffer.from(token, "base64url").toString("utf-8");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(decoded)) {
+        email = decoded;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!email) {
     return new NextResponse(
-      buildHtmlPage(
-        "Invalid Token",
-        "The unsubscribe token could not be decoded.",
-      ),
+      buildHtmlPage("Invalid Token", "The unsubscribe token is invalid."),
       { status: 400, headers: { "Content-Type": "text/html; charset=utf-8" } },
     );
   }
 
-  // Validate decoded email
+  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return new NextResponse(

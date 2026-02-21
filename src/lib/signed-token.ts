@@ -5,6 +5,7 @@
  * - SSO state parameters (OIDC/SAML)
  * - SSO authentication tokens
  * - WebAuthn challenge tokens
+ * - Newsletter unsubscribe links
  * - Any short-lived, tamper-proof tokens
  *
  * Format: base64url(payload).base64url(hmac-sha256)
@@ -90,6 +91,60 @@ export function verifySignedToken<T = Record<string, unknown>>(
     }
 
     return payload as T;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Unsubscribe Tokens ───
+
+/**
+ * Create an HMAC-signed unsubscribe token for an email address.
+ * Format: base64url(email).base64url(hmac-sha256(email))
+ * No expiration — unsubscribe links should remain valid indefinitely.
+ */
+export function createUnsubscribeToken(email: string): string {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET required for unsubscribe tokens");
+
+  const data = Buffer.from(email.toLowerCase()).toString("base64url");
+  const signature = crypto
+    .createHmac(ALGORITHM, secret)
+    .update(data)
+    .digest("base64url");
+
+  return `${data}.${signature}`;
+}
+
+/**
+ * Verify an HMAC-signed unsubscribe token and extract the email.
+ * Returns null if the token is invalid or tampered.
+ */
+export function verifyUnsubscribeToken(token: string): string | null {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || !token) return null;
+
+  const dotIndex = token.lastIndexOf(".");
+  if (dotIndex === -1) return null;
+
+  const data = token.slice(0, dotIndex);
+  const signature = token.slice(dotIndex + 1);
+
+  if (!data || !signature) return null;
+
+  const expected = crypto
+    .createHmac(ALGORITHM, secret)
+    .update(data)
+    .digest("base64url");
+
+  const sigBuf = Buffer.from(signature, "utf-8");
+  const expBuf = Buffer.from(expected, "utf-8");
+
+  if (sigBuf.length !== expBuf.length) return null;
+  if (!crypto.timingSafeEqual(sigBuf, expBuf)) return null;
+
+  try {
+    return Buffer.from(data, "base64url").toString("utf-8");
   } catch {
     return null;
   }

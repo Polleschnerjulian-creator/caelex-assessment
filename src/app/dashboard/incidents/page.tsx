@@ -371,13 +371,44 @@ export default function IncidentsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // Open draft in a new window / modal style
+        // Open draft in a new window using safe DOM methods (no document.write)
         const w = window.open("", "_blank", "width=800,height=600");
         if (w) {
-          w.document.write(
-            `<html><head><title>${data.title}</title><style>body{font-family:monospace;padding:24px;background:#0A0F1E;color:#E2E8F0;white-space:pre-wrap;line-height:1.6;}h1{color:#3B82F6;font-size:18px;}</style></head><body><h1>${data.title}</h1><p style="color:#94A3B8;font-size:12px;">${data.legalBasis}</p><hr style="border-color:#334155;margin:16px 0;"/>${data.content}</body></html>`,
-          );
-          w.document.close();
+          const doc = w.document;
+          doc.open();
+          // Build the document safely using DOM APIs
+          const html = doc.createElement("html");
+          const head = doc.createElement("head");
+          const title = doc.createElement("title");
+          title.textContent = data.title || "Draft Notification";
+          const style = doc.createElement("style");
+          style.textContent =
+            "body{font-family:monospace;padding:24px;background:#0A0F1E;color:#E2E8F0;white-space:pre-wrap;line-height:1.6;}h1{color:#3B82F6;font-size:18px;}";
+          head.appendChild(title);
+          head.appendChild(style);
+
+          const body = doc.createElement("body");
+          const h1 = doc.createElement("h1");
+          h1.textContent = data.title || "";
+          const p = doc.createElement("p");
+          p.style.color = "#94A3B8";
+          p.style.fontSize = "12px";
+          p.textContent = data.legalBasis || "";
+          const hr = doc.createElement("hr");
+          hr.style.borderColor = "#334155";
+          hr.style.margin = "16px 0";
+          const contentPre = doc.createElement("pre");
+          contentPre.style.whiteSpace = "pre-wrap";
+          contentPre.textContent = data.content || "";
+
+          body.appendChild(h1);
+          body.appendChild(p);
+          body.appendChild(hr);
+          body.appendChild(contentPre);
+          html.appendChild(head);
+          html.appendChild(body);
+          doc.appendChild(html);
+          doc.close();
         }
         // Refresh phases
         if (expandedId === incidentId) {

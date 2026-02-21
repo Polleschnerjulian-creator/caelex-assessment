@@ -139,6 +139,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Verify the document belongs to a user in the same organization (prevent cross-org IDOR)
+    const orgMembers = await prisma.organizationMember.findMany({
+      where: { organizationId },
+      select: { userId: true },
+    });
+    const orgUserIds = orgMembers.map((m) => m.userId);
+    const docRecord = await prisma.document.findFirst({
+      where: { id: documentId, userId: { in: orgUserIds } },
+      select: { id: true },
+    });
+    if (!docRecord) {
+      return NextResponse.json(
+        { error: "Document not found in this organization" },
+        { status: 404 },
+      );
+    }
+
     const document = await addDocument(id, documentId, session.user.id, note);
 
     return NextResponse.json({ success: true, document });
