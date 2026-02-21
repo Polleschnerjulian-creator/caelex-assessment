@@ -23,7 +23,14 @@ export async function POST(request: NextRequest) {
 
     const result = await validateToken(token, ipAddress);
     if (!result.valid) {
-      return NextResponse.json({ error: result.error }, { status: 403 });
+      return NextResponse.json(
+        {
+          error: result.error,
+          expired: "expired" in result && result.expired === true,
+          revoked: "revoked" in result && result.revoked === true,
+        },
+        { status: 403 },
+      );
     }
 
     const engagement = result.engagement;
@@ -35,6 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
+      valid: true,
       engagement: {
         id: engagement.id,
         type: engagement.type,

@@ -53,10 +53,14 @@ export interface EngagementFilters {
   search?: string;
 }
 
-// ─── Token Generation ───
+// ─── Token Generation & Hashing ───
 
 function generateAccessToken(): string {
   return `stkn_${crypto.randomBytes(32).toString("base64url")}`;
+}
+
+function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 // ─── CRUD ───
@@ -70,6 +74,7 @@ export async function createEngagement(
   tokenExpiresAt.setDate(tokenExpiresAt.getDate() + tokenExpiryDays);
 
   const accessToken = generateAccessToken();
+  const accessTokenHash = hashToken(accessToken);
 
   const engagement = await prisma.stakeholderEngagement.create({
     data: {
@@ -86,7 +91,7 @@ export async function createEngagement(
       contractRef: input.contractRef,
       retainerStart: input.retainerStart,
       retainerEnd: input.retainerEnd,
-      accessToken,
+      accessTokenHash,
       tokenExpiresAt,
       ipAllowlist: input.ipAllowlist || [],
       mfaRequired: input.mfaRequired || false,
@@ -293,13 +298,14 @@ export async function rotateToken(
   tokenExpiryDays: number = 90,
 ) {
   const newToken = generateAccessToken();
+  const newTokenHash = hashToken(newToken);
   const tokenExpiresAt = new Date();
   tokenExpiresAt.setDate(tokenExpiresAt.getDate() + tokenExpiryDays);
 
   const engagement = await prisma.stakeholderEngagement.update({
     where: { id, organizationId },
     data: {
-      accessToken: newToken,
+      accessTokenHash: newTokenHash,
       tokenExpiresAt,
     },
   });
@@ -318,8 +324,10 @@ export async function rotateToken(
 // ─── Token Validation ───
 
 export async function validateToken(token: string, ipAddress?: string) {
+  const tokenHash = hashToken(token);
+
   const engagement = await prisma.stakeholderEngagement.findUnique({
-    where: { accessToken: token },
+    where: { accessTokenHash: tokenHash },
     include: {
       organization: {
         select: { id: true, name: true, slug: true, logoUrl: true },
@@ -332,11 +340,15 @@ export async function validateToken(token: string, ipAddress?: string) {
   }
 
   if (engagement.isRevoked || engagement.status === "REVOKED") {
-    return { valid: false, error: "Access has been revoked" } as const;
+    return {
+      valid: false,
+      error: "Access has been revoked",
+      revoked: true,
+    } as const;
   }
 
   if (engagement.tokenExpiresAt < new Date()) {
-    return { valid: false, error: "Token has expired" } as const;
+    return { valid: false, error: "Token has expired", expired: true } as const;
   }
 
   if (engagement.status === "SUSPENDED") {
@@ -347,9 +359,9 @@ export async function validateToken(token: string, ipAddress?: string) {
     return { valid: false, error: "Engagement is completed" } as const;
   }
 
-  // IP allowlist check
-  if (engagement.ipAllowlist.length > 0 && ipAddress) {
-    if (!engagement.ipAllowlist.includes(ipAddress)) {
+  // IP allowlist check — deny by default when IP cannot be determined
+  if (engagement.ipAllowlist.length > 0) {
+    if (!ipAddress || !engagement.ipAllowlist.includes(ipAddress)) {
       return { valid: false, error: "IP address not allowed" } as const;
     }
   }

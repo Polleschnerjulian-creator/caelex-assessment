@@ -4413,8 +4413,8 @@ model StakeholderEngagement {
 
   // Access
   status         EngagementStatus @default(INVITED)
-  accessToken    String           @unique
-  tokenExpiresAt DateTime
+  accessTokenHash String          @unique
+  tokenExpiresAt  DateTime
   lastAccessAt   DateTime?
   accessCount    Int              @default(0)
 
@@ -4434,7 +4434,7 @@ model StakeholderEngagement {
   updatedAt DateTime @updatedAt
 
   @@index([organizationId, type])
-  @@index([accessToken])
+  @@index([accessTokenHash])
   @@index([status])
   @@index([contactEmail])
 }
