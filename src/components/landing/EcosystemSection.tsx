@@ -16,6 +16,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+// ─── Data ───
+
 const stakeholders = [
   { icon: Scale, label: "Legal Counsel" },
   { icon: ShieldCheck, label: "Insurers" },
@@ -23,21 +25,6 @@ const stakeholders = [
   { icon: Truck, label: "Suppliers" },
   { icon: Landmark, label: "Regulators" },
   { icon: Rocket, label: "Launch Providers" },
-];
-
-// 6 nodes on an ellipse (rx=270, ry=200) inside a 680x500 viewBox
-// Angles: -90, -30, 30, 90, 150, 210 degrees (top-first, clockwise)
-const SVG_W = 680;
-const SVG_H = 500;
-const CX = SVG_W / 2;
-const CY = SVG_H / 2;
-const nodeCoords = [
-  { x: 340, y: 50 },
-  { x: 574, y: 150 },
-  { x: 574, y: 350 },
-  { x: 340, y: 450 },
-  { x: 106, y: 350 },
-  { x: 106, y: 150 },
 ];
 
 const pillars = [
@@ -61,6 +48,26 @@ const pillars = [
   },
 ];
 
+// ─── Network Geometry ───
+// Compact viewBox: 600×420, ellipse rx=220 ry=155
+
+const VB = { w: 600, h: 420 };
+const C = { x: 300, y: 210 };
+const RX = 220;
+const RY = 155;
+
+function nodeXY(i: number) {
+  const a = ((i * 60 - 90) * Math.PI) / 180;
+  return {
+    x: Math.round(C.x + RX * Math.cos(a)),
+    y: Math.round(C.y + RY * Math.sin(a)),
+  };
+}
+
+const nodes = Array.from({ length: 6 }, (_, i) => nodeXY(i));
+
+// ─── Component ───
+
 export default function EcosystemSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -77,7 +84,7 @@ export default function EcosystemSection() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 80% 50% at 50% 45%, rgba(16, 185, 129, 0.06) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 50% at 50% 40%, rgba(16, 185, 129, 0.06) 0%, transparent 70%)",
         }}
       />
 
@@ -87,7 +94,7 @@ export default function EcosystemSection() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16 md:mb-24"
+          className="text-center mb-16 md:mb-20"
         >
           <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
             Compliance Network
@@ -105,100 +112,302 @@ export default function EcosystemSection() {
 
         {/* ── Network Visualization ── */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.15 }}
-          className="mb-20 md:mb-28"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mb-20 md:mb-24"
         >
-          {/* Desktop — radial hub-and-spoke layout */}
+          {/* Desktop: Animated radial network */}
           <div
             className="hidden md:block relative mx-auto"
-            style={{ maxWidth: SVG_W, aspectRatio: `${SVG_W}/${SVG_H}` }}
+            style={{
+              maxWidth: VB.w,
+              aspectRatio: `${VB.w} / ${VB.h}`,
+            }}
           >
-            {/* SVG: orbit ring + spoke lines */}
+            {/* SVG: orbits, spokes, particles, ripples */}
             <svg
               className="absolute inset-0 w-full h-full"
-              viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+              viewBox={`0 0 ${VB.w} ${VB.h}`}
               fill="none"
+              overflow="hidden"
               aria-hidden="true"
             >
-              {/* Faint elliptical orbit */}
+              {/* Outer orbit — flowing dashes */}
               <ellipse
-                cx={CX}
-                cy={CY}
-                rx="270"
-                ry="200"
-                stroke="rgba(16, 185, 129, 0.07)"
+                cx={C.x}
+                cy={C.y}
+                rx={RX}
+                ry={RY}
+                stroke="rgba(16,185,129,0.07)"
                 strokeWidth="1"
-                strokeDasharray="4 8"
-              />
+                strokeDasharray="6 10"
+              >
+                <animate
+                  attributeName="stroke-dashoffset"
+                  from="0"
+                  to="-80"
+                  dur="40s"
+                  repeatCount="indefinite"
+                />
+              </ellipse>
 
-              {/* Spoke lines from center to each node */}
-              {nodeCoords.map((n, i) => (
+              {/* Inner orbit — counter-rotation */}
+              <ellipse
+                cx={C.x}
+                cy={C.y}
+                rx={RX * 0.45}
+                ry={RY * 0.45}
+                stroke="rgba(16,185,129,0.04)"
+                strokeWidth="1"
+                strokeDasharray="3 9"
+              >
+                <animate
+                  attributeName="stroke-dashoffset"
+                  from="0"
+                  to="48"
+                  dur="25s"
+                  repeatCount="indefinite"
+                />
+              </ellipse>
+
+              {/* Inter-node mesh (faint connections between adjacent nodes) */}
+              {nodes.map((n, i) => {
+                const next = nodes[(i + 1) % 6];
+                return (
+                  <line
+                    key={`mesh-${i}`}
+                    x1={n.x}
+                    y1={n.y}
+                    x2={next.x}
+                    y2={next.y}
+                    stroke="rgba(16,185,129,0.035)"
+                    strokeWidth="1"
+                  />
+                );
+              })}
+
+              {/* Spoke lines — animated flowing dashes */}
+              {nodes.map((n, i) => (
                 <line
-                  key={i}
-                  x1={CX}
-                  y1={CY}
+                  key={`spoke-${i}`}
+                  x1={C.x}
+                  y1={C.y}
                   x2={n.x}
                   y2={n.y}
-                  stroke="rgba(16, 185, 129, 0.1)"
+                  stroke="rgba(16,185,129,0.09)"
                   strokeWidth="1"
-                  strokeDasharray="4 6"
-                />
+                  strokeDasharray="4 8"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="0"
+                    to="-12"
+                    dur={`${2.5 + i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                </line>
               ))}
 
-              {/* Center glow dot */}
-              <circle cx={CX} cy={CY} r="3" fill="rgba(16, 185, 129, 0.25)" />
+              {/* Traveling particles — 2 per spoke, staggered */}
+              {nodes.map((n, i) => (
+                <g key={`p-${i}`}>
+                  {/* Fast particle */}
+                  <circle r="1.5" fill="rgba(16,185,129,0.6)">
+                    <animate
+                      attributeName="cx"
+                      values={`${n.x};${C.x}`}
+                      dur={`${3 + i * 0.3}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="cy"
+                      values={`${n.y};${C.y}`}
+                      dur={`${3 + i * 0.3}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0;0.7;0.7;0"
+                      dur={`${3 + i * 0.3}s`}
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  {/* Slower offset particle */}
+                  <circle r="1" fill="rgba(16,185,129,0.4)">
+                    <animate
+                      attributeName="cx"
+                      values={`${n.x};${C.x}`}
+                      dur={`${3.5 + i * 0.3}s`}
+                      begin={`${1.5 + i * 0.2}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="cy"
+                      values={`${n.y};${C.y}`}
+                      dur={`${3.5 + i * 0.3}s`}
+                      begin={`${1.5 + i * 0.2}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0;0.5;0.5;0"
+                      dur={`${3.5 + i * 0.3}s`}
+                      begin={`${1.5 + i * 0.2}s`}
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                </g>
+              ))}
+
+              {/* Radar ripples from center */}
+              <circle
+                cx={C.x}
+                cy={C.y}
+                r="15"
+                fill="none"
+                stroke="rgba(16,185,129,0.06)"
+                strokeWidth="1"
+              >
+                <animate
+                  attributeName="r"
+                  from="15"
+                  to="200"
+                  dur="6s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.06"
+                  to="0"
+                  dur="6s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              <circle
+                cx={C.x}
+                cy={C.y}
+                r="15"
+                fill="none"
+                stroke="rgba(16,185,129,0.06)"
+                strokeWidth="1"
+              >
+                <animate
+                  attributeName="r"
+                  from="15"
+                  to="200"
+                  dur="6s"
+                  begin="3s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.06"
+                  to="0"
+                  dur="6s"
+                  begin="3s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+
+              {/* Center breathing glow */}
+              <circle cx={C.x} cy={C.y} r="20" fill="rgba(16,185,129,0.04)">
+                <animate
+                  attributeName="r"
+                  values="20;35;20"
+                  dur="4s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.04;0.1;0.04"
+                  dur="4s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+
+              {/* Center dot */}
+              <circle cx={C.x} cy={C.y} r="3" fill="rgba(16,185,129,0.35)" />
+
+              {/* Node anchor dots */}
+              {nodes.map((n, i) => (
+                <circle
+                  key={`dot-${i}`}
+                  cx={n.x}
+                  cy={n.y}
+                  r="2"
+                  fill="rgba(16,185,129,0.2)"
+                />
+              ))}
             </svg>
 
-            {/* Center hub */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="relative">
-                <div
-                  className="absolute -inset-6 rounded-full bg-emerald-500/[0.08] blur-2xl"
-                  aria-hidden="true"
-                />
-                <div className="relative px-6 py-3.5 rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 backdrop-blur-sm">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                    <span className="text-body-lg font-medium text-emerald-400 whitespace-nowrap">
-                      Your Organization
-                    </span>
-                  </div>
+            {/* Center Hub Label */}
+            <div
+              className="absolute left-1/2 top-1/2 z-10"
+              style={{ transform: "translate(-50%, -50%)" }}
+            >
+              <motion.div
+                animate={
+                  isInView
+                    ? {
+                        boxShadow: [
+                          "0 0 20px rgba(16,185,129,0.05)",
+                          "0 0 40px rgba(16,185,129,0.12)",
+                          "0 0 20px rgba(16,185,129,0.05)",
+                        ],
+                      }
+                    : {}
+                }
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                  <span className="text-body-lg font-medium text-emerald-400 whitespace-nowrap">
+                    Your Organization
+                  </span>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Stakeholder nodes */}
+            {/* Stakeholder Nodes */}
             {stakeholders.map((s, i) => {
               const Icon = s.icon;
-              const n = nodeCoords[i];
+              const n = nodes[i];
               return (
-                <motion.div
+                <div
                   key={s.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.35 + i * 0.08 }}
-                  className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+                  className="absolute z-10"
                   style={{
-                    top: `${(n.y / SVG_H) * 100}%`,
-                    left: `${(n.x / SVG_W) * 100}%`,
+                    top: `${(n.y / VB.h) * 100}%`,
+                    left: `${(n.x / VB.w) * 100}%`,
+                    transform: "translate(-50%, -50%)",
                   }}
                 >
-                  <div className="flex flex-col items-center gap-2.5 px-5 py-4 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1] backdrop-blur-sm hover:bg-emerald-500/[0.06] hover:border-emerald-500/20 transition-all duration-300 cursor-default group">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/15 transition-colors duration-300">
-                      <Icon size={20} className="text-emerald-400" />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
+                  >
+                    <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1] backdrop-blur-sm hover:bg-emerald-500/[0.06] hover:border-emerald-500/20 transition-all duration-300 cursor-default group">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/15 transition-colors duration-300">
+                        <Icon size={18} className="text-emerald-400" />
+                      </div>
+                      <span className="text-small font-medium text-white/60 group-hover:text-emerald-300/80 transition-colors duration-300 whitespace-nowrap">
+                        {s.label}
+                      </span>
                     </div>
-                    <span className="text-small font-medium text-white/60 group-hover:text-emerald-300/80 transition-colors duration-300 whitespace-nowrap">
-                      {s.label}
-                    </span>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </div>
               );
             })}
           </div>
 
-          {/* Mobile — clean grid */}
+          {/* Mobile: Grid */}
           <div className="md:hidden">
             <div className="flex justify-center mb-6">
               <div className="px-5 py-3 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20">
