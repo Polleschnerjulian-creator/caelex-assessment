@@ -70,7 +70,9 @@
     "incidents": "Vorfälle",
     "digitalTwin": "Digital Twin",
     "generate2": "Generate 2.0",
-    "widget": "Widget"
+    "widget": "Widget",
+    "network": "Ökosystem",
+    "complianceNetwork": "Compliance-Netzwerk"
   },
   "topbar": {
     "runAssessment": "Bewertung starten",
