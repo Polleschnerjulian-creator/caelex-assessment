@@ -149,10 +149,12 @@ interface Scenario {
   baselineScore: number;
   projectedScore: number;
   scoreDelta: number;
-  parameters: string;
-  results: string;
+  parameters: Record<string, unknown>;
+  results: Record<string, unknown>;
   createdAt: string;
   isFavorite: boolean;
+  isStale: boolean;
+  regulationVersion: string | null;
 }
 
 interface TimelineEntry {
@@ -993,6 +995,13 @@ function ScenariosTab() {
   const [params, setParams] = useState<Record<string, unknown>>({});
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [comparing, setComparing] = useState(false);
+  const [compareResult, setCompareResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const scenarioTypes: Array<{
     value: string;
@@ -1063,6 +1072,11 @@ function ScenariosTab() {
         { key: "satcom", label: "SATCOM Services", type: "checkbox" },
       ],
     },
+    {
+      value: "composite",
+      label: "Composite (Multi-Change)",
+      paramFields: [],
+    },
   ];
 
   const currentScenario = scenarioTypes.find((s) => s.value === scenarioType);
@@ -1093,6 +1107,59 @@ function ScenariosTab() {
     await fetch(`/api/digital-twin/scenarios/${id}`, { method: "DELETE" });
     refetch();
   };
+
+  const handleToggleFavorite = async (id: string, current: boolean) => {
+    await fetch(`/api/digital-twin/scenarios/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isFavorite: !current }),
+    });
+    refetch();
+  };
+
+  const handleRecompute = async (id: string) => {
+    await fetch("/api/digital-twin/scenarios/recompute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenarioId: id }),
+    });
+    refetch();
+  };
+
+  const handleCompare = async () => {
+    if (selectedForCompare.length < 2) return;
+    setComparing(true);
+    setCompareResult(null);
+    try {
+      const res = await fetch("/api/digital-twin/scenarios/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenarioIds: selectedForCompare }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCompareResult(json.data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setComparing(false);
+    }
+  };
+
+  const toggleCompareSelection = (id: string) => {
+    setSelectedForCompare((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : prev.length < 4
+          ? [...prev, id]
+          : prev,
+    );
+  };
+
+  const filteredScenarios = scenarios?.filter(
+    (s) => !showFavoritesOnly || s.isFavorite,
+  );
 
   const simResult = result as SimulationResult | null;
 
@@ -1351,28 +1418,208 @@ function ScenariosTab() {
         </motion.div>
       )}
 
+      {/* Comparison Result */}
+      {compareResult && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-slate-50 dark:bg-white/[0.03] border border-emerald-500/20 rounded-xl p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+              Scenario Comparison
+            </h3>
+            <button
+              onClick={() => {
+                setCompareResult(null);
+                setSelectedForCompare([]);
+              }}
+              className="text-small text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+            >
+              Clear
+            </button>
+          </div>
+          {(
+            compareResult as {
+              recommendation?: { bestScenarioName?: string; reason?: string };
+            }
+          ).recommendation && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-4">
+              <p className="text-small font-medium text-emerald-400 mb-1">
+                Recommended:{" "}
+                {
+                  (
+                    compareResult as {
+                      recommendation: { bestScenarioName: string };
+                    }
+                  ).recommendation.bestScenarioName
+                }
+              </p>
+              <p className="text-small text-slate-500 dark:text-white/45">
+                {
+                  (compareResult as { recommendation: { reason: string } })
+                    .recommendation.reason
+                }
+              </p>
+            </div>
+          )}
+          {(
+            compareResult as {
+              dimensions?: Array<{
+                dimension: string;
+                values: Array<{ scenarioId: string; label: string }>;
+              }>;
+            }
+          ).dimensions && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-small">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-white/10">
+                    <th className="text-left py-2 text-slate-500 dark:text-white/45">
+                      Dimension
+                    </th>
+                    {(
+                      compareResult as { scenarios: Array<{ name: string }> }
+                    ).scenarios?.map((s: { name: string }, i: number) => (
+                      <th
+                        key={i}
+                        className="text-right py-2 text-slate-500 dark:text-white/45"
+                      >
+                        {s.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(
+                    compareResult as {
+                      dimensions: Array<{
+                        dimension: string;
+                        values: Array<{ label: string }>;
+                      }>;
+                    }
+                  ).dimensions.map((dim, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-slate-100 dark:border-white/5"
+                    >
+                      <td className="py-2 text-slate-700 dark:text-white/70">
+                        {dim.dimension}
+                      </td>
+                      {dim.values.map((v, j) => (
+                        <td
+                          key={j}
+                          className="py-2 text-right text-slate-900 dark:text-white"
+                        >
+                          {v.label}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {/* Saved Scenarios */}
-      {!loading && scenarios && scenarios.length > 0 && (
+      {!loading && filteredScenarios && filteredScenarios.length > 0 && (
         <div>
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-3">
-            Saved Scenarios
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+              Saved Scenarios
+            </h3>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`flex items-center gap-1.5 text-small px-3 py-1.5 rounded-lg transition-colors ${
+                  showFavoritesOnly
+                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                }`}
+              >
+                <Star
+                  size={12}
+                  className={showFavoritesOnly ? "fill-amber-400" : ""}
+                />
+                Favorites
+              </button>
+              {selectedForCompare.length >= 2 && (
+                <button
+                  onClick={handleCompare}
+                  disabled={comparing}
+                  className="flex items-center gap-1.5 text-small px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50"
+                >
+                  {comparing ? (
+                    <RefreshCw size={12} className="animate-spin" />
+                  ) : (
+                    <BarChart3 size={12} />
+                  )}
+                  Compare ({selectedForCompare.length})
+                </button>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {scenarios.map((s) => (
+            {filteredScenarios.map((s) => (
               <div
                 key={s.id}
-                className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+                className={`bg-slate-50 dark:bg-white/[0.03] border rounded-xl p-4 transition-colors ${
+                  selectedForCompare.includes(s.id)
+                    ? "border-blue-500/40 bg-blue-500/5 dark:bg-blue-500/5"
+                    : s.isStale
+                      ? "border-amber-500/20"
+                      : "border-slate-100 dark:border-white/[0.06] hover:border-slate-200 dark:hover:border-white/10"
+                }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-body font-medium text-slate-900 dark:text-white">
-                    {s.name}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(s.id)}
-                    className="text-slate-400 dark:text-white/30 hover:text-red-400 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedForCompare.includes(s.id)}
+                      onChange={() => toggleCompareSelection(s.id)}
+                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/[0.05] text-blue-500 focus:ring-blue-500"
+                    />
+                    <span className="text-body font-medium text-slate-900 dark:text-white">
+                      {s.name}
+                    </span>
+                    {s.isStale && (
+                      <span className="text-micro px-1.5 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">
+                        STALE
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleToggleFavorite(s.id, s.isFavorite)}
+                      className={`transition-colors ${
+                        s.isFavorite
+                          ? "text-amber-400"
+                          : "text-slate-400 dark:text-white/30 hover:text-amber-400"
+                      }`}
+                    >
+                      <Star
+                        size={14}
+                        className={s.isFavorite ? "fill-amber-400" : ""}
+                      />
+                    </button>
+                    {s.isStale && (
+                      <button
+                        onClick={() => handleRecompute(s.id)}
+                        className="text-slate-400 dark:text-white/30 hover:text-emerald-400 transition-colors"
+                        title="Recompute with latest engine data"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(s.id)}
+                      className="text-slate-400 dark:text-white/30 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-small text-slate-500 dark:text-white/45">
                   <span className="capitalize">
@@ -1408,6 +1655,8 @@ interface SimulationResult {
     title: string;
     framework: string;
     type: string;
+    impact?: string;
+    description?: string;
   }>;
   financialImpact: {
     currentExposure: number;
@@ -1416,6 +1665,13 @@ interface SimulationResult {
   };
   riskAssessment: { level: string; summary: string };
   recommendations: string[];
+  stepResults?: SimulationResult[];
+  interactionEffects?: string[];
+  steps?: Array<{
+    name: string;
+    result: SimulationResult;
+    cumulativeScore: number;
+  }>;
 }
 
 function TimelineTab() {

@@ -4230,20 +4230,24 @@ model WhatIfScenario {
   organizationId String?
 
   name           String
-  scenarioType   String // add_jurisdiction, change_operator_type, add_satellites, expand_operations
+  scenarioType   String // add_jurisdiction, change_operator_type, add_satellites, expand_operations, composite, chain
   parameters     String @db.Text // JSON input
   baselineScore  Int
   projectedScore Int
   scoreDelta     Int
   results        String @db.Text // JSON full result
 
-  computedAt DateTime?
-  isFavorite Boolean   @default(false)
+  computedAt         DateTime?
+  isFavorite         Boolean   @default(false)
+  regulationVersion  String?   // Hash of engine data at compute time
+  isStale            Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, isFavorite])
+  @@index([isStale])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
