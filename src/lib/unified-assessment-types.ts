@@ -287,10 +287,32 @@ export interface UnifiedAssessmentAnswers {
   requiresEnglishProcess: boolean | null;
   prefersFastProcessing: boolean | null;
 
+  // Phase 2 additions
+  defenseInvolvement: "none" | "partial" | "full" | null;
+  launchTimeline: "pre_launch" | "active" | "post_eol" | null;
+
+  // Phase 4 additions
+  euControlledEntity: boolean | null;
+  isInternationalOrg: boolean | null;
+  internationalOrgType: string | null;
+  dataProviderTypes: string[];
+
+  // Phase 5 additions (NIS2 screening)
+  providesDigitalInfrastructure: boolean | null;
+  annualRevenueAbove10M: boolean | null;
+  designatedByMemberState: boolean | null;
+
+  // Phase 6 additions (Spectrum)
+  usesRadioFrequencies: boolean | null;
+  frequencyBands: string[];
+
   // Phase 7: Insurance & Liability
   hasInsurance: boolean | null;
   insuranceCoverage: InsuranceRange | null;
   hasThirdPartyLiability: boolean | null;
+  hasLaunchInsurance: boolean | null;
+  hasInOrbitInsurance: boolean | null;
+  insuranceAmount: InsuranceRange | null;
 
   // Phase 8: Compliance Status
   hasExistingCompliance: boolean | null;
@@ -529,6 +551,17 @@ export interface RedactedUnifiedResult {
     moduleCount: number;
     keyDeadlines: { date: string; description: string }[];
     priorityActions: string[];
+    applicableArticles: {
+      number: string;
+      title: string;
+      relevance: string;
+    }[];
+    moduleStatuses: {
+      id: string;
+      name: string;
+      status: string;
+      articleCount: number;
+    }[];
   };
 
   nis2: {
@@ -539,6 +572,11 @@ export interface RedactedUnifiedResult {
     complianceGapCount: number;
     estimatedReadiness: number;
     priorityActions: string[];
+    incidentTimeline: {
+      phase: string;
+      deadline: string;
+      description: string;
+    }[];
   };
 
   nationalSpaceLaw: {
@@ -555,6 +593,13 @@ export interface RedactedUnifiedResult {
     estimatedMonths: number;
     immediateActions: string[];
   };
+
+  crossFrameworkOverlap: {
+    area: string;
+    euSpaceActRef: string;
+    nis2Ref: string;
+  }[];
+  confidenceScore: number;
 }
 
 // ============================================================================
@@ -621,6 +666,8 @@ export const getDefaultUnifiedAnswers =
     isStartup: null,
     activityTypes: [],
     isDefenseOnly: null,
+    defenseInvolvement: null,
+    launchTimeline: null,
     hasPostLaunchResponsibility: null,
     providesServicesToEU: null,
     spacecraftCount: null,
@@ -637,6 +684,10 @@ export const getDefaultUnifiedAnswers =
     isEssentialServiceProvider: null,
     partOfSupplyChain: null,
     governmentContracts: null,
+    euControlledEntity: null,
+    isInternationalOrg: null,
+    internationalOrgType: null,
+    dataProviderTypes: [],
     hasCybersecurityPolicy: null,
     hasRiskManagement: null,
     hasIncidentResponsePlan: null,
@@ -647,14 +698,22 @@ export const getDefaultUnifiedAnswers =
     hasAccessControl: null,
     hasVulnerabilityManagement: null,
     conductsPenetrationTesting: null,
+    providesDigitalInfrastructure: null,
+    annualRevenueAbove10M: null,
+    designatedByMemberState: null,
     currentLicenses: [],
     interestedJurisdictions: [],
     licensingTimeline: null,
     requiresEnglishProcess: null,
     prefersFastProcessing: null,
+    usesRadioFrequencies: null,
+    frequencyBands: [],
     hasInsurance: null,
     insuranceCoverage: null,
     hasThirdPartyLiability: null,
+    hasLaunchInsurance: null,
+    hasInOrbitInsurance: null,
+    insuranceAmount: null,
     hasExistingCompliance: null,
     existingCertifications: [],
     hasLegalCounsel: null,

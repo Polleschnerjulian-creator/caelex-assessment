@@ -378,6 +378,123 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                           </div>
                         )}
 
+                        {/* Module Statuses */}
+                        {result.euSpaceAct.moduleStatuses &&
+                          result.euSpaceAct.moduleStatuses.length > 0 && (
+                            <div>
+                              <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
+                                Module Breakdown
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {result.euSpaceAct.moduleStatuses.map((mod) => (
+                                  <div
+                                    key={mod.id}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/[0.06]"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`inline-block w-2 h-2 rounded-full ${
+                                          mod.status === "required"
+                                            ? "bg-emerald-400"
+                                            : mod.status === "simplified"
+                                              ? "bg-amber-400"
+                                              : "bg-white/20"
+                                        }`}
+                                      />
+                                      <span className="text-body text-white/70">
+                                        {mod.name}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-caption text-white/45">
+                                        {mod.articleCount} art.
+                                      </span>
+                                      <span
+                                        className={`text-micro px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                          mod.status === "required"
+                                            ? "bg-emerald-500/15 text-emerald-400"
+                                            : mod.status === "simplified"
+                                              ? "bg-amber-500/15 text-amber-400"
+                                              : "bg-white/[0.06] text-white/45"
+                                        }`}
+                                      >
+                                        {mod.status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Applicable Articles */}
+                        {result.euSpaceAct.applicableArticles &&
+                          result.euSpaceAct.applicableArticles.length > 0 && (
+                            <div>
+                              <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
+                                Applicable Articles (
+                                {result.euSpaceAct.applicableArticles.length})
+                              </h4>
+                              <div className="overflow-hidden rounded-lg border border-white/[0.06]">
+                                <table className="w-full text-left">
+                                  <thead>
+                                    <tr className="bg-white/[0.03]">
+                                      <th className="px-3 py-2 text-micro text-white/45 uppercase tracking-wider font-medium">
+                                        Article
+                                      </th>
+                                      <th className="px-3 py-2 text-micro text-white/45 uppercase tracking-wider font-medium">
+                                        Title
+                                      </th>
+                                      <th className="px-3 py-2 text-micro text-white/45 uppercase tracking-wider font-medium">
+                                        Type
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {result.euSpaceAct.applicableArticles
+                                      .slice(
+                                        0,
+                                        expandedSections.articles
+                                          ? undefined
+                                          : 10,
+                                      )
+                                      .map((article) => (
+                                        <tr
+                                          key={article.number}
+                                          className="border-t border-white/[0.04] hover:bg-white/[0.02]"
+                                        >
+                                          <td className="px-3 py-2 text-body text-emerald-400/80 font-mono">
+                                            Art. {article.number}
+                                          </td>
+                                          <td className="px-3 py-2 text-body text-white/70">
+                                            {article.title}
+                                          </td>
+                                          <td className="px-3 py-2 text-caption text-white/45">
+                                            {article.relevance}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                  </tbody>
+                                </table>
+                                {result.euSpaceAct.applicableArticles.length >
+                                  10 &&
+                                  !expandedSections.articles && (
+                                    <button
+                                      onClick={() => toggleSection("articles")}
+                                      className="w-full py-2 text-center text-caption text-emerald-400/70 hover:text-emerald-400 transition-colors bg-white/[0.02]"
+                                    >
+                                      Show all{" "}
+                                      {
+                                        result.euSpaceAct.applicableArticles
+                                          .length
+                                      }{" "}
+                                      articles
+                                    </button>
+                                  )}
+                              </div>
+                            </div>
+                          )}
+
                         {/* Priority actions */}
                         {result.euSpaceAct.priorityActions.length > 0 && (
                           <div>
@@ -545,6 +662,50 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                             />
                           </div>
                         </div>
+
+                        {/* NIS2 Incident Timeline */}
+                        {result.nis2.incidentTimeline &&
+                          result.nis2.incidentTimeline.length > 0 && (
+                            <div>
+                              <h4 className="text-small font-medium text-white/45 uppercase tracking-wider mb-3">
+                                Incident Reporting Timeline
+                              </h4>
+                              <div className="relative">
+                                {/* Timeline line */}
+                                <div className="absolute left-4 top-4 bottom-4 w-px bg-emerald-500/20" />
+                                <div className="space-y-4">
+                                  {result.nis2.incidentTimeline.map(
+                                    (phase, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-start gap-4 relative"
+                                      >
+                                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 z-10">
+                                          <Clock
+                                            size={14}
+                                            className="text-emerald-400"
+                                          />
+                                        </div>
+                                        <div className="flex-1 p-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                                          <div className="flex items-center justify-between mb-1">
+                                            <span className="text-body font-medium text-white/80">
+                                              {phase.phase}
+                                            </span>
+                                            <span className="text-caption font-medium text-emerald-400/70">
+                                              {phase.deadline}
+                                            </span>
+                                          </div>
+                                          <p className="text-small text-white/45">
+                                            {phase.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                         {/* Priority actions */}
                         {result.nis2.priorityActions.length > 0 && (
@@ -720,6 +881,123 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             </div>
           </motion.div>
         </div>
+
+        {/* Cross-Framework Overlap */}
+        {result.crossFrameworkOverlap &&
+          result.crossFrameworkOverlap.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32 }}
+              className="mt-6"
+            >
+              <div
+                className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+                style={{
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                }}
+              >
+                <h3 className="text-small font-medium text-white/45 uppercase tracking-wider mb-4">
+                  Cross-Framework Overlap
+                </h3>
+                <p className="text-caption text-white/35 mb-3">
+                  Requirements shared between EU Space Act and NIS2 — implement
+                  once, satisfy both
+                </p>
+                <div className="space-y-2">
+                  {result.crossFrameworkOverlap.map((overlap, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+                    >
+                      <span className="text-body text-white/70 flex-1">
+                        {overlap.area}
+                      </span>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-caption text-amber-400/70 font-mono">
+                          {overlap.euSpaceActRef}
+                        </span>
+                        <span className="text-caption text-white/20">/</span>
+                        <span className="text-caption text-emerald-400/70 font-mono">
+                          {overlap.nis2Ref}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+        {/* Confidence Score */}
+        {result.confidenceScore !== undefined && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.34 }}
+            className="mt-4"
+          >
+            <div
+              className="p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] flex items-center justify-between"
+              style={{
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10">
+                  <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-white/[0.06]"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="none"
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-emerald-400"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                      strokeDasharray={`${result.confidenceScore}, 100`}
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-micro font-medium text-emerald-400">
+                    {result.confidenceScore}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-body text-white/70">
+                    Assessment Confidence
+                  </span>
+                  {result.confidenceScore < 80 && (
+                    <p className="text-caption text-white/35">
+                      Answer more questions to improve accuracy
+                    </p>
+                  )}
+                </div>
+              </div>
+              <span
+                className={`text-body-lg font-medium ${
+                  result.confidenceScore >= 80
+                    ? "text-emerald-400"
+                    : result.confidenceScore >= 50
+                      ? "text-amber-400"
+                      : "text-red-400"
+                }`}
+              >
+                {result.confidenceScore}%
+              </span>
+            </div>
+          </motion.div>
+        )}
 
         {/* Immediate Actions */}
         {result.overallSummary.immediateActions.length > 0 && (

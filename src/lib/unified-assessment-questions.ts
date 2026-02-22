@@ -396,6 +396,79 @@ const PHASE_2_QUESTIONS: UnifiedQuestion[] = [
     ],
   },
   {
+    id: "defenseInvolvement",
+    phase: 2,
+    phaseName: "Activity Types",
+    title: "What is your defense sector involvement?",
+    subtitle:
+      "Level of military or defense involvement in your space activities",
+    helpText:
+      "Fully defense-only operations are exempt from EU Space Act (Art. 2(3)). Dual-use operations remain in scope.",
+    type: "single",
+    required: true,
+    options: [
+      {
+        id: "none",
+        value: "none",
+        label: "None",
+        description: "Purely commercial or civil operations",
+        icon: "Building2",
+      },
+      {
+        id: "partial",
+        value: "partial",
+        label: "Partial (Dual-Use)",
+        description: "Both commercial and defense applications",
+        icon: "Shield",
+      },
+      {
+        id: "full",
+        value: "full",
+        label: "Full (Defense-Only)",
+        description: "Exclusively military operations",
+        icon: "ShieldAlert",
+      },
+    ],
+  },
+  {
+    id: "launchTimeline",
+    phase: 2,
+    phaseName: "Activity Types",
+    title: "What is your current mission phase?",
+    subtitle: "Current lifecycle stage of your primary mission",
+    helpText:
+      "Determines which checklist phase (pre-authorization, ongoing, end-of-life) is highlighted",
+    type: "single",
+    required: true,
+    showIf: (answers) =>
+      answers.activityTypes?.includes("SCO") === true ||
+      answers.activityTypes?.includes("LO") === true,
+    options: [
+      {
+        id: "pre_launch",
+        value: "pre_launch",
+        label: "Pre-Launch",
+        description: "Planning, development, or pre-authorization phase",
+        icon: "Clock",
+      },
+      {
+        id: "active",
+        value: "active",
+        label: "Active Operations",
+        description:
+          "Currently operating in orbit or providing launch services",
+        icon: "Rocket",
+      },
+      {
+        id: "post_eol",
+        value: "post_eol",
+        label: "Post End-of-Life",
+        description: "Decommissioning or disposal phase",
+        icon: "Archive",
+      },
+    ],
+  },
+  {
     id: "hasPostLaunchResponsibility",
     phase: 2,
     phaseName: "Activity Types",
@@ -921,6 +994,151 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
     ],
   },
   {
+    id: "euControlledEntity",
+    phase: 4,
+    phaseName: "Services & Market",
+    title:
+      "Is your entity directly or indirectly controlled by an EU person or entity?",
+    subtitle:
+      "EU Space Act Art. 2(1)(c) — EU-controlled third-country operators",
+    helpText:
+      "Third-country entities controlled by EU persons may still fall under EU Space Act scope",
+    type: "boolean",
+    required: true,
+    showIf: (answers) =>
+      !!answers.establishmentCountry &&
+      !EU_MEMBER_STATES.includes(
+        answers.establishmentCountry as (typeof EU_MEMBER_STATES)[number],
+      ),
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Controlled by EU person or entity",
+        icon: "Building2",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "Not EU-controlled",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "isInternationalOrg",
+    phase: 4,
+    phaseName: "Services & Market",
+    title:
+      "Is your organization an international intergovernmental organisation?",
+    subtitle: "Such as ESA, EUMETSAT, or EUTELSAT IGO",
+    helpText: "International organisations may be exempt under Art. 2(2)",
+    type: "boolean",
+    required: true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "International intergovernmental organisation",
+        icon: "Globe",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "Not an international organisation",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "internationalOrgType",
+    phase: 4,
+    phaseName: "Services & Market",
+    title: "Which organisation?",
+    subtitle: "Select your international organisation",
+    type: "single",
+    required: true,
+    showIf: (answers) => answers.isInternationalOrg === true,
+    options: [
+      {
+        id: "esa",
+        value: "ESA",
+        label: "ESA",
+        description: "European Space Agency",
+        icon: "Rocket",
+      },
+      {
+        id: "eumetsat",
+        value: "EUMETSAT",
+        label: "EUMETSAT",
+        description:
+          "European Organisation for the Exploitation of Meteorological Satellites",
+        icon: "CloudSun",
+      },
+      {
+        id: "eutelsat_igo",
+        value: "EUTELSAT_IGO",
+        label: "EUTELSAT IGO",
+        description: "European Telecommunications Satellite Organization",
+        icon: "Radio",
+      },
+      {
+        id: "other",
+        value: "other",
+        label: "Other",
+        description: "Other international organisation",
+        icon: "Globe",
+      },
+    ],
+  },
+  {
+    id: "dataProviderTypes",
+    phase: 4,
+    phaseName: "Services & Market",
+    title: "What type of positional data do you provide?",
+    subtitle: "Select all applicable data services",
+    helpText: "Determines which PDP-specific articles apply",
+    type: "multi",
+    required: true,
+    showIf: (answers) => answers.activityTypes?.includes("PDP") === true,
+    minSelections: 1,
+    maxSelections: 4,
+    options: [
+      {
+        id: "ssa_tracking",
+        value: "ssa_tracking",
+        label: "SSA Tracking",
+        description: "Space object tracking and cataloguing",
+        icon: "Radar",
+      },
+      {
+        id: "collision_warning",
+        value: "collision_warning",
+        label: "Collision Warnings",
+        description: "Conjunction assessments and collision avoidance",
+        icon: "AlertTriangle",
+      },
+      {
+        id: "ephemeris",
+        value: "ephemeris",
+        label: "Ephemeris Data",
+        description: "Orbital ephemeris and prediction data",
+        icon: "Orbit",
+      },
+      {
+        id: "conjunction",
+        value: "conjunction",
+        label: "Conjunction Assessments",
+        description: "Probability of collision calculations",
+        icon: "Target",
+      },
+    ],
+  },
+  {
     id: "partOfSupplyChain",
     phase: 4,
     phaseName: "Services & Market",
@@ -1214,6 +1432,91 @@ const PHASE_5_QUESTIONS: UnifiedQuestion[] = [
       },
     ],
   },
+  {
+    id: "providesDigitalInfrastructure",
+    phase: 5,
+    phaseName: "Cybersecurity",
+    title:
+      "Do you provide digital infrastructure services (DNS, cloud, data centers)?",
+    subtitle: "NIS2 Annex I Sector 8 — Digital Infrastructure",
+    helpText:
+      "If yes and medium/large, may be classified as essential under NIS2 regardless of space sector",
+    type: "boolean",
+    required: true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Provide digital infrastructure services",
+        icon: "Server",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "No digital infrastructure services",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "annualRevenueAbove10M",
+    phase: 5,
+    phaseName: "Cybersecurity",
+    title: "Is your annual revenue above \u20AC10M?",
+    subtitle: "NIS2 size threshold for small entities",
+    helpText:
+      "Small entities above \u20AC10M revenue threshold may be classified as NIS2 important",
+    type: "boolean",
+    required: true,
+    showIf: (answers) =>
+      answers.entitySize === "small" || answers.entitySize === "micro",
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Above \u20AC10M annual revenue",
+        icon: "TrendingUp",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "Below \u20AC10M annual revenue",
+        icon: "TrendingDown",
+      },
+    ],
+  },
+  {
+    id: "designatedByMemberState",
+    phase: 5,
+    phaseName: "Cybersecurity",
+    title:
+      "Has any EU member state designated you as a provider of essential services?",
+    subtitle: "Overrides size-based NIS2 classification",
+    helpText:
+      "Member state designation makes you essential regardless of entity size",
+    type: "boolean",
+    required: true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Designated as essential service provider",
+        icon: "Award",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "Not designated",
+        icon: "X",
+      },
+    ],
+  },
 ];
 
 // ============================================================================
@@ -1359,6 +1662,101 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
       },
     ],
   },
+  {
+    id: "usesRadioFrequencies",
+    phase: 6,
+    phaseName: "Licensing",
+    title: "Does your mission use radio frequency spectrum?",
+    subtitle: "RF spectrum coordination and ITU filing requirements",
+    helpText:
+      "Spectrum usage links to ITU coordination and national frequency licensing articles",
+    type: "boolean",
+    required: true,
+    showIf: (answers) =>
+      answers.activityTypes?.includes("SCO") === true ||
+      answers.activityTypes?.includes("ISOS") === true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Uses radio frequency spectrum",
+        icon: "Radio",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "No RF usage",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "frequencyBands",
+    phase: 6,
+    phaseName: "Licensing",
+    title: "Which frequency bands?",
+    subtitle: "Select all bands used by your mission",
+    helpText:
+      "Determines ITU coordination requirements and interference considerations",
+    type: "multi",
+    required: true,
+    minSelections: 1,
+    maxSelections: 7,
+    showIf: (answers) => answers.usesRadioFrequencies === true,
+    options: [
+      {
+        id: "s_band",
+        value: "S-band",
+        label: "S-band",
+        description: "2-4 GHz, TT&C and data relay",
+        icon: "Radio",
+      },
+      {
+        id: "x_band",
+        value: "X-band",
+        label: "X-band",
+        description: "8-12 GHz, high-rate data downlink",
+        icon: "Radio",
+      },
+      {
+        id: "ka_band",
+        value: "Ka-band",
+        label: "Ka-band",
+        description: "26.5-40 GHz, broadband services",
+        icon: "Radio",
+      },
+      {
+        id: "ku_band",
+        value: "Ku-band",
+        label: "Ku-band",
+        description: "12-18 GHz, broadcast and VSAT",
+        icon: "Radio",
+      },
+      {
+        id: "l_band",
+        value: "L-band",
+        label: "L-band",
+        description: "1-2 GHz, mobile satellite services",
+        icon: "Radio",
+      },
+      {
+        id: "uhf",
+        value: "UHF",
+        label: "UHF",
+        description: "300 MHz-3 GHz, IoT and M2M",
+        icon: "Radio",
+      },
+      {
+        id: "vhf",
+        value: "VHF",
+        label: "VHF",
+        description: "30-300 MHz, AIS and ADS-B",
+        icon: "Radio",
+      },
+    ],
+  },
 ];
 
 // ============================================================================
@@ -1455,6 +1853,99 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
         label: "No",
         description: "No TPL coverage",
         icon: "X",
+      },
+    ],
+  },
+  {
+    id: "hasLaunchInsurance",
+    phase: 7,
+    phaseName: "Insurance",
+    title: "Do you have launch insurance?",
+    subtitle: "Coverage for launch phase risks and failures",
+    type: "boolean",
+    required: true,
+    showIf: (answers) =>
+      answers.activityTypes?.includes("LO") === true ||
+      answers.activityTypes?.includes("LSO") === true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Have launch insurance",
+        icon: "Shield",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "No launch insurance",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "hasInOrbitInsurance",
+    phase: 7,
+    phaseName: "Insurance",
+    title: "Do you have in-orbit insurance?",
+    subtitle: "Coverage for in-orbit operational risks",
+    type: "boolean",
+    required: true,
+    showIf: (answers) => answers.activityTypes?.includes("SCO") === true,
+    options: [
+      {
+        id: "yes",
+        value: true,
+        label: "Yes",
+        description: "Have in-orbit insurance",
+        icon: "Shield",
+      },
+      {
+        id: "no",
+        value: false,
+        label: "No",
+        description: "No in-orbit insurance",
+        icon: "X",
+      },
+    ],
+  },
+  {
+    id: "insuranceAmount",
+    phase: 7,
+    phaseName: "Insurance",
+    title: "What is your total coverage amount?",
+    subtitle: "Combined insurance coverage across all policies",
+    type: "single",
+    required: true,
+    showIf: (answers) =>
+      answers.hasInsurance === true ||
+      answers.hasLaunchInsurance === true ||
+      answers.hasInOrbitInsurance === true,
+    options: [
+      {
+        id: "under_5m",
+        value: "under_5m",
+        label: "Under \u20AC5M",
+        description: "Minimal coverage",
+      },
+      {
+        id: "5m_20m",
+        value: "5m_20m",
+        label: "\u20AC5M - \u20AC20M",
+        description: "Basic coverage",
+      },
+      {
+        id: "20m_60m",
+        value: "20m_60m",
+        label: "\u20AC20M - \u20AC60M",
+        description: "Standard coverage",
+      },
+      {
+        id: "60m_100m",
+        value: "60m_100m",
+        label: "\u20AC60M - \u20AC100M",
+        description: "Enhanced coverage",
       },
     ],
   },

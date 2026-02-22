@@ -109,6 +109,93 @@ export default function UnifiedAssessmentWizard() {
   );
 
   const startedAtRef = useRef<number>(Date.now());
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedTimestamp, setSavedTimestamp] = useState<number | null>(null);
+
+  const STORAGE_KEY = "caelex-unified-assessment-v2";
+  const STORAGE_VERSION = 2;
+  const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+  // Resume detection on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+      if (parsed.version !== STORAGE_VERSION) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+      if (Date.now() - parsed.savedAt > MAX_AGE_MS) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+
+      setSavedTimestamp(parsed.savedAt);
+      setShowResumeModal(true);
+    } catch {
+      // Ignore parse errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleResume = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+      setState((prev) => ({
+        ...prev,
+        answers: { ...getDefaultUnifiedAnswers(), ...parsed.answers },
+        currentPhase: parsed.currentPhase || 1,
+        currentStep: parsed.currentStep || 1,
+        totalSteps: getTotalQuestions({
+          ...getDefaultUnifiedAnswers(),
+          ...parsed.answers,
+        }),
+      }));
+    } catch {
+      // Ignore
+    }
+    setShowResumeModal(false);
+  }, []);
+
+  const handleStartFresh = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+    setShowResumeModal(false);
+  }, []);
+
+  // Auto-save on every answer change
+  useEffect(() => {
+    if (state.isComplete || showResumeModal) return;
+
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: STORAGE_VERSION,
+          answers: state.answers,
+          currentPhase: state.currentPhase,
+          currentStep: state.currentStep,
+          savedAt: Date.now(),
+        }),
+      );
+    } catch {
+      // localStorage may be unavailable
+    }
+  }, [
+    state.answers,
+    state.currentPhase,
+    state.currentStep,
+    state.isComplete,
+    showResumeModal,
+  ]);
 
   const currentQuestion = getCurrentQuestion(state.answers, state.currentStep);
   const totalSteps = getTotalQuestions(state.answers);
@@ -162,7 +249,7 @@ export default function UnifiedAssessmentWizard() {
         const data = await response.json();
         setComplianceResult(data.result);
 
-        // Store in localStorage
+        // Store result in localStorage + clear auto-save
         try {
           localStorage.setItem(
             "caelex-unified-assessment",
@@ -171,6 +258,8 @@ export default function UnifiedAssessmentWizard() {
               completedAt: new Date().toISOString(),
             }),
           );
+          // Clear auto-save on completion
+          localStorage.removeItem(STORAGE_KEY);
         } catch {
           // localStorage may be unavailable
         }
@@ -198,6 +287,22 @@ export default function UnifiedAssessmentWizard() {
         ...state.answers,
         [currentQuestion.id]: value,
       };
+
+      // Dependent field resets
+      const key = currentQuestion.id;
+      if (key === "operatesConstellation" && value === false) {
+        newAnswers.constellationSize = null;
+      }
+      if (key === "isInternationalOrg" && value === false) {
+        newAnswers.internationalOrgType = null;
+      }
+      if (key === "usesRadioFrequencies" && value === false) {
+        newAnswers.frequencyBands = [];
+      }
+      if (key === "hasInsurance" && value === false) {
+        newAnswers.insuranceCoverage = null;
+        newAnswers.insuranceAmount = null;
+      }
 
       const visibleQuestions = getVisibleQuestions(newAnswers);
       const isLastQuestion = state.currentStep >= visibleQuestions.length;
@@ -305,6 +410,50 @@ export default function UnifiedAssessmentWizard() {
       startedAt: Date.now(),
     });
   }, []);
+
+  // Resume modal
+  if (showResumeModal) {
+    const savedAgo = savedTimestamp
+      ? Math.round((Date.now() - savedTimestamp) / 60000)
+      : 0;
+    const savedLabel =
+      savedAgo < 60
+        ? `${savedAgo} minutes ago`
+        : savedAgo < 1440
+          ? `${Math.round(savedAgo / 60)} hours ago`
+          : `${Math.round(savedAgo / 1440)} days ago`;
+
+    return (
+      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+            <Building2 className="w-7 h-7 text-emerald-400" />
+          </div>
+          <h2 className="text-heading font-medium text-white mb-3">
+            Unfinished Assessment
+          </h2>
+          <p className="text-body text-white/45 mb-8">
+            You have an unfinished assessment from {savedLabel}. Resume where
+            you left off?
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleResume}
+              className="px-6 py-3 rounded-full bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-all"
+            >
+              Resume
+            </button>
+            <button
+              onClick={handleStartFresh}
+              className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all"
+            >
+              Start Fresh
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Calculating state
   if (isCalculating) {
