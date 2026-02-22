@@ -217,6 +217,7 @@ const FR: JurisdictionLaw = {
 };
 
 // ─── United Kingdom (UK) ───
+// Delegated to uk-space-engine.server.ts — this entry is kept for metadata/display only
 
 const UK: JurisdictionLaw = {
   countryCode: "UK",

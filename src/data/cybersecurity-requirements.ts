@@ -109,6 +109,13 @@ export interface CybersecurityRequirement {
   implementationTimeWeeks?: number;
   assessmentFields?: AssessmentField[];
   complianceRule?: ComplianceRule;
+  enisaGuidance?: {
+    controlId: string; // e.g. "ENISA-SP-GOV-01"
+    controlName: string;
+    segment: "space" | "ground" | "user" | "link";
+    implementationSteps: string[];
+    maturityLevels?: { level: number; description: string }[];
+  }[];
 }
 
 // ─── Requirements Data ───
@@ -201,6 +208,68 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "communicatedToStaff",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.2",
+        controlName: "Cybersecurity Policy for Space Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Establish a dedicated cybersecurity policy addressing space operations specifically",
+          "Obtain senior management approval and formal sign-off for the policy",
+          "Communicate the policy to all relevant personnel involved in space operations",
+          "Schedule regular reviews aligned with Art. 74 requirements",
+        ],
+        maturityLevels: [
+          {
+            level: 1,
+            description:
+              "No formal cybersecurity policy for space operations exists",
+          },
+          {
+            level: 2,
+            description:
+              "Draft policy exists but is not approved or communicated",
+          },
+          {
+            level: 3,
+            description:
+              "Approved policy exists and is communicated to key personnel",
+          },
+          {
+            level: 4,
+            description:
+              "Policy is regularly reviewed and updated with space-specific considerations",
+          },
+          {
+            level: 5,
+            description:
+              "Policy is continuously improved based on threat landscape changes and audit findings",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.9",
+        controlName: "Space Cybersecurity Awareness Training",
+        segment: "ground",
+        implementationSteps: [
+          "Design cybersecurity awareness training tailored to space operations personnel",
+          "Cover space-specific threats such as signal interference, spoofing, and supply chain compromise",
+          "Deliver training regularly and track completion records",
+          "Update training content based on evolving threat landscape",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.5",
+        controlName: "Compliance Monitoring Framework",
+        segment: "ground",
+        implementationSteps: [
+          "Implement a framework for continuous monitoring of compliance with the security policy",
+          "Map policy requirements to operational controls and verify implementation",
+          "Track compliance metrics and report to management",
+          "Address non-compliance findings with corrective actions",
+        ],
+      },
+    ],
   },
   {
     id: "risk_mgmt_framework",
@@ -277,6 +346,75 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["frameworkDocumented", "includesSpaceThreats"],
       requiredNotEmpty: ["frameworkType"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.1",
+        controlName: "Space Mission Cybersecurity Risk Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Conduct comprehensive cybersecurity risk assessments covering space, ground, user, and link segments",
+          "Identify and categorize threats specific to the space mission lifecycle",
+          "Assess vulnerabilities across the entire mission architecture",
+          "Document risk assessment results and feed into treatment planning",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No formal risk assessment process exists" },
+          {
+            level: 2,
+            description:
+              "Ad-hoc risk assessments performed without consistent methodology",
+          },
+          {
+            level: 3,
+            description:
+              "Documented risk assessment methodology covering all four segments",
+          },
+          {
+            level: 4,
+            description:
+              "Regular risk assessments with quantitative analysis and trend tracking",
+          },
+          {
+            level: 5,
+            description:
+              "Continuous risk monitoring with automated threat intelligence integration",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.4",
+        controlName: "Risk Treatment Plan for Space Assets",
+        segment: "ground",
+        implementationSteps: [
+          "Develop risk treatment plans for each identified cybersecurity risk",
+          "Define risk acceptance criteria and residual risk thresholds",
+          "Track residual risk levels after treatment implementation",
+          "Review and update treatment plans periodically",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.6",
+        controlName: "Regular Risk Review Cycle",
+        segment: "ground",
+        implementationSteps: [
+          "Establish a defined schedule for periodic risk reviews",
+          "Trigger ad-hoc reviews upon significant mission profile or threat landscape changes",
+          "Update the risk register based on review findings",
+          "Report risk review outcomes to senior management",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.8",
+        controlName: "Regulatory Compliance Mapping",
+        segment: "ground",
+        implementationSteps: [
+          "Map all applicable cybersecurity regulatory requirements to internal controls",
+          "Maintain traceability between EU Space Act, NIS2, and national law obligations and implementations",
+          "Identify and close compliance gaps through the risk management framework",
+          "Update mappings when regulations or internal controls change",
+        ],
+      },
+    ],
   },
   {
     id: "security_roles",
@@ -337,6 +475,51 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     complianceRule: {
       requiredTrue: ["securityResponsibleDesignated", "raciMatrixDocumented"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.3",
+        controlName: "Roles and Responsibilities Definition",
+        segment: "ground",
+        implementationSteps: [
+          "Define cybersecurity roles and responsibilities for all space mission phases",
+          "Designate a security officer specifically for space operations",
+          "Document accountability chains from operations staff to senior management",
+          "Ensure role definitions cover both ground and space segment responsibilities",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No formal security roles defined" },
+          {
+            level: 2,
+            description: "Security responsibilities informally assigned",
+          },
+          {
+            level: 3,
+            description:
+              "Formal role definitions documented with designated security officer",
+          },
+          {
+            level: 4,
+            description:
+              "RACI matrix maintained with regular reviews of role assignments",
+          },
+          {
+            level: 5,
+            description:
+              "Dynamic role management adapting to mission phases and organizational changes",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.2",
+        controlName: "Cybersecurity Policy for Space Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Ensure the cybersecurity policy explicitly assigns roles and accountability",
+          "Include third-party and supplier responsibilities in the policy scope",
+          "Align role definitions with NIS2 Art. 20(1) management accountability requirements",
+        ],
+      },
+    ],
   },
 
   // ═══ RISK ASSESSMENT (Art. 77-78) ═══
@@ -417,6 +600,52 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["annualAssessmentConducted", "assetInventoryExists"],
       requiredNotEmpty: ["assessmentMethodology"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.1",
+        controlName: "Space Mission Cybersecurity Risk Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Conduct risk assessments covering all four segments: space, ground, user, and link",
+          "Include space-specific threat scenarios such as jamming, spoofing, and ASAT threats",
+          "Assess vulnerabilities across the entire mission architecture lifecycle",
+          "Document findings in a structured risk register",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-2.1.1",
+        controlName: "Space Asset Inventory",
+        segment: "ground",
+        implementationSteps: [
+          "Maintain a comprehensive inventory of all space assets including satellites, ground stations, and links",
+          "Include ownership and security classification attributes for each asset",
+          "Use the asset inventory as the foundation for risk assessments",
+          "Keep the inventory current with regular updates",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-2.1.6",
+        controlName: "Critical Asset Identification",
+        segment: "ground",
+        implementationSteps: [
+          "Identify assets whose compromise would result in mission loss or safety hazards",
+          "Prioritize risk assessment activities around critical assets",
+          "Apply enhanced protection measures to assets identified as critical",
+          "Review critical asset designations when mission profiles change",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.6",
+        controlName: "Regular Risk Review Cycle",
+        segment: "ground",
+        implementationSteps: [
+          "Conduct periodic risk reviews at least annually",
+          "Trigger event-driven reviews upon significant changes to mission profile or threat landscape",
+          "Update risk treatment plans based on review findings",
+          "Document review outcomes and track remediation actions",
+        ],
+      },
+    ],
   },
   {
     id: "threat_intelligence",
@@ -486,6 +715,38 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["threatIntelSubscribed", "regularBriefings"],
       requiredNotEmpty: ["threatFeedSources"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.1",
+        controlName: "Space Mission Cybersecurity Risk Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Integrate threat intelligence feeds into the risk assessment process",
+          "Use space-specific threat intelligence to identify emerging vulnerabilities",
+          "Update risk assessments when new threat intelligence indicates changed risk levels",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-9.1.2",
+        controlName: "Supply Chain Risk Management",
+        segment: "ground",
+        implementationSteps: [
+          "Monitor threat intelligence for supply chain compromise indicators",
+          "Assess geopolitical threat intelligence relevant to supplier locations",
+          "Share relevant threat information with critical suppliers where appropriate",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-13.1.5",
+        controlName: "Space Weather Monitoring",
+        segment: "space",
+        implementationSteps: [
+          "Monitor space weather intelligence feeds for solar events and geomagnetic storms",
+          "Integrate space weather data into operational risk monitoring",
+          "Correlate space weather events with spacecraft anomalies",
+        ],
+      },
+    ],
   },
   {
     id: "supply_chain_risk",
@@ -565,6 +826,74 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       ],
       requiredNotEmpty: ["supplierAuditFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-9.1.1",
+        controlName: "Supplier Security Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Assess the cybersecurity posture of critical suppliers and subcontractors",
+          "Evaluate component manufacturers, software providers, and launch service integrators",
+          "Verify supplier security certifications and compliance status",
+          "Conduct regular reassessments based on risk and supplier criticality",
+        ],
+        maturityLevels: [
+          {
+            level: 1,
+            description: "No supplier security assessments performed",
+          },
+          { level: 2, description: "Ad-hoc assessments of some suppliers" },
+          {
+            level: 3,
+            description:
+              "Systematic assessments of all critical suppliers using defined criteria",
+          },
+          {
+            level: 4,
+            description:
+              "Continuous supplier monitoring with risk-based assessment frequency",
+          },
+          {
+            level: 5,
+            description:
+              "Integrated supplier risk management with real-time threat intelligence",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-9.1.2",
+        controlName: "Supply Chain Risk Management",
+        segment: "ground",
+        implementationSteps: [
+          "Implement supply chain risk management covering geopolitical risks",
+          "Identify and mitigate single-source dependencies for critical components",
+          "Verify component authenticity throughout the space system lifecycle",
+          "Maintain supply chain risk register with treatment plans",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-9.1.5",
+        controlName: "Contractual Security Requirements",
+        segment: "ground",
+        implementationSteps: [
+          "Include cybersecurity clauses in all supplier contracts",
+          "Require incident notification, audit rights, and data handling obligations",
+          "Mandate compliance with applicable regulations (NIS2, EU Space Act)",
+          "Define security requirements for subcontractors in the supply chain",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-9.1.4",
+        controlName: "Counterfeit Component Prevention",
+        segment: "space",
+        implementationSteps: [
+          "Implement measures to detect and prevent counterfeit electronic components",
+          "Source components exclusively from authorized distributors",
+          "Apply testing protocols to verify component authenticity",
+          "Maintain traceability records for all critical components",
+        ],
+      },
+    ],
   },
 
   // ═══ INFORMATION SECURITY (Art. 79-80) ═══
@@ -647,6 +976,72 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       ],
       requiredNotEmpty: ["accessReviewFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-3.1.1",
+        controlName: "Role-Based Access for Mission Control",
+        segment: "ground",
+        implementationSteps: [
+          "Implement RBAC for mission control systems based on operator duties",
+          "Define granular roles separating commanding, monitoring, and administration functions",
+          "Restrict operator access to only the functions necessary for their assigned role",
+          "Review and update role definitions when mission requirements change",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No formal access control model in place" },
+          {
+            level: 2,
+            description: "Basic user accounts with shared credentials",
+          },
+          {
+            level: 3,
+            description: "RBAC implemented with documented role definitions",
+          },
+          {
+            level: 4,
+            description:
+              "Automated access provisioning with regular certification reviews",
+          },
+          {
+            level: 5,
+            description:
+              "Attribute-based access control with context-aware policies",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-3.1.2",
+        controlName: "Privileged Access Management for TT&C",
+        segment: "ground",
+        implementationSteps: [
+          "Implement privileged access management for Telemetry, Tracking, and Command systems",
+          "Deploy just-in-time access provisioning for elevated privileges",
+          "Enable session recording for all privileged access sessions",
+          "Require approval workflows before granting privileged access",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-3.1.6",
+        controlName: "Access Review and Recertification",
+        segment: "ground",
+        implementationSteps: [
+          "Conduct periodic access reviews for all user accounts",
+          "Immediately revoke access upon role change or personnel departure",
+          "Recertify access rights at least quarterly for mission-critical systems",
+          "Document and track all access changes and exceptions",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-9.1.3",
+        controlName: "Third-Party Access Control",
+        segment: "ground",
+        implementationSteps: [
+          "Control and monitor third-party access to space systems and data",
+          "Define access scope and time limitations for all supplier interactions",
+          "Implement audit logging for all third-party access sessions",
+        ],
+      },
+    ],
   },
   {
     id: "mfa",
@@ -722,6 +1117,61 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredNotEmpty: ["mfaType"],
       numberThresholds: { coveragePercent: { min: 90 } },
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-3.1.7",
+        controlName: "Multi-Factor Authentication for Critical Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Enforce MFA using hardware tokens or FIDO2 for all mission-critical system access",
+          "Include spacecraft commanding interfaces in MFA scope",
+          "Deploy phishing-resistant MFA methods for highest-risk systems",
+          "Document exceptions with compensating controls and risk acceptance",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No MFA deployed" },
+          {
+            level: 2,
+            description: "MFA on some systems using SMS or email codes",
+          },
+          {
+            level: 3,
+            description:
+              "MFA enforced on all critical systems with TOTP or hardware tokens",
+          },
+          {
+            level: 4,
+            description:
+              "Phishing-resistant MFA (FIDO2) deployed with centralized management",
+          },
+          {
+            level: 5,
+            description: "Adaptive MFA with risk-based step-up authentication",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-3.1.4",
+        controlName: "Remote Access Security for Satellite Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Secure all remote access to satellite operations with VPN and MFA",
+          "Implement encrypted channels for all remote sessions",
+          "Enable continuous session monitoring for remote access connections",
+          "Restrict remote access origination to approved networks where possible",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-13.1.8",
+        controlName: "Ground-to-Space Authentication",
+        segment: "link",
+        implementationSteps: [
+          "Implement mutual authentication between ground stations and spacecraft",
+          "Use cryptographic protocols to prevent rogue ground station access",
+          "Verify authentication mechanisms cannot be bypassed during safe mode",
+        ],
+      },
+    ],
   },
   {
     id: "data_protection",
@@ -790,6 +1240,40 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     complianceRule: {
       requiredTrue: ["classificationSchemeExists", "dataAtRestEncrypted"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-1.1.7",
+        controlName: "Space Mission Security Classification",
+        segment: "ground",
+        implementationSteps: [
+          "Classify space missions and associated data flows by sensitivity and criticality",
+          "Apply proportionate security controls to each classification level",
+          "Include telemetry, command, and payload data in the classification scheme",
+          "Align classification levels with export control requirements (ITAR/EAR)",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-2.1.2",
+        controlName: "Hardware and Software Asset Classification",
+        segment: "ground",
+        implementationSteps: [
+          "Classify all hardware and software assets by criticality and sensitivity",
+          "Distinguish between mission-critical, mission-support, and general-purpose systems",
+          "Apply data protection measures proportionate to asset classification",
+          "Review classifications when mission profiles or data handling requirements change",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-7.1.7",
+        controlName: "Data-in-Transit Protection",
+        segment: "ground",
+        implementationSteps: [
+          "Protect all data in transit between ground stations, data centers, and end users",
+          "Use TLS 1.3 or equivalent encryption for terrestrial data transfers",
+          "Implement integrity verification for data exchanged between systems",
+        ],
+      },
+    ],
   },
   {
     id: "network_security",
@@ -869,6 +1353,60 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["missionNetworkIsolated", "firewallRulesDocumented"],
       requiredNotEmpty: ["penTestFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-7.1.4",
+        controlName: "Network Segmentation for Ground Segment",
+        segment: "ground",
+        implementationSteps: [
+          "Segment ground station networks isolating mission-critical systems from corporate IT",
+          "Implement DMZs between internet-facing services and operational networks",
+          "Deploy firewalls with documented and justified rule sets between network zones",
+          "Regularly test segmentation effectiveness through penetration testing",
+        ],
+        maturityLevels: [
+          { level: 1, description: "Flat network with no segmentation" },
+          {
+            level: 2,
+            description:
+              "Basic VLAN separation between corporate and operations",
+          },
+          {
+            level: 3,
+            description:
+              "Multi-zone architecture with firewall-enforced segmentation",
+          },
+          {
+            level: 4,
+            description: "Micro-segmentation with IDS/IPS at zone boundaries",
+          },
+          {
+            level: 5,
+            description: "Zero trust architecture with continuous verification",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-3.1.4",
+        controlName: "Remote Access Security for Satellite Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Secure all remote access via VPN with multi-factor authentication",
+          "Implement encrypted tunnels for remote satellite operations sessions",
+          "Monitor all remote access sessions continuously for anomalous activity",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-5.1.1",
+        controlName: "Ground Station Physical Protection",
+        segment: "ground",
+        implementationSteps: [
+          "Complement network security with physical security at ground stations",
+          "Implement intrusion detection systems for both physical and network perimeters",
+          "Ensure physical access controls support network segmentation boundaries",
+        ],
+      },
+    ],
   },
 
   // ═══ CRYPTOGRAPHY (Art. 81-82) ═══
@@ -942,6 +1480,66 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "keyLifecycleDocumented",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-4.1.4",
+        controlName: "Crypto Module Standards Compliance",
+        segment: "ground",
+        implementationSteps: [
+          "Ensure cryptographic modules comply with FIPS 140-3 or Common Criteria standards",
+          "Match standard level to the classification of protected data",
+          "Maintain certificates and validation records for all cryptographic modules",
+          "Replace non-compliant modules according to a defined timeline",
+        ],
+        maturityLevels: [
+          {
+            level: 1,
+            description: "No cryptographic policy or standards in place",
+          },
+          {
+            level: 2,
+            description: "Informal algorithm choices without documented policy",
+          },
+          {
+            level: 3,
+            description:
+              "Documented policy with approved algorithm list and key lifecycle procedures",
+          },
+          {
+            level: 4,
+            description:
+              "Certified cryptographic modules with enforced standards compliance",
+          },
+          {
+            level: 5,
+            description:
+              "Crypto agility framework enabling rapid algorithm transition when needed",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-4.1.5",
+        controlName: "Post-Quantum Cryptography Planning",
+        segment: "ground",
+        implementationSteps: [
+          "Develop a migration plan for transitioning to post-quantum cryptographic algorithms",
+          "Assess which space assets have operational lifetimes extending beyond quantum threat horizons",
+          "Identify crypto-agile architectures that support algorithm substitution",
+          "Monitor NIST and ENISA guidance on post-quantum algorithm standardization",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-4.1.3",
+        controlName: "Key Management Lifecycle for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Document end-to-end key lifecycle covering generation, distribution, storage, rotation, revocation, and destruction",
+          "Define key management procedures specific to space link encryption",
+          "Establish secure key distribution procedures for ground-to-space key transfer",
+          "Implement key recovery procedures to prevent loss of spacecraft control",
+        ],
+      },
+    ],
   },
   {
     id: "space_link_encryption",
@@ -1024,6 +1622,73 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["linksEncrypted", "hsmForGroundKeys"],
       requiredNotEmpty: ["encryptionStandard"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-4.1.1",
+        controlName: "Encryption of Telecommand Uplinks",
+        segment: "link",
+        implementationSteps: [
+          "Encrypt all telecommand uplinks using approved cryptographic algorithms",
+          "Implement command authentication to prevent command injection and replay attacks",
+          "Use sequence numbering and anti-replay mechanisms on command uplinks",
+          "Test encryption implementation against known attack patterns",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No encryption on space links" },
+          {
+            level: 2,
+            description: "Encryption on some links with basic key management",
+          },
+          {
+            level: 3,
+            description:
+              "All command and telemetry links encrypted with CCSDS SDLS or equivalent",
+          },
+          {
+            level: 4,
+            description:
+              "Separate authentication and encryption with HSM-backed ground keys",
+          },
+          {
+            level: 5,
+            description:
+              "Crypto-agile space link architecture with over-the-air re-keying capability",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-4.1.2",
+        controlName: "Encryption of Telemetry Downlinks",
+        segment: "link",
+        implementationSteps: [
+          "Encrypt telemetry downlinks to protect spacecraft health and payload data",
+          "Prevent eavesdropping on operational parameters and mission data",
+          "Implement integrity verification for all telemetry data",
+          "Consider selective encryption based on data classification levels",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-7.1.6",
+        controlName: "TT&C Communication Security",
+        segment: "link",
+        implementationSteps: [
+          "Implement end-to-end security for Telemetry, Tracking, and Command communications",
+          "Deploy authentication, encryption, and replay protection on all TT&C links",
+          "Use sequence numbering to detect and reject out-of-order or replayed commands",
+          "Verify TT&C security during all mission phases including safe mode",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-4.1.6",
+        controlName: "Inter-Satellite Link Encryption",
+        segment: "space",
+        implementationSteps: [
+          "Apply encryption to inter-satellite communication links (optical or RF)",
+          "Prevent interception and manipulation of data relayed between constellation nodes",
+          "Implement mutual authentication between constellation spacecraft",
+        ],
+      },
+    ],
   },
   {
     id: "key_management",
@@ -1090,6 +1755,61 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     complianceRule: {
       requiredTrue: ["hsmUsed", "keyRotationDefined", "keyDistributionSecure"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-4.1.3",
+        controlName: "Key Management Lifecycle for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Implement end-to-end key management for all cryptographic keys used in space operations",
+          "Define procedures for key generation using approved random number generators",
+          "Establish secure key distribution mechanisms including out-of-band transfer",
+          "Document key rotation schedules, revocation procedures, and secure destruction methods",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No formal key management procedures" },
+          {
+            level: 2,
+            description: "Basic key management with manual processes",
+          },
+          {
+            level: 3,
+            description:
+              "Documented lifecycle procedures with HSM storage and defined rotation schedules",
+          },
+          {
+            level: 4,
+            description:
+              "Automated key lifecycle management with centralized inventory and audit trail",
+          },
+          {
+            level: 5,
+            description:
+              "Advanced key management with over-the-air re-keying and post-quantum readiness",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-4.1.4",
+        controlName: "Crypto Module Standards Compliance",
+        segment: "ground",
+        implementationSteps: [
+          "Use FIPS 140-3 or Common Criteria certified HSMs for key storage",
+          "Ensure key generation meets required entropy standards",
+          "Validate that cryptographic modules are appropriate for the data classification level",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-8.1.5",
+        controlName: "Secure Software Update Mechanisms",
+        segment: "space",
+        implementationSteps: [
+          "Manage cryptographic keys for OTA update signature verification",
+          "Implement key rollover procedures for update signing keys",
+          "Ensure key compromise recovery procedures include update signing keys",
+        ],
+      },
+    ],
   },
 
   // ═══ DETECTION & MONITORING (Art. 83-84) ═══
@@ -1169,6 +1889,62 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["siemDeployed", "alertProceduresDocumented"],
       requiredNotEmpty: ["monitoringMode"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-6.1.3",
+        controlName: "Monitoring of Space System Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Continuously monitor space system operations for security events across all segments",
+          "Detect anomalous behaviors and unauthorized activities in real time",
+          "Correlate events across ground station, mission control, and communication link systems",
+          "Establish alert thresholds based on mission-specific risk profiles",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No security monitoring in place" },
+          {
+            level: 2,
+            description: "Basic log collection without active monitoring",
+          },
+          {
+            level: 3,
+            description:
+              "SIEM deployed with documented alert procedures covering ground and mission systems",
+          },
+          {
+            level: 4,
+            description:
+              "24/7 monitoring with automated correlation and response playbooks",
+          },
+          {
+            level: 5,
+            description:
+              "Advanced monitoring with ML-based detection and threat hunting capabilities",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-13.1.1",
+        controlName: "Spacecraft Health Monitoring",
+        segment: "space",
+        implementationSteps: [
+          "Implement continuous spacecraft health monitoring with security-aware anomaly detection",
+          "Distinguish between hardware failures, environmental effects, and potential cyber attacks",
+          "Integrate spacecraft health telemetry into the security monitoring infrastructure",
+          "Define alert criteria for security-relevant spacecraft anomalies",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-6.1.1",
+        controlName: "Secure Satellite Operations Procedures",
+        segment: "ground",
+        implementationSteps: [
+          "Document secure operating procedures for commanding, telemetry processing, and payload management",
+          "Monitor for deviations from approved operating procedures",
+          "Log all satellite operations activities for security review",
+        ],
+      },
+    ],
   },
   {
     id: "anomaly_detection",
@@ -1241,6 +2017,51 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "detectionRulesDocumented",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-13.1.2",
+        controlName: "Orbital Anomaly Detection",
+        segment: "space",
+        implementationSteps: [
+          "Monitor for unexpected orbital maneuvers and deviations from predicted parameters",
+          "Detect proximity operations by uncooperative objects",
+          "Integrate orbital anomaly detection with security monitoring systems",
+          "Define alert thresholds for orbital parameter deviations",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-13.1.1",
+        controlName: "Spacecraft Health Monitoring",
+        segment: "space",
+        implementationSteps: [
+          "Implement security-aware anomaly detection on spacecraft telemetry",
+          "Baseline normal spacecraft behavior patterns for comparison",
+          "Distinguish between hardware failures, environmental effects, and cyber attacks",
+          "Use correlation of multiple telemetry parameters to reduce false positives",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-7.1.2",
+        controlName: "Anti-Jamming Measures",
+        segment: "link",
+        implementationSteps: [
+          "Implement RF interference and jamming detection capabilities",
+          "Deploy spread spectrum and frequency hopping techniques for resilience",
+          "Monitor signal quality metrics to detect deliberate interference patterns",
+          "Establish automated alerting for communication link anomalies",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-7.1.3",
+        controlName: "Anti-Spoofing for GNSS",
+        segment: "user",
+        implementationSteps: [
+          "Deploy anti-spoofing mechanisms for GNSS-dependent operations",
+          "Implement multi-source validation for navigation signals",
+          "Monitor for anomalies indicating GNSS spoofing attacks",
+        ],
+      },
+    ],
   },
   {
     id: "log_management",
@@ -1313,6 +2134,39 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       ],
       numberThresholds: { retentionMonths: { min: 12 } },
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-6.1.3",
+        controlName: "Monitoring of Space System Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Collect security-relevant logs from all space system operations across all segments",
+          "Aggregate logs from ground stations, mission control, and network infrastructure",
+          "Ensure log sources cover commanding, telemetry processing, and link management activities",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.3",
+        controlName: "Forensic Capability for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Retain logs with sufficient detail to support forensic investigation",
+          "Include telemetry archives and command log histories in centralized logging",
+          "Protect log integrity using immutable storage or cryptographic verification",
+          "Ensure timestamp synchronization supports forensic timeline reconstruction",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-3.1.5",
+        controlName: "Session Management for Ground Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Log all session activities on ground system interfaces",
+          "Include session start/end times, user identity, and actions performed",
+          "Retain session logs for the minimum required retention period",
+        ],
+      },
+    ],
   },
 
   // ═══ BUSINESS CONTINUITY (Art. 85) ═══
@@ -1403,6 +2257,74 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       ],
       requiredNotEmpty: ["testFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-11.1.1",
+        controlName: "Mission Continuity Planning",
+        segment: "ground",
+        implementationSteps: [
+          "Develop mission continuity plans covering loss of ground contact, spacecraft anomaly, and cyber attack scenarios",
+          "Define recovery time and recovery point objectives for each mission-critical function",
+          "Identify dependencies between space, ground, and link segments for continuity planning",
+          "Maintain and version-control continuity plan documentation",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No business continuity plan exists" },
+          {
+            level: 2,
+            description: "Informal recovery procedures for some scenarios",
+          },
+          {
+            level: 3,
+            description:
+              "Documented BCP covering ground station loss, satellite anomalies, and alternative communication",
+          },
+          {
+            level: 4,
+            description:
+              "Regularly tested BCP with defined RTO/RPO and automated failover capabilities",
+          },
+          {
+            level: 5,
+            description:
+              "Resilient architecture with real-time failover and continuous continuity validation",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-11.1.2",
+        controlName: "Ground Station Failover",
+        segment: "ground",
+        implementationSteps: [
+          "Implement failover capabilities between primary and backup ground stations",
+          "Define and test switchover procedures with maximum acceptable switchover times",
+          "Establish agreements with partner ground station networks for emergency access",
+          "Regularly test failover procedures to validate recovery capability",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-11.1.3",
+        controlName: "Emergency Operations Procedures",
+        segment: "space",
+        implementationSteps: [
+          "Define emergency operations procedures for degraded modes of operation",
+          "Include safe-mode commanding and manual backup procedures",
+          "Establish emergency communication channels independent of primary infrastructure",
+          "Train operations personnel on emergency procedures regularly",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-11.1.5",
+        controlName: "Business Continuity Testing",
+        segment: "ground",
+        implementationSteps: [
+          "Regularly test BCP through tabletop exercises and functional tests",
+          "Conduct full-scale simulations at least annually",
+          "Incorporate lessons learned into plan updates",
+          "Document test results and track remediation of identified gaps",
+        ],
+      },
+    ],
   },
   {
     id: "backup_recovery",
@@ -1488,6 +2410,62 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       requiredTrue: ["backupPolicyExists", "offsiteStorageUsed"],
       requiredNotEmpty: ["backupRule", "recoveryTestFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-6.1.8",
+        controlName: "Backup and Recovery for Mission Data",
+        segment: "ground",
+        implementationSteps: [
+          "Implement comprehensive backup procedures for mission-critical data",
+          "Include telemetry archives, command histories, orbital parameters, and configuration baselines",
+          "Store backups using the 3-2-1 rule with offsite replication",
+          "Regularly test recovery procedures to verify backup integrity",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No backup procedures for mission data" },
+          {
+            level: 2,
+            description: "Ad-hoc backups of some systems without testing",
+          },
+          {
+            level: 3,
+            description:
+              "Documented backup policy with offsite storage and scheduled testing",
+          },
+          {
+            level: 4,
+            description:
+              "Automated backups with regular recovery validation and defined RTO/RPO",
+          },
+          {
+            level: 5,
+            description:
+              "Real-time replication with instant failover and continuous integrity verification",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-11.1.4",
+        controlName: "Disaster Recovery for Space Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Implement disaster recovery capabilities with offsite data replication",
+          "Establish alternative processing sites for mission control functions",
+          "Define and test recovery time and recovery point objectives",
+          "Include spacecraft configuration data in disaster recovery scope",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-2.1.3",
+        controlName: "Configuration Management for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Include spacecraft and ground system configurations in backup scope",
+          "Track and backup all authorized configuration baselines",
+          "Ensure configuration recovery procedures are tested alongside data recovery",
+        ],
+      },
+    ],
   },
 
   // ═══ INCIDENT REPORTING (Art. 89-92) ═══
@@ -1577,6 +2555,74 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
       ],
       requiredNotEmpty: ["tabletopExerciseFrequency"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-10.1.2",
+        controlName: "Incident Response for Space Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Maintain incident response procedures specific to space operations",
+          "Develop playbooks for satellite anomalies, ground station compromise, and link disruption",
+          "Define roles, responsibilities, and communication channels for incident response",
+          "Practice response procedures through regular tabletop exercises and simulations",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No incident response plan exists" },
+          {
+            level: 2,
+            description:
+              "Generic IT incident response plan without space-specific considerations",
+          },
+          {
+            level: 3,
+            description:
+              "Documented space-specific IRP with severity classification and NCA escalation paths",
+          },
+          {
+            level: 4,
+            description:
+              "Regularly tested IRP with dedicated response team and automated alerting",
+          },
+          {
+            level: 5,
+            description:
+              "Mature incident response with threat hunting, advanced forensics, and continuous improvement",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.1",
+        controlName: "Space Incident Detection and Classification",
+        segment: "ground",
+        implementationSteps: [
+          "Establish incident detection capabilities with space-specific classification schemes",
+          "Distinguish between cyber, physical, natural, and conjunction events",
+          "Define severity levels and escalation criteria for each incident type",
+          "Integrate detection with monitoring systems for rapid identification",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.5",
+        controlName: "Conjunction Event Response",
+        segment: "space",
+        implementationSteps: [
+          "Define response procedures for conjunction events and collision risks",
+          "Establish collision probability assessment thresholds for maneuver decisions",
+          "Coordinate with SSA providers for conjunction warning data",
+          "Include conjunction response in incident response tabletop exercises",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.6",
+        controlName: "Signal Interference Response",
+        segment: "link",
+        implementationSteps: [
+          "Establish procedures for detecting and characterizing RF signal interference",
+          "Define response actions for intentional and unintentional interference",
+          "Include interference response playbooks in the incident response plan",
+        ],
+      },
+    ],
   },
   {
     id: "early_warning",
@@ -1643,6 +2689,55 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "incidentThresholdsDefined",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-10.1.4",
+        controlName: "Incident Communication and Reporting",
+        segment: "ground",
+        implementationSteps: [
+          "Implement NCA notification procedures meeting the 24-hour early warning deadline",
+          "Pre-register with the national incident reporting portal",
+          "Prepare early warning templates covering required notification fields",
+          "Designate 24/7 contacts authorized to submit incident notifications",
+        ],
+        maturityLevels: [
+          {
+            level: 1,
+            description: "No incident notification procedures in place",
+          },
+          {
+            level: 2,
+            description:
+              "Awareness of notification requirements but no formal process",
+          },
+          {
+            level: 3,
+            description:
+              "Registered with NCA, templates prepared, and 24/7 contacts designated",
+          },
+          {
+            level: 4,
+            description:
+              "Automated notification workflow with pre-approved templates and tested processes",
+          },
+          {
+            level: 5,
+            description:
+              "Integrated notification platform with real-time NCA coordination and cross-border capability",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.1",
+        controlName: "Space Incident Detection and Classification",
+        segment: "ground",
+        implementationSteps: [
+          "Define clear thresholds for what constitutes a significant incident requiring NCA notification",
+          "Establish automated detection that can trigger notification workflows within the 24-hour window",
+          "Classify incidents rapidly to determine reporting obligations",
+        ],
+      },
+    ],
   },
   {
     id: "detailed_notification",
@@ -1707,6 +2802,40 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "containmentMeasuresDocumented",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-10.1.4",
+        controlName: "Incident Communication and Reporting",
+        segment: "ground",
+        implementationSteps: [
+          "Prepare detailed incident report templates meeting NIS2 Art. 23(4)(b) requirements",
+          "Include impact assessment covering affected services, data, and stakeholders",
+          "Document containment measures taken and their effectiveness",
+          "Establish cross-border notification procedures for multi-jurisdiction operations",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.2",
+        controlName: "Incident Response for Space Operations",
+        segment: "ground",
+        implementationSteps: [
+          "Execute incident response playbooks to gather information for the 72-hour detailed report",
+          "Document affected space assets, ground systems, and communication links",
+          "Record all containment and mitigation actions with timestamps",
+          "Coordinate between technical response team and regulatory reporting function",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.3",
+        controlName: "Forensic Capability for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Begin forensic investigation to support detailed notification content",
+          "Preserve evidence including telemetry logs, command histories, and system images",
+          "Document initial findings for inclusion in the 72-hour report",
+        ],
+      },
+    ],
   },
   {
     id: "final_report",
@@ -1771,6 +2900,62 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
         "lessonsLearnedProcess",
       ],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-10.1.7",
+        controlName: "Post-Incident Analysis",
+        segment: "ground",
+        implementationSteps: [
+          "Conduct structured post-incident analysis for all significant incidents",
+          "Capture lessons learned and update threat models based on findings",
+          "Improve detection and response capabilities based on post-incident review",
+          "Track remediation actions to completion and verify effectiveness",
+        ],
+        maturityLevels: [
+          { level: 1, description: "No post-incident analysis performed" },
+          {
+            level: 2,
+            description: "Informal debriefs after major incidents only",
+          },
+          {
+            level: 3,
+            description:
+              "Structured root cause analysis with documented lessons learned and remediation tracking",
+          },
+          {
+            level: 4,
+            description:
+              "Systematic post-incident process with metrics, trend analysis, and organizational learning",
+          },
+          {
+            level: 5,
+            description:
+              "Continuous improvement cycle with proactive threat model updates and industry information sharing",
+          },
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.3",
+        controlName: "Forensic Capability for Space Systems",
+        segment: "ground",
+        implementationSteps: [
+          "Complete forensic investigation including telemetry analysis and command log review",
+          "Determine root cause and attribution where possible",
+          "Document forensic findings in the final incident report",
+          "Preserve forensic evidence for regulatory and legal requirements",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.4",
+        controlName: "Incident Communication and Reporting",
+        segment: "ground",
+        implementationSteps: [
+          "Prepare comprehensive final report meeting NIS2 Art. 23(4)(d) one-month deadline",
+          "Include root cause analysis, impact assessment, and remediation measures taken",
+          "Submit final report to NCA and coordinate with EUSRN as required",
+        ],
+      },
+    ],
   },
 
   // ═══ EUSRN (Art. 93-95) ═══
@@ -1830,6 +3015,28 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     complianceRule: {
       requiredTrue: ["registrationSubmitted", "contactsDesignated"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-12.1.1",
+        controlName: "Regulatory Compliance Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Include EUSRN registration in your regulatory compliance tracking",
+          "Verify registration details are current and accurate",
+          "Align EUSRN participation with NCA reporting obligations",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-1.1.8",
+        controlName: "Regulatory Compliance Mapping",
+        segment: "ground",
+        implementationSteps: [
+          "Map EUSRN obligations to internal processes and responsible personnel",
+          "Maintain traceability between EUSRN requirements and operational contacts",
+          "Update compliance mapping when EUSRN requirements evolve",
+        ],
+      },
+    ],
   },
   {
     id: "eusrn_participation",
@@ -1889,6 +3096,38 @@ export const cybersecurityRequirements: CybersecurityRequirement[] = [
     complianceRule: {
       requiredTrue: ["exercisesParticipated", "meetingsAttended"],
     },
+    enisaGuidance: [
+      {
+        controlId: "ENISA-SPACE-12.1.3",
+        controlName: "External Audit Coordination",
+        segment: "ground",
+        implementationSteps: [
+          "Coordinate with EUSRN for cross-sector cybersecurity exercises",
+          "Facilitate regulatory audit access while protecting sensitive operational data",
+          "Share exercise results and lessons learned with the EUSRN community",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-10.1.4",
+        controlName: "Incident Communication and Reporting",
+        segment: "ground",
+        implementationSteps: [
+          "Participate in EUSRN coordinated incident response activities",
+          "Share threat intelligence with the EUSRN network (anonymized where needed)",
+          "Implement EUSRN recommendations for improving sector-wide resilience",
+        ],
+      },
+      {
+        controlId: "ENISA-SPACE-12.1.1",
+        controlName: "Regulatory Compliance Assessment",
+        segment: "ground",
+        implementationSteps: [
+          "Track EUSRN participation requirements as part of regulatory compliance",
+          "Document attendance at coordination meetings and exercises",
+          "Implement recommendations received through EUSRN channels",
+        ],
+      },
+    ],
   },
 ];
 

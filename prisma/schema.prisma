@@ -2444,6 +2444,7 @@ model Organization {
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
+  operatorProfile        OperatorProfile? // Unified operator profile
 
   @@index([slug])
   @@index([plan])
@@ -4581,4 +4582,42 @@ model DataRoomAccessLog {
   createdAt DateTime @default(now())
 
   @@index([dataRoomId, createdAt])
+}
+
+// ============================================
+// OPERATOR PROFILE (Unified)
+// ============================================
+
+model OperatorProfile {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Core Classification
+  operatorType   String? // CanonicalOperatorType
+  euOperatorCode String? // EU Space Act abbreviation (SCO, LO, etc.)
+  entitySize     String? // 'micro' | 'small' | 'medium' | 'large'
+  isResearch     Boolean @default(false)
+  isDefenseOnly  Boolean @default(false)
+
+  // Mission Profile
+  primaryOrbit          String? // CanonicalOrbitType
+  orbitAltitudeKm       Float?
+  satelliteMassKg       Float?
+  isConstellation       Boolean  @default(false)
+  constellationSize     Int?
+  missionDurationMonths Int?
+  plannedLaunchDate     DateTime?
+
+  // Jurisdiction
+  establishment            String?  // Primary jurisdiction (ISO 3166-1 alpha-2)
+  operatingJurisdictions   String[] @default([])
+  offersEUServices         Boolean  @default(false)
+
+  // Metadata
+  completeness Float    @default(0) // 0-1, how complete the profile is
+  lastUpdated  DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@index([organizationId])
 }

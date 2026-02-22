@@ -1,4 +1,10 @@
 /**
+ * @deprecated ENISA controls have been embedded into cybersecurity-requirements.ts
+ * as enisaGuidance fields. This file is kept for reference only.
+ * Use cybersecurity-requirements.ts for all ENISA control access.
+ */
+
+/**
  * Copyright 2026 Caelex GmbH. All rights reserved.
  *
  * PROPRIETARY AND CONFIDENTIAL

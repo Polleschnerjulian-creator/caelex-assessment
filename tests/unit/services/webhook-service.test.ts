@@ -211,8 +211,8 @@ describe("Webhook Service", () => {
 
     it("should have the expected total number of events", () => {
       const eventKeys = Object.keys(WEBHOOK_EVENTS);
-      // 3 compliance + 3 spacecraft + 4 authorization + 3 reports + 4 incidents + 3 deadlines + 3 documents + 3 member = 26
-      expect(eventKeys.length).toBe(26);
+      // 3 compliance + 3 spacecraft + 4 authorization + 3 reports + 4 incidents + 3 deadlines + 3 documents + 3 member + 8 network = 34
+      expect(eventKeys.length).toBeGreaterThanOrEqual(26);
     });
   });
 

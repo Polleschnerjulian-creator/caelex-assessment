@@ -645,7 +645,7 @@ export async function checkLimitUsage(
   const features = PRICING_TIERS[plan].features;
 
   let current = 0;
-  let limit = features[resource];
+  const limit = features[resource];
 
   switch (resource) {
     case "users":

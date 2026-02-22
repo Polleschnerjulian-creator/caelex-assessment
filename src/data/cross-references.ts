@@ -826,3 +826,398 @@ export function getNIS2ArticlesWithEUSpaceActEquivalent(): string[] {
 
   return Array.from(articles);
 }
+
+// ================================================================
+// Cross-Domain Regulation Mappings
+// ================================================================
+
+// ─── Export Control ↔ Cybersecurity Cross-References ───
+
+export interface ExportCyberCrossRef {
+  id: string;
+  exportControl: { regulation: string; section: string; topic: string };
+  cybersecurity: { regulation: string; article: string; topic: string };
+  conflict: string;
+  resolution: string;
+  severity: "high" | "medium" | "low";
+}
+
+export const EXPORT_CYBER_CROSS_REFS: ExportCyberCrossRef[] = [
+  {
+    id: "ec-01",
+    exportControl: {
+      regulation: "ITAR",
+      section: "22 CFR 120.17",
+      topic: "Deemed Export",
+    },
+    cybersecurity: {
+      regulation: "EU Space Act",
+      article: "Art. 79",
+      topic: "Information Security",
+    },
+    conflict:
+      "Foreign nationals implementing cybersecurity controls may trigger deemed export of technical data.",
+    resolution:
+      "Obtain TAA (Technical Assistance Agreement) before granting access to USML-listed cybersecurity systems.",
+    severity: "high" as const,
+  },
+  {
+    id: "ec-02",
+    exportControl: {
+      regulation: "EAR",
+      section: "15 CFR 734.13",
+      topic: "Encryption Export Controls",
+    },
+    cybersecurity: {
+      regulation: "EU Space Act",
+      article: "Art. 81-82",
+      topic: "Cryptography & Encryption",
+    },
+    conflict:
+      "EU Space Act mandates encryption for space communications, but exporting encryption technology to certain destinations requires BIS license under EAR.",
+    resolution:
+      "Use License Exception ENC (Section 740.17) for commercial encryption. File classification requests for custom space-grade encryption algorithms.",
+    severity: "medium" as const,
+  },
+  {
+    id: "ec-03",
+    exportControl: {
+      regulation: "ITAR",
+      section: "22 CFR 121 Cat. XV",
+      topic: "Spacecraft Systems & Equipment",
+    },
+    cybersecurity: {
+      regulation: "NIS2 Directive",
+      article: "Art. 21(2)(d)",
+      topic: "Supply Chain Security",
+    },
+    conflict:
+      "NIS2 supply chain transparency requirements may conflict with ITAR restrictions on disclosing technical details of defense articles to non-US persons.",
+    resolution:
+      "Implement compartmentalized supply chain audits: separate ITAR-controlled technical data from NIS2 supply chain risk assessments. Use non-technical summaries for NIS2 reporting.",
+    severity: "high" as const,
+  },
+  {
+    id: "ec-04",
+    exportControl: {
+      regulation: "EU Dual-Use Regulation",
+      section: "Regulation (EU) 2021/821 Annex I",
+      topic: "Category 5 — Telecommunications & Information Security",
+    },
+    cybersecurity: {
+      regulation: "EU Space Act",
+      article: "Art. 88",
+      topic: "Threat-Led Penetration Testing (TLPT)",
+    },
+    conflict:
+      "TLPT tools and techniques for space systems may include dual-use cyber intrusion software requiring export authorization under EU Dual-Use Regulation.",
+    resolution:
+      "Ensure TLPT providers hold appropriate export licenses. Use EU-based testing facilities where possible to avoid cross-border transfer issues.",
+    severity: "medium" as const,
+  },
+  {
+    id: "ec-05",
+    exportControl: {
+      regulation: "ITAR",
+      section: "22 CFR 125.4",
+      topic: "Exemptions for NATO/Allied Transfers",
+    },
+    cybersecurity: {
+      regulation: "EU Space Act",
+      article: "Art. 93-95",
+      topic: "EU Space Resilience Network (EUSRN)",
+    },
+    conflict:
+      "EUSRN information sharing with non-NATO EU member states may not qualify for ITAR NATO exemptions, restricting threat intelligence exchange.",
+    resolution:
+      "Establish separate information sharing channels for ITAR-controlled and non-controlled cyber threat intelligence. Use sanitized indicators of compromise (IOCs).",
+    severity: "low" as const,
+  },
+];
+
+// ─── Spectrum ↔ Debris Cross-References ───
+
+export interface SpectrumDebrisCrossRef {
+  id: string;
+  spectrum: { regulation: string; article: string; topic: string };
+  debris: { regulation: string; article: string; topic: string };
+  interaction: string;
+  recommendation: string;
+}
+
+export const SPECTRUM_DEBRIS_CROSS_REFS: SpectrumDebrisCrossRef[] = [
+  {
+    id: "sd-01",
+    spectrum: {
+      regulation: "ITU RR",
+      article: "Art. 44",
+      topic: "Spectrum License Duration",
+    },
+    debris: {
+      regulation: "EU Space Act",
+      article: "Art. 59",
+      topic: "5-Year Deorbit Rule",
+    },
+    interaction:
+      "Spectrum license expiry date should align with or exceed debris compliance deadlines.",
+    recommendation:
+      "Ensure ITU filing duration covers planned mission + maximum deorbit window.",
+  },
+  {
+    id: "sd-02",
+    spectrum: {
+      regulation: "ITU RR",
+      article: "Art. 11 & Res. 35 (WRC-23)",
+      topic: "NGSO Milestone-Based Deployment",
+    },
+    debris: {
+      regulation: "EU Space Act",
+      article: "Art. 67",
+      topic: "Debris Mitigation Plan",
+    },
+    interaction:
+      "ITU milestone deployment deadlines may pressure operators to launch satellites before debris mitigation plan approval is complete.",
+    recommendation:
+      "Submit debris mitigation plan to national authority in parallel with ITU milestone notifications. Coordinate timelines to avoid regulatory gaps.",
+  },
+  {
+    id: "sd-03",
+    spectrum: {
+      regulation: "ITU RR",
+      article: "Art. 21 No. 21.16",
+      topic: "Harmful Interference",
+    },
+    debris: {
+      regulation: "EU Space Act",
+      article: "Art. 72",
+      topic: "End-of-Life Passivation",
+    },
+    interaction:
+      "End-of-life passivation requires disabling transmitters, which must be coordinated with ITU to formally notify cessation of emissions and release spectrum.",
+    recommendation:
+      "Include ITU spectrum release notification in end-of-life procedure. Notify administration 6 months before planned passivation.",
+  },
+  {
+    id: "sd-04",
+    spectrum: {
+      regulation: "FCC",
+      article: "47 CFR 25.114(d)(14)",
+      topic: "Orbital Debris Mitigation in Spectrum License",
+    },
+    debris: {
+      regulation: "FCC 5-Year Deorbit Rule",
+      article: "47 CFR 25.114(d)(14)(iv)",
+      topic: "Post-Mission Disposal",
+    },
+    interaction:
+      "FCC now requires orbital debris mitigation disclosures as part of spectrum license applications, creating a single-window regulatory checkpoint.",
+    recommendation:
+      "Prepare unified debris mitigation + spectrum application package. Ensure deorbit timeline in spectrum application matches debris mitigation plan.",
+  },
+];
+
+// ─── Insurance ↔ National Space Laws Cross-References ───
+
+export interface InsuranceNationalCrossRef {
+  id: string;
+  country: string;
+  countryCode: string;
+  euSpaceAct: { article: string; topic: string };
+  nationalLaw: { name: string; provision: string; topic: string };
+  minimumTPL: string;
+  interaction: string;
+  recommendation: string;
+}
+
+export const INSURANCE_NATIONAL_CROSS_REFS: InsuranceNationalCrossRef[] = [
+  {
+    id: "in-01",
+    country: "France",
+    countryCode: "FR",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "French Space Operations Act (LOS 2008)",
+      provision: "Art. 6 & Decree 2009-643",
+      topic: "Third-Party Liability Insurance",
+    },
+    minimumTPL: "\u20AC60,000,000",
+    interaction:
+      "French LOS mandates \u20AC60M minimum TPL insurance, which may exceed EU Space Act harmonized minimums. France retains higher national threshold.",
+    recommendation:
+      "Comply with French \u20AC60M TPL as it exceeds EU Space Act minimum. Obtain CNES technical opinion on coverage adequacy for mission profile.",
+  },
+  {
+    id: "in-02",
+    country: "United Kingdom",
+    countryCode: "UK",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "UK Space Industry Act 2018",
+      provision: "Section 38 & Regulations 2021/792",
+      topic: "Licensee Liability & Insurance",
+    },
+    minimumTPL: "\u00A360,000,000",
+    interaction:
+      "UK sets \u00A360M default TPL with risk-based adjustments by CAA. Post-Brexit, EU Space Act does not apply but UK operators seeking EU market access must comply with both.",
+    recommendation:
+      "UK operators targeting EU market should maintain dual-compliant insurance covering both UK CAA and EU Space Act requirements.",
+  },
+  {
+    id: "in-03",
+    country: "Belgium",
+    countryCode: "BE",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Belgian Space Activities Act 2005",
+      provision: "Art. 15-17",
+      topic: "Insurance Obligation",
+    },
+    minimumTPL: "Risk-based (set by Royal Decree)",
+    interaction:
+      "Belgian law delegates TPL amount to Royal Decree on case-by-case basis. EU Space Act will provide a harmonized floor that Belgium must implement.",
+    recommendation:
+      "Engage Belgian Science Policy Office (BELSPO) early to determine national TPL. Ensure coverage meets both national and EU Space Act thresholds.",
+  },
+  {
+    id: "in-04",
+    country: "Netherlands",
+    countryCode: "NL",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Dutch Space Activities Act 2007 (Wet ruimtevaartactiviteiten)",
+      provision: "Art. 3(2)(f)",
+      topic: "Financial Security",
+    },
+    minimumTPL: "Risk-based (Minister determination)",
+    interaction:
+      "Dutch law requires 'adequate financial security' determined per license. EU Space Act harmonization will establish minimum baseline replacing ministerial discretion.",
+    recommendation:
+      "Prepare for transition from discretionary to harmonized regime. Maintain existing Dutch insurance levels during transition period.",
+  },
+  {
+    id: "in-05",
+    country: "Luxembourg",
+    countryCode: "LU",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Luxembourg Space Activities Act 2020",
+      provision: "Art. 16",
+      topic: "Insurance & Financial Guarantees",
+    },
+    minimumTPL: "\u20AC100,000,000",
+    interaction:
+      "Luxembourg sets a high \u20AC100M TPL minimum, reflecting its role as a major satellite operator hub (SES). This exceeds expected EU Space Act harmonized minimums.",
+    recommendation:
+      "Comply with Luxembourg \u20AC100M TPL. Consider whether EU Space Act implementation may lower this threshold for smaller operators.",
+  },
+  {
+    id: "in-06",
+    country: "Austria",
+    countryCode: "AT",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Austrian Outer Space Act 2011 (Weltraumgesetz)",
+      provision: "\u00A74(1)(4)",
+      topic: "Insurance Requirement",
+    },
+    minimumTPL: "Risk-based (\u20AC60M guideline)",
+    interaction:
+      "Austrian law requires insurance proportionate to risk with an approximate \u20AC60M guideline. EU Space Act will formalize minimum thresholds.",
+    recommendation:
+      "Maintain coverage at or above \u20AC60M. Prepare for EU Space Act harmonized requirements which may adjust this threshold.",
+  },
+  {
+    id: "in-07",
+    country: "Denmark",
+    countryCode: "DK",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Danish Outer Space Act 2016 (Lov om aktiviteter i det ydre rum)",
+      provision: "\u00A76",
+      topic: "Liability Insurance",
+    },
+    minimumTPL: "DKK 500,000,000 (~\u20AC67M)",
+    interaction:
+      "Danish law sets DKK 500M (~\u20AC67M) TPL requirement. EU Space Act harmonization will interact with this established threshold.",
+    recommendation:
+      "Maintain DKK 500M coverage. Monitor EU Space Act implementation for potential changes to Danish national requirements.",
+  },
+  {
+    id: "in-08",
+    country: "Germany",
+    countryCode: "DE",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "German Space Act (WeltraumG) \u2014 Draft",
+      provision: "Draft \u00A78 (expected)",
+      topic: "Insurance Obligation",
+    },
+    minimumTPL: "TBD (expected \u20AC50-60M)",
+    interaction:
+      "Germany currently lacks dedicated space law and insurance requirement. Draft WeltraumG expected to align with EU Space Act insurance provisions from the outset.",
+    recommendation:
+      "German operators should comply with EU Space Act insurance requirements directly. Monitor WeltraumG legislative progress for national specifics.",
+  },
+  {
+    id: "in-09",
+    country: "Italy",
+    countryCode: "IT",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Italian Space Economy Law (Law 7/2018)",
+      provision: "Art. 8",
+      topic: "Insurance & Liability",
+    },
+    minimumTPL: "Risk-based (ASI determination)",
+    interaction:
+      "Italian law delegates TPL determination to ASI (Italian Space Agency) on a case-by-case basis. EU Space Act will establish harmonized floor.",
+    recommendation:
+      "Engage ASI early in mission planning for insurance assessment. Prepare for transition to EU Space Act harmonized requirements.",
+  },
+  {
+    id: "in-10",
+    country: "Norway",
+    countryCode: "NO",
+    euSpaceAct: {
+      article: "Art. 44-51",
+      topic: "Insurance Requirements",
+    },
+    nationalLaw: {
+      name: "Norwegian Space Activities Act 1969 (amended 2017)",
+      provision: "\u00A73",
+      topic: "Liability Coverage",
+    },
+    minimumTPL: "Risk-based (Ministry determination)",
+    interaction:
+      "Norway (EEA member) will likely incorporate EU Space Act insurance provisions through the EEA Agreement. Current risk-based approach will be supplemented by harmonized minimums.",
+    recommendation:
+      "Norwegian operators should anticipate EEA incorporation of EU Space Act. Maintain risk-based coverage per current Ministry of Trade requirements until harmonized regime applies.",
+  },
+];

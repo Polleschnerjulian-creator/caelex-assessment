@@ -22,8 +22,15 @@ import type {
   RedactedSpaceLawResult,
   JurisdictionLaw,
   SpaceLawCountryCode,
+  SpaceLawActivityType,
   LicensingRequirement,
 } from "./space-law-types";
+
+import type {
+  UkSpaceProfile,
+  UkActivityType,
+} from "@/data/uk-space-industry-act";
+import type { UkAssessmentResult } from "./uk-space-engine.server";
 
 // ─── Lazy import for jurisdiction data ───
 
@@ -47,6 +54,293 @@ async function getCrossReferences() {
   return _crossRefModule.SPACE_LAW_CROSS_REFERENCES;
 }
 
+// ─── Lazy import for UK-specific engine ───
+
+let _ukEngineModule: typeof import("./uk-space-engine.server") | null = null;
+
+async function getUkEngine() {
+  if (!_ukEngineModule) {
+    _ukEngineModule = await import("./uk-space-engine.server");
+  }
+  return _ukEngineModule;
+}
+
+// ─── UK Engine Delegation ───
+
+/**
+ * Map generic SpaceLawActivityType to UK-specific UkActivityType.
+ * Returns UkActivityType values that approximate the generic activity type.
+ */
+function mapActivityTypeToUk(
+  activityType: SpaceLawActivityType | null,
+): UkActivityType[] {
+  if (!activityType) return ["orbital_operations"];
+  switch (activityType) {
+    case "spacecraft_operation":
+      return ["orbital_operations"];
+    case "launch_vehicle":
+      return ["launch"];
+    case "launch_site":
+      return ["spaceport_operations"];
+    case "in_orbit_services":
+      return ["orbital_operations"];
+    case "earth_observation":
+      return ["orbital_operations"];
+    case "satellite_communications":
+      return ["orbital_operations"];
+    case "space_resources":
+      return ["orbital_operations"];
+    default:
+      return ["orbital_operations"];
+  }
+}
+
+/**
+ * Map generic SpaceLawActivityType to a UK operator type.
+ */
+function mapActivityTypeToUkOperatorType(
+  activityType: SpaceLawActivityType | null,
+): UkSpaceProfile["operatorType"] {
+  if (!activityType) return "satellite_operator";
+  switch (activityType) {
+    case "launch_vehicle":
+      return "launch_operator";
+    case "launch_site":
+      return "spaceport_operator";
+    default:
+      return "satellite_operator";
+  }
+}
+
+/**
+ * Build a UkSpaceProfile from generic SpaceLawAssessmentAnswers.
+ */
+function buildUkProfileFromAnswers(
+  answers: SpaceLawAssessmentAnswers,
+): UkSpaceProfile {
+  const operatorType = mapActivityTypeToUkOperatorType(answers.activityType);
+  const activityTypes = mapActivityTypeToUk(answers.activityType);
+  const isOrbital =
+    answers.primaryOrbit !== null && answers.primaryOrbit !== "beyond";
+
+  return {
+    operatorType,
+    activityTypes,
+    launchFromUk: answers.activityType === "launch_site",
+    launchToOrbit: isOrbital,
+    isSuborbital: false,
+    hasUkNexus:
+      answers.entityNationality === "domestic" ||
+      answers.entityNationality === null,
+    involvesPeople: false,
+    isCommercial: true,
+    targetOrbit: answers.primaryOrbit ?? undefined,
+  };
+}
+
+/**
+ * Adapt a UkAssessmentResult into the standard JurisdictionResult format
+ * so that callers of calculateSpaceLawCompliance() see a consistent shape.
+ */
+function adaptUKResult(
+  ukResult: UkAssessmentResult,
+  ukJurisdictionData: JurisdictionLaw,
+  answers: SpaceLawAssessmentAnswers,
+): JurisdictionResult {
+  // Convert UK engine requirements to the generic LicensingRequirement format
+  const applicableRequirements: LicensingRequirement[] =
+    ukResult.applicableRequirements.map((req) => ({
+      id: req.id,
+      category: mapUkCategoryToGeneric(req.category),
+      title: req.title,
+      description: req.description,
+      mandatory: req.bindingLevel === "mandatory",
+      applicableTo: answers.activityType
+        ? [answers.activityType]
+        : (["spacecraft_operation"] as SpaceLawActivityType[]),
+      details: req.implementationGuidance,
+      articleRef: req.sectionRef,
+    }));
+
+  const mandatoryRequirements = applicableRequirements.filter(
+    (req) => req.mandatory,
+  );
+
+  // Derive favorability score from the UK engine's compliance score and risk level
+  const { score: favorabilityScore, factors: favorabilityFactors } =
+    deriveUkFavorabilityScore(ukResult, ukJurisdictionData, answers);
+
+  // Determine applicability based on UK engine results
+  const isApplicable = ukResult.applicableRequirements.length > 0;
+  const applicabilityReason = isApplicable
+    ? `Authorization required under ${ukJurisdictionData.legislation.name}. ${ukResult.requiredLicenses.length} licence type(s) applicable under the UK Space Industry Act 2018.`
+    : "No applicable requirements identified for this activity under UK space law.";
+
+  return {
+    countryCode: ukJurisdictionData.countryCode,
+    countryName: ukJurisdictionData.countryName,
+    flagEmoji: ukJurisdictionData.flagEmoji,
+    isApplicable,
+    applicabilityReason,
+    totalRequirements: applicableRequirements.length,
+    mandatoryRequirements: mandatoryRequirements.length,
+    applicableRequirements,
+    authority: {
+      name: ukJurisdictionData.licensingAuthority.name,
+      website: ukJurisdictionData.licensingAuthority.website,
+      contactEmail: ukJurisdictionData.licensingAuthority.contactEmail,
+    },
+    estimatedTimeline: ukJurisdictionData.timeline.typicalProcessingWeeks,
+    estimatedCost: formatCostEstimate(ukJurisdictionData),
+    insurance: {
+      mandatory: ukJurisdictionData.insuranceLiability.mandatoryInsurance,
+      minimumCoverage:
+        ukJurisdictionData.insuranceLiability.minimumCoverage || "Case-by-case",
+      governmentIndemnification:
+        ukJurisdictionData.insuranceLiability.governmentIndemnification,
+    },
+    debris: {
+      deorbitRequired: ukJurisdictionData.debrisMitigation.deorbitRequirement,
+      deorbitTimeline:
+        ukJurisdictionData.debrisMitigation.deorbitTimeline || "Not specified",
+      mitigationPlan: ukJurisdictionData.debrisMitigation.debrisMitigationPlan,
+    },
+    legislation: {
+      name: ukJurisdictionData.legislation.name,
+      status: ukJurisdictionData.legislation.status,
+      yearEnacted: ukJurisdictionData.legislation.yearEnacted,
+    },
+    favorabilityScore,
+    favorabilityFactors,
+  };
+}
+
+/**
+ * Map UK requirement categories to generic LicensingRequirementCategory.
+ */
+function mapUkCategoryToGeneric(
+  ukCategory: string,
+): LicensingRequirement["category"] {
+  const mapping: Record<string, LicensingRequirement["category"]> = {
+    operator_licensing: "corporate_governance",
+    range_control: "operational_plan",
+    liability_insurance: "insurance",
+    safety: "safety_assessment",
+    environmental: "environmental_assessment",
+    security: "security_clearance",
+    registration: "notification",
+    informed_consent: "safety_assessment",
+    emergency_response: "operational_plan",
+  };
+  return mapping[ukCategory] || "technical_assessment";
+}
+
+/**
+ * Derive a favorability score for UK from the UK engine's detailed results,
+ * consistent with the scoring approach used by the generic engine.
+ */
+function deriveUkFavorabilityScore(
+  ukResult: UkAssessmentResult,
+  ukJurisdictionData: JurisdictionLaw,
+  answers: SpaceLawAssessmentAnswers,
+): { score: number; factors: string[] } {
+  // Start with the standard favorability calculation from metadata
+  // to maintain consistency with other jurisdictions
+  let score = 50;
+  const factors: string[] = [];
+
+  // Timeline factor
+  const avgWeeks =
+    (ukJurisdictionData.timeline.typicalProcessingWeeks.min +
+      ukJurisdictionData.timeline.typicalProcessingWeeks.max) /
+    2;
+  if (avgWeeks <= 10) {
+    score += 15;
+    factors.push("Fast licensing timeline");
+  } else if (avgWeeks <= 16) {
+    score += 8;
+    factors.push("Moderate licensing timeline");
+  } else {
+    score -= 5;
+    factors.push("Longer licensing timeline");
+  }
+
+  // Government indemnification
+  if (ukJurisdictionData.insuranceLiability.governmentIndemnification) {
+    score += 10;
+    factors.push("Government indemnification available");
+  }
+
+  // Liability regime
+  if (ukJurisdictionData.insuranceLiability.liabilityRegime === "capped") {
+    score += 8;
+    factors.push("Capped liability regime");
+  }
+
+  // Regulatory maturity
+  if (ukJurisdictionData.legislation.yearEnacted <= 2018) {
+    score += 5;
+    factors.push("Established regulatory framework");
+  }
+
+  // National registry
+  if (ukJurisdictionData.registration.nationalRegistryExists) {
+    score += 3;
+    factors.push("National space registry maintained");
+  }
+
+  // UK-specific enrichments from the detailed UK engine
+  factors.push(
+    `${ukResult.requiredLicenses.length} licence type(s) required under SIA 2018`,
+  );
+  factors.push(
+    `${ukResult.applicableRequirements.length} detailed CAA requirements identified`,
+  );
+
+  if (ukResult.euSpaceActOverlaps.length > 0) {
+    factors.push(
+      `${ukResult.euSpaceActOverlaps.length} EU Space Act cross-reference(s) — plan for dual compliance post-Brexit`,
+    );
+  }
+
+  // Adjust score based on UK risk level (bonus for comprehensive framework)
+  if (ukResult.riskLevel === "low") {
+    score += 5;
+    factors.push("Low regulatory risk based on detailed UK assessment");
+  }
+
+  // Small entity consideration (not in generic UK favorability)
+  if (answers.entitySize === "small") {
+    factors.push(
+      "Note: UK SIA 2018 does not provide reduced thresholds for small operators",
+    );
+  }
+
+  score = Math.max(0, Math.min(100, score));
+  return { score, factors };
+}
+
+/**
+ * Calculate UK jurisdiction result using the dedicated UK Space Industry Act engine.
+ * Falls back to generic calculation if the UK engine encounters an error.
+ */
+async function calculateUKJurisdictionResult(
+  ukJurisdictionData: JurisdictionLaw,
+  answers: SpaceLawAssessmentAnswers,
+): Promise<JurisdictionResult> {
+  try {
+    const ukEngine = await getUkEngine();
+    const profile = buildUkProfileFromAnswers(answers);
+    const validatedProfile = ukEngine.validateOperatorProfile(profile);
+    // No pre-existing assessments in the generic flow — pass empty array
+    const ukResult = ukEngine.performAssessment(validatedProfile, []);
+    return adaptUKResult(ukResult, ukJurisdictionData, answers);
+  } catch {
+    // Fallback to generic calculation if UK engine fails
+    return calculateJurisdictionResult(ukJurisdictionData, answers);
+  }
+}
+
 // ─── Main Calculation Function ───
 
 export async function calculateSpaceLawCompliance(
@@ -56,13 +350,24 @@ export async function calculateSpaceLawCompliance(
   const crossReferences = await getCrossReferences();
 
   // 1. Calculate results for each selected jurisdiction
-  const jurisdictions: JurisdictionResult[] = answers.selectedJurisdictions
-    .map((code) => {
+  //    UK/GB is delegated to the dedicated UK Space Industry Act engine
+  const jurisdictionPromises = answers.selectedJurisdictions.map(
+    async (code): Promise<JurisdictionResult | null> => {
       const data = jurisdictionData.get(code);
       if (!data) return null;
+
+      // Delegate UK to dedicated engine for richer analysis
+      if (code === "UK") {
+        return calculateUKJurisdictionResult(data, answers);
+      }
+
       return calculateJurisdictionResult(data, answers);
-    })
-    .filter((r): r is JurisdictionResult => r !== null);
+    },
+  );
+
+  const jurisdictions: JurisdictionResult[] = (
+    await Promise.all(jurisdictionPromises)
+  ).filter((r): r is JurisdictionResult => r !== null);
 
   // 2. Build comparison matrix
   const comparisonMatrix = buildComparisonMatrix(

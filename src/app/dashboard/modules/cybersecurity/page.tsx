@@ -1799,24 +1799,68 @@ function CybersecurityPageContent() {
                                   regulationType="CYBERSECURITY"
                                 />
 
-                                {/* References */}
-                                <div className="flex flex-wrap gap-2">
-                                  {req.nis2Reference && (
-                                    <span className="text-micro px-2 py-1 rounded bg-purple-500/10 text-purple-400">
-                                      {req.nis2Reference}
+                                {/* Regulation Sources & References */}
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-micro px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                      EU Space Act
                                     </span>
-                                  )}
-                                  {req.isoReference && (
-                                    <span className="text-micro px-2 py-1 rounded bg-emerald-500/10 text-emerald-400">
-                                      {req.isoReference}
-                                    </span>
-                                  )}
-                                  {req.implementationTimeWeeks && (
-                                    <span className="text-micro px-2 py-1 rounded bg-white/[0.05] text-white/45">
-                                      ~{req.implementationTimeWeeks} weeks to
-                                      implement
-                                    </span>
-                                  )}
+                                    {req.nis2Reference && (
+                                      <span className="text-micro px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                        NIS2 · {req.nis2Reference}
+                                      </span>
+                                    )}
+                                    {req.enisaGuidance &&
+                                      req.enisaGuidance.length > 0 && (
+                                        <span className="text-micro px-2 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                          ENISA · {req.enisaGuidance.length}{" "}
+                                          {req.enisaGuidance.length === 1
+                                            ? "control"
+                                            : "controls"}
+                                        </span>
+                                      )}
+                                    {req.isoReference && (
+                                      <span className="text-micro px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        ISO · {req.isoReference}
+                                      </span>
+                                    )}
+                                    {req.implementationTimeWeeks && (
+                                      <span className="text-micro px-2 py-1 rounded bg-white/[0.05] text-white/45">
+                                        ~{req.implementationTimeWeeks} weeks to
+                                        implement
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* ENISA Guidance Details */}
+                                  {req.enisaGuidance &&
+                                    req.enisaGuidance.length > 0 && (
+                                      <div className="p-3 bg-cyan-500/[0.03] rounded-lg border border-cyan-500/10">
+                                        <p className="text-micro uppercase tracking-wider text-cyan-400/70 mb-2">
+                                          ENISA Space Cybersecurity Controls
+                                        </p>
+                                        <div className="space-y-2">
+                                          {req.enisaGuidance.map((g) => (
+                                            <div
+                                              key={g.controlId}
+                                              className="flex items-start gap-2"
+                                            >
+                                              <span className="font-mono text-micro text-cyan-400/60 mt-0.5 shrink-0">
+                                                {g.controlId}
+                                              </span>
+                                              <div className="min-w-0">
+                                                <span className="text-small text-white/60">
+                                                  {g.controlName}
+                                                </span>
+                                                <span className="text-micro text-white/30 ml-2">
+                                                  [{g.segment}]
+                                                </span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
                                 </div>
                               </div>
                             </motion.div>

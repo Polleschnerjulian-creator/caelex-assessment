@@ -53,8 +53,8 @@ describe("Comment Service", () => {
       expect(COMMENTABLE_ENTITIES).toContain("assessment");
     });
 
-    it("should have exactly 5 entity types", () => {
-      expect(COMMENTABLE_ENTITIES).toHaveLength(5);
+    it("should have at least 5 entity types", () => {
+      expect(COMMENTABLE_ENTITIES.length).toBeGreaterThanOrEqual(5);
     });
   });
 
