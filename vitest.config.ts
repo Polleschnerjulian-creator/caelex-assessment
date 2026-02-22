@@ -12,7 +12,7 @@ export default defineConfig({
     exclude: ["tests/e2e/**/*", "node_modules/**/*"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html", "lcov"],
+      reporter: ["text", "json", "json-summary", "html", "lcov"],
       reportsDirectory: "./coverage",
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
@@ -37,10 +37,10 @@ export default defineConfig({
       ],
       thresholds: {
         global: {
-          branches: 60,
-          functions: 60,
-          lines: 65,
-          statements: 65,
+          branches: 80,
+          functions: 80,
+          lines: 85,
+          statements: 85,
         },
       },
     },

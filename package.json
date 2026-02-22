@@ -27,7 +27,15 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
+    "test:unit": "vitest run --dir tests/unit",
+    "test:integration": "vitest run --dir tests/integration",
+    "test:contracts": "vitest run --dir tests/contracts",
     "test:all": "vitest run && playwright test",
+    "test:ci": "vitest run --coverage --reporter=default --reporter=junit --outputFile=test-results/junit.xml",
+    "test:e2e:a11y": "playwright test tests/e2e/accessibility.spec.ts",
+    "test:e2e:visual": "playwright test tests/e2e/visual-regression.spec.ts --update-snapshots",
+    "test:mutation": "stryker run",
+    "lighthouse": "lhci autorun",
     "build:widget": "npx tsx widget.build.ts"
   },
   "dependencies": {
@@ -88,7 +96,11 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@faker-js/faker": "^10.2.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",

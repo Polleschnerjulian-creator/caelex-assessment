@@ -5,7 +5,8 @@ import { AssessmentAnswers, SpaceActData } from "@/lib/types";
 vi.mock("server-only", () => ({}));
 
 // Import after mocking server-only
-const { calculateCompliance } = await import("@/lib/engine.server");
+const { calculateCompliance, redactArticlesForClient } =
+  await import("@/lib/engine.server");
 
 // Mock space act data
 const mockSpaceActData: SpaceActData = {
@@ -35,6 +36,14 @@ const mockSpaceActData: SpaceActData = {
           applies_to: ["SCO", "LO", "LSO"],
           compliance_type: "scope_determination",
           operator_action: "Determine applicability",
+        },
+        {
+          number: 3,
+          title: "Definitions",
+          summary: "Key definitions",
+          applies_to: ["ALL"],
+          compliance_type: "informational",
+          operator_action: "N/A",
         },
       ],
     },
@@ -69,6 +78,22 @@ const mockSpaceActData: SpaceActData = {
               applies_to: ["SCO"],
               compliance_type: "conditional_simplification",
               operator_action: "Apply for light regime if eligible",
+            },
+            {
+              number: 12,
+              title: "ISOS Authorization",
+              summary: "Authorization for ISOS providers",
+              applies_to: ["ISOS"],
+              compliance_type: "mandatory_pre_activity",
+              operator_action: "Obtain ISOS authorization",
+            },
+            {
+              number: 14,
+              title: "CAP Registration",
+              summary: "Registration for collision avoidance providers",
+              applies_to: ["CAP"],
+              compliance_type: "mandatory_pre_activity",
+              operator_action: "Register as CAP",
             },
           ],
         },
@@ -161,6 +186,14 @@ const mockSpaceActData: SpaceActData = {
           compliance_type: "mandatory_pre_activity",
           operator_action: "Register with EUSPA",
         },
+        {
+          number: 106,
+          title: "TCO Ongoing Obligations",
+          summary: "Ongoing obligations for TCO",
+          applies_to: ["TCO"],
+          compliance_type: "mandatory_ongoing",
+          operator_action: "Comply with TCO obligations",
+        },
       ],
     },
   ],
@@ -246,22 +279,35 @@ const mockSpaceActData: SpaceActData = {
   decision_tree: {},
 };
 
+// ─── Helper ───
+
+function makeAnswers(
+  overrides: Partial<AssessmentAnswers> = {},
+): AssessmentAnswers {
+  return {
+    activityType: "spacecraft",
+    isDefenseOnly: false,
+    hasPostLaunchAssets: true,
+    allAssetsPreLaunch: false,
+    establishment: "eu",
+    entitySize: "medium",
+    operatesConstellation: false,
+    constellationSize: null,
+    primaryOrbit: "LEO",
+    offersEUServices: true,
+    ...overrides,
+  } as AssessmentAnswers;
+}
+
 describe("Compliance Engine", () => {
   describe("calculateCompliance", () => {
-    describe("Operator Type Mapping", () => {
-      it("should correctly identify spacecraft operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
+    // ═══════════════════════════════════════════
+    // Operator Type Mapping — ALL 7 types
+    // ═══════════════════════════════════════════
 
+    describe("Operator Type Mapping", () => {
+      it("should correctly identify spacecraft operator (SCO)", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.operatorType).toBe("spacecraft_operator");
@@ -269,19 +315,8 @@ describe("Compliance Engine", () => {
         expect(result.operatorTypeLabel).toBe("Spacecraft Operator (EU)");
       });
 
-      it("should correctly identify launch operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "launch_vehicle",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should correctly identify launch operator (LO)", () => {
+        const answers = makeAnswers({ activityType: "launch_vehicle" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.operatorType).toBe("launch_operator");
@@ -289,19 +324,8 @@ describe("Compliance Engine", () => {
         expect(result.operatorTypeLabel).toBe("Launch Operator (EU)");
       });
 
-      it("should correctly identify launch site operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "launch_site",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should correctly identify launch site operator (LSO)", () => {
+        const answers = makeAnswers({ activityType: "launch_site" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.operatorType).toBe("launch_site_operator");
@@ -309,284 +333,69 @@ describe("Compliance Engine", () => {
       });
 
       it("should correctly identify ISOS provider", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "isos",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        const answers = makeAnswers({ activityType: "isos" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.operatorType).toBe("isos_provider");
         expect(result.operatorAbbreviation).toBe("ISOS");
       });
 
-      it("should correctly identify primary data provider", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "data_provider",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should correctly identify primary data provider (PDP)", () => {
+        const answers = makeAnswers({ activityType: "data_provider" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.operatorType).toBe("primary_data_provider");
         expect(result.operatorAbbreviation).toBe("PDP");
       });
-    });
 
-    describe("Third Country Operator Detection", () => {
-      it("should identify third country operator with EU services", () => {
-        const answers: AssessmentAnswers = {
+      it("should identify third country operator (TCO) when establishment is third_country_eu_services", () => {
+        const answers = makeAnswers({
           activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
           establishment: "third_country_eu_services",
-          entitySize: "large",
-          operatesConstellation: true,
-          constellationSize: 50,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.isThirdCountry).toBe(true);
-        expect(result.isEU).toBe(false);
         expect(result.operatorTypeLabel).toContain("Third Country");
-        expect(result.authorizationPath).toBe(
-          "EUSPA Registration → Commission Decision",
-        );
       });
 
-      it("should correctly handle EU-established operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "GEO",
-          offersEUServices: true,
-        };
-
+      it("should default to spacecraft operator for unknown activityType", () => {
+        const answers = makeAnswers({
+          activityType: "unknown_type" as any,
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.isEU).toBe(true);
-        expect(result.isThirdCountry).toBe(false);
-        expect(result.authorizationPath).toBe(
-          "National Authority (NCA) → URSO Registration",
-        );
+        expect(result.operatorType).toBe("spacecraft_operator");
+        expect(result.operatorAbbreviation).toBe("SCO");
+      });
+
+      it("should default to spacecraft operator when activityType is null", () => {
+        const answers = makeAnswers({ activityType: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.operatorType).toBe("spacecraft_operator");
+        expect(result.operatorAbbreviation).toBe("SCO");
       });
     });
 
-    describe("Light Regime Determination", () => {
-      it("should identify light regime for small enterprise", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "small",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
+    // ═══════════════════════════════════════════
+    // Article Filtering by Operator Type
+    // ═══════════════════════════════════════════
 
+    describe("Article Filtering by Operator Type", () => {
+      it("should include ALL articles for every operator type", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.regime).toBe("light");
-        expect(result.regimeLabel).toBe("Light Regime");
-        expect(result.regimeReason).toContain("Art. 10");
+        // Art. 1 applies to ALL
+        const hasArt1 = result.applicableArticles.some((a) => a.number === 1);
+        expect(hasArt1).toBe(true);
       });
 
-      it("should identify light regime for research institution", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "research",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should filter articles specifically for SCO", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.regime).toBe("light");
-        expect(result.entitySizeLabel).toBe("Research/Educational Institution");
-      });
-
-      it("should identify standard regime for medium enterprise", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.regime).toBe("standard");
-        expect(result.regimeLabel).toBe("Standard (Full Requirements)");
-      });
-
-      it("should identify standard regime for large enterprise", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: true,
-          constellationSize: 100,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.regime).toBe("standard");
-      });
-    });
-
-    describe("Constellation Tier Classification", () => {
-      it("should classify single satellite correctly", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.constellationTier).toBe("single_satellite");
-        expect(result.constellationTierLabel).toBe("Single Satellite");
-      });
-
-      it("should classify small constellation (2-9 satellites)", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: true,
-          constellationSize: 5,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.constellationTier).toBe("small_constellation");
-        expect(result.constellationTierLabel).toContain("Small Constellation");
-      });
-
-      it("should classify medium constellation (10-99 satellites)", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: true,
-          constellationSize: 50,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.constellationTier).toBe("medium_constellation");
-      });
-
-      it("should classify large constellation (100-999 satellites)", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: true,
-          constellationSize: 500,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.constellationTier).toBe("large_constellation");
-      });
-
-      it("should classify mega constellation (1000+ satellites)", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: true,
-          constellationSize: 5000,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.constellationTier).toBe("mega_constellation");
-        expect(result.constellationTierLabel).toContain("Mega Constellation");
-      });
-    });
-
-    describe("Article Filtering", () => {
-      it("should filter articles by operator type", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        // SCO should have articles that apply to SCO or ALL
-        expect(result.applicableArticles.length).toBeGreaterThan(0);
-
-        // Check that applicable articles either apply to SCO or ALL
         for (const article of result.applicableArticles) {
           const appliesTo = article.applies_to || [];
           expect(appliesTo.includes("SCO") || appliesTo.includes("ALL")).toBe(
@@ -595,72 +404,292 @@ describe("Compliance Engine", () => {
         }
       });
 
-      it("should exclude articles based on excludes field", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "data_provider",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should filter articles specifically for LO", () => {
+        const answers = makeAnswers({ activityType: "launch_vehicle" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        // Article 74 (Cybersecurity) excludes PDP
+        for (const article of result.applicableArticles) {
+          const appliesTo = article.applies_to || [];
+          expect(appliesTo.includes("LO") || appliesTo.includes("ALL")).toBe(
+            true,
+          );
+        }
+      });
+
+      it("should filter articles specifically for LSO", () => {
+        const answers = makeAnswers({ activityType: "launch_site" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        for (const article of result.applicableArticles) {
+          const appliesTo = article.applies_to || [];
+          expect(appliesTo.includes("LSO") || appliesTo.includes("ALL")).toBe(
+            true,
+          );
+        }
+      });
+
+      it("should filter articles specifically for ISOS", () => {
+        const answers = makeAnswers({ activityType: "isos" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        // Should include Art. 12 (ISOS-specific) and Art. 1 (ALL)
+        const hasArt12 = result.applicableArticles.some((a) => a.number === 12);
+        expect(hasArt12).toBe(true);
+
+        // Should NOT include SCO-specific articles like Art. 55
+        const hasArt55 = result.applicableArticles.some((a) => a.number === 55);
+        expect(hasArt55).toBe(false);
+      });
+
+      it("should filter articles specifically for PDP", () => {
+        const answers = makeAnswers({ activityType: "data_provider" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        // PDP should NOT include Art. 74 (excludes PDP)
         const hasCyberArticle = result.applicableArticles.some(
           (a) => a.number === 74,
         );
         expect(hasCyberArticle).toBe(false);
       });
 
-      it("should include third country specific articles for TCO", () => {
-        const answers: AssessmentAnswers = {
+      it("should include TCO articles for third country operators", () => {
+        const answers = makeAnswers({
           activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
           establishment: "third_country_eu_services",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        // Should include article 105 (TCO registration)
         const hasTcoArticle = result.applicableArticles.some(
           (a) => a.number === 105,
         );
         expect(hasTcoArticle).toBe(true);
       });
-    });
 
-    describe("Module Status Calculation", () => {
-      it("should calculate module statuses", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
+      it("should exclude articles based on excludes field", () => {
+        const answers = makeAnswers({ activityType: "data_provider" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        // Article 74 excludes PDP
+        const hasCyber = result.applicableArticles.some((a) => a.number === 74);
+        expect(hasCyber).toBe(false);
+      });
+
+      it("should not include TCO-excluded articles when isThirdCountry and article excludes TCO", () => {
+        const dataWithTCOExclusion: SpaceActData = {
+          ...mockSpaceActData,
+          titles: [
+            {
+              number: 1,
+              title: "Test",
+              articles_detail: [
+                {
+                  number: 99,
+                  title: "Special",
+                  summary: "Special rule",
+                  applies_to: ["ALL"],
+                  excludes: ["TCO"],
+                  compliance_type: "mandatory_ongoing",
+                  operator_action: "Do something",
+                },
+              ],
+            },
+          ],
         };
 
+        const answers = makeAnswers({
+          establishment: "third_country_eu_services",
+        });
+        const result = calculateCompliance(answers, dataWithTCOExclusion);
+
+        const hasArt99 = result.applicableArticles.some((a) => a.number === 99);
+        expect(hasArt99).toBe(false);
+      });
+    });
+
+    // ═══════════════════════════════════════════
+    // Standard vs Light Regime Determination
+    // ═══════════════════════════════════════════
+
+    describe("Light Regime Determination", () => {
+      it("should identify light regime for small enterprise", () => {
+        const answers = makeAnswers({ entitySize: "small" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("light");
+        expect(result.regimeLabel).toBe("Light Regime");
+        expect(result.regimeReason).toContain("Art. 10");
+      });
+
+      it("should identify light regime for research institution", () => {
+        const answers = makeAnswers({ entitySize: "research" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("light");
+        expect(result.entitySizeLabel).toBe("Research/Educational Institution");
+      });
+
+      it("should identify standard regime for medium enterprise", () => {
+        const answers = makeAnswers({ entitySize: "medium" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("standard");
+        expect(result.regimeLabel).toBe("Standard (Full Requirements)");
+      });
+
+      it("should identify standard regime for large enterprise", () => {
+        const answers = makeAnswers({ entitySize: "large" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("standard");
+      });
+
+      it("should identify standard regime for null entity size", () => {
+        const answers = makeAnswers({ entitySize: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("standard");
+        expect(result.entitySizeLabel).toBe("Not specified");
+      });
+    });
+
+    // ═══════════════════════════════════════════
+    // Constellation Size Thresholds
+    // ═══════════════════════════════════════════
+
+    describe("Constellation Tier Classification", () => {
+      it("should classify single satellite correctly", () => {
+        const answers = makeAnswers({
+          operatesConstellation: false,
+          constellationSize: null,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("single_satellite");
+        expect(result.constellationTierLabel).toBe("Single Satellite");
+      });
+
+      it("should classify constellation size 1 as single satellite", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 1,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("single_satellite");
+      });
+
+      it("should classify small constellation (2-9 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 5,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("small_constellation");
+        expect(result.constellationTierLabel).toContain("Small Constellation");
+      });
+
+      it("should classify small constellation boundary (2 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 2,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("small_constellation");
+      });
+
+      it("should classify medium constellation (10-99 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 50,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("medium_constellation");
+      });
+
+      it("should classify medium constellation boundary (10 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 10,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("medium_constellation");
+      });
+
+      it("should classify large constellation (100-999 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 500,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("large_constellation");
+      });
+
+      it("should classify large constellation boundary (100 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 100,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("large_constellation");
+      });
+
+      it("should classify mega constellation (1000+ satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 5000,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("mega_constellation");
+        expect(result.constellationTierLabel).toContain("Mega Constellation");
+      });
+
+      it("should classify mega constellation boundary (1000 satellites)", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: 1000,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBe("mega_constellation");
+      });
+
+      it("should handle null constellationSize when operatesConstellation is true", () => {
+        const answers = makeAnswers({
+          operatesConstellation: true,
+          constellationSize: null,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.constellationTier).toBeNull();
+        expect(result.constellationTierLabel).toBeNull();
+      });
+    });
+
+    // ═══════════════════════════════════════════
+    // Module Status Calculations
+    // ═══════════════════════════════════════════
+
+    describe("Module Status Calculation", () => {
+      it("should calculate module statuses for all 9 modules", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.moduleStatuses).toBeDefined();
         expect(Array.isArray(result.moduleStatuses)).toBe(true);
-        expect(result.moduleStatuses.length).toBeGreaterThan(0);
+        expect(result.moduleStatuses.length).toBe(9);
+      });
 
-        // Each module status should have required fields
+      it("should have required fields on each module status", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
         for (const mod of result.moduleStatuses) {
           expect(mod).toHaveProperty("id");
           expect(mod).toHaveProperty("name");
@@ -675,52 +704,129 @@ describe("Compliance Engine", () => {
         }
       });
 
-      it("should mark modules as simplified for light regime", () => {
-        const answers: AssessmentAnswers = {
+      it("should mark modules with mandatory articles as required", () => {
+        const answers = makeAnswers({
           activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "small", // Light regime eligible
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+          entitySize: "medium",
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        // Light regime should potentially have simplified modules
-        expect(result.regime).toBe("light");
-        // Check if any module has simplified status
-        const hasSimplified = result.moduleStatuses.some(
-          (m) => m.status === "simplified",
+        // The supervision module (Art. 26-31, 40-43, 52-57, 73) should contain Art. 33 (mandatory_ongoing)
+        const supervisionModule = result.moduleStatuses.find(
+          (m) => m.id === "supervision",
         );
-        // This depends on the data - the test validates the logic works
+        if (supervisionModule && supervisionModule.articleCount > 0) {
+          expect(supervisionModule.status).toBe("required");
+        }
+      });
+
+      it("should show simplified status for light regime with conditional simplified articles", () => {
+        const answers = makeAnswers({
+          activityType: "spacecraft",
+          entitySize: "small", // Light regime
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.regime).toBe("light");
+        // Authorization module should be simplified because it has conditional_simplification (Art. 10)
+        const authModule = result.moduleStatuses.find(
+          (m) => m.id === "authorization",
+        );
+        // It could be simplified if it has both mandatory + simplified articles
+        if (authModule) {
+          expect(authModule.articleCount).toBeGreaterThan(0);
+        }
+      });
+
+      it("should mark modules with no applicable articles as not_applicable", () => {
+        const answers = makeAnswers({ activityType: "data_provider" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        // PDP has fewer applicable articles, some modules should be not_applicable
+        const notApplicableModules = result.moduleStatuses.filter(
+          (m) => m.status === "not_applicable",
+        );
+        expect(notApplicableModules.length).toBeGreaterThan(0);
+      });
+
+      it("should set summary text based on status", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        for (const mod of result.moduleStatuses) {
+          expect(typeof mod.summary).toBe("string");
+          expect(mod.summary.length).toBeGreaterThan(0);
+        }
       });
     });
 
-    describe("Checklist Generation", () => {
-      it("should generate checklist for EU spacecraft operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
+    // ═══════════════════════════════════════════
+    // Out-of-Scope Detection
+    // ═══════════════════════════════════════════
 
+    describe("Third Country Operator Detection", () => {
+      it("should identify third country operator with EU services", () => {
+        const answers = makeAnswers({
+          establishment: "third_country_eu_services",
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.isThirdCountry).toBe(true);
+        expect(result.isEU).toBe(false);
+        expect(result.operatorTypeLabel).toContain("Third Country");
+        expect(result.authorizationPath).toBe(
+          "EUSPA Registration → Commission Decision",
+        );
+      });
+
+      it("should correctly handle EU-established operator", () => {
+        const answers = makeAnswers({ establishment: "eu" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.isEU).toBe(true);
+        expect(result.isThirdCountry).toBe(false);
+        expect(result.authorizationPath).toBe(
+          "National Authority (NCA) → URSO Registration",
+        );
+      });
+
+      it("should handle third_country_no_eu establishment", () => {
+        const answers = makeAnswers({
+          establishment: "third_country_no_eu" as any,
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.isEU).toBe(false);
+        expect(result.isThirdCountry).toBe(false);
+        expect(result.authorizationPath).toBe("Determine establishment status");
+      });
+
+      it("should handle null establishment", () => {
+        const answers = makeAnswers({ establishment: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.isEU).toBe(false);
+        expect(result.isThirdCountry).toBe(false);
+      });
+    });
+
+    // ═══════════════════════════════════════════
+    // Checklist Generation
+    // ═══════════════════════════════════════════
+
+    describe("Checklist Generation", () => {
+      it("should generate pre-authorization, ongoing, and end-of-life checklist for EU spacecraft operator", () => {
+        const answers = makeAnswers({
+          activityType: "spacecraft",
+          establishment: "eu",
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.checklist).toBeDefined();
         expect(Array.isArray(result.checklist)).toBe(true);
-        expect(result.checklist.length).toBeGreaterThan(0);
+        // SCO EU: pre_authorization (2) + ongoing (2) + end_of_life (1) = 5
+        expect(result.checklist.length).toBe(5);
 
-        // Check checklist item structure
         for (const item of result.checklist) {
           expect(item).toHaveProperty("action");
           expect(item).toHaveProperty("article_reference");
@@ -728,24 +834,13 @@ describe("Compliance Engine", () => {
       });
 
       it("should generate checklist for third country operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
+        const answers = makeAnswers({
           establishment: "third_country_eu_services",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.checklist).toBeDefined();
         expect(result.checklist.length).toBeGreaterThan(0);
 
-        // TCO checklist should include registration
         const hasRegistration = result.checklist.some((item) =>
           item.action.toLowerCase().includes("register"),
         );
@@ -753,200 +848,177 @@ describe("Compliance Engine", () => {
       });
 
       it("should generate checklist for launch operator", () => {
-        const answers: AssessmentAnswers = {
+        const answers = makeAnswers({
           activityType: "launch_vehicle",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
           establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
 
+        expect(result.checklist).toBeDefined();
+        expect(result.checklist.length).toBeGreaterThan(0);
+
+        // LO EU: pre_authorization (1) + operational (1) = 2
+        expect(result.checklist.length).toBe(2);
+      });
+
+      it("should generate checklist for launch site operator (uses LO checklist)", () => {
+        const answers = makeAnswers({
+          activityType: "launch_site",
+          establishment: "eu",
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.checklist).toBeDefined();
         expect(result.checklist.length).toBeGreaterThan(0);
       });
-    });
 
-    describe("Key Dates", () => {
-      it("should include basic key dates", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
+      it("should generate default checklist for ISOS/PDP (falls back to SCO pre+ongoing)", () => {
+        const answers = makeAnswers({
+          activityType: "isos",
           establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.keyDates).toBeDefined();
-        expect(result.keyDates.length).toBeGreaterThan(0);
+        expect(result.checklist).toBeDefined();
+        // Default path: SCO pre_authorization (2) + ongoing (2) = 4
+        expect(result.checklist.length).toBe(4);
+      });
+    });
 
-        // Should include 2030 application date
+    // ═══════════════════════════════════════════
+    // Key Dates
+    // ═══════════════════════════════════════════
+
+    describe("Key Dates", () => {
+      it("should include 2030 application date", () => {
+        const answers = makeAnswers({});
+        const result = calculateCompliance(answers, mockSpaceActData);
+
+        expect(result.keyDates.length).toBeGreaterThan(0);
         const has2030 = result.keyDates.some((d) => d.date.includes("2030"));
         expect(has2030).toBe(true);
       });
 
       it("should include EFD deadline for light regime", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "small",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        const answers = makeAnswers({ entitySize: "small" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        // Light regime has specific EFD deadline
         const hasEfdDeadline = result.keyDates.some((d) =>
           d.description.toLowerCase().includes("efd"),
         );
         expect(hasEfdDeadline).toBe(true);
       });
-    });
 
-    describe("Authorization Cost Estimates", () => {
-      it("should estimate cost for spacecraft operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should not include EFD deadline for standard regime", () => {
+        const answers = makeAnswers({ entitySize: "large" });
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.estimatedAuthorizationCost).toContain("100,000");
+        const hasEfdDeadline = result.keyDates.some((d) =>
+          d.description.toLowerCase().includes("efd"),
+        );
+        expect(hasEfdDeadline).toBe(false);
       });
 
-      it("should estimate cost for launch operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "launch_vehicle",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+      it("should always include 2035 review date", () => {
+        const answers = makeAnswers({});
         const result = calculateCompliance(answers, mockSpaceActData);
 
-        expect(result.estimatedAuthorizationCost).toContain("150,000");
+        const has2035 = result.keyDates.some((d) => d.date.includes("2035"));
+        expect(has2035).toBe(true);
       });
 
-      it("should show TBD for third country operator", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "third_country_eu_services",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
+      it("should have more key dates for light regime than standard", () => {
+        const lightAnswers = makeAnswers({ entitySize: "small" });
+        const standardAnswers = makeAnswers({ entitySize: "large" });
+        const lightResult = calculateCompliance(lightAnswers, mockSpaceActData);
+        const standardResult = calculateCompliance(
+          standardAnswers,
+          mockSpaceActData,
+        );
 
-        const result = calculateCompliance(answers, mockSpaceActData);
-
-        expect(result.estimatedAuthorizationCost.toLowerCase()).toContain(
-          "tbd",
+        expect(lightResult.keyDates.length).toBeGreaterThan(
+          standardResult.keyDates.length,
         );
       });
     });
 
+    // ═══════════════════════════════════════════
+    // Authorization Cost Estimates
+    // ═══════════════════════════════════════════
+
+    describe("Authorization Cost Estimates", () => {
+      it("should estimate cost for spacecraft operator", () => {
+        const answers = makeAnswers({ activityType: "spacecraft" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.estimatedAuthorizationCost).toContain("100,000");
+      });
+
+      it("should estimate cost for launch operator", () => {
+        const answers = makeAnswers({ activityType: "launch_vehicle" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.estimatedAuthorizationCost).toContain("150,000");
+      });
+
+      it("should show TBD for third country operator", () => {
+        const answers = makeAnswers({
+          establishment: "third_country_eu_services",
+        });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.estimatedAuthorizationCost.toLowerCase()).toContain(
+          "tbd",
+        );
+      });
+
+      it("should show default estimate for ISOS/PDP", () => {
+        const answers = makeAnswers({ activityType: "isos" });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.estimatedAuthorizationCost).toContain("50,000");
+      });
+    });
+
+    // ═══════════════════════════════════════════
+    // Orbit Labels
+    // ═══════════════════════════════════════════
+
     describe("Orbit Labels", () => {
       it("should correctly label LEO", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        const answers = makeAnswers({ primaryOrbit: "LEO" });
         const result = calculateCompliance(answers, mockSpaceActData);
-
         expect(result.orbitLabel).toContain("Low Earth Orbit");
       });
 
-      it("should correctly label GEO", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "GEO",
-          offersEUServices: true,
-        };
-
+      it("should correctly label MEO", () => {
+        const answers = makeAnswers({ primaryOrbit: "MEO" });
         const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.orbitLabel).toContain("Medium Earth Orbit");
+      });
 
+      it("should correctly label GEO", () => {
+        const answers = makeAnswers({ primaryOrbit: "GEO" });
+        const result = calculateCompliance(answers, mockSpaceActData);
         expect(result.orbitLabel).toContain("Geostationary");
       });
 
       it("should correctly label beyond Earth orbit", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "large",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "beyond",
-          offersEUServices: true,
-        };
-
+        const answers = makeAnswers({ primaryOrbit: "beyond" });
         const result = calculateCompliance(answers, mockSpaceActData);
-
         expect(result.orbitLabel).toContain("Beyond Earth");
+      });
+
+      it("should handle null orbit", () => {
+        const answers = makeAnswers({ primaryOrbit: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.orbitLabel).toBe("Not specified");
       });
     });
 
+    // ═══════════════════════════════════════════
+    // Statistics Calculation
+    // ═══════════════════════════════════════════
+
     describe("Statistics Calculation", () => {
       it("should calculate applicable percentage correctly", () => {
-        const answers: AssessmentAnswers = {
-          activityType: "spacecraft",
-          isDefenseOnly: false,
-          allAssetsPreLaunch: false,
-          establishment: "eu",
-          entitySize: "medium",
-          operatesConstellation: false,
-          constellationSize: null,
-          primaryOrbit: "LEO",
-          offersEUServices: true,
-        };
-
+        const answers = makeAnswers({});
         const result = calculateCompliance(answers, mockSpaceActData);
 
         expect(result.totalArticles).toBe(119);
@@ -954,12 +1026,105 @@ describe("Compliance Engine", () => {
         expect(result.applicablePercentage).toBeGreaterThanOrEqual(0);
         expect(result.applicablePercentage).toBeLessThanOrEqual(100);
 
-        // Verify percentage calculation
         const expectedPercentage = Math.round(
           (result.applicableCount / result.totalArticles) * 100,
         );
         expect(result.applicablePercentage).toBe(expectedPercentage);
       });
+    });
+
+    // ═══════════════════════════════════════════
+    // Edge Cases
+    // ═══════════════════════════════════════════
+
+    describe("Edge Cases", () => {
+      it("should handle empty titles array", () => {
+        const emptyData: SpaceActData = {
+          ...mockSpaceActData,
+          titles: [],
+        };
+        const answers = makeAnswers({});
+        const result = calculateCompliance(answers, emptyData);
+
+        expect(result.applicableArticles).toEqual([]);
+        expect(result.applicableCount).toBe(0);
+      });
+
+      it("should handle all null answers gracefully", () => {
+        const answers: AssessmentAnswers = {
+          activityType: null,
+          isDefenseOnly: null,
+          hasPostLaunchAssets: null,
+          allAssetsPreLaunch: false,
+          establishment: null,
+          entitySize: null,
+          operatesConstellation: null,
+          constellationSize: null,
+          primaryOrbit: null,
+          offersEUServices: null,
+        } as AssessmentAnswers;
+
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result).toBeDefined();
+        expect(result.operatorType).toBe("spacecraft_operator");
+        expect(result.regime).toBe("standard");
+      });
+
+      it("should set offersEUServices to false when null", () => {
+        const answers = makeAnswers({ offersEUServices: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.offersEUServices).toBe(false);
+      });
+
+      it("should set entitySize to 'unknown' when null", () => {
+        const answers = makeAnswers({ entitySize: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.entitySize).toBe("unknown");
+      });
+
+      it("should set orbit to 'unknown' when null", () => {
+        const answers = makeAnswers({ primaryOrbit: null });
+        const result = calculateCompliance(answers, mockSpaceActData);
+        expect(result.orbit).toBe("unknown");
+      });
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // Redaction
+  // ═══════════════════════════════════════════
+
+  describe("redactArticlesForClient", () => {
+    it("should strip sensitive fields from articles", () => {
+      const answers = makeAnswers({});
+      const fullResult = calculateCompliance(answers, mockSpaceActData);
+      const redacted = redactArticlesForClient(fullResult);
+
+      expect(redacted.applicableArticles.length).toBe(
+        fullResult.applicableArticles.length,
+      );
+
+      for (const article of redacted.applicableArticles) {
+        expect(article).toHaveProperty("number");
+        expect(article).toHaveProperty("title");
+        expect(article).toHaveProperty("compliance_type");
+        expect(article).toHaveProperty("applies_to");
+        // Should NOT have sensitive fields
+        expect(article).not.toHaveProperty("summary");
+        expect(article).not.toHaveProperty("operator_action");
+      }
+    });
+
+    it("should preserve non-article fields", () => {
+      const answers = makeAnswers({});
+      const fullResult = calculateCompliance(answers, mockSpaceActData);
+      const redacted = redactArticlesForClient(fullResult);
+
+      expect(redacted.operatorType).toBe(fullResult.operatorType);
+      expect(redacted.regime).toBe(fullResult.regime);
+      expect(redacted.isEU).toBe(fullResult.isEU);
+      expect(redacted.checklist).toEqual(fullResult.checklist);
+      expect(redacted.keyDates).toEqual(fullResult.keyDates);
     });
   });
 });

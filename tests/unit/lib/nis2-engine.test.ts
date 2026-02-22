@@ -236,6 +236,16 @@ describe("classifyNIS2Entity", () => {
 
       expect(result.classification).toBe("out_of_scope");
     });
+
+    it("should classify entities with unknown size as out of scope (fallback)", () => {
+      const answers = makeAnswers({
+        entitySize: "unknown" as any,
+      });
+      const result = classifyNIS2Entity(answers);
+
+      expect(result.classification).toBe("out_of_scope");
+      expect(result.articleRef).toContain("Art. 2");
+    });
   });
 
   describe("Essential entity classifications", () => {
@@ -279,6 +289,16 @@ describe("classifyNIS2Entity", () => {
 
       expect(result.classification).toBe("essential");
       expect(result.articleRef).toContain("Art. 3(1)");
+    });
+
+    it("should classify large SATCOM entities as essential (large takes priority)", () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        operatesSatComms: true,
+      });
+      const result = classifyNIS2Entity(answers);
+
+      expect(result.classification).toBe("essential");
     });
   });
 
@@ -381,6 +401,42 @@ describe("classifyNIS2Entity", () => {
       }
     });
   });
+
+  describe("All criteria combinations for classification", () => {
+    it("should handle medium entity with both ground infra and SATCOM as essential", () => {
+      const answers = makeAnswers({
+        entitySize: "medium",
+        operatesGroundInfra: true,
+        operatesSatComms: true,
+      });
+      const result = classifyNIS2Entity(answers);
+
+      expect(result.classification).toBe("essential");
+    });
+
+    it("should handle small entity with all critical services as important", () => {
+      const answers = makeAnswers({
+        entitySize: "small",
+        operatesGroundInfra: true,
+        operatesSatComms: true,
+        providesLaunchServices: true,
+      });
+      const result = classifyNIS2Entity(answers);
+
+      expect(result.classification).toBe("important");
+    });
+
+    it("should handle micro entity without SATCOM as out_of_scope", () => {
+      const answers = makeAnswers({
+        entitySize: "micro",
+        operatesGroundInfra: true, // Ground infra alone doesn't save micro
+        operatesSatComms: false,
+      });
+      const result = classifyNIS2Entity(answers);
+
+      expect(result.classification).toBe("out_of_scope");
+    });
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -408,6 +464,23 @@ describe("calculateNIS2Compliance", () => {
     expect(result.totalNIS2Requirements).toBeGreaterThan(0);
   });
 
+  it("should return more requirements for essential than important", async () => {
+    const essentialAnswers = makeAnswers({ entitySize: "large" });
+    const importantAnswers = makeAnswers({
+      entitySize: "medium",
+      operatesGroundInfra: false,
+      operatesSatComms: false,
+    });
+
+    const essentialResult = await calculateNIS2Compliance(essentialAnswers);
+    const importantResult = await calculateNIS2Compliance(importantAnswers);
+
+    // Essential gets governance (essential-only) + shared requirements
+    expect(essentialResult.applicableCount).toBeGreaterThanOrEqual(
+      importantResult.applicableCount,
+    );
+  });
+
   it("should return empty requirements for out-of-scope entities", async () => {
     const answers = makeAnswers({ isEUEstablished: false });
     const result = await calculateNIS2Compliance(answers);
@@ -417,106 +490,243 @@ describe("calculateNIS2Compliance", () => {
     expect(result.applicableCount).toBe(0);
   });
 
-  it("should include incident reporting timeline", async () => {
-    const answers = makeAnswers({ entitySize: "large" });
-    const result = await calculateNIS2Compliance(answers);
+  describe("Incident Reporting Timeline", () => {
+    it("should include 24h early warning deadline", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
 
-    expect(result.incidentReportingTimeline).toBeDefined();
-    expect(result.incidentReportingTimeline.earlyWarning.deadline).toBe(
-      "24 hours",
-    );
-    expect(result.incidentReportingTimeline.notification.deadline).toBe(
-      "72 hours",
-    );
-    expect(result.incidentReportingTimeline.finalReport.deadline).toBe(
-      "1 month",
-    );
-  });
-
-  it("should calculate EU Space Act overlap for in-scope entities", async () => {
-    const answers = makeAnswers({ entitySize: "large" });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.euSpaceActOverlap).toBeDefined();
-    expect(result.euSpaceActOverlap.count).toBeGreaterThan(0);
-    expect(
-      result.euSpaceActOverlap.totalPotentialSavingsWeeks,
-    ).toBeGreaterThanOrEqual(0);
-  });
-
-  it("should return zero overlap for out-of-scope entities", async () => {
-    const answers = makeAnswers({ isEUEstablished: false });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.euSpaceActOverlap.count).toBe(0);
-    expect(result.euSpaceActOverlap.totalPotentialSavingsWeeks).toBe(0);
-    expect(result.euSpaceActOverlap.overlappingRequirements).toEqual([]);
-  });
-
-  it("should include penalty information", async () => {
-    const answers = makeAnswers({ entitySize: "large" });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.penalties).toBeDefined();
-    expect(result.penalties.essential).toContain("10,000,000");
-    expect(result.penalties.important).toContain("7,000,000");
-    expect(result.penalties.applicable).toContain("10,000,000"); // essential entity
-  });
-
-  it("should show N/A penalties for out-of-scope", async () => {
-    const answers = makeAnswers({ isEUEstablished: false });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.penalties.applicable).toContain("N/A");
-  });
-
-  it("should set registration required for in-scope entities", async () => {
-    const answers = makeAnswers({ entitySize: "large" });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.registrationRequired).toBe(true);
-    expect(result.registrationDeadline).toContain("Art. 3(4)");
-  });
-
-  it("should set registration not required for out-of-scope entities", async () => {
-    const answers = makeAnswers({ isEUEstablished: false });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.registrationRequired).toBe(false);
-  });
-
-  it("should include key dates with EU Space Act date for in-scope entities", async () => {
-    const answers = makeAnswers({ entitySize: "large" });
-    const result = await calculateNIS2Compliance(answers);
-
-    expect(result.keyDates.length).toBeGreaterThan(2);
-    const hasSpaceActDate = result.keyDates.some((d) =>
-      d.description.includes("EU Space Act"),
-    );
-    expect(hasSpaceActDate).toBe(true);
-  });
-
-  it("should handle multi-member-state supervisory authority", async () => {
-    const answers = makeAnswers({
-      entitySize: "large",
-      memberStateCount: 5,
+      expect(result.incidentReportingTimeline.earlyWarning.deadline).toBe(
+        "24 hours",
+      );
     });
-    const result = await calculateNIS2Compliance(answers);
 
-    expect(result.supervisoryAuthority).toContain("Primary");
-    expect(result.supervisoryAuthorityNote).toContain("multiple member states");
+    it("should include 72h notification deadline", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.incidentReportingTimeline.notification.deadline).toBe(
+        "72 hours",
+      );
+    });
+
+    it("should include 1 month final report deadline", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.incidentReportingTimeline.finalReport.deadline).toBe(
+        "1 month",
+      );
+    });
+
+    it("should include intermediate report upon request", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.incidentReportingTimeline.intermediateReport.deadline).toBe(
+        "Upon request",
+      );
+    });
+
+    it("should include timeline descriptions", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(
+        result.incidentReportingTimeline.earlyWarning.description,
+      ).toBeTruthy();
+      expect(
+        result.incidentReportingTimeline.notification.description,
+      ).toBeTruthy();
+      expect(
+        result.incidentReportingTimeline.finalReport.description,
+      ).toBeTruthy();
+    });
   });
 
-  it("should handle single member state supervisory authority", async () => {
-    const answers = makeAnswers({
-      entitySize: "large",
-      memberStateCount: 1,
-    });
-    const result = await calculateNIS2Compliance(answers);
+  describe("Penalty Calculations", () => {
+    it("should include EUR 10M/2% for essential entities", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
 
-    expect(result.supervisoryAuthority).toContain(
-      "National competent authority",
-    );
+      expect(result.penalties.essential).toContain("10,000,000");
+      expect(result.penalties.essential).toContain("2%");
+      expect(result.penalties.applicable).toContain("10,000,000");
+    });
+
+    it("should include EUR 7M/1.4% for important entities", async () => {
+      const answers = makeAnswers({
+        entitySize: "medium",
+        operatesGroundInfra: false,
+        operatesSatComms: false,
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.penalties.important).toContain("7,000,000");
+      expect(result.penalties.important).toContain("1.4%");
+      expect(result.penalties.applicable).toContain("7,000,000");
+    });
+
+    it("should show N/A penalties for out-of-scope", async () => {
+      const answers = makeAnswers({ isEUEstablished: false });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.penalties.applicable).toContain("N/A");
+    });
+
+    it("should always include both essential and important penalty info", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.penalties.essential).toBeTruthy();
+      expect(result.penalties.important).toBeTruthy();
+      expect(result.penalties.applicable).toBeTruthy();
+    });
+  });
+
+  describe("EU Space Act Overlap", () => {
+    it("should calculate overlap for in-scope entities", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.euSpaceActOverlap).toBeDefined();
+      expect(result.euSpaceActOverlap.count).toBeGreaterThan(0);
+      expect(
+        result.euSpaceActOverlap.totalPotentialSavingsWeeks,
+      ).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should return zero overlap for out-of-scope entities", async () => {
+      const answers = makeAnswers({ isEUEstablished: false });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.euSpaceActOverlap.count).toBe(0);
+      expect(result.euSpaceActOverlap.totalPotentialSavingsWeeks).toBe(0);
+      expect(result.euSpaceActOverlap.overlappingRequirements).toEqual([]);
+    });
+
+    it("should calculate savings weeks based on effort type", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      // Savings should be > 0 given we have supersedes + overlaps cross-refs
+      if (result.euSpaceActOverlap.count > 0) {
+        expect(
+          result.euSpaceActOverlap.totalPotentialSavingsWeeks,
+        ).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe("Registration", () => {
+    it("should set registration required for in-scope entities", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.registrationRequired).toBe(true);
+      expect(result.registrationDeadline).toContain("Art. 3(4)");
+    });
+
+    it("should set registration not required for out-of-scope entities", async () => {
+      const answers = makeAnswers({ isEUEstablished: false });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.registrationRequired).toBe(false);
+      expect(result.registrationDeadline).toBe("N/A");
+    });
+  });
+
+  describe("Key Dates", () => {
+    it("should include EU Space Act date for in-scope entities", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.keyDates.length).toBeGreaterThan(2);
+      const hasSpaceActDate = result.keyDates.some((d) =>
+        d.description.includes("EU Space Act"),
+      );
+      expect(hasSpaceActDate).toBe(true);
+    });
+
+    it("should include base dates for out-of-scope entities", async () => {
+      const answers = makeAnswers({ isEUEstablished: false });
+      const result = await calculateNIS2Compliance(answers);
+
+      // Should still have the two base dates
+      expect(result.keyDates.length).toBe(2);
+    });
+
+    it("should include October 2024 transposition deadline", async () => {
+      const answers = makeAnswers({ entitySize: "large" });
+      const result = await calculateNIS2Compliance(answers);
+
+      const hasTransposition = result.keyDates.some(
+        (d) =>
+          d.date.includes("October 2024") &&
+          d.description.includes("transposition"),
+      );
+      expect(hasTransposition).toBe(true);
+    });
+  });
+
+  describe("Supervisory Authority", () => {
+    it("should handle multi-member-state supervisory authority", async () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        memberStateCount: 5,
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.supervisoryAuthority).toContain("Primary");
+      expect(result.supervisoryAuthorityNote).toContain(
+        "multiple member states",
+      );
+    });
+
+    it("should handle single member state supervisory authority", async () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        memberStateCount: 1,
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.supervisoryAuthority).toContain(
+        "National competent authority",
+      );
+    });
+
+    it("should default to single member state when memberStateCount is null", async () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        memberStateCount: null as any,
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.supervisoryAuthority).toContain(
+        "National competent authority",
+      );
+    });
+  });
+
+  describe("Sub-sector", () => {
+    it("should preserve sub-sector in result", async () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        spaceSubSector: "ground_infrastructure",
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.subSector).toBe("ground_infrastructure");
+    });
+
+    it("should handle null sub-sector", async () => {
+      const answers = makeAnswers({
+        entitySize: "large",
+        spaceSubSector: null as any,
+      });
+      const result = await calculateNIS2Compliance(answers);
+
+      expect(result.subSector).toBeNull();
+    });
   });
 });
 
@@ -534,14 +744,12 @@ describe("redactNIS2ResultForClient", () => {
     expect(redacted.classificationReason).toBe(fullResult.classificationReason);
     expect(redacted.applicableCount).toBe(fullResult.applicableCount);
 
-    // Redacted requirements should only have: id, articleRef, category, title, severity
     for (const req of redacted.applicableRequirements) {
       expect(req).toHaveProperty("id");
       expect(req).toHaveProperty("articleRef");
       expect(req).toHaveProperty("category");
       expect(req).toHaveProperty("title");
       expect(req).toHaveProperty("severity");
-      // Should NOT have sensitive fields
       expect(req).not.toHaveProperty("description");
       expect(req).not.toHaveProperty("spaceSpecificGuidance");
       expect(req).not.toHaveProperty("tips");
@@ -563,7 +771,6 @@ describe("redactNIS2ResultForClient", () => {
     expect(redacted.euSpaceActOverlap.totalPotentialSavingsWeeks).toBe(
       fullResult.euSpaceActOverlap.totalPotentialSavingsWeeks,
     );
-    // Should not have detailed overlapping requirements
     expect(
       (redacted.euSpaceActOverlap as Record<string, unknown>)
         .overlappingRequirements,
@@ -584,5 +791,14 @@ describe("redactNIS2ResultForClient", () => {
       fullResult.incidentReportingTimeline,
     );
     expect(redacted.keyDates).toEqual(fullResult.keyDates);
+  });
+
+  it("should handle empty requirements array in redaction", async () => {
+    const answers = makeAnswers({ isEUEstablished: false });
+    const fullResult = await calculateNIS2Compliance(answers);
+    const redacted = redactNIS2ResultForClient(fullResult);
+
+    expect(redacted.applicableRequirements).toEqual([]);
+    expect(redacted.applicableCount).toBe(0);
   });
 });
