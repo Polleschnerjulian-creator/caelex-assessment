@@ -382,9 +382,11 @@ export function Generate2Page() {
       setPanelState("completed");
       setResumeData(null);
 
-      // Save to server in the background — failure shows a warning, not a blocking error
+      // Save to server — try lightweight first (server reconstructs from saved
+      // sections), fall back to sending full content if that fails.
+      let saved = false;
       try {
-        const completeRes = await fetchWithTimeout(
+        const lightRes = await fetchWithTimeout(
           `/api/generate2/documents/${documentId}/complete`,
           {
             method: "POST",
@@ -393,10 +395,7 @@ export function Generate2Page() {
               ...csrfHeaders(),
             },
             body: JSON.stringify({
-              parsedSections: finalSections,
-              rawContent: fullContent,
-              actionRequiredCount: actionRequired,
-              evidencePlaceholderCount: evidencePlaceholders,
+              mode: "reconstruct",
               totalInputTokens,
               totalOutputTokens,
               generationTimeMs: Date.now() - startTime,
@@ -404,18 +403,55 @@ export function Generate2Page() {
           },
           COMPLETE_FETCH_TIMEOUT_MS,
         );
-        if (!completeRes.ok) {
-          console.error(
-            "[Generate2] Server save returned non-OK:",
-            completeRes.status,
-            await completeRes.text().catch(() => "no body"),
+        saved = lightRes.ok;
+        if (!lightRes.ok) {
+          console.warn(
+            "[Generate2] Lightweight save failed, trying full mode:",
+            lightRes.status,
           );
         }
-      } catch (saveErr) {
-        // Server save failed — document is still visible and exportable
+      } catch (lightErr) {
+        console.warn(
+          "[Generate2] Lightweight save error, trying full mode:",
+          lightErr,
+        );
+      }
+
+      // Fallback: send full content if lightweight mode failed
+      if (!saved) {
+        try {
+          const fullRes = await fetchWithTimeout(
+            `/api/generate2/documents/${documentId}/complete`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...csrfHeaders(),
+              },
+              body: JSON.stringify({
+                parsedSections: finalSections,
+                rawContent: fullContent,
+                actionRequiredCount: actionRequired,
+                evidencePlaceholderCount: evidencePlaceholders,
+                totalInputTokens,
+                totalOutputTokens,
+                generationTimeMs: Date.now() - startTime,
+              }),
+            },
+            COMPLETE_FETCH_TIMEOUT_MS,
+          );
+          saved = fullRes.ok;
+          if (!fullRes.ok) {
+            console.error("[Generate2] Full save also failed:", fullRes.status);
+          }
+        } catch (fullErr) {
+          console.error("[Generate2] Full save error:", fullErr);
+        }
+      }
+
+      if (!saved) {
         console.error(
-          "[Generate2] Server save failed (non-blocking):",
-          saveErr,
+          "[Generate2] Both save modes failed — document visible but not persisted",
         );
       }
     } catch (err) {
@@ -613,30 +649,14 @@ export function Generate2Page() {
           ).length;
         }
 
-        // Save to server (best-effort, don't block package progress)
+        // Save to server — lightweight mode (server reconstructs from saved sections)
         fetchWithTimeout(
           `/api/generate2/documents/${documentId}/complete`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...csrfHeaders() },
             body: JSON.stringify({
-              parsedSections:
-                parsedSections.length > 0
-                  ? parsedSections
-                  : [
-                      {
-                        title: "Generated Content",
-                        content: [
-                          {
-                            type: "text",
-                            value: fullContent.substring(0, 50000),
-                          },
-                        ],
-                      },
-                    ],
-              rawContent: fullContent,
-              actionRequiredCount: pkgActionRequired,
-              evidencePlaceholderCount: pkgEvidencePlaceholders,
+              mode: "reconstruct",
               totalInputTokens,
               totalOutputTokens,
               generationTimeMs: Date.now() - startTime,
