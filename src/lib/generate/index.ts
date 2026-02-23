@@ -153,7 +153,15 @@ export async function generateSection(
         model: MODEL,
         max_tokens: MAX_TOKENS_PER_SECTION,
         temperature: 0.3,
-        system: systemPrompt,
+        // Use prompt caching — system prompt is identical for all sections of a document.
+        // Sections 2+ hit the cache, reducing latency by ~50% and input cost by ~90%.
+        system: [
+          {
+            type: "text" as const,
+            text: systemPrompt,
+            cache_control: { type: "ephemeral" as const },
+          },
+        ],
         messages: [{ role: "user", content: sectionPrompt }],
       });
 
@@ -177,12 +185,16 @@ export async function generateSection(
       const isRetryable = status === 429 || status === 529 || status === 500;
 
       if (!isRetryable || attempt === MAX_RETRIES) {
+        console.error(
+          `[generateSection] Section ${sectionNumber} "${sectionTitle}" failed permanently:`,
+          { status, attempt, error: lastError.message },
+        );
         throw lastError;
       }
 
       // Exponential backoff: 2s, 4s, 8s
       const delayMs = 2000 * Math.pow(2, attempt);
-      console.log(
+      console.warn(
         `[generateSection] Retrying section ${sectionNumber} (attempt ${attempt + 1}/${MAX_RETRIES}) after ${delayMs}ms — status ${status}`,
       );
       await new Promise((resolve) => setTimeout(resolve, delayMs));

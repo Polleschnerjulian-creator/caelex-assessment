@@ -18,9 +18,9 @@ import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
-const SECTION_FETCH_TIMEOUT_MS = 240_000; // 4 minutes per section
-const COMPLETE_FETCH_TIMEOUT_MS = 60_000; // 60s for finalization
-const MAX_FINALIZE_RETRIES = 2;
+const SECTION_FETCH_TIMEOUT_MS = 120_000; // 2 minutes per section (server maxDuration=300s)
+const COMPLETE_FETCH_TIMEOUT_MS = 30_000; // 30s for finalization (lightweight DB write)
+const GENERATION_WATCHDOG_MS = 900_000; // 15 minutes max total generation time
 
 /** Fetch with AbortController timeout so requests can't hang indefinitely */
 async function fetchWithTimeout(
@@ -224,8 +224,19 @@ export function Generate2Page() {
     let startTime: number;
     let startFromSection: number;
 
+    // Global watchdog — auto-fail after 15 minutes to prevent infinite hangs
+    const watchdogTimer = setTimeout(() => {
+      console.error(
+        "[Generate2] Watchdog triggered: generation exceeded 15 minutes",
+      );
+      setError(
+        "Generation timed out after 15 minutes. Your progress has been saved — click Resume to continue.",
+      );
+      setIsGenerating(false);
+      setPanelState("pre-generation");
+    }, GENERATION_WATCHDOG_MS);
+
     if (resume && resumeData) {
-      // Resume from where we left off
       documentId = resumeData.documentId;
       sectionContents = [...resumeData.sectionContents];
       totalInputTokens = resumeData.totalInputTokens;
@@ -234,7 +245,6 @@ export function Generate2Page() {
       startFromSection = sectionContents.length;
       setGenerationPhase("sections");
     } else {
-      // Fresh start
       sectionContents = [];
       totalInputTokens = 0;
       totalOutputTokens = 0;
@@ -244,20 +254,26 @@ export function Generate2Page() {
       setCompletedSections(0);
       setCurrentSection(0);
       setResumeData(null);
-      documentId = ""; // will be set after init
+      documentId = "";
     }
 
     try {
+      // ── Phase 1: Initialize ──
       if (!resume || !resumeData) {
-        // 1. Initialize
-        const initRes = await fetch("/api/generate2/documents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({ documentType: selectedType }),
-        });
+        const initRes = await fetchWithTimeout(
+          "/api/generate2/documents",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({ documentType: selectedType }),
+          },
+          30_000, // 30s for init — it's a DB write, not AI
+        );
 
         if (!initRes.ok) {
-          const err = await initRes.json();
+          const err = await initRes
+            .json()
+            .catch(() => ({ error: "Failed to initialize document" }));
           throw new Error(err.error || "Failed to initialize");
         }
 
@@ -266,7 +282,7 @@ export function Generate2Page() {
         setGenerationPhase("sections");
       }
 
-      // 2. Generate each section (starting from where we left off)
+      // ── Phase 2: Generate each section ──
       for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
@@ -285,9 +301,9 @@ export function Generate2Page() {
         );
 
         if (!sectionRes.ok) {
-          const errData = await sectionRes
-            .json()
-            .catch(() => ({ error: `Section ${i + 1} failed` }));
+          const errData = await sectionRes.json().catch(() => ({
+            error: `Section ${i + 1} "${sectionDefs[i].title}" failed`,
+          }));
           throw new Error(
             errData.error || `Failed to generate section ${i + 1}`,
           );
@@ -300,54 +316,44 @@ export function Generate2Page() {
         setCompletedSections(i + 1);
       }
 
-      // 3. Finalize (client-side parsing to avoid server timeout)
+      // ── Phase 3: Finalize ──
+      // CRITICAL: After all sections are generated, the client has ALL content.
+      // Parse locally first, display immediately, then try to save to server.
+      // Server save failure must NEVER block the user from seeing their document.
       setGenerationPhase("finalizing");
 
       const fullContent = sectionContents
         .filter((s) => typeof s === "string" && s.length > 0)
         .join("\n\n");
 
-      // Non-blocking parse — yields to browser so UI stays responsive
-      const { parsedSections, actionRequired, evidencePlaceholders } =
-        await parseContentNonBlocking(fullContent, parseSectionsFromMarkdown);
+      // Client-side parse (non-blocking with 30s timeout)
+      let parsedSections: ParsedSection[];
+      let actionRequired: number;
+      let evidencePlaceholders: number;
 
-      // Send parsed result to server with retry
-      let completeRes: Response | null = null;
-      for (let attempt = 0; attempt <= MAX_FINALIZE_RETRIES; attempt++) {
-        try {
-          completeRes = await fetchWithTimeout(
-            `/api/generate2/documents/${documentId}/complete`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...csrfHeaders(),
-              },
-              body: JSON.stringify({
-                parsedSections,
-                rawContent: fullContent,
-                actionRequiredCount: actionRequired,
-                evidencePlaceholderCount: evidencePlaceholders,
-                totalInputTokens,
-                totalOutputTokens,
-                generationTimeMs: Date.now() - startTime,
-              }),
-            },
-            COMPLETE_FETCH_TIMEOUT_MS,
-          );
-          if (completeRes.ok) break;
-        } catch (err) {
-          if (attempt === MAX_FINALIZE_RETRIES) throw err;
-          // Wait before retry (exponential: 2s, 4s)
-          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
-        }
-      }
-
-      if (completeRes && !completeRes.ok) {
-        const errData = await completeRes
-          .json()
-          .catch(() => ({ error: "Finalization failed (no details)" }));
-        throw new Error(errData.error || "Failed to finalize document");
+      try {
+        const result = await parseContentNonBlocking(
+          fullContent,
+          parseSectionsFromMarkdown,
+        );
+        parsedSections = result.parsedSections;
+        actionRequired = result.actionRequired;
+        evidencePlaceholders = result.evidencePlaceholders;
+      } catch (parseErr) {
+        // Parsing failed — fall back to raw text display
+        console.error("[Generate2] Client-side parse failed:", parseErr);
+        parsedSections = [
+          {
+            title: "Generated Content",
+            content: [
+              { type: "text" as const, value: fullContent.substring(0, 50000) },
+            ],
+          },
+        ];
+        actionRequired = (fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || [])
+          .length;
+        evidencePlaceholders = (fullContent.match(/\[EVIDENCE[^\]]*\]/g) || [])
+          .length;
       }
 
       const finalSections =
@@ -365,6 +371,7 @@ export function Generate2Page() {
               },
             ];
 
+      // IMMEDIATELY show the document to the user — don't wait for server save
       setDocumentState({
         id: documentId,
         content: finalSections,
@@ -374,8 +381,45 @@ export function Generate2Page() {
       setCompletedDocs((prev) => new Set([...prev, selectedType]));
       setPanelState("completed");
       setResumeData(null);
+
+      // Save to server in the background — failure shows a warning, not a blocking error
+      try {
+        const completeRes = await fetchWithTimeout(
+          `/api/generate2/documents/${documentId}/complete`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...csrfHeaders(),
+            },
+            body: JSON.stringify({
+              parsedSections: finalSections,
+              rawContent: fullContent,
+              actionRequiredCount: actionRequired,
+              evidencePlaceholderCount: evidencePlaceholders,
+              totalInputTokens,
+              totalOutputTokens,
+              generationTimeMs: Date.now() - startTime,
+            }),
+          },
+          COMPLETE_FETCH_TIMEOUT_MS,
+        );
+        if (!completeRes.ok) {
+          console.error(
+            "[Generate2] Server save returned non-OK:",
+            completeRes.status,
+            await completeRes.text().catch(() => "no body"),
+          );
+        }
+      } catch (saveErr) {
+        // Server save failed — document is still visible and exportable
+        console.error(
+          "[Generate2] Server save failed (non-blocking):",
+          saveErr,
+        );
+      }
     } catch (err) {
-      console.error("Generation failed:", err);
+      console.error("[Generate2] Generation failed:", err);
       const message = err instanceof Error ? err.message : "Generation failed";
       setError(message);
       setPanelState("pre-generation");
@@ -390,20 +434,25 @@ export function Generate2Page() {
         });
       }
     } finally {
+      clearTimeout(watchdogTimer);
       setIsGenerating(false);
     }
   }
 
   async function handleExportPdf() {
-    if (!documentState.id || !documentState.content || !selectedType) return;
+    if (!documentState.content || !selectedType) return;
 
     try {
-      // 1. Mark as exported via API
-      await fetch(`/api/generate2/documents/${documentState.id}/export`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify({ format: "pdf" }),
-      });
+      // 1. Mark as exported via API (best-effort, non-blocking)
+      if (documentState.id) {
+        fetch(`/api/generate2/documents/${documentState.id}/export`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({ format: "pdf" }),
+        }).catch(() => {
+          /* non-critical */
+        });
+      }
 
       // 2. Dynamic import jsPDF generator (client-side only)
       const { generateDocumentPDF } = await import("@/lib/pdf/jspdf-generator");
@@ -528,25 +577,63 @@ export function Generate2Page() {
 
         if (failed) continue;
 
-        // Finalize — non-blocking parse
+        // Finalize — non-blocking parse, then background save
         setGenerationPhase("finalizing");
         const fullContent = sectionContents.filter(Boolean).join("\n\n");
-        const {
-          parsedSections,
-          actionRequired: pkgActionRequired,
-          evidencePlaceholders: pkgEvidencePlaceholders,
-        } = await parseContentNonBlocking(
-          fullContent,
-          parseSectionsFromMarkdown,
-        );
 
-        await fetchWithTimeout(
+        let parsedSections: ParsedSection[];
+        let pkgActionRequired: number;
+        let pkgEvidencePlaceholders: number;
+
+        try {
+          const parsed = await parseContentNonBlocking(
+            fullContent,
+            parseSectionsFromMarkdown,
+          );
+          parsedSections = parsed.parsedSections;
+          pkgActionRequired = parsed.actionRequired;
+          pkgEvidencePlaceholders = parsed.evidencePlaceholders;
+        } catch {
+          parsedSections = [
+            {
+              title: "Generated Content",
+              content: [
+                {
+                  type: "text" as const,
+                  value: fullContent.substring(0, 50000),
+                },
+              ],
+            },
+          ];
+          pkgActionRequired = (
+            fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
+          ).length;
+          pkgEvidencePlaceholders = (
+            fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
+          ).length;
+        }
+
+        // Save to server (best-effort, don't block package progress)
+        fetchWithTimeout(
           `/api/generate2/documents/${documentId}/complete`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json", ...csrfHeaders() },
             body: JSON.stringify({
-              parsedSections,
+              parsedSections:
+                parsedSections.length > 0
+                  ? parsedSections
+                  : [
+                      {
+                        title: "Generated Content",
+                        content: [
+                          {
+                            type: "text",
+                            value: fullContent.substring(0, 50000),
+                          },
+                        ],
+                      },
+                    ],
               rawContent: fullContent,
               actionRequiredCount: pkgActionRequired,
               evidencePlaceholderCount: pkgEvidencePlaceholders,
@@ -556,6 +643,8 @@ export function Generate2Page() {
             }),
           },
           COMPLETE_FETCH_TIMEOUT_MS,
+        ).catch((err) =>
+          console.error(`[Generate2] Package save failed for ${docType}:`, err),
         );
 
         setCompletedDocs((prev) => new Set([...prev, docType]));

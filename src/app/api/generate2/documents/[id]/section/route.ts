@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateSection } from "@/lib/generate";
+import { generateSection, markGenerationFailed } from "@/lib/generate";
 
 export const maxDuration = 300;
 
@@ -19,13 +19,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let documentId: string | undefined;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: documentId } = await params;
+    ({ id: documentId } = await params);
 
     const body = await request.json();
     const { sectionIndex, sectionTitle, sectionNumber } = body as {
@@ -75,11 +77,29 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Section generation error:", error);
+    const message =
+      error instanceof Error ? error.message : "Section generation failed";
+    const status = (error as { status?: number }).status;
+
+    console.error(
+      `[section/route] Section generation error (doc=${documentId}):`,
+      { message, status, error },
+    );
+
+    // Mark document as FAILED for permanent errors (not transient/retryable)
+    const isPermanentFailure =
+      status !== 429 && status !== 529 && status !== 503;
+    if (documentId && isPermanentFailure) {
+      markGenerationFailed(documentId, message).catch((e) =>
+        console.error("[section/route] Failed to mark doc as FAILED:", e),
+      );
+    }
+
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Section generation failed",
+        error: message,
+        code: status === 429 ? "RATE_LIMITED" : "GENERATION_FAILED",
+        retryable: !isPermanentFailure,
       },
       { status: 500 },
     );
