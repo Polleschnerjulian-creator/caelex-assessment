@@ -16,17 +16,52 @@ import crypto from "crypto";
 // ─── SAML Signature Verification ───
 
 /**
+ * Map XML Signature algorithm URIs to Node.js crypto algorithm names
+ * and their corresponding digest algorithm for DigestValue verification.
+ */
+const SIGNATURE_ALGORITHMS: Record<
+  string,
+  { verify: string; digest: string } | undefined
+> = {
+  "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256": {
+    verify: "RSA-SHA256",
+    digest: "sha256",
+  },
+  "http://www.w3.org/2000/09/xmldsig#rsa-sha1": {
+    verify: "RSA-SHA1",
+    digest: "sha1",
+  },
+  "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512": {
+    verify: "RSA-SHA512",
+    digest: "sha512",
+  },
+};
+
+const DIGEST_ALGORITHMS: Record<string, string | undefined> = {
+  "http://www.w3.org/2001/04/xmlenc#sha256": "sha256",
+  "http://www.w3.org/2000/09/xmldsig#sha1": "sha1",
+  "http://www.w3.org/2001/04/xmldsig-more#sha512": "sha512",
+};
+
+/**
  * Verify the XML signature on a SAML response using the IdP's X.509 certificate.
- * Returns true only if the signature covers the assertion and matches the certificate.
+ *
+ * Steps performed:
+ * 1. Extract Reference URI and validate it matches the Assertion ID
+ * 2. Compute the digest of the referenced Assertion and verify it matches DigestValue
+ * 3. Verify the SignatureValue over SignedInfo using the IdP certificate
+ *
+ * Returns true only if all checks pass.
  */
 function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
   try {
-    // Extract the SignatureValue from the XML
+    // ── Step 0: Extract key XML elements ──
+
+    // Extract the SignatureValue
     const sigValueMatch = xml.match(
       /<ds:SignatureValue[^>]*>([\s\S]*?)<\/ds:SignatureValue>/,
     );
     if (!sigValueMatch) return false;
-
     const signatureValue = sigValueMatch[1].replace(/\s/g, "");
 
     // Extract the SignedInfo element (the data that was signed)
@@ -34,12 +69,79 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       /(<ds:SignedInfo[\s\S]*?<\/ds:SignedInfo>)/,
     );
     if (!signedInfoMatch) return false;
+    const signedInfoXml = signedInfoMatch[1];
 
-    // Extract DigestValue for the assertion
+    // Extract DigestValue
     const digestMatch = xml.match(
       /<ds:DigestValue>([\s\S]*?)<\/ds:DigestValue>/,
     );
     if (!digestMatch) return false;
+    const expectedDigest = digestMatch[1].replace(/\s/g, "");
+
+    // ── Step 1: Validate Reference URI matches the Assertion ID ──
+
+    const referenceUriMatch = signedInfoXml.match(
+      /<ds:Reference\s+URI="([^"]*)"/,
+    );
+    if (!referenceUriMatch) return false;
+    const referenceUri = referenceUriMatch[1];
+
+    // The Reference URI should be "#<AssertionID>" or empty (whole document)
+    // Extract the Assertion ID from the SAML response
+    const assertionIdMatch =
+      xml.match(/<saml:Assertion[^>]+ID="([^"]+)"/) ||
+      xml.match(/<Assertion[^>]+ID="([^"]+)"/);
+
+    if (referenceUri) {
+      // URI must start with "#" and reference the Assertion ID
+      if (!referenceUri.startsWith("#")) return false;
+      const referencedId = referenceUri.substring(1);
+      if (!assertionIdMatch || referencedId !== assertionIdMatch[1]) {
+        return false;
+      }
+    }
+
+    // ── Step 2: Verify DigestValue matches the digest of the referenced Assertion ──
+
+    // Determine the digest algorithm from DigestMethod
+    const digestMethodMatch = signedInfoXml.match(
+      /<ds:DigestMethod\s+Algorithm="([^"]+)"/,
+    );
+    const digestAlgUri = digestMethodMatch?.[1] || "";
+    const digestAlgorithm = DIGEST_ALGORITHMS[digestAlgUri] || "sha256";
+
+    // Extract the referenced element for digest computation
+    // If URI references an Assertion, extract that element; otherwise use the whole response
+    let referencedContent: string;
+    if (referenceUri && assertionIdMatch) {
+      // Extract the full Assertion element
+      const assertionMatch =
+        xml.match(/(<saml:Assertion[\s\S]*?<\/saml:Assertion>)/) ||
+        xml.match(/(<Assertion[\s\S]*?<\/Assertion>)/);
+      if (!assertionMatch) return false;
+      referencedContent = assertionMatch[1];
+    } else {
+      referencedContent = xml;
+    }
+
+    // Compute digest of the referenced content (after removing the Signature element)
+    const contentWithoutSignature = referencedContent.replace(
+      /<ds:Signature[\s\S]*?<\/ds:Signature>/,
+      "",
+    );
+    const computedDigest = crypto
+      .createHash(digestAlgorithm)
+      .update(contentWithoutSignature)
+      .digest("base64");
+
+    if (computedDigest !== expectedDigest) {
+      console.error(
+        "SAML DigestValue mismatch: assertion content has been tampered with",
+      );
+      return false;
+    }
+
+    // ── Step 3: Verify the SignatureValue over SignedInfo using the certificate ──
 
     // Normalize the certificate PEM
     const certPem = pemCertificate.includes("BEGIN CERTIFICATE")
@@ -47,27 +149,17 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       : `-----BEGIN CERTIFICATE-----\n${pemCertificate}\n-----END CERTIFICATE-----`;
 
     // Determine signature algorithm from SignatureMethod
-    const algMatch = xml.match(/<ds:SignatureMethod\s+Algorithm="([^"]+)"/);
-    const algorithm = algMatch?.[1] || "";
+    const algMatch = signedInfoXml.match(
+      /<ds:SignatureMethod\s+Algorithm="([^"]+)"/,
+    );
+    const signatureAlgUri = algMatch?.[1] || "";
+    const algorithms = SIGNATURE_ALGORITHMS[signatureAlgUri] || {
+      verify: "RSA-SHA256",
+      digest: "sha256",
+    };
 
-    let nodeAlgorithm: string;
-    if (algorithm.includes("rsa-sha256") || algorithm.includes("#sha256")) {
-      nodeAlgorithm = "RSA-SHA256";
-    } else if (algorithm.includes("rsa-sha1") || algorithm.includes("#sha1")) {
-      nodeAlgorithm = "RSA-SHA1";
-    } else if (algorithm.includes("rsa-sha512")) {
-      nodeAlgorithm = "RSA-SHA512";
-    } else {
-      // Default to SHA-256 if unrecognized
-      nodeAlgorithm = "RSA-SHA256";
-    }
-
-    // Canonicalize SignedInfo (simplified: use the raw XML for Exclusive C14N)
-    // In production, use a proper XML canonicalization library
-    const signedInfoXml = signedInfoMatch[1];
-
-    // Verify the signature
-    const verifier = crypto.createVerify(nodeAlgorithm);
+    // Verify the cryptographic signature over SignedInfo
+    const verifier = crypto.createVerify(algorithms.verify);
     verifier.update(signedInfoXml);
 
     return verifier.verify(certPem, signatureValue, "base64");
@@ -217,12 +309,15 @@ export async function POST(request: NextRequest) {
         metadata: { email, name, provider: "SAML" },
       });
 
-      // Build redirect URL using APP_URL or NEXTAUTH_URL (never trust Host header)
+      // Build redirect URL from environment (never trust Host header)
       const baseUrl =
-        process.env.APP_URL ||
-        process.env.NEXTAUTH_URL ||
-        process.env.AUTH_URL ||
-        `https://${headersList.get("host") || "localhost:3000"}`;
+        process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+      if (!baseUrl) {
+        return NextResponse.json(
+          { error: "Server configuration error" },
+          { status: 500 },
+        );
+      }
 
       // Create an HMAC-signed SSO token (prevents forgery)
       const ssoToken = createSignedToken(

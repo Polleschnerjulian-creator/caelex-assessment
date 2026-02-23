@@ -99,6 +99,7 @@ export interface AuditLogEntry {
   metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
+  organizationId?: string; // Multi-tenancy: scope audit log to organization
 }
 
 // ─── PII Sanitization for Audit Values ───
@@ -196,6 +197,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
     await prisma.auditLog.create({
       data: {
         userId: entry.userId,
+        organizationId: entry.organizationId || null,
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,
@@ -225,6 +227,7 @@ export async function logAuditEventsBatch(
     await prisma.auditLog.createMany({
       data: entries.map((entry) => ({
         userId: entry.userId,
+        organizationId: entry.organizationId || null,
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,
@@ -256,6 +259,7 @@ export async function getAuditLogs(
     action?: string;
     startDate?: Date;
     endDate?: Date;
+    organizationId?: string; // Multi-tenancy: filter by organization
   } = {},
 ) {
   const {
@@ -265,9 +269,14 @@ export async function getAuditLogs(
     action,
     startDate,
     endDate,
+    organizationId,
   } = options;
 
   const where: Record<string, unknown> = { userId };
+
+  if (organizationId) {
+    where.organizationId = organizationId;
+  }
 
   if (entityType) {
     where.entityType = entityType;

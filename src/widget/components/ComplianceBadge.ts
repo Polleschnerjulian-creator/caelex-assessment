@@ -18,10 +18,14 @@ export function initComplianceBadge(
 
   const header = document.createElement("div");
   header.className = "caelex-header";
-  header.innerHTML = `
-    <span class="caelex-header-title">Compliance Badge</span>
-    <span class="caelex-header-badge">Preview</span>
-  `;
+  const headerTitle = document.createElement("span");
+  headerTitle.className = "caelex-header-title";
+  headerTitle.textContent = "Compliance Badge";
+  const headerBadge = document.createElement("span");
+  headerBadge.className = "caelex-header-badge";
+  headerBadge.textContent = "Preview";
+  header.appendChild(headerTitle);
+  header.appendChild(headerBadge);
   root.appendChild(header);
 
   const body = document.createElement("div");
@@ -60,7 +64,12 @@ export function initComplianceBadge(
 
   const footer = document.createElement("div");
   footer.className = "caelex-footer";
-  footer.innerHTML =
-    'Powered by <a href="https://caelex.eu" target="_blank" rel="noopener">Caelex</a>';
+  footer.appendChild(document.createTextNode("Powered by "));
+  const footerLink = document.createElement("a");
+  footerLink.href = "https://caelex.eu";
+  footerLink.target = "_blank";
+  footerLink.rel = "noopener";
+  footerLink.textContent = "Caelex";
+  footer.appendChild(footerLink);
   root.appendChild(footer);
 }

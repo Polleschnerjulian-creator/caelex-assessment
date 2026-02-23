@@ -107,7 +107,7 @@ const ACCESS_LEVEL_BADGES: Record<string, { label: string; color: string }> = {
   },
   DOWNLOAD: {
     label: "Download",
-    color: "bg-cyan-500/10 text-cyan-400",
+    color: "bg-green-500/10 text-green-400",
   },
   FULL: {
     label: "Full Access",
@@ -508,7 +508,7 @@ export default function DataRoomDetailPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <FolderLock size={18} className="text-cyan-400 flex-shrink-0" />
+            <FolderLock size={18} className="text-emerald-400 flex-shrink-0" />
             <h1 className="text-xl font-semibold text-slate-900 dark:text-white truncate">
               {room.name}
             </h1>

@@ -1,6 +1,8 @@
 /**
  * POST /api/auth/passkey/login-verify
- * Verifies WebAuthn authentication and creates session
+ * Verifies WebAuthn authentication and issues a short-lived signed token
+ * for the client to exchange via next-auth signIn (passkey-token provider).
+ * The raw userId is never exposed to the client.
  */
 
 import { NextResponse } from "next/server";
@@ -10,6 +12,7 @@ import {
   recordLoginEvent,
   clearFailedAttempts,
 } from "@/lib/login-security.server";
+import { createSignedToken } from "@/lib/signed-token";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -126,19 +129,18 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    // Return success with user info
-    // The client should then call next-auth signIn with the user ID
-    // to properly create a session
+    // Issue a short-lived signed token instead of exposing the raw userId.
+    // The client exchanges this token via the "passkey-token" credentials
+    // provider to create a proper NextAuth session.
+    const passkeyToken = createSignedToken(
+      { sub: user.id, purpose: "passkey-login" },
+      60 * 1000, // 1 minute expiry
+    );
+
     // Clear the challenge cookie
     const res = NextResponse.json({
       success: true,
-      userId: user.id,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      },
+      token: passkeyToken,
       message: "Passkey verified. Complete sign-in on client.",
     });
     res.cookies.delete("__webauthn_challenge");

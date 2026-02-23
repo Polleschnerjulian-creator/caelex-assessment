@@ -196,7 +196,7 @@ export default function NetworkHubPage() {
       {/* Page Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center">
             <Network className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
           </div>
           <div>
@@ -269,7 +269,7 @@ export default function NetworkHubPage() {
 
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <FolderLock className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+                <FolderLock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                 <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
                   Open Data Rooms
                 </span>

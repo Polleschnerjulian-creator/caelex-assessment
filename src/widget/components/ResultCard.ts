@@ -35,10 +35,14 @@ export function renderResultCard(
   for (const stat of stats) {
     const row = document.createElement("div");
     row.className = "caelex-result-stat";
-    row.innerHTML = `
-      <span class="caelex-result-stat-label">${stat.label}</span>
-      <span class="caelex-result-stat-value">${stat.value}</span>
-    `;
+    const statLabel = document.createElement("span");
+    statLabel.className = "caelex-result-stat-label";
+    statLabel.textContent = stat.label;
+    const statValue = document.createElement("span");
+    statValue.className = "caelex-result-stat-value";
+    statValue.textContent = stat.value;
+    row.appendChild(statLabel);
+    row.appendChild(statValue);
     container.appendChild(row);
   }
 

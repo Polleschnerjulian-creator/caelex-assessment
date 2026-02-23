@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/documents/dashboard - Get document dashboard stats
 export async function GET() {
@@ -8,6 +9,13 @@ export async function GET() {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(session.user.id);
+    const orgFilter: Record<string, unknown> = {};
+    if (orgContext?.organizationId) {
+      orgFilter.organizationId = orgContext.organizationId;
     }
 
     const now = new Date();
@@ -28,11 +36,12 @@ export async function GET() {
       active,
     ] = await Promise.all([
       prisma.document.count({
-        where: { userId: session.user.id, isLatest: true },
+        where: { userId: session.user.id, ...orgFilter, isLatest: true },
       }),
       prisma.document.count({
         where: {
           userId: session.user.id,
+          ...orgFilter,
           isLatest: true,
           isExpired: true,
         },
@@ -40,6 +49,7 @@ export async function GET() {
       prisma.document.count({
         where: {
           userId: session.user.id,
+          ...orgFilter,
           isLatest: true,
           expiryDate: { gte: now, lte: thirtyDaysFromNow },
           isExpired: false,
@@ -48,6 +58,7 @@ export async function GET() {
       prisma.document.count({
         where: {
           userId: session.user.id,
+          ...orgFilter,
           isLatest: true,
           expiryDate: { gte: now, lte: ninetyDaysFromNow },
           isExpired: false,
@@ -56,6 +67,7 @@ export async function GET() {
       prisma.document.count({
         where: {
           userId: session.user.id,
+          ...orgFilter,
           isLatest: true,
           status: "DRAFT",
         },
@@ -63,6 +75,7 @@ export async function GET() {
       prisma.document.count({
         where: {
           userId: session.user.id,
+          ...orgFilter,
           isLatest: true,
           status: "ACTIVE",
         },
@@ -74,6 +87,7 @@ export async function GET() {
       by: ["category"],
       where: {
         userId: session.user.id,
+        ...orgFilter,
         isLatest: true,
         status: { notIn: ["ARCHIVED", "REJECTED"] },
       },

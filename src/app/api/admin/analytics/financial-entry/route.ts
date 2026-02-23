@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -22,9 +23,11 @@ const financialEntrySchema = z.object({
 export async function GET(request: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    await requireRole(["admin"]);
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -52,7 +55,17 @@ export async function GET(request: Request) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     console.error("[Financial Entry] GET Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch entries" },
@@ -68,9 +81,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    await requireRole(["admin"]);
 
     const body = await request.json();
     const validation = financialEntrySchema.safeParse(body);
@@ -101,7 +116,17 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, entry });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     console.error("[Financial Entry] POST Error:", error);
     return NextResponse.json(
       { error: "Failed to create entry" },

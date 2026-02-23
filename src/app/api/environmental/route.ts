@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   calculateScreeningLCA,
   type MissionProfile,
@@ -18,8 +19,15 @@ export async function GET() {
 
     const userId = session.user.id;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(userId);
+    const where: Record<string, unknown> = { userId };
+    if (orgContext?.organizationId) {
+      where.organizationId = orgContext.organizationId;
+    }
+
     const assessments = await prisma.environmentalAssessment.findMany({
-      where: { userId },
+      where,
       orderBy: { updatedAt: "desc" },
       include: {
         impactResults: true,
@@ -87,10 +95,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtx = await getCurrentOrganization(userId);
+
     // Create assessment
     const assessment = await prisma.environmentalAssessment.create({
       data: {
         userId,
+        organizationId: orgCtx?.organizationId || null,
         assessmentName:
           assessmentName ||
           `Environmental Assessment ${new Date().toLocaleDateString()}`,

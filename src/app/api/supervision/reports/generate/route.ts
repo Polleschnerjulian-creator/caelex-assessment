@@ -194,11 +194,15 @@ export async function POST(request: NextRequest) {
     // Return the PDF as a downloadable file
     // Convert Buffer to Uint8Array for NextResponse compatibility
     const uint8Array = new Uint8Array(result.report.buffer);
+    // Sanitize filename to prevent header injection
+    const safeFilename = result.report.filename
+      .replace(/[^\w\s.\-]/g, "_")
+      .replace(/\s+/g, "_");
     const response = new NextResponse(uint8Array, {
       status: 200,
       headers: {
         "Content-Type": result.report.contentType,
-        "Content-Disposition": `attachment; filename="${result.report.filename}"`,
+        "Content-Disposition": `attachment; filename="${safeFilename}"`,
         "X-Report-Id": result.report.reportId,
         "X-Report-Type": result.report.reportType,
       },

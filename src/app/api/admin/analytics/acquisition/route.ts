@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { subDays, subMonths, format, eachDayOfInterval } from "date-fns";
 
 /**
  * GET /api/admin/analytics/acquisition
  * Marketing & acquisition metrics for CEO dashboard
+ *
+ * Platform-level admin only (User.role === "admin").
  */
 export async function GET(request: Request) {
   try {
     const session = await auth();
-
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    await requireRole(["admin"]);
 
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "30d";
@@ -330,7 +334,17 @@ export async function GET(request: Request) {
         range,
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     console.error("[Analytics Acquisition] Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch acquisition analytics" },

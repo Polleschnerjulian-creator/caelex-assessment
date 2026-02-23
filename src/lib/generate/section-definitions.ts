@@ -206,4 +206,41 @@ export const SECTION_DEFINITIONS: Record<NCADocumentType, SectionDefinition[]> =
       { number: 7, title: "Remediation Roadmap" },
       { number: 8, title: "Certification Readiness Assessment" },
     ],
+
+    // ─── Category C: General / Cross-Cutting ───
+
+    AUTHORIZATION_APPLICATION: [
+      { number: 1, title: "Cover Letter" },
+      { number: 2, title: "Operator Profile" },
+      { number: 3, title: "Mission Description" },
+      { number: 4, title: "Compliance Summary" },
+      { number: 5, title: "Authorization Checklist (Art. 7)" },
+      { number: 6, title: "Supporting Documents Index" },
+      { number: 7, title: "Certification Statement" },
+    ],
+
+    ENVIRONMENTAL_FOOTPRINT: [
+      { number: 1, title: "Executive Summary" },
+      { number: 2, title: "Mission Profile" },
+      { number: 3, title: "Lifecycle Assessment Methodology" },
+      { number: 4, title: "Launch Vehicle Analysis" },
+      { number: 5, title: "Propellant Analysis" },
+      { number: 6, title: "Lifecycle Phase Breakdown" },
+      { number: 7, title: "Supplier Data Summary" },
+      { number: 8, title: "Hotspot Identification" },
+      { number: 9, title: "Mitigation Measures" },
+      { number: 10, title: "EFD Grade Justification" },
+      { number: 11, title: "Recommendations" },
+    ],
+
+    INSURANCE_COMPLIANCE: [
+      { number: 1, title: "Executive Summary" },
+      { number: 2, title: "Organization Risk Profile" },
+      { number: 3, title: "Third-Party Liability Analysis" },
+      { number: 4, title: "Coverage Overview" },
+      { number: 5, title: "Jurisdiction Requirements" },
+      { number: 6, title: "Gap Analysis" },
+      { number: 7, title: "Premium Estimates" },
+      { number: 8, title: "Recommendations" },
+    ],
   };

@@ -7,6 +7,8 @@ declare module "next-auth" {
       id: string;
       role?: string;
       theme?: string;
+      mfaRequired?: boolean;
+      mfaVerified?: boolean;
     } & DefaultSession["user"];
   }
 
@@ -14,6 +16,8 @@ declare module "next-auth" {
     id: string;
     role?: string;
     theme?: string;
+    mfaRequired?: boolean;
+    mfaVerified?: boolean;
   }
 }
 
@@ -22,5 +26,7 @@ declare module "@auth/core/jwt" {
     id: string;
     role?: string;
     theme?: string;
+    mfaRequired?: boolean;
+    mfaVerified?: boolean;
   }
 }

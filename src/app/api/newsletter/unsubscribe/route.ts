@@ -26,21 +26,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Verify HMAC-signed token (falls back to legacy base64 for existing links)
-  let email: string | null = verifyUnsubscribeToken(token);
-
-  // Legacy fallback: plain base64 tokens (from before HMAC was added)
-  if (!email) {
-    try {
-      const decoded = Buffer.from(token, "base64url").toString("utf-8");
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(decoded)) {
-        email = decoded;
-      }
-    } catch {
-      // ignore
-    }
-  }
+  // Verify HMAC-signed token — only accept properly signed tokens
+  const email: string | null = verifyUnsubscribeToken(token);
 
   if (!email) {
     return new NextResponse(

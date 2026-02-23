@@ -200,7 +200,8 @@ export async function POST(
       },
     });
 
-    const filename = doc.title.replace(/[^a-zA-Z0-9-_ ]/g, "");
+    // Sanitize filename to prevent header injection
+    const filename = doc.title.replace(/[^\w\s.\-]/g, "_").replace(/\s+/g, "_");
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {

@@ -39,13 +39,22 @@ export async function GET(
       );
     }
 
-    // Verify user is a member of the organization
+    // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id, organizationId },
+      select: { role: true },
     });
     if (!member) {
       return NextResponse.json(
         { error: "You do not have access to this organization" },
+        { status: 403 },
+      );
+    }
+
+    // At minimum MANAGER role required to view webhook deliveries
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to view webhook deliveries" },
         { status: 403 },
       );
     }
@@ -97,13 +106,22 @@ export async function POST(
       );
     }
 
-    // Verify user is a member of the organization
+    // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id, organizationId },
+      select: { role: true },
     });
     if (!member) {
       return NextResponse.json(
         { error: "You do not have access to this organization" },
+        { status: 403 },
+      );
+    }
+
+    // Only OWNER, ADMIN, or MANAGER can retry webhook deliveries
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to manage webhook deliveries" },
         { status: 403 },
       );
     }

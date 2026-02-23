@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   calculateTPLRequirement,
   getRequiredInsuranceTypes,
@@ -25,8 +26,15 @@ export async function GET() {
 
     const userId = session.user.id;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(userId);
+    const where: Record<string, unknown> = { userId };
+    if (orgContext?.organizationId) {
+      where.organizationId = orgContext.organizationId;
+    }
+
     const assessments = await prisma.insuranceAssessment.findMany({
-      where: { userId },
+      where,
       include: {
         policies: true,
       },
@@ -102,10 +110,14 @@ export async function POST(request: Request) {
     // Get required insurance types
     const requiredTypes = getRequiredInsuranceTypes(profile);
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtx = await getCurrentOrganization(userId);
+
     // Create assessment
     const assessment = await prisma.insuranceAssessment.create({
       data: {
         userId,
+        organizationId: orgCtx?.organizationId || null,
         assessmentName: body.assessmentName || null,
         primaryJurisdiction: body.primaryJurisdiction,
         operatorType: body.operatorType,

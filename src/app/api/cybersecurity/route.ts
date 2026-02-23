@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
   getApplicableRequirements,
   isEligibleForSimplifiedRegime,
@@ -22,8 +23,15 @@ export async function GET() {
 
     const userId = session.user.id;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(userId);
+    const where: Record<string, unknown> = { userId };
+    if (orgContext?.organizationId) {
+      where.organizationId = orgContext.organizationId;
+    }
+
     const assessments = await prisma.cybersecurityAssessment.findMany({
-      where: { userId },
+      where,
       include: {
         requirements: true,
       },
@@ -110,12 +118,16 @@ export async function POST(request: Request) {
     // Get applicable requirements
     const applicableRequirements = getApplicableRequirements(profile);
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtx = await getCurrentOrganization(userId);
+
     // Create assessment with requirement statuses in transaction
     const assessment = await prisma.$transaction(async (tx) => {
       // Create the assessment
       const newAssessment = await tx.cybersecurityAssessment.create({
         data: {
           userId,
+          organizationId: orgCtx?.organizationId || null,
           assessmentName,
           organizationSize,
           employeeCount,

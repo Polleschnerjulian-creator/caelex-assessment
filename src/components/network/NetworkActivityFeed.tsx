@@ -50,7 +50,7 @@ const ACTION_CONFIG: Record<
   },
   DATA_ROOM_CREATED: {
     icon: FolderPlus,
-    color: "text-blue-500 bg-blue-500/10",
+    color: "text-emerald-500 bg-emerald-500/10",
   },
   DATA_ROOM_CLOSED: {
     icon: FolderLock,
@@ -58,11 +58,11 @@ const ACTION_CONFIG: Record<
   },
   DOCUMENT_ADDED: {
     icon: FileText,
-    color: "text-cyan-500 bg-cyan-500/10",
+    color: "text-green-500 bg-green-500/10",
   },
   ATTESTATION_SIGNED: {
     icon: ShieldCheck,
-    color: "text-purple-500 bg-purple-500/10",
+    color: "text-slate-500 bg-slate-500/10",
   },
   DOCUMENT_VIEWED: {
     icon: Eye,

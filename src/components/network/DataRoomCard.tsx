@@ -35,7 +35,8 @@ const ACCESS_LEVEL_CONFIG: Record<
 > = {
   VIEW_ONLY: {
     label: "View Only",
-    color: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
+    color:
+      "text-slate-600 dark:text-slate-400 bg-slate-500/10 border-slate-500/20",
     icon: ShieldCheck,
   },
   DOWNLOAD: {

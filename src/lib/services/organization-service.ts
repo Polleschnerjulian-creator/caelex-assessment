@@ -668,6 +668,7 @@ export async function acceptInvitation(
 export async function cancelInvitation(
   invitationId: string,
   actingUserId: string,
+  organizationId: string,
 ): Promise<void> {
   const invitation = await prisma.organizationInvitation.findUnique({
     where: { id: invitationId },
@@ -676,7 +677,7 @@ export async function cancelInvitation(
     },
   });
 
-  if (!invitation) {
+  if (!invitation || invitation.organizationId !== organizationId) {
     throw new Error("Invitation not found");
   }
 
@@ -698,12 +699,13 @@ export async function cancelInvitation(
 export async function resendInvitation(
   invitationId: string,
   actingUserId: string,
+  organizationId: string,
 ): Promise<OrganizationInvitation> {
   const invitation = await prisma.organizationInvitation.findUnique({
     where: { id: invitationId },
   });
 
-  if (!invitation) {
+  if (!invitation || invitation.organizationId !== organizationId) {
     throw new Error("Invitation not found");
   }
 

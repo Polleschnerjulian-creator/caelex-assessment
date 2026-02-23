@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 
 // GET /api/documents/[id] - Get document details
 export async function GET(
@@ -15,11 +16,18 @@ export async function GET(
 
     const { id } = await params;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(session.user.id);
+    const docWhere: Record<string, unknown> = {
+      id,
+      userId: session.user.id,
+    };
+    if (orgContext?.organizationId) {
+      docWhere.organizationId = orgContext.organizationId;
+    }
+
     const document = await prisma.document.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-      },
+      where: docWhere,
       include: {
         versions: {
           orderBy: { version: "desc" },
@@ -80,9 +88,16 @@ export async function PATCH(
 
     const { id } = await params;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtxPatch = await getCurrentOrganization(session.user.id);
+    const patchWhere: Record<string, unknown> = { id, userId: session.user.id };
+    if (orgCtxPatch?.organizationId) {
+      patchWhere.organizationId = orgCtxPatch.organizationId;
+    }
+
     // Verify ownership
     const existing = await prisma.document.findFirst({
-      where: { id, userId: session.user.id },
+      where: patchWhere,
     });
 
     if (!existing) {
@@ -191,9 +206,19 @@ export async function DELETE(
 
     const { id } = await params;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtxDelete = await getCurrentOrganization(session.user.id);
+    const deleteWhere: Record<string, unknown> = {
+      id,
+      userId: session.user.id,
+    };
+    if (orgCtxDelete?.organizationId) {
+      deleteWhere.organizationId = orgCtxDelete.organizationId;
+    }
+
     // Verify ownership
     const existing = await prisma.document.findFirst({
-      where: { id, userId: session.user.id },
+      where: deleteWhere,
     });
 
     if (!existing) {

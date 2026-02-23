@@ -47,7 +47,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    await cancelInvitation(invitationId, session.user.id);
+    await cancelInvitation(invitationId, session.user.id, orgId);
 
     return NextResponse.json({
       message: "Invitation cancelled successfully",
@@ -87,7 +87,11 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    const invitation = await resendInvitation(invitationId, session.user.id);
+    const invitation = await resendInvitation(
+      invitationId,
+      session.user.id,
+      orgId,
+    );
 
     // Send invitation email
     const inviteUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || ""}/invite/${invitation.token}`;

@@ -1,9 +1,13 @@
 /**
  * Admin Audit Logs API
- * GET: List all audit logs (admin-only, all users)
+ * GET: List all audit logs (platform admin-only, all users)
+ *
+ * Uses platform-level admin role (User.role === "admin") via the DAL.
+ * This is a platform-wide operation, not scoped to a single organization.
  */
 
 import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/dal";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -14,15 +18,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check admin role
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    // Verify platform-level admin role via DAL (checks User.role, not org membership)
+    await requireRole(["admin"]);
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(
@@ -61,7 +58,17 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({ logs, total, limit, offset });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     console.error("Error fetching admin audit logs:", error);
     return NextResponse.json(
       { error: "Internal server error" },

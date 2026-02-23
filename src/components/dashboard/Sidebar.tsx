@@ -632,20 +632,11 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 {t("sidebar.documents")}
               </NavItem>
               <NavItem
-                href="/dashboard/documents/generate"
-                icon={<Zap size={16} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                badge="AI"
-              >
-                {t("sidebar.aiGenerate")}
-              </NavItem>
-              <NavItem
                 href="/dashboard/generate"
                 icon={<Sparkles size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
               >
-                {t("sidebar.generate2")}
+                {t("sidebar.documentGenerator")}
               </NavItem>
               <NavItem
                 href="/dashboard/audit-center"

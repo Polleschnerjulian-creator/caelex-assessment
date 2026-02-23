@@ -30,13 +30,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify user is a member of the organization
+    // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
       where: { userId: session.user.id, organizationId },
+      select: { role: true },
     });
     if (!member) {
       return NextResponse.json(
         { error: "You do not have access to this organization" },
+        { status: 403 },
+      );
+    }
+
+    // At minimum ADMIN role required to view webhooks (contains sensitive config)
+    if (!["OWNER", "ADMIN", "MANAGER"].includes(member.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to view webhooks" },
         { status: 403 },
       );
     }

@@ -28,6 +28,9 @@ export function DocumentSelectorPanel({
   const cyberDocs = NCA_DOCUMENT_TYPES.filter(
     (d) => d.category === "cybersecurity",
   );
+  const generalDocs = NCA_DOCUMENT_TYPES.filter(
+    (d) => d.category === "general",
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -37,7 +40,7 @@ export function DocumentSelectorPanel({
           <h2 className="text-sm font-semibold text-white">NCA Documents</h2>
         </div>
         <p className="text-xs text-slate-500 mt-1">
-          {completedDocs.size}/16 documents generated
+          {completedDocs.size}/{NCA_DOCUMENT_TYPES.length} documents generated
         </p>
       </div>
 
@@ -68,6 +71,25 @@ export function DocumentSelectorPanel({
           </h3>
           <div className="space-y-1">
             {cyberDocs.map((meta) => (
+              <DocumentTypeCard
+                key={meta.id}
+                meta={meta}
+                readiness={readinessMap.get(meta.id)}
+                isSelected={selectedType === meta.id}
+                hasDocument={completedDocs.has(meta.id)}
+                onClick={() => onSelect(meta.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Category C — General Compliance */}
+        <div>
+          <h3 className="text-caption font-semibold uppercase tracking-wider text-slate-500 px-1 mb-2">
+            Category C — General Compliance
+          </h3>
+          <div className="space-y-1">
+            {generalDocs.map((meta) => (
               <DocumentTypeCard
                 key={meta.id}
                 meta={meta}

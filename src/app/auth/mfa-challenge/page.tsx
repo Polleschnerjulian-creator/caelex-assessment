@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
+import { useSession } from "next-auth/react";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,7 @@ import {
 
 function MfaChallengeContent() {
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -136,7 +138,8 @@ function MfaChallengeContent() {
         return;
       }
 
-      // Success - redirect to callback URL
+      // Success - update session to set mfaVerified=true in JWT, then redirect
+      await updateSession({ mfaVerified: true });
       router.push(callbackUrl);
     } catch {
       setError("Something went wrong. Please try again.");

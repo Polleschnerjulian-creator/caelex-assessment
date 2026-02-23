@@ -253,24 +253,26 @@ class InMemoryRateLimiter {
   }
 }
 
-// Fallback limiters
+// Fallback limiters — MORE CONSERVATIVE than Redis limits because in-memory
+// rate limiting does not work across serverless instances. Lower limits help
+// mitigate the risk of per-instance abuse.
 const fallbackLimiters = {
-  api: new InMemoryRateLimiter(100, 60000),
-  auth: new InMemoryRateLimiter(5, 60000),
-  registration: new InMemoryRateLimiter(3, 3600000),
-  assessment: new InMemoryRateLimiter(10, 3600000),
-  export: new InMemoryRateLimiter(20, 3600000),
-  sensitive: new InMemoryRateLimiter(5, 3600000),
-  supplier: new InMemoryRateLimiter(30, 3600000),
-  document_generation: new InMemoryRateLimiter(5, 3600000),
-  nca_portal: new InMemoryRateLimiter(30, 3600000),
-  nca_package: new InMemoryRateLimiter(10, 3600000),
-  public_api: new InMemoryRateLimiter(5, 3600000),
-  widget: new InMemoryRateLimiter(30, 3600000),
-  mfa: new InMemoryRateLimiter(5, 60000),
-  generate2: new InMemoryRateLimiter(20, 3600000),
-  admin: new InMemoryRateLimiter(30, 60000),
-  contact: new InMemoryRateLimiter(5, 3600000),
+  api: new InMemoryRateLimiter(30, 60000), // 30/min vs 100/min (Redis)
+  auth: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
+  registration: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
+  assessment: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
+  export: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
+  sensitive: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
+  supplier: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  document_generation: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
+  nca_portal: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  nca_package: new InMemoryRateLimiter(3, 3600000), // 3/hr vs 10/hr (Redis)
+  public_api: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
+  widget: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  mfa: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
+  generate2: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
+  admin: new InMemoryRateLimiter(10, 60000), // 10/min vs 30/min (Redis)
+  contact: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
 };
 
 // ─── Public API ───
@@ -315,7 +317,12 @@ export async function checkRateLimit(
     };
   }
 
-  // Fallback to in-memory
+  // Fallback to in-memory — log warning as this is not safe for multi-instance
+  console.warn(
+    `[SECURITY] Rate limiting for "${type}" falling back to in-memory. ` +
+      "This is NOT safe for multi-instance deployments. " +
+      "Configure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+  );
   return fallbackLimiters[type].limit(identifier);
 }
 

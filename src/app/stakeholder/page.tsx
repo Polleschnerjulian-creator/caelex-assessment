@@ -49,6 +49,9 @@ function StakeholderLandingContent() {
     if (urlToken) {
       setToken(urlToken);
       setAutoValidating(true);
+      // Clear the token from the URL immediately to prevent leakage via
+      // Referer header, browser history, or shoulder surfing
+      window.history.replaceState({}, "", window.location.pathname);
       validateToken(urlToken);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

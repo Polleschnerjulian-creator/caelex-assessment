@@ -8,12 +8,15 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/dal";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
 
 /**
  * GET /api/admin/demos
+ *
+ * Platform-level admin only (User.role === "admin").
  *
  * Query params:
  *   - page (default: 1)
@@ -23,9 +26,11 @@ import type { Prisma } from "@prisma/client";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    await requireRole(["admin"]);
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -61,7 +66,17 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     logger.error("Failed to list demo requests", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to list demo requests") },
@@ -73,6 +88,8 @@ export async function GET(request: NextRequest) {
 /**
  * PATCH /api/admin/demos
  *
+ * Platform-level admin only (User.role === "admin").
+ *
  * Body:
  *   - id (required) — DemoRequest ID
  *   - status (optional) — NEW, CONTACTED, SCHEDULED, COMPLETED, NO_RESPONSE
@@ -82,9 +99,11 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    await requireRole(["admin"]);
 
     const body = await request.json();
     const { id, status, notes, respondedAt } = body;
@@ -127,7 +146,17 @@ export async function PATCH(request: NextRequest) {
     });
 
     return NextResponse.json({ demo: updated });
-  } catch (error) {
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
     logger.error("Failed to update demo request", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to update demo request") },

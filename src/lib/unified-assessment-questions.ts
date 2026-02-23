@@ -26,6 +26,8 @@ const PHASE_1_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Company Profile",
     title: "What is your organization's name?",
     subtitle: "Optional - helps personalize your compliance profile",
+    helpText:
+      "Your company name will appear on generated reports and compliance documents. You can leave this blank for an anonymous assessment.",
     type: "text",
     required: false,
   },
@@ -169,6 +171,8 @@ const PHASE_1_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Company Profile",
     title: "What is your annual turnover?",
     subtitle: "Approximate range for compliance assessment",
+    helpText:
+      "Used together with employee count to verify EU SME classification. Determines NIS2 thresholds (€10M for important, €50M for essential entities).",
     type: "single",
     required: true,
     options: [
@@ -209,6 +213,8 @@ const PHASE_1_QUESTIONS: UnifiedQuestion[] = [
     phase: 1,
     phaseName: "Company Profile",
     title: "How many employees does your organization have?",
+    helpText:
+      "Employee count is a key factor in the EU SME definition and determines NIS2 entity size classification (< 50 = small, < 250 = medium, 250+ = large).",
     type: "single",
     required: true,
     options: [
@@ -474,6 +480,8 @@ const PHASE_2_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Activity Types",
     title: "Do you retain responsibility for space objects after launch?",
     subtitle: "Command & control, debris mitigation, end-of-life management",
+    helpText:
+      "Post-launch responsibility triggers debris mitigation obligations (Art. 58-73) including 25-year de-orbit rule, collision avoidance, and passivation requirements.",
     type: "boolean",
     required: true,
     showIf: (answers) =>
@@ -539,6 +547,8 @@ const PHASE_3_QUESTIONS: UnifiedQuestion[] = [
     phase: 3,
     phaseName: "Operations",
     title: "How many spacecraft do you operate or plan to operate?",
+    helpText:
+      "The number of spacecraft affects constellation classification, insurance requirements, and whether enhanced debris mitigation rules apply (> 100 objects).",
     type: "single",
     required: true,
     showIf: (answers) => answers.activityTypes?.includes("SCO"),
@@ -792,6 +802,8 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Services & Market",
     title: "What services does your organization provide?",
     subtitle: "Select all that apply",
+    helpText:
+      "Your service portfolio determines NIS2 sub-sector classification (e.g. SATCOM → satellite operator, EO → earth observation) and which EU Space Act modules apply.",
     type: "multi",
     required: true,
     maxSelections: 12,
@@ -888,6 +900,8 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Services & Market",
     title: "Do you serve customers in the European Union?",
     subtitle: "Including commercial, government, or consumer customers",
+    helpText:
+      "EU market presence determines whether the EU Space Act applies to your activities and triggers NIS2 obligations for cross-border service providers.",
     type: "boolean",
     required: true,
     options: [
@@ -974,6 +988,8 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Services & Market",
     title: "Do you have government or defense contracts?",
     subtitle: "With EU Member States or EU institutions",
+    helpText:
+      "Government contracts may imply additional security clearance requirements and could classify you as a critical infrastructure supplier under NIS2.",
     type: "boolean",
     required: true,
     options: [
@@ -1060,6 +1076,8 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Services & Market",
     title: "Which organisation?",
     subtitle: "Select your international organisation",
+    helpText:
+      "ESA and EUMETSAT have specific exemption considerations under Art. 2(2). Other international organisations may have bilateral agreements affecting scope.",
     type: "single",
     required: true,
     showIf: (answers) => answers.isInternationalOrg === true,
@@ -1413,6 +1431,8 @@ const PHASE_5_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Cybersecurity",
     title: "Do you conduct regular penetration testing?",
     subtitle: "External security assessments and red team exercises",
+    helpText:
+      "Regular penetration testing is a best practice under NIS2 Art. 21(2)(e) and demonstrates proactive security posture to NCAs during authorization review.",
     type: "boolean",
     required: true,
     options: [
@@ -1530,6 +1550,8 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Licensing",
     title: "Where do you currently hold space licenses?",
     subtitle: "Select all jurisdictions where you are licensed",
+    helpText:
+      "Existing licenses demonstrate regulatory track record. Some jurisdictions accept licenses from other countries as evidence of compliance capability.",
     type: "multi",
     required: false,
     maxSelections: 10,
@@ -1572,6 +1594,8 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     phase: 6,
     phaseName: "Licensing",
     title: "What is your timeline for obtaining a license?",
+    helpText:
+      "Processing times vary by jurisdiction: Luxembourg and UK are typically fastest (3-6 months), while France and Germany may take 6-12 months.",
     type: "single",
     required: true,
     options: [
@@ -1618,6 +1642,8 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Licensing",
     title: "Do you require an English-language licensing process?",
     subtitle: "Some jurisdictions require local language documentation",
+    helpText:
+      "Luxembourg, UK, and the Netherlands accept English applications. France requires French, Germany requires German. This can significantly impact preparation effort.",
     type: "boolean",
     required: true,
     options: [
@@ -1643,6 +1669,8 @@ const PHASE_6_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Licensing",
     title: "Is fast processing time a priority?",
     subtitle: "Some jurisdictions have faster turnaround times",
+    helpText:
+      "If speed is critical, jurisdictions like Luxembourg and the UK have streamlined processes. The comparison will weight processing time accordingly.",
     type: "boolean",
     required: true,
     options: [
@@ -1770,6 +1798,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Insurance",
     title: "Do you currently have space insurance coverage?",
     subtitle: "Launch insurance, in-orbit insurance, or third-party liability",
+    helpText:
+      "Space insurance is mandatory under EU Space Act Art. 47-50 and most national space laws. Minimum third-party liability coverage is required for authorization.",
     type: "boolean",
     required: true,
     options: [
@@ -1794,6 +1824,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     phase: 7,
     phaseName: "Insurance",
     title: "What is your current insurance coverage level?",
+    helpText:
+      "Coverage amounts are compared against calculated minimum TPL requirements based on your orbit, spacecraft mass, and mission type per Art. 48.",
     showIf: (answers) => answers.hasInsurance === true,
     type: "single",
     required: true,
@@ -1837,6 +1869,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     title: "Do you have third-party liability coverage?",
     subtitle:
       "Coverage for damage to third parties (required by most jurisdictions)",
+    helpText:
+      "TPL is the most critical insurance type — required under Art. 48 and the 1972 Liability Convention. Without it, NCA authorization will be refused.",
     type: "boolean",
     required: true,
     options: [
@@ -1862,6 +1896,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Insurance",
     title: "Do you have launch insurance?",
     subtitle: "Coverage for launch phase risks and failures",
+    helpText:
+      "Launch insurance covers the period from ignition through early orbit phase. It protects against total or partial launch failure — typically the highest-risk phase.",
     type: "boolean",
     required: true,
     showIf: (answers) =>
@@ -1890,6 +1926,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Insurance",
     title: "Do you have in-orbit insurance?",
     subtitle: "Coverage for in-orbit operational risks",
+    helpText:
+      "In-orbit insurance covers spacecraft anomalies, component failures, and collision damage during the operational phase. Premiums depend on orbit and spacecraft value.",
     type: "boolean",
     required: true,
     showIf: (answers) => answers.activityTypes?.includes("SCO") === true,
@@ -1916,6 +1954,8 @@ const PHASE_7_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Insurance",
     title: "What is your total coverage amount?",
     subtitle: "Combined insurance coverage across all policies",
+    helpText:
+      "Sum of all active policies (launch + in-orbit + TPL). This is compared against the calculated minimum to identify coverage gaps for NCA authorization.",
     type: "single",
     required: true,
     showIf: (answers) =>
@@ -1963,6 +2003,8 @@ const PHASE_8_QUESTIONS: UnifiedQuestion[] = [
     title: "Do you have existing compliance programs in place?",
     subtitle:
       "Quality management, security certifications, regulatory compliance",
+    helpText:
+      "Existing compliance programs (ISO, ECSS, SOC 2) can significantly accelerate your EU Space Act and NIS2 authorization process by demonstrating established governance.",
     type: "boolean",
     required: true,
     options: [
@@ -1988,6 +2030,8 @@ const PHASE_8_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Compliance Status",
     title: "Which certifications do you currently hold?",
     subtitle: "Select all that apply",
+    helpText:
+      "ISO 27001 directly maps to NIS2 Art. 21 requirements. ECSS standards are recognized by EU Space Act. Existing certifications reduce your compliance gap.",
     showIf: (answers) => answers.hasExistingCompliance === true,
     type: "multi",
     required: false,
@@ -2049,6 +2093,8 @@ const PHASE_8_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Compliance Status",
     title: "Do you have access to space law legal counsel?",
     subtitle: "Internal or external legal expertise in space regulations",
+    helpText:
+      "Space law is a specialized field. Legal counsel experienced with NCA authorization processes can help navigate requirements and avoid common pitfalls.",
     type: "boolean",
     required: true,
     options: [
@@ -2074,6 +2120,8 @@ const PHASE_8_QUESTIONS: UnifiedQuestion[] = [
     phaseName: "Compliance Status",
     title: "What is your approximate compliance budget?",
     subtitle: "For regulatory compliance activities over the next 2 years",
+    helpText:
+      "Budget scope includes legal counsel, insurance premiums, technical compliance measures (debris mitigation, cybersecurity), certifications, and NCA application fees.",
     type: "single",
     required: true,
     options: [

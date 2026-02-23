@@ -243,6 +243,10 @@ model AuditLog {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   // What happened
   action     String // 'article_status_changed', 'document_uploaded', 'checklist_completed', etc.
   entityType String // 'article', 'checklist', 'document', 'authorization', 'workflow'
@@ -265,6 +269,7 @@ model AuditLog {
   timestamp DateTime @default(now())
 
   @@index([userId])
+  @@index([organizationId])
   @@index([entityType, entityId])
   @@index([timestamp])
   @@index([action])
@@ -277,6 +282,10 @@ model DebrisAssessment {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Mission Profile
   missionName          String?
@@ -307,6 +316,7 @@ model DebrisAssessment {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
 }
 
 model DebrisRequirementStatus {
@@ -333,6 +343,10 @@ model CybersecurityAssessment {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Organization Profile
   assessmentName   String?
@@ -375,6 +389,7 @@ model CybersecurityAssessment {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
 }
 
 model CybersecurityRequirementStatus {
@@ -402,6 +417,10 @@ model NIS2Assessment {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Assessment Info
   assessmentName String?
@@ -459,6 +478,7 @@ model NIS2Assessment {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
   @@index([entityClassification])
 }
 
@@ -487,6 +507,10 @@ model InsuranceAssessment {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Assessment Info
   assessmentName String?
@@ -533,6 +557,7 @@ model InsuranceAssessment {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
 }
 
 model InsurancePolicy {
@@ -582,6 +607,10 @@ model EnvironmentalAssessment {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Assessment Info
   assessmentName String?
@@ -639,6 +668,7 @@ model EnvironmentalAssessment {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
   @@index([status])
 }
 
@@ -1728,6 +1758,10 @@ model Document {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Multi-tenancy: organization scope
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   // Basic Information
   name        String
   description String? @db.Text
@@ -1791,6 +1825,7 @@ model Document {
   @@index([expiryDate])
   @@index([status])
   @@index([moduleType])
+  @@index([organizationId])
   @@index([userId, status, expiryDate])
 }
 
@@ -2445,6 +2480,15 @@ model Organization {
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
   operatorProfile        OperatorProfile? // Unified operator profile
+
+  // Multi-tenancy: org-scoped models
+  auditLogs                    AuditLog[]
+  documents                    Document[]
+  debrisAssessments            DebrisAssessment[]
+  cybersecurityAssessments     CybersecurityAssessment[]
+  insuranceAssessments         InsuranceAssessment[]
+  environmentalAssessments     EnvironmentalAssessment[]
+  nis2Assessments              NIS2Assessment[]
 
   @@index([slug])
   @@index([plan])
@@ -3901,6 +3945,9 @@ model ApiEndpointMetrics {
 // AI DOCUMENT GENERATION
 // ============================================
 
+/// @deprecated Legacy document generation types from the old AI Generate system.
+/// Kept for backwards compatibility with existing GeneratedDocument records.
+/// New documents use the NCADocument model with NCADocumentType enum.
 enum DocumentGenerationType {
   DEBRIS_MITIGATION_PLAN
   CYBERSECURITY_FRAMEWORK
@@ -3917,6 +3964,9 @@ enum DocumentGenerationStatus {
   FAILED
 }
 
+/// @deprecated Legacy model from the old AI Generate system.
+/// Kept for backwards compatibility with existing records and data retention.
+/// New documents use the NCADocument model.
 model GeneratedDocument {
   id               String                   @id @default(cuid())
   userId           String
@@ -4271,6 +4321,9 @@ enum NCADocumentType {
   SUPPLY_CHAIN_SECURITY // B6: Supply Chain Security
   EUSRN_PROCEDURES // B7: EUSRN Notification Procedures
   COMPLIANCE_MATRIX // B8: Compliance Verification Matrix
+  AUTHORIZATION_APPLICATION // C1: Authorization Application Package
+  ENVIRONMENTAL_FOOTPRINT // C2: Environmental Footprint Declaration
+  INSURANCE_COMPLIANCE // C3: Insurance Compliance Report
 }
 
 enum NCADocumentStatus {

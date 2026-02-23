@@ -79,10 +79,13 @@ function getClientIp(req: NextRequest): string {
   const realIp = req.headers.get("x-real-ip");
   if (realIp) return realIp;
 
+  // Use the RIGHTMOST IP in x-forwarded-for (added by trusted proxy).
+  // The leftmost IP is the original client but can be spoofed.
+  // This is consistent with the rate limiter's IP extraction logic.
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     const ips = forwarded.split(",").map((ip) => ip.trim());
-    return ips[0] || "unknown";
+    return ips[ips.length - 1] || "unknown";
   }
 
   return "unknown";
@@ -186,7 +189,8 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/supplier/",
   "/api/v1/webhooks",
   "/api/v1/compliance/", // API v1 uses API key auth, not CSRF
-  "/api/auth/",
+  "/api/auth/callback/", // Only OAuth callbacks are exempt — login/signup/other auth endpoints require CSRF
+  "/api/auth/session", // NextAuth session endpoint (GET-like, read-only)
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
   "/api/nis2/calculate", // NIS2 assessment is public, CSRF exempt (rate limited instead)
   "/api/astra/", // ASTRA has session auth + rate limiting, CSRF exempt
@@ -357,8 +361,17 @@ export default async function middleware(req: NextRequest) {
     if (isMutating && !isCsrfExempt) {
       const cookieToken = req.cookies.get(CSRF_COOKIE_NAME)?.value;
       const headerToken = req.headers.get(CSRF_HEADER_NAME);
+      // Extract session ID for session-bound CSRF validation
+      const sessionId =
+        req.cookies.get("__Secure-authjs.session-token")?.value ||
+        req.cookies.get("authjs.session-token")?.value;
 
-      if (!cookieToken || !validateCsrfToken(cookieToken, headerToken)) {
+      const csrfValid = await validateCsrfToken(
+        cookieToken,
+        headerToken,
+        sessionId,
+      );
+      if (!cookieToken || !csrfValid) {
         return applySecurityHeaders(
           new NextResponse(
             JSON.stringify({
@@ -428,7 +441,12 @@ export default async function middleware(req: NextRequest) {
   const response = applySecurityHeaders(NextResponse.next(), pathname, nonce);
   if (!req.cookies.has(CSRF_COOKIE_NAME)) {
     const isProduction = process.env.NODE_ENV === "production";
-    response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), {
+    // Bind CSRF token to session if user is authenticated
+    const sessionIdForCsrf =
+      req.cookies.get("__Secure-authjs.session-token")?.value ||
+      req.cookies.get("authjs.session-token")?.value;
+    const csrfToken = await generateCsrfToken(sessionIdForCsrf);
+    response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
       httpOnly: false, // Must be readable by JS for double-submit pattern
       secure: isProduction,
       sameSite: "strict",

@@ -320,6 +320,7 @@ export function withApiAuth(
       const errorMessage =
         error instanceof Error ? error.message : "Internal server error";
 
+      // Log the full error internally for debugging
       await logRequest(
         authResult.apiKey.id,
         request,
@@ -328,7 +329,8 @@ export function withApiAuth(
         errorMessage,
       );
 
-      return apiError(errorMessage, 500);
+      // Return generic message to clients to prevent information leakage
+      return apiError("Internal server error", 500);
     }
   };
 }

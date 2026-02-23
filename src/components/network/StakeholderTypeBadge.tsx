@@ -37,16 +37,16 @@ const STAKEHOLDER_CONFIG: Record<
   LEGAL_COUNSEL: {
     label: "Legal Counsel",
     icon: Scale,
-    color: "text-blue-400",
-    bgColor: "bg-blue-500/10 dark:bg-blue-500/15",
-    borderColor: "border-blue-500/20",
+    color: "text-emerald-400",
+    bgColor: "bg-emerald-500/10 dark:bg-emerald-500/15",
+    borderColor: "border-emerald-500/20",
   },
   INSURER: {
     label: "Insurer",
     icon: Shield,
-    color: "text-purple-400",
-    bgColor: "bg-purple-500/10 dark:bg-purple-500/15",
-    borderColor: "border-purple-500/20",
+    color: "text-slate-400",
+    bgColor: "bg-slate-500/10 dark:bg-slate-500/15",
+    borderColor: "border-slate-500/20",
   },
   AUDITOR: {
     label: "Auditor",
@@ -72,9 +72,9 @@ const STAKEHOLDER_CONFIG: Record<
   CONSULTANT: {
     label: "Consultant",
     icon: Lightbulb,
-    color: "text-cyan-400",
-    bgColor: "bg-cyan-500/10 dark:bg-cyan-500/15",
-    borderColor: "border-cyan-500/20",
+    color: "text-lime-400",
+    bgColor: "bg-lime-500/10 dark:bg-lime-500/15",
+    borderColor: "border-lime-500/20",
   },
   LAUNCH_PROVIDER: {
     label: "Launch Provider",

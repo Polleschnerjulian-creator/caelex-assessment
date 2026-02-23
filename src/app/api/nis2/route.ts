@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import { decrypt, isEncrypted } from "@/lib/encryption";
 import {
   calculateNIS2Compliance,
@@ -30,8 +31,15 @@ export async function GET() {
 
     const userId = session.user.id;
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(userId);
+    const where: Record<string, unknown> = { userId };
+    if (orgContext?.organizationId) {
+      where.organizationId = orgContext.organizationId;
+    }
+
     const assessments = await prisma.nIS2Assessment.findMany({
-      where: { userId },
+      where,
       include: {
         requirements: true,
       },
@@ -133,12 +141,16 @@ export async function POST(request: Request) {
     // Calculate full compliance result for overlap counts
     const complianceResult = await calculateNIS2Compliance(answers);
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtx = await getCurrentOrganization(userId);
+
     // Create assessment then bulk-insert requirement statuses.
     // Uses sequential queries instead of interactive $transaction because
     // Neon serverless pooled connections can drop mid-transaction.
     const assessment = await prisma.nIS2Assessment.create({
       data: {
         userId,
+        organizationId: orgCtx?.organizationId || null,
         assessmentName,
         entityClassification: classification.classification,
         classificationReason: classification.reason,

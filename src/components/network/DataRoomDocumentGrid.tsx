@@ -39,9 +39,9 @@ function getFileIcon(fileType: string) {
     type.includes("jpeg") ||
     type.includes("svg")
   )
-    return { icon: FileImage, color: "text-purple-400" };
+    return { icon: FileImage, color: "text-rose-400" };
   if (type.includes("json") || type.includes("xml"))
-    return { icon: FileCode, color: "text-cyan-400" };
+    return { icon: FileCode, color: "text-emerald-400" };
   return { icon: File, color: "text-slate-400" };
 }
 
@@ -61,9 +61,9 @@ function formatDate(dateString: string): string {
 
 const CATEGORY_COLORS: Record<string, string> = {
   COMPLIANCE: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
-  LEGAL: "text-blue-600 dark:text-blue-400 bg-blue-500/10",
-  FINANCIAL: "text-purple-600 dark:text-purple-400 bg-purple-500/10",
-  TECHNICAL: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10",
+  LEGAL: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+  FINANCIAL: "text-zinc-600 dark:text-zinc-400 bg-zinc-500/10",
+  TECHNICAL: "text-green-600 dark:text-green-400 bg-green-500/10",
   INSURANCE: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
   OTHER: "text-slate-600 dark:text-slate-400 bg-slate-500/10",
 };

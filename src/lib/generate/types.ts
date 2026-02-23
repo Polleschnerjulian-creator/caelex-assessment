@@ -24,7 +24,10 @@ export type NCADocumentType =
   | "ACCESS_CONTROL"
   | "SUPPLY_CHAIN_SECURITY"
   | "EUSRN_PROCEDURES"
-  | "COMPLIANCE_MATRIX";
+  | "COMPLIANCE_MATRIX"
+  | "AUTHORIZATION_APPLICATION"
+  | "ENVIRONMENTAL_FOOTPRINT"
+  | "INSURANCE_COMPLIANCE";
 
 export type NCADocumentStatus =
   | "DRAFT"
@@ -41,7 +44,7 @@ export type NCAPackageStatus =
 
 // ─── Category & Priority ───
 
-export type DocumentCategory = "debris" | "cybersecurity";
+export type DocumentCategory = "debris" | "cybersecurity" | "general";
 export type DocumentPriority = "P0" | "P1" | "P2";
 
 export interface DocumentTypeMeta {
@@ -251,6 +254,43 @@ export const NCA_DOCUMENT_TYPES: DocumentTypeMeta[] = [
     articleRef: "Art. 74-95",
     description:
       "Full requirement-by-requirement verification matrix with evidence inventory",
+    estimatedSections: 8,
+  },
+  // Category C — General / Cross-Cutting
+  {
+    id: "AUTHORIZATION_APPLICATION",
+    code: "C1",
+    title: "Authorization Application Package",
+    shortTitle: "Authorization App.",
+    category: "general",
+    priority: "P0",
+    articleRef: "Art. 4-12",
+    description:
+      "Complete NCA authorization application consolidating all compliance areas into a submission-ready package",
+    estimatedSections: 7,
+  },
+  {
+    id: "ENVIRONMENTAL_FOOTPRINT",
+    code: "C2",
+    title: "Environmental Footprint Declaration",
+    shortTitle: "EFD",
+    category: "general",
+    priority: "P0",
+    articleRef: "Art. 44-46",
+    description:
+      "Environmental Footprint Declaration per ISO 14040/14044 lifecycle assessment methodology",
+    estimatedSections: 11,
+  },
+  {
+    id: "INSURANCE_COMPLIANCE",
+    code: "C3",
+    title: "Insurance Compliance Report",
+    shortTitle: "Insurance Report",
+    category: "general",
+    priority: "P0",
+    articleRef: "Art. 47-50",
+    description:
+      "Insurance compliance report analyzing TPL requirements, coverage gaps, and jurisdiction-specific obligations",
     estimatedSections: 8,
   },
 ];

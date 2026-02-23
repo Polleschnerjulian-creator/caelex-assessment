@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { analytics } from "@/lib/analytics";
@@ -37,7 +37,16 @@ export default function LoginPage() {
           { provider: "credentials" },
           { category: "conversion" },
         );
-        router.push("/dashboard");
+
+        // Check if MFA is required before granting full access
+        const session = await getSession();
+        if (session?.user?.mfaRequired && !session?.user?.mfaVerified) {
+          router.push(
+            `/auth/mfa-challenge?callbackUrl=${encodeURIComponent("/dashboard")}`,
+          );
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch {
       setError("Something went wrong");

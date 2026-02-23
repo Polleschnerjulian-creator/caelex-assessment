@@ -49,6 +49,16 @@ const ARTICLE_RANGES: Record<
   COMPLIANCE_MATRIX: [
     { start: 74, end: 95, label: "Full Cybersecurity (Art. 74-95)" },
   ],
+  // Category C — General / Cross-Cutting
+  AUTHORIZATION_APPLICATION: [
+    { start: 4, end: 12, label: "Authorization (Art. 4-12)" },
+  ],
+  ENVIRONMENTAL_FOOTPRINT: [
+    { start: 44, end: 46, label: "Environmental (Art. 44-46)" },
+  ],
+  INSURANCE_COMPLIANCE: [
+    { start: 47, end: 50, label: "Insurance (Art. 47-50)" },
+  ],
 };
 
 export async function GET(request: NextRequest) {

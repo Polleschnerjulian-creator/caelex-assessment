@@ -36,11 +36,11 @@ const ATTESTATION_TYPE_COLORS: Record<string, string> = {
   AUDIT_REPORT:
     "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
   NDA_ACKNOWLEDGMENT:
-    "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
+    "text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20",
   INSURANCE_CONFIRMATION:
-    "text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20",
+    "text-zinc-600 dark:text-zinc-400 bg-zinc-500/10 border-zinc-500/20",
   SUPPLIER_CERTIFICATION:
-    "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    "text-lime-600 dark:text-lime-400 bg-lime-500/10 border-lime-500/20",
   REGULATORY_APPROVAL:
     "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20",
 };

@@ -33,28 +33,21 @@ function isValidCronSecret(header: string, secret: string): boolean {
 export async function GET(req: Request) {
   const startTime = Date.now();
 
-  // Verify cron secret
+  // Verify cron secret — always required, even in development
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isDev = process.env.NODE_ENV === "development";
 
-  // In production, CRON_SECRET must be set
-  if (!isDev && !cronSecret) {
-    logger.error("CRON_SECRET not configured in production");
+  if (!cronSecret) {
+    logger.error("CRON_SECRET not configured");
     return NextResponse.json(
       { error: "Service unavailable: cron authentication not configured" },
       { status: 503 },
     );
   }
 
-  // Verify authorization in non-development environments
-  if (!isDev && !isValidCronSecret(authHeader || "", cronSecret!)) {
+  if (!isValidCronSecret(authHeader || "", cronSecret)) {
     logger.warn("Unauthorized cron request attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (isDev && !cronSecret) {
-    logger.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
   }
 
   try {

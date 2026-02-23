@@ -706,8 +706,8 @@ export default function EngagementDetailPage() {
                   {/* IP Allowlist */}
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-cyan-500/10">
-                        <Globe size={16} className="text-cyan-400" />
+                      <div className="p-2 rounded-lg bg-emerald-500/10">
+                        <Globe size={16} className="text-emerald-400" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-slate-700 dark:text-white/70">
@@ -736,8 +736,8 @@ export default function EngagementDetailPage() {
                   {/* MFA Requirement */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-purple-500/10">
-                        <Fingerprint size={16} className="text-purple-400" />
+                      <div className="p-2 rounded-lg bg-slate-500/10">
+                        <Fingerprint size={16} className="text-slate-400" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-slate-700 dark:text-white/70">

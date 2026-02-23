@@ -85,7 +85,7 @@ export function Generate2Page() {
           setCompletedDocs(completed);
         }
       } catch (err) {
-        console.error("Failed to load Generate 2.0 data:", err);
+        console.error("Failed to load document generator data:", err);
       } finally {
         setIsLoading(false);
       }
@@ -501,7 +501,9 @@ export function Generate2Page() {
       <div className="flex items-center justify-center h-[calc(100vh-80px)]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-400">Loading Generate 2.0...</p>
+          <p className="text-sm text-slate-400">
+            Loading Document Generator...
+          </p>
         </div>
       </div>
     );

@@ -211,4 +211,41 @@ export const READINESS_SCHEMAS: Record<NCADocumentType, ReadinessSchema> = {
       { source: "user", field: "operatorType", weight: 1 },
     ],
   },
+
+  // ── Category C: General / Cross-Cutting ──
+
+  AUTHORIZATION_APPLICATION: {
+    documentType: "AUTHORIZATION_APPLICATION",
+    fields: [
+      { source: "organization", field: "name", weight: 3 },
+      { source: "user", field: "operatorType", weight: 3 },
+      { source: "debris", field: "complianceScore", weight: 2 },
+      { source: "cybersecurity", field: "maturityScore", weight: 2 },
+      { source: "spacecraft", field: "length>=1", weight: 2 },
+      { source: "debris", field: "orbitType", weight: 1 },
+    ],
+  },
+
+  ENVIRONMENTAL_FOOTPRINT: {
+    documentType: "ENVIRONMENTAL_FOOTPRINT",
+    fields: [
+      { source: "debris", field: "orbitType", weight: 3 },
+      { source: "debris", field: "satelliteCount", weight: 3 },
+      { source: "debris", field: "deorbitStrategy", weight: 2 },
+      { source: "debris", field: "altitudeKm", weight: 2 },
+      { source: "user", field: "operatorType", weight: 2 },
+      { source: "spacecraft", field: "length>=1", weight: 1 },
+    ],
+  },
+
+  INSURANCE_COMPLIANCE: {
+    documentType: "INSURANCE_COMPLIANCE",
+    fields: [
+      { source: "organization", field: "name", weight: 3 },
+      { source: "user", field: "operatorType", weight: 3 },
+      { source: "debris", field: "orbitType", weight: 2 },
+      { source: "debris", field: "satelliteCount", weight: 2 },
+      { source: "spacecraft", field: "length>=1", weight: 1 },
+    ],
+  },
 };

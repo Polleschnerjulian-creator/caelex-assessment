@@ -29,10 +29,9 @@ const TYPE_COLORS: Record<string, string> = {
   COMPLIANCE_DECLARATION:
     "bg-emerald-500/10 text-emerald-500 border-emerald-500/30",
   AUDIT_REPORT: "bg-amber-500/10 text-amber-500 border-amber-500/30",
-  NDA_ACKNOWLEDGMENT: "bg-blue-500/10 text-blue-500 border-blue-500/30",
-  INSURANCE_CONFIRMATION:
-    "bg-purple-500/10 text-purple-500 border-purple-500/30",
-  SUPPLIER_CERTIFICATION: "bg-cyan-500/10 text-cyan-500 border-cyan-500/30",
+  NDA_ACKNOWLEDGMENT: "bg-green-500/10 text-green-500 border-green-500/30",
+  INSURANCE_CONFIRMATION: "bg-zinc-500/10 text-zinc-500 border-zinc-500/30",
+  SUPPLIER_CERTIFICATION: "bg-lime-500/10 text-lime-500 border-lime-500/30",
   REGULATORY_APPROVAL: "bg-red-500/10 text-red-500 border-red-500/30",
 };
 

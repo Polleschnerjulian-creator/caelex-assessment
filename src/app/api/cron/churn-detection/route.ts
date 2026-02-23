@@ -21,36 +21,29 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const startTime = Date.now();
 
-  // ─── Cron Auth ───
+  // ─── Cron Auth — always required, even in development ───
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isDev = process.env.NODE_ENV === "development";
 
-  if (!isDev && !cronSecret) {
-    logger.error("CRON_SECRET not configured in production");
+  if (!cronSecret) {
+    logger.error("CRON_SECRET not configured");
     return NextResponse.json(
       { error: "Service unavailable: cron authentication not configured" },
       { status: 503 },
     );
   }
 
-  if (!isDev) {
-    try {
-      const headerBuffer = Buffer.from(authHeader || "");
-      const expectedBuffer = Buffer.from(`Bearer ${cronSecret}`);
-      if (
-        headerBuffer.length !== expectedBuffer.length ||
-        !timingSafeEqual(headerBuffer, expectedBuffer)
-      ) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    } catch {
+  try {
+    const headerBuffer = Buffer.from(authHeader || "");
+    const expectedBuffer = Buffer.from(`Bearer ${cronSecret}`);
+    if (
+      headerBuffer.length !== expectedBuffer.length ||
+      !timingSafeEqual(headerBuffer, expectedBuffer)
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-  }
-
-  if (isDev && !cronSecret) {
-    logger.warn("[DEV] CRON_SECRET not set - bypassing auth for development");
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // ─── Detect At-Risk Organizations ───

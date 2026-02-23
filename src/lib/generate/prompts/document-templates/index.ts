@@ -13,6 +13,9 @@ import { getEOLDisposalTemplate } from "./a4-eol-disposal";
 import { getCyberPolicyTemplate } from "./b1-cyber-policy";
 import { getCyberRiskTemplate } from "./b2-cyber-risk";
 import { getIncidentResponseTemplate } from "./b3-incident-response";
+import { getAuthorizationApplicationTemplate } from "./c1-authorization-application";
+import { getEnvironmentalFootprintTemplate } from "./c2-environmental-footprint";
+import { getInsuranceComplianceTemplate } from "./c3-insurance-compliance";
 
 /**
  * Template lookup for P0 document types.
@@ -24,6 +27,9 @@ const TEMPLATE_MAP: Partial<Record<NCADocumentType, () => string>> = {
   CYBER_POLICY: getCyberPolicyTemplate,
   CYBER_RISK_ASSESSMENT: getCyberRiskTemplate,
   INCIDENT_RESPONSE: getIncidentResponseTemplate,
+  AUTHORIZATION_APPLICATION: getAuthorizationApplicationTemplate,
+  ENVIRONMENTAL_FOOTPRINT: getEnvironmentalFootprintTemplate,
+  INSURANCE_COMPLIANCE: getInsuranceComplianceTemplate,
 };
 
 /**
@@ -52,7 +58,9 @@ function getGenericTemplate(docType: NCADocumentType): string {
   const categoryDetail =
     meta.category === "debris"
       ? "Debris Mitigation (EU Space Act Title IV, Art. 58-73)"
-      : "Cybersecurity (EU Space Act Title V, Art. 74-95)";
+      : meta.category === "cybersecurity"
+        ? "Cybersecurity (EU Space Act Title V, Art. 74-95)"
+        : "General Compliance (EU Space Act)";
 
   return `## Document-Specific Instructions: ${meta.code} — ${meta.title}
 

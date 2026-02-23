@@ -140,6 +140,16 @@ export async function configureSSOConnection(
     );
   }
 
+  // SSRF protection: validate issuerUrl is not an internal network address
+  if (input.issuerUrl) {
+    validateExternalUrl(input.issuerUrl, "SSO issuer");
+  }
+
+  // SSRF protection: validate ssoUrl is not an internal network address
+  if (input.ssoUrl) {
+    validateExternalUrl(input.ssoUrl, "SSO login");
+  }
+
   // Encrypt client secret if provided (AES-256-GCM via main encryption module)
   const encryptedSecret = input.clientSecret
     ? await encrypt(input.clientSecret)
@@ -208,6 +218,14 @@ export async function updateSSOConnection(
   const existing = await getSSOConnection(organizationId);
   if (!existing) {
     throw new Error("SSO connection not found");
+  }
+
+  // SSRF protection: validate URLs are not internal network addresses
+  if (input.issuerUrl) {
+    validateExternalUrl(input.issuerUrl, "SSO issuer");
+  }
+  if (input.ssoUrl) {
+    validateExternalUrl(input.ssoUrl, "SSO login");
   }
 
   const updateData: Prisma.SSOConnectionUpdateInput = {};

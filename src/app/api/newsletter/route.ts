@@ -99,23 +99,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const subscription = await prisma.newsletterSubscription.findUnique({
-      where: { email: email.toLowerCase() },
-    });
-
-    if (!subscription) {
-      return NextResponse.json(
-        { error: "Subscription not found" },
-        { status: 404 },
-      );
-    }
-
-    if (subscription.status === "UNSUBSCRIBED") {
-      return NextResponse.json({ success: true });
-    }
-
-    await prisma.newsletterSubscription.update({
-      where: { id: subscription.id },
+    // Use deleteMany-style update to avoid leaking whether the email exists
+    // Always return the same success response regardless of email existence
+    await prisma.newsletterSubscription.updateMany({
+      where: { email: email.toLowerCase(), status: "ACTIVE" },
       data: {
         status: "UNSUBSCRIBED",
         unsubscribedAt: new Date(),

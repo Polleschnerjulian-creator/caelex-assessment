@@ -75,8 +75,16 @@ export const getAuthenticatedUser = cache(
 );
 
 /**
- * Verify user has required role.
- * Call after getAuthenticatedUser() when role-specific access is needed.
+ * Verify user has required PLATFORM-LEVEL role (User.role field).
+ * Call after getAuthenticatedUser() when platform-wide admin access is needed.
+ *
+ * IMPORTANT: This checks the User.role field ("user", "admin", "auditor")
+ * which is a PLATFORM-LEVEL concept for super-admin operations (managing all
+ * users, all organizations, platform analytics, etc.).
+ *
+ * This is SEPARATE from organization-level roles (OrganizationMember.role:
+ * OWNER, ADMIN, MANAGER, MEMBER, VIEWER) which are scoped to a specific org.
+ * For org-scoped permission checks, use OrganizationMember.role with a specific orgId.
  */
 export async function requireRole(
   allowedRoles: string[],

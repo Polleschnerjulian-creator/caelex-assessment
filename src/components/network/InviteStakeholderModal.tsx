@@ -58,14 +58,14 @@ const STAKEHOLDER_TYPES: {
     label: "Legal Counsel",
     description: "External legal advisors for regulatory compliance",
     icon: Scale,
-    color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
   },
   {
     type: "INSURER",
     label: "Insurer",
     description: "Insurance providers for space liability coverage",
     icon: Shield,
-    color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    color: "text-slate-400 bg-slate-500/10 border-slate-500/20",
   },
   {
     type: "AUDITOR",
@@ -93,7 +93,7 @@ const STAKEHOLDER_TYPES: {
     label: "Consultant",
     description: "Regulatory or technical consultants",
     icon: Lightbulb,
-    color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    color: "text-lime-400 bg-lime-500/10 border-lime-500/20",
   },
   {
     type: "LAUNCH_PROVIDER",

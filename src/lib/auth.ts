@@ -22,6 +22,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import * as Sentry from "@sentry/nextjs";
 import { logger } from "@/lib/logger";
+import { verifySignedToken } from "@/lib/signed-token";
 
 // ─── Auth availability check ───
 
@@ -42,12 +43,31 @@ const getPrisma = async () => {
   return prisma;
 };
 
+// ─── Helpers ───
+
+/**
+ * Mask an email address for use in logs and security events.
+ * Preserves first/last character of local part and full domain for debuggability
+ * while protecting PII. Example: "julian@example.com" -> "j****n@example.com"
+ */
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const maskedLocal =
+    local.length <= 2
+      ? "*".repeat(local.length)
+      : local[0] + "*".repeat(local.length - 2) + local[local.length - 1];
+  return `${maskedLocal}@${domain}`;
+}
+
 // ─── Types ───
 
 declare module "next-auth" {
   interface User {
     role?: string;
     theme?: string;
+    mfaRequired?: boolean;
+    mfaVerified?: boolean;
   }
   interface Session {
     user: {
@@ -57,6 +77,8 @@ declare module "next-auth" {
       image?: string | null;
       role?: string;
       theme?: string;
+      mfaRequired?: boolean;
+      mfaVerified?: boolean;
     };
   }
 }
@@ -153,10 +175,22 @@ const authResult = isAuthConfigured
             token.id = user.id;
             token.role = user.role || "user";
             token.theme = user.theme || "system";
+
+            // Propagate MFA flags — if MFA is required, session is not fully
+            // authenticated until the TOTP challenge is completed.
+            if (user.mfaRequired) {
+              token.mfaRequired = true;
+              token.mfaVerified = false;
+            }
           }
 
           // Session update trigger - verify user is still active and sync preferences
           if (trigger === "update" && token.id) {
+            // If MFA was just verified, update the token
+            if (updateData?.mfaVerified === true) {
+              token.mfaVerified = true;
+            }
+
             // If theme is being updated via updateSession({ theme: ... })
             if (updateData?.theme) {
               token.theme = updateData.theme as string;
@@ -193,13 +227,21 @@ const authResult = isAuthConfigured
             session.user.id = token.id as string;
             session.user.role = token.role as string | undefined;
             session.user.theme = token.theme as string | undefined;
+            session.user.mfaRequired = token.mfaRequired as boolean | undefined;
+            session.user.mfaVerified = token.mfaVerified as boolean | undefined;
           }
           return session;
         },
 
         async signIn({ user, account }) {
           // For OAuth providers, check if user is active
-          if (account?.provider !== "credentials" && user.id) {
+          // Skip for credentials-based providers (email/password + passkey-token)
+          // as they already verify isActive in their authorize callbacks.
+          if (
+            account?.provider !== "credentials" &&
+            account?.provider !== "passkey-token" &&
+            user.id
+          ) {
             try {
               const prisma = await getPrisma();
               if (!prisma) return true; // Allow sign in if DB not configured
@@ -271,7 +313,12 @@ const authResult = isAuthConfigured
               return null;
             }
 
-            // ─── Rate Limit Check ───
+            // ─── Rate Limit Check (per-email, pre-authentication) ───
+            // This LoginAttempt table provides email-based rate limiting that works
+            // even for non-existent accounts (defense against credential stuffing).
+            // This is complementary to the per-user account lockout system in
+            // login-security.server.ts (User.failedLoginAttempts / lockedUntil),
+            // which tracks lockout state for known users and supports unlock tokens.
             const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
 
             const recentAttempts = await prisma.loginAttempt.count({
@@ -282,13 +329,16 @@ const authResult = isAuthConfigured
             });
 
             if (recentAttempts >= 5) {
-              // Log security event
+              // Log security event (mask PII in logs)
               await prisma.securityEvent.create({
                 data: {
                   type: "BRUTE_FORCE_ATTEMPT",
                   severity: "HIGH",
-                  description: `Login rate limit exceeded for email: ${email}`,
-                  metadata: JSON.stringify({ email, attempts: recentAttempts }),
+                  description: `Login rate limit exceeded for email: ${maskEmail(email)}`,
+                  metadata: JSON.stringify({
+                    email: maskEmail(email),
+                    attempts: recentAttempts,
+                  }),
                 },
               });
 
@@ -317,6 +367,9 @@ const authResult = isAuthConfigured
                 role: true,
                 isActive: true,
                 theme: true,
+                mfaConfig: {
+                  select: { enabled: true },
+                },
               },
             });
 
@@ -353,6 +406,78 @@ const authResult = isAuthConfigured
             });
 
             // ─── Return User ───
+            // If user has MFA enabled, mark session as requiring MFA verification.
+            // The session will have mfaVerified=false until the TOTP challenge is completed.
+            const hasMfa = user.mfaConfig?.enabled === true;
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: user.role,
+              theme: user.theme || "system",
+              ...(hasMfa && { mfaRequired: true, mfaVerified: false }),
+            };
+          },
+        }),
+
+        // Passkey Token Provider — exchanges a short-lived signed token
+        // (issued by /api/auth/passkey/login-verify) for a NextAuth session.
+        // This avoids exposing the raw userId to the client.
+        Credentials({
+          id: "passkey-token",
+          name: "passkey-token",
+          credentials: {
+            token: { label: "Token", type: "text" },
+          },
+
+          async authorize(credentials) {
+            if (!credentials?.token) {
+              return null;
+            }
+
+            const token = credentials.token as string;
+
+            // Verify the signed token (checks HMAC signature + expiration)
+            const payload = verifySignedToken<{
+              sub: string;
+              purpose: string;
+            }>(token);
+
+            if (
+              !payload ||
+              payload.purpose !== "passkey-login" ||
+              !payload.sub
+            ) {
+              return null;
+            }
+
+            const prisma = await getPrisma();
+            if (!prisma) {
+              logger.error(
+                "Database not configured - cannot authenticate passkey token",
+              );
+              return null;
+            }
+
+            const user = await prisma.user.findUnique({
+              where: { id: payload.sub },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                image: true,
+                role: true,
+                isActive: true,
+                theme: true,
+              },
+            });
+
+            if (!user || !user.isActive) {
+              return null;
+            }
+
             return {
               id: user.id,
               email: user.email,

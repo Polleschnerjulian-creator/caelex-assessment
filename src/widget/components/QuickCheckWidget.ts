@@ -67,10 +67,14 @@ export function initQuickCheckWidget(
     // Header
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `
-      <span class="caelex-header-title">Space Act Compliance Check</span>
-      <span class="caelex-header-badge">Free</span>
-    `;
+    const headerTitle = document.createElement("span");
+    headerTitle.className = "caelex-header-title";
+    headerTitle.textContent = "Space Act Compliance Check";
+    const headerBadge = document.createElement("span");
+    headerBadge.className = "caelex-header-badge";
+    headerBadge.textContent = "Free";
+    header.appendChild(headerTitle);
+    header.appendChild(headerBadge);
     root.appendChild(header);
 
     const body = document.createElement("div");
@@ -150,14 +154,19 @@ export function initQuickCheckWidget(
     root.innerHTML = "";
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `<span class="caelex-header-title">Analyzing...</span>`;
+    const loadingTitle = document.createElement("span");
+    loadingTitle.className = "caelex-header-title";
+    loadingTitle.textContent = "Analyzing...";
+    header.appendChild(loadingTitle);
     root.appendChild(header);
 
     const body = document.createElement("div");
     body.className = "caelex-body";
     const loading = document.createElement("div");
     loading.className = "caelex-loading";
-    loading.innerHTML = '<div class="caelex-spinner"></div>';
+    const spinner = document.createElement("div");
+    spinner.className = "caelex-spinner";
+    loading.appendChild(spinner);
     body.appendChild(loading);
     root.appendChild(body);
     renderFooter();
@@ -167,7 +176,10 @@ export function initQuickCheckWidget(
     root.innerHTML = "";
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `<span class="caelex-header-title">Error</span>`;
+    const errTitle = document.createElement("span");
+    errTitle.className = "caelex-header-title";
+    errTitle.textContent = "Error";
+    header.appendChild(errTitle);
     root.appendChild(header);
 
     const body = document.createElement("div");
@@ -203,7 +215,10 @@ export function initQuickCheckWidget(
       root.innerHTML = "";
       const header = document.createElement("div");
       header.className = "caelex-header";
-      header.innerHTML = `<span class="caelex-header-title">Your Compliance Profile</span>`;
+      const profileTitle = document.createElement("span");
+      profileTitle.className = "caelex-header-title";
+      profileTitle.textContent = "Your Compliance Profile";
+      header.appendChild(profileTitle);
       root.appendChild(header);
 
       const body = document.createElement("div");
@@ -219,8 +234,13 @@ export function initQuickCheckWidget(
   function renderFooter() {
     const footer = document.createElement("div");
     footer.className = "caelex-footer";
-    footer.innerHTML =
-      'Powered by <a href="https://caelex.eu" target="_blank" rel="noopener">Caelex</a>';
+    footer.appendChild(document.createTextNode("Powered by "));
+    const footerLink = document.createElement("a");
+    footerLink.href = "https://caelex.eu";
+    footerLink.target = "_blank";
+    footerLink.rel = "noopener";
+    footerLink.textContent = "Caelex";
+    footer.appendChild(footerLink);
     root.appendChild(footer);
   }
 

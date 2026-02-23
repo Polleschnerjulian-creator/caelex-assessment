@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import crypto from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import {
@@ -61,10 +62,18 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    // Resolve organization context for multi-tenant scoping
+    const orgContext = await getCurrentOrganization(session.user.id);
+
     const where: Record<string, unknown> = {
       userId: session.user.id,
       isLatest: true,
     };
+
+    // Add organization scope when user has an active organization
+    if (orgContext?.organizationId) {
+      where.organizationId = orgContext.organizationId;
+    }
 
     if (category) where.category = category;
     if (status) where.status = status;
@@ -226,9 +235,13 @@ export async function POST(req: Request) {
       }
     }
 
+    // Resolve organization context for multi-tenant scoping
+    const orgCtx = await getCurrentOrganization(session.user.id);
+
     const document = await prisma.document.create({
       data: {
         userId: session.user.id,
+        organizationId: orgCtx?.organizationId || null,
         name,
         description,
         fileName,

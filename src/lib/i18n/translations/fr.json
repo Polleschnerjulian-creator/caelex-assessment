@@ -69,7 +69,8 @@
     "regulatoryFeed": "Flux réglementaire",
     "incidents": "Incidents",
     "digitalTwin": "Digital Twin",
-    "generate2": "Generate 2.0",
+    "generate2": "Générateur de documents",
+    "documentGenerator": "Générateur de documents",
     "widget": "Widget",
     "network": "Écosystème",
     "complianceNetwork": "Réseau de conformité"
@@ -508,12 +509,13 @@
     "emptyDescription": "Effectuez des évaluations de conformité pour alimenter votre Jumeau Numérique."
   },
   "generate2": {
-    "title": "Generate 2.0",
+    "title": "Générateur de documents",
     "subtitle": "Générateur de documents prêts pour la soumission NCA",
     "ncaDocuments": "Documents NCA",
-    "documentsGenerated": "{count}/16 documents générés",
+    "documentsGenerated": "{count}/19 documents générés",
     "categoryDebris": "Catégorie A — Atténuation des débris",
     "categoryCyber": "Catégorie B — Cybersécurité",
+    "categoryGeneral": "Catégorie C — Conformité générale",
     "generatePackage": "Générer le package complet",
     "generating": "Génération en cours...",
     "selectDocument": "Sélectionner un type de document",

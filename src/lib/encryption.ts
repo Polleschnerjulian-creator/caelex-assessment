@@ -36,7 +36,11 @@ function scryptAsync(
   });
 }
 const ALGORITHM = "aes-256-gcm";
-const IV_LENGTH = 16;
+// NIST SP 800-38D recommends 96-bit (12-byte) IVs for GCM.
+// New encryptions use 12-byte IVs. Legacy data encrypted with 16-byte IVs
+// is still supported in decrypt() via automatic IV length detection.
+const IV_LENGTH = 12;
+const LEGACY_IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ORG_KEY_PREFIX = "org:";
 
@@ -171,7 +175,9 @@ export async function decrypt(encryptedText: string): Promise<string> {
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
 
-  if (iv.length !== IV_LENGTH) {
+  // Support both legacy 16-byte IVs and new 12-byte (NIST-recommended) IVs.
+  // Legacy data encrypted before the IV length migration will have 16-byte IVs.
+  if (iv.length !== IV_LENGTH && iv.length !== LEGACY_IV_LENGTH) {
     throw new Error("Invalid IV length");
   }
 
@@ -194,7 +200,12 @@ export async function decrypt(encryptedText: string): Promise<string> {
 export function isEncrypted(text: string): boolean {
   if (!text) return false;
   const parts = text.split(":");
-  return parts.length === 3 && parts[0].length === IV_LENGTH * 2;
+  // Support both new 12-byte and legacy 16-byte IV lengths (hex-encoded = 2x byte length)
+  return (
+    parts.length === 3 &&
+    (parts[0].length === IV_LENGTH * 2 ||
+      parts[0].length === LEGACY_IV_LENGTH * 2)
+  );
 }
 
 /**
@@ -278,7 +289,8 @@ export async function decryptForOrg(encryptedText: string): Promise<string> {
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
 
-  if (iv.length !== IV_LENGTH) {
+  // Support both legacy 16-byte IVs and new 12-byte (NIST-recommended) IVs
+  if (iv.length !== IV_LENGTH && iv.length !== LEGACY_IV_LENGTH) {
     throw new Error("Invalid IV length");
   }
 

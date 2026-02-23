@@ -10,6 +10,10 @@ import { sendSuspiciousLoginEmail } from "@/lib/email/suspicious-login";
 import { revokeAllUserSessions } from "@/lib/services/session-service";
 import type { AuthMethod } from "@prisma/client";
 
+// Per-user account lockout thresholds.
+// This is complementary to the per-email LoginAttempt rate limiting in auth.ts,
+// which protects against credential stuffing for both existing and non-existent
+// accounts. This system provides per-user lockout with unlock token support.
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 30;
 const UNLOCK_TOKEN_EXPIRY_HOURS = 1;

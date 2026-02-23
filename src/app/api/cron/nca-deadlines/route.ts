@@ -218,19 +218,19 @@ async function processNCADeadlines() {
 export async function GET(req: Request) {
   const startTime = Date.now();
 
+  // Verify cron secret — always required, even in development
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  const isDev = process.env.NODE_ENV === "development";
 
-  if (!isDev && !cronSecret) {
-    logger.error("CRON_SECRET not configured in production");
+  if (!cronSecret) {
+    logger.error("CRON_SECRET not configured");
     return NextResponse.json(
       { error: "Service unavailable: cron authentication not configured" },
       { status: 503 },
     );
   }
 
-  if (!isDev && !isValidCronSecret(authHeader || "", cronSecret!)) {
+  if (!isValidCronSecret(authHeader || "", cronSecret)) {
     logger.warn("Unauthorized NCA deadline cron request attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

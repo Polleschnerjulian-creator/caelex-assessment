@@ -25,6 +25,7 @@ import UnifiedResultsDashboard from "@/components/unified/UnifiedResultsDashboar
 import AssessmentResultsGate from "@/components/assessment/AssessmentResultsGate";
 import { csrfHeaders } from "@/lib/csrf-client";
 import { getIcon } from "@/lib/icons";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
 // Flag emojis for country selection
 const FLAG_EMOJIS: Record<string, string> = {
@@ -643,17 +644,14 @@ export default function UnifiedAssessmentWizard() {
 
                 <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium tracking-[-0.02em] text-white mb-3">
                   {currentQuestion.title}
+                  {currentQuestion.helpText && (
+                    <InfoTooltip text={currentQuestion.helpText} />
+                  )}
                 </h2>
 
                 {currentQuestion.subtitle && (
                   <p className="text-body-lg text-white/45 leading-relaxed">
                     {currentQuestion.subtitle}
-                  </p>
-                )}
-
-                {currentQuestion.helpText && (
-                  <p className="text-small text-emerald-400/60 mt-3 leading-relaxed">
-                    {currentQuestion.helpText}
                   </p>
                 )}
               </div>

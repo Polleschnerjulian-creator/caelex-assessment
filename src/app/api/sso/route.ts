@@ -16,6 +16,45 @@ import {
 } from "@/lib/services/sso-service";
 import { SSOProvider, OrganizationRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+// ─── Zod Schema for SSO Configuration ───
+
+const SSOConfigSchema = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  provider: z.nativeEnum(SSOProvider, {
+    message: "Invalid SSO provider",
+  }),
+  // SAML fields
+  entityId: z.string().max(2048).optional(),
+  ssoUrl: z.string().url("Invalid SSO URL").max(2048).optional(),
+  certificate: z.string().max(16384).optional(),
+  // OIDC fields
+  clientId: z.string().max(512).optional(),
+  clientSecret: z.string().max(1024).optional(),
+  issuerUrl: z.string().url("Invalid issuer URL").max(2048).optional(),
+  // Settings
+  autoProvision: z.boolean().optional(),
+  defaultRole: z
+    .nativeEnum(OrganizationRole, {
+      message: "Invalid organization role",
+    })
+    .optional(),
+  domains: z
+    .array(
+      z
+        .string()
+        .min(1)
+        .max(255)
+        .regex(
+          /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$/,
+          "Invalid domain format",
+        ),
+    )
+    .max(50, "Too many domains")
+    .optional(),
+  enforceSSO: z.boolean().optional(),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -101,6 +140,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Validate input with Zod schema
+    const parseResult = SSOConfigSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid input",
+          details: parseResult.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+
     const {
       organizationId,
       provider,
@@ -114,14 +166,7 @@ export async function POST(request: NextRequest) {
       defaultRole,
       domains,
       enforceSSO,
-    } = body;
-
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: "Organization ID is required" },
-        { status: 400 },
-      );
-    }
+    } = parseResult.data;
 
     // Verify user has admin access to this organization
     const membership = await prisma.organizationMember.findFirst({
@@ -135,13 +180,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    if (!provider || !Object.values(SSOProvider).includes(provider)) {
-      return NextResponse.json(
-        { error: "Invalid SSO provider" },
-        { status: 400 },
-      );
-    }
-
     const connection = await configureSSOConnection(
       organizationId,
       {
@@ -153,7 +191,7 @@ export async function POST(request: NextRequest) {
         clientSecret,
         issuerUrl,
         autoProvision,
-        defaultRole: defaultRole as OrganizationRole,
+        defaultRole,
         domains,
         enforceSSO,
       },

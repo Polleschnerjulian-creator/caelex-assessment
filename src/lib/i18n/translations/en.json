@@ -69,7 +69,8 @@
     "regulatoryFeed": "Regulatory Feed",
     "incidents": "Incidents",
     "digitalTwin": "Digital Twin",
-    "generate2": "Generate 2.0",
+    "generate2": "Document Generator",
+    "documentGenerator": "Document Generator",
     "widget": "Widget",
     "network": "Ecosystem",
     "complianceNetwork": "Compliance Network"
@@ -508,12 +509,13 @@
     "emptyDescription": "Complete compliance assessments to populate your Digital Twin."
   },
   "generate2": {
-    "title": "Generate 2.0",
+    "title": "Document Generator",
     "subtitle": "NCA-Submission-Ready Document Generator",
     "ncaDocuments": "NCA Documents",
-    "documentsGenerated": "{count}/16 documents generated",
+    "documentsGenerated": "{count}/19 documents generated",
     "categoryDebris": "Category A — Debris Mitigation",
     "categoryCyber": "Category B — Cybersecurity",
+    "categoryGeneral": "Category C — General Compliance",
     "generatePackage": "Generate Full Package",
     "generating": "Generating...",
     "selectDocument": "Select a document type",

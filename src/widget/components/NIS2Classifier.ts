@@ -29,10 +29,14 @@ export function initNIS2Classifier(
 
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `
-      <span class="caelex-header-title">NIS2 Classification</span>
-      <span class="caelex-header-badge">Free</span>
-    `;
+    const headerTitle = document.createElement("span");
+    headerTitle.className = "caelex-header-title";
+    headerTitle.textContent = "NIS2 Classification";
+    const headerBadge = document.createElement("span");
+    headerBadge.className = "caelex-header-badge";
+    headerBadge.textContent = "Free";
+    header.appendChild(headerTitle);
+    header.appendChild(headerBadge);
     root.appendChild(header);
 
     const body = document.createElement("div");
@@ -89,12 +93,19 @@ export function initNIS2Classifier(
     root.innerHTML = "";
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `<span class="caelex-header-title">Classifying...</span>`;
+    const loadingTitle = document.createElement("span");
+    loadingTitle.className = "caelex-header-title";
+    loadingTitle.textContent = "Classifying...";
+    header.appendChild(loadingTitle);
     root.appendChild(header);
     const body = document.createElement("div");
     body.className = "caelex-body";
-    body.innerHTML =
-      '<div class="caelex-loading"><div class="caelex-spinner"></div></div>';
+    const loadingDiv = document.createElement("div");
+    loadingDiv.className = "caelex-loading";
+    const spinner = document.createElement("div");
+    spinner.className = "caelex-spinner";
+    loadingDiv.appendChild(spinner);
+    body.appendChild(loadingDiv);
     root.appendChild(body);
     renderFooter();
   }
@@ -104,7 +115,10 @@ export function initNIS2Classifier(
 
     const header = document.createElement("div");
     header.className = "caelex-header";
-    header.innerHTML = `<span class="caelex-header-title">NIS2 Classification</span>`;
+    const resultTitle = document.createElement("span");
+    resultTitle.className = "caelex-header-title";
+    resultTitle.textContent = "NIS2 Classification";
+    header.appendChild(resultTitle);
     root.appendChild(header);
 
     const body = document.createElement("div");
@@ -126,7 +140,13 @@ export function initNIS2Classifier(
 
     const classLabel = document.createElement("div");
     classLabel.className = "caelex-result-header";
-    classLabel.innerHTML = `<strong style="color: var(--caelex-text-heading); font-size: 16px">${result.classification.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</strong>`;
+    const classStrong = document.createElement("strong");
+    classStrong.style.cssText =
+      "color: var(--caelex-text-heading); font-size: 16px";
+    classStrong.textContent = result.classification
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    classLabel.appendChild(classStrong);
     resultDiv.appendChild(classLabel);
 
     // Reason
@@ -142,10 +162,15 @@ export function initNIS2Classifier(
     // Penalty
     const penalty = document.createElement("div");
     penalty.className = "caelex-result-stat";
-    penalty.innerHTML = `
-      <span class="caelex-result-stat-label">Max Penalty</span>
-      <span class="caelex-result-stat-value" style="font-size: 12px">${result.penaltyRange}</span>
-    `;
+    const penaltyLabel = document.createElement("span");
+    penaltyLabel.className = "caelex-result-stat-label";
+    penaltyLabel.textContent = "Max Penalty";
+    const penaltyValue = document.createElement("span");
+    penaltyValue.className = "caelex-result-stat-value";
+    penaltyValue.style.fontSize = "12px";
+    penaltyValue.textContent = result.penaltyRange;
+    penalty.appendChild(penaltyLabel);
+    penalty.appendChild(penaltyValue);
     resultDiv.appendChild(penalty);
 
     // CTA
@@ -183,7 +208,10 @@ export function initNIS2Classifier(
       root.innerHTML = "";
       const header = document.createElement("div");
       header.className = "caelex-header";
-      header.innerHTML = `<span class="caelex-header-title">Error</span>`;
+      const errTitle = document.createElement("span");
+      errTitle.className = "caelex-header-title";
+      errTitle.textContent = "Error";
+      header.appendChild(errTitle);
       root.appendChild(header);
       const body = document.createElement("div");
       body.className = "caelex-body";
@@ -208,8 +236,13 @@ export function initNIS2Classifier(
   function renderFooter() {
     const footer = document.createElement("div");
     footer.className = "caelex-footer";
-    footer.innerHTML =
-      'Powered by <a href="https://caelex.eu" target="_blank" rel="noopener">Caelex</a>';
+    footer.appendChild(document.createTextNode("Powered by "));
+    const footerLink = document.createElement("a");
+    footerLink.href = "https://caelex.eu";
+    footerLink.target = "_blank";
+    footerLink.rel = "noopener";
+    footerLink.textContent = "Caelex";
+    footer.appendChild(footerLink);
     root.appendChild(footer);
   }
 

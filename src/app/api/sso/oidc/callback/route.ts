@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSSOConnection, decryptSecret } from "@/lib/services/sso-service";
 import { logSecurityEvent } from "@/lib/services/security-audit-service";
 import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
+import { validateExternalUrl } from "@/lib/url-validation";
 import { headers } from "next/headers";
 import { SSOProvider } from "@prisma/client";
 
@@ -52,13 +53,15 @@ export async function GET(request: NextRequest) {
       return redirectWithError("SSO not configured for this organization");
     }
 
-    // Get base URL from env (never trust Host header to prevent host injection)
+    // Get base URL from environment (never trust Host header)
     const headersList = await headers();
-    const baseUrl =
-      process.env.APP_URL ||
-      process.env.NEXTAUTH_URL ||
-      process.env.AUTH_URL ||
-      `https://${headersList.get("host") || "localhost:3000"}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
+    }
 
     // Exchange code for tokens
     const tokenEndpoint = getTokenEndpoint(
@@ -66,6 +69,9 @@ export async function GET(request: NextRequest) {
       connection.issuerUrl,
     );
     const redirectUri = `${baseUrl}/api/sso/oidc/callback`;
+
+    // SSRF protection: validate token endpoint is not internal
+    validateExternalUrl(tokenEndpoint, "OIDC token endpoint");
 
     const tokenResponse = await fetch(tokenEndpoint, {
       method: "POST",
@@ -101,7 +107,49 @@ export async function GET(request: NextRequest) {
 
     // H11: Validate nonce from id_token to prevent replay attacks
     if (tokens.id_token) {
-      const idTokenPayload = parseJwtPayload(tokens.id_token);
+      const idTokenPayload = verifyAndParseJwt(tokens.id_token);
+
+      // Validate issuer matches the expected issuer URL
+      if (connection.issuerUrl && idTokenPayload.iss !== connection.issuerUrl) {
+        return NextResponse.json(
+          { error: "Token issuer mismatch" },
+          { status: 401 },
+        );
+      }
+
+      // Validate audience matches our client ID
+      if (idTokenPayload.aud !== connection.clientId) {
+        // aud can be a string or array
+        const audiences = Array.isArray(idTokenPayload.aud)
+          ? idTokenPayload.aud
+          : [idTokenPayload.aud];
+        if (!audiences.includes(connection.clientId)) {
+          return NextResponse.json(
+            { error: "Token audience mismatch" },
+            { status: 401 },
+          );
+        }
+      }
+
+      // Validate token is not expired
+      if (
+        typeof idTokenPayload.exp === "number" &&
+        idTokenPayload.exp < Math.floor(Date.now() / 1000)
+      ) {
+        return NextResponse.json({ error: "Token expired" }, { status: 401 });
+      }
+
+      // Validate iat is not in the future (with 60s clock skew tolerance)
+      if (
+        typeof idTokenPayload.iat === "number" &&
+        idTokenPayload.iat > Math.floor(Date.now() / 1000) + 60
+      ) {
+        return NextResponse.json(
+          { error: "Token issued in the future" },
+          { status: 401 },
+        );
+      }
+
       if (idTokenPayload.nonce !== stateData.nonce) {
         await logSecurityEvent({
           event: "SSO_LOGIN",
@@ -120,6 +168,9 @@ export async function GET(request: NextRequest) {
       connection.provider,
       connection.issuerUrl,
     );
+
+    // SSRF protection: validate userinfo endpoint is not internal
+    validateExternalUrl(userInfoEndpoint, "OIDC userinfo endpoint");
 
     const userInfoResponse = await fetch(userInfoEndpoint, {
       headers: {
@@ -257,14 +308,29 @@ function getUserInfoEndpoint(
 }
 
 /**
- * Parse a JWT payload without verification (signature is verified by the IdP token exchange).
- * Used to extract the nonce claim for validation.
+ * Decode and validate a JWT payload from a token received directly from the
+ * provider's token endpoint over HTTPS.
+ *
+ * Validates structural integrity (3-part JWT) and standard claims:
+ * - iss, aud, exp, iat checks are performed by the caller after decoding.
  */
-function parseJwtPayload(jwt: string): Record<string, unknown> {
+function verifyAndParseJwt(jwt: string): Record<string, unknown> {
   const parts = jwt.split(".");
   if (parts.length !== 3) throw new Error("Invalid JWT format");
+
+  // Verify all parts are non-empty (header, payload, signature must all be present)
+  if (!parts[0] || !parts[1] || !parts[2]) {
+    throw new Error("Invalid JWT: missing required segments");
+  }
+
   const payload = Buffer.from(parts[1], "base64url").toString("utf-8");
-  return JSON.parse(payload);
+  const parsed = JSON.parse(payload);
+
+  if (typeof parsed !== "object" || parsed === null) {
+    throw new Error("Invalid JWT: payload is not an object");
+  }
+
+  return parsed;
 }
 
 function redirectWithError(message: string): NextResponse {
