@@ -138,10 +138,19 @@ function MfaChallengeContent() {
         return;
       }
 
-      // Success - update session to set mfaVerified=true in JWT, then redirect
-      await updateSession({ mfaVerified: true });
-      router.push(callbackUrl);
-    } catch {
+      // Success — the server already updated the JWT cookie in the response.
+      // Try updateSession to refresh client-side state, but don't fail if it errors
+      // (the cookie is already set server-side, so the redirect will work).
+      try {
+        await updateSession({ mfaVerified: true });
+      } catch {
+        // Non-critical: server already set the updated JWT cookie
+      }
+
+      // Hard redirect ensures the browser picks up the new session cookie
+      window.location.href = callbackUrl;
+    } catch (err) {
+      console.error("MFA validation error:", err);
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
     }
