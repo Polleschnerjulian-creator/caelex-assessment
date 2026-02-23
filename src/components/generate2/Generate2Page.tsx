@@ -44,29 +44,39 @@ async function fetchWithTimeout(
   }
 }
 
-/** Yield to the browser so the UI can repaint between heavy operations */
+/** Yield to the browser so the UI can repaint between heavy operations.
+ *  Uses setTimeout only — requestAnimationFrame hangs in background tabs. */
 function yieldToMain(): Promise<void> {
   return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      setTimeout(resolve, 0);
-    });
+    setTimeout(resolve, 0);
   });
 }
 
-/** Run parseSectionsFromMarkdown + regex matching without blocking the main thread */
+/** Run parseSectionsFromMarkdown + regex matching without blocking the main thread.
+ *  Wrapped in a race with a 30s timeout so it can never hang indefinitely. */
 async function parseContentNonBlocking(
   fullContent: string,
   parseFn: typeof parseSectionsFromMarkdown,
 ) {
-  await yieldToMain();
-  const parsedSections = parseFn(fullContent);
-  await yieldToMain();
-  const actionRequired = (fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || [])
-    .length;
-  const evidencePlaceholders = (fullContent.match(/\[EVIDENCE[^\]]*\]/g) || [])
-    .length;
-  await yieldToMain();
-  return { parsedSections, actionRequired, evidencePlaceholders };
+  const parse = async () => {
+    await yieldToMain();
+    const parsedSections = parseFn(fullContent);
+    await yieldToMain();
+    const actionRequired = (
+      fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
+    ).length;
+    const evidencePlaceholders = (
+      fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
+    ).length;
+    await yieldToMain();
+    return { parsedSections, actionRequired, evidencePlaceholders };
+  };
+
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Content parsing timed out")), 30_000),
+  );
+
+  return Promise.race([parse(), timeout]);
 }
 
 interface DocumentState {

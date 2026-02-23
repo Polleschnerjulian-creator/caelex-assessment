@@ -70,18 +70,20 @@ export function DocumentPreviewPanel({
 
   if (panelState === "generating") {
     return (
-      <div className="p-6">
-        <div className="mb-6">
+      <div className="flex flex-col h-full">
+        <div className="px-6 pt-6 pb-2">
           <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
           <p className="text-sm text-slate-400 mt-1">{meta.articleRef}</p>
         </div>
-        <GenerationProgress
-          sections={sections}
-          completedSections={completedSections}
-          currentSection={currentSection}
-          isGenerating={isGenerating}
-          phase={generationPhase}
-        />
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <GenerationProgress
+            sections={sections}
+            completedSections={completedSections}
+            currentSection={currentSection}
+            isGenerating={isGenerating}
+            phase={generationPhase}
+          />
+        </div>
       </div>
     );
   }
@@ -272,7 +274,7 @@ export function DocumentPreviewPanel({
 
   // Pre-generation state
   return (
-    <div className="p-6">
+    <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white">{meta.title}</h3>
         <p className="text-sm text-slate-400 mt-1">{meta.description}</p>
