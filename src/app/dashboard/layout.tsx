@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -10,53 +11,111 @@ import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
 import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
-import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import {
+  LanguageProvider,
+  useLanguage,
+} from "@/components/providers/LanguageProvider";
+
+const ROUTE_TITLE_MAP: Record<string, string> = {
+  "/dashboard": "sidebar.dashboard",
+  "/dashboard/tracker": "sidebar.complianceTracker",
+  "/dashboard/generate": "sidebar.documentGenerator",
+  "/dashboard/mission-control": "sidebar.missionControl",
+  "/dashboard/documents": "sidebar.documents",
+  "/dashboard/audit-center": "sidebar.auditCenter",
+  "/dashboard/timeline": "sidebar.timeline",
+  "/dashboard/digital-twin": "sidebar.digitalTwin",
+  "/dashboard/incidents": "sidebar.incidents",
+  "/dashboard/regulatory-feed": "sidebar.regulatoryFeed",
+  "/dashboard/nca-portal": "sidebar.ncaPortal",
+  "/dashboard/network": "sidebar.complianceNetwork",
+  "/dashboard/settings": "sidebar.settings",
+  "/dashboard/admin": "sidebar.adminPanel",
+};
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const { t } = useLanguage();
+  useAnalyticsTracking();
+
+  // Derive page title from route
+  let pageTitle: string | undefined;
+  if (pathname === "/dashboard/astra") {
+    pageTitle = "ASTRA";
+  } else if (pathname.startsWith("/dashboard/modules/")) {
+    const moduleName = pathname.split("/dashboard/modules/")[1]?.split("/")[0];
+    if (moduleName) {
+      pageTitle = moduleName
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+  } else {
+    const i18nKey = ROUTE_TITLE_MAP[pathname];
+    if (i18nKey) {
+      pageTitle = t(i18nKey);
+    }
+  }
+
+  const isFullscreenPage =
+    pathname === "/dashboard/generate" ||
+    pathname === "/dashboard/mission-control";
+
+  return (
+    <div className="min-h-screen bg-light-bg dark:bg-dark-surface">
+      <div className="lg:grid lg:grid-cols-[260px_1fr]">
+        {/* Sidebar */}
+        <Sidebar
+          user={
+            session?.user as {
+              name?: string | null;
+              email?: string | null;
+              image?: string | null;
+              role?: string;
+              organization?: string;
+            }
+          }
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
+        {/* Main content */}
+        <div className="flex flex-col min-h-screen">
+          <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
+          <main
+            id="main-content"
+            className={`flex-1 ${isFullscreenPage ? "" : "p-6 lg:p-10"}`}
+          >
+            {isFullscreenPage ? (
+              <ErrorBoundary>{children}</ErrorBoundary>
+            ) : (
+              <div className="max-w-[1400px] mx-auto">
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+
+      {/* Onboarding overlay for new users */}
+      <OnboardingOverlay />
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session } = useSession();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  useAnalyticsTracking();
-
   return (
     <LanguageProvider>
       <OrganizationProvider>
         <ToastProvider>
           <AstraProvider>
-            <div className="min-h-screen bg-light-bg dark:bg-dark-surface">
-              <div className="lg:grid lg:grid-cols-[260px_1fr]">
-                {/* Sidebar */}
-                <Sidebar
-                  user={
-                    session?.user as {
-                      name?: string | null;
-                      email?: string | null;
-                      image?: string | null;
-                      role?: string;
-                      organization?: string;
-                    }
-                  }
-                  isOpen={sidebarOpen}
-                  onClose={() => setSidebarOpen(false)}
-                />
-
-                {/* Main content */}
-                <div className="flex flex-col min-h-screen">
-                  <TopBar onMenuClick={() => setSidebarOpen(true)} />
-                  <main id="main-content" className="flex-1 p-6 lg:p-10">
-                    <div className="max-w-[1400px] mx-auto">
-                      <ErrorBoundary>{children}</ErrorBoundary>
-                    </div>
-                  </main>
-                </div>
-              </div>
-
-              {/* Onboarding overlay for new users */}
-              <OnboardingOverlay />
-            </div>
+            <DashboardContent>{children}</DashboardContent>
           </AstraProvider>
         </ToastProvider>
       </OrganizationProvider>
