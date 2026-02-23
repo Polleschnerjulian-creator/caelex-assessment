@@ -109,18 +109,53 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!mfaConfig) {
-      return NextResponse.json(
-        { error: "MFA is not configured for this account." },
-        { status: 400 },
+    if (!mfaConfig || !mfaConfig.enabled) {
+      // MFA config was deleted or disabled, but the JWT still has mfaRequired=true.
+      // Auto-heal: update the JWT to clear mfaRequired and let the user through.
+      console.warn(
+        "[MFA] No active MFA config found but session has mfaRequired. Auto-healing JWT.",
       );
-    }
+      const healResponse = NextResponse.json({
+        success: true,
+        mfaVerified: true,
+        message: "MFA no longer required — session updated.",
+      });
 
-    if (!mfaConfig.enabled) {
-      return NextResponse.json(
-        { error: "MFA is not enabled for this account." },
-        { status: 400 },
-      );
+      try {
+        const authSecret = process.env.AUTH_SECRET;
+        if (authSecret) {
+          const token = await getToken({
+            req: request,
+            secret: authSecret,
+            salt: SESSION_COOKIE_NAME,
+            cookieName: SESSION_COOKIE_NAME,
+          });
+          if (token) {
+            const updatedToken = {
+              ...token,
+              mfaRequired: false,
+              mfaVerified: true,
+            };
+            const newJwt = await encode({
+              token: updatedToken,
+              secret: authSecret,
+              salt: SESSION_COOKIE_NAME,
+              maxAge: 24 * 60 * 60,
+            });
+            healResponse.cookies.set(SESSION_COOKIE_NAME, newJwt, {
+              httpOnly: true,
+              secure: isProduction,
+              sameSite: "lax",
+              path: "/",
+              maxAge: 24 * 60 * 60,
+            });
+          }
+        }
+      } catch (jwtErr) {
+        console.error("[MFA] JWT heal failed:", jwtErr);
+      }
+
+      return healResponse;
     }
 
     // ── Step 5: Validate code ──
