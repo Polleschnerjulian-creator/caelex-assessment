@@ -61,7 +61,7 @@ const completeBodySchema = z.object({
   generationTimeMs: z.number().int().min(0),
 });
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(
   request: NextRequest,

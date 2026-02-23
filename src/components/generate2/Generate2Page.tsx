@@ -18,6 +18,57 @@ import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 
 type PanelState = "empty" | "pre-generation" | "generating" | "completed";
 
+const SECTION_FETCH_TIMEOUT_MS = 240_000; // 4 minutes per section
+const COMPLETE_FETCH_TIMEOUT_MS = 60_000; // 60s for finalization
+const MAX_FINALIZE_RETRIES = 2;
+
+/** Fetch with AbortController timeout so requests can't hang indefinitely */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(
+        `Request timed out after ${Math.round(timeoutMs / 1000)}s`,
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Yield to the browser so the UI can repaint between heavy operations */
+function yieldToMain(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      setTimeout(resolve, 0);
+    });
+  });
+}
+
+/** Run parseSectionsFromMarkdown + regex matching without blocking the main thread */
+async function parseContentNonBlocking(
+  fullContent: string,
+  parseFn: typeof parseSectionsFromMarkdown,
+) {
+  await yieldToMain();
+  const parsedSections = parseFn(fullContent);
+  await yieldToMain();
+  const actionRequired = (fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || [])
+    .length;
+  const evidencePlaceholders = (fullContent.match(/\[EVIDENCE[^\]]*\]/g) || [])
+    .length;
+  await yieldToMain();
+  return { parsedSections, actionRequired, evidencePlaceholders };
+}
+
 interface DocumentState {
   id: string | null;
   content: ParsedSection[] | null;
@@ -209,7 +260,7 @@ export function Generate2Page() {
       for (let i = startFromSection; i < sectionDefs.length; i++) {
         setCurrentSection(i);
 
-        const sectionRes = await fetch(
+        const sectionRes = await fetchWithTimeout(
           `/api/generate2/documents/${documentId}/section`,
           {
             method: "POST",
@@ -220,6 +271,7 @@ export function Generate2Page() {
               sectionNumber: sectionDefs[i].number,
             }),
           },
+          SECTION_FETCH_TIMEOUT_MS,
         );
 
         if (!sectionRes.ok) {
@@ -244,33 +296,44 @@ export function Generate2Page() {
       const fullContent = sectionContents
         .filter((s) => typeof s === "string" && s.length > 0)
         .join("\n\n");
-      const parsedSections = parseSectionsFromMarkdown(fullContent);
-      const actionRequired = (
-        fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
-      ).length;
-      const evidencePlaceholders = (
-        fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
-      ).length;
 
-      // Send only parsed result to server (thin DB update)
-      const completeRes = await fetch(
-        `/api/generate2/documents/${documentId}/complete`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            parsedSections,
-            rawContent: fullContent,
-            actionRequiredCount: actionRequired,
-            evidencePlaceholderCount: evidencePlaceholders,
-            totalInputTokens,
-            totalOutputTokens,
-            generationTimeMs: Date.now() - startTime,
-          }),
-        },
-      );
+      // Non-blocking parse — yields to browser so UI stays responsive
+      const { parsedSections, actionRequired, evidencePlaceholders } =
+        await parseContentNonBlocking(fullContent, parseSectionsFromMarkdown);
 
-      if (!completeRes.ok) {
+      // Send parsed result to server with retry
+      let completeRes: Response | null = null;
+      for (let attempt = 0; attempt <= MAX_FINALIZE_RETRIES; attempt++) {
+        try {
+          completeRes = await fetchWithTimeout(
+            `/api/generate2/documents/${documentId}/complete`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...csrfHeaders(),
+              },
+              body: JSON.stringify({
+                parsedSections,
+                rawContent: fullContent,
+                actionRequiredCount: actionRequired,
+                evidencePlaceholderCount: evidencePlaceholders,
+                totalInputTokens,
+                totalOutputTokens,
+                generationTimeMs: Date.now() - startTime,
+              }),
+            },
+            COMPLETE_FETCH_TIMEOUT_MS,
+          );
+          if (completeRes.ok) break;
+        } catch (err) {
+          if (attempt === MAX_FINALIZE_RETRIES) throw err;
+          // Wait before retry (exponential: 2s, 4s)
+          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+        }
+      }
+
+      if (completeRes && !completeRes.ok) {
         const errData = await completeRes
           .json()
           .catch(() => ({ error: "Finalization failed (no details)" }));
@@ -414,7 +477,7 @@ export function Generate2Page() {
         for (let i = 0; i < sectionDefs.length; i++) {
           setCurrentSection(i);
           try {
-            const sectionRes = await fetch(
+            const sectionRes = await fetchWithTimeout(
               `/api/generate2/documents/${documentId}/section`,
               {
                 method: "POST",
@@ -428,6 +491,7 @@ export function Generate2Page() {
                   sectionNumber: sectionDefs[i].number,
                 }),
               },
+              SECTION_FETCH_TIMEOUT_MS,
             );
 
             if (!sectionRes.ok) {
@@ -454,28 +518,35 @@ export function Generate2Page() {
 
         if (failed) continue;
 
-        // Finalize
+        // Finalize — non-blocking parse
         setGenerationPhase("finalizing");
         const fullContent = sectionContents.filter(Boolean).join("\n\n");
-        const parsedSections = parseSectionsFromMarkdown(fullContent);
+        const {
+          parsedSections,
+          actionRequired: pkgActionRequired,
+          evidencePlaceholders: pkgEvidencePlaceholders,
+        } = await parseContentNonBlocking(
+          fullContent,
+          parseSectionsFromMarkdown,
+        );
 
-        await fetch(`/api/generate2/documents/${documentId}/complete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...csrfHeaders() },
-          body: JSON.stringify({
-            parsedSections,
-            rawContent: fullContent,
-            actionRequiredCount: (
-              fullContent.match(/\[ACTION REQUIRED[^\]]*\]/g) || []
-            ).length,
-            evidencePlaceholderCount: (
-              fullContent.match(/\[EVIDENCE[^\]]*\]/g) || []
-            ).length,
-            totalInputTokens,
-            totalOutputTokens,
-            generationTimeMs: Date.now() - startTime,
-          }),
-        });
+        await fetchWithTimeout(
+          `/api/generate2/documents/${documentId}/complete`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({
+              parsedSections,
+              rawContent: fullContent,
+              actionRequiredCount: pkgActionRequired,
+              evidencePlaceholderCount: pkgEvidencePlaceholders,
+              totalInputTokens,
+              totalOutputTokens,
+              generationTimeMs: Date.now() - startTime,
+            }),
+          },
+          COMPLETE_FETCH_TIMEOUT_MS,
+        );
 
         setCompletedDocs((prev) => new Set([...prev, docType]));
       }
