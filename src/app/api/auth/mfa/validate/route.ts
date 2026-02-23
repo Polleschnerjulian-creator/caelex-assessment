@@ -4,12 +4,18 @@
  *
  * On success, updates the session JWT server-side (sets mfaVerified=true)
  * and returns the new cookie directly — no client-side updateSession needed.
+ *
+ * This route inlines the MFA validation logic (instead of calling validateMfaCode)
+ * to provide granular error handling at each step: DB lookup, decryption, TOTP verify.
  */
 
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getToken, encode } from "next-auth/jwt";
-import { validateMfaCode, verifyAndConsumeBackupCode } from "@/lib/mfa.server";
+import { prisma } from "@/lib/prisma";
+import { decrypt } from "@/lib/encryption";
+import * as OTPAuth from "otpauth";
+import bcrypt from "bcryptjs";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   recordLoginEvent,
@@ -28,9 +34,20 @@ const SESSION_COOKIE_NAME = isProduction
   ? "__Secure-authjs.session-token"
   : "authjs.session-token";
 
+// TOTP replay protection — track recently used codes
+const usedTotpCodes = new Map<string, number>();
+setInterval(() => {
+  const cutoff = Date.now() - 60_000;
+  for (const [key, timestamp] of usedTotpCodes) {
+    if (timestamp < cutoff) {
+      usedTotpCodes.delete(key);
+    }
+  }
+}, 30_000);
+
 export async function POST(request: Request) {
   try {
-    // Rate limit: 5 requests per minute per IP
+    // ── Step 1: Rate limit ──
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       "unknown";
@@ -39,9 +56,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    const body = await request.json();
-    const validation = validateSchema.safeParse(body);
+    // ── Step 2: Parse & validate body ──
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
+    const validation = validateSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Invalid request", details: validation.error.issues },
@@ -52,7 +75,7 @@ export async function POST(request: Request) {
     const { code, isBackupCode } = validation.data;
     const { ipAddress, userAgent } = getRequestContext(request);
 
-    // Always require authenticated session — never accept userId from request body
+    // ── Step 3: Get session ──
     let session;
     try {
       session = await auth();
@@ -65,7 +88,6 @@ export async function POST(request: Request) {
     }
 
     if (!session?.user?.id) {
-      console.error("[MFA] No session found. Cookie may be missing.");
       return NextResponse.json(
         { error: "Session expired. Please log in again." },
         { status: 401 },
@@ -73,24 +95,139 @@ export async function POST(request: Request) {
     }
     const userId = session.user.id;
 
-    let isValid = false;
-
+    // ── Step 4: Look up MFA config ──
+    let mfaConfig;
     try {
-      if (isBackupCode) {
-        isValid = await verifyAndConsumeBackupCode(userId, code);
-      } else {
-        isValid = await validateMfaCode(userId, code);
-      }
-    } catch (mfaErr) {
-      console.error("[MFA] Code validation threw:", mfaErr);
+      mfaConfig = await prisma.mfaConfig.findUnique({
+        where: { userId },
+      });
+    } catch (dbErr) {
+      console.error("[MFA] DB lookup failed:", dbErr);
       return NextResponse.json(
-        { error: "Verification error. Please try again." },
+        { error: "Database error. Please try again." },
         { status: 500 },
       );
     }
 
+    if (!mfaConfig) {
+      return NextResponse.json(
+        { error: "MFA is not configured for this account." },
+        { status: 400 },
+      );
+    }
+
+    if (!mfaConfig.enabled) {
+      return NextResponse.json(
+        { error: "MFA is not enabled for this account." },
+        { status: 400 },
+      );
+    }
+
+    // ── Step 5: Validate code ──
+    let isValid = false;
+
+    if (isBackupCode) {
+      // ── Backup code path ──
+      if (!mfaConfig.backupCodes) {
+        return NextResponse.json(
+          { error: "No backup codes configured." },
+          { status: 400 },
+        );
+      }
+
+      try {
+        const hashedCodes: string[] = JSON.parse(mfaConfig.backupCodes);
+        const normalizedCode = code.toUpperCase().replace(/\s/g, "");
+
+        for (let i = 0; i < hashedCodes.length; i++) {
+          if (
+            hashedCodes[i] &&
+            (await bcrypt.compare(normalizedCode, hashedCodes[i]))
+          ) {
+            // Consume the code
+            hashedCodes[i] = "";
+            await prisma.mfaConfig.update({
+              where: { userId },
+              data: { backupCodes: JSON.stringify(hashedCodes) },
+            });
+            isValid = true;
+            break;
+          }
+        }
+      } catch (backupErr) {
+        console.error("[MFA] Backup code verification failed:", backupErr);
+        return NextResponse.json(
+          { error: "Backup code verification failed." },
+          { status: 500 },
+        );
+      }
+    } else {
+      // ── TOTP code path ──
+
+      // Step 5a: Decrypt the stored secret
+      let totpSecret: string;
+      try {
+        totpSecret = await decrypt(mfaConfig.encryptedSecret);
+      } catch (decryptErr) {
+        console.error("[MFA] Decryption failed:", decryptErr);
+        const errMsg =
+          decryptErr instanceof Error ? decryptErr.message : String(decryptErr);
+        // Check for common causes
+        if (errMsg.includes("ENCRYPTION_KEY")) {
+          console.error(
+            "[MFA] ENCRYPTION_KEY or ENCRYPTION_SALT not set in environment",
+          );
+        }
+        return NextResponse.json(
+          {
+            error:
+              "MFA secret decryption failed. Server configuration issue — please contact support.",
+          },
+          { status: 500 },
+        );
+      }
+
+      if (!totpSecret) {
+        console.error("[MFA] Decrypted secret is empty");
+        return NextResponse.json(
+          { error: "MFA configuration is corrupted." },
+          { status: 500 },
+        );
+      }
+
+      // Step 5b: Verify the TOTP code
+      try {
+        const totp = new OTPAuth.TOTP({
+          issuer: "Caelex",
+          algorithm: "SHA256",
+          digits: 6,
+          period: 30,
+          secret: OTPAuth.Secret.fromBase32(totpSecret),
+        });
+
+        const delta = totp.validate({ token: code, window: 1 });
+        isValid = delta !== null;
+      } catch (totpErr) {
+        console.error("[MFA] TOTP verification threw:", totpErr);
+        return NextResponse.json(
+          { error: "TOTP verification failed. MFA may need to be re-setup." },
+          { status: 500 },
+        );
+      }
+
+      // Step 5c: Replay protection
+      if (isValid) {
+        const replayKey = `${userId}:${code}`;
+        if (usedTotpCodes.has(replayKey)) {
+          isValid = false;
+        } else {
+          usedTotpCodes.set(replayKey, Date.now());
+        }
+      }
+    }
+
+    // ── Step 6: Handle invalid code ──
     if (!isValid) {
-      // Non-critical audit/login logging — catch individually to not block response
       logAuditEvent({
         userId,
         action: "MFA_CHALLENGE_FAILED",
@@ -112,7 +249,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
-    // Success — non-critical audit/login logging
+    // ── Step 7: Success — audit logging (non-blocking) ──
     if (isBackupCode) {
       logAuditEvent({
         userId,
@@ -155,7 +292,7 @@ export async function POST(request: Request) {
       console.error("[MFA] Clear attempts failed:", e),
     );
 
-    // Update the JWT server-side: set mfaVerified=true directly in the token.
+    // ── Step 8: Update JWT server-side ──
     const response = NextResponse.json({
       success: true,
       mfaVerified: true,
@@ -193,13 +330,16 @@ export async function POST(request: Request) {
       }
     } catch (jwtError) {
       console.error("[MFA] JWT update failed:", jwtError);
+      // Non-fatal: the success response already tells the client MFA passed.
+      // The next page load will trigger a session refresh.
     }
 
     return response;
   } catch (error) {
     console.error("[MFA] Unhandled error:", error);
+    const detail = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to validate code" },
+      { error: `MFA validation failed: ${detail}` },
       { status: 500 },
     );
   }
