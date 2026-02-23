@@ -54,44 +54,44 @@ function fadeUp(isInView: boolean, delay = 0) {
 // ============================================================================
 
 const governanceMetrics = [
-  { value: "100%", label: "EU-Datenresidenz" },
-  { value: "0", label: "Datenvorfälle" },
-  { value: "AES-256", label: "Verschlüsselung" },
-  { value: "DSGVO", label: "by Design" },
+  { value: "100%", label: "EU Data Residency" },
+  { value: "0", label: "Data Incidents" },
+  { value: "AES-256", label: "Encryption" },
+  { value: "GDPR", label: "by Design" },
 ];
 
 const frameworkPillars = [
   {
     icon: Landmark,
-    title: "Unternehmensführung",
+    title: "Corporate Leadership",
     subtitle: "Governance",
     items: [
-      "Klare Entscheidungsstrukturen und Verantwortlichkeiten",
-      "Regelmäßige Überprüfung der Unternehmensprozesse",
-      "Transparente Kommunikation gegenüber Kunden und Partnern",
-      "Dokumentierte Richtlinien für alle Geschäftsbereiche",
+      "Clear decision structures and responsibilities",
+      "Regular review of business processes",
+      "Transparent communication with customers and partners",
+      "Documented policies for all business areas",
     ],
   },
   {
     icon: ShieldCheck,
-    title: "Risikomanagement",
+    title: "Risk Management",
     subtitle: "Risk & Compliance",
     items: [
-      "Systematische Identifikation und Bewertung von Risiken",
-      "Kontinuierliches Monitoring regulatorischer Änderungen",
-      "Incident-Response-Prozesse mit definierten Eskalationswegen",
-      "Automatisierte Sicherheitsscans und interne Code-Reviews bei jedem Deployment",
+      "Systematic identification and assessment of risks",
+      "Continuous monitoring of regulatory changes",
+      "Incident response processes with defined escalation paths",
+      "Automated security scans and internal code reviews on every deployment",
     ],
   },
   {
     icon: HeartHandshake,
-    title: "Kundenverantwortung",
+    title: "Customer Responsibility",
     subtitle: "Accountability",
     items: [
-      "Gleichbehandlung aller Kunden unabhängig von Größe",
-      "Faire und transparente Preisgestaltung",
-      "Offene Feedbackkultur mit kurzen Reaktionszeiten",
-      "Langfristige Partnerschaften statt kurzfristiger Optimierung",
+      "Equal treatment of all customers regardless of size",
+      "Fair and transparent pricing",
+      "Open feedback culture with fast response times",
+      "Long-term partnerships over short-term optimization",
     ],
   },
 ];
@@ -99,33 +99,33 @@ const frameworkPillars = [
 const codexArticles = [
   {
     number: "I",
-    title: "Datensouveränität",
-    text: "Kundendaten sind Eigentum des Kunden. Caelex verarbeitet Daten ausschließlich zur Erbringung der vertraglich vereinbarten Leistung. Ein Verkauf, eine Weitergabe oder anderweitige Monetarisierung von Kundendaten findet nicht statt — weder direkt noch indirekt.",
+    title: "Data Sovereignty",
+    text: "Customer data is the property of the customer. Caelex processes data exclusively to deliver the contractually agreed service. No sale, transfer, or other monetization of customer data takes place — neither directly nor indirectly.",
   },
   {
     number: "II",
-    title: "Regulatorische Integrität",
-    text: "Caelex stellt regulatorisches Wissen bereit — keine Rechtsberatung. Unsere Plattform bildet den aktuellen Stand europäischer Raumfahrtregulierung ab und hilft beim Verständnis. Compliance-Entscheidungen trifft der Kunde auf Basis qualifizierter rechtlicher Beratung.",
+    title: "Regulatory Integrity",
+    text: "Caelex provides regulatory knowledge — not legal advice. Our platform reflects the current state of European space regulation and aids understanding. Compliance decisions are made by the customer based on qualified legal counsel.",
   },
   {
     number: "III",
-    title: "Transparenz",
-    text: "Alle Preise, Leistungsumfänge und Vertragsbedingungen sind klar und vollständig dokumentiert. Es gibt keine versteckten Kosten, keine Dark Patterns und keine manipulativen Gestaltungselemente in unserer Software.",
+    title: "Transparency",
+    text: "All pricing, service scope, and contract terms are clearly and fully documented. There are no hidden costs, no dark patterns, and no manipulative design elements in our software.",
   },
   {
     number: "IV",
-    title: "Verantwortungsvolle KI",
-    text: "KI-generierte Inhalte sind in unserer Plattform immer kenntlich gemacht. KI-Funktionen dienen als Unterstützungswerkzeug — niemals als autonomer Entscheider. Kundendaten werden nicht zum Training von KI-Modellen verwendet. Unser KI-Einsatz entspricht den Anforderungen des EU AI Act.",
+    title: "Responsible AI",
+    text: "AI-generated content is always clearly labeled in our platform. AI features serve as support tools — never as autonomous decision-makers. Customer data is not used to train AI models. Our AI usage complies with the requirements of the EU AI Act.",
   },
   {
     number: "V",
-    title: "Unabhängigkeit",
-    text: "Caelex ist ein unabhängiges Softwareunternehmen. Wir bieten keine Beratungsleistungen an und haben keine Interessenkonflikte mit Regulierungsbehörden, Beratern oder anderen Marktteilnehmern. Unsere Software liefert Fakten — keine Meinungen.",
+    title: "Independence",
+    text: "Caelex is an independent software company. We do not offer consulting services and have no conflicts of interest with regulatory authorities, consultants, or other market participants. Our software delivers facts — not opinions.",
   },
   {
     number: "VI",
-    title: "Nachhaltiges Wachstum",
-    text: "Wir verpflichten uns zu verantwortungsvollem Wachstum. Das betrifft unsere Infrastruktur (effiziente Ressourcennutzung, EU-Hosting) und unser Geschäftsmodell (nachhaltige Kundenbeziehungen statt kurzfristiger Gewinnmaximierung).",
+    title: "Sustainable Growth",
+    text: "We are committed to responsible growth. This applies to our infrastructure (efficient resource usage, EU hosting) and our business model (sustainable customer relationships over short-term profit maximization).",
   },
 ];
 
@@ -134,22 +134,22 @@ const esgPillars = [
     icon: Leaf,
     accent: "emerald",
     title: "Environmental",
-    subtitle: "Umwelt & Ressourcen",
+    subtitle: "Environment & Resources",
     commitments: [
       {
-        title: "EU-Only Cloud-Infrastruktur",
+        title: "EU-Only Cloud Infrastructure",
         description:
-          "AWS eu-central-1 (Frankfurt) — carbon-neutral Region mit 100% Renewable-Energy-Matching",
+          "AWS eu-central-1 (Frankfurt) — carbon-neutral region with 100% renewable energy matching",
       },
       {
-        title: "Effiziente Software-Architektur",
+        title: "Efficient Software Architecture",
         description:
-          "Optimierte Datenbankabfragen und serverlose Architektur zur Minimierung des Ressourcenverbrauchs",
+          "Optimized database queries and serverless architecture to minimize resource consumption",
       },
       {
-        title: "Papierlose Prozesse",
+        title: "Paperless Processes",
         description:
-          "Vollständig digitale Compliance-Dokumentation, Audit-Trails und Berichterstellung",
+          "Fully digital compliance documentation, audit trails, and report generation",
       },
     ],
   },
@@ -157,22 +157,22 @@ const esgPillars = [
     icon: Users,
     accent: "blue",
     title: "Social",
-    subtitle: "Mensch & Gesellschaft",
+    subtitle: "People & Society",
     commitments: [
       {
-        title: "Gleichbehandlung",
+        title: "Equal Treatment",
         description:
-          "Identische Servicequalität und Preistransparenz für alle Kunden — unabhängig von Unternehmensgröße",
+          "Identical service quality and price transparency for all customers — regardless of company size",
       },
       {
-        title: "Wissenszugang",
+        title: "Knowledge Access",
         description:
-          "Kostenloses Assessment, öffentliche Guides und Glossare für den Zugang zu Regulierungswissen",
+          "Free assessment, public guides, and glossaries for access to regulatory knowledge",
       },
       {
-        title: "Transparente Regulierungskommunikation",
+        title: "Transparent Regulatory Communication",
         description:
-          "Verständliche Aufbereitung komplexer Regulierung — öffentlicher Blog, Glossar und Leitfäden für die gesamte Branche",
+          "Clear presentation of complex regulation — public blog, glossary, and guides for the entire industry",
       },
     ],
   },
@@ -180,22 +180,22 @@ const esgPillars = [
     icon: Landmark,
     accent: "purple",
     title: "Governance",
-    subtitle: "Führung & Kontrolle",
+    subtitle: "Leadership & Control",
     commitments: [
       {
-        title: "Dokumentierte Richtlinien",
+        title: "Documented Policies",
         description:
-          "Datenschutzrichtlinie, Nutzungsbedingungen und Cookie-Richtlinie — öffentlich einsehbar",
+          "Privacy policy, terms of service, and cookie policy — publicly accessible",
       },
       {
-        title: "Compliance-Monitoring",
+        title: "Compliance Monitoring",
         description:
-          "Kontinuierliche Überwachung regulatorischer Anforderungen und automatisierte Audit-Trails",
+          "Continuous monitoring of regulatory requirements and automated audit trails",
       },
       {
-        title: "Automatisierte Audit-Trails",
+        title: "Automated Audit Trails",
         description:
-          "Lückenlose Protokollierung aller sicherheitsrelevanten Aktionen — jederzeit nachvollziehbar",
+          "Comprehensive logging of all security-relevant actions — fully traceable at any time",
       },
     ],
   },
@@ -203,62 +203,62 @@ const esgPillars = [
 
 const complianceFrameworks = [
   {
-    name: "DSGVO / GDPR",
+    name: "GDPR",
     status: "achieved" as const,
-    description: "Privacy-by-Design, Datenschutz-Folgenabschätzungen, DPO",
+    description: "Privacy by design, data protection impact assessments, DPO",
   },
   {
     name: "EU AI Act",
     status: "achieved" as const,
     description:
-      "Transparenzpflichten, menschliche Aufsicht, Risikoklassifizierung",
+      "Transparency obligations, human oversight, risk classification",
   },
   {
-    name: "NIS2-Richtlinie",
+    name: "NIS2 Directive",
     status: "achieved" as const,
-    description: "Sicherheitsmaßnahmen nach Art. 21, Incident Reporting",
+    description: "Security measures per Art. 21, incident reporting",
   },
 ];
 
 const riskCategories = [
   {
     icon: Lock,
-    title: "Informationssicherheit",
+    title: "Information Security",
     measures: [
-      "AES-256-GCM Verschlüsselung sensibler Daten",
-      "Rollenbasierte Zugriffskontrolle (RBAC)",
-      "Automatische Sicherheitsscans bei jedem Deployment",
-      "Mehrstufiges Rate Limiting und DDoS-Schutz",
+      "AES-256-GCM encryption of sensitive data",
+      "Role-based access control (RBAC)",
+      "Automated security scans on every deployment",
+      "Multi-layered rate limiting and DDoS protection",
     ],
   },
   {
     icon: Database,
-    title: "Datenschutz",
+    title: "Data Protection",
     measures: [
-      "Datenminimierung und Zweckbindung",
-      "Automatische Anonymisierung von IP-Adressen",
-      "Verschlüsselte Backups mit EU-Datenresidenz",
-      "Recht auf Löschung und Datenportabilität",
+      "Data minimization and purpose limitation",
+      "Automatic anonymization of IP addresses",
+      "Encrypted backups with EU data residency",
+      "Right to erasure and data portability",
     ],
   },
   {
     icon: Activity,
-    title: "Betriebskontinuität",
+    title: "Business Continuity",
     measures: [
-      "Automatisches Failover und Redundanz",
-      "Zero-Downtime-Deployments",
-      "Echtzeit-Monitoring mit Alerting",
-      "Dokumentierte Incident-Response-Prozesse",
+      "Automatic failover and redundancy",
+      "Zero-downtime deployments",
+      "Real-time monitoring with alerting",
+      "Documented incident response processes",
     ],
   },
   {
     icon: Globe,
-    title: "Regulatorische Risiken",
+    title: "Regulatory Risks",
     measures: [
-      "Kontinuierliches Monitoring europäischer Gesetzgebung",
-      "Proaktive Anpassung an neue Anforderungen",
-      "Automatisierte Compliance-Checks in der CI/CD-Pipeline",
-      "Automatisierte Dependency-Checks und Secret-Scanning in der CI/CD-Pipeline",
+      "Continuous monitoring of European legislation",
+      "Proactive adaptation to new requirements",
+      "Automated compliance checks in the CI/CD pipeline",
+      "Automated dependency checks and secret scanning in the CI/CD pipeline",
     ],
   },
 ];
@@ -266,32 +266,32 @@ const riskCategories = [
 const ethicalPolicies = [
   {
     icon: Fingerprint,
-    title: "Datenschutzrichtlinie",
+    title: "Privacy Policy",
     points: [
-      "Keine Weitergabe oder Monetarisierung von Kundendaten",
-      "Kein Tracking durch Drittanbieter — ausschließlich selbst gehostete Analysen",
-      "DSGVO-konforme Datenverarbeitung mit dokumentierten Rechtsgrundlagen",
-      "Automatische Löschung nach Vertragsende und auf Anfrage",
+      "No transfer or monetization of customer data",
+      "No third-party tracking — exclusively self-hosted analytics",
+      "GDPR-compliant data processing with documented legal bases",
+      "Automatic deletion after contract termination and upon request",
     ],
   },
   {
     icon: Brain,
-    title: "KI-Ethikrichtlinie",
+    title: "AI Ethics Policy",
     points: [
-      "Kennzeichnungspflicht für alle KI-generierten Inhalte",
-      "Kein Training von KI-Modellen mit Kundendaten",
-      "Mensch-in-der-Schleife bei allen sicherheitskritischen Entscheidungen",
-      "Regelmäßige Überprüfung auf Bias und Fairness",
+      "Labeling requirement for all AI-generated content",
+      "No training of AI models with customer data",
+      "Human-in-the-loop for all safety-critical decisions",
+      "Regular review for bias and fairness",
     ],
   },
   {
     icon: Gavel,
-    title: "Anti-Korruptionsrichtlinie",
+    title: "Anti-Corruption Policy",
     points: [
-      "Null-Toleranz gegenüber Bestechung und Vorteilsgewährung",
-      "Keine Dark Patterns oder manipulativen Gestaltungselemente",
-      "Transparente Geschäftsbeziehungen ohne Interessenkonflikte",
-      "Whistleblower-Schutz für interne und externe Meldende",
+      "Zero tolerance for bribery and undue advantage",
+      "No dark patterns or manipulative design elements",
+      "Transparent business relationships without conflicts of interest",
+      "Whistleblower protection for internal and external reporters",
     ],
   },
 ];
@@ -299,52 +299,52 @@ const ethicalPolicies = [
 const reportingChannels = [
   {
     icon: AlertTriangle,
-    title: "Hinweisgebersystem",
+    title: "Whistleblower System",
     description:
-      "Vertrauliche Meldung von Verstößen gegen unseren Code of Conduct oder geltende Gesetze. Anonyme Meldungen sind möglich. Wir garantieren Schutz vor Repressalien gemäß EU-Whistleblower-Richtlinie.",
+      "Confidential reporting of violations against our Code of Conduct or applicable laws. Anonymous reports are possible. We guarantee protection against retaliation in accordance with the EU Whistleblower Directive.",
     email: "ethics@caelex.eu",
-    label: "Hinweis melden",
+    label: "Report a concern",
   },
   {
     icon: Lock,
     title: "Security Response",
     description:
-      "Responsible Disclosure für Sicherheitslücken und Schwachstellen. Wir bestätigen den Eingang innerhalb von 24 Stunden und informieren über den Fortschritt der Behebung.",
+      "Responsible disclosure for security vulnerabilities. We acknowledge receipt within 24 hours and provide updates on remediation progress.",
     email: "security@caelex.eu",
-    label: "Schwachstelle melden",
+    label: "Report a vulnerability",
   },
   {
     icon: Shield,
-    title: "Datenschutzbeauftragter",
+    title: "Data Protection Officer",
     description:
-      "Ansprechpartner für alle Fragen zu Datenschutz, Betroffenenrechte und Datenverarbeitung. Anfragen werden innerhalb der gesetzlichen Fristen bearbeitet.",
+      "Point of contact for all questions regarding data protection, data subject rights, and data processing. Requests are handled within the statutory deadlines.",
     email: "dpo@caelex.eu",
-    label: "DPO kontaktieren",
+    label: "Contact DPO",
   },
 ];
 
 const governanceDocuments = [
   {
-    title: "Datenschutzrichtlinie",
-    description: "DSGVO-konforme Verarbeitung personenbezogener Daten",
+    title: "Privacy Policy",
+    description: "GDPR-compliant processing of personal data",
     status: "available" as const,
-    href: "/legal/privacy",
+    href: "/legal/privacy-en",
   },
   {
-    title: "Nutzungsbedingungen",
-    description: "Vertragliche Grundlagen der Plattformnutzung",
+    title: "Terms of Service",
+    description: "Contractual basis for platform usage",
     status: "available" as const,
-    href: "/legal/terms",
+    href: "/legal/terms-en",
   },
   {
-    title: "Cookie-Richtlinie",
-    description: "Transparente Information über eingesetzte Technologien",
+    title: "Cookie Policy",
+    description: "Transparent information about technologies used",
     status: "available" as const,
-    href: "/legal/cookies",
+    href: "/legal/cookies-en",
   },
   {
-    title: "Impressum",
-    description: "Angaben gemäß § 5 TMG und Verantwortlichkeit",
+    title: "Legal Notice",
+    description: "Company information and legal responsibility",
     status: "available" as const,
     href: "/legal/impressum",
   },
@@ -394,23 +394,23 @@ function StatusBadge({
 }) {
   const config = {
     achieved: {
-      label: "Umgesetzt",
+      label: "Achieved",
       className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
     },
     planned: {
-      label: "Geplant",
+      label: "Planned",
       className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
     },
     available: {
-      label: "Verfügbar",
+      label: "Available",
       className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
     },
     "on-request": {
-      label: "Auf Anfrage",
+      label: "On Request",
       className: "bg-blue-500/15 text-blue-400 border-blue-500/20",
     },
     "coming-soon": {
-      label: "In Vorbereitung",
+      label: "Coming Soon",
       className: "bg-white/10 text-white/45 border-white/10",
     },
   };
@@ -455,18 +455,18 @@ function HeroSection() {
           {...fadeUp(isInView, 0.1)}
           className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-white mb-6"
         >
-          Verantwortung ist kein Feature
+          Responsibility is not a feature
           <br />
-          <span className="text-white/45">— es ist unser Fundament.</span>
+          <span className="text-white/45">— it is our foundation.</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
           className="text-heading md:text-heading-lg text-white/45 max-w-[700px] mx-auto mb-14 leading-relaxed"
         >
-          Caelex verwaltet sensible Compliance-Daten der europäischen
-          Raumfahrtindustrie. Das verpflichtet uns zu den höchsten Standards bei
-          Datenschutz, Ethik und Unternehmensführung.
+          Caelex manages sensitive compliance data for the European space
+          industry. This commits us to the highest standards in data protection,
+          ethics, and corporate governance.
         </motion.p>
 
         {/* Governance Metrics */}
@@ -508,8 +508,8 @@ function FrameworkSection() {
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Framework"
-          title="Governance-Struktur"
-          subtitle="Unser Governance-Framework basiert auf drei Säulen — sie definieren, wie wir Entscheidungen treffen, Risiken managen und Verantwortung übernehmen."
+          title="Governance Structure"
+          subtitle="Our governance framework is built on three pillars — they define how we make decisions, manage risk, and take responsibility."
           isInView={isInView}
         />
 
@@ -569,7 +569,7 @@ function CodexSection() {
         <SectionHeader
           eyebrow="Codex"
           title="Caelex Corporate Codex"
-          subtitle="Sechs verbindliche Grundsätze, die unser Handeln bestimmen. Sie gelten für jede Entscheidung, jedes Produkt und jede Geschäftsbeziehung."
+          subtitle="Six binding principles that guide our actions. They apply to every decision, every product, and every business relationship."
           isInView={isInView}
         />
 
@@ -640,7 +640,7 @@ function ESGSection() {
         <SectionHeader
           eyebrow="ESG"
           title="Environmental, Social & Governance"
-          subtitle="Nachhaltigkeit ist für Caelex kein Marketing-Label. Wir messen uns an konkreten Maßnahmen in allen drei ESG-Dimensionen."
+          subtitle="Sustainability is not a marketing label for Caelex. We measure ourselves by concrete actions across all three ESG dimensions."
           isInView={isInView}
         />
 
@@ -707,8 +707,8 @@ function ComplianceFrameworkSection() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Compliance"
-          title="Regulatorische Frameworks"
-          subtitle="Caelex richtet sich nach den strengsten europäischen Regulierungen — ohne Kompromisse."
+          title="Regulatory Frameworks"
+          subtitle="Caelex adheres to the strictest European regulations — without compromise."
           isInView={isInView}
         />
 
@@ -735,7 +735,7 @@ function ComplianceFrameworkSection() {
             href="/security"
             className="inline-flex items-center gap-2 text-body-lg text-emerald-400 hover:text-emerald-300 transition-colors"
           >
-            Technische Sicherheitsdetails
+            Technical security details
             <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </motion.div>
@@ -758,9 +758,9 @@ function RiskManagementSection() {
       />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Risikomanagement"
-          title="Systematischer Schutz"
-          subtitle="Vier zentrale Risikobereiche, die wir durch definierte Maßnahmen, Prozesse und Kontrollen adressieren."
+          eyebrow="Risk Management"
+          title="Systematic Protection"
+          subtitle="Four core risk areas that we address through defined measures, processes, and controls."
           isInView={isInView}
         />
 
@@ -813,9 +813,9 @@ function EthicalPoliciesSection() {
     <section ref={ref} className="py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Richtlinien"
-          title="Ethik & Compliance-Policies"
-          subtitle="Verbindliche Richtlinien, die für die gesamte Produktentwicklung und alle Geschäftsbeziehungen gelten."
+          eyebrow="Policies"
+          title="Ethics & Compliance Policies"
+          subtitle="Binding policies that apply to all product development and business relationships."
           isInView={isInView}
         />
 
@@ -875,9 +875,9 @@ function ReportingSection() {
       />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Meldewege"
-          title="Transparenz & Berichterstattung"
-          subtitle="Drei dedizierte Kanäle für verantwortungsvolle Kommunikation — vertraulich, geschützt und mit garantierten Reaktionszeiten."
+          eyebrow="Reporting"
+          title="Transparency & Reporting"
+          subtitle="Three dedicated channels for responsible communication — confidential, protected, and with guaranteed response times."
           isInView={isInView}
         />
 
@@ -924,9 +924,9 @@ function DocumentsSection() {
     <section ref={ref} className="py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
-          eyebrow="Dokumente"
-          title="Governance-Dokumentation"
-          subtitle="Zentrale Richtlinien und Dokumente — öffentlich einsehbar."
+          eyebrow="Documents"
+          title="Governance Documentation"
+          subtitle="Core policies and documents — publicly accessible."
           isInView={isInView}
         />
 
@@ -963,7 +963,7 @@ function DocumentsSection() {
                     <Link
                       href={doc.href}
                       className="ml-4 p-2 rounded-lg hover:bg-white/[0.06] transition-colors shrink-0"
-                      aria-label={`${doc.title} öffnen`}
+                      aria-label={`Open ${doc.title}`}
                     >
                       <ExternalLink
                         size={16}
@@ -998,18 +998,18 @@ function CTASection() {
         <motion.div {...fadeUp(isInView, 0)}>
           <GlassCard className="p-12 md:p-16 text-center" hover={false}>
             <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
-              Fragen zu unserer Governance?
+              Questions about our governance?
             </h2>
             <p className="text-title text-white/45 max-w-[560px] mx-auto mb-10 leading-relaxed">
-              Wir stehen für offenen Dialog — zu Governance, Datenschutz oder
-              unserer Arbeitsweise.
+              We are committed to open dialogue — about governance, data
+              protection, or how we work.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/contact"
                 className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               >
-                Kontakt aufnehmen
+                Get in Touch
                 <ArrowRight
                   size={16}
                   className="transition-transform duration-300 group-hover:translate-x-0.5"
