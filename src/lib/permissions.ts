@@ -18,7 +18,8 @@ export type PermissionCategory =
   | "documents"
   | "incidents"
   | "api"
-  | "network";
+  | "network"
+  | "assure";
 
 export type PermissionAction =
   | "read"
@@ -98,6 +99,12 @@ export const ALL_PERMISSIONS: string[] = [
   "network:write",
   "network:manage",
   "network:attest",
+
+  // Assure
+  "assure:read",
+  "assure:write",
+  "assure:share",
+  "assure:export",
 ];
 
 // ─── Role Permission Matrix ───
@@ -153,6 +160,11 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "network:write",
     "network:manage",
     "network:attest",
+    // Assure
+    "assure:read",
+    "assure:write",
+    "assure:share",
+    "assure:export",
   ],
 
   MANAGER: [
@@ -185,6 +197,10 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "network:read",
     "network:write",
     "network:attest",
+    // Assure
+    "assure:read",
+    "assure:write",
+    "assure:export",
   ],
 
   MEMBER: [
@@ -207,6 +223,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "incidents:write",
     // Network
     "network:read",
+    // Assure
+    "assure:read",
   ],
 
   VIEWER: [
@@ -224,6 +242,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "incidents:read",
     // Network
     "network:read",
+    // Assure
+    "assure:read",
   ],
 };
 
@@ -360,6 +380,12 @@ export const PERMISSION_DESCRIPTIONS: Record<string, string> = {
   "network:write": "Create engagements and manage data rooms",
   "network:manage": "Rotate tokens, revoke access, manage security",
   "network:attest": "Create and manage compliance attestations",
+
+  // Assure
+  "assure:read": "View Regulatory Readiness Score and shared links",
+  "assure:write": "Generate DD packages and compute RRS",
+  "assure:share": "Create and manage share links for external stakeholders",
+  "assure:export": "Export DD packages as PDF",
 };
 
 // ─── Role Descriptions ───
@@ -452,4 +478,5 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   incidents: "Incidents",
   api: "API Access",
   network: "Compliance Network",
+  assure: "Regulatory Readiness (Assure)",
 };

@@ -44,6 +44,10 @@
     {
       "path": "/api/cron/compliance-snapshot",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/compute-rrs",
+      "schedule": "0 7 * * *"
     }
   ]
 }

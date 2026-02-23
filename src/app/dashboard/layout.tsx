@@ -29,6 +29,10 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/regulatory-feed": "sidebar.regulatoryFeed",
   "/dashboard/nca-portal": "sidebar.ncaPortal",
   "/dashboard/network": "sidebar.complianceNetwork",
+  "/dashboard/assure": "_literal:Regulatory Readiness",
+  "/dashboard/assure/score": "_literal:RRS Score Details",
+  "/dashboard/assure/share": "_literal:Share Links",
+  "/dashboard/assure/packages": "_literal:DD Packages",
   "/dashboard/settings": "sidebar.settings",
   "/dashboard/admin": "sidebar.adminPanel",
 };
@@ -55,7 +59,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   } else {
     const i18nKey = ROUTE_TITLE_MAP[pathname];
     if (i18nKey) {
-      pageTitle = t(i18nKey);
+      pageTitle = i18nKey.startsWith("_literal:")
+        ? i18nKey.slice("_literal:".length)
+        : t(i18nKey);
     }
   }
 

@@ -184,6 +184,22 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:contact",
       }),
+
+      // Assure: 30 per hour (authenticated dashboard)
+      assure: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:assure",
+      }),
+
+      // Assure public share view: 10 per hour per IP (more restrictive)
+      assure_public: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:assure_public",
+      }),
     }
   : null;
 
@@ -273,6 +289,8 @@ const fallbackLimiters = {
   generate2: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
   admin: new InMemoryRateLimiter(10, 60000), // 10/min vs 30/min (Redis)
   contact: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
+  assure: new InMemoryRateLimiter(15, 3600000), // 15/hr vs 30/hr (Redis)
+  assure_public: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
 };
 
 // ─── Public API ───
@@ -293,7 +311,9 @@ export type RateLimitType =
   | "generate2"
   | "mfa"
   | "admin"
-  | "contact";
+  | "contact"
+  | "assure"
+  | "assure_public";
 
 /**
  * Check rate limit for an identifier.

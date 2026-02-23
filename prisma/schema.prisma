@@ -66,6 +66,10 @@ model User {
   whatIfScenarios          WhatIfScenario[] // Digital Twin: saved what-if scenarios
   ncaDocuments             NCADocument[] // Generate 2.0: NCA documents
   ncaDocPackages           NCADocPackage[] // Generate 2.0: NCA submission packages
+  // Assure: created share links and DD packages
+  assureShareLinks         AssureShareLink[]
+  assureDDPackages         AssureDDPackage[]
+
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage    Int                       @default(0)
   lastReengagementAt       DateTime?
@@ -2481,6 +2485,12 @@ model Organization {
   attestations           ComplianceAttestation[] // Network: compliance attestations
   operatorProfile        OperatorProfile? // Unified operator profile
 
+  // Assure: Regulatory Readiness Intelligence
+  rrsScores              RegulatoryReadinessScore? // Latest RRS
+  rrsSnapshots           RRSSnapshot[] // Historical RRS snapshots
+  assureShareLinks       AssureShareLink[] // Permissioned share links
+  assureDDPackages       AssureDDPackage[] // Due diligence packages
+
   // Multi-tenancy: org-scoped models
   auditLogs                    AuditLog[]
   documents                    Document[]
@@ -4677,4 +4687,137 @@ model OperatorProfile {
   createdAt    DateTime @default(now())
 
   @@index([organizationId])
+}
+
+// ============================================
+// ASSURE: REGULATORY READINESS INTELLIGENCE
+// ============================================
+
+enum ShareGranularity {
+  SUMMARY // RRS total score + component scores only
+  COMPONENT // + gap analysis per module, risk register summary
+  DETAILED // + article-level detail, full timeline, documents list
+}
+
+model RegulatoryReadinessScore {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Composite score
+  overallScore Int // 0-100
+
+  // Component scores (0-100 each)
+  authorizationReadiness Int
+  cybersecurityPosture   Int
+  operationalCompliance  Int
+  jurisdictionalCoverage Int
+  regulatoryTrajectory   Int
+  governanceProcess      Int
+
+  // Metadata
+  grade  String // A, B, C, D, F
+  status String // compliant, mostly_compliant, partial, non_compliant, not_assessed
+
+  // Methodology hash for reproducibility
+  methodologyVersion String @default("1.0")
+
+  computedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([overallScore])
+}
+
+model RRSSnapshot {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Scores at point in time
+  overallScore           Int
+  authorizationReadiness Int
+  cybersecurityPosture   Int
+  operationalCompliance  Int
+  jurisdictionalCoverage Int
+  regulatoryTrajectory   Int
+  governanceProcess      Int
+
+  grade  String
+  status String
+
+  snapshotDate DateTime @default(now())
+
+  @@unique([organizationId, snapshotDate])
+  @@index([organizationId, snapshotDate])
+}
+
+model AssureShareLink {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id])
+
+  token String @unique // cryptographically random access token
+  label String // "Series B DD — Investor X"
+
+  // Access controls
+  granularity ShareGranularity @default(SUMMARY)
+  expiresAt   DateTime
+  maxViews    Int? // optional view limit
+  viewCount   Int              @default(0)
+  isRevoked   Boolean          @default(false)
+
+  // What's included
+  includeRRS          Boolean @default(true)
+  includeGapAnalysis  Boolean @default(false)
+  includeTimeline     Boolean @default(false)
+  includeRiskRegister Boolean @default(false)
+  includeTrend        Boolean @default(false)
+
+  // Audit
+  views AssureShareView[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([token])
+  @@index([createdById])
+}
+
+model AssureShareView {
+  id     String          @id @default(cuid())
+  linkId String
+  link   AssureShareLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  viewerIp  String? // encrypted
+  userAgent String?
+
+  viewedAt DateTime @default(now())
+
+  @@index([linkId, viewedAt])
+}
+
+model AssureDDPackage {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id])
+
+  // Package content (JSON)
+  content Json // Full DD package data at point-in-time
+
+  // RRS snapshot at generation time
+  rrsScore Int
+  grade    String
+  status   String
+
+  // Metadata
+  title       String   @default("Due Diligence Package")
+  generatedAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([createdById])
 }

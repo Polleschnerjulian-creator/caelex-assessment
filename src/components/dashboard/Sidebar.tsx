@@ -37,6 +37,7 @@ import {
   Orbit,
   Sparkles,
   Users,
+  ShieldAlert,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -680,6 +681,23 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 {t("sidebar.missionControl")}
+              </NavItem>
+            </div>
+          </div>
+
+          {/* Assure Section */}
+          <div className="mt-5">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+              Assure
+            </p>
+            <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/assure"
+                icon={<ShieldAlert size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={t("sidebar.new")}
+              >
+                Regulatory Readiness
               </NavItem>
             </div>
           </div>

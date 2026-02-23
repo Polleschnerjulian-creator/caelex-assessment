@@ -62,7 +62,14 @@ export type AuditAction =
   | "data_room_document_added"
   | "data_room_document_removed"
   | "attestation_signed"
-  | "attestation_revoked";
+  | "attestation_revoked"
+  | "assure_rrs_computed"
+  | "assure_share_created"
+  | "assure_share_updated"
+  | "assure_share_revoked"
+  | "assure_share_deleted"
+  | "assure_share_viewed"
+  | "assure_dd_generated";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -86,7 +93,10 @@ export type AuditEntityType =
   | "compliance_evidence"
   | "stakeholder_engagement"
   | "data_room"
-  | "compliance_attestation";
+  | "compliance_attestation"
+  | "assure_share"
+  | "assure_dd_package"
+  | "assure_rrs";
 
 export interface AuditLogEntry {
   userId: string;
