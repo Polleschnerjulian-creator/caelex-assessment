@@ -53,44 +53,45 @@ export async function POST(request: Request) {
     const { ipAddress, userAgent } = getRequestContext(request);
 
     // Always require authenticated session — never accept userId from request body
-    const session = await auth();
+    let session;
+    try {
+      session = await auth();
+    } catch (authErr) {
+      console.error("[MFA] auth() threw:", authErr);
+      return NextResponse.json(
+        { error: "Session error. Please log in again." },
+        { status: 401 },
+      );
+    }
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[MFA] No session found. Cookie may be missing.");
+      return NextResponse.json(
+        { error: "Session expired. Please log in again." },
+        { status: 401 },
+      );
     }
     const userId = session.user.id;
 
     let isValid = false;
 
-    if (isBackupCode) {
-      // Verify backup code
-      isValid = await verifyAndConsumeBackupCode(userId, code);
-
-      if (isValid) {
-        await logAuditEvent({
-          userId,
-          action: "MFA_BACKUP_CODE_USED",
-          entityType: "MfaConfig",
-          entityId: userId,
-          metadata: { codeUsed: true },
-          ipAddress,
-          userAgent,
-        });
-
-        await recordLoginEvent(
-          userId,
-          "BACKUP_CODE_USED",
-          ipAddress ?? null,
-          userAgent ?? null,
-          "PASSWORD",
-        );
+    try {
+      if (isBackupCode) {
+        isValid = await verifyAndConsumeBackupCode(userId, code);
+      } else {
+        isValid = await validateMfaCode(userId, code);
       }
-    } else {
-      // Verify TOTP code
-      isValid = await validateMfaCode(userId, code);
+    } catch (mfaErr) {
+      console.error("[MFA] Code validation threw:", mfaErr);
+      return NextResponse.json(
+        { error: "Verification error. Please try again." },
+        { status: 500 },
+      );
     }
 
     if (!isValid) {
-      await logAuditEvent({
+      // Non-critical audit/login logging — catch individually to not block response
+      logAuditEvent({
         userId,
         action: "MFA_CHALLENGE_FAILED",
         entityType: "MfaConfig",
@@ -98,21 +99,41 @@ export async function POST(request: Request) {
         metadata: { isBackupCode },
         ipAddress,
         userAgent,
-      });
+      }).catch((e) => console.error("[MFA] Audit log failed:", e));
 
-      await recordLoginEvent(
+      recordLoginEvent(
         userId,
         "MFA_FAILED",
         ipAddress ?? null,
         userAgent ?? null,
         "PASSWORD",
-      );
+      ).catch((e) => console.error("[MFA] Login event log failed:", e));
 
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
-    // Log successful validation
-    await logAuditEvent({
+    // Success — non-critical audit/login logging
+    if (isBackupCode) {
+      logAuditEvent({
+        userId,
+        action: "MFA_BACKUP_CODE_USED",
+        entityType: "MfaConfig",
+        entityId: userId,
+        metadata: { codeUsed: true },
+        ipAddress,
+        userAgent,
+      }).catch((e) => console.error("[MFA] Audit log failed:", e));
+
+      recordLoginEvent(
+        userId,
+        "BACKUP_CODE_USED",
+        ipAddress ?? null,
+        userAgent ?? null,
+        "PASSWORD",
+      ).catch((e) => console.error("[MFA] Login event log failed:", e));
+    }
+
+    logAuditEvent({
       userId,
       action: "MFA_CHALLENGE_SUCCESS",
       entityType: "MfaConfig",
@@ -120,22 +141,21 @@ export async function POST(request: Request) {
       metadata: { isBackupCode },
       ipAddress,
       userAgent,
-    });
+    }).catch((e) => console.error("[MFA] Audit log failed:", e));
 
-    await recordLoginEvent(
+    recordLoginEvent(
       userId,
       "MFA_SUCCESS",
       ipAddress ?? null,
       userAgent ?? null,
       "PASSWORD",
+    ).catch((e) => console.error("[MFA] Login event log failed:", e));
+
+    clearFailedAttempts(userId).catch((e) =>
+      console.error("[MFA] Clear attempts failed:", e),
     );
 
-    // Clear failed attempts on successful MFA
-    await clearFailedAttempts(userId);
-
     // Update the JWT server-side: set mfaVerified=true directly in the token.
-    // This avoids relying on the client-side updateSession() which can fail
-    // due to stale CSRF tokens after the login → MFA redirect flow.
     const response = NextResponse.json({
       success: true,
       mfaVerified: true,
@@ -157,7 +177,7 @@ export async function POST(request: Request) {
             token: updatedToken,
             secret,
             salt: SESSION_COOKIE_NAME,
-            maxAge: 24 * 60 * 60, // Match session maxAge from auth.ts
+            maxAge: 24 * 60 * 60,
           });
 
           response.cookies.set(SESSION_COOKIE_NAME, newJwt, {
@@ -167,16 +187,17 @@ export async function POST(request: Request) {
             path: "/",
             maxAge: 24 * 60 * 60,
           });
+        } else {
+          console.warn("[MFA] getToken returned null — JWT cookie not updated");
         }
       }
     } catch (jwtError) {
-      // Non-fatal: client can still try updateSession as fallback
-      console.error("Failed to update JWT server-side:", jwtError);
+      console.error("[MFA] JWT update failed:", jwtError);
     }
 
     return response;
   } catch (error) {
-    console.error("Error validating MFA:", error);
+    console.error("[MFA] Unhandled error:", error);
     return NextResponse.json(
       { error: "Failed to validate code" },
       { status: 500 },

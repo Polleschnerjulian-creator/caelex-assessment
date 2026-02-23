@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { csrfHeaders } from "@/lib/csrf-client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -12,14 +12,12 @@ import {
   ArrowLeft,
   Loader2,
 } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 function MfaChallengeContent() {
-  const router = useRouter();
   const { update: updateSession } = useSession();
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
   const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  // Validate callbackUrl is a safe relative path (prevent open redirect)
   const callbackUrl =
     rawCallbackUrl.startsWith("/") &&
     !rawCallbackUrl.startsWith("//") &&
@@ -36,18 +34,15 @@ function MfaChallengeContent() {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Countdown timer for TOTP validity
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Math.floor(Date.now() / 1000);
       const remaining = 30 - (now % 30);
       setCountdown(remaining);
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
-  // Focus first input on mount
   useEffect(() => {
     if (!isBackupCode && inputRefs.current[0]) {
       inputRefs.current[0].focus();
@@ -55,19 +50,16 @@ function MfaChallengeContent() {
   }, [isBackupCode]);
 
   const handleInputChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Only allow digits
-
+    if (!/^\d*$/.test(value)) return;
     const newCode = [...code];
-    newCode[index] = value.slice(-1); // Only keep last digit
+    newCode[index] = value.slice(-1);
     setCode(newCode);
     setError(null);
 
-    // Auto-focus next input
     if (value && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all digits entered
     if (value && index === 5 && newCode.every((d) => d !== "")) {
       handleSubmit(newCode.join(""));
     }
@@ -94,7 +86,6 @@ function MfaChallengeContent() {
     if (pasted.length === 6) {
       handleSubmit(pasted);
     } else {
-      // Focus the next empty input
       const nextEmpty = newCode.findIndex((d) => d === "");
       if (nextEmpty !== -1 && inputRefs.current[nextEmpty]) {
         inputRefs.current[nextEmpty]?.focus();
@@ -120,7 +111,6 @@ function MfaChallengeContent() {
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({
           code: finalCode,
-          userId,
           isBackupCode,
         }),
       });
@@ -130,7 +120,6 @@ function MfaChallengeContent() {
       if (!response.ok) {
         setError(data.error || "Invalid code");
         setIsLoading(false);
-        // Clear code on error
         if (!isBackupCode) {
           setCode(["", "", "", "", "", ""]);
           inputRefs.current[0]?.focus();
@@ -138,16 +127,14 @@ function MfaChallengeContent() {
         return;
       }
 
-      // Success — the server already updated the JWT cookie in the response.
-      // Try updateSession to refresh client-side state, but don't fail if it errors
-      // (the cookie is already set server-side, so the redirect will work).
+      // Server already updated the JWT cookie in the response.
+      // Try updateSession for client-side state, but don't block on failure.
       try {
         await updateSession({ mfaVerified: true });
       } catch {
         // Non-critical: server already set the updated JWT cookie
       }
 
-      // Hard redirect ensures the browser picks up the new session cookie
       window.location.href = callbackUrl;
     } catch (err) {
       console.error("MFA validation error:", err);
@@ -157,23 +144,35 @@ function MfaChallengeContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
+      {/* Background grid */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
+
+      {/* Glow */}
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-500/[0.06] rounded-full blur-[120px] pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Logo size={24} className="text-white" />
+        </div>
+
+        {/* Card */}
+        <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-4">
-              <Shield className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            <div className="mx-auto w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+              <Shield className="w-7 h-7 text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
+            <h1 className="text-display-sm font-medium text-white">
               Two-Factor Authentication
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
+            <p className="text-white/40 text-body-lg mt-2">
               {isBackupCode
                 ? "Enter one of your backup codes"
                 : "Enter the 6-digit code from your authenticator app"}
@@ -191,7 +190,7 @@ function MfaChallengeContent() {
               >
                 {/* TOTP Code Input */}
                 <div
-                  className="flex justify-center gap-2 mb-4"
+                  className="flex justify-center gap-2.5 mb-5"
                   onPaste={handlePaste}
                 >
                   {code.map((digit, index) => (
@@ -208,31 +207,32 @@ function MfaChallengeContent() {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       disabled={isLoading}
                       className="w-12 h-14 text-center text-2xl font-mono font-semibold
-                        bg-slate-50 dark:bg-slate-900
-                        border-2 border-slate-200 dark:border-slate-600
-                        rounded-lg
-                        focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20
-                        text-slate-900 dark:text-white
-                        disabled:opacity-50 disabled:cursor-not-allowed
-                        transition-all duration-200"
+                        bg-white/[0.03] border border-white/[0.08]
+                        rounded-lg text-white
+                        focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20
+                        focus:bg-emerald-500/[0.03]
+                        disabled:opacity-40 disabled:cursor-not-allowed
+                        transition-all duration-200 outline-none"
                     />
                   ))}
                 </div>
 
                 {/* Countdown Timer */}
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  <div
-                    className={`text-sm font-medium ${
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <span
+                    className={`text-small font-medium tabular-nums ${
                       countdown <= 5
-                        ? "text-red-500 dark:text-red-400"
-                        : "text-slate-500 dark:text-slate-400"
+                        ? "text-red-400"
+                        : countdown <= 10
+                          ? "text-amber-400"
+                          : "text-white/30"
                     }`}
                   >
-                    Code expires in {countdown}s
-                  </div>
-                  <div className="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    {countdown}s
+                  </span>
+                  <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
                     <motion.div
-                      className={`h-full ${
+                      className={`h-full rounded-full ${
                         countdown <= 5
                           ? "bg-red-500"
                           : countdown <= 10
@@ -266,14 +266,12 @@ function MfaChallengeContent() {
                     placeholder="XXXXXXXX"
                     disabled={isLoading}
                     className="w-full h-14 text-center text-xl font-mono font-semibold tracking-widest
-                      bg-slate-50 dark:bg-slate-900
-                      border-2 border-slate-200 dark:border-slate-600
-                      rounded-lg
-                      focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20
-                      text-slate-900 dark:text-white
-                      placeholder:text-slate-400 dark:placeholder:text-slate-500
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      transition-all duration-200"
+                      bg-white/[0.03] border border-white/[0.08]
+                      rounded-lg text-white
+                      focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20
+                      placeholder:text-white/15
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                      transition-all duration-200 outline-none"
                   />
                 </div>
               </motion.div>
@@ -285,32 +283,30 @@ function MfaChallengeContent() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 p-3 mb-4 bg-red-50 dark:bg-red-900/20
-                border border-red-200 dark:border-red-800 rounded-lg"
+              className="flex items-center gap-2 p-3 mb-4 bg-red-500/10
+                border border-red-500/20 rounded-lg"
             >
-              <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400" />
-              <span className="text-sm text-red-700 dark:text-red-300">
-                {error}
-              </span>
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              <span className="text-small text-red-300">{error}</span>
             </motion.div>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Button (only for backup code mode — TOTP auto-submits) */}
           {isBackupCode && (
             <button
               onClick={() => handleSubmit()}
               disabled={isLoading || !backupCode}
-              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700
-                text-white font-medium rounded-lg
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-colors duration-200
+              className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600
+                text-black font-semibold rounded-lg
+                disabled:opacity-40 disabled:cursor-not-allowed
+                transition-all duration-200
                 flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <KeyRound className="w-5 h-5" />
+                  <KeyRound className="w-4 h-4" />
                   Verify Backup Code
                 </>
               )}
@@ -318,7 +314,7 @@ function MfaChallengeContent() {
           )}
 
           {/* Toggle Backup Code */}
-          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+          <div className="mt-6 pt-6 border-t border-white/[0.06]">
             <button
               onClick={() => {
                 setIsBackupCode(!isBackupCode);
@@ -326,51 +322,37 @@ function MfaChallengeContent() {
                 setCode(["", "", "", "", "", ""]);
                 setBackupCode("");
               }}
-              className="w-full text-center text-sm text-slate-600 dark:text-slate-400
-                hover:text-emerald-600 dark:hover:text-emerald-400
-                transition-colors duration-200"
+              className="w-full text-center text-small text-white/30
+                hover:text-emerald-400/80 transition-colors duration-200"
             >
               {isBackupCode
-                ? "← Use authenticator app instead"
-                : "Lost access to your authenticator? Use a backup code →"}
-            </button>
-          </div>
-
-          {/* Back to Login */}
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => router.push("/auth/signin")}
-              className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-500
-                hover:text-slate-700 dark:hover:text-slate-300
-                transition-colors duration-200"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to login
+                ? "Use authenticator app instead"
+                : "Lost access? Use a backup code"}
             </button>
           </div>
         </div>
 
-        {/* Help Text */}
-        <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-500">
-          Having trouble?{" "}
+        {/* Back to Login */}
+        <div className="mt-6 text-center">
           <a
-            href="/support"
-            className="text-emerald-600 dark:text-emerald-400 hover:underline"
+            href="/login"
+            className="inline-flex items-center gap-1.5 text-small text-white/25
+              hover:text-white/50 transition-colors duration-200"
           >
-            Contact support
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to login
           </a>
-        </p>
+        </div>
       </motion.div>
     </div>
   );
 }
 
-// Loading fallback for Suspense
 function MfaChallengeLoading() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
+        <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-8">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           </div>
@@ -380,7 +362,6 @@ function MfaChallengeLoading() {
   );
 }
 
-// Main export wrapped in Suspense
 export default function MfaChallengePage() {
   return (
     <Suspense fallback={<MfaChallengeLoading />}>
