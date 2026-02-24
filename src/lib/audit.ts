@@ -90,7 +90,10 @@ export type AuditAction =
   | "assure_milestone_created"
   | "assure_milestone_updated"
   | "assure_milestone_deleted"
-  | "assure_comply_linked";
+  | "assure_comply_linked"
+  | "assure_dataroom_doc_added"
+  | "assure_update_generated"
+  | "assure_dataroom_accessed";
 
 // Entity types for audit logging
 export type AuditEntityType =

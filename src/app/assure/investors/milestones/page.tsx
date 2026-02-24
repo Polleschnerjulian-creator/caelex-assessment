@@ -29,13 +29,13 @@ export default function MilestonesPage() {
   const [newMilestone, setNewMilestone] = useState({
     title: "",
     targetDate: "",
-    category: "product",
+    category: "PRODUCT",
     status: "ON_TRACK",
   });
 
   const fetchMilestones = useCallback(async () => {
     try {
-      const res = await fetch("/api/assure/investors/milestones");
+      const res = await fetch("/api/assure/milestones");
       if (res.ok) {
         const data = await res.json();
         setMilestones(data.milestones || []);
@@ -55,10 +55,13 @@ export default function MilestonesPage() {
     if (!newMilestone.title.trim() || !newMilestone.targetDate) return;
     setAdding(true);
     try {
-      const res = await fetch("/api/assure/investors/milestones", {
+      const res = await fetch("/api/assure/milestones", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        body: JSON.stringify(newMilestone),
+        body: JSON.stringify({
+          ...newMilestone,
+          targetDate: new Date(newMilestone.targetDate).toISOString(),
+        }),
       });
       if (res.ok) {
         await fetchMilestones();
@@ -66,7 +69,7 @@ export default function MilestonesPage() {
         setNewMilestone({
           title: "",
           targetDate: "",
-          category: "product",
+          category: "PRODUCT",
           status: "ON_TRACK",
         });
       }
@@ -286,17 +289,15 @@ export default function MilestonesPage() {
                       className={inputClasses}
                     >
                       {[
-                        "product",
-                        "fundraise",
-                        "regulatory",
-                        "team",
-                        "revenue",
-                        "partnership",
-                        "technology",
-                        "operations",
+                        { value: "PRODUCT", label: "Product" },
+                        { value: "BUSINESS", label: "Business" },
+                        { value: "FINANCIAL", label: "Financial" },
+                        { value: "REGULATORY_M", label: "Regulatory" },
+                        { value: "TEAM", label: "Team" },
+                        { value: "PARTNERSHIP", label: "Partnership" },
                       ].map((c) => (
-                        <option key={c} value={c}>
-                          {c.charAt(0).toUpperCase() + c.slice(1)}
+                        <option key={c.value} value={c.value}>
+                          {c.label}
                         </option>
                       ))}
                     </select>

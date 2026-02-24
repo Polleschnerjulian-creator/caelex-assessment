@@ -53,23 +53,12 @@ export default function DataRoomPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [foldersRes, checklistRes, linksRes] = await Promise.all([
-        fetch("/api/assure/dataroom"),
-        fetch("/api/assure/dataroom/checklist"),
-        fetch("/api/assure/dataroom/links"),
-      ]);
-
-      if (foldersRes.ok) {
-        const data = await foldersRes.json();
+      const res = await fetch("/api/assure/dataroom");
+      if (res.ok) {
+        const data = await res.json();
         setFolders(data.folders || []);
-      }
-      if (checklistRes.ok) {
-        const data = await checklistRes.json();
-        setChecklist(data.items || data.checklist || []);
-      }
-      if (linksRes.ok) {
-        const data = await linksRes.json();
-        setLinks(data.links || []);
+        setChecklist(data.checklistItems || []);
+        setLinks(data.accessLinks || []);
       }
     } catch (err) {
       console.error("Failed to fetch data room:", err);
@@ -92,15 +81,15 @@ export default function DataRoomPage() {
       if (!files || files.length === 0) return;
       setUploading(true);
       try {
-        const formData = new FormData();
-        formData.append("folder", folder);
-        Array.from(files).forEach((file) => {
-          formData.append("files", file);
-        });
-        const res = await fetch("/api/assure/dataroom/upload", {
+        const res = await fetch("/api/assure/dataroom/documents", {
           method: "POST",
-          headers: csrfHeaders(),
-          body: formData,
+          headers: { "Content-Type": "application/json", ...csrfHeaders() },
+          body: JSON.stringify({
+            folder,
+            fileName: files[0].name,
+            fileSize: files[0].size,
+            fileUrl: URL.createObjectURL(files[0]),
+          }),
         });
         if (res.ok) {
           await fetchData();

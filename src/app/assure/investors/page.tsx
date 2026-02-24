@@ -25,38 +25,19 @@ interface Milestone {
   category: string;
 }
 
-interface InvestorStats {
-  totalMilestones: number;
-  completedMilestones: number;
-  onTrack: number;
-  atRisk: number;
-  delayed: number;
-  updatesSent: number;
-  lastUpdateDate?: string;
-}
-
 // ─── Component ───
 
 export default function InvestorsPage() {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [stats, setStats] = useState<InvestorStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [milestonesRes, statsRes] = await Promise.all([
-          fetch("/api/assure/investors/milestones"),
-          fetch("/api/assure/investors/stats"),
-        ]);
-
-        if (milestonesRes.ok) {
-          const data = await milestonesRes.json();
+        const res = await fetch("/api/assure/milestones");
+        if (res.ok) {
+          const data = await res.json();
           setMilestones(data.milestones || []);
-        }
-        if (statsRes.ok) {
-          const data = await statsRes.json();
-          setStats(data);
         }
       } catch (err) {
         console.error("Failed to fetch investor data:", err);
@@ -87,15 +68,15 @@ export default function InvestorsPage() {
       m.status.toUpperCase() === "COMPLETED" ||
       m.status.toUpperCase() === "COMPLETED_M",
   ).length;
-  const onTrackCount =
-    stats?.onTrack ??
-    milestones.filter((m) => m.status.toUpperCase() === "ON_TRACK").length;
-  const atRiskCount =
-    stats?.atRisk ??
-    milestones.filter((m) => m.status.toUpperCase() === "AT_RISK").length;
-  const delayedCount =
-    stats?.delayed ??
-    milestones.filter((m) => m.status.toUpperCase() === "DELAYED").length;
+  const onTrackCount = milestones.filter(
+    (m) => m.status.toUpperCase() === "ON_TRACK",
+  ).length;
+  const atRiskCount = milestones.filter(
+    (m) => m.status.toUpperCase() === "AT_RISK",
+  ).length;
+  const delayedCount = milestones.filter(
+    (m) => m.status.toUpperCase() === "DELAYED",
+  ).length;
 
   return (
     <div>
@@ -228,9 +209,7 @@ export default function InvestorsPage() {
                   Investor Updates
                 </h3>
                 <p className="text-small text-white/40">
-                  {stats?.updatesSent ?? 0} updates sent
-                  {stats?.lastUpdateDate &&
-                    ` (last: ${new Date(stats.lastUpdateDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })})`}
+                  Send updates to investors
                 </p>
               </div>
               <ArrowUpRight size={16} className="text-white/20" />

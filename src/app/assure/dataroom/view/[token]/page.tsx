@@ -46,7 +46,7 @@ export default function DataRoomPublicViewPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/assure/dataroom/view/${token}`);
+        const res = await fetch(`/api/assure/view/${token}`);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           setError(

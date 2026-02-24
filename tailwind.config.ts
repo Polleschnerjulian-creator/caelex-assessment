@@ -25,6 +25,13 @@ const config: Config = {
           border: "#1e293b",
           muted: "#94a3b8",
         },
+        // Navy palette — design system
+        navy: {
+          950: "#0A0F1E",
+          900: "#0F172A",
+          800: "#1E293B",
+          700: "#334155",
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

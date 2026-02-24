@@ -60,14 +60,19 @@ export default function InvestorUpdatesPage() {
     async function fetchData() {
       try {
         const [metricsRes, milestonesRes, updatesRes] = await Promise.all([
-          fetch("/api/assure/investors/metrics"),
-          fetch("/api/assure/investors/milestones"),
-          fetch("/api/assure/investors/updates"),
+          fetch("/api/assure/score/current"),
+          fetch("/api/assure/milestones"),
+          fetch("/api/assure/updates"),
         ]);
 
         if (metricsRes.ok) {
           const data = await metricsRes.json();
-          setKeyMetrics(data.metrics || []);
+          if (data.overallScore !== undefined) {
+            setKeyMetrics([
+              { name: "IRS Score", value: String(data.overallScore) },
+              { name: "Grade", value: data.grade || "\u2014" },
+            ]);
+          }
         }
         if (milestonesRes.ok) {
           const data = await milestonesRes.json();
@@ -97,7 +102,7 @@ export default function InvestorUpdatesPage() {
     setGenerating(true);
     setGenerated(false);
     try {
-      const res = await fetch("/api/assure/investors/updates/generate", {
+      const res = await fetch("/api/assure/updates/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify(config),
@@ -105,7 +110,7 @@ export default function InvestorUpdatesPage() {
       if (res.ok) {
         setGenerated(true);
         // Refresh past updates
-        const updatesRes = await fetch("/api/assure/investors/updates");
+        const updatesRes = await fetch("/api/assure/updates");
         if (updatesRes.ok) {
           const data = await updatesRes.json();
           setPastUpdates(data.updates || []);

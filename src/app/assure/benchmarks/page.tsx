@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, RefreshCw, TrendingUp } from "lucide-react";
-import { csrfHeaders } from "@/lib/csrf-client";
 import GlassCard from "@/components/ui/GlassCard";
 import BenchmarkRadarChart from "@/components/assure/BenchmarkRadarChart";
 import MetricComparisonBars from "@/components/assure/MetricComparisonBars";
@@ -65,10 +64,7 @@ export default function BenchmarksPage() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch("/api/assure/benchmarks/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-      });
+      const res = await fetch("/api/assure/benchmarks/position");
       if (res.ok) {
         const json = await res.json();
         setData(json);
