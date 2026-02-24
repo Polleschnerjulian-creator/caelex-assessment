@@ -69,7 +69,11 @@ export type AuditAction =
   | "assure_share_revoked"
   | "assure_share_deleted"
   | "assure_share_viewed"
-  | "assure_dd_generated";
+  | "assure_dd_generated"
+  | "rcr_computed"
+  | "rcr_published"
+  | "rcr_appeal_submitted"
+  | "rcr_appeal_resolved";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -96,7 +100,10 @@ export type AuditEntityType =
   | "compliance_attestation"
   | "assure_share"
   | "assure_dd_package"
-  | "assure_rrs";
+  | "assure_rrs"
+  | "regulatory_credit_rating"
+  | "rcr_rating"
+  | "rcr_appeal";
 
 export interface AuditLogEntry {
   userId: string;

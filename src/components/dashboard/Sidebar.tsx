@@ -699,6 +699,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               >
                 Regulatory Readiness
               </NavItem>
+              <NavItem
+                href="/dashboard/assure/rating"
+                icon={<BarChart3 size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                Credit Rating
+              </NavItem>
             </div>
           </div>
 

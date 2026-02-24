@@ -19,7 +19,8 @@ export type ReportType =
   | "audit_trail"
   | "compliance_certificate"
   | "audit_center"
-  | "dd_package";
+  | "dd_package"
+  | "rcr_report";
 
 export interface ReportMetadata {
   reportId: string;

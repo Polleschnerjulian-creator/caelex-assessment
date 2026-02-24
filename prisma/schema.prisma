@@ -2490,6 +2490,8 @@ model Organization {
   rrsSnapshots           RRSSnapshot[] // Historical RRS snapshots
   assureShareLinks       AssureShareLink[] // Permissioned share links
   assureDDPackages       AssureDDPackage[] // Due diligence packages
+  rcrRatings             RegulatoryCreditRating[] // RCR rating history
+  rcrAppeals             RCRAppeal[] // Rating appeals
 
   // Multi-tenancy: org-scoped models
   auditLogs                    AuditLog[]
@@ -4820,4 +4822,108 @@ model AssureDDPackage {
 
   @@index([organizationId])
   @@index([createdById])
+}
+
+// ============================================
+// RCR: REGULATORY CREDIT RATING
+// ============================================
+
+enum RatingOutlook {
+  POSITIVE
+  STABLE
+  NEGATIVE
+  DEVELOPING
+}
+
+enum RatingAction {
+  INITIAL
+  AFFIRM
+  UPGRADE
+  DOWNGRADE
+  WATCH_ON
+  WATCH_OFF
+  WITHDRAWN
+}
+
+enum AppealStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+model RegulatoryCreditRating {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  grade         String // "AA+", "BBB-", etc.
+  previousGrade String?
+  numericScore  Float
+  outlook       RatingOutlook @default(STABLE)
+  onWatch       Boolean       @default(false)
+  watchReason   String?
+
+  methodologyVersion String @default("1.0.0")
+  confidence         Float // 0-1
+  validUntil         DateTime
+
+  // Component scores and risks as JSON
+  componentScores Json // RCRComponentScore[]
+  riskRegister    Json // RCRRisk[]
+  peerPercentile  Float? // 0-100
+
+  // Rating action
+  actionType      RatingAction
+  actionRationale String? @db.Text
+
+  computedAt  DateTime @default(now())
+  publishedAt DateTime?
+  isPublished Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, computedAt])
+  @@index([grade])
+  @@index([isPublished])
+}
+
+model RCRBenchmark {
+  id           String @id @default(cuid())
+  operatorType String // SCO, LO, LSO, etc.
+  period       String // "2026-Q1"
+
+  // Anonymized cohort statistics
+  count       Int
+  meanScore   Float
+  medianScore Float
+  p25Score    Float
+  p75Score    Float
+  stdDev      Float
+
+  gradeDistribution Json // { "AAA": 2, "AA": 5, ... }
+  componentMeans    Json // { "authorization": 72.3, ... }
+
+  computedAt DateTime @default(now())
+
+  @@unique([operatorType, period])
+}
+
+model RCRAppeal {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ratingId       String
+  reason         String       @db.Text
+  supportingDocs Json? // Document IDs from vault
+  status         AppealStatus @default(SUBMITTED)
+  reviewNotes    String?      @db.Text
+  resolvedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
 }

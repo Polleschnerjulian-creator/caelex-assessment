@@ -33,6 +33,10 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/assure/score": "_literal:RRS Score Details",
   "/dashboard/assure/share": "_literal:Share Links",
   "/dashboard/assure/packages": "_literal:DD Packages",
+  "/dashboard/assure/rating": "_literal:Regulatory Credit Rating",
+  "/dashboard/assure/rating/report": "_literal:Rating Report",
+  "/dashboard/assure/rating/methodology": "_literal:Rating Methodology",
+  "/dashboard/assure/rating/appeal": "_literal:Rating Appeals",
   "/dashboard/settings": "sidebar.settings",
   "/dashboard/admin": "sidebar.adminPanel",
 };

@@ -48,6 +48,10 @@
     {
       "path": "/api/cron/compute-rrs",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/compute-rcr",
+      "schedule": "30 7 * * *"
     }
   ]
 }
