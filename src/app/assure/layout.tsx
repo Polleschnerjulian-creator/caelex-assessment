@@ -53,11 +53,11 @@ function AssureLayoutContent({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/assure/dataroom/view/");
 
   if (isUnlayouted) {
-    return <>{children}</>;
+    return <div className="dark">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-navy-950">
+    <div className="dark min-h-screen bg-navy-950">
       <div className="lg:grid lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <AssureSidebar

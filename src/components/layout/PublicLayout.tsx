@@ -7,6 +7,7 @@ import Footer from "@/components/landing/Footer";
 // Routes that should NOT show navigation + footer
 const EXCLUDED_ROUTES = [
   "/dashboard",
+  "/assure",
   "/login",
   "/signup",
   "/assessment",
