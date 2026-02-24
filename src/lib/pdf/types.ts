@@ -20,7 +20,12 @@ export type ReportType =
   | "compliance_certificate"
   | "audit_center"
   | "dd_package"
-  | "rcr_report";
+  | "rcr_report"
+  | "executive_summary"
+  | "investment_teaser"
+  | "assure_company_profile"
+  | "assure_risk_report"
+  | "investor_update";
 
 export interface ReportMetadata {
   reportId: string;

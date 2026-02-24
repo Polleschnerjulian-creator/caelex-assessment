@@ -69,6 +69,8 @@ model User {
   // Assure: created share links and DD packages
   assureShareLinks         AssureShareLink[]
   assureDDPackages         AssureDDPackage[]
+  // Assure Platform: materials created by user
+  assureMaterials          AssureMaterial[]
 
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage    Int                       @default(0)
@@ -2492,6 +2494,14 @@ model Organization {
   assureDDPackages       AssureDDPackage[] // Due diligence packages
   rcrRatings             RegulatoryCreditRating[] // RCR rating history
   rcrAppeals             RCRAppeal[] // Rating appeals
+
+  // Assure Platform: Investment Readiness
+  assureCompanyProfile   AssureCompanyProfile?
+  assureRisks            AssureRisk[]
+  assureMaterials        AssureMaterial[]
+  assureDataRooms        AssureDataRoom[]
+  investmentReadinessScores InvestmentReadinessScore[]
+  assureMilestones       AssureMilestone[]
 
   // Multi-tenancy: org-scoped models
   auditLogs                    AuditLog[]
@@ -4926,4 +4936,528 @@ model RCRAppeal {
 
   @@index([organizationId])
   @@index([status])
+}
+
+// ============================================
+// CAELEX ASSURE PLATFORM — Investment Readiness
+// ============================================
+
+enum CompanyStage {
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C_PLUS
+  PRE_IPO
+  PUBLIC
+}
+
+enum ProductStatus {
+  CONCEPT
+  PROTOTYPE
+  TESTING
+  BETA
+  PRODUCTION
+  OPERATIONAL
+}
+
+enum RiskCategory {
+  TECHNOLOGY
+  MARKET
+  REGULATORY
+  FINANCIAL
+  OPERATIONAL
+  COMPETITIVE
+  GEOPOLITICAL
+}
+
+enum RiskProbability {
+  VERY_LOW
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+}
+
+enum RiskImpact {
+  NEGLIGIBLE
+  MINOR
+  MODERATE_IMPACT
+  MAJOR
+  CATASTROPHIC
+}
+
+enum MitigationStatus {
+  IDENTIFIED
+  PLANNED
+  IN_PROGRESS_M
+  MITIGATED
+  ACCEPTED
+  TRANSFERRED
+}
+
+enum MaterialType {
+  EXECUTIVE_SUMMARY
+  INVESTMENT_TEASER
+  COMPANY_PROFILE_MAT
+  RISK_REPORT
+  CUSTOM
+}
+
+enum DataRoomAction {
+  ROOM_ACCESSED
+  DOCUMENT_VIEWED
+  DOCUMENT_DOWNLOADED
+  FOLDER_BROWSED
+}
+
+enum MilestoneCategory {
+  PRODUCT
+  BUSINESS
+  FINANCIAL
+  REGULATORY_M
+  TEAM
+  PARTNERSHIP
+}
+
+enum AssureMilestoneStatus {
+  ON_TRACK
+  AT_RISK
+  DELAYED
+  COMPLETED_M
+  CANCELLED
+}
+
+// ─── Company Intelligence Profile ───
+
+model AssureCompanyProfile {
+  id               String       @id @default(cuid())
+  organizationId   String       @unique
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Core Identity
+  companyName      String
+  legalName        String?
+  foundedDate      DateTime?
+  headquarters     String?
+  legalForm        String?
+  registrationNumber String?
+  website          String?
+  linkedIn         String?
+
+  // Classification
+  operatorType     String[]
+  subsector        String[]
+  stage            CompanyStage @default(SEED)
+  employeeCount    Int?
+  employeeGrowth6M Float?
+
+  // Mission Statement
+  oneLiner         String?
+  missionStatement String?  @db.Text
+  problemStatement String?  @db.Text
+  solutionStatement String? @db.Text
+
+  completionScore  Float    @default(0)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Sub-profiles
+  techProfile       AssureTechProfile?
+  marketProfile     AssureMarketProfile?
+  teamProfile       AssureTeamProfile?
+  financialProfile  AssureFinancialProfile?
+  regulatoryProfile AssureRegulatoryProfile?
+  competitiveProfile AssureCompetitiveProfile?
+  tractionProfile   AssureTractionProfile?
+  risks             AssureRisk[]
+
+  @@index([stage])
+}
+
+model AssureTechProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  trlLevel         Int?
+  trlJustification String?  @db.Text
+  trlEvidence      Json?
+
+  productName      String?
+  productDescription String? @db.Text
+  productStatus    ProductStatus?
+  launchDate       DateTime?
+  keyFeatures      Json?
+  technicalSpecs   Json?
+
+  patents          Json?
+  tradeSecrets     String?  @db.Text
+  ipStrategy       String?  @db.Text
+
+  milestones       Json?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureMarketProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  tamValue         Float?
+  tamSource        String?
+  samValue         Float?
+  somValue         Float?
+  marketGrowthRate Float?
+
+  whyNow           String?  @db.Text
+  marketDrivers    Json?
+
+  targetCustomers  Json?
+  customerCount    Int?
+  pipelineValue    Float?
+  contractedRevenue Float?
+
+  gtmStrategy      String?  @db.Text
+  salesCycle       String?
+  distributionChannels Json?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureTeamProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  founders         Json?
+  cSuite           Json?
+  keyHires         Json?
+
+  boardMembers     Json?
+  advisors         Json?
+
+  teamSize         Int?
+  engineeringRatio Float?
+  averageExperience Float?
+  keyPersonRisk    String?  @db.Text
+  hiringPlan       Json?
+
+  employeeTurnover Float?
+  glassdoorRating  Float?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureFinancialProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  annualRevenue    Float?
+  revenueGrowthYoY Float?
+  monthlyBurnRate  Float?
+  runway           Int?
+  grossMargin      Float?
+  cashPosition     Float?
+
+  revenueModel     String?
+  revenueStreams    Json?
+  unitEconomics    Json?
+
+  totalRaised      Float?
+  fundingRounds    Json?
+  currentValuation Float?
+
+  isRaising        Boolean  @default(false)
+  targetRaise      Float?
+  targetValuation  Float?
+  roundType        String?
+  useOfFunds       Json?
+  targetCloseDate  DateTime?
+
+  revenueProjections Json?
+  profitabilityTimeline String?
+  breakEvenDate    DateTime?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureRegulatoryProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  complyLinked     Boolean  @default(false)
+  complyOrgId      String?
+  rrsScore         Float?
+  rrsComponents    Json?
+
+  jurisdictions    String[]
+  authorizationStatus String?
+  authorizationDetails String? @db.Text
+  nis2Status       String?
+  spaceDebrisCompliance String?
+  insuranceStatus  String?
+
+  regulatoryMoatDescription String? @db.Text
+  barrierToEntry   String?  @db.Text
+  timeToReplicate  String?
+
+  regulatoryRisks  Json?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureCompetitiveProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  competitors      Json?
+  competitiveAdvantage String? @db.Text
+  moats            Json?
+  differentiators  Json?
+  marketPosition   String?
+
+  winRate          Float?
+  keyWins          Json?
+  keyLosses        Json?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AssureTractionProfile {
+  id               String   @id @default(cuid())
+  profileId        String   @unique
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  keyMetrics       Json?
+  milestonesAchieved Json?
+  partnerships     Json?
+  lois             Int?
+  signedContracts  Int?
+  pilotPrograms    Int?
+
+  awards           Json?
+  mediaFeatures    Json?
+  conferences      Json?
+
+  upcomingMilestones Json?
+
+  completionScore  Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// ─── Investment Readiness Score ───
+
+model InvestmentReadinessScore {
+  id                  String       @id @default(cuid())
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  overallScore        Float
+  grade               String
+  components          Json
+  topStrengths        Json
+  topWeaknesses       Json
+  improvementPlan     Json
+
+  profileCompleteness Float
+  stage               CompanyStage
+  benchmarkPercentile Float?
+
+  computedAt          DateTime @default(now())
+
+  @@index([organizationId, computedAt])
+  @@index([grade])
+}
+
+// ─── Risk Intelligence ───
+
+model AssureRisk {
+  id               String       @id @default(cuid())
+  profileId        String
+  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  category         RiskCategory
+  title            String
+  description      String   @db.Text
+
+  probability      RiskProbability
+  impact           RiskImpact
+  riskScore        Float
+  financialExposure Float?
+
+  mitigationStrategy String? @db.Text
+  mitigationStatus MitigationStatus @default(IDENTIFIED)
+  mitigationEvidence Json?
+  residualRisk     Float?
+
+  timeHorizon      String?
+  triggerEvents    Json?
+  earlyWarnings    Json?
+
+  isPreDefined     Boolean  @default(false)
+  isFromComply     Boolean  @default(false)
+
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([profileId, category])
+  @@index([organizationId])
+  @@index([riskScore])
+}
+
+// ─── Investor Materials ───
+
+model AssureMaterial {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById      String
+  createdBy        User         @relation(fields: [createdById], references: [id])
+
+  type             MaterialType
+  title            String
+  version          Int          @default(1)
+
+  includedSections Json
+  customizations   Json?
+
+  pdfUrl           String?
+  pdfGeneratedAt   DateTime?
+
+  profileSnapshot  Json
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([organizationId, type])
+}
+
+// ─── Virtual Data Room ───
+
+model AssureDataRoom {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name             String       @default("Investor Data Room")
+  description      String?
+
+  folders          Json
+  checklistItems   Json?
+  completionRate   Float        @default(0)
+
+  accessLinks      AssureDataRoomLink[]
+  documents        AssureDataRoomDocument[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([organizationId])
+}
+
+model AssureDataRoomLink {
+  id             String         @id @default(cuid())
+  dataRoomId     String
+  dataRoom       AssureDataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+
+  recipientName  String
+  recipientEmail String
+  recipientOrg   String?
+
+  token          String   @unique
+  pin            String?
+  expiresAt      DateTime
+  isActive       Boolean  @default(true)
+
+  canDownload    Boolean  @default(false)
+  canPrint       Boolean  @default(false)
+  watermark      Boolean  @default(true)
+
+  accessibleFolders Json?
+
+  views          AssureDataRoomView[]
+  totalViews     Int      @default(0)
+  lastViewedAt   DateTime?
+
+  createdAt      DateTime @default(now())
+
+  @@index([token])
+  @@index([dataRoomId])
+}
+
+model AssureDataRoomView {
+  id          String             @id @default(cuid())
+  linkId      String
+  link        AssureDataRoomLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  documentId  String?
+  action      DataRoomAction
+  durationSec Int?
+  ipAddress   String?
+  userAgent   String?
+  viewedAt    DateTime @default(now())
+
+  @@index([linkId, viewedAt])
+}
+
+model AssureDataRoomDocument {
+  id           String         @id @default(cuid())
+  dataRoomId   String
+  dataRoom     AssureDataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  documentId   String?
+  folder       String
+  fileName     String
+  fileSize     Int?
+  fileUrl      String?
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+
+  @@index([dataRoomId, folder])
+}
+
+// ─── Milestones & Investor Relations ───
+
+model AssureMilestone {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title            String
+  description      String?      @db.Text
+  category         MilestoneCategory
+  targetDate       DateTime
+  completedDate    DateTime?
+  status           AssureMilestoneStatus @default(ON_TRACK)
+
+  evidence         Json?
+
+  isInvestorVisible Boolean  @default(true)
+  investorNote     String?  @db.Text
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([organizationId, status])
+  @@index([targetDate])
 }

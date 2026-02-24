@@ -73,7 +73,24 @@ export type AuditAction =
   | "rcr_computed"
   | "rcr_published"
   | "rcr_appeal_submitted"
-  | "rcr_appeal_resolved";
+  | "rcr_appeal_resolved"
+  | "assure_profile_updated"
+  | "assure_irs_computed"
+  | "assure_risk_created"
+  | "assure_risk_updated"
+  | "assure_risk_deleted"
+  | "assure_risks_auto_populated"
+  | "assure_material_generated"
+  | "assure_material_deleted"
+  | "assure_dataroom_created"
+  | "assure_dataroom_link_created"
+  | "assure_dataroom_link_revoked"
+  | "assure_dataroom_document_uploaded"
+  | "assure_dataroom_document_deleted"
+  | "assure_milestone_created"
+  | "assure_milestone_updated"
+  | "assure_milestone_deleted"
+  | "assure_comply_linked";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -103,7 +120,15 @@ export type AuditEntityType =
   | "assure_rrs"
   | "regulatory_credit_rating"
   | "rcr_rating"
-  | "rcr_appeal";
+  | "rcr_appeal"
+  | "assure_company_profile"
+  | "assure_risk"
+  | "assure_material"
+  | "assure_dataroom"
+  | "assure_dataroom_link"
+  | "assure_dataroom_document"
+  | "assure_milestone"
+  | "investment_readiness_score";
 
 export interface AuditLogEntry {
   userId: string;

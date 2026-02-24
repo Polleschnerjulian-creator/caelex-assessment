@@ -1,7 +1,8 @@
 /**
  * PDF Report Generation Module
  *
- * Provides PDF report templates and generation utilities for NCA reports.
+ * Provides PDF report templates and generation utilities for NCA reports
+ * and Caelex Assure platform reports.
  */
 
 // Types
@@ -62,3 +63,17 @@ export {
   buildComplianceSummaryConfig,
   type ComplianceSummaryData,
 } from "./reports/compliance-summary";
+
+// Caelex Assure Report Templates
+export {
+  buildExecutiveSummaryReport,
+  type ExecutiveSummaryData,
+  buildInvestmentTeaserReport,
+  type InvestmentTeaserData,
+  buildCompanyProfileReport,
+  type CompanyProfileData,
+  buildRiskReport,
+  type RiskReportData,
+  buildInvestorUpdateReport,
+  type InvestorUpdateData,
+} from "./assure";
