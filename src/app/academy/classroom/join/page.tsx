@@ -46,7 +46,7 @@ export default function JoinClassroomPage() {
 
       setTimeout(() => {
         router.push(
-          `/dashboard/academy/classroom/${data.classroomId ?? data.classroom?.id ?? ""}`,
+          `/academy/classroom/${data.classroomId ?? data.classroom?.id ?? ""}`,
         );
       }, 1500);
     } catch (e) {
@@ -60,7 +60,7 @@ export default function JoinClassroomPage() {
     <div className="max-w-lg mx-auto space-y-6">
       {/* Breadcrumb */}
       <Link
-        href="/dashboard/academy/classroom"
+        href="/academy/classroom"
         className="inline-flex items-center gap-2 text-small text-white/40 hover:text-white/60 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />

@@ -7,7 +7,7 @@ export default function InstructorClassroomsRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/dashboard/academy/instructor");
+    router.replace("/academy/instructor");
   }, [router]);
 
   return null;

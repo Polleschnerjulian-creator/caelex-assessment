@@ -146,7 +146,7 @@ export default function ClassroomAnalyticsPage() {
           {error ?? "Analytics not available"}
         </p>
         <Link
-          href={`/dashboard/academy/instructor/classrooms/${classroomId}`}
+          href={`/academy/instructor/classrooms/${classroomId}`}
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Classroom
@@ -162,14 +162,14 @@ export default function ClassroomAnalyticsPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-small text-white/40">
         <Link
-          href="/dashboard/academy/instructor"
+          href="/academy/instructor"
           className="hover:text-white/60 transition-colors"
         >
           Instructor
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <Link
-          href={`/dashboard/academy/instructor/classrooms/${classroomId}`}
+          href={`/academy/instructor/classrooms/${classroomId}`}
           className="hover:text-white/60 transition-colors"
         >
           {data.classroomName}

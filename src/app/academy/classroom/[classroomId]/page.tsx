@@ -99,7 +99,7 @@ export default function ClassroomDetailPage() {
           {error ?? "Classroom not found"}
         </p>
         <Link
-          href="/dashboard/academy/classroom"
+          href="/academy/classroom"
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Classrooms
@@ -113,7 +113,7 @@ export default function ClassroomDetailPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-small text-white/40">
         <Link
-          href="/dashboard/academy/classroom"
+          href="/academy/classroom"
           className="hover:text-white/60 transition-colors"
         >
           Classrooms
@@ -187,7 +187,7 @@ export default function ClassroomDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
               >
-                <Link href={`/dashboard/academy/courses/${course.slug}`}>
+                <Link href={`/academy/courses/${course.slug}`}>
                   <GlassCard className="p-5 cursor-pointer group">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-body-lg font-medium text-white group-hover:text-emerald-400 transition-colors truncate">

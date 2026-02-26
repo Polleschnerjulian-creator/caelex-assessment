@@ -37,13 +37,6 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/assure/rating/report": "_literal:Rating Report",
   "/dashboard/assure/rating/methodology": "_literal:Rating Methodology",
   "/dashboard/assure/rating/appeal": "_literal:Rating Appeals",
-  "/dashboard/academy": "_literal:Academy",
-  "/dashboard/academy/courses": "_literal:Course Catalog",
-  "/dashboard/academy/simulations": "_literal:Simulation Lab",
-  "/dashboard/academy/sandbox": "_literal:Compliance Sandbox",
-  "/dashboard/academy/progress": "_literal:My Progress",
-  "/dashboard/academy/classroom": "_literal:Classroom",
-  "/dashboard/academy/instructor": "_literal:Instructor Panel",
   "/dashboard/settings": "sidebar.settings",
   "/dashboard/admin": "sidebar.adminPanel",
 };

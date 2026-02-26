@@ -18,14 +18,14 @@ export default function LearnRedirect() {
         );
         if (enrollment?.currentLessonId) {
           router.replace(
-            `/dashboard/academy/courses/${params.courseSlug}/learn/${enrollment.currentLessonId}`,
+            `/academy/courses/${params.courseSlug}/learn/${enrollment.currentLessonId}`,
           );
         } else {
-          router.replace(`/dashboard/academy/courses/${params.courseSlug}`);
+          router.replace(`/academy/courses/${params.courseSlug}`);
         }
       })
       .catch(() => {
-        router.replace(`/dashboard/academy/courses/${params.courseSlug}`);
+        router.replace(`/academy/courses/${params.courseSlug}`);
       });
   }, [params.courseSlug, router]);
 

@@ -149,7 +149,7 @@ export default function InstructorClassroomPage() {
           {error ?? "Classroom not found"}
         </p>
         <Link
-          href="/dashboard/academy/instructor"
+          href="/academy/instructor"
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Instructor Panel
@@ -163,7 +163,7 @@ export default function InstructorClassroomPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-small text-white/40">
         <Link
-          href="/dashboard/academy/instructor"
+          href="/academy/instructor"
           className="hover:text-white/60 transition-colors"
         >
           Instructor
@@ -220,7 +220,7 @@ export default function InstructorClassroomPage() {
                 </button>
               </div>
               <Link
-                href={`/dashboard/academy/instructor/classrooms/${classroomId}/analytics`}
+                href={`/academy/instructor/classrooms/${classroomId}/analytics`}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-small text-white/60 hover:bg-white/10 hover:text-white/80 transition-all"
               >
                 <BarChart3 className="w-4 h-4" />

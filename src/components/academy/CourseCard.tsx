@@ -81,7 +81,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   const isEnrolled = !!course.enrollment;
 
   return (
-    <Link href={`/dashboard/academy/courses/${course.slug}`}>
+    <Link href={`/academy/courses/${course.slug}`}>
       <motion.div
         whileHover={{ scale: 1.02, y: -2 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}

@@ -243,7 +243,7 @@ export default function CourseCatalogPage() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
                 >
-                  <Link href={`/dashboard/academy/courses/${course.slug}`}>
+                  <Link href={`/academy/courses/${course.slug}`}>
                     <GlassCard className="p-5 h-full cursor-pointer group">
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">

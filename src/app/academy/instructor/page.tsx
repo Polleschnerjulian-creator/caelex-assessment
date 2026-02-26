@@ -117,7 +117,7 @@ export default function InstructorDashboardPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/academy/instructor/classrooms/new"
+          href="/academy/instructor/classrooms/new"
           className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-5 py-2.5 rounded-xl transition-all"
         >
           <Plus className="w-4 h-4" />
@@ -186,9 +186,7 @@ export default function InstructorDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.06 }}
               >
-                <Link
-                  href={`/dashboard/academy/instructor/classrooms/${classroom.id}`}
-                >
+                <Link href={`/academy/instructor/classrooms/${classroom.id}`}>
                   <GlassCard className="p-5 cursor-pointer group">
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="text-title font-medium text-white group-hover:text-purple-400 transition-colors">
@@ -261,7 +259,7 @@ export default function InstructorDashboardPage() {
               assigning courses.
             </p>
             <Link
-              href="/dashboard/academy/instructor/classrooms/new"
+              href="/academy/instructor/classrooms/new"
               className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium px-6 py-2.5 rounded-lg transition-all"
             >
               <Plus className="w-4 h-4" />

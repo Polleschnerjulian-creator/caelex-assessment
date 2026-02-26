@@ -274,7 +274,7 @@ export default function AcademyDashboardPage() {
               Continue Learning
             </h2>
             <Link
-              href="/dashboard/academy/courses"
+              href="/academy/courses"
               className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
             >
               All Courses <ChevronRight className="w-3.5 h-3.5" />
@@ -288,9 +288,7 @@ export default function AcademyDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.08 }}
               >
-                <Link
-                  href={`/dashboard/academy/courses/${enrollment.course.slug}/learn`}
-                >
+                <Link href={`/academy/courses/${enrollment.course.slug}/learn`}>
                   <GlassCard className="p-5 cursor-pointer">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
@@ -347,7 +345,7 @@ export default function AcademyDashboardPage() {
             mastering space regulatory compliance.
           </p>
           <Link
-            href="/dashboard/academy/courses"
+            href="/academy/courses"
             className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium px-6 py-2.5 rounded-lg transition-all"
           >
             Browse Courses
@@ -407,7 +405,7 @@ export default function AcademyDashboardPage() {
               Badges
             </h2>
             <Link
-              href="/dashboard/academy/progress"
+              href="/academy/progress"
               className="text-caption text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
             >
               View All <ChevronRight className="w-3.5 h-3.5" />

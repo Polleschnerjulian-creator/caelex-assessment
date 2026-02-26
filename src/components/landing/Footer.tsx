@@ -9,6 +9,7 @@ const productLinks = [
   { label: "Caelex Comply", href: "/platform" },
   { label: "Caelex Assure", href: "/assure" },
   { label: "Assessment", href: "/assessment" },
+  { label: "Caelex Academy", href: "/academy" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Pricing", href: "/pricing" },
 ];

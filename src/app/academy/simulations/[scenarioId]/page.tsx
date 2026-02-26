@@ -150,7 +150,7 @@ export default function SimulationRunnerPage() {
           {error ?? "Scenario not found"}
         </p>
         <Link
-          href="/dashboard/academy/simulations"
+          href="/academy/simulations"
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Simulations
@@ -169,7 +169,7 @@ export default function SimulationRunnerPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-small text-white/40">
         <Link
-          href="/dashboard/academy/simulations"
+          href="/academy/simulations"
           className="hover:text-white/60 transition-colors"
         >
           Simulations
@@ -473,7 +473,7 @@ export default function SimulationRunnerPage() {
               Try Again
             </button>
             <Link
-              href="/dashboard/academy/simulations"
+              href="/academy/simulations"
               className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-6 py-3 rounded-xl transition-all"
             >
               Back to Simulations

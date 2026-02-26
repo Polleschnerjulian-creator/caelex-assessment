@@ -89,7 +89,7 @@ export default function ClassroomPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/academy/classroom/join"
+          href="/academy/classroom/join"
           className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-5 py-2.5 rounded-xl transition-all"
         >
           <Plus className="w-4 h-4" />
@@ -107,7 +107,7 @@ export default function ClassroomPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
             >
-              <Link href={`/dashboard/academy/classroom/${classroom.id}`}>
+              <Link href={`/academy/classroom/${classroom.id}`}>
                 <GlassCard className="p-5 h-full cursor-pointer group">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
@@ -190,7 +190,7 @@ export default function ClassroomPage() {
             organization administrator to create one.
           </p>
           <Link
-            href="/dashboard/academy/classroom/join"
+            href="/academy/classroom/join"
             className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium px-6 py-2.5 rounded-lg transition-all"
           >
             Join with Code

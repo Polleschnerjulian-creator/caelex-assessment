@@ -201,7 +201,7 @@ export default function CourseDetailPage() {
           {error ?? "Course not found"}
         </p>
         <Link
-          href="/dashboard/academy/courses"
+          href="/academy/courses"
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Courses
@@ -225,7 +225,7 @@ export default function CourseDetailPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-small text-white/40">
         <Link
-          href="/dashboard/academy/courses"
+          href="/academy/courses"
           className="hover:text-white/60 transition-colors"
         >
           Courses
@@ -347,7 +347,7 @@ export default function CourseDetailPage() {
                   {completedLessons} of {totalLessons} lessons completed
                 </p>
                 <Link
-                  href={`/dashboard/academy/courses/${course.slug}/learn`}
+                  href={`/academy/courses/${course.slug}/learn`}
                   className="mt-4 w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body py-3 rounded-xl transition-all"
                 >
                   <PlayCircle className="w-5 h-5" />
@@ -461,7 +461,7 @@ export default function CourseDetailPage() {
                                     <div className="flex-1 min-w-0">
                                       {course.enrollment ? (
                                         <Link
-                                          href={`/dashboard/academy/courses/${course.slug}/learn/${lesson.slug}`}
+                                          href={`/academy/courses/${course.slug}/learn/${lesson.slug}`}
                                           className="text-body text-white/70 hover:text-emerald-400 transition-colors truncate block"
                                         >
                                           {lesson.title}

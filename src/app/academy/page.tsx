@@ -179,7 +179,7 @@ export default function AcademyLandingPage() {
 
             <div className="flex items-center justify-center gap-4">
               <Link
-                href="/login?callbackUrl=/dashboard/academy"
+                href="/login?callbackUrl=/academy/dashboard"
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-subtitle px-8 py-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center gap-2"
               >
                 Start Learning Free
@@ -354,7 +354,7 @@ export default function AcademyLandingPage() {
                 regulatory consultant, the Academy has the courses you need.
               </p>
               <Link
-                href="/signup?callbackUrl=/dashboard/academy"
+                href="/signup?callbackUrl=/academy/dashboard"
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-subtitle px-8 py-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
               >
                 Create Free Account

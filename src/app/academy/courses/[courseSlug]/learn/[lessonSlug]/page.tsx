@@ -406,7 +406,7 @@ function SimulationView({ lessonId }: { lessonId: string }) {
           choices.
         </p>
         <Link
-          href={`/dashboard/academy/simulations/${lessonId}`}
+          href={`/academy/simulations/${lessonId}`}
           className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-6 py-3 rounded-xl transition-all"
         >
           <PlayCircle className="w-5 h-5" />
@@ -490,7 +490,7 @@ export default function LessonPage() {
           {error ?? "Lesson not found"}
         </p>
         <Link
-          href={`/dashboard/academy/courses/${courseSlug}`}
+          href={`/academy/courses/${courseSlug}`}
           className="bg-emerald-500 hover:bg-emerald-600 text-white text-body px-5 py-2 rounded-lg transition-all"
         >
           Back to Course
@@ -520,7 +520,7 @@ export default function LessonPage() {
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <Link
-              href={`/dashboard/academy/courses/${courseSlug}`}
+              href={`/academy/courses/${courseSlug}`}
               className="flex items-center gap-2 text-small text-white/45 hover:text-white/70 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -556,7 +556,7 @@ export default function LessonPage() {
                         return (
                           <Link
                             key={navLesson.id}
-                            href={`/dashboard/academy/courses/${courseSlug}/learn/${navLesson.slug}`}
+                            href={`/academy/courses/${courseSlug}/learn/${navLesson.slug}`}
                             onClick={() => setSidebarOpen(false)}
                             className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-small transition-colors ${
                               isActive
@@ -657,7 +657,7 @@ export default function LessonPage() {
         <div className="flex items-center justify-between px-6 lg:px-10 py-4 border-t border-white/10 bg-navy-900/50 backdrop-blur-sm">
           {lesson.prevLesson ? (
             <Link
-              href={`/dashboard/academy/courses/${courseSlug}/learn/${lesson.prevLesson.slug}`}
+              href={`/academy/courses/${courseSlug}/learn/${lesson.prevLesson.slug}`}
               className="flex items-center gap-2 text-body text-white/50 hover:text-white/70 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -689,7 +689,7 @@ export default function LessonPage() {
 
           {lesson.nextLesson ? (
             <Link
-              href={`/dashboard/academy/courses/${courseSlug}/learn/${lesson.nextLesson.slug}`}
+              href={`/academy/courses/${courseSlug}/learn/${lesson.nextLesson.slug}`}
               className="flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors"
             >
               <span className="hidden sm:inline">
@@ -700,7 +700,7 @@ export default function LessonPage() {
             </Link>
           ) : (
             <Link
-              href={`/dashboard/academy/courses/${courseSlug}`}
+              href={`/academy/courses/${courseSlug}`}
               className="flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors"
             >
               Finish Course

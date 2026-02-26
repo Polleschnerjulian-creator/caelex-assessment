@@ -127,7 +127,7 @@ export default function CreateClassroomPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <Link
-        href="/dashboard/academy/instructor"
+        href="/academy/instructor"
         className="inline-flex items-center gap-2 text-small text-white/40 hover:text-white/60 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -186,13 +186,13 @@ export default function CreateClassroomPage() {
 
               <div className="flex items-center justify-center gap-3">
                 <Link
-                  href={`/dashboard/academy/instructor/classrooms/${createdId}`}
+                  href={`/academy/instructor/classrooms/${createdId}`}
                   className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-6 py-2.5 rounded-xl transition-all"
                 >
                   Go to Classroom
                 </Link>
                 <Link
-                  href="/dashboard/academy/instructor"
+                  href="/academy/instructor"
                   className="text-body text-white/45 hover:text-white/70 transition-colors"
                 >
                   Back to Dashboard

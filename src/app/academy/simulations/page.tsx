@@ -134,7 +134,7 @@ export default function SimulationsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }}
                 >
-                  <Link href={`/dashboard/academy/simulations/${scenario.id}`}>
+                  <Link href={`/academy/simulations/${scenario.id}`}>
                     <GlassCard className="p-5 h-full cursor-pointer group">
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
@@ -229,7 +229,7 @@ export default function SimulationsPage() {
                   </p>
                 </div>
                 <Link
-                  href={`/dashboard/academy/simulations/${run.scenarioId}`}
+                  href={`/academy/simulations/${run.scenarioId}`}
                   className="text-small text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
                 >
                   Try Again <ChevronRight className="w-3.5 h-3.5" />
