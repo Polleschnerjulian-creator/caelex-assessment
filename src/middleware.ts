@@ -442,6 +442,32 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
+  // Protected routes — check for session cookie (Academy)
+  const academyPublicPaths = ["/academy"];
+  const isAcademyPublicPath = academyPublicPaths.includes(pathname);
+
+  if (pathname.startsWith("/academy") && !isAcademyPublicPath) {
+    const hasSession =
+      req.cookies.has("__Secure-authjs.session-token") ||
+      req.cookies.has("authjs.session-token");
+    if (!hasSession) {
+      if (!process.env.AUTH_SECRET) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL("/", req.url)),
+          pathname,
+          nonce,
+        );
+      }
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return applySecurityHeaders(
+        NextResponse.redirect(loginUrl),
+        pathname,
+        nonce,
+      );
+    }
+  }
+
   // Auth routes — redirect if already logged in
   if (["/login", "/signup"].includes(pathname)) {
     const hasSession =

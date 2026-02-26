@@ -12,7 +12,6 @@ import {
   Award,
   Rocket,
   Clock,
-  Users,
   ChevronRight,
   Satellite,
   Scale,
@@ -327,8 +326,8 @@ export default function AcademyLandingPage() {
                     {course.duration}
                   </div>
                   <div className="flex items-center gap-1.5 text-small text-white/45">
-                    <Users className="w-3.5 h-3.5" />
-                    {Math.floor(Math.random() * 500) + 100} enrolled
+                    <BookOpen className="w-3.5 h-3.5" />
+                    {course.category}
                   </div>
                 </div>
               </motion.div>
@@ -347,11 +346,11 @@ export default function AcademyLandingPage() {
             >
               <Globe className="w-12 h-12 text-emerald-400 mx-auto mb-6" />
               <h2 className="text-display font-semibold text-white mb-4">
-                Join Thousands of Space Professionals Mastering Compliance
+                Start Mastering Space Regulatory Compliance
               </h2>
               <p className="text-body-lg text-white/45 mb-8 max-w-lg mx-auto">
                 Whether you are a satellite operator, launch provider, or
-                regulatory consultant, the Academy has the courses you need.
+                regulatory consultant — build the knowledge you need.
               </p>
               <Link
                 href="/signup?callbackUrl=/academy/dashboard"

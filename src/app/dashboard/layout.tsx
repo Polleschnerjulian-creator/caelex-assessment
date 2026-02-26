@@ -99,10 +99,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             className={`flex-1 ${isFullscreenPage ? "" : "p-6 lg:p-10"}`}
           >
             {isFullscreenPage ? (
-              <ErrorBoundary>{children}</ErrorBoundary>
+              <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
             ) : (
               <div className="max-w-[1400px] mx-auto">
-                <ErrorBoundary>{children}</ErrorBoundary>
+                <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
               </div>
             )}
           </main>

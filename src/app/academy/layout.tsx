@@ -64,7 +64,7 @@ function AcademyLayoutContent({ children }: { children: React.ReactNode }) {
           <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
           <main id="main-content" className="flex-1 p-6 lg:p-10">
             <div className="max-w-[1400px] mx-auto">
-              <ErrorBoundary>{children}</ErrorBoundary>
+              <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
             </div>
           </main>
         </div>
