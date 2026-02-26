@@ -38,6 +38,11 @@ import {
   Sparkles,
   Users,
   ShieldAlert,
+  GraduationCap,
+  BookOpen,
+  FlaskConical,
+  Terminal,
+  TrendingUp,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -593,6 +598,58 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 )}
               />
             </ModuleGroup>
+          </div>
+
+          {/* Academy Section */}
+          <div className="mb-5">
+            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+              Academy
+            </p>
+            <div className="space-y-0.5">
+              <NavItem
+                href="/dashboard/academy"
+                icon={<GraduationCap size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge="New"
+              >
+                Dashboard
+              </NavItem>
+              <NavItem
+                href="/dashboard/academy/courses"
+                icon={<BookOpen size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                Courses
+              </NavItem>
+              <NavItem
+                href="/dashboard/academy/simulations"
+                icon={<FlaskConical size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                Simulations
+              </NavItem>
+              <NavItem
+                href="/dashboard/academy/sandbox"
+                icon={<Terminal size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                Sandbox
+              </NavItem>
+              <NavItem
+                href="/dashboard/academy/progress"
+                icon={<TrendingUp size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                My Progress
+              </NavItem>
+              <NavItem
+                href="/dashboard/academy/classroom"
+                icon={<Users size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+              >
+                Classroom
+              </NavItem>
+            </div>
           </div>
 
           {/* AI Agent Section */}

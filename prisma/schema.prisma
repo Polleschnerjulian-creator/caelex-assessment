@@ -71,6 +71,12 @@ model User {
   assureDDPackages         AssureDDPackage[]
   // Assure Platform: materials created by user
   assureMaterials          AssureMaterial[]
+  // Caelex Academy
+  academyEnrollments     AcademyEnrollment[]
+  academyCompletions     AcademyLessonCompletion[]
+  academyBadges          AcademyBadge[]
+  academySimulations     AcademySimulationRun[]
+  instructedClassrooms   AcademyClassroom[] @relation("ClassroomInstructor")
 
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage    Int                       @default(0)
@@ -5460,4 +5466,227 @@ model AssureMilestone {
 
   @@index([organizationId, status])
   @@index([targetDate])
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// CAELEX ACADEMY
+// ═══════════════════════════════════════════════════════════════
+
+model AcademyCourse {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  subtitle        String?
+  description     String
+  icon            String
+  category        AcademyCourseCategory
+  level           AcademyLevel
+  estimatedMinutes Int
+  isPublished     Boolean  @default(false)
+  isPremium       Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  modules         AcademyModule[]
+  enrollments     AcademyEnrollment[]
+  prerequisites   AcademyCourse[] @relation("CoursePrerequisites")
+  prerequisiteOf  AcademyCourse[] @relation("CoursePrerequisites")
+  tags            String[]
+  relatedComplianceModules String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([category, level])
+  @@index([isPublished, sortOrder])
+}
+
+model AcademyModule {
+  id              String   @id @default(cuid())
+  courseId         String
+  course           AcademyCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  sortOrder       Int      @default(0)
+  lessons         AcademyLesson[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([courseId, sortOrder])
+}
+
+model AcademyLesson {
+  id              String   @id @default(cuid())
+  moduleId        String
+  module          AcademyModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  slug            String
+  title           String
+  type            AcademyLessonType
+  sortOrder       Int      @default(0)
+  estimatedMinutes Int     @default(10)
+  content         Json?
+  simulationConfig Json?
+  questions       AcademyQuestion[]
+  completions     AcademyLessonCompletion[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@unique([moduleId, slug])
+  @@index([moduleId, sortOrder])
+}
+
+model AcademyQuestion {
+  id              String   @id @default(cuid())
+  lessonId        String
+  lesson          AcademyLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  sortOrder       Int      @default(0)
+  questionText    String
+  questionType    AcademyQuestionType
+  options         Json
+  explanation     String
+  hint            String?
+  relatedArticles String[]
+  scenarioContext Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([lessonId, sortOrder])
+}
+
+model AcademyEnrollment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String
+  course           AcademyCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status          AcademyEnrollmentStatus @default(ACTIVE)
+  enrolledAt      DateTime @default(now())
+  completedAt     DateTime?
+  progressPercent Float    @default(0)
+  totalTimeSpent  Int      @default(0)
+  currentLessonId String?
+  quizAverage     Float?
+  bestSimScore    Float?
+  classroomId     String?
+  classroom       AcademyClassroom? @relation(fields: [classroomId], references: [id])
+  @@unique([userId, courseId])
+  @@index([userId, status])
+  @@index([courseId])
+  @@index([classroomId])
+}
+
+model AcademyLessonCompletion {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId        String
+  lesson          AcademyLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt     DateTime @default(now())
+  timeSpent       Int      @default(0)
+  score           Float?
+  answers         Json?
+  simulationResult Json?
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model AcademyClassroom {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  code            String   @unique
+  instructorId    String
+  instructor      User     @relation("ClassroomInstructor", fields: [instructorId], references: [id])
+  organizationId  String?
+  isActive        Boolean  @default(true)
+  semester        String?
+  maxStudents     Int      @default(50)
+  assignedCourses String[]
+  deadlines       Json?
+  enrollments     AcademyEnrollment[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([instructorId])
+  @@index([code])
+}
+
+model AcademyBadge {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeType       AcademyBadgeType
+  earnedAt        DateTime @default(now())
+  metadata        Json?
+  @@unique([userId, badgeType])
+  @@index([userId])
+}
+
+model AcademySimulationRun {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId        String?
+  scenarioId      String
+  scenarioTitle   String
+  operatorProfile Json
+  decisions       Json
+  engineResult    Json
+  score           Float
+  feedback        Json
+  timeSpent       Int      @default(0)
+  completedAt     DateTime @default(now())
+  @@index([userId, scenarioId])
+  @@index([userId, completedAt])
+}
+
+enum AcademyCourseCategory {
+  EU_SPACE_ACT
+  NIS2
+  NATIONAL_SPACE_LAW
+  CROSS_REGULATORY
+  FUNDAMENTALS
+  ADVANCED_TOPICS
+}
+
+enum AcademyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum AcademyLessonType {
+  THEORY
+  INTERACTIVE
+  QUIZ
+  SIMULATION
+  CASE_STUDY
+  SANDBOX
+}
+
+enum AcademyQuestionType {
+  MULTIPLE_CHOICE
+  MULTIPLE_SELECT
+  TRUE_FALSE
+  ARTICLE_LOOKUP
+  OPERATOR_CLASSIFY
+  SCENARIO_DECISION
+  JURISDICTION_COMPARE
+}
+
+enum AcademyEnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  DROPPED
+}
+
+enum AcademyBadgeType {
+  FIRST_LESSON
+  FIRST_COURSE
+  SPEED_DEMON
+  PERFECT_QUIZ
+  SIMULATION_MASTER
+  STREAK_7
+  STREAK_30
+  ALL_EU_SPACE_ACT
+  ALL_NIS2
+  CROSS_REGULATORY
+  JURISDICTION_EXPLORER
+  COMPLIANCE_CHAMPION
 }

@@ -200,6 +200,14 @@ export const rateLimiters = redis
         analytics: true,
         prefix: "ratelimit:assure_public",
       }),
+
+      // Academy: 30 requests per minute per user
+      academy: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(30, "1 m"),
+        analytics: true,
+        prefix: "ratelimit:academy",
+      }),
     }
   : null;
 
@@ -291,6 +299,7 @@ const fallbackLimiters = {
   contact: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   assure: new InMemoryRateLimiter(15, 3600000), // 15/hr vs 30/hr (Redis)
   assure_public: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
+  academy: new InMemoryRateLimiter(15, 60000), // 15/min vs 30/min (Redis)
 };
 
 // ─── Public API ───
@@ -313,7 +322,8 @@ export type RateLimitType =
   | "admin"
   | "contact"
   | "assure"
-  | "assure_public";
+  | "assure_public"
+  | "academy";
 
 /**
  * Check rate limit for an identifier.

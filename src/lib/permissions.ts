@@ -19,7 +19,8 @@ export type PermissionCategory =
   | "incidents"
   | "api"
   | "network"
-  | "assure";
+  | "assure"
+  | "academy";
 
 export type PermissionAction =
   | "read"
@@ -105,6 +106,13 @@ export const ALL_PERMISSIONS: string[] = [
   "assure:write",
   "assure:share",
   "assure:export",
+
+  // Academy
+  "academy:access",
+  "academy:simulate",
+  "academy:sandbox",
+  "academy:instruct",
+  "academy:admin",
 ];
 
 // ─── Role Permission Matrix ───
@@ -165,6 +173,12 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "assure:write",
     "assure:share",
     "assure:export",
+    // Academy
+    "academy:access",
+    "academy:simulate",
+    "academy:sandbox",
+    "academy:instruct",
+    "academy:admin",
   ],
 
   MANAGER: [
@@ -201,6 +215,11 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "assure:read",
     "assure:write",
     "assure:export",
+    // Academy
+    "academy:access",
+    "academy:simulate",
+    "academy:sandbox",
+    "academy:instruct",
   ],
 
   MEMBER: [
@@ -225,6 +244,10 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "network:read",
     // Assure
     "assure:read",
+    // Academy
+    "academy:access",
+    "academy:simulate",
+    "academy:sandbox",
   ],
 
   VIEWER: [
@@ -244,6 +267,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, string[]> = {
     "network:read",
     // Assure
     "assure:read",
+    // Academy
+    "academy:access",
   ],
 };
 
@@ -386,6 +411,13 @@ export const PERMISSION_DESCRIPTIONS: Record<string, string> = {
   "assure:write": "Generate DD packages and compute RRS",
   "assure:share": "Create and manage share links for external stakeholders",
   "assure:export": "Export DD packages as PDF",
+
+  // Academy
+  "academy:access": "Access Academy courses and content",
+  "academy:simulate": "Run compliance simulations",
+  "academy:sandbox": "Access the compliance sandbox",
+  "academy:instruct": "Create and manage classrooms",
+  "academy:admin": "Manage all Academy courses and content",
 };
 
 // ─── Role Descriptions ───
@@ -479,4 +511,5 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   api: "API Access",
   network: "Compliance Network",
   assure: "Regulatory Readiness (Assure)",
+  academy: "Academy",
 };
