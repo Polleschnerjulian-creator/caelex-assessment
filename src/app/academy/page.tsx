@@ -15,9 +15,8 @@ import {
   Scale,
   Clock,
 } from "lucide-react";
-import GlassCard from "@/components/ui/GlassCard";
 
-// ─── Feature Data ───
+// ─── Data ───
 
 const FEATURES = [
   {
@@ -89,42 +88,57 @@ const COURSES = [
 ];
 
 const LEVEL_STYLES: Record<string, string> = {
-  Beginner: "text-green-400",
-  Intermediate: "text-amber-400",
-  Advanced: "text-red-400",
+  Beginner: "text-emerald-400/80",
+  Intermediate: "text-amber-400/80",
+  Advanced: "text-red-400/80",
+};
+
+// ─── Liquid Glass Utility ───
+
+const glass = {
+  card: "bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]",
+  cardHover:
+    "hover:bg-white/[0.06] hover:border-white/[0.14] hover:shadow-[0_16px_48px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-500",
+  nav: "bg-white/[0.04] backdrop-blur-2xl border-b border-white/[0.06]",
 };
 
 // ─── Component ───
 
 export default function AcademyLandingPage() {
   return (
-    <div className="min-h-screen bg-navy-950">
-      {/* Nav */}
-      <nav className="border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-black text-white antialiased">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-emerald-500/[0.04] rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[400px] bg-emerald-500/[0.02] rounded-full blur-[120px]" />
+      </div>
+
+      {/* Nav — Liquid Glass */}
+      <nav className={glass.nav}>
+        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/academy" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <GraduationCap size={16} className="text-emerald-400" />
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
+              <GraduationCap size={15} className="text-emerald-400" />
             </div>
             <div className="flex flex-col">
-              <span className="text-body-lg font-semibold text-white tracking-wide">
+              <span className="text-[13px] font-semibold text-white/90 tracking-wide leading-none">
                 CAELEX
               </span>
-              <span className="text-micro font-medium text-emerald-400 tracking-[0.2em] -mt-0.5">
+              <span className="text-[9px] font-medium text-emerald-400/80 tracking-[0.2em] leading-none mt-0.5">
                 ACADEMY
               </span>
             </div>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             <Link
               href="/dashboard"
-              className="text-small text-white/40 hover:text-white/70 transition-colors"
+              className="text-[13px] text-white/35 hover:text-white/60 transition-colors duration-300"
             >
               Back to Comply
             </Link>
             <Link
               href="/login?callbackUrl=/academy/dashboard"
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-5 py-2.5 rounded-lg transition-all"
+              className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[13px] px-5 py-2 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
             >
               Start Learning
             </Link>
@@ -133,36 +147,37 @@ export default function AcademyLandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-24 pb-20">
+      <section className="relative max-w-[1200px] mx-auto px-6 pt-28 pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto"
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-center max-w-[680px] mx-auto"
         >
-          <h1 className="text-display-lg font-bold text-white leading-tight mb-6">
+          <h1 className="text-[56px] font-bold text-white leading-[1.1] tracking-tight mb-5">
             Master Space
             <br />
-            <span className="text-emerald-400">Regulatory Compliance</span>
+            <span className="bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
+              Regulatory Compliance
+            </span>
           </h1>
 
-          <p className="text-body-lg text-white/45 leading-relaxed max-w-2xl mx-auto mb-10">
-            Interactive courses, compliance simulations, and hands-on sandbox
-            practice for EU Space Act, NIS2, and national space law
-            professionals.
+          <p className="text-[17px] text-white/40 leading-relaxed max-w-[520px] mx-auto mb-10 font-light">
+            Interactive courses, compliance simulations, and hands-on practice
+            for EU Space Act, NIS2, and national space law professionals.
           </p>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3.5">
             <Link
               href="/login?callbackUrl=/academy/dashboard"
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-subtitle px-8 py-3.5 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+              className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
             >
               Start Learning
-              <ArrowRight size={18} />
+              <ArrowRight size={16} strokeWidth={2.5} />
             </Link>
             <Link
               href="#courses"
-              className="border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-medium text-subtitle px-8 py-3.5 rounded-lg transition-all"
+              className="bg-white/[0.06] hover:bg-white/[0.1] backdrop-blur-xl border border-white/[0.1] hover:border-white/[0.18] text-white/70 hover:text-white font-medium text-[15px] px-7 py-3 rounded-full transition-all duration-300"
             >
               View Courses
             </Link>
@@ -171,23 +186,23 @@ export default function AcademyLandingPage() {
       </section>
 
       {/* Features */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
+      <section className="relative max-w-[1200px] mx-auto px-6 pb-28">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
         >
-          <div className="text-center mb-14">
-            <h2 className="text-display font-bold text-white mb-3">
+          <div className="text-center mb-16">
+            <h2 className="text-[36px] font-bold text-white tracking-tight mb-3">
               Everything You Need
             </h2>
-            <p className="text-body-lg text-white/40 max-w-lg mx-auto">
+            <p className="text-[16px] text-white/35 max-w-[440px] mx-auto font-light">
               Six integrated modules designed to build real regulatory
               competence.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((feature, index) => {
               const Icon = feature.icon;
               return (
@@ -195,19 +210,29 @@ export default function AcademyLandingPage() {
                   key={feature.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.08 }}
+                  transition={{
+                    delay: 0.4 + index * 0.07,
+                    duration: 0.5,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
                 >
-                  <GlassCard className="p-6 h-full">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
-                      <Icon size={20} className="text-emerald-400" />
+                  <div
+                    className={`${glass.card} ${glass.cardHover} p-6 h-full`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/[0.15] flex items-center justify-center mb-5">
+                      <Icon
+                        size={18}
+                        className="text-emerald-400"
+                        strokeWidth={1.5}
+                      />
                     </div>
-                    <h3 className="text-title font-semibold text-white mb-2">
+                    <h3 className="text-[15px] font-semibold text-white/90 mb-2 tracking-[-0.01em]">
                       {feature.title}
                     </h3>
-                    <p className="text-body text-white/40 leading-relaxed">
+                    <p className="text-[13px] text-white/35 leading-[1.65] font-light">
                       {feature.description}
                     </p>
-                  </GlassCard>
+                  </div>
                 </motion.div>
               );
             })}
@@ -216,24 +241,25 @@ export default function AcademyLandingPage() {
       </section>
 
       {/* Courses */}
-      <section id="courses" className="border-t border-white/5 py-24">
-        <div className="max-w-6xl mx-auto px-6">
+      <section id="courses" className="relative pb-28">
+        <div className="border-t border-white/[0.04]" />
+        <div className="max-w-[1200px] mx-auto px-6 pt-28">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
           >
-            <div className="text-center mb-14">
-              <h2 className="text-display font-bold text-white mb-3">
+            <div className="text-center mb-16">
+              <h2 className="text-[36px] font-bold text-white tracking-tight mb-3">
                 Featured Courses
               </h2>
-              <p className="text-body-lg text-white/40 max-w-lg mx-auto">
+              <p className="text-[16px] text-white/35 max-w-[440px] mx-auto font-light">
                 Start with fundamentals or go deep into specific regulatory
                 frameworks.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {COURSES.map((course, index) => {
                 const Icon = course.icon;
                 return (
@@ -241,35 +267,45 @@ export default function AcademyLandingPage() {
                     key={course.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.08 }}
+                    transition={{
+                      delay: 0.6 + index * 0.07,
+                      duration: 0.5,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    }}
                   >
-                    <GlassCard className="p-6 h-full flex flex-col">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                          <Icon size={20} className="text-emerald-400" />
+                    <div
+                      className={`${glass.card} ${glass.cardHover} p-6 h-full flex flex-col`}
+                    >
+                      <div className="flex items-start justify-between mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                          <Icon
+                            size={18}
+                            className="text-emerald-400/80"
+                            strokeWidth={1.5}
+                          />
                         </div>
                         <span
-                          className={`text-micro font-medium ${LEVEL_STYLES[course.level] ?? "text-white/40"}`}
+                          className={`text-[11px] font-medium tracking-wide ${LEVEL_STYLES[course.level] ?? "text-white/35"}`}
                         >
                           {course.level}
                         </span>
                       </div>
 
-                      <p className="text-micro text-emerald-400/70 uppercase tracking-wider mb-1.5">
+                      <p className="text-[10px] text-emerald-400/50 uppercase tracking-[0.15em] mb-2 font-medium">
                         {course.category}
                       </p>
-                      <h3 className="text-title font-semibold text-white mb-2">
+                      <h3 className="text-[15px] font-semibold text-white/90 mb-2.5 tracking-[-0.01em]">
                         {course.title}
                       </h3>
-                      <p className="text-body text-white/40 leading-relaxed flex-1">
+                      <p className="text-[13px] text-white/35 leading-[1.65] flex-1 font-light">
                         {course.description}
                       </p>
 
-                      <div className="flex items-center gap-1.5 mt-4 pt-4 border-t border-white/5 text-small text-white/30">
-                        <Clock size={13} />
+                      <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-white/[0.04] text-[12px] text-white/25">
+                        <Clock size={12} strokeWidth={1.5} />
                         <span>{course.duration}</span>
                       </div>
-                    </GlassCard>
+                    </div>
                   </motion.div>
                 );
               })}
@@ -279,20 +315,21 @@ export default function AcademyLandingPage() {
       </section>
 
       {/* Footer CTA */}
-      <section className="border-t border-white/5 py-16">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h3 className="text-display-sm font-bold text-white mb-4">
+      <section className="relative pb-20">
+        <div className="border-t border-white/[0.04]" />
+        <div className="max-w-[1200px] mx-auto px-6 pt-20 text-center">
+          <h3 className="text-[28px] font-bold text-white tracking-tight mb-4">
             Ready to build regulatory expertise?
           </h3>
-          <p className="text-body-lg text-white/40 mb-8">
+          <p className="text-[16px] text-white/30 mb-9 font-light">
             Free access to all courses. No credit card required.
           </p>
           <Link
             href="/signup?callbackUrl=/academy/dashboard"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-subtitle px-8 py-3.5 rounded-lg transition-all inline-flex items-center gap-2"
+            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 inline-flex items-center gap-2.5 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
           >
             Create Free Account
-            <ArrowRight size={18} />
+            <ArrowRight size={16} strokeWidth={2.5} />
           </Link>
         </div>
       </section>
