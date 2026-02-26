@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   BookOpen,
   Cpu,
@@ -10,357 +9,291 @@ import {
   Shield,
   BarChart3,
   Award,
-  Rocket,
-  Clock,
-  ChevronRight,
+  ArrowRight,
+  GraduationCap,
   Satellite,
   Scale,
-  Globe,
+  Clock,
 } from "lucide-react";
+import GlassCard from "@/components/ui/GlassCard";
 
-// ─── Constants ───
+// ─── Feature Data ───
 
 const FEATURES = [
   {
     icon: BookOpen,
     title: "Interactive Courses",
     description:
-      "Step-by-step modules covering EU Space Act, NIS2, and national space laws with rich content, embedded questions, and real-world case studies.",
+      "Step-by-step modules covering EU Space Act, NIS2, and national space laws with embedded questions and case studies.",
   },
   {
     icon: Cpu,
     title: "Compliance Simulations",
     description:
-      "Play as a satellite operator, launch provider, or ground service company. Make regulatory decisions and see how they affect your compliance score.",
+      "Play as a satellite operator, launch provider, or ground service company. Make decisions and see their regulatory impact.",
   },
   {
     icon: FlaskConical,
-    title: "Real Engine Practice",
+    title: "Compliance Sandbox",
     description:
-      "Use the actual Caelex compliance engine in a sandbox environment. Calculate compliance profiles for any operator scenario.",
+      "Use the actual Caelex compliance engine to calculate profiles for any operator scenario in a safe environment.",
   },
   {
     icon: Shield,
-    title: "Regulatory Sandbox",
+    title: "Regulatory Deep Dives",
     description:
-      "Experiment with different operator profiles, jurisdictions, and regulatory parameters. See how each variable affects compliance outcomes.",
+      "Explore operator profiles, jurisdictions, and parameters. Understand how each variable affects compliance outcomes.",
   },
   {
     icon: BarChart3,
     title: "Progress Tracking",
     description:
-      "Track your learning journey with detailed analytics, streaks, badges, and module-by-module progress across all courses.",
+      "Detailed analytics, learning streaks, and module-by-module progress across all courses and simulations.",
   },
   {
     icon: Award,
-    title: "Certifiable Knowledge",
+    title: "Badges & Certification",
     description:
-      "Earn badges and demonstrate mastery. Share progress with your team or organization to prove regulatory competence.",
+      "Earn badges for milestones and demonstrate mastery. Share progress with your team or organization.",
   },
 ];
 
-const SAMPLE_COURSES = [
+const COURSES = [
   {
     title: "EU Space Act Fundamentals",
-    subtitle:
-      "Understand the regulatory framework shaping European space activities",
-    level: "BEGINNER",
+    description:
+      "The regulatory framework shaping European space activities — authorization, supervision, and operator obligations.",
+    level: "Beginner",
     duration: "4 hours",
     icon: Satellite,
     category: "EU Space Act",
   },
   {
     title: "NIS2 for Space Operators",
-    subtitle:
-      "Cybersecurity obligations under the NIS2 Directive for space entities",
-    level: "INTERMEDIATE",
+    description:
+      "Cybersecurity obligations under the NIS2 Directive — incident reporting, security measures, and penalties.",
+    level: "Intermediate",
     duration: "3 hours",
     icon: Shield,
     category: "NIS2",
   },
   {
     title: "Cross-Regulatory Compliance",
-    subtitle:
-      "Navigate overlapping requirements across EU Space Act, NIS2, and national laws",
-    level: "ADVANCED",
+    description:
+      "Navigate overlapping requirements across EU Space Act, NIS2, and national space laws of 10 jurisdictions.",
+    level: "Advanced",
     duration: "6 hours",
     icon: Scale,
     category: "Cross-Regulatory",
   },
 ];
 
-const LEVEL_COLORS: Record<string, string> = {
-  BEGINNER: "bg-green-500/20 text-green-400 border-green-500/30",
-  INTERMEDIATE: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  ADVANCED: "bg-red-500/20 text-red-400 border-red-500/30",
-  EXPERT: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+const LEVEL_STYLES: Record<string, string> = {
+  Beginner: "text-green-400",
+  Intermediate: "text-amber-400",
+  Advanced: "text-red-400",
 };
 
-// ─── Animation Variants ───
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const stagger = {
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-// ─── Section Components ───
-
-function AnimatedSection({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={stagger}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// ─── Main Page ───
+// ─── Component ───
 
 export default function AcademyLandingPage() {
   return (
-    <div className="min-h-screen bg-navy-950 text-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-navy-950 to-cyan-500/5" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
-
-        <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
-              <Rocket className="w-4 h-4 text-emerald-400" />
-              <span className="text-caption text-emerald-400 uppercase tracking-wider">
-                Now Available
+    <div className="min-h-screen bg-navy-950">
+      {/* Nav */}
+      <nav className="border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/academy" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+              <GraduationCap size={16} className="text-emerald-400" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-body-lg font-semibold text-white tracking-wide">
+                CAELEX
+              </span>
+              <span className="text-micro font-medium text-emerald-400 tracking-[0.2em] -mt-0.5">
+                ACADEMY
               </span>
             </div>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard"
+              className="text-small text-white/40 hover:text-white/70 transition-colors"
+            >
+              Back to Comply
+            </Link>
+            <Link
+              href="/login?callbackUrl=/academy/dashboard"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-body px-5 py-2.5 rounded-lg transition-all"
+            >
+              Start Learning
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-            <h1 className="text-display-lg font-bold mb-6 leading-tight">
-              <span className="text-white">Caelex </span>
-              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                Academy
-              </span>
-            </h1>
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-3xl mx-auto"
+        >
+          <h1 className="text-display-lg font-bold text-white leading-tight mb-6">
+            Master Space
+            <br />
+            <span className="text-emerald-400">Regulatory Compliance</span>
+          </h1>
 
-            <p className="text-display-sm font-light text-white/70 mb-4 max-w-2xl mx-auto">
-              Master Space Regulatory Compliance
+          <p className="text-body-lg text-white/45 leading-relaxed max-w-2xl mx-auto mb-10">
+            Interactive courses, compliance simulations, and hands-on sandbox
+            practice for EU Space Act, NIS2, and national space law
+            professionals.
+          </p>
+
+          <div className="flex items-center justify-center gap-4">
+            <Link
+              href="/login?callbackUrl=/academy/dashboard"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-subtitle px-8 py-3.5 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+            >
+              Start Learning
+              <ArrowRight size={18} />
+            </Link>
+            <Link
+              href="#courses"
+              className="border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-medium text-subtitle px-8 py-3.5 rounded-lg transition-all"
+            >
+              View Courses
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Features */}
+      <section className="max-w-6xl mx-auto px-6 pb-24">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="text-center mb-14">
+            <h2 className="text-display font-bold text-white mb-3">
+              Everything You Need
+            </h2>
+            <p className="text-body-lg text-white/40 max-w-lg mx-auto">
+              Six integrated modules designed to build real regulatory
+              competence.
             </p>
+          </div>
 
-            <p className="text-body-lg text-white/45 mb-10 max-w-xl mx-auto">
-              Interactive courses, compliance simulations, and real engine
-              practice for EU Space Act, NIS2, and national space law
-              professionals.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + index * 0.08 }}
+                >
+                  <GlassCard className="p-6 h-full">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                      <Icon size={20} className="text-emerald-400" />
+                    </div>
+                    <h3 className="text-title font-semibold text-white mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-body text-white/40 leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </GlassCard>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </section>
 
-            <div className="flex items-center justify-center gap-4">
-              <Link
-                href="/login?callbackUrl=/academy/dashboard"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-subtitle px-8 py-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center gap-2"
-              >
-                Start Learning Free
-                <ChevronRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="#features"
-                className="border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-medium text-subtitle px-8 py-4 rounded-xl transition-all"
-              >
-                Explore Features
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Stats row */}
+      {/* Courses */}
+      <section id="courses" className="border-t border-white/5 py-24">
+        <div className="max-w-6xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="grid grid-cols-3 gap-8 mt-20 max-w-lg mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
           >
-            {[
-              { value: "12+", label: "Courses" },
-              { value: "50+", label: "Lessons" },
-              { value: "20+", label: "Simulations" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-display-sm font-semibold text-white">
-                  {stat.value}
-                </p>
-                <p className="text-caption text-white/45 uppercase tracking-wider">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <AnimatedSection className="text-center mb-16">
-            <motion.p
-              variants={fadeUp}
-              className="text-caption text-emerald-400 uppercase tracking-[0.2em] mb-4"
-            >
-              Platform Features
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-display font-semibold text-white mb-4"
-            >
-              Everything You Need to Master Compliance
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-white/45 max-w-2xl mx-auto"
-            >
-              From theory to practice, the Academy provides a complete learning
-              environment for space regulatory professionals.
-            </motion.p>
-          </AnimatedSection>
-
-          <AnimatedSection className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                variants={fadeUp}
-                transition={{ delay: i * 0.05 }}
-                className="bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-500 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
-                  <feature.icon className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-title font-medium text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-body text-white/45 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Course Preview */}
-      <section className="py-24 px-6 bg-navy-900/50">
-        <div className="max-w-6xl mx-auto">
-          <AnimatedSection className="text-center mb-16">
-            <motion.p
-              variants={fadeUp}
-              className="text-caption text-emerald-400 uppercase tracking-[0.2em] mb-4"
-            >
-              Course Catalog
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-display font-semibold text-white mb-4"
-            >
-              Featured Courses
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-white/45 max-w-2xl mx-auto"
-            >
-              Start with fundamentals or dive deep into specific regulatory
-              frameworks. New courses added regularly.
-            </motion.p>
-          </AnimatedSection>
-
-          <AnimatedSection className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {SAMPLE_COURSES.map((course, i) => (
-              <motion.div
-                key={course.title}
-                variants={fadeUp}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-500 group"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-emerald-500/30 transition-colors">
-                    <course.icon className="w-6 h-6 text-emerald-400" />
-                  </div>
-                  <span
-                    className={`text-micro uppercase px-2.5 py-1 rounded-full border ${LEVEL_COLORS[course.level]}`}
-                  >
-                    {course.level}
-                  </span>
-                </div>
-
-                <p className="text-micro text-emerald-400 uppercase tracking-wider mb-2">
-                  {course.category}
-                </p>
-                <h3 className="text-title font-medium text-white mb-2">
-                  {course.title}
-                </h3>
-                <p className="text-body text-white/45 mb-4">
-                  {course.subtitle}
-                </p>
-
-                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-1.5 text-small text-white/45">
-                    <Clock className="w-3.5 h-3.5" />
-                    {course.duration}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-small text-white/45">
-                    <BookOpen className="w-3.5 h-3.5" />
-                    {course.category}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedSection className="text-center">
-            <motion.div
-              variants={fadeUp}
-              className="bg-gradient-to-br from-emerald-500/10 via-navy-900 to-cyan-500/10 rounded-2xl p-12 border border-white/10"
-            >
-              <Globe className="w-12 h-12 text-emerald-400 mx-auto mb-6" />
-              <h2 className="text-display font-semibold text-white mb-4">
-                Start Mastering Space Regulatory Compliance
+            <div className="text-center mb-14">
+              <h2 className="text-display font-bold text-white mb-3">
+                Featured Courses
               </h2>
-              <p className="text-body-lg text-white/45 mb-8 max-w-lg mx-auto">
-                Whether you are a satellite operator, launch provider, or
-                regulatory consultant — build the knowledge you need.
+              <p className="text-body-lg text-white/40 max-w-lg mx-auto">
+                Start with fundamentals or go deep into specific regulatory
+                frameworks.
               </p>
-              <Link
-                href="/signup?callbackUrl=/academy/dashboard"
-                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-subtitle px-8 py-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
-              >
-                Create Free Account
-                <ChevronRight className="w-5 h-5" />
-              </Link>
-            </motion.div>
-          </AnimatedSection>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {COURSES.map((course, index) => {
+                const Icon = course.icon;
+                return (
+                  <motion.div
+                    key={course.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + index * 0.08 }}
+                  >
+                    <GlassCard className="p-6 h-full flex flex-col">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                          <Icon size={20} className="text-emerald-400" />
+                        </div>
+                        <span
+                          className={`text-micro font-medium ${LEVEL_STYLES[course.level] ?? "text-white/40"}`}
+                        >
+                          {course.level}
+                        </span>
+                      </div>
+
+                      <p className="text-micro text-emerald-400/70 uppercase tracking-wider mb-1.5">
+                        {course.category}
+                      </p>
+                      <h3 className="text-title font-semibold text-white mb-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-body text-white/40 leading-relaxed flex-1">
+                        {course.description}
+                      </p>
+
+                      <div className="flex items-center gap-1.5 mt-4 pt-4 border-t border-white/5 text-small text-white/30">
+                        <Clock size={13} />
+                        <span>{course.duration}</span>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="border-t border-white/5 py-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h3 className="text-display-sm font-bold text-white mb-4">
+            Ready to build regulatory expertise?
+          </h3>
+          <p className="text-body-lg text-white/40 mb-8">
+            Free access to all courses. No credit card required.
+          </p>
+          <Link
+            href="/signup?callbackUrl=/academy/dashboard"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-subtitle px-8 py-3.5 rounded-lg transition-all inline-flex items-center gap-2"
+          >
+            Create Free Account
+            <ArrowRight size={18} />
+          </Link>
         </div>
       </section>
     </div>
