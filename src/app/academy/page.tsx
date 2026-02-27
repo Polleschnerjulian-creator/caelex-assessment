@@ -10,11 +10,11 @@ import {
   BarChart3,
   Award,
   ArrowRight,
-  GraduationCap,
   Satellite,
   Scale,
   Clock,
 } from "lucide-react";
+import { CaelexIcon } from "@/components/ui/Logo";
 
 // ─── Data ───
 
@@ -117,15 +117,13 @@ export default function AcademyLandingPage() {
       <nav className={glass.nav}>
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/academy" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-              <GraduationCap size={15} className="text-emerald-400" />
-            </div>
+            <CaelexIcon size={22} className="text-emerald-400" />
             <div className="flex flex-col">
-              <span className="text-[13px] font-semibold text-white/90 tracking-wide leading-none">
-                CAELEX
+              <span className="text-[13px] font-medium text-white/90 tracking-[-0.02em] leading-none">
+                caelex
               </span>
-              <span className="text-[9px] font-medium text-emerald-400/80 tracking-[0.2em] leading-none mt-0.5">
-                ACADEMY
+              <span className="text-[9px] font-medium text-emerald-400/70 tracking-[0.15em] leading-none mt-1 uppercase">
+                Academy
               </span>
             </div>
           </Link>

@@ -185,7 +185,7 @@ export default function CourseCatalogPage() {
                 className="fixed inset-0 z-10"
                 onClick={() => setShowLevelDropdown(false)}
               />
-              <div className="absolute right-0 top-full mt-1 z-20 bg-navy-800 border border-white/10 rounded-xl py-1 min-w-[160px] shadow-xl">
+              <div className="absolute right-0 top-full mt-1 z-20 bg-[#141414] border border-white/10 rounded-xl py-1 min-w-[160px] shadow-xl">
                 {LEVELS.map((level) => (
                   <button
                     key={level}

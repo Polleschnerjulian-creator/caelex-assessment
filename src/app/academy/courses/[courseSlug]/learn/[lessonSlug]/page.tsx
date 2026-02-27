@@ -153,7 +153,7 @@ function ContentBlock({
       );
     case "code":
       return (
-        <pre className="bg-navy-950 border border-white/10 rounded-xl p-5 mb-4 overflow-x-auto">
+        <pre className="bg-black border border-white/10 rounded-xl p-5 mb-4 overflow-x-auto">
           <code className="text-small text-emerald-300 font-mono">
             {block.code ?? block.content}
           </code>
@@ -506,14 +506,14 @@ export default function LessonPage() {
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-20 left-4 z-30 w-10 h-10 rounded-lg bg-navy-800 border border-white/10 flex items-center justify-center"
+        className="lg:hidden fixed top-20 left-4 z-30 w-10 h-10 rounded-lg bg-[#141414] border border-white/10 flex items-center justify-center"
       >
         <Menu className="w-5 h-5 text-white/60" />
       </button>
 
       {/* Left Sidebar Navigation */}
       <aside
-        className={`fixed lg:relative inset-y-0 left-0 z-40 w-72 bg-navy-900 border-r border-white/10 overflow-y-auto transition-transform lg:translate-x-0 ${
+        className={`fixed lg:relative inset-y-0 left-0 z-40 w-72 bg-[#0a0a0a] border-r border-white/10 overflow-y-auto transition-transform lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -591,7 +591,7 @@ export default function LessonPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 lg:px-10 py-4 border-b border-white/10 bg-navy-900/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-6 lg:px-10 py-4 border-b border-white/10 bg-white/[0.02] backdrop-blur-sm">
           <div className="flex items-center gap-3">
             {(() => {
               const TypeIcon = LESSON_TYPE_ICONS[lesson.type] ?? FileText;
@@ -654,7 +654,7 @@ export default function LessonPage() {
         </div>
 
         {/* Bottom navigation bar */}
-        <div className="flex items-center justify-between px-6 lg:px-10 py-4 border-t border-white/10 bg-navy-900/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-6 lg:px-10 py-4 border-t border-white/10 bg-white/[0.02] backdrop-blur-sm">
           {lesson.prevLesson ? (
             <Link
               href={`/academy/courses/${courseSlug}/learn/${lesson.prevLesson.slug}`}

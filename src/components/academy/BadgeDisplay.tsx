@@ -238,7 +238,7 @@ export default function BadgeDisplay({
             >
               <div
                 className="
-                  bg-navy-800 border border-white/15 rounded-lg
+                  bg-[#141414] border border-white/[0.08] rounded-lg
                   px-3 py-2.5 min-w-[180px] max-w-[220px]
                   shadow-[0_12px_40px_rgba(0,0,0,0.4)]
                 "

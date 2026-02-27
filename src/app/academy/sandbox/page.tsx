@@ -196,14 +196,14 @@ export default function SandboxPage() {
                 onChange={(e) => setActivityType(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-lg text-white appearance-none cursor-pointer focus:outline-none focus:border-emerald-500/50 transition-colors"
               >
-                <option value="" className="bg-navy-900">
+                <option value="" className="bg-[#0a0a0a]">
                   Select activity type...
                 </option>
                 {ACTIVITY_TYPES.map((opt) => (
                   <option
                     key={opt.value}
                     value={opt.value}
-                    className="bg-navy-900"
+                    className="bg-[#0a0a0a]"
                   >
                     {opt.label}
                   </option>
@@ -224,14 +224,14 @@ export default function SandboxPage() {
                 onChange={(e) => setEntitySize(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-lg text-white appearance-none cursor-pointer focus:outline-none focus:border-emerald-500/50 transition-colors"
               >
-                <option value="" className="bg-navy-900">
+                <option value="" className="bg-[#0a0a0a]">
                   Select entity size...
                 </option>
                 {ENTITY_SIZES.map((opt) => (
                   <option
                     key={opt.value}
                     value={opt.value}
-                    className="bg-navy-900"
+                    className="bg-[#0a0a0a]"
                   >
                     {opt.label}
                   </option>
@@ -252,14 +252,14 @@ export default function SandboxPage() {
                 onChange={(e) => setEstablishment(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-lg text-white appearance-none cursor-pointer focus:outline-none focus:border-emerald-500/50 transition-colors"
               >
-                <option value="" className="bg-navy-900">
+                <option value="" className="bg-[#0a0a0a]">
                   Select establishment...
                 </option>
                 {ESTABLISHMENTS.map((opt) => (
                   <option
                     key={opt.value}
                     value={opt.value}
-                    className="bg-navy-900"
+                    className="bg-[#0a0a0a]"
                   >
                     {opt.label}
                   </option>
@@ -280,14 +280,14 @@ export default function SandboxPage() {
                 onChange={(e) => setOrbit(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-lg text-white appearance-none cursor-pointer focus:outline-none focus:border-emerald-500/50 transition-colors"
               >
-                <option value="" className="bg-navy-900">
+                <option value="" className="bg-[#0a0a0a]">
                   Select orbit type...
                 </option>
                 {ORBITS.map((opt) => (
                   <option
                     key={opt.value}
                     value={opt.value}
-                    className="bg-navy-900"
+                    className="bg-[#0a0a0a]"
                   >
                     {opt.label}
                   </option>

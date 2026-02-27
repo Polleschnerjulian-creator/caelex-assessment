@@ -51,7 +51,7 @@ function AcademyLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="dark min-h-screen bg-navy-950">
+    <div className="dark min-h-screen bg-black">
       <div className="lg:grid lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <AcademySidebar
