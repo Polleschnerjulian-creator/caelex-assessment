@@ -72,7 +72,7 @@ const priorityColors: Record<string, string> = {
   critical: "bg-red-500/20 text-red-400 border-red-500/30",
   high: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   medium: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  low: "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/10 dark:text-white/45 dark:border-white/10",
+  low: "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/10 dark:text-white/45 dark:border-[--glass-border-subtle]",
 };
 
 export default function ComplianceScoreCard() {
@@ -105,7 +105,7 @@ export default function ComplianceScoreCard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 mb-8"
+        className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 mb-8"
       >
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
@@ -124,7 +124,7 @@ export default function ComplianceScoreCard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 mb-8"
+      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 mb-8"
     >
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">

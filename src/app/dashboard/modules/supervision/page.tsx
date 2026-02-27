@@ -458,7 +458,7 @@ function SupervisionPageContent() {
                         primaryCountry: e.target.value,
                       })
                     }
-                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="">Select country...</option>
                     {Object.values(nationalAuthorities)
@@ -545,7 +545,7 @@ function SupervisionPageContent() {
                   )}
 
                 {/* Designated Contact */}
-                <div className="border-t border-slate-200 dark:border-white/10 pt-6">
+                <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] pt-6">
                   <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Designated Contact Person
                   </h4>
@@ -563,7 +563,7 @@ function SupervisionPageContent() {
                             designatedContactName: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="John Smith"
                       />
                     </div>
@@ -580,7 +580,7 @@ function SupervisionPageContent() {
                             designatedContactRole: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="Compliance Officer"
                       />
                     </div>
@@ -597,7 +597,7 @@ function SupervisionPageContent() {
                             designatedContactEmail: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="compliance@company.com"
                       />
                     </div>
@@ -614,7 +614,7 @@ function SupervisionPageContent() {
                             designatedContactPhone: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="+49 123 456789"
                       />
                     </div>
@@ -622,7 +622,7 @@ function SupervisionPageContent() {
                 </div>
 
                 {/* Communication Preferences */}
-                <div className="border-t border-slate-200 dark:border-white/10 pt-6">
+                <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] pt-6">
                   <h4 className="font-medium text-slate-900 dark:text-white mb-4">
                     Communication Preferences
                   </h4>
@@ -639,7 +639,7 @@ function SupervisionPageContent() {
                             communicationLanguage: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         <option value="en">English</option>
                         <option value="de">German</option>
@@ -660,7 +660,7 @@ function SupervisionPageContent() {
                             notificationMethod: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         <option value="email">Email Only</option>
                         <option value="portal">NCA Portal</option>
@@ -704,7 +704,7 @@ function SupervisionPageContent() {
                   {reportingObligations.map((obligation) => (
                     <div
                       key={obligation.type}
-                      className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors"
+                      className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -751,7 +751,7 @@ function SupervisionPageContent() {
                   ))}
                 </div>
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
                   <Button variant="ghost" onClick={() => setActiveStep("nca")}>
                     Back
                   </Button>
@@ -785,7 +785,7 @@ function SupervisionPageContent() {
                       role="dialog"
                       aria-label="Log new incident"
                       aria-modal="true"
-                      className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                      className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
                     >
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                         Log New Incident
@@ -804,7 +804,7 @@ function SupervisionPageContent() {
                                 category: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                           >
                             <option value="">Select category...</option>
                             {incidentCategories.map((cat) => (
@@ -827,7 +827,7 @@ function SupervisionPageContent() {
                                 severity: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                           >
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -849,7 +849,7 @@ function SupervisionPageContent() {
                                 title: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                             placeholder="Brief incident title"
                           />
                         </div>
@@ -866,7 +866,7 @@ function SupervisionPageContent() {
                                 description: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-24 resize-none"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-24 resize-none"
                             placeholder="Detailed description of the incident"
                           />
                         </div>
@@ -885,7 +885,7 @@ function SupervisionPageContent() {
                                   detectedAt: e.target.value,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                             />
                           </div>
                           <div>
@@ -901,7 +901,7 @@ function SupervisionPageContent() {
                                   detectedBy: e.target.value,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
                               placeholder="Name or system"
                             />
                           </div>
@@ -961,7 +961,7 @@ function SupervisionPageContent() {
                     {incidents.map((incident) => (
                       <div
                         key={incident.id}
-                        className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors cursor-pointer"
+                        className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors cursor-pointer"
                       >
                         <div className="flex items-start justify-between">
                           <div>
@@ -1013,7 +1013,7 @@ function SupervisionPageContent() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("reporting")}
@@ -1069,7 +1069,7 @@ function SupervisionPageContent() {
                       return (
                         <div
                           key={event.id}
-                          className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-white/10 transition-colors"
+                          className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-3">
@@ -1149,7 +1149,7 @@ function SupervisionPageContent() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-white/10 mt-6">
+                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("incidents")}

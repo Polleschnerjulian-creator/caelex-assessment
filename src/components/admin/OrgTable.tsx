@@ -47,7 +47,7 @@ const PLAN_STYLES: Record<string, { bg: string; text: string; icon?: string }> =
       text: "text-blue-700 dark:text-blue-400",
     },
     FREE: {
-      bg: "bg-slate-50 dark:bg-white/[0.06] border-slate-200 dark:border-white/10",
+      bg: "bg-slate-50 dark:bg-[--glass-bg-elevated] border-slate-200 dark:border-[--glass-border-subtle]",
       text: "text-slate-600 dark:text-white/45",
     },
   };
@@ -92,7 +92,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
   if (organizations.length === 0) {
     return (
       <div
-        className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
+        className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
         role="status"
       >
         <p className="text-body-lg text-slate-500 dark:text-white/45">
@@ -103,11 +103,11 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
   }
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full" aria-label="Organizations">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+            <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02]">
               <th
                 scope="col"
                 className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"

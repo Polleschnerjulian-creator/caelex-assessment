@@ -41,7 +41,7 @@ function FieldRenderer({
   const [showHelp, setShowHelp] = useState(false);
 
   const inputClasses =
-    "w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-3 py-2 text-body focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] transition-colors";
+    "w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-3 py-2 text-body focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] transition-colors";
 
   return (
     <div className="flex items-start gap-3">
@@ -85,7 +85,7 @@ function FieldRenderer({
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
               value === true
                 ? "bg-green-500"
-                : "bg-slate-200 dark:bg-white/[0.08]"
+                : "bg-slate-200 dark:bg-[--glass-bg-elevated]"
             }`}
           >
             <span

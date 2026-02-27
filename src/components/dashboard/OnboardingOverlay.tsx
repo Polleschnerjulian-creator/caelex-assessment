@@ -231,7 +231,7 @@ export default function OnboardingOverlay() {
               stiffness: 300,
               delay: 0.1,
             }}
-            className="relative w-full max-w-lg bg-white dark:bg-[#111113] rounded-xl shadow-2xl border border-slate-200 dark:border-white/[0.08] overflow-hidden"
+            className="relative w-full max-w-lg bg-white dark:bg-[#111113] rounded-xl shadow-2xl border border-slate-200 dark:border-[--glass-border-medium] overflow-hidden"
           >
             {/* Progress Dots */}
             <div className="flex items-center justify-center gap-2 pt-6 pb-2">
@@ -285,7 +285,7 @@ export default function OnboardingOverlay() {
                     </p>
 
                     {session?.user?.name && (
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] mb-8">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-medium] mb-8">
                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
                           <span className="text-micro font-medium text-emerald-600 dark:text-emerald-400">
                             {session.user.name
@@ -410,7 +410,7 @@ export default function OnboardingOverlay() {
                             text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70
                             text-body px-6 py-2.5 rounded-xl
                             transition-all duration-200
-                            hover:bg-slate-50 dark:hover:bg-white/[0.03]
+                            hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]
                           "
                         >
                           <SkipForward size={14} aria-hidden="true" />
@@ -463,8 +463,8 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-white/[0.04]
-                          border border-slate-200 dark:border-white/[0.08]
+                          bg-slate-50 dark:bg-[--glass-bg-surface]
+                          border border-slate-200 dark:border-[--glass-border-medium]
                           hover:border-emerald-300 dark:hover:border-emerald-500/30
                           hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
                           transition-all duration-200 text-left
@@ -502,8 +502,8 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-white/[0.04]
-                          border border-slate-200 dark:border-white/[0.08]
+                          bg-slate-50 dark:bg-[--glass-bg-surface]
+                          border border-slate-200 dark:border-[--glass-border-medium]
                           hover:border-emerald-300 dark:hover:border-emerald-500/30
                           hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
                           transition-all duration-200 text-left
@@ -539,8 +539,8 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-slate-50 dark:bg-white/[0.04]
-                          border border-slate-200 dark:border-white/[0.08]
+                          bg-slate-50 dark:bg-[--glass-bg-surface]
+                          border border-slate-200 dark:border-[--glass-border-medium]
                           hover:border-emerald-300 dark:hover:border-emerald-500/30
                           hover:bg-emerald-50/50 dark:hover:bg-emerald-500/[0.04]
                           transition-all duration-200 text-left

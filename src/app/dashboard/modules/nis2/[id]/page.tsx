@@ -415,14 +415,14 @@ function WizardOptionCard({
         ${
           isSelected
             ? "bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500 dark:border-emerald-400/50"
-            : "bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+            : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover] hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
         }
       `}
     >
       <div className="flex items-center gap-4">
         {IconComponent && (
           <div
-            className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${isSelected ? "bg-emerald-100 dark:bg-emerald-500/20" : "bg-slate-100 dark:bg-white/[0.06]"}`}
+            className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${isSelected ? "bg-emerald-100 dark:bg-emerald-500/20" : "bg-slate-100 dark:bg-[--glass-bg-elevated]"}`}
           >
             <IconComponent
               size={20}
@@ -583,10 +583,10 @@ function InlineAssessmentWizard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
+      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[--glass-border-subtle]">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
@@ -603,7 +603,7 @@ function InlineAssessmentWizard({
         </div>
         <button
           onClick={onCancel}
-          className="p-2 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+          className="p-2 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
           aria-label="Close wizard"
         >
           <X size={16} className="text-slate-400 dark:text-white/45" />
@@ -611,7 +611,7 @@ function InlineAssessmentWizard({
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-slate-100 dark:bg-white/[0.04]">
+      <div className="h-1 bg-slate-100 dark:bg-[--glass-bg-surface]">
         <motion.div
           className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500"
           initial={{ width: 0 }}
@@ -640,13 +640,13 @@ function InlineAssessmentWizard({
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={handleBack}
-                className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors"
               >
                 Change Answer
               </button>
               <button
                 onClick={onCancel}
-                className="px-4 py-2 text-sm bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/70 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -706,7 +706,7 @@ function InlineAssessmentWizard({
 
       {/* Footer */}
       {!outOfScope && (
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-[--glass-border-subtle] bg-slate-50/50 dark:bg-white/[0.01]">
           <button
             onClick={currentStep === 1 ? onCancel : handleBack}
             className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
@@ -1219,7 +1219,7 @@ export default function NIS2AssessmentDetailPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
+            className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
           >
             {/* Gradient top accent */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-green-500" />
@@ -1248,7 +1248,7 @@ export default function NIS2AssessmentDetailPage() {
               {/* 3-column insight cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 {/* ISO 27001 Coverage */}
-                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4 border border-slate-100 dark:border-[--glass-border-subtle]">
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -1262,7 +1262,7 @@ export default function NIS2AssessmentDetailPage() {
                     {recommendations.iso27001Coverage.count} of{" "}
                     {recommendations.iso27001Coverage.total} requirements
                   </div>
-                  <div className="h-1.5 bg-slate-200 dark:bg-white/[0.06] rounded-full mt-2 overflow-hidden">
+                  <div className="h-1.5 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-full mt-2 overflow-hidden">
                     <div
                       className="h-full bg-emerald-500 rounded-full transition-all"
                       style={{
@@ -1273,7 +1273,7 @@ export default function NIS2AssessmentDetailPage() {
                 </div>
 
                 {/* Critical Gaps */}
-                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4 border border-slate-100 dark:border-[--glass-border-subtle]">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="w-4 h-4 text-red-400" />
                     <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -1293,7 +1293,7 @@ export default function NIS2AssessmentDetailPage() {
                 </div>
 
                 {/* EU Space Act Overlap */}
-                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/[0.06]">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4 border border-slate-100 dark:border-[--glass-border-subtle]">
                   <div className="flex items-center gap-2 mb-2">
                     <Layers className="w-4 h-4 text-green-400" />
                     <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -1330,7 +1330,7 @@ export default function NIS2AssessmentDetailPage() {
 
               {/* Estimated total implementation time */}
               {recommendations.totalImplementationWeeks > 0 && (
-                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center gap-3">
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[--glass-border-subtle] flex items-center gap-3">
                   <Clock className="w-4 h-4 text-slate-400 dark:text-white/30" />
                   <span className="text-xs text-slate-500 dark:text-white/45">
                     Estimated total implementation time:{" "}
@@ -1483,7 +1483,7 @@ export default function NIS2AssessmentDetailPage() {
               return (
                 <div
                   key={phase.phase}
-                  className={`bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden`}
+                  className={`bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden`}
                 >
                   {/* Phase header */}
                   <button
@@ -1544,7 +1544,7 @@ export default function NIS2AssessmentDetailPage() {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="border-t border-slate-100 dark:border-white/[0.06]"
+                        className="border-t border-slate-100 dark:border-[--glass-border-subtle]"
                       >
                         <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                           {phase.requirements.map((pr) => {
@@ -1600,7 +1600,7 @@ export default function NIS2AssessmentDetailPage() {
         )}
 
         {/* Header Card */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-6">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
           {/* Name */}
           <div className="flex items-start justify-between mb-4">
             {editingName ? (
@@ -1614,7 +1614,7 @@ export default function NIS2AssessmentDetailPage() {
                     if (e.key === "Escape") setEditingName(false);
                   }}
                   autoFocus
-                  className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-lg font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="flex-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-lg font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
                 <button
                   onClick={handleSaveName}
@@ -1666,7 +1666,7 @@ export default function NIS2AssessmentDetailPage() {
 
           {/* Classification Reason */}
           {assessment.classificationReason && (
-            <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed mb-5 border-l-2 border-slate-200 dark:border-white/10 pl-3">
+            <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed mb-5 border-l-2 border-slate-200 dark:border-[--glass-border-subtle] pl-3">
               {assessment.classificationReason}
             </p>
           )}
@@ -1674,14 +1674,14 @@ export default function NIS2AssessmentDetailPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {/* Compliance Progress */}
-            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4">
               <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Compliance
               </div>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">
                 {progress}%
               </div>
-              <div className="h-1.5 bg-slate-200 dark:bg-white/[0.06] rounded-full mt-2 overflow-hidden">
+              <div className="h-1.5 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-full mt-2 overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
@@ -1690,7 +1690,7 @@ export default function NIS2AssessmentDetailPage() {
             </div>
 
             {/* Requirements */}
-            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4">
               <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Requirements
               </div>
@@ -1703,7 +1703,7 @@ export default function NIS2AssessmentDetailPage() {
             </div>
 
             {/* Risk Level */}
-            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4">
               <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Risk Level
               </div>
@@ -1716,7 +1716,7 @@ export default function NIS2AssessmentDetailPage() {
             </div>
 
             {/* EU Space Act Overlaps */}
-            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl p-4">
               <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-1">
                 Overlaps
               </div>
@@ -1730,7 +1730,7 @@ export default function NIS2AssessmentDetailPage() {
           </div>
 
           {/* Profile Details */}
-          <div className="mt-5 pt-5 border-t border-slate-200 dark:border-white/[0.06] grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div className="mt-5 pt-5 border-t border-slate-200 dark:border-[--glass-border-subtle] grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
               <span className="text-slate-400 dark:text-white/30 block mb-0.5">
                 Sector
@@ -1889,8 +1889,8 @@ export default function NIS2AssessmentDetailPage() {
                     layout
                     className={`rounded-xl overflow-hidden transition-all ${
                       isExpanded
-                        ? "bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/[0.15] ring-1 ring-slate-200 dark:ring-white/[0.05]"
-                        : "bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08]"
+                        ? "bg-white dark:bg-[--glass-bg-surface] border border-slate-300 dark:border-white/[0.15] ring-1 ring-slate-200 dark:ring-white/[0.05]"
+                        : "bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle]"
                     }`}
                   >
                     <button
@@ -1951,7 +1951,7 @@ export default function NIS2AssessmentDetailPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="border-t border-slate-200 dark:border-white/[0.06] px-4 py-4 space-y-4"
+                        className="border-t border-slate-200 dark:border-[--glass-border-subtle] px-4 py-4 space-y-4"
                       >
                         {/* Compliance Question */}
                         {meta?.complianceQuestion && (
@@ -2108,7 +2108,7 @@ export default function NIS2AssessmentDetailPage() {
                         />
 
                         {/* Status buttons */}
-                        <div className="pt-3 border-t border-slate-200 dark:border-white/[0.06]">
+                        <div className="pt-3 border-t border-slate-200 dark:border-[--glass-border-subtle]">
                           <div className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 mb-2">
                             Set Status
                           </div>
@@ -2137,7 +2137,7 @@ export default function NIS2AssessmentDetailPage() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                     isActive
                                       ? `${btnSc.bgColor} ${btnSc.color} ring-1 ring-current`
-                                      : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                                      : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
                                   } disabled:opacity-50`}
                                 >
                                   {btnSc.label}
@@ -2149,7 +2149,7 @@ export default function NIS2AssessmentDetailPage() {
 
                         {/* User notes */}
                         {req.notes && (
-                          <p className="text-xs text-slate-500 dark:text-white/45 border-l-2 border-slate-200 dark:border-white/10 pl-2 italic">
+                          <p className="text-xs text-slate-500 dark:text-white/45 border-l-2 border-slate-200 dark:border-[--glass-border-subtle] pl-2 italic">
                             {req.notes}
                           </p>
                         )}
@@ -2163,7 +2163,7 @@ export default function NIS2AssessmentDetailPage() {
 
         {/* Empty requirements */}
         {totalReqs === 0 && (
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-8 text-center">
+          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
             <ShieldOff className="w-10 h-10 text-slate-400/40 dark:text-white/20 mx-auto mb-3" />
             <h3 className="text-sm font-medium text-slate-700 dark:text-white/70 mb-1">
               No requirements applicable

@@ -33,7 +33,7 @@ export function ThemeSettingsCard() {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   return (
-    <div className="bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/10 p-6">
+    <div className="bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-[--glass-border-subtle] p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
           Appearance
@@ -61,7 +61,7 @@ export function ThemeSettingsCard() {
               className={`relative flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
                 isSelected
                   ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
-                  : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+                  : "border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover] hover:bg-slate-50 dark:hover:bg-white/[0.03]"
               }`}
             >
               {/* Selected Checkmark */}
@@ -106,7 +106,7 @@ export function ThemeSettingsCard() {
       </div>
 
       {/* Current Theme Info */}
-      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
+      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
         <p className="text-sm text-slate-600 dark:text-white/45">
           Currently using:{" "}
           <span className="font-medium text-slate-900 dark:text-white/70">

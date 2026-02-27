@@ -483,8 +483,8 @@ function EnvironmentalPageContent() {
                       isActive
                         ? "bg-emerald-500/20 border border-emerald-500/30"
                         : isCompleted
-                          ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 hover:bg-slate-100 dark:hover:bg-white/[0.05]"
-                          : "bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.03] opacity-50"
+                          ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"
+                          : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.03] opacity-50"
                     } ${isClickable ? "cursor-pointer" : "cursor-not-allowed"}`}
                   >
                     <div
@@ -618,7 +618,7 @@ function MissionProfileStep({
   return (
     <div className="space-y-6">
       {/* Basic Info */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Basic Information
         </h3>
@@ -634,7 +634,7 @@ function MissionProfileStep({
                 setFormData({ ...formData, assessmentName: e.target.value })
               }
               placeholder="e.g., LEO Constellation EFD"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -648,7 +648,7 @@ function MissionProfileStep({
                 setFormData({ ...formData, missionName: e.target.value })
               }
               placeholder="e.g., Starlink Gen 2"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -660,7 +660,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, operatorType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               <option value="spacecraft">Spacecraft Operator</option>
               <option value="launch">Launch Provider</option>
@@ -676,7 +676,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, missionType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               <option value="commercial">Commercial</option>
               <option value="government">Government</option>
@@ -688,7 +688,7 @@ function MissionProfileStep({
       </div>
 
       {/* Spacecraft Details */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Spacecraft Details
         </h3>
@@ -706,7 +706,7 @@ function MissionProfileStep({
                   spacecraftMassKg: parseFloat(e.target.value) || 0,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -723,7 +723,7 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -740,7 +740,7 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -752,7 +752,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, orbitType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               <option value="LEO">LEO (Low Earth Orbit)</option>
               <option value="MEO">MEO (Medium Earth Orbit)</option>
@@ -775,7 +775,7 @@ function MissionProfileStep({
                   altitudeKm: parseInt(e.target.value) || null,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -787,7 +787,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, deorbitStrategy: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               <option value="controlled_deorbit">Controlled Deorbit</option>
               <option value="passive_decay">Passive Decay</option>
@@ -799,7 +799,7 @@ function MissionProfileStep({
       </div>
 
       {/* Launch Configuration */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Launch Configuration
         </h3>
@@ -813,7 +813,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, launchVehicle: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               {Object.entries(launchVehicles).map(([id, vehicle]) => (
                 <option key={id} value={id}>
@@ -837,7 +837,7 @@ function MissionProfileStep({
               }
               min="1"
               max="100"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
             <p className="text-caption text-slate-600 dark:text-white/70 mt-1">
               100% for dedicated launch, lower for rideshare
@@ -848,7 +848,7 @@ function MissionProfileStep({
         {/* Launch vehicle info card */}
         {formData.launchVehicle &&
           launchVehicles[formData.launchVehicle as LaunchVehicleId] && (
-            <div className="mt-4 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg border border-slate-200 dark:border-white/10">
+            <div className="mt-4 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-body text-slate-900 dark:text-white font-medium">
@@ -927,7 +927,7 @@ function MissionProfileStep({
       </div>
 
       {/* Propulsion (optional) */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Spacecraft Propulsion (Optional)
         </h3>
@@ -944,7 +944,7 @@ function MissionProfileStep({
                   spacecraftPropellant: e.target.value,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             >
               <option value="">No onboard propulsion</option>
               {Object.entries(propellantProfiles).map(([id, prop]) => (
@@ -968,7 +968,7 @@ function MissionProfileStep({
                 })
               }
               disabled={!formData.spacecraftPropellant}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30 disabled:opacity-50"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30 disabled:opacity-50"
             />
           </div>
         </div>
@@ -977,7 +977,7 @@ function MissionProfileStep({
           propellantProfiles[
             formData.spacecraftPropellant as PropellantType
           ] && (
-            <div className="mt-4 p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg border border-slate-200 dark:border-white/10">
+            <div className="mt-4 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
               <div className="flex items-center gap-2">
                 {propellantProfiles[
                   formData.spacecraftPropellant as PropellantType
@@ -1000,7 +1000,7 @@ function MissionProfileStep({
       </div>
 
       {/* Operations */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Ground Operations
         </h3>
@@ -1019,7 +1019,7 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
           <div>
@@ -1038,14 +1038,14 @@ function MissionProfileStep({
               min="0"
               max="24"
               step="0.5"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
             />
           </div>
         </div>
       </div>
 
       {/* Simplified Regime */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Organization Type
         </h3>
@@ -1137,7 +1137,7 @@ function CalculatorStep({
     <div className="space-y-6">
       {/* Calculate Button or Results */}
       {!result && !assessment.totalGWP ? (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
           <Leaf
             className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
             aria-hidden="true"
@@ -1170,7 +1170,7 @@ function CalculatorStep({
       ) : (
         <>
           {/* Grade Card */}
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
                 Environmental Footprint Grade
@@ -1245,7 +1245,7 @@ function CalculatorStep({
           </div>
 
           {/* Lifecycle Breakdown */}
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
               Lifecycle Phase Breakdown
             </h3>
@@ -1261,7 +1261,7 @@ function CalculatorStep({
                       className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         isHotspot
                           ? "bg-orange-500/20"
-                          : "bg-slate-100 dark:bg-white/[0.05]"
+                          : "bg-slate-100 dark:bg-[--glass-bg-surface]"
                       }`}
                     >
                       <Icon
@@ -1286,7 +1286,7 @@ function CalculatorStep({
                         </p>
                       </div>
                       <div
-                        className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden"
+                        className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden"
                         role="progressbar"
                         aria-valuenow={phase.percentOfTotal}
                         aria-valuemin={0}
@@ -1312,7 +1312,7 @@ function CalculatorStep({
 
           {/* Recommendations */}
           {result?.recommendations && result.recommendations.length > 0 && (
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
               <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <TrendingDown
                   className="w-5 h-5 text-emerald-400"
@@ -1324,7 +1324,7 @@ function CalculatorStep({
                 {result.recommendations.map((rec, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                    className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
                   >
                     <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-caption text-emerald-400 font-medium">
                       {index + 1}
@@ -1402,7 +1402,7 @@ function SuppliersStep({
 
       {/* Suppliers List or Empty State */}
       {suppliers.length === 0 ? (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
           <Users
             className="w-12 h-12 text-slate-300 dark:text-white/10 mx-auto mb-4"
             aria-hidden="true"
@@ -1430,7 +1430,7 @@ function SuppliersStep({
           </button>
         </div>
       ) : (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
               Supplier Data Requests
@@ -1456,7 +1456,7 @@ function SuppliersStep({
               return (
                 <div
                   key={supplier.id}
-                  className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg border border-slate-200 dark:border-white/10"
+                  className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -1490,13 +1490,13 @@ function SuppliersStep({
                       {dataRequired.slice(0, 3).map((item, i) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 bg-slate-200 dark:bg-white/[0.05] rounded text-caption text-slate-600 dark:text-white/70"
+                          className="px-2 py-0.5 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-600 dark:text-white/70"
                         >
                           {item}
                         </span>
                       ))}
                       {dataRequired.length > 3 && (
-                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-white/[0.05] rounded text-caption text-slate-600 dark:text-white/70">
+                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-600 dark:text-white/70">
                           +{dataRequired.length - 3} more
                         </span>
                       )}
@@ -1514,7 +1514,7 @@ function SuppliersStep({
             })}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
             <div className="flex items-center gap-6 text-small">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10" />
@@ -1578,7 +1578,7 @@ function ReportStep({
   if (!report) {
     return (
       <div className="space-y-6">
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
           <FileText
             className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
             aria-hidden="true"
@@ -1631,7 +1631,7 @@ function ReportStep({
   return (
     <div className="space-y-6">
       {/* Report Header */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -1649,14 +1649,14 @@ function ReportStep({
               </p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200 dark:hover:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-600 dark:text-white/70">
+          <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] hover:bg-slate-200 dark:hover:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-600 dark:text-white/70">
             <Download className="w-4 h-4" aria-hidden="true" />
             Download PDF
           </button>
         </div>
 
         {/* Grade Summary */}
-        <div className="flex items-center gap-6 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+        <div className="flex items-center gap-6 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
           <div
             className="w-20 h-20 rounded-xl flex items-center justify-center text-display font-medium"
             style={{
@@ -1679,7 +1679,7 @@ function ReportStep({
       </div>
 
       {/* Mission Profile Summary */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Mission Profile
         </h3>
@@ -1752,12 +1752,12 @@ function ReportStep({
       </div>
 
       {/* Environmental Metrics */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Environmental Impact Metrics
         </h3>
         <div className="grid grid-cols-3 gap-6">
-          <div className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
             <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
               Total GWP
             </p>
@@ -1768,7 +1768,7 @@ function ReportStep({
               Climate change impact
             </p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
             <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
               Carbon Intensity
             </p>
@@ -1782,7 +1782,7 @@ function ReportStep({
               Per kg payload delivered
             </p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
             <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
               Ozone Depletion
             </p>
@@ -1800,7 +1800,7 @@ function ReportStep({
       </div>
 
       {/* Lifecycle Breakdown */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Lifecycle Phase Breakdown
         </h3>
@@ -1811,7 +1811,7 @@ function ReportStep({
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   phase.isHotspot
                     ? "bg-orange-500/20"
-                    : "bg-slate-100 dark:bg-white/[0.05]"
+                    : "bg-slate-100 dark:bg-[--glass-bg-surface]"
                 }`}
               >
                 {(() => {
@@ -1841,7 +1841,7 @@ function ReportStep({
                   </p>
                 </div>
                 <div
-                  className="h-2 bg-slate-100 dark:bg-white/[0.05] rounded-full overflow-hidden"
+                  className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden"
                   role="progressbar"
                   aria-valuenow={phase.percentOfTotal}
                   aria-valuemin={0}
@@ -1864,7 +1864,7 @@ function ReportStep({
 
       {/* Recommendations */}
       {report.recommendations.length > 0 && (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <TrendingDown
               className="w-5 h-5 text-emerald-400"
@@ -1876,7 +1876,7 @@ function ReportStep({
             {report.recommendations.map((rec: string, index: number) => (
               <div
                 key={index}
-                className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
               >
                 <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-caption text-emerald-400 font-medium shrink-0">
                   {index + 1}
@@ -1891,7 +1891,7 @@ function ReportStep({
       )}
 
       {/* Regulatory Compliance */}
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Regulatory Compliance Status
         </h3>
@@ -1911,10 +1911,10 @@ function ReportStep({
             .map((req: any) => (
               <div
                 key={req.article}
-                className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                className="flex items-center justify-between p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <span className="px-2 py-1 bg-slate-200 dark:bg-white/[0.05] rounded text-caption text-slate-500 dark:text-white/45">
+                  <span className="px-2 py-1 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-500 dark:text-white/45">
                     {req.article}
                   </span>
                   <span className="text-body text-slate-600 dark:text-white/70">
@@ -1939,7 +1939,7 @@ function ReportStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-white/10">
+      <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
         <button
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 text-body"

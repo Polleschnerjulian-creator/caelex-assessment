@@ -120,7 +120,7 @@ export default function RegulationTimeline() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6"
+      className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

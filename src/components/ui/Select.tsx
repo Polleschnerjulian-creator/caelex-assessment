@@ -63,13 +63,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             aria-required={props.required}
             className={`
               w-full px-4 py-2.5 pr-10
-              bg-white dark:bg-white/[0.06]
-              border border-slate-200 dark:border-white/10
+              bg-white dark:bg-[--glass-bg-surface]
+              border border-slate-200 dark:border-[--glass-border-subtle]
               rounded-lg
               text-body-lg text-slate-900 dark:text-white
               appearance-none
               transition-all duration-200
-              hover:border-slate-300 dark:hover:border-white/20
+              hover:border-slate-300 dark:hover:border-[--glass-border-hover]
               focus:outline-none
               focus:border-emerald-500/50
               focus:ring-2 focus:ring-emerald-500/20

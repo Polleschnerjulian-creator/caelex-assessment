@@ -14,7 +14,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const { t } = useLanguage();
 
   return (
-    <header className="h-16 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-transparent px-6 lg:px-8 flex items-center justify-between">
+    <header className="h-16 border-b border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface] dark:backdrop-blur-glass px-6 lg:px-8 flex items-center justify-between">
       {/* Left */}
       <div className="flex items-center gap-4">
         {/* Mobile hamburger */}
@@ -39,7 +39,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-slate-300 dark:border-white/10 text-slate-700 dark:text-white/70 text-small px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white/70 transition-all"
+          className="border border-slate-300 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/70 text-small px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-[--glass-border-hover] hover:text-slate-900 dark:hover:text-white/70 transition-all"
         >
           {t("topbar.runAssessment")}
         </Link>

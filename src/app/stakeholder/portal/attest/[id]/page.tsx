@@ -540,7 +540,7 @@ export default function AttestationSigningPage() {
           <div className="flex items-center justify-center gap-4 mt-8">
             <a
               href="/stakeholder/portal"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-slate-200 dark:border-white/10 text-subtitle font-medium text-slate-600 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] text-subtitle font-medium text-slate-600 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors"
             >
               <span>Back to Dashboard</span>
             </a>
@@ -742,7 +742,7 @@ export default function AttestationSigningPage() {
               )}
 
               {/* Confirmation Checkbox */}
-              <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] cursor-pointer mb-4 hover:border-emerald-500/30 transition-colors">
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] cursor-pointer mb-4 hover:border-emerald-500/30 transition-colors">
                 <input
                   type="checkbox"
                   checked={confirmed}

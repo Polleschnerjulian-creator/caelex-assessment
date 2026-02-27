@@ -462,7 +462,7 @@ export default function DataRoomViewPage() {
                     return (
                       <GlassCard key={doc.id} className="p-4">
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center flex-shrink-0">
                             <FileIcon className="w-5 h-5 text-slate-400 dark:text-white/40" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -505,7 +505,7 @@ export default function DataRoomViewPage() {
                   return (
                     <GlassCard key={doc.id} className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center flex-shrink-0">
                           <FileIcon className="w-5 h-5 text-slate-400 dark:text-white/40" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -568,11 +568,11 @@ export default function DataRoomViewPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-5xl max-h-[90vh] bg-white dark:bg-[#0F172A] rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col"
+              className="w-full max-w-5xl max-h-[90vh] bg-white dark:bg-[#0F172A] rounded-2xl overflow-hidden border border-slate-200 dark:border-[--glass-border-subtle] shadow-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Viewer Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[--glass-border-subtle]">
                 <div className="flex items-center gap-3 min-w-0">
                   <FileText className="w-5 h-5 text-slate-400 dark:text-white/40 flex-shrink-0" />
                   <span className="text-body font-medium text-slate-800 dark:text-white truncate">
@@ -583,7 +583,7 @@ export default function DataRoomViewPage() {
                   {canDownload && viewingDoc.downloadable && (
                     <button
                       onClick={() => handleDownloadDocument(viewingDoc)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium text-slate-500 dark:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium text-slate-500 dark:text-white/50 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span>Download</span>
@@ -591,7 +591,7 @@ export default function DataRoomViewPage() {
                   )}
                   <button
                     onClick={() => setViewingDoc(null)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-white/40 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-white/40 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -696,7 +696,7 @@ export default function DataRoomViewPage() {
                             <span className="text-body font-medium text-slate-800 dark:text-white">
                               {comment.author}
                             </span>
-                            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.04] px-1.5 py-0.5 rounded">
+                            <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-[--glass-bg-surface] px-1.5 py-0.5 rounded">
                               {comment.authorRole}
                             </span>
                             <span className="text-caption text-slate-400 dark:text-white/30">
@@ -732,7 +732,7 @@ export default function DataRoomViewPage() {
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Add a comment..."
                         rows={3}
-                        className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-body text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 resize-none transition-colors"
+                        className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-[--glass-bg-surface] text-body text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 resize-none transition-colors"
                       />
                     </div>
                     <button

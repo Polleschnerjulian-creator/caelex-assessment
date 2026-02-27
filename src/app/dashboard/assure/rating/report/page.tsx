@@ -283,7 +283,7 @@ export default function RatingReportPage() {
               {(rating.componentScores || []).map((comp) => (
                 <div
                   key={comp.component}
-                  className="border border-slate-200 dark:border-white/10 rounded-lg p-4"
+                  className="border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -367,13 +367,13 @@ export default function RatingReportPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSortBy("severity")}
-                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "severity" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-white/[0.06]"}`}
+                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "severity" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"}`}
                 >
                   By Severity
                 </button>
                 <button
                   onClick={() => setSortBy("likelihood")}
-                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "likelihood" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-white/[0.06]"}`}
+                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "likelihood" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"}`}
                 >
                   By Likelihood
                 </button>
@@ -387,7 +387,7 @@ export default function RatingReportPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-small">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-white/10">
+                    <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
                       <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
                         Risk
                       </th>

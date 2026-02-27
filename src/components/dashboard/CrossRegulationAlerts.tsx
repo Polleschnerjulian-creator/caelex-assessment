@@ -83,7 +83,7 @@ export default function CrossRegulationAlerts({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6"
+        className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
       >
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-4 h-4 text-emerald-400" />
@@ -118,7 +118,7 @@ export default function CrossRegulationAlerts({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6"
+      className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -161,12 +161,12 @@ export default function CrossRegulationAlerts({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ delay: index * 0.03 }}
-                className={`bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.06] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
+                className={`bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
               >
                 {/* Card header */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : alert.id)}
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
                 >
                   <AlertTriangle
                     className={`w-4 h-4 mt-0.5 flex-shrink-0 ${style.icon}`}

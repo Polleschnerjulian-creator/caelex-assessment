@@ -104,8 +104,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 flex items-start gap-3
                 w-80 p-4
                 rounded-lg border
-                backdrop-blur-xl
-                shadow-lg shadow-black/20
+                glass-floating
                 ${styles[toast.type]}
               `}
             >

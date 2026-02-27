@@ -216,7 +216,7 @@ function ModuleGroup({
           className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45"
+              : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45"
           }`}
         >
           {count}
@@ -388,7 +388,8 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[260px] lg:h-screen
-          bg-white dark:bg-dark-bg border-r border-slate-200 dark:border-white/10
+          bg-white dark:bg-dark-bg border-r border-slate-200 dark:border-[--glass-border-subtle]
+          dark:backdrop-blur-2xl
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -404,7 +405,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </button>
 
         {/* Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-white/10">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           <Link href="/" className="flex items-center gap-2">
             <Logo size={22} className="text-slate-900 dark:text-white" />
             <span className="text-micro text-slate-500 dark:text-white/45 tracking-wider">
@@ -759,7 +760,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-200 dark:border-white/10 space-y-1">
+        <div className="p-3 border-t border-slate-200 dark:border-[--glass-border-subtle] space-y-1">
           <NavItem
             href="/dashboard/settings"
             icon={<Settings size={16} strokeWidth={1.5} />}
@@ -785,10 +786,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-t border-slate-200 dark:border-white/10">
+        <div className="p-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/10">
+            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-[--glass-border-subtle]">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img

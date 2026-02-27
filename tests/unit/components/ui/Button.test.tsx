@@ -31,8 +31,8 @@ describe("Button Component", () => {
     it("should apply secondary variant styles", () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-white/[0.06]");
-      expect(button.className).toContain("border-white/10");
+      expect(button.className).toContain("bg-slate-100");
+      expect(button.className).toContain("border-slate-200");
     });
 
     it("should apply ghost variant styles", () => {
@@ -51,7 +51,7 @@ describe("Button Component", () => {
     it("should apply dark variant styles", () => {
       render(<Button variant="dark">Dark</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-[#0A0B10]");
+      expect(button.className).toContain("bg-slate-900");
       expect(button.className).toContain("rounded-full");
     });
   });
@@ -60,22 +60,22 @@ describe("Button Component", () => {
     it("should apply small size", () => {
       render(<Button size="sm">Small</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-3");
-      expect(button.className).toContain("text-[12px]");
+      expect(button.className).toContain("px-5");
+      expect(button.className).toContain("text-body");
     });
 
     it("should apply medium size by default", () => {
       render(<Button>Medium</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-4");
-      expect(button.className).toContain("text-[13px]");
+      expect(button.className).toContain("px-6");
+      expect(button.className).toContain("text-body-lg");
     });
 
     it("should apply large size", () => {
       render(<Button size="lg">Large</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-6");
-      expect(button.className).toContain("text-[14px]");
+      expect(button.className).toContain("px-8");
+      expect(button.className).toContain("text-subtitle");
     });
   });
 

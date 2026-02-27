@@ -18,20 +18,21 @@ describe("Card Components", () => {
     it("should apply default variant styles", () => {
       const { container } = render(<Card>Default</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-white/[0.04]");
-      expect(card.className).toContain("border-white/10");
+      expect(card.className).toContain("bg-white");
+      expect(card.className).toContain("border-slate-200");
+      expect(card.className).toContain("glass-surface");
     });
 
     it("should apply glass variant styles", () => {
       const { container } = render(<Card variant="glass">Glass</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("backdrop-blur-xl");
+      expect(card.className).toContain("glass-elevated");
     });
 
     it("should apply elevated variant styles", () => {
       const { container } = render(<Card variant="elevated">Elevated</Card>);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-white/[0.06]");
+      expect(card.className).toContain("glass-elevated");
       expect(card.className).toContain("shadow-lg");
     });
 
@@ -41,7 +42,7 @@ describe("Card Components", () => {
       );
       const card = container.firstChild as HTMLElement;
       expect(card.className).toContain("cursor-pointer");
-      expect(card.className).toContain("hover:bg-white/[0.06]");
+      expect(card.className).toContain("glass-interactive");
     });
 
     it("should apply no padding", () => {
@@ -143,7 +144,7 @@ describe("Card Components", () => {
     it("should apply text styles", () => {
       const { container } = render(<CardTitle>Title</CardTitle>);
       const title = container.firstChild as HTMLElement;
-      expect(title.className).toContain("text-[16px]");
+      expect(title.className).toContain("text-title");
       expect(title.className).toContain("font-semibold");
       expect(title.className).toContain("text-white");
     });
@@ -175,8 +176,8 @@ describe("Card Components", () => {
         <CardDescription>Description</CardDescription>,
       );
       const description = container.firstChild as HTMLElement;
-      expect(description.className).toContain("text-[13px]");
-      expect(description.className).toContain("text-white/60");
+      expect(description.className).toContain("text-body");
+      expect(description.className).toContain("text-white/45");
     });
 
     it("should apply custom className", () => {
@@ -232,7 +233,7 @@ describe("Card Components", () => {
       const { container } = render(<CardFooter>Footer</CardFooter>);
       const footer = container.firstChild as HTMLElement;
       expect(footer.className).toContain("border-t");
-      expect(footer.className).toContain("border-white/10");
+      expect(footer.className).toContain("border-white/[0.08]");
     });
 
     it("should have margin top and padding top", () => {

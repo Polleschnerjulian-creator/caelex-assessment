@@ -210,7 +210,7 @@ function SecurityCard() {
   };
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
           <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -303,7 +303,7 @@ function SecurityCard() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-slate-200 dark:border-white/10 my-6" />
+      <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] my-6" />
 
       {/* Password Section */}
       <div>
@@ -338,7 +338,7 @@ function SecurityCard() {
                     setPasswordError(null);
                   }}
                   placeholder={t("settings.enterCurrentPassword")}
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                  className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
                   type="button"
@@ -373,7 +373,7 @@ function SecurityCard() {
                     setPasswordError(null);
                   }}
                   placeholder={t("settings.enterNewPassword")}
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                  className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
                 />
                 <button
                   type="button"
@@ -408,7 +408,7 @@ function SecurityCard() {
                   setPasswordError(null);
                 }}
                 placeholder={t("settings.confirmNewPasswordPlaceholder")}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
               />
             </div>
 
@@ -469,7 +469,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Account Info */}
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mb-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
               <User className="w-5 h-5 text-slate-600 dark:text-white/70" />
@@ -541,7 +541,7 @@ export default function SettingsPage() {
         {/* API Keys */}
         <Link
           href="/dashboard/settings/api-keys"
-          className="block bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors group"
+          className="block bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors group"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -567,7 +567,7 @@ export default function SettingsPage() {
         {/* Embeddable Widget */}
         <Link
           href="/dashboard/settings/widget"
-          className="block bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors group"
+          className="block bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors group"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

@@ -150,7 +150,7 @@ function StakeholderLandingContent() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1E] flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02]">
+      <header className="border-b border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -210,7 +210,7 @@ function StakeholderLandingContent() {
                       if (error) setError(null);
                     }}
                     placeholder="Paste your access token here"
-                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-body text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 dark:focus:border-emerald-500 transition-colors"
+                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-[--glass-bg-surface] text-body text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 dark:focus:border-emerald-500 transition-colors"
                     autoComplete="off"
                     autoFocus
                   />
@@ -293,7 +293,7 @@ function StakeholderLandingContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-white/10 py-4">
+      <footer className="border-t border-slate-200 dark:border-[--glass-border-subtle] py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <p className="text-caption text-slate-400 dark:text-white/30">
             Powered by Caelex Compliance Platform

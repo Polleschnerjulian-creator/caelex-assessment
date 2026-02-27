@@ -131,7 +131,7 @@ function getPriorityColor(priority: string): string {
     case "medium":
       return "bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20";
     default:
-      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-white/10";
+      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-[--glass-border-subtle]";
   }
 }
 

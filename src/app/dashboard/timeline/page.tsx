@@ -323,7 +323,7 @@ function MissionTimelineGantt() {
         {/* Desktop Gantt view */}
         <div className="hidden md:block">
           {/* Time axis */}
-          <div className="relative h-8 mb-2 ml-48 border-b border-slate-200 dark:border-white/10">
+          <div className="relative h-8 mb-2 ml-48 border-b border-slate-200 dark:border-[--glass-border-subtle]">
             {yearLabels.map(({ year, offset }) => (
               <div
                 key={year}
@@ -1031,7 +1031,7 @@ function TimelinePageContent() {
                         {deadlines.map((deadline) => (
                           <div
                             key={deadline.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:bg-[--glass-bg-surface] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
                               <div
@@ -1167,7 +1167,7 @@ function TimelinePageContent() {
               </CardHeader>
               <CardContent>
                 {/* Calendar Header */}
-                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-white/10 mb-1">
+                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-[--glass-border-subtle] mb-1">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
@@ -1298,7 +1298,7 @@ function TimelinePageContent() {
             role="dialog"
             aria-label="Add new deadline"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -1328,7 +1328,7 @@ function TimelinePageContent() {
                   onChange={(e) =>
                     setDeadlineForm({ ...deadlineForm, title: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   placeholder="Deadline title"
                 />
               </div>
@@ -1345,7 +1345,7 @@ function TimelinePageContent() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
                   placeholder="Optional description"
                 />
               </div>
@@ -1364,7 +1364,7 @@ function TimelinePageContent() {
                         dueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
@@ -1379,7 +1379,7 @@ function TimelinePageContent() {
                         priority: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -1401,7 +1401,7 @@ function TimelinePageContent() {
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 >
                   {categoryMetadata.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -1424,7 +1424,7 @@ function TimelinePageContent() {
                       regulatoryRef: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   placeholder="e.g., EU Space Act Art. 45"
                 />
               </div>

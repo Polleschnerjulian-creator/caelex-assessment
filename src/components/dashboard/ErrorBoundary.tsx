@@ -42,7 +42,7 @@ export default class ErrorBoundary extends React.Component<
           className="flex items-center justify-center min-h-[400px] p-8"
           role="alert"
         >
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 max-w-md w-full text-center">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-md w-full text-center">
             <div className="flex items-center justify-center mb-5">
               <div className="p-3 bg-red-50 dark:bg-red-500/10 rounded-xl">
                 <AlertTriangle
@@ -62,7 +62,7 @@ export default class ErrorBoundary extends React.Component<
             </p>
 
             {isDev && this.state.error && (
-              <div className="mb-6 text-left bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.06] rounded-lg p-4 overflow-auto max-h-[200px]">
+              <div className="mb-6 text-left bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4 overflow-auto max-h-[200px]">
                 <p className="font-mono text-caption text-red-600 dark:text-red-400 mb-1">
                   {this.state.error.name}: {this.state.error.message}
                 </p>

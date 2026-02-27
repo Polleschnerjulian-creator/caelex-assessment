@@ -462,9 +462,9 @@ export default function DataRoomDetailPage() {
   if (loading) {
     return (
       <div className="space-y-4" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-white/[0.06] rounded animate-pulse w-48" />
-        <div className="h-32 bg-slate-200 dark:bg-white/[0.06] rounded-xl animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-white/[0.06] rounded-xl animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded animate-pulse w-48" />
+        <div className="h-32 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
+        <div className="h-64 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
         <span className="sr-only">Loading data room...</span>
       </div>
     );
@@ -502,7 +502,7 @@ export default function DataRoomDetailPage() {
               : router.push("/dashboard/network")
           }
           aria-label="Back to engagement"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
@@ -531,7 +531,7 @@ export default function DataRoomDetailPage() {
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
           aria-label="Room settings"
         >
           <Settings size={16} />
@@ -661,7 +661,7 @@ export default function DataRoomDetailPage() {
               {documents.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-7 h-7 text-slate-300 dark:text-white/15" />
                     </div>
                     <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
@@ -721,7 +721,7 @@ export default function DataRoomDetailPage() {
               {accessLogs.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
                       <Activity className="w-7 h-7 text-slate-300 dark:text-white/15" />
                     </div>
                     <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
@@ -775,7 +775,7 @@ export default function DataRoomDetailPage() {
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Add a comment about this data room..."
                       rows={3}
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 resize-none"
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 resize-none"
                     />
                     <div className="flex justify-end mt-2">
                       <button
@@ -825,7 +825,7 @@ export default function DataRoomDetailPage() {
                               {comment.authorName}
                             </span>
                             {comment.authorRole && (
-                              <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30">
+                              <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30">
                                 {comment.authorRole}
                               </span>
                             )}
@@ -854,7 +854,7 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Add document to data room"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -981,7 +981,7 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Data room settings"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-lg w-full"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -1014,7 +1014,7 @@ export default function DataRoomDetailPage() {
                       name: e.target.value,
                     }))
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
               <div>
@@ -1030,7 +1030,7 @@ export default function DataRoomDetailPage() {
                     }))
                   }
                   rows={3}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50 resize-none"
                 />
               </div>
               <div>
@@ -1045,7 +1045,7 @@ export default function DataRoomDetailPage() {
                       accessLevel: e.target.value,
                     }))
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="VIEW_ONLY">View Only</option>
                   <option value="DOWNLOAD">Download</option>
@@ -1095,7 +1095,7 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Confirm close data room"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-md w-full"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-md w-full"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-red-500/10">

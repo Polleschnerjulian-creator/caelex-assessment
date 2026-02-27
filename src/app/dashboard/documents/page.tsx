@@ -458,7 +458,7 @@ function DocumentsPageContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search documents..."
-                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg pl-10 pr-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <label htmlFor="doc-category-filter" className="sr-only">
@@ -468,7 +468,7 @@ function DocumentsPageContent() {
                   id="doc-category-filter"
                   value={selectedCategory || ""}
                   onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">All Categories</option>
                   {categoryDisplayInfo.map((cat) => (
@@ -519,7 +519,7 @@ function DocumentsPageContent() {
                         {docs.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="flex items-center justify-between bg-white dark:bg-white/[0.02] rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-3">
                               <div className="text-slate-500 dark:text-white/45">
@@ -610,7 +610,7 @@ function DocumentsPageContent() {
                         onChange={(e) =>
                           setUploadForm({ ...uploadForm, name: e.target.value })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="e.g., Space Activity License"
                       />
                     </div>
@@ -626,7 +626,7 @@ function DocumentsPageContent() {
                             category: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         {categoryDisplayInfo.map((cat) => (
                           <option key={cat.id} value={cat.id}>
@@ -648,7 +648,7 @@ function DocumentsPageContent() {
                             issueDate: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       />
                     </div>
                     <div>
@@ -664,7 +664,7 @@ function DocumentsPageContent() {
                             expiryDate: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       />
                     </div>
                     <div>
@@ -679,7 +679,7 @@ function DocumentsPageContent() {
                             moduleType: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                       >
                         <option value="">None</option>
                         <option value="AUTHORIZATION">Authorization</option>
@@ -703,7 +703,7 @@ function DocumentsPageContent() {
                             regulatoryRef: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                         placeholder="e.g., EU Space Act Art. 18"
                       />
                     </div>
@@ -719,7 +719,7 @@ function DocumentsPageContent() {
                             description: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
                         placeholder="Optional description"
                       />
                     </div>
@@ -1040,7 +1040,7 @@ function DocumentsPageContent() {
             role="dialog"
             aria-label="Upload document"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -1072,7 +1072,7 @@ function DocumentsPageContent() {
                     onChange={(e) =>
                       setUploadForm({ ...uploadForm, name: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                     placeholder="e.g., Space Activity License"
                   />
                 </div>
@@ -1085,7 +1085,7 @@ function DocumentsPageContent() {
                     onChange={(e) =>
                       setUploadForm({ ...uploadForm, category: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     {categoryDisplayInfo.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -1109,7 +1109,7 @@ function DocumentsPageContent() {
                         issueDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
                 <div>
@@ -1125,7 +1125,7 @@ function DocumentsPageContent() {
                         expiryDate: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 </div>
               </div>
@@ -1142,7 +1142,7 @@ function DocumentsPageContent() {
                         moduleType: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="">None</option>
                     <option value="AUTHORIZATION">Authorization</option>
@@ -1166,7 +1166,7 @@ function DocumentsPageContent() {
                         regulatoryRef: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                     placeholder="e.g., EU Space Act Art. 18"
                   />
                 </div>
@@ -1183,7 +1183,7 @@ function DocumentsPageContent() {
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-20 resize-none focus:outline-none focus:border-emerald-500/50"
                   placeholder="Optional description"
                 />
               </div>

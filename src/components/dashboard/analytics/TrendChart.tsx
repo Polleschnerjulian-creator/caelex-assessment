@@ -94,7 +94,7 @@ export function TrendChart({
 
   if (data.length === 0) {
     return (
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
           {title}
         </h3>
@@ -110,7 +110,7 @@ export function TrendChart({
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -254,7 +254,7 @@ export function TrendChart({
 
       {/* Current score */}
       {chartData.points.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-400">Current Score</span>
             <span className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -302,7 +302,7 @@ export function MiniTrendChart({
 
   if (data.length < 2) {
     return (
-      <div className="w-20 h-6 bg-slate-50 dark:bg-white/[0.06] rounded" />
+      <div className="w-20 h-6 bg-slate-50 dark:bg-[--glass-bg-elevated] rounded" />
     );
   }
 

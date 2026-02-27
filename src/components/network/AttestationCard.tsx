@@ -141,7 +141,7 @@ export default function AttestationCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-[--glass-border-subtle]">
           {!attestation.isVerified && !attestation.isRevoked && (
             <button
               onClick={() => onVerify(attestation.id)}

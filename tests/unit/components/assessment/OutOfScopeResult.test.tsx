@@ -112,7 +112,7 @@ describe("OutOfScopeResult", () => {
   it("renders the alert icon", () => {
     const { container } = render(<OutOfScopeResult {...defaultProps} />);
     // The icon wrapper
-    const iconWrapper = container.querySelector(".w-16.h-16.rounded-2xl");
+    const iconWrapper = container.querySelector(".w-16.h-16.rounded-xl");
     expect(iconWrapper).toBeInTheDocument();
   });
 });

@@ -230,7 +230,7 @@ export function MfaSetupCard() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
         </div>
@@ -239,7 +239,7 @@ export function MfaSetupCard() {
   }
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -369,7 +369,7 @@ export function MfaSetupCard() {
                   setError(null);
                 }}
                 placeholder="Enter your password"
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
               />
             </div>
 
@@ -439,7 +439,7 @@ export function MfaSetupCard() {
                   setError(null);
                 }}
                 placeholder="000000"
-                className="w-full max-w-[200px] bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-widest"
+                className="w-full max-w-[200px] bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-widest"
               />
             </div>
 
@@ -513,12 +513,12 @@ export function MfaSetupCard() {
 
                 {/* Manual Entry */}
                 {secret && (
-                  <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-white/10">
+                  <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
                     <p className="text-small text-slate-500 dark:text-white/45 mb-2">
                       Or enter this code manually:
                     </p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 p-2 bg-white dark:bg-white/[0.04] rounded text-small font-mono text-slate-900 dark:text-white break-all">
+                      <code className="flex-1 p-2 bg-white dark:bg-[--glass-bg-surface] rounded text-small font-mono text-slate-900 dark:text-white break-all">
                         {secret}
                       </code>
                       <button
@@ -574,7 +574,7 @@ export function MfaSetupCard() {
                       setError(null);
                     }}
                     placeholder="000000"
-                    className="w-full text-center bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-heading-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-[0.5em]"
+                    className="w-full text-center bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-heading-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono tracking-[0.5em]"
                   />
                 </div>
 
@@ -622,12 +622,12 @@ export function MfaSetupCard() {
                   </p>
                 </div>
 
-                <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-white/10">
+                <div className="p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
                   <div className="grid grid-cols-2 gap-2">
                     {backupCodes.map((code, index) => (
                       <code
                         key={index}
-                        className="p-2 bg-white dark:bg-white/[0.04] rounded text-center text-body font-mono text-slate-900 dark:text-white"
+                        className="p-2 bg-white dark:bg-[--glass-bg-surface] rounded text-center text-body font-mono text-slate-900 dark:text-white"
                       >
                         {code}
                       </code>

@@ -222,7 +222,7 @@ export default function RegulatoryFeedPage() {
                 className={`text-small px-3 py-1.5 rounded-full font-medium transition-all ${
                   isActive
                     ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                    : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border border-transparent hover:bg-slate-200 dark:hover:bg-white/[0.08]"
+                    : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 border border-transparent hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated]"
                 }`}
               >
                 {sev === "ALL"
@@ -240,7 +240,7 @@ export default function RegulatoryFeedPage() {
                 setModuleFilter(e.target.value);
                 setPage(1);
               }}
-              className="text-small px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 border border-slate-200 dark:border-white/10 appearance-none pr-7 cursor-pointer"
+              className="text-small px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 border border-slate-200 dark:border-[--glass-border-subtle] appearance-none pr-7 cursor-pointer"
             >
               <option value="">{t("regulatoryFeed.filterByModule")}</option>
               {Object.entries(MODULE_LABELS).map(([key, label]) => (
@@ -293,7 +293,7 @@ export default function RegulatoryFeedPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] transition-colors"
             >
               Previous
             </button>
@@ -303,7 +303,7 @@ export default function RegulatoryFeedPage() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-white/[0.08] transition-colors"
+              className="text-body px-4 py-2 rounded-lg bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/45 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] transition-colors"
             >
               Next
             </button>
@@ -326,7 +326,7 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-4">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
       <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
         {label}
       </p>
@@ -366,7 +366,7 @@ function FeedItem({
       animate={{ opacity: update.isRead ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      className={`bg-white dark:bg-white/[0.03] border rounded-xl overflow-hidden transition-all ${
+      className={`bg-white dark:bg-[--glass-bg-surface] border rounded-xl overflow-hidden transition-all ${
         update.isRead
           ? "border-slate-200 dark:border-white/5"
           : `border-slate-200 dark:${config.border}`
@@ -395,7 +395,7 @@ function FeedItem({
             <span className="text-micro font-mono text-slate-400 dark:text-white/30">
               {update.celexNumber}
             </span>
-            <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45">
+            <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45">
               {DOC_TYPE_LABELS[update.documentType] || update.documentType}
             </span>
             {update.isRead && (
@@ -493,7 +493,7 @@ function FeedItem({
 function EmptyState({ t }: { t: (key: string) => string }) {
   return (
     <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mx-auto mb-6">
         <Radio
           size={28}
           className="text-slate-400 dark:text-white/30"

@@ -55,16 +55,16 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
 
     case "table":
       return (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 mb-3">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] mb-3">
           <table className="w-full text-xs" aria-label="Data table">
             <thead>
-              <tr className="bg-slate-50 dark:bg-white/[0.03]">
+              <tr className="bg-slate-50 dark:bg-[--glass-bg-surface]">
                 {(Array.isArray(block.headers) ? block.headers : []).map(
                   (h, i) => (
                     <th
                       scope="col"
                       key={i}
-                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/45 border-b border-slate-200 dark:border-white/10"
+                      className="px-3 py-2 text-left font-medium text-slate-600 dark:text-white/45 border-b border-slate-200 dark:border-[--glass-border-subtle]"
                     >
                       {str(h)}
                     </th>
@@ -125,7 +125,9 @@ function ContentBlock({ block }: { block: ReportSectionContent }) {
       );
 
     case "divider":
-      return <hr className="border-slate-200 dark:border-white/10 my-4" />;
+      return (
+        <hr className="border-slate-200 dark:border-[--glass-border-subtle] my-4" />
+      );
 
     case "spacer":
       return <div style={{ height: block.height || 10 }} />;
@@ -140,7 +142,7 @@ export function SectionRenderer({ sections }: { sections: ReportSection[] }) {
     <div className="space-y-6">
       {sections.map((section, i) => (
         <div key={i}>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 pb-2 border-b border-slate-200 dark:border-white/10">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 pb-2 border-b border-slate-200 dark:border-[--glass-border-subtle]">
             {str(section.title)}
           </h2>
           <div className="pl-1">

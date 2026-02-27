@@ -63,7 +63,7 @@ export default function SignAttestationForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-white/10">
+      <div className="flex items-center gap-2 pb-4 border-b border-slate-200 dark:border-[--glass-border-subtle]">
         <ShieldCheck size={20} className="text-emerald-500" />
         <h2 className="text-heading font-semibold text-slate-900 dark:text-white">
           Sign Attestation
@@ -78,7 +78,7 @@ export default function SignAttestationForm({
         <select
           value={formData.type}
           onChange={(e) => updateField("type", e.target.value)}
-          className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+          className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
         >
           {attestationTypes.map((at) => (
             <option key={at.value} value={at.value}>
@@ -98,7 +98,7 @@ export default function SignAttestationForm({
           value={formData.title}
           onChange={(e) => updateField("title", e.target.value)}
           placeholder="e.g. Q1 2026 Compliance Declaration"
-          className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+          className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
         />
       </div>
 
@@ -112,7 +112,7 @@ export default function SignAttestationForm({
           onChange={(e) => updateField("statement", e.target.value)}
           placeholder="Enter the formal attestation statement..."
           rows={5}
-          className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none"
+          className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none"
         />
       </div>
 
@@ -126,7 +126,7 @@ export default function SignAttestationForm({
           onChange={(e) => updateField("scope", e.target.value)}
           placeholder='{"modules": ["authorization", "insurance"], "period": "Q1 2026"}'
           rows={3}
-          className="w-full px-3 py-2 text-small bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none font-mono"
+          className="w-full px-3 py-2 text-small bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none font-mono"
         />
         <p className="text-micro text-slate-400 dark:text-white/30 mt-1">
           Optional JSON object defining the scope of this attestation.
@@ -134,7 +134,7 @@ export default function SignAttestationForm({
       </div>
 
       {/* Signer info */}
-      <div className="space-y-4 p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03]">
+      <div className="space-y-4 p-4 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-[--glass-bg-surface]">
         <h3 className="text-body font-medium text-slate-900 dark:text-white">
           Signer Information
         </h3>
@@ -147,7 +147,7 @@ export default function SignAttestationForm({
               type="text"
               value={formData.signerName}
               onChange={(e) => updateField("signerName", e.target.value)}
-              className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+              className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
             />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default function SignAttestationForm({
               value={formData.signerTitle}
               onChange={(e) => updateField("signerTitle", e.target.value)}
               placeholder="e.g. Chief Compliance Officer"
-              className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+              className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
             />
           </div>
           <div>
@@ -170,7 +170,7 @@ export default function SignAttestationForm({
               type="email"
               value={formData.signerEmail}
               onChange={(e) => updateField("signerEmail", e.target.value)}
-              className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+              className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
             />
           </div>
           <div>
@@ -183,14 +183,14 @@ export default function SignAttestationForm({
               onChange={(e) =>
                 updateField("signerOrganization", e.target.value)
               }
-              className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+              className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
             />
           </div>
         </div>
       </div>
 
       {/* Confirmation checkbox */}
-      <div className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-amber-50 dark:bg-amber-500/5">
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-amber-50 dark:bg-amber-500/5">
         <input
           type="checkbox"
           id="attestation-confirm"

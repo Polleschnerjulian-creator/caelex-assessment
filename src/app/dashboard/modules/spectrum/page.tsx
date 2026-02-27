@@ -253,7 +253,7 @@ function WizardStep1({
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(st.id)
                 ? "border-emerald-500 bg-emerald-500/10"
-                : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
+                : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -342,7 +342,7 @@ function WizardStep2({
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(fb.id)
                 ? "border-emerald-500 bg-emerald-500/10"
-                : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
+                : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -445,7 +445,7 @@ function WizardStep3({
                 className={`p-3 rounded-lg border text-left transition-all ${
                   data.orbitType === orbit.id
                     ? "border-emerald-500 bg-emerald-500/10"
-                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
+                    : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
                 }`}
               >
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
@@ -474,7 +474,7 @@ function WizardStep3({
                 satelliteCount: parseInt(e.target.value) || 1,
               })
             }
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -488,7 +488,7 @@ function WizardStep3({
             value={(data.networkName as string) || ""}
             onChange={(e) => onChange({ ...data, networkName: e.target.value })}
             placeholder="e.g., STARLINK, ONEWEB"
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -502,7 +502,7 @@ function WizardStep3({
             onChange={(e) =>
               onChange({ ...data, administrationCode: e.target.value })
             }
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="">Select administration...</option>
             <option value="F">France (F)</option>
@@ -583,7 +583,7 @@ function WizardStep4({
               className={`p-3 rounded-lg border text-left transition-all ${
                 data.primaryJurisdiction === j.id
                   ? "border-emerald-500 bg-emerald-500/10"
-                  : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04]/50 hover:border-slate-300 dark:border-white/20"
+                  : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -616,12 +616,12 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Project Aurora Spectrum Filing"
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         />
       </div>
 
       {/* Summary */}
-      <div className="p-4 bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-lg">
+      <div className="p-4 bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg">
         <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
           Assessment Summary
         </h4>
@@ -712,7 +712,7 @@ function FilingStatusCard({
   };
 
   return (
-    <div className="p-3 bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-lg">
+    <div className="p-3 bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-slate-400">
           {getPhaseIcon()}
@@ -968,10 +968,10 @@ export default function SpectrumManagementPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-white/10">
+              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   New Spectrum Assessment
                 </h2>
@@ -985,7 +985,7 @@ export default function SpectrumManagementPage() {
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
                           ? "bg-emerald-500"
-                          : "bg-slate-100 dark:bg-white/[0.06]"
+                          : "bg-slate-100 dark:bg-[--glass-bg-elevated]"
                       }`}
                     />
                   ))}
@@ -1014,7 +1014,7 @@ export default function SpectrumManagementPage() {
                 </div>
               )}
 
-              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 flex justify-between">
+              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-[--glass-border-subtle] flex justify-between">
                 <button
                   onClick={() => {
                     if (wizardStep === 1) {
@@ -1068,7 +1068,7 @@ export default function SpectrumManagementPage() {
 
       {!assessment ? (
         // No Assessment State
-        <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
           <Satellite className="w-12 h-12 text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
             No Spectrum Assessment Yet
@@ -1090,7 +1090,7 @@ export default function SpectrumManagementPage() {
           {/* Assessment Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Score Card */}
-            <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-slate-400">
                   Compliance Score
@@ -1112,7 +1112,7 @@ export default function SpectrumManagementPage() {
               <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                 {assessment.overallComplianceScore ?? 0}%
               </div>
-              <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-2">
+              <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-2">
                 <div
                   className={`h-2 rounded-full ${
                     (assessment.overallComplianceScore ?? 0) >= 80
@@ -1129,7 +1129,7 @@ export default function SpectrumManagementPage() {
             </div>
 
             {/* Network Info */}
-            <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
               <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
                 Network Details
               </h3>
@@ -1162,7 +1162,7 @@ export default function SpectrumManagementPage() {
             </div>
 
             {/* Status Summary */}
-            <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
               <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
                 Requirements Status
               </h3>
@@ -1204,7 +1204,7 @@ export default function SpectrumManagementPage() {
           </div>
 
           {/* ITU Filing Status */}
-          <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4">
+          <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
             <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Globe className="w-4 h-4 text-purple-400" />
               ITU Filing Progress
@@ -1250,7 +1250,7 @@ export default function SpectrumManagementPage() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab
                       ? "bg-emerald-600 text-white"
-                      : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                      : "bg-white dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {tab === "all" ? "All Sources" : tab}
@@ -1267,7 +1267,7 @@ export default function SpectrumManagementPage() {
               onChange={(e) =>
                 setStatusFilter(e.target.value as "all" | ComplianceStatus)
               }
-              className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1 text-slate-900 dark:text-white text-sm"
+              className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-2 py-1 text-slate-900 dark:text-white text-sm"
             >
               <option value="all">All Statuses</option>
               <option value="compliant">Compliant</option>
@@ -1280,7 +1280,7 @@ export default function SpectrumManagementPage() {
           {/* Requirements List */}
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
-              <div className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+              <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
                 <p className="text-slate-600 dark:text-white/45">
                   No requirements match the current filters.
                 </p>
@@ -1289,7 +1289,7 @@ export default function SpectrumManagementPage() {
               filteredRequirements.map((req) => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-white/[0.04]/50 border border-slate-200 dark:border-white/10 rounded-xl p-4"
+                  className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">

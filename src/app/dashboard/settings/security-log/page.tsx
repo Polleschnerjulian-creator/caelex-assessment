@@ -170,7 +170,7 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
   const eventLabel = EVENT_LABELS[log.event] || log.event.replace(/_/g, " ");
 
   return (
-    <div className="border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden transition-all">
+    <div className="border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg overflow-hidden transition-all">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full p-4 text-left hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
@@ -230,7 +230,7 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="px-4 pb-4 pt-0 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+        <div className="px-4 pb-4 pt-0 border-t border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02]">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <div>
               <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-1">
@@ -287,11 +287,11 @@ function SecurityLogItem({ log }: { log: SecurityLog }) {
             )}
           </div>
           {log.metadata && Object.keys(log.metadata).length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
               <p className="text-caption uppercase tracking-wide text-slate-400 dark:text-white/30 mb-2">
                 Additional Details
               </p>
-              <pre className="text-small text-slate-600 dark:text-white/45 bg-white dark:bg-white/[0.04] p-3 rounded-lg overflow-x-auto">
+              <pre className="text-small text-slate-600 dark:text-white/45 bg-white dark:bg-[--glass-bg-surface] p-3 rounded-lg overflow-x-auto">
                 {JSON.stringify(log.metadata, null, 2)}
               </pre>
             </div>
@@ -385,7 +385,7 @@ export default function SecurityLogPage() {
           <button
             onClick={() => fetchLogs(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-body font-medium text-slate-600 dark:text-white/70 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
@@ -429,7 +429,7 @@ export default function SecurityLogPage() {
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                 riskFilter === filter.key
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
-                  : "bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-white/[0.06]"
+                  : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
               }`}
             >
               <span className={riskFilter !== filter.key ? filter.color : ""}>
@@ -463,7 +463,7 @@ export default function SecurityLogPage() {
             </button>
           </div>
         ) : filteredLogs.length === 0 ? (
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
             <Shield className="w-10 h-10 text-slate-300 dark:text-white/20 mx-auto mb-4" />
             <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
               {riskFilter === "all"
@@ -486,7 +486,7 @@ export default function SecurityLogPage() {
 
         {/* Footer Note */}
         {!loading && !error && logs.length > 0 && (
-          <div className="mt-8 p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-lg">
+          <div className="mt-8 p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg">
             <p className="text-small text-slate-500 dark:text-white/45">
               Security logs are retained for 365 days. If you notice any
               suspicious activity, please change your password immediately and

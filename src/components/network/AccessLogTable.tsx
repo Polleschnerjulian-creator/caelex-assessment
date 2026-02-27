@@ -47,7 +47,7 @@ function SkeletonRow() {
     <tr className="animate-pulse">
       {Array.from({ length: 6 }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-3 rounded bg-slate-200 dark:bg-white/[0.06]" />
+          <div className="h-3 rounded bg-slate-200 dark:bg-[--glass-bg-elevated]" />
         </td>
       ))}
     </tr>
@@ -93,10 +93,10 @@ export default function AccessLogTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10">
+    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
       <table className="w-full text-left">
         <thead>
-          <tr className="bg-slate-50 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/10">
+          <tr className="bg-slate-50 dark:bg-[--glass-bg-surface] border-b border-slate-200 dark:border-[--glass-border-subtle]">
             <th className="px-4 py-3">
               <button
                 onClick={toggleSort}
@@ -138,7 +138,7 @@ export default function AccessLogTable({
                       index % 2 === 0
                         ? "bg-white dark:bg-transparent"
                         : "bg-slate-50/50 dark:bg-white/[0.02]"
-                    } hover:bg-slate-50 dark:hover:bg-white/[0.04]`}
+                    } hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]`}
                   >
                     <td className="px-4 py-3 text-small text-slate-700 dark:text-white/70 font-mono whitespace-nowrap">
                       {formatTimestamp(log.timestamp)}

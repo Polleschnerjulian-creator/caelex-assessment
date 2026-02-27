@@ -96,7 +96,7 @@ export default function NCAPortalClient() {
             onClick={loadData}
             disabled={isLoading}
             aria-label="Refresh portal data"
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
           >
             <RefreshCw
               size={16}
@@ -184,7 +184,7 @@ export default function NCAPortalClient() {
                   className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     entry.direction === "INBOUND"
                       ? "bg-emerald-500/10"
-                      : "bg-slate-100 dark:bg-white/[0.06]"
+                      : "bg-slate-100 dark:bg-[--glass-bg-elevated]"
                   }`}
                 >
                   {entry.isRead ? (

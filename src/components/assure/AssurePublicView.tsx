@@ -126,7 +126,7 @@ function getStatusBadge(status: string): {
       return {
         label: "Not Assessed",
         color:
-          "bg-slate-50 text-slate-600 border-slate-200 dark:bg-white/5 dark:text-white/50 dark:border-white/10",
+          "bg-slate-50 text-slate-600 border-slate-200 dark:bg-white/5 dark:text-white/50 dark:border-[--glass-border-subtle]",
         icon: Clock,
       };
   }
@@ -141,7 +141,7 @@ function getPriorityColor(priority: string): string {
     case "medium":
       return "bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20";
     default:
-      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-white/10";
+      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-[--glass-border-subtle]";
   }
 }
 
@@ -160,7 +160,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-navy-950">
       {/* Header */}
-      <div className="bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-white/10">
+      <div className="bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-[--glass-border-subtle]">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -200,7 +200,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-white/10 p-8 shadow-sm">
+            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-[--glass-border-subtle] p-8 shadow-sm">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 {/* Gauge */}
                 <div className="flex-shrink-0">
@@ -283,7 +283,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
             <h2 className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/40 mb-4">
               Gap Analysis
             </h2>
-            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6">
+            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-[--glass-border-subtle] p-6">
               {score.recommendations.length > 0 ? (
                 <div className="space-y-3">
                   {score.recommendations.map((rec, i) => (
@@ -327,7 +327,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
             <h2 className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/40 mb-4">
               Score Trend
             </h2>
-            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-white/10 p-6">
+            <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-[--glass-border-subtle] p-6">
               <div className="h-[200px] flex items-end gap-1">
                 {data.trendData.map((point, i) => {
                   const barHeight = Math.max(
@@ -385,10 +385,10 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
               <h2 className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/40 mb-4">
                 Risk Register
               </h2>
-              <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
+              <div className="bg-white dark:bg-navy-900 rounded-2xl border border-slate-200 dark:border-[--glass-border-subtle] overflow-hidden">
                 <table className="w-full" role="table">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-white/10">
+                    <tr className="border-b border-slate-100 dark:border-[--glass-border-subtle]">
                       <th className="text-left text-micro uppercase tracking-wider text-slate-400 dark:text-white/40 p-4 pb-2 font-medium">
                         Severity
                       </th>
@@ -435,7 +435,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 dark:border-white/10 bg-white dark:bg-navy-900">
+      <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-navy-900">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">

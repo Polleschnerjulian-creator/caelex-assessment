@@ -221,7 +221,7 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+        className="relative p-2 text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"
         aria-label={`${t("notifications.notifications")}${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -245,10 +245,10 @@ export default function NotificationCenter() {
           id="notification-panel"
           role="dialog"
           aria-label={t("notifications.notifications")}
-          className="absolute right-0 top-full mt-2 w-[380px] bg-white border border-slate-200 dark:bg-dark-bg dark:border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-[380px] bg-white border border-slate-200 dark:bg-dark-bg dark:border-[--glass-border-subtle] rounded-xl shadow-2xl z-50 overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-white/10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle]">
             <h3 className="text-body-lg font-medium text-slate-900 dark:text-white">
               {t("notifications.notifications")}
             </h3>
@@ -319,7 +319,7 @@ export default function NotificationCenter() {
                           flex items-start gap-3 px-4 py-3 border-l-2 border-b border-b-slate-100 dark:border-b-white/5
                           ${severityBorder[n.severity] || "border-l-slate-200 dark:border-l-white/10"}
                           ${n.read ? "bg-transparent" : "bg-slate-50 dark:bg-white/[0.02]"}
-                          hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors group
+                          hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors group
                         `}
                       >
                         <div className="flex-1 min-w-0">

@@ -241,14 +241,14 @@ export default function EvidencePanel({
                 placeholder="Evidence title (e.g., 'ISO 27001 Certificate 2025')"
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
               />
               <div className="flex gap-2">
                 <select
                   aria-label="Evidence type"
                   value={formType}
                   onChange={(e) => setFormType(e.target.value)}
-                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-slate-700 dark:text-white/45 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                  className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-2 py-1.5 text-xs text-slate-700 dark:text-white/45 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
                 >
                   {EVIDENCE_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -262,7 +262,7 @@ export default function EvidencePanel({
                   placeholder="Description (optional)"
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                  className="flex-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
                 />
               </div>
               <div className="flex justify-end">

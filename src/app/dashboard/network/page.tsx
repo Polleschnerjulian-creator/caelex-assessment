@@ -85,9 +85,9 @@ function StatSkeleton() {
   return (
     <GlassCard hover={false} className="p-5">
       <div className="animate-pulse space-y-3">
-        <div className="h-3 bg-slate-200 dark:bg-white/[0.06] rounded w-24" />
-        <div className="h-8 bg-slate-200 dark:bg-white/[0.06] rounded w-16" />
-        <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded w-32" />
+        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-24" />
+        <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-16" />
+        <div className="h-2 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-32" />
       </div>
     </GlassCard>
   );
@@ -98,14 +98,14 @@ function CardSkeleton() {
     <GlassCard hover={false} className="p-5">
       <div className="animate-pulse space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-200 dark:bg-white/[0.06] rounded-lg" />
+          <div className="w-10 h-10 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-lg" />
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-slate-200 dark:bg-white/[0.06] rounded w-2/3" />
-            <div className="h-3 bg-slate-200 dark:bg-white/[0.06] rounded w-1/3" />
+            <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-2/3" />
+            <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-1/3" />
           </div>
         </div>
-        <div className="h-3 bg-slate-200 dark:bg-white/[0.06] rounded w-full" />
-        <div className="h-3 bg-slate-200 dark:bg-white/[0.06] rounded w-3/4" />
+        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-full" />
+        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-3/4" />
       </div>
     </GlassCard>
   );
@@ -212,7 +212,7 @@ export default function NetworkHubPage() {
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-white/10 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors disabled:opacity-50"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
@@ -332,7 +332,7 @@ export default function NetworkHubPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search stakeholders..."
-            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 transition-colors"
+            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 transition-colors"
           />
         </div>
 
@@ -376,7 +376,7 @@ export default function NetworkHubPage() {
           ) : filteredEngagements.length === 0 ? (
             <GlassCard hover={false} className="p-12">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
                   <Building2 className="w-8 h-8 text-slate-300 dark:text-white/15" />
                 </div>
                 <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
@@ -446,10 +446,10 @@ export default function NetworkHubPage() {
               <div className="animate-pulse space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex gap-3">
-                    <div className="w-6 h-6 bg-slate-200 dark:bg-white/[0.06] rounded-full flex-shrink-0" />
+                    <div className="w-6 h-6 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-full flex-shrink-0" />
                     <div className="space-y-1.5 flex-1">
-                      <div className="h-3 bg-slate-200 dark:bg-white/[0.06] rounded w-3/4" />
-                      <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded w-1/2" />
+                      <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-3/4" />
+                      <div className="h-2 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-1/2" />
                     </div>
                   </div>
                 ))}

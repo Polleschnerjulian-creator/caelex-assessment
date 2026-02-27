@@ -747,13 +747,13 @@ function CybersecurityPageContent() {
     return (
       <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
+                className="h-24 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl"
               />
             ))}
           </div>
@@ -781,7 +781,7 @@ function CybersecurityPageContent() {
       {/* Maturity Metrics (when assessment selected) */}
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.maturityScore || 0}%
             </p>
@@ -789,7 +789,7 @@ function CybersecurityPageContent() {
               maturity score
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p
               className={`text-heading font-medium ${
                 maturityInfo.color === "red"
@@ -809,7 +809,7 @@ function CybersecurityPageContent() {
               maturity level
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-green-600 dark:text-green-400">
               {metrics.compliant}/{metrics.total}
             </p>
@@ -817,7 +817,7 @@ function CybersecurityPageContent() {
               requirements compliant
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <div className="flex items-center gap-2">
               {selectedAssessment.isSimplifiedRegime ? (
                 <CheckCircle2

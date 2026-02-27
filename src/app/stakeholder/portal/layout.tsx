@@ -185,7 +185,7 @@ export default function PortalLayout({
       >
         <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1E]">
           {/* Top Navigation */}
-          <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0A0F1E]/80 backdrop-blur-xl">
+          <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-[--glass-border-subtle] bg-white/80 dark:bg-[#0A0F1E]/80 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               <div className="flex items-center justify-between h-14">
                 {/* Left: Branding */}
@@ -235,7 +235,7 @@ export default function PortalLayout({
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                         item.active
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : "text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+                          : "text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"
                       }`}
                     >
                       <item.icon className="w-4 h-4" />

@@ -238,7 +238,7 @@ function WizardStep1({
             className={`p-3 sm:p-4 rounded-lg border text-left transition-all ${
               selected.includes(type.id)
                 ? "bg-emerald-600/20 border-emerald-500 text-white"
-                : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/45 hover:border-slate-500"
+                : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] text-slate-500 dark:text-white/45 hover:border-slate-500"
             }`}
           >
             <div className="font-medium text-sm sm:text-base">{type.label}</div>
@@ -275,7 +275,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasITARItems
               ? "bg-red-900/20 border-red-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -307,7 +307,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasEARItems
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -362,7 +362,7 @@ function WizardStep3({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasForeignNationals
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -392,8 +392,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTechnologyTransfer
-              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           } ${data.hasTechnologyTransfer && "border-emerald-600"}`}
         >
           <input
@@ -417,8 +417,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasDefenseContracts
-              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           } ${data.hasDefenseContracts && "border-emerald-600"}`}
         >
           <input
@@ -442,8 +442,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasManufacturingAbroad
-              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           } ${data.hasManufacturingAbroad && "border-emerald-600"}`}
         >
           <input
@@ -467,8 +467,8 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasJointVentures
-              ? "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           } ${data.hasJointVentures && "border-emerald-600"}`}
         >
           <input
@@ -516,7 +516,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.registeredWithDDTC
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -541,7 +541,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTCP
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -564,7 +564,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasAutomatedScreening
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -589,7 +589,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasECL
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/10 hover:border-slate-500"
+              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
           }`}
         >
           <input
@@ -620,7 +620,7 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Q1 2026 ITAR/EAR Assessment"
-          className="w-full px-4 py-2 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
         />
       </div>
     </div>
@@ -668,7 +668,7 @@ function RequirementCard({
   };
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg overflow-hidden">
       <div
         className="p-3 sm:p-4 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -730,7 +730,7 @@ function RequirementCard({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 sm:px-4 pb-4 border-t border-slate-200 dark:border-white/10 pt-4 space-y-4">
+            <div className="px-3 sm:px-4 pb-4 border-t border-slate-200 dark:border-[--glass-border-subtle] pt-4 space-y-4">
               <p className="text-sm text-slate-300">{req.description}</p>
 
               <div className="flex flex-wrap gap-2">
@@ -751,7 +751,7 @@ function RequirementCard({
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       requirement.status === status
                         ? statusColors[status]
-                        : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 hover:bg-slate-200 dark:hover:bg-white/[0.08]"
+                        : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated]"
                     }`}
                   >
                     {status.replace("_", " ")}
@@ -1023,10 +1023,10 @@ export default function ExportControlPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-white/10">
+              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   New Export Control Assessment
                 </h2>
@@ -1040,7 +1040,7 @@ export default function ExportControlPage() {
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
                           ? "bg-emerald-500"
-                          : "bg-slate-100 dark:bg-white/[0.06]"
+                          : "bg-slate-100 dark:bg-[--glass-bg-elevated]"
                       }`}
                     />
                   ))}
@@ -1062,7 +1062,7 @@ export default function ExportControlPage() {
                 )}
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-white/10 space-y-3">
+              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-[--glass-border-subtle] space-y-3">
                 {createError && (
                   <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
                     <AlertTriangle size={14} className="flex-shrink-0" />
@@ -1103,7 +1103,7 @@ export default function ExportControlPage() {
 
       {/* No Assessments State */}
       {assessments.length === 0 && !showWizard && (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
           <Scale className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
             No Export Control Assessments
@@ -1126,7 +1126,7 @@ export default function ExportControlPage() {
         <>
           {/* Score Overview */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4">
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
               <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                 Overall Score
               </div>
@@ -1134,7 +1134,7 @@ export default function ExportControlPage() {
                 {currentAssessment.overallComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
               <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                 ITAR Score
               </div>
@@ -1142,7 +1142,7 @@ export default function ExportControlPage() {
                 {currentAssessment.itarComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
               <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                 EAR Score
               </div>
@@ -1150,7 +1150,7 @@ export default function ExportControlPage() {
                 {currentAssessment.earComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
               <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                 Critical Gaps
               </div>
@@ -1158,7 +1158,7 @@ export default function ExportControlPage() {
                 {currentAssessment.criticalGaps ?? 0}
               </div>
             </div>
-            <div className="col-span-2 sm:col-span-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4">
+            <div className="col-span-2 sm:col-span-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
               <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
                 Risk Level
               </div>
@@ -1208,7 +1208,7 @@ export default function ExportControlPage() {
             )}
 
           {/* Tabs */}
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-white/10">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-[--glass-border-subtle]">
             {(["all", "ITAR", "EAR"] as const).map((tab) => (
               <button
                 key={tab}
@@ -1220,7 +1220,7 @@ export default function ExportControlPage() {
                 }`}
               >
                 {tab === "all" ? "All Requirements" : tab}
-                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-slate-100 dark:bg-white/[0.06]">
+                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-slate-100 dark:bg-[--glass-bg-elevated]">
                   {tab === "all"
                     ? requirements.length
                     : requirements.filter(
@@ -1249,7 +1249,7 @@ export default function ExportControlPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
                     ? "bg-emerald-600 text-white"
-                    : "bg-white dark:bg-white/[0.04] text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:bg-white/[0.06]"
+                    : "bg-white dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:bg-[--glass-bg-elevated]"
                 }`}
               >
                 {status === "all" ? "All" : status.replace("_", " ")}
@@ -1271,7 +1271,7 @@ export default function ExportControlPage() {
           {/* Requirements List */}
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
-              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-8 text-center">
+              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-8 text-center">
                 <Search className="w-8 h-8 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-600 dark:text-white/45">
                   No requirements match your filters
@@ -1291,7 +1291,7 @@ export default function ExportControlPage() {
           </div>
 
           {/* Report Generation */}
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-4">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
@@ -1309,7 +1309,7 @@ export default function ExportControlPage() {
                     "_blank",
                   )
                 }
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] text-white rounded-lg text-sm transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-white rounded-lg text-sm transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Generate Report
@@ -1318,7 +1318,7 @@ export default function ExportControlPage() {
           </div>
 
           {/* Resources */}
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-4">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4">
             <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2 mb-4">
               <BookOpen className="w-4 h-4" />
               Regulatory Resources
@@ -1328,7 +1328,7 @@ export default function ExportControlPage() {
                 href="https://www.pmddtc.state.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] rounded-lg transition-colors"
               >
                 <Lock className="w-5 h-5 text-red-400" />
                 <div>
@@ -1343,7 +1343,7 @@ export default function ExportControlPage() {
                 href="https://www.bis.doc.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] rounded-lg transition-colors"
               >
                 <Globe className="w-5 h-5 text-amber-400" />
                 <div>

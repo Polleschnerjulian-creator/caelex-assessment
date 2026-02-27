@@ -32,7 +32,7 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 shadow-xl">
+      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 shadow-xl">
         <p className="text-slate-900 dark:text-white text-body font-medium">
           {data.category}
         </p>

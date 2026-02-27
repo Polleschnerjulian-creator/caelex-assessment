@@ -19,7 +19,7 @@ export default function StakeholderPortalLayout({
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/10">
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-[--glass-border-subtle]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Left: Organization branding */}
@@ -58,7 +58,7 @@ export default function StakeholderPortalLayout({
                   External Stakeholder
                 </p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/[0.06] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[--glass-bg-elevated] flex items-center justify-center">
                 <span className="text-small font-medium text-slate-600 dark:text-white/60">
                   {stakeholderName
                     .split(" ")
@@ -81,7 +81,7 @@ export default function StakeholderPortalLayout({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900">
+      <footer className="border-t border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-slate-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <p className="text-micro text-slate-400 dark:text-white/30">

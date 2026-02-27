@@ -317,7 +317,7 @@ function BillingContent() {
           <p className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
             FREQUENTLY ASKED QUESTIONS
           </p>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <div className="space-y-6">
               <div>
                 <p className="text-body-lg font-medium text-slate-900 dark:text-white">

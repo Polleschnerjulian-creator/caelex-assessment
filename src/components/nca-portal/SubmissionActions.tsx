@@ -107,7 +107,7 @@ export default function SubmissionActions({
                 disabled={isUpdating}
                 className={`
                   w-full text-left px-3 py-2 text-sm transition-colors
-                  ${opt.value === currentPriority ? "bg-emerald-50 dark:bg-emerald-500/10" : "hover:bg-slate-50 dark:hover:bg-white/[0.04]"}
+                  ${opt.value === currentPriority ? "bg-emerald-50 dark:bg-emerald-500/10" : "hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"}
                   ${opt.color}
                 `}
               >
@@ -142,7 +142,7 @@ export default function SubmissionActions({
                 handleStatusUpdate("WITHDRAWN", "Withdrawn by operator")
               }
               disabled={isUpdating}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-lg transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] rounded-lg transition-colors disabled:opacity-50"
             >
               <XCircle size={14} />
               Withdraw

@@ -56,7 +56,7 @@ function getLinkStatus(link: ShareLink): {
     return {
       label: "Expired",
       color:
-        "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-white/10",
+        "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-[--glass-border-subtle]",
       icon: Clock,
     };
   if (link.maxViews && link.viewCount >= link.maxViews)
@@ -299,7 +299,7 @@ export default function ShareLinkManager({
           <div className="overflow-x-auto">
             <table className="w-full" role="table">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/10">
+                <tr className="border-b border-slate-100 dark:border-[--glass-border-subtle]">
                   <th className="text-left text-micro uppercase tracking-wider text-slate-400 dark:text-white/40 p-3 pb-2 font-medium">
                     Label
                   </th>

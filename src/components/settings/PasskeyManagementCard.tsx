@@ -191,7 +191,7 @@ export function PasskeyManagementCard() {
 
   if (!isWebAuthnSupported) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
             <Fingerprint className="w-5 h-5 text-slate-400 dark:text-white/45" />
@@ -214,7 +214,7 @@ export function PasskeyManagementCard() {
   }
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
@@ -246,7 +246,7 @@ export function PasskeyManagementCard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-white/10"
+            className="space-y-4 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]"
           >
             <div>
               <label
@@ -261,7 +261,7 @@ export function PasskeyManagementCard() {
                 value={newDeviceName}
                 onChange={(e) => setNewDeviceName(e.target.value)}
                 placeholder="e.g., MacBook Pro, iPhone"
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
               />
               <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
                 Give your passkey a name to identify it later
@@ -339,7 +339,7 @@ export function PasskeyManagementCard() {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded px-2 py-1 text-body text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="flex-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded px-2 py-1 text-body text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === "Enter") renamePasskey(passkey.id);

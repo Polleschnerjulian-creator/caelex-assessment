@@ -32,7 +32,7 @@ export function EmptyState({
       role="status"
       className={`flex flex-col items-center justify-center py-16 px-8 text-center ${className}`}
     >
-      <div className="w-16 h-16 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-6">
+      <div className="w-16 h-16 rounded-xl bg-white/[0.04] border border-slate-200 dark:border-transparent flex items-center justify-center mb-6 glass-surface">
         <div className="text-white/45" aria-hidden="true">
           {icon}
         </div>

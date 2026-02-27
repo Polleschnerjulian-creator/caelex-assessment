@@ -231,7 +231,7 @@ export function OrganizationCard() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
         </div>
@@ -249,7 +249,7 @@ export function OrganizationCard() {
 
   function TabToggle() {
     return (
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-white/[0.06] rounded-lg mb-6">
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-lg mb-6">
         <button
           onClick={() => resetAndSwitchTo("create")}
           className={`flex-1 px-4 py-2 text-body font-medium rounded-lg transition-colors ${
@@ -311,7 +311,7 @@ export function OrganizationCard() {
             }}
             placeholder="e.g., Acme Space Corp"
             autoFocus
-            className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
           />
         </div>
 
@@ -327,7 +327,7 @@ export function OrganizationCard() {
             </span>
           </label>
           <div className="flex items-center gap-0">
-            <span className="text-body text-slate-400 dark:text-white/30 bg-slate-50 dark:bg-white/[0.02] border border-r-0 border-slate-200 dark:border-white/10 rounded-l-lg px-3 py-2.5">
+            <span className="text-body text-slate-400 dark:text-white/30 bg-slate-50 dark:bg-white/[0.02] border border-r-0 border-slate-200 dark:border-[--glass-border-subtle] rounded-l-lg px-3 py-2.5">
               /org/
             </span>
             <input
@@ -342,7 +342,7 @@ export function OrganizationCard() {
                 setCreateError(null);
               }}
               placeholder="auto-generated"
-              className="flex-1 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-r-lg px-3 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+              className="flex-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-r-lg px-3 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
             />
           </div>
           <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
@@ -424,7 +424,7 @@ export function OrganizationCard() {
                 }}
                 placeholder="Paste invitation token or full URL"
                 autoFocus
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
               />
               <p className="text-caption text-slate-400 dark:text-white/30 mt-1.5">
                 Ask your organization admin for an invitation link
@@ -537,7 +537,7 @@ export function OrganizationCard() {
                   setInviteToken("");
                   setJoinError(null);
                 }}
-                className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.06] text-body text-slate-700 dark:text-white/70 font-medium transition-colors"
+                className="px-4 py-2.5 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] text-body text-slate-700 dark:text-white/70 font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -624,10 +624,10 @@ export function OrganizationCard() {
         </div>
 
         {/* Manage Billing + Create New Org */}
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex items-center justify-between flex-wrap gap-3">
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-between flex-wrap gap-3">
           <Link
             href="/dashboard/settings/billing"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.06] text-body text-slate-700 dark:text-white/70 font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] text-body text-slate-700 dark:text-white/70 font-medium transition-colors"
           >
             <CreditCard className="w-4 h-4" />
             Manage Billing
@@ -648,7 +648,7 @@ export function OrganizationCard() {
   // ─── Render ───
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">

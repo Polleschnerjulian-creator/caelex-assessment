@@ -435,7 +435,7 @@ export default function PortalDashboardPage() {
                 key={activity.id}
                 className="flex items-center gap-3 px-5 py-3"
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center flex-shrink-0">
                   <Clock className="w-4 h-4 text-slate-400 dark:text-white/40" />
                 </div>
                 <div className="flex-1 min-w-0">

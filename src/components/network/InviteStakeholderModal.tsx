@@ -212,23 +212,23 @@ export default function InviteStakeholderModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           <h2 className="text-heading font-semibold text-slate-900 dark:text-white">
             Invite Stakeholder
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Step indicator */}
-        <div className="px-6 py-3 border-b border-slate-200 dark:border-white/10">
+        <div className="px-6 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-center gap-2">
             {STEP_LABELS.map((label, i) => {
               const StepIcon = stepIcons[i];
@@ -289,7 +289,7 @@ export default function InviteStakeholderModal({
                           className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
                             isSelected
                               ? "border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10"
-                              : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                              : "border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
                           }`}
                         >
                           <div className={`p-2 rounded-lg border ${st.color}`}>
@@ -332,7 +332,7 @@ export default function InviteStakeholderModal({
                         updateField("companyName", e.target.value)
                       }
                       placeholder="e.g. Acme Space Legal GmbH"
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -346,7 +346,7 @@ export default function InviteStakeholderModal({
                         updateField("contactName", e.target.value)
                       }
                       placeholder="e.g. Dr. Sarah Mueller"
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -360,7 +360,7 @@ export default function InviteStakeholderModal({
                         updateField("contactEmail", e.target.value)
                       }
                       placeholder="sarah@acmelegal.com"
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                   <div>
@@ -374,7 +374,7 @@ export default function InviteStakeholderModal({
                         updateField("contactPhone", e.target.value)
                       }
                       placeholder="+49 30 1234 5678"
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -394,7 +394,7 @@ export default function InviteStakeholderModal({
                       onChange={(e) => updateField("scope", e.target.value)}
                       placeholder="Describe the scope of this stakeholder's engagement..."
                       rows={4}
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none"
                     />
                   </div>
                   <div>
@@ -408,7 +408,7 @@ export default function InviteStakeholderModal({
                         updateField("contractReference", e.target.value)
                       }
                       placeholder="e.g. CTR-2025-0042"
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -430,13 +430,13 @@ export default function InviteStakeholderModal({
                       }
                       placeholder="Enter IP addresses or CIDR ranges, one per line..."
                       rows={3}
-                      className="w-full px-3 py-2 text-body bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none font-mono text-small"
+                      className="w-full px-3 py-2 text-body bg-white dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none font-mono text-small"
                     />
                     <p className="text-micro text-slate-400 dark:text-white/30 mt-1">
                       Leave empty to allow access from any IP address.
                     </p>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03]">
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-[--glass-bg-surface]">
                     <div>
                       <p className="text-body font-medium text-slate-900 dark:text-white">
                         Require MFA
@@ -471,7 +471,7 @@ export default function InviteStakeholderModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-white/10">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
           <button
             onClick={step === 0 ? onClose : goBack}
             className="flex items-center gap-1.5 px-4 py-2 text-body font-medium text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"

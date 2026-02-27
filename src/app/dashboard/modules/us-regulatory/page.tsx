@@ -679,14 +679,14 @@ function UsRegulatoryPageContent() {
 
       {/* Multi-Agency Tabs */}
       {selectedAssessment && (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-white/10">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-[--glass-border-subtle]">
             <button
               onClick={() => setActiveAgencyTab("overview")}
               className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                 activeAgencyTab === "overview"
-                  ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-white/[0.06]/50"
-                  : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
+                  ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-[--glass-bg-elevated]/50"
+                  : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-[--glass-bg-elevated]/30"
               }`}
             >
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -704,8 +704,8 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveAgencyTab(agency)}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                     activeAgencyTab === agency
-                      ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-white/[0.06]/50"
-                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-white/[0.06]/30"
+                      ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-[--glass-bg-elevated]/50"
+                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-[--glass-bg-elevated]/30"
                   }`}
                 >
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -765,7 +765,7 @@ function UsRegulatoryPageContent() {
                             {status.score}%
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 sm:h-2">
+                        <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 sm:h-2">
                           <div
                             className={`h-full rounded-full ${
                               status.score >= 80
@@ -787,7 +787,7 @@ function UsRegulatoryPageContent() {
                             .map((license) => (
                               <span
                                 key={license}
-                                className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-white/[0.06] text-slate-300 rounded truncate max-w-[120px]"
+                                className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-300 rounded truncate max-w-[120px]"
                               >
                                 {licenseTypeConfig[license]?.label}
                               </span>
@@ -881,7 +881,7 @@ function UsRegulatoryPageContent() {
 
       {/* Wizard Steps */}
       {(selectedAssessment || showNewAssessment) && (
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-2 sm:p-4 overflow-hidden">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-2 sm:p-4 overflow-hidden">
           <div className="flex items-center justify-between overflow-x-auto scrollbar-hide">
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center flex-shrink-0">
@@ -901,7 +901,7 @@ function UsRegulatoryPageContent() {
                         ? "bg-emerald-500 text-white"
                         : activeStep > index
                           ? "bg-green-500 text-white"
-                          : "bg-slate-200 dark:bg-white/[0.08] text-slate-400"
+                          : "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-400"
                     }`}
                   >
                     {activeStep > index ? (
@@ -940,7 +940,7 @@ function UsRegulatoryPageContent() {
             className="space-y-4 sm:space-y-6"
           >
             {/* Assessment Name */}
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
               <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                 Assessment Name (optional)
               </label>
@@ -954,7 +954,7 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Operator Types */}
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
               <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Space operations in the US
               </h3>
@@ -1011,7 +1011,7 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Activity Types */}
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
               <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Select your activities
               </h3>
@@ -1041,7 +1041,7 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Orbit Configuration */}
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
               <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Orbit Configuration
               </h3>
@@ -1080,7 +1080,7 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Mission Details */}
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
               <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
                 Mission Details
               </h3>
@@ -1241,7 +1241,7 @@ function UsRegulatoryPageContent() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-2 sm:p-3 text-center"
+                  className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-2 sm:p-3 text-center"
                 >
                   <div
                     className={`text-lg sm:text-2xl font-bold text-${stat.color}-400`}
@@ -1264,7 +1264,7 @@ function UsRegulatoryPageContent() {
                     e.target.value as UsRequirementCategory | "all",
                   )
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
               >
                 <option value="all">All Categories</option>
                 {Object.entries(categoryConfig).map(([cat, config]) => (
@@ -1278,7 +1278,7 @@ function UsRegulatoryPageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UsComplianceStatus | "all")
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
               >
                 <option value="all">All Statuses</option>
                 {Object.entries(statusConfig).map(([status, config]) => (
@@ -1301,7 +1301,7 @@ function UsRegulatoryPageContent() {
                 return (
                   <div
                     key={req.id}
-                    className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 sm:p-4"
+                    className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -1354,7 +1354,7 @@ function UsRegulatoryPageContent() {
                               className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
                                 currentStatus === status
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-100 dark:bg-white/[0.06]"
+                                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-100 dark:bg-[--glass-bg-elevated]"
                               }`}
                               title={config.label}
                             >
@@ -1421,12 +1421,12 @@ function UsRegulatoryPageContent() {
               {gapAnalysis.slice(0, 20).map((gap, index) => (
                 <div
                   key={gap.requirementId}
-                  className={`bg-white dark:bg-white/[0.04] border rounded-lg p-3 sm:p-4 ${
+                  className={`bg-white dark:bg-[--glass-bg-surface] border rounded-lg p-3 sm:p-4 ${
                     gap.priority === "high"
                       ? "border-red-500/30"
                       : gap.priority === "medium"
                         ? "border-amber-500/30"
-                        : "border-slate-200 dark:border-white/10"
+                        : "border-slate-200 dark:border-[--glass-border-subtle]"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -1470,7 +1470,7 @@ function UsRegulatoryPageContent() {
                           {gap.dependencies.slice(0, 2).map((dep, i) => (
                             <span
                               key={i}
-                              className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 rounded truncate max-w-[140px]"
+                              className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 rounded truncate max-w-[140px]"
                             >
                               {dep}
                             </span>
@@ -1515,7 +1515,7 @@ function UsRegulatoryPageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
           >
-            <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4 sm:p-6">
+            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-medium text-slate-900 dark:text-white mb-4">
                 Compliance Report
               </h2>
@@ -1609,7 +1609,7 @@ function UsRegulatoryPageContent() {
                       >
                         {agencyScore}%
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
+                      <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
                         <div
                           className={`h-full rounded-full ${
                             agencyScore >= 80
@@ -1701,7 +1701,7 @@ function UsRegulatoryPageContent() {
                 <button
                   key={assessment.id}
                   onClick={() => selectAssessment(assessment)}
-                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg hover:border-slate-300 dark:border-white/20 transition-colors text-left gap-3"
+                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg hover:border-slate-300 dark:border-white/20 transition-colors text-left gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm sm:text-base font-medium text-slate-900 dark:text-white truncate">
@@ -1738,7 +1738,7 @@ function UsRegulatoryPageContent() {
               key="empty"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 sm:p-8 text-center"
+              className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 sm:p-8 text-center"
             >
               <Globe2 className="w-10 sm:w-12 h-10 sm:h-12 text-slate-500 mx-auto mb-3 sm:mb-4" />
               <h2 className="text-lg sm:text-xl font-medium text-slate-900 dark:text-white mb-2">

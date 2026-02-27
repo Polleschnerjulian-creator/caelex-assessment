@@ -57,7 +57,7 @@ export function InfoTooltip({ text }: InfoTooltipProps) {
           role="tooltip"
           className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 sm:w-80"
         >
-          <div className="relative bg-navy-800 border border-white/10 rounded-xl px-4 py-3 shadow-xl shadow-black/30 backdrop-blur-sm">
+          <div className="relative bg-navy-800 border rounded-xl px-4 py-3 shadow-xl shadow-black/30 glass-floating">
             <button
               type="button"
               onClick={() => setIsOpen(false)}

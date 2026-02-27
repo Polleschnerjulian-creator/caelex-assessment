@@ -38,7 +38,7 @@ export default function PackageCompletenessBar({
         </div>
       )}
       <div
-        className={`w-full ${heightClass} bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden`}
+        className={`w-full ${heightClass} bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden`}
         role="progressbar"
         aria-valuenow={score}
         aria-valuemin={0}

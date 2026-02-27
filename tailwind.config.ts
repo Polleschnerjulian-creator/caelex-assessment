@@ -45,6 +45,20 @@ const config: Config = {
           "monospace",
         ],
       },
+      // Glass design system tokens
+      backdropBlur: {
+        glass: "var(--glass-blur-surface)",
+        "glass-lg": "var(--glass-blur-elevated)",
+        "glass-xl": "var(--glass-blur-floating)",
+      },
+      boxShadow: {
+        glass: "0 4px 16px rgba(0, 0, 0, 0.15)",
+        "glass-elevated": "0 8px 32px rgba(0, 0, 0, 0.2)",
+        "glass-floating": "0 16px 48px rgba(0, 0, 0, 0.3)",
+      },
+      transitionTimingFunction: {
+        glass: "cubic-bezier(0.4, 0, 0.2, 1)",
+      },
       // Type scale — single source of truth (reduces 24 arbitrary sizes → 11 tokens)
       fontSize: {
         micro: ["10px", { lineHeight: "1.4", letterSpacing: "0.05em" }],

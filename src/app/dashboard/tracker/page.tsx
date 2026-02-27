@@ -36,9 +36,9 @@ const statusColors: Record<
   { bg: string; border: string; dot: string }
 > = {
   not_started: {
-    bg: "bg-slate-50 dark:bg-white/[0.04]",
-    border: "border-slate-200 dark:border-white/[0.1]",
-    dot: "bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-white/[0.1]",
+    bg: "bg-slate-50 dark:bg-[--glass-bg-surface]",
+    border: "border-slate-200 dark:border-[--glass-border-subtle]",
+    dot: "bg-slate-200 dark:bg-white/10 border-slate-300 dark:border-[--glass-border-subtle]",
   },
   in_progress: {
     bg: "bg-amber-50 dark:bg-amber-500/5",
@@ -57,8 +57,8 @@ const statusColors: Record<
   },
   not_applicable: {
     bg: "bg-slate-50 dark:bg-white/[0.01]",
-    border: "border-slate-200 dark:border-white/10",
-    dot: "bg-slate-200 dark:bg-white/5 border-slate-300 dark:border-white/10",
+    border: "border-slate-200 dark:border-[--glass-border-subtle]",
+    dot: "bg-slate-200 dark:bg-white/5 border-slate-300 dark:border-[--glass-border-subtle]",
   },
 };
 
@@ -72,7 +72,7 @@ const complianceTypeColors: Record<string, string> = {
   conditional:
     "bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400/60",
   informational:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
+    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
   enforcement:
     "bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400/60",
   scope_determination:
@@ -80,16 +80,17 @@ const complianceTypeColors: Record<string, string> = {
   operational:
     "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
   voluntary:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
+    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
   monitoring:
-    "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45",
+    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45",
 };
 
 const priorityColors: Record<string, string> = {
   CRITICAL: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400",
   HIGH: "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400/60",
-  MEDIUM: "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70",
-  LOW: "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45",
+  MEDIUM:
+    "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70",
+  LOW: "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45",
   CONDITIONAL:
     "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300/50",
 };
@@ -300,13 +301,13 @@ export default function TrackerPage() {
     return (
       <div className="p-8" role="status" aria-live="polite">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
           <div className="grid grid-cols-8 gap-2 mt-8">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="h-20 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                className="h-20 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
               />
             ))}
           </div>
@@ -352,7 +353,7 @@ export default function TrackerPage() {
             return (
               <div
                 key={mod.id}
-                className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg p-3 text-center"
+                className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 text-center"
               >
                 <p className="text-micro text-slate-400 dark:text-white/30">
                   {mod.number}
@@ -367,7 +368,7 @@ export default function TrackerPage() {
             );
           })}
           {/* Total */}
-          <div className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg p-3 text-center">
+          <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 text-center">
             <p className="text-micro text-slate-500 dark:text-white/45">ALL</p>
             <p className="text-heading font-semibold text-slate-900 dark:text-white">
               {moduleProgress["total"]?.total > 0
@@ -386,7 +387,7 @@ export default function TrackerPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="sticky top-0 z-20 bg-white/90 dark:bg-black/90 backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-slate-200 dark:border-white/10">
+        <div className="sticky top-0 z-20 bg-white/90 dark:bg-black/90 backdrop-blur-sm flex flex-wrap items-center gap-3 py-4 mb-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           {/* Search */}
           <div className="relative">
             <Search
@@ -403,7 +404,7 @@ export default function TrackerPage() {
               placeholder="Search articles..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-body text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
+              className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg pl-9 pr-4 py-2 text-body text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/20 w-[280px] focus:border-slate-300 dark:focus:border-white/[0.12] focus:outline-none transition-all"
             />
           </div>
 
@@ -413,8 +414,8 @@ export default function TrackerPage() {
               onClick={() => setModuleFilter("all")}
               className={`px-3 py-1 rounded-full text-caption border transition-all ${
                 moduleFilter === "all"
-                  ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                  : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
+                  ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
+                  : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
               All
@@ -425,8 +426,8 @@ export default function TrackerPage() {
                 onClick={() => setModuleFilter(mod.id)}
                 className={`px-3 py-1 rounded-full text-caption border transition-all ${
                   moduleFilter === mod.id
-                    ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
-                    : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
+                    ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border-slate-300 dark:border-white/[0.12]"
+                    : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/12 hover:text-slate-800 dark:hover:text-white/70"
                 }`}
               >
                 {mod.shortName}
@@ -444,7 +445,7 @@ export default function TrackerPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as ArticleStatusType | "all")
             }
-            className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-caption text-slate-900 dark:text-white focus:outline-none"
+            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg px-3 py-2 text-caption text-slate-900 dark:text-white focus:outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="not_started">Not Started</option>
@@ -470,7 +471,7 @@ export default function TrackerPage() {
               onClick={() => setViewMode("articles")}
               className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "articles"
-                  ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
+                  ? "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white"
                   : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
@@ -483,7 +484,7 @@ export default function TrackerPage() {
               onClick={() => setViewMode("checklist")}
               className={`px-4 py-2 text-caption transition-all ${
                 viewMode === "checklist"
-                  ? "bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white"
+                  ? "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white"
                   : "text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white/70"
               }`}
             >
@@ -538,9 +539,9 @@ export default function TrackerPage() {
                           key={article.id}
                           className={`${colors.bg} border ${
                             isExpanded
-                              ? "border-slate-300 dark:border-white/[0.1]"
+                              ? "border-slate-300 dark:border-[--glass-border-subtle]"
                               : colors.border
-                          } rounded-lg transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.08]`}
+                          } rounded-lg transition-all duration-200 hover:border-slate-300 dark:hover:border-[--glass-border-subtle]`}
                         >
                           {/* Collapsed Row */}
                           <button
@@ -568,7 +569,7 @@ export default function TrackerPage() {
                             </span>
 
                             {/* Module Badge */}
-                            <span className="text-micro px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70">
+                            <span className="text-micro px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70">
                               {article.moduleLabel}
                             </span>
 
@@ -576,7 +577,7 @@ export default function TrackerPage() {
                             <span
                               className={`text-micro px-2 py-0.5 rounded-full ${
                                 complianceTypeColors[article.complianceType] ||
-                                "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/45"
+                                "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45"
                               }`}
                             >
                               {article.complianceType.replace(/_/g, " ")}
@@ -623,7 +624,7 @@ export default function TrackerPage() {
                                 {article.appliesTo.map((op) => (
                                   <span
                                     key={op}
-                                    className="text-[9px] bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-white/70 px-2 py-0.5 rounded"
+                                    className="text-[9px] bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70 px-2 py-0.5 rounded"
                                   >
                                     {op}
                                   </span>

@@ -301,7 +301,7 @@ function KPICard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+      className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -401,7 +401,7 @@ function SeverityBadge({ severity }: { severity: string }) {
     critical: "bg-red-500/10 text-red-400 border-red-500/20",
     high: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    low: "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-white/10",
+    low: "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
   };
 
   return (
@@ -449,7 +449,7 @@ function OverviewTab({ state }: { state: TwinState }) {
   return (
     <div className="space-y-6">
       {/* Trajectory Chart */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
@@ -527,7 +527,7 @@ function OverviewTab({ state }: { state: TwinState }) {
           {state.modules.map((m) => (
             <div
               key={m.id}
-              className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+              className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-body font-medium text-slate-900 dark:text-white">
@@ -553,7 +553,7 @@ function OverviewTab({ state }: { state: TwinState }) {
                   </span>
                 )}
               </div>
-              <div className="w-full bg-slate-100 dark:bg-white/[0.06] rounded-full h-1.5 mb-2">
+              <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 mb-2">
                 <div
                   className={`h-1.5 rounded-full ${m.score >= 80 ? "bg-emerald-500" : m.score >= 50 ? "bg-amber-500" : "bg-red-500"}`}
                   style={{ width: `${m.score}%` }}
@@ -627,7 +627,7 @@ function OverviewTab({ state }: { state: TwinState }) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
           <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Requirements
           </p>
@@ -638,7 +638,7 @@ function OverviewTab({ state }: { state: TwinState }) {
             covered
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
           <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Evidence Gaps
           </p>
@@ -649,7 +649,7 @@ function OverviewTab({ state }: { state: TwinState }) {
             missing or expired
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
           <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             Days Since Incident
           </p>
@@ -660,7 +660,7 @@ function OverviewTab({ state }: { state: TwinState }) {
             {state.incidents.open === 0 ? "no active" : "open"}
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 text-center">
           <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
             30d Velocity
           </p>
@@ -697,7 +697,7 @@ function FrameworksTab() {
     <div className="space-y-6">
       {/* Radar Chart */}
       {data.radarData.length >= 3 && (
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Framework Radar
           </h3>
@@ -728,7 +728,7 @@ function FrameworksTab() {
       )}
 
       {/* Comparison Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
             Framework Comparison
@@ -816,7 +816,7 @@ function RiskTab() {
   return (
     <div className="space-y-6">
       {/* Bubble Chart */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
@@ -905,7 +905,7 @@ function RiskTab() {
       </div>
 
       {/* Financial Exposure Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
             Financial Exposure
@@ -964,7 +964,7 @@ function RiskTab() {
                   </td>
                 </tr>
               ))}
-              <tr className="bg-slate-50 dark:bg-white/[0.03]">
+              <tr className="bg-slate-50 dark:bg-[--glass-bg-surface]">
                 <td
                   className="px-6 py-3 text-body text-slate-900 dark:text-white font-semibold"
                   colSpan={4}
@@ -1166,7 +1166,7 @@ function ScenariosTab() {
   return (
     <div className="space-y-6">
       {/* Scenario Builder */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Scenario Builder
         </h3>
@@ -1182,7 +1182,7 @@ function ScenariosTab() {
                 setParams({});
                 setResult(null);
               }}
-              className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
             >
               {scenarioTypes.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -1200,7 +1200,7 @@ function ScenariosTab() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Expand to Italy"
-              className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+              className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
             />
           </div>
         </div>
@@ -1219,7 +1219,7 @@ function ScenariosTab() {
                     onChange={(e) =>
                       setParams({ ...params, [field.key]: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="">Select...</option>
                     {field.options?.map((o) => (
@@ -1238,7 +1238,7 @@ function ScenariosTab() {
                         [field.key]: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                   />
                 ) : field.type === "checkbox" ? (
                   <label className="flex items-center gap-2 mt-1.5">
@@ -1248,7 +1248,7 @@ function ScenariosTab() {
                       onChange={(e) =>
                         setParams({ ...params, [field.key]: e.target.checked })
                       }
-                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/[0.05] text-emerald-500 focus:ring-emerald-500"
+                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[--glass-bg-surface] text-emerald-500 focus:ring-emerald-500"
                     />
                     <span className="text-small text-slate-500 dark:text-white/45">
                       Include
@@ -1279,7 +1279,7 @@ function ScenariosTab() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6"
+          className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6"
         >
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Simulation Results
@@ -1287,7 +1287,7 @@ function ScenariosTab() {
 
           {/* Score Comparison */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
               <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Baseline
               </p>
@@ -1295,7 +1295,7 @@ function ScenariosTab() {
                 {simResult.baselineScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
               <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Projected
               </p>
@@ -1303,7 +1303,7 @@ function ScenariosTab() {
                 {simResult.projectedScore}
               </p>
             </div>
-            <div className="text-center p-4 bg-slate-100 dark:bg-white/[0.03] rounded-xl">
+            <div className="text-center p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl">
               <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider mb-1">
                 Delta
               </p>
@@ -1423,7 +1423,7 @@ function ScenariosTab() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-50 dark:bg-white/[0.03] border border-emerald-500/20 rounded-xl p-6"
+          className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-emerald-500/20 rounded-xl p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
@@ -1474,7 +1474,7 @@ function ScenariosTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-small">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-white/10">
+                  <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
                     <th className="text-left py-2 text-slate-500 dark:text-white/45">
                       Dimension
                     </th>
@@ -1565,7 +1565,7 @@ function ScenariosTab() {
             {filteredScenarios.map((s) => (
               <div
                 key={s.id}
-                className={`bg-slate-50 dark:bg-white/[0.03] border rounded-xl p-4 transition-colors ${
+                className={`bg-slate-50 dark:bg-[--glass-bg-surface] border rounded-xl p-4 transition-colors ${
                   selectedForCompare.includes(s.id)
                     ? "border-blue-500/40 bg-blue-500/5 dark:bg-blue-500/5"
                     : s.isStale
@@ -1579,7 +1579,7 @@ function ScenariosTab() {
                       type="checkbox"
                       checked={selectedForCompare.includes(s.id)}
                       onChange={() => toggleCompareSelection(s.id)}
-                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/[0.05] text-blue-500 focus:ring-blue-500"
+                      className="rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[--glass-bg-surface] text-blue-500 focus:ring-blue-500"
                     />
                     <span className="text-body font-medium text-slate-900 dark:text-white">
                       {s.name}
@@ -1725,7 +1725,7 @@ function TimelineTab() {
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-lg hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-lg hover:border-slate-200 dark:hover:border-white/10 transition-colors"
                 >
                   <div
                     className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityColors[entry.priority] || priorityColors.MEDIUM}`}

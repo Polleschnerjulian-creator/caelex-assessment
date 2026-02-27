@@ -12,7 +12,7 @@ describe("Badge Component", () => {
     it("should apply default variant styles", () => {
       render(<Badge>Default</Badge>);
       const badge = screen.getByText("Default");
-      expect(badge.className).toContain("bg-white/10");
+      expect(badge.className).toContain("bg-slate-100");
     });
 
     it("should apply success variant styles", () => {
@@ -47,21 +47,21 @@ describe("Badge Component", () => {
       render(<Badge variant="outline">Outline</Badge>);
       const badge = screen.getByText("Outline");
       expect(badge.className).toContain("bg-transparent");
-      expect(badge.className).toContain("border-white/20");
+      expect(badge.className).toContain("border-slate-300");
     });
 
     it("should apply small size", () => {
       render(<Badge size="sm">Small</Badge>);
       const badge = screen.getByText("Small");
       expect(badge.className).toContain("px-1.5");
-      expect(badge.className).toContain("text-[10px]");
+      expect(badge.className).toContain("text-micro");
     });
 
     it("should apply medium size by default", () => {
       render(<Badge>Medium</Badge>);
       const badge = screen.getByText("Medium");
       expect(badge.className).toContain("px-2.5");
-      expect(badge.className).toContain("text-[11px]");
+      expect(badge.className).toContain("text-caption");
     });
 
     it("should render dot when dot prop is true", () => {

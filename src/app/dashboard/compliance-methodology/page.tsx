@@ -273,7 +273,7 @@ function SectionCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6"
+      className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mb-6"
     >
       {children}
     </motion.div>
@@ -322,7 +322,7 @@ export default function ComplianceMethodologyPage() {
           </h2>
           <div className="space-y-4 text-body-lg text-slate-700 dark:text-white/70 leading-relaxed">
             <p>{t("methodology.howItWorksP1")}</p>
-            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-lg p-4 font-mono text-body text-emerald-400">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/5 rounded-lg p-4 font-mono text-body text-emerald-400">
               Overall Score = (Auth × 0.25) + (Debris × 0.20) + (Cyber × 0.20) +
               (Insurance × 0.15) + (Environmental × 0.10) + (Reporting × 0.10)
             </div>
@@ -339,7 +339,7 @@ export default function ComplianceMethodologyPage() {
             {grades.map((g) => (
               <div
                 key={g.grade}
-                className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-lg p-4 text-center"
+                className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/5 rounded-lg p-4 text-center"
               >
                 <div
                   className={`w-10 h-10 rounded-full ${g.color} flex items-center justify-center mx-auto mb-2`}
@@ -412,7 +412,7 @@ export default function ComplianceMethodologyPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.08 }}
-                  className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden"
+                  className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
                 >
                   {/* Module Header */}
                   <div className="flex items-center gap-4 p-5 border-b border-slate-100 dark:border-white/5">
@@ -488,7 +488,7 @@ export default function ComplianceMethodologyPage() {
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="border-t border-slate-200 dark:border-white/10">
+                        <tr className="border-t border-slate-200 dark:border-[--glass-border-subtle]">
                           <td className="pt-2 text-small text-slate-500 dark:text-white/45 font-medium">
                             {t("common.total")}
                           </td>
@@ -536,7 +536,7 @@ export default function ComplianceMethodologyPage() {
               {
                 level: t("common.low"),
                 color:
-                  "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/45 border-slate-200 dark:border-white/10",
+                  "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
                 rule: t("methodology.priorityLowDesc"),
               },
             ].map((p) => (

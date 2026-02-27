@@ -67,7 +67,7 @@ export function DeleteAccountCard({
   return (
     <>
       {/* Delete Account Card */}
-      <div className="bg-white dark:bg-white/[0.04] border border-red-200 dark:border-red-500/20 rounded-xl p-6 mt-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-red-200 dark:border-red-500/20 rounded-xl p-6 mt-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
             <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -114,9 +114,9 @@ export function DeleteAccountCard({
           aria-modal="true"
           aria-labelledby="delete-account-title"
         >
-          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-white/10">
+          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-slate-200 dark:border-[--glass-border-subtle]">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-red-50 dark:bg-red-500/5">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-[--glass-border-subtle] bg-red-50 dark:bg-red-500/5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -166,7 +166,7 @@ export function DeleteAccountCard({
                       aria-required="true"
                       autoComplete="current-password"
                       placeholder="Your current password"
-                      className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                      className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 pr-10 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
                     />
                     <button
                       type="button"
@@ -205,7 +205,7 @@ export function DeleteAccountCard({
                   onChange={(e) => setConfirmation(e.target.value)}
                   aria-required="true"
                   placeholder="DELETE MY ACCOUNT"
-                  className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono"
+                  className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono"
                 />
               </div>
 
@@ -223,7 +223,7 @@ export function DeleteAccountCard({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowModal(false);

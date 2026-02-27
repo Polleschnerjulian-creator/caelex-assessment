@@ -46,16 +46,16 @@ const variants: Record<ButtonVariant, string> = {
     focus:ring-2 focus:ring-emerald-500/30 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg
   `,
   secondary: `
-    bg-slate-100 dark:bg-white/[0.06] text-slate-800 dark:text-white border border-slate-200 dark:border-white/10
-    hover:bg-slate-200 dark:hover:bg-white/[0.10] hover:border-slate-300 dark:hover:border-white/20
+    bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-800 dark:text-white border border-slate-200 dark:border-[--glass-border-subtle]
+    hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] hover:border-slate-300 dark:hover:border-[--glass-border-hover]
     active:bg-slate-300 dark:active:bg-white/[0.12]
     disabled:opacity-50
     focus:ring-2 focus:ring-slate-300 dark:focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg
   `,
   ghost: `
     text-slate-700 dark:text-white/70
-    hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]
-    active:bg-slate-200 dark:active:bg-white/[0.08]
+    hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]
+    active:bg-slate-200 dark:active:bg-[--glass-bg-elevated]
     focus:ring-2 focus:ring-slate-300 dark:focus:ring-white/20
   `,
   danger: `
@@ -147,9 +147,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
-        whileHover={{ scale: disabled || loading ? 1 : 1.01 }}
-        whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
-        transition={{ duration: 0.1 }}
+        whileHover={{
+          scale: disabled || loading ? 1 : 1.01,
+          filter: disabled || loading ? "none" : "brightness(1.05)",
+        }}
+        whileTap={{
+          scale: disabled || loading ? 1 : 0.98,
+          filter: disabled || loading ? "none" : "brightness(0.95)",
+        }}
+        transition={{ duration: 0.15 }}
         className={classes}
         disabled={disabled || loading}
         aria-busy={loading || undefined}

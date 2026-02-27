@@ -48,7 +48,7 @@ export default function UsageMetrics({
   };
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <h3 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-5">
         Usage
       </h3>
@@ -90,7 +90,7 @@ export default function UsageMetrics({
 
             {/* Progress Bar */}
             <div
-              className="h-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden"
+              className="h-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden"
               role="progressbar"
               aria-valuenow={metric.current}
               aria-valuemin={0}

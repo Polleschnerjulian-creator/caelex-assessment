@@ -236,7 +236,7 @@ export default function ApiKeysPage() {
         )}
 
         {/* Keys table */}
-        <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
@@ -254,7 +254,7 @@ export default function ApiKeysPage() {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-white/10">
+                <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
                   <th className="text-left text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
                     {t("apiKeys.name")}
                   </th>
@@ -370,7 +370,7 @@ export default function ApiKeysPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
+              className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
             >
               <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
                 {t("apiKeys.createApiKey")}
@@ -389,7 +389,7 @@ export default function ApiKeysPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder={t("apiKeys.keyNamePlaceholder")}
-                  className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export default function ApiKeysPage() {
                   {scopes.map((s) => (
                     <label
                       key={s.scope}
-                      className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.04] cursor-pointer border border-slate-100 dark:border-white/5"
+                      className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] cursor-pointer border border-slate-100 dark:border-white/5"
                     >
                       <input
                         type="checkbox"
@@ -434,7 +434,7 @@ export default function ApiKeysPage() {
                   onChange={(e) =>
                     setNewRateLimit(parseInt(e.target.value) || 1000)
                   }
-                  className="w-full bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
 
@@ -442,7 +442,7 @@ export default function ApiKeysPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="flex-1 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                  className="flex-1 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-500 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                 >
                   {t("common.cancel")}
                 </button>

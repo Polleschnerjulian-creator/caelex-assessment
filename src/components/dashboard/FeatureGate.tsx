@@ -86,7 +86,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
     <div className="flex items-center justify-center min-h-[400px] px-4">
       <div className="max-w-md w-full text-center">
         {/* Lock icon */}
-        <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mx-auto mb-6">
           <Lock
             size={28}
             className="text-slate-400 dark:text-white/30"
@@ -105,7 +105,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
         </p>
 
         {/* Plan badge */}
-        <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 mb-6">
+        <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 mb-6">
           <span className="text-small text-slate-500 dark:text-white/45">
             Your plan:
           </span>

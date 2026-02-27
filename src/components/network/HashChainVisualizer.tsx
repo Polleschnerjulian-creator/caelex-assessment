@@ -75,7 +75,7 @@ export default function HashChainVisualizer({
               className={`relative flex flex-col items-center p-3 rounded-xl border-2 min-w-[140px] ${
                 node.isRevoked
                   ? "border-red-500/30 bg-red-500/5 dark:bg-red-500/10"
-                  : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.06]"
+                  : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-elevated]"
               }`}
             >
               {/* Revoked indicator */}

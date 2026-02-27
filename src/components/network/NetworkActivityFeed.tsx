@@ -67,7 +67,7 @@ const ACTION_CONFIG: Record<
   DOCUMENT_VIEWED: {
     icon: Eye,
     color:
-      "text-slate-500 dark:text-white/50 bg-slate-500/10 dark:bg-white/[0.06]",
+      "text-slate-500 dark:text-white/50 bg-slate-500/10 dark:bg-[--glass-bg-elevated]",
   },
   DOCUMENT_DOWNLOADED: {
     icon: Download,
@@ -76,7 +76,7 @@ const ACTION_CONFIG: Record<
   PORTAL_LOGIN: {
     icon: LogIn,
     color:
-      "text-slate-500 dark:text-white/50 bg-slate-500/10 dark:bg-white/[0.06]",
+      "text-slate-500 dark:text-white/50 bg-slate-500/10 dark:bg-[--glass-bg-elevated]",
   },
 };
 
@@ -101,10 +101,10 @@ function formatRelativeTime(dateString: string): string {
 function SkeletonRow() {
   return (
     <div className="flex items-start gap-3 p-3 animate-pulse">
-      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/[0.06]" />
+      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[--glass-bg-elevated]" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-white/[0.06]" />
-        <div className="h-2.5 w-1/4 rounded bg-slate-100 dark:bg-white/[0.03]" />
+        <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-[--glass-bg-elevated]" />
+        <div className="h-2.5 w-1/4 rounded bg-slate-100 dark:bg-[--glass-bg-surface]" />
       </div>
     </div>
   );
@@ -149,7 +149,7 @@ export default function NetworkActivityFeed({
         return (
           <div
             key={activity.id}
-            className="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+            className="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-colors"
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses}`}

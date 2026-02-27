@@ -325,7 +325,7 @@ export default function OperatorProfileEditor() {
                   type="checkbox"
                   checked={profile.isResearch}
                   onChange={(e) => handleChange("isResearch", e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-white/[0.06]"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
                 />
                 <span className="text-body text-slate-700 dark:text-slate-200">
                   Research entity (eligible for light regime)
@@ -338,7 +338,7 @@ export default function OperatorProfileEditor() {
                   onChange={(e) =>
                     handleChange("isDefenseOnly", e.target.checked)
                   }
-                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-white/[0.06]"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
                 />
                 <span className="text-body text-slate-700 dark:text-slate-200">
                   Defense-only operations (excluded from EU Space Act)
@@ -439,7 +439,7 @@ export default function OperatorProfileEditor() {
                 onChange={(e) =>
                   handleChange("isConstellation", e.target.checked)
                 }
-                className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-white/[0.06]"
+                className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
               />
               <span className="text-body text-slate-700 dark:text-slate-200">
                 Part of a constellation
@@ -507,7 +507,7 @@ export default function OperatorProfileEditor() {
                       ${
                         isSelected
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                          : "bg-slate-50 dark:bg-white/[0.04] text-slate-600 dark:text-white/50 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                          : "bg-slate-50 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/50 border border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
                       }
                     `}
                   >
@@ -525,7 +525,7 @@ export default function OperatorProfileEditor() {
               onChange={(e) =>
                 handleChange("offersEUServices", e.target.checked)
               }
-              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-white/[0.06]"
+              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 bg-white dark:bg-[--glass-bg-elevated]"
             />
             <span className="text-body text-slate-700 dark:text-slate-200">
               Offers services in the EU market
@@ -547,7 +547,7 @@ export default function OperatorProfileEditor() {
           assessments, saving time and ensuring consistency.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.operatorType && profile.entitySize
@@ -566,7 +566,7 @@ export default function OperatorProfileEditor() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.entitySize && profile.establishment

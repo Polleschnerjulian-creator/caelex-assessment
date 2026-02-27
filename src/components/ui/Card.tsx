@@ -11,15 +11,16 @@ interface CardProps extends HTMLMotionProps<"div"> {
 
 const cardVariants = {
   default:
-    "bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10",
+    "bg-white border border-slate-200 shadow-sm shadow-slate-100 glass-surface relative overflow-hidden",
   glass:
-    "bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200 dark:border-white/10",
+    "bg-white/80 border border-slate-200 glass-elevated relative overflow-hidden",
   elevated:
-    "bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-200/50 dark:shadow-black/20",
+    "bg-white border border-slate-200 shadow-lg shadow-slate-200/50 glass-elevated relative overflow-hidden",
   interactive: `
-    bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10
-    hover:bg-slate-50 dark:hover:bg-white/[0.06] hover:border-slate-300 dark:hover:border-white/15
+    bg-white border border-slate-200
+    hover:bg-slate-50 hover:border-slate-300
     transition-all duration-200 cursor-pointer
+    glass-surface glass-interactive relative overflow-hidden
   `,
 };
 
@@ -35,6 +36,8 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     { variant = "default", padding = "md", className = "", children, ...props },
     ref,
   ) => {
+    const isInteractive = variant === "interactive";
+
     return (
       <motion.div
         ref={ref}
@@ -44,6 +47,12 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           ${paddings[padding]}
           ${className}
         `}
+        {...(isInteractive
+          ? {
+              whileHover: { y: -2 },
+              transition: { type: "spring", stiffness: 400, damping: 25 },
+            }
+          : {})}
         {...props}
       >
         {children}
@@ -125,7 +134,7 @@ interface CardFooterProps {
 export function CardFooter({ children, className = "" }: CardFooterProps) {
   return (
     <div
-      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-white/10 ${className}`}
+      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-white/[0.08] ${className}`}
     >
       {children}
     </div>

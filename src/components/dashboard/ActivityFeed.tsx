@@ -207,10 +207,10 @@ export default function ActivityFeed({
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="animate-pulse flex items-start gap-3">
-            <div className="w-8 h-8 bg-slate-200 dark:bg-white/[0.05] rounded-lg" />
+            <div className="w-8 h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded-lg" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-3/4" />
-              <div className="h-3 bg-slate-100 dark:bg-white/[0.04] rounded w-1/2" />
+              <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-3/4" />
+              <div className="h-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded w-1/2" />
             </div>
           </div>
         ))}
@@ -229,7 +229,7 @@ export default function ActivityFeed({
               <select
                 value={entityFilter}
                 onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/12 text-slate-700 dark:text-white/45 rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.1]"
+                className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 text-slate-700 dark:text-white/45 rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.1]"
               >
                 <option value="all">All Activity</option>
                 <option value="article">Articles</option>
@@ -305,12 +305,12 @@ export default function ActivityFeed({
                   transition={{ delay: index * 0.02 }}
                   className={`flex items-start gap-3 ${compact ? "py-2" : "py-3"} ${
                     index < logs.length - 1
-                      ? "border-b border-slate-100 dark:border-white/[0.03]"
+                      ? "border-b border-slate-100 dark:border-[--glass-border-subtle]"
                       : ""
                   }`}
                 >
                   <div
-                    className={`p-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.04] ${iconColor}`}
+                    className={`p-1.5 rounded-lg bg-slate-100 dark:bg-[--glass-bg-surface] ${iconColor}`}
                   >
                     <Icon size={compact ? 12 : 14} />
                   </div>

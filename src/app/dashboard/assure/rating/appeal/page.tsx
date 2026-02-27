@@ -81,7 +81,7 @@ const STATUS_CONFIG: Record<
     label: "Withdrawn",
     icon: XCircle,
     className:
-      "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-white/10",
+      "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
   },
 };
 
@@ -169,7 +169,7 @@ function AppealForm({
               onChange={(e) => setReason(e.target.value)}
               placeholder="Describe why you believe the current rating does not accurately reflect your organization's regulatory compliance posture. Include specific evidence or circumstances that should be considered..."
               rows={6}
-              className="w-full px-4 py-3 bg-white dark:bg-navy-900 border border-slate-200 dark:border-white/10 rounded-xl text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all resize-none"
+              className="w-full px-4 py-3 bg-white dark:bg-navy-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all resize-none"
             />
             <p className="text-micro text-slate-400 dark:text-white/25 mt-1">
               Minimum 50 characters. {reason.length}/50

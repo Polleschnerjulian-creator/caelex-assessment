@@ -268,7 +268,7 @@ export default function FileUploader({
                 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
                 : file
                   ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-500/5"
-                  : "border-slate-300 dark:border-white/10 hover:border-slate-400 dark:hover:border-white/20 bg-slate-50 dark:bg-white/[0.02]"
+                  : "border-slate-300 dark:border-[--glass-border-subtle] hover:border-slate-400 dark:hover:border-[--glass-border-hover] bg-slate-50 dark:bg-white/[0.02]"
             }
           `}
         >
@@ -329,7 +329,7 @@ export default function FileUploader({
 
       {/* Progress */}
       {status !== "idle" && status !== "error" && (
-        <div className="bg-slate-50 dark:bg-white/[0.02] rounded-xl p-6 border border-slate-200 dark:border-white/10">
+        <div className="bg-slate-50 dark:bg-white/[0.02] rounded-xl p-6 border border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-center gap-4 mb-4">
             {status === "success" ? (
               <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/20">

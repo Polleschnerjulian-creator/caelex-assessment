@@ -44,16 +44,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-required={props.required}
           className={`
             w-full px-4 py-2.5
-            bg-white dark:bg-white/[0.06]
-            border border-slate-200 dark:border-white/10
+            bg-white dark:bg-[--glass-bg-surface]
+            border border-slate-200 dark:border-[--glass-border-subtle]
             rounded-lg
             text-body-lg text-slate-900 dark:text-white
             placeholder:text-slate-400 dark:placeholder:text-white/45
             transition-all duration-200
-            hover:border-slate-300 dark:hover:border-white/20
+            hover:border-slate-300 dark:hover:border-[--glass-border-hover]
             focus:outline-none
             focus:border-emerald-500/50
-            focus:bg-slate-50 dark:focus:bg-white/[0.08]
+            focus:bg-slate-50 dark:focus:bg-[--glass-bg-elevated]
             focus:ring-2 focus:ring-emerald-500/20
             disabled:opacity-50 disabled:cursor-not-allowed
             ${error ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20" : ""}

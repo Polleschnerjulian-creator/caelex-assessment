@@ -17,3 +17,4 @@ export { Progress, CircularProgress } from "./Progress";
 export { ToastProvider, useToast } from "./Toast";
 export { EmptyState, CompactEmptyState } from "./EmptyState";
 export { Breadcrumbs } from "./Breadcrumbs";
+export { GlassMotion, GlassStagger, glassItemVariants } from "./GlassMotion";

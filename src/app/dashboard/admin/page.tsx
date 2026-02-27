@@ -189,7 +189,7 @@ function StatCard({
   loading: boolean;
 }) {
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
       <div className="flex items-center gap-4">
         <div
           className={`w-11 h-11 ${bgColor} rounded-lg flex items-center justify-center ${iconColor}`}
@@ -229,7 +229,7 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="group bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-200"
+      className="group bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-11 h-11 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">

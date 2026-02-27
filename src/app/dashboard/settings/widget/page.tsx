@@ -200,7 +200,7 @@ export default function WidgetSettingsPage() {
 
       {/* API Key Section */}
       {!config ? (
-        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
             {t("widget.setup")}
           </h2>
@@ -244,7 +244,7 @@ export default function WidgetSettingsPage() {
           )}
 
           {/* Widget Type */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.widgetType")}
@@ -257,7 +257,7 @@ export default function WidgetSettingsPage() {
                   className={`p-4 rounded-lg border text-left transition-colors ${
                     widgetType === wt.value
                       ? "border-blue-500 bg-blue-500/5 dark:bg-blue-500/10"
-                      : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                      : "border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
                   }`}
                 >
                   <p className="font-medium text-sm text-slate-900 dark:text-white">
@@ -272,7 +272,7 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Theme */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Palette size={20} />
               {t("widget.theme")}
@@ -285,7 +285,7 @@ export default function WidgetSettingsPage() {
                   className={`px-6 py-3 rounded-lg border text-sm font-medium transition-colors ${
                     theme === t
                       ? "border-blue-500 bg-blue-500/5 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : "border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/45 hover:border-slate-300"
+                      : "border-slate-200 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/45 hover:border-slate-300"
                   }`}
                 >
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -295,7 +295,7 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Allowed Domains */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Globe size={20} />
               {t("widget.allowedDomains")}
@@ -310,7 +310,7 @@ export default function WidgetSettingsPage() {
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="https://example.com"
-                className="flex-1 px-3 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
+                className="flex-1 px-3 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
               />
               <button
                 onClick={addDomain}
@@ -357,18 +357,18 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Embed Code */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.embedCode")}
             </h2>
             <div className="relative">
-              <pre className="bg-slate-50 dark:bg-dark-surface border border-slate-200 dark:border-white/10 rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
+              <pre className="bg-slate-50 dark:bg-dark-surface border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
                 {embedCode}
               </pre>
               <button
                 onClick={() => copyToClipboard(embedCode, "embed")}
-                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-lg text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70 transition-colors"
+                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70 transition-colors"
               >
                 {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
               </button>
@@ -376,12 +376,12 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Live Preview */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
             <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Eye size={20} />
               {t("widget.preview")}
             </h2>
-            <div className="flex justify-center p-8 bg-slate-50 dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-white/10">
+            <div className="flex justify-center p-8 bg-slate-50 dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
               <div className="text-center text-sm text-slate-500 dark:text-white/45">
                 <Code2 size={32} className="mx-auto mb-3 opacity-50" />
                 <p>Widget preview available when running locally.</p>
@@ -395,7 +395,7 @@ export default function WidgetSettingsPage() {
 
           {/* Analytics */}
           {analytics && (
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
               <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <BarChart3 size={20} />
                 {t("widget.analytics")}

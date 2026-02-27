@@ -34,7 +34,7 @@ const ROLE_STYLES: Record<string, string> = {
     "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20",
   auditor:
     "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
-  user: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/10",
+  user: "bg-slate-50 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
 };
 
 const PLAN_STYLES: Record<string, string> = {
@@ -44,7 +44,7 @@ const PLAN_STYLES: Record<string, string> = {
     "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20",
   STARTER:
     "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
-  FREE: "bg-slate-50 dark:bg-white/[0.06] text-slate-600 dark:text-white/45 border-slate-200 dark:border-white/10",
+  FREE: "bg-slate-50 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
 };
 
 export default function UserTable({ users, onRefresh }: Props) {
@@ -126,7 +126,7 @@ export default function UserTable({ users, onRefresh }: Props) {
   if (users.length === 0) {
     return (
       <div
-        className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
+        className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
         role="status"
       >
         <p className="text-body-lg text-slate-500 dark:text-white/45">
@@ -137,11 +137,11 @@ export default function UserTable({ users, onRefresh }: Props) {
   }
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full" aria-label="Users">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+            <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02]">
               <th
                 scope="col"
                 className="text-left px-4 py-3 text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45"
@@ -276,7 +276,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/45 rounded-full text-caption font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-500 dark:text-white/45 rounded-full text-caption font-medium">
                         <UserX size={11} aria-hidden="true" />
                         Inactive
                       </span>

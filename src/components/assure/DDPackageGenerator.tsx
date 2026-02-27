@@ -167,7 +167,7 @@ export default function DDPackageGenerator({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 border-l border-slate-100 dark:border-white/10 pl-3 ml-1">
+                    <div className="flex items-center gap-1 border-l border-slate-100 dark:border-[--glass-border-subtle] pl-3 ml-1">
                       <a
                         href={`/api/assure/dd-package/${pkg.id}`}
                         target="_blank"

@@ -411,13 +411,13 @@ function DebrisPageContent() {
     return (
       <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-100 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-100 dark:bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-100 dark:bg-[--glass-bg-surface] rounded w-1/3" />
+          <div className="h-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-white dark:bg-white/[0.04] rounded-xl"
+                className="h-24 bg-white dark:bg-[--glass-bg-surface] rounded-xl"
               />
             ))}
           </div>
@@ -445,7 +445,7 @@ function DebrisPageContent() {
       {/* Compliance Metrics (when assessment selected) */}
       {selectedAssessment && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-slate-900 dark:text-white">
               {metrics.compliant}/{metrics.total}
             </p>
@@ -453,7 +453,7 @@ function DebrisPageContent() {
               requirements compliant
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.complianceScore || 0}%
             </p>
@@ -461,7 +461,7 @@ function DebrisPageContent() {
               compliance score
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-green-400">
               {selectedAssessment.deorbitTimelineYears || "\u2014"}
             </p>
@@ -469,7 +469,7 @@ function DebrisPageContent() {
               years to deorbit
             </p>
           </div>
-          <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-5">
+          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
             <p className="text-display font-semibold text-slate-900 dark:text-white">
               {selectedAssessment.caServiceProvider || "\u2014"}
             </p>
@@ -498,7 +498,7 @@ function DebrisPageContent() {
                 disabled={index > 0 && !selectedAssessment}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
-                    ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
+                    ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.1]"
                     : index > 0 && !selectedAssessment
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-slate-100 dark:hover:bg-white/[0.04]"
@@ -510,7 +510,7 @@ function DebrisPageContent() {
                       ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
                         ? "bg-green-500/20 text-green-400"
-                        : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
+                        : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70"
                   }`}
                 >
                   {activeStep > index ? (
@@ -577,10 +577,10 @@ function DebrisPageContent() {
                       fetchRequirements(assessment.id);
                       setActiveStep(1);
                     }}
-                    className={`w-full bg-white dark:bg-white/[0.04] border rounded-xl p-5 text-left hover:bg-slate-50 dark:hover:bg-white/[0.05] transition-all ${
+                    className={`w-full bg-white dark:bg-[--glass-bg-surface] border rounded-xl p-5 text-left hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-all ${
                       selectedAssessment?.id === assessment.id
                         ? "border-slate-300 dark:border-white/[0.15]"
-                        : "border-slate-200 dark:border-white/10"
+                        : "border-slate-200 dark:border-[--glass-border-subtle]"
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -593,7 +593,7 @@ function DebrisPageContent() {
                           <span className="text-subtitle font-medium text-slate-900 dark:text-white">
                             {assessment.missionName || "Unnamed Mission"}
                           </span>
-                          <span className="text-micro uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.05] text-slate-500 dark:text-white/45">
+                          <span className="text-micro uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45">
                             {assessment.constellationTier}
                           </span>
                         </div>
@@ -622,7 +622,7 @@ function DebrisPageContent() {
             {/* New assessment form */}
             {(assessments.length === 0 || showNewAssessment) && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <h2 className="text-title font-medium text-slate-900 dark:text-white mb-4">
                     Mission Profile
                   </h2>
@@ -642,7 +642,7 @@ function DebrisPageContent() {
                         value={missionName}
                         onChange={(e) => setMissionName(e.target.value)}
                         placeholder="e.g., Constellation Alpha"
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -660,7 +660,7 @@ function DebrisPageContent() {
                             deorbitStrategy: undefined, // Reset deorbit when orbit changes
                           }))
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select orbit...</option>
                         {Object.entries(orbitTypeConfig).map(
@@ -691,7 +691,7 @@ function DebrisPageContent() {
                             }))
                           }
                           placeholder="e.g., 550"
-                          className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                          className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                         />
                       </div>
                     )}
@@ -711,7 +711,7 @@ function DebrisPageContent() {
                             satelliteCount: parseInt(e.target.value) || 1,
                           }))
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                       {form.satelliteCount && form.satelliteCount > 1 && (
                         <p className="text-caption text-slate-600 dark:text-white/70 mt-1">
@@ -735,7 +735,7 @@ function DebrisPageContent() {
                             hasPropulsion: e.target.value !== "none",
                           }))
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select capability...</option>
                         <option value="full">
@@ -764,7 +764,7 @@ function DebrisPageContent() {
                               parseInt(e.target.value) || 5,
                           }))
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -782,7 +782,7 @@ function DebrisPageContent() {
                           }))
                         }
                         disabled={!form.orbitType}
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] disabled:opacity-50"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15] disabled:opacity-50"
                       >
                         <option value="">Select strategy...</option>
                         {availableDeorbitStrategies.map((strategy) => (
@@ -821,7 +821,7 @@ function DebrisPageContent() {
                               }))
                             }
                             placeholder="e.g., 5"
-                            className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                            className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                           />
                         </div>
                       )}
@@ -834,7 +834,7 @@ function DebrisPageContent() {
                       <select
                         value={caServiceProvider}
                         onChange={(e) => setCaServiceProvider(e.target.value)}
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select or enter...</option>
                         <option value="EUSST">
@@ -864,7 +864,7 @@ function DebrisPageContent() {
                             hasPassivationCapability: e.target.checked,
                           }))
                         }
-                        className="w-4 h-4 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded"
+                        className="w-4 h-4 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded"
                       />
                       <label
                         htmlFor="passivation"
@@ -898,7 +898,7 @@ function DebrisPageContent() {
 
                 {/* Preview of applicable requirements */}
                 {previewRequirements.length > 0 && (
-                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                     <h3 className="text-body-lg font-medium text-slate-900 dark:text-white mb-4">
                       Applicable Requirements Preview
                     </h3>
@@ -970,7 +970,7 @@ function DebrisPageContent() {
             className="space-y-6"
           >
             {!selectedAssessment ? (
-              <div className="bg-white dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+              <div className="bg-white dark:bg-[--glass-bg-surface] border border-dashed border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
                   className="mx-auto text-slate-500 dark:text-white/45 mb-3"
@@ -988,7 +988,7 @@ function DebrisPageContent() {
             ) : (
               <>
                 {/* Progress bar */}
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="text-title font-medium text-slate-900 dark:text-white mb-1">
@@ -1003,7 +1003,7 @@ function DebrisPageContent() {
                       {selectedAssessment.complianceScore || 0}%
                     </p>
                   </div>
-                  <div className="h-2 bg-slate-100 dark:bg-white/[0.04] rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{
@@ -1043,7 +1043,7 @@ function DebrisPageContent() {
                         className={`bg-white dark:bg-white/[0.015] border rounded-xl transition-all ${
                           isExpanded
                             ? "border-slate-300 dark:border-white/[0.12]"
-                            : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/[0.08]"
+                            : "border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-white/[0.08]"
                         }`}
                       >
                         {/* Card header — clickable */}
@@ -1196,7 +1196,7 @@ function DebrisPageContent() {
                                       );
                                     }}
                                     aria-label={`Compliance status for ${req.title}`}
-                                    className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] focus:outline-none ${statusInfo.color}`}
+                                    className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface] focus:outline-none ${statusInfo.color}`}
                                   >
                                     <option value="not_assessed">
                                       Not Assessed
@@ -1212,7 +1212,7 @@ function DebrisPageContent() {
                                 {/* Tips */}
                                 {req.status !== "compliant" &&
                                   req.tips.length > 0 && (
-                                    <div className="p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                                    <div className="p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
                                       <p className="text-micro uppercase tracking-wider text-slate-500 dark:text-white/45 mb-2">
                                         Tips
                                       </p>
@@ -1292,7 +1292,7 @@ function DebrisPageContent() {
             className="space-y-6"
           >
             {!selectedAssessment ? (
-              <div className="bg-white dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+              <div className="bg-white dark:bg-[--glass-bg-surface] border border-dashed border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
                   className="mx-auto text-slate-500 dark:text-white/45 mb-3"
@@ -1308,7 +1308,7 @@ function DebrisPageContent() {
                 </button>
               </div>
             ) : !generatedPlan ? (
-              <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-8 text-center">
+              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
                 <FileText
                   size={48}
                   className="mx-auto text-slate-300 dark:text-white/10 mb-4"
@@ -1344,7 +1344,7 @@ function DebrisPageContent() {
             ) : (
               <>
                 {/* Generated Plan Display */}
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
@@ -1367,7 +1367,7 @@ function DebrisPageContent() {
                   </div>
 
                   {/* Mission Overview */}
-                  <div className="mb-6 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                  <div className="mb-6 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
                     <h3 className="text-body font-medium text-slate-900 dark:text-white mb-3">
                       Mission Overview
                     </h3>
@@ -1403,7 +1403,7 @@ function DebrisPageContent() {
                   ).map(([sectionKey, section]) => (
                     <div
                       key={sectionKey}
-                      className="mb-6 p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                      className="mb-6 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
                     >
                       <h3 className="text-body font-medium text-slate-900 dark:text-white mb-3 capitalize">
                         {sectionKey.replace(/([A-Z])/g, " $1")}
@@ -1446,14 +1446,14 @@ function DebrisPageContent() {
                   ))}
 
                   {/* Requirements Matrix */}
-                  <div className="p-4 bg-slate-100 dark:bg-white/[0.04] rounded-lg">
+                  <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
                     <h3 className="text-body font-medium text-slate-900 dark:text-white mb-3">
                       Requirements Matrix
                     </h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-small">
                         <thead>
-                          <tr className="text-left text-slate-600 dark:text-white/70 border-b border-slate-200 dark:border-white/10">
+                          <tr className="text-left text-slate-600 dark:text-white/70 border-b border-slate-200 dark:border-[--glass-border-subtle]">
                             <th className="pb-2">Article</th>
                             <th className="pb-2">Requirement</th>
                             <th className="pb-2">Status</th>

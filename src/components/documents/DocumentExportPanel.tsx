@@ -66,7 +66,7 @@ export function DocumentExportPanel({
 
       <div className="max-w-lg mx-auto">
         {/* Document Summary */}
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] mb-6">
+        <div className="p-6 rounded-xl border border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-white/[0.02] mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-emerald-500/10">
               <FileText size={20} className="text-emerald-500" />
@@ -88,7 +88,7 @@ export function DocumentExportPanel({
                 key={i}
                 className="flex items-center gap-2 text-xs text-slate-600 dark:text-white/45"
               >
-                <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 text-micro font-medium">
+                <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30 text-micro font-medium">
                   {i + 1}
                 </span>
                 {typeof section.title === "string" ? section.title : "Section"}
@@ -129,7 +129,7 @@ export function DocumentExportPanel({
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
           >
             <ArrowLeft size={16} />
             Back to Editor

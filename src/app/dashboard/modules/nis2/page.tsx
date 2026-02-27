@@ -368,7 +368,7 @@ function DashboardOptionCard({
         ${
           isSelected
             ? "bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500 dark:border-emerald-400/50"
-            : "bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+            : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover] hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
         }
       `}
     >
@@ -381,7 +381,7 @@ function DashboardOptionCard({
               ${
                 isSelected
                   ? "bg-emerald-100 dark:bg-emerald-500/20"
-                  : "bg-slate-100 dark:bg-white/[0.06] group-hover:bg-slate-200 dark:group-hover:bg-white/[0.08]"
+                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] group-hover:bg-slate-200 dark:group-hover:bg-white/[0.08]"
               }
             `}
           >
@@ -465,13 +465,13 @@ function OutOfScopeCard({
       <div className="flex items-center justify-center gap-3">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors"
         >
           Change Answer
         </button>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white/70 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 rounded-lg transition-colors"
         >
           Close
         </button>
@@ -632,10 +632,10 @@ function NIS2Wizard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
+      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[--glass-border-subtle]">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-cyan-400" aria-hidden="true" />
@@ -651,7 +651,7 @@ function NIS2Wizard({
         </div>
         <button
           onClick={onCancel}
-          className="p-2 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+          className="p-2 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
           aria-label="Close wizard"
         >
           <X size={16} className="text-slate-400 dark:text-white/45" />
@@ -659,7 +659,7 @@ function NIS2Wizard({
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-slate-100 dark:bg-white/[0.04]">
+      <div className="h-1 bg-slate-100 dark:bg-[--glass-bg-surface]">
         <motion.div
           className="h-full bg-emerald-500"
           initial={{ width: 0 }}
@@ -738,7 +738,7 @@ function NIS2Wizard({
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 max-w-xl mx-auto"
           >
-            <div className="border-t border-slate-100 dark:border-white/[0.06] pt-6">
+            <div className="border-t border-slate-100 dark:border-[--glass-border-subtle] pt-6">
               <label className="block text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
                 Assessment Name
               </label>
@@ -746,7 +746,7 @@ function NIS2Wizard({
                 type="text"
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
-                className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
+                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
                 placeholder="e.g. Q1 2026 NIS2 Audit"
               />
             </div>
@@ -770,7 +770,7 @@ function NIS2Wizard({
 
       {/* Footer */}
       {!outOfScope && (
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-white/[0.01]">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-[--glass-border-subtle] bg-slate-50/50 dark:bg-white/[0.01]">
           <button
             onClick={currentStep === 1 ? onCancel : handleBack}
             className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
@@ -909,7 +909,7 @@ export default function NIS2ModulePage() {
                 href="/assessment/nis2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors"
               >
                 Public Assessment
                 <ExternalLink size={14} />
@@ -957,7 +957,7 @@ export default function NIS2ModulePage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center"
+            className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
           >
             <ShieldCheck
               className="w-12 h-12 text-cyan-400/40 mx-auto mb-4"
@@ -1007,7 +1007,7 @@ export default function NIS2ModulePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="block bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/[0.15] transition-colors"
+                  className="block bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[--glass-border-hover] transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1052,7 +1052,7 @@ export default function NIS2ModulePage() {
 
                       {/* Progress bar */}
                       <div className="w-24">
-                        <div className="h-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden">
                           <div
                             className="h-full bg-emerald-500 rounded-full transition-all"
                             style={{ width: `${progress}%` }}

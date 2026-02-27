@@ -81,7 +81,7 @@ function getGradeRowColor(grade: string): string {
   if (g === "D")
     return "bg-red-100 dark:bg-red-800/10 border-red-300 dark:border-red-800/20";
 
-  return "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10";
+  return "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[--glass-border-subtle]";
 }
 
 function getGradeTextColor(grade: string): string {
@@ -117,7 +117,7 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+    <div className="border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
@@ -237,7 +237,7 @@ export default function RCRMethodologyExplorer({
                   {comp.dataSources.map((source) => (
                     <span
                       key={source}
-                      className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/40 border border-slate-200 dark:border-white/10"
+                      className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/40 border border-slate-200 dark:border-[--glass-border-subtle]"
                     >
                       {source}
                     </span>
@@ -310,7 +310,7 @@ export default function RCRMethodologyExplorer({
               POSITIVE:
                 "bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400",
               STABLE:
-                "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/70",
+                "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/70",
               NEGATIVE:
                 "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400",
               DEVELOPING:

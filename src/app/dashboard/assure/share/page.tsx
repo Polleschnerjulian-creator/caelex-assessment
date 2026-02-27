@@ -249,7 +249,7 @@ export default function AssureSharePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white border border-slate-200 dark:bg-navy-900 dark:border-white/10 rounded-xl p-8 max-w-[520px] w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-white border border-slate-200 dark:bg-navy-900 dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-[520px] w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               {/* Modal header */}
               <div className="flex items-center justify-between mb-6">
@@ -298,7 +298,7 @@ export default function AssureSharePage() {
                       setForm((f) => ({ ...f, label: e.target.value }))
                     }
                     placeholder="e.g. Series B DD — Acme Ventures"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
                   />
                 </div>
 
@@ -320,7 +320,7 @@ export default function AssureSharePage() {
                           .value as CreateLinkForm["granularity"],
                       }))
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
                   >
                     <option value="SUMMARY">
                       Summary — Overall score and component scores only
@@ -351,7 +351,7 @@ export default function AssureSharePage() {
                         setForm((f) => ({ ...f, expiresAt: e.target.value }))
                       }
                       min={new Date().toISOString().split("T")[0]}
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
                     />
                   </div>
                   <div>
@@ -373,7 +373,7 @@ export default function AssureSharePage() {
                       }
                       min={1}
                       placeholder="Unlimited"
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
                     />
                   </div>
                 </div>
@@ -446,7 +446,7 @@ export default function AssureSharePage() {
               <div className="flex gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 border border-slate-200 text-slate-500 dark:border-white/10 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                  className="flex-1 border border-slate-200 text-slate-500 dark:border-[--glass-border-subtle] dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                 >
                   Cancel
                 </button>

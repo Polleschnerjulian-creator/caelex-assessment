@@ -50,7 +50,7 @@ export function Progress({
         </div>
       )}
       <div
-        className={`w-full bg-white/10 rounded-full overflow-hidden ${heights[size]}`}
+        className={`w-full bg-slate-200 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden ${heights[size]}`}
       >
         <div
           className={`

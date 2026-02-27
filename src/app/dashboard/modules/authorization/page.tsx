@@ -267,13 +267,13 @@ function AuthorizationPageContent() {
     return (
       <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
+                className="h-24 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl"
               />
             ))}
           </div>
@@ -315,7 +315,7 @@ function AuthorizationPageContent() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                   activeStep === index
-                    ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
+                    ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.1]"
                     : "hover:bg-slate-50 dark:hover:bg-white/[0.04]"
                 }`}
               >
@@ -325,7 +325,7 @@ function AuthorizationPageContent() {
                       ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                       : activeStep > index
                         ? "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400"
-                        : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
+                        : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70"
                   }`}
                 >
                   {activeStep > index ? (
@@ -391,10 +391,10 @@ function AuthorizationPageContent() {
                       setSelectedWorkflow(workflow);
                       setActiveStep(1);
                     }}
-                    className={`w-full bg-slate-50 dark:bg-white/[0.04] border rounded-xl p-5 text-left hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-all ${
+                    className={`w-full bg-slate-50 dark:bg-[--glass-bg-surface] border rounded-xl p-5 text-left hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-all ${
                       selectedWorkflow?.id === workflow.id
                         ? "border-slate-300 dark:border-white/[0.15]"
-                        : "border-slate-200 dark:border-white/10"
+                        : "border-slate-200 dark:border-[--glass-border-subtle]"
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -412,7 +412,8 @@ function AuthorizationPageContent() {
                             className={`text-micro uppercase tracking-wider px-2 py-0.5 rounded-full ${
                               workflowStatusFlow[
                                 workflow.status as keyof typeof workflowStatusFlow
-                              ]?.bgColor || "bg-slate-50 dark:bg-white/[0.04]"
+                              ]?.bgColor ||
+                              "bg-slate-50 dark:bg-[--glass-bg-surface]"
                             } ${
                               workflowStatusFlow[
                                 workflow.status as keyof typeof workflowStatusFlow
@@ -467,7 +468,7 @@ function AuthorizationPageContent() {
             {/* New workflow form */}
             {showNewWorkflowForm && (
               <div className="space-y-6">
-                <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <h2 className="text-title font-medium text-slate-900 dark:text-white mb-4">
                     Determine Your Competent Authority
                   </h2>
@@ -486,7 +487,7 @@ function AuthorizationPageContent() {
                       <select
                         value={formOperatorType}
                         onChange={(e) => setFormOperatorType(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select operator type...</option>
                         <option value="SCO">Spacecraft Operator</option>
@@ -507,8 +508,8 @@ function AuthorizationPageContent() {
                           onClick={() => setFormIsThirdCountry(false)}
                           className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             !formIsThirdCountry
-                              ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border border-slate-300 dark:border-white/[0.15]"
-                              : "bg-slate-50 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 border border-slate-200 dark:border-white/10"
+                              ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border border-slate-300 dark:border-white/[0.15]"
+                              : "bg-slate-50 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45 border border-slate-200 dark:border-[--glass-border-subtle]"
                           }`}
                         >
                           EU Member State
@@ -517,8 +518,8 @@ function AuthorizationPageContent() {
                           onClick={() => setFormIsThirdCountry(true)}
                           className={`flex-1 py-3 rounded-lg text-body transition-all ${
                             formIsThirdCountry
-                              ? "bg-slate-200 dark:bg-white/[0.08] text-slate-900 dark:text-white border border-slate-300 dark:border-white/[0.15]"
-                              : "bg-slate-50 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 border border-slate-200 dark:border-white/10"
+                              ? "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-900 dark:text-white border border-slate-300 dark:border-white/[0.15]"
+                              : "bg-slate-50 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45 border border-slate-200 dark:border-[--glass-border-subtle]"
                           }`}
                         >
                           Third Country
@@ -535,7 +536,7 @@ function AuthorizationPageContent() {
                         <select
                           value={formCountry}
                           onChange={(e) => setFormCountry(e.target.value)}
-                          className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                          className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                         >
                           <option value="">Select country...</option>
                           {ncas.map((nca) => (
@@ -560,7 +561,7 @@ function AuthorizationPageContent() {
                             onChange={(e) =>
                               setFormLaunchCountry(e.target.value)
                             }
-                            className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                            className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                           >
                             <option value="">Same as establishment</option>
                             {ncas.map((nca) => (
@@ -581,7 +582,7 @@ function AuthorizationPageContent() {
                         type="date"
                         value={formTargetDate}
                         onChange={(e) => setFormTargetDate(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-3 text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
                   </div>
@@ -592,10 +593,10 @@ function AuthorizationPageContent() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-xl p-6"
+                    className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/[0.05]">
+                      <div className="p-3 rounded-xl bg-slate-100 dark:bg-[--glass-bg-surface]">
                         <Building2
                           size={24}
                           className="text-slate-500 dark:text-white/45"
@@ -665,7 +666,7 @@ function AuthorizationPageContent() {
 
                         {/* Notes */}
                         {ncaDetermination.notes && (
-                          <div className="mt-4 p-3 bg-slate-50 dark:bg-white/[0.04] rounded-lg border border-slate-200 dark:border-white/10">
+                          <div className="mt-4 p-3 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
                             <div className="flex items-start gap-2">
                               <Info
                                 size={14}
@@ -684,7 +685,7 @@ function AuthorizationPageContent() {
                     {/* Secondary NCAs */}
                     {ncaDetermination.secondaryNCAs &&
                       ncaDetermination.secondaryNCAs.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
                           <p className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45 mb-3">
                             Additional Coordination Required
                           </p>
@@ -692,7 +693,7 @@ function AuthorizationPageContent() {
                             {ncaDetermination.secondaryNCAs.map((nca) => (
                               <div
                                 key={nca.id}
-                                className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/[0.04] rounded-lg"
+                                className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg"
                               >
                                 <MapPin
                                   size={12}
@@ -754,7 +755,7 @@ function AuthorizationPageContent() {
             className="space-y-6"
           >
             {!selectedWorkflow ? (
-              <div className="bg-slate-50 dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+              <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-dashed border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
                   className="mx-auto text-slate-500 dark:text-white/45 mb-3"
@@ -773,7 +774,7 @@ function AuthorizationPageContent() {
             ) : (
               <>
                 {/* Progress Overview */}
-                <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="text-title font-medium text-slate-900 dark:text-white mb-1">
@@ -790,7 +791,7 @@ function AuthorizationPageContent() {
                       </p>
                     </div>
                   </div>
-                  <div className="h-2 bg-slate-100 dark:bg-white/[0.04] rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progress.percent}%` }}
@@ -822,11 +823,11 @@ function AuthorizationPageContent() {
                     return (
                       <div
                         key={doc.id}
-                        className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-white/10 rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/[0.08] transition-all"
+                        className="bg-white dark:bg-white/[0.015] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-300 dark:hover:border-white/[0.08] transition-all"
                       >
                         <div className="flex items-start gap-4">
                           <div
-                            className={`p-2.5 rounded-lg ${statusInfo?.bgColor || "bg-slate-50 dark:bg-white/[0.04]"}`}
+                            className={`p-2.5 rounded-lg ${statusInfo?.bgColor || "bg-slate-50 dark:bg-[--glass-bg-surface]"}`}
                           >
                             <CategoryIcon
                               size={18}
@@ -864,7 +865,7 @@ function AuthorizationPageContent() {
                                   updateDocumentStatus(doc.id, e.target.value)
                                 }
                                 aria-label={`Status for ${doc.name}`}
-                                className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] focus:outline-none ${statusInfo?.color || "text-slate-700 dark:text-white/70"}`}
+                                className={`text-caption uppercase tracking-wider px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface] focus:outline-none ${statusInfo?.color || "text-slate-700 dark:text-white/70"}`}
                               >
                                 <option value="not_started">Not Started</option>
                                 <option value="in_progress">In Progress</option>
@@ -883,7 +884,7 @@ function AuthorizationPageContent() {
                             {template?.tips &&
                               doc.status !== "ready" &&
                               doc.status !== "submitted" && (
-                                <div className="mt-3 p-3 bg-slate-50 dark:bg-white/[0.04] rounded-lg">
+                                <div className="mt-3 p-3 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg">
                                   <p className="text-micro uppercase tracking-wider text-slate-500 dark:text-white/45 mb-2">
                                     Tips
                                   </p>
@@ -932,7 +933,7 @@ function AuthorizationPageContent() {
             className="space-y-6"
           >
             {/* Countdown Card */}
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-white/[0.03] dark:to-white/[0.01] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-white/[0.03] dark:to-white/[0.01] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45 mb-1">
@@ -954,13 +955,13 @@ function AuthorizationPageContent() {
             </div>
 
             {/* Key Dates Timeline */}
-            <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
               <h2 className="text-title font-medium text-slate-900 dark:text-white mb-6">
                 Key Milestones
               </h2>
 
               <div className="relative">
-                <div className="absolute left-4 top-2 bottom-2 w-px bg-slate-200 dark:bg-white/[0.08]" />
+                <div className="absolute left-4 top-2 bottom-2 w-px bg-slate-200 dark:bg-[--glass-bg-elevated]" />
 
                 <div className="space-y-6">
                   {[
@@ -1028,7 +1029,7 @@ function AuthorizationPageContent() {
 
             {/* Document Deadlines */}
             {selectedWorkflow && (
-              <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                 <h2 className="text-title font-medium text-slate-900 dark:text-white mb-4">
                   Document Deadlines
                 </h2>
@@ -1043,7 +1044,7 @@ function AuthorizationPageContent() {
                     .map((doc) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/[0.04] rounded-lg"
+                        className="flex items-center justify-between p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
                       >
                         <span className="text-small text-slate-500 dark:text-white/45 truncate">
                           {doc.name}
@@ -1071,7 +1072,7 @@ function AuthorizationPageContent() {
             className="space-y-6"
           >
             {!selectedWorkflow ? (
-              <div className="bg-slate-50 dark:bg-white/[0.04] border border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl p-12 text-center">
+              <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-dashed border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
                 <AlertCircle
                   size={32}
                   className="mx-auto text-slate-500 dark:text-white/45 mb-3"
@@ -1090,7 +1091,7 @@ function AuthorizationPageContent() {
             ) : (
               <>
                 {/* Current Status */}
-                <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-title font-medium text-slate-900 dark:text-white mb-1">
@@ -1141,7 +1142,7 @@ function AuthorizationPageContent() {
                               className={`flex-1 h-2 rounded-full ${
                                 isCompleted || isCurrent
                                   ? "bg-gradient-to-r from-green-500/50 to-green-500"
-                                  : "bg-slate-100 dark:bg-white/[0.05]"
+                                  : "bg-slate-100 dark:bg-[--glass-bg-surface]"
                               }`}
                             />
                             {index < arr.length - 1 && (
@@ -1188,7 +1189,7 @@ function AuthorizationPageContent() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-4"
+                      className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
                     >
                       <p className="text-caption text-slate-500 dark:text-white/45 mb-1">
                         {item.label}

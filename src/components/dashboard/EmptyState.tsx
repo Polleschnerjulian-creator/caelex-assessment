@@ -46,7 +46,7 @@ export default function EmptyState({
 
   return (
     <div className="flex flex-col items-center justify-center text-center py-16">
-      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mb-5">
+      <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mb-5">
         <div className="text-slate-400 dark:text-white/30">{icon}</div>
       </div>
       <h3 className="text-title font-medium text-slate-900 dark:text-white/70 mb-1.5">

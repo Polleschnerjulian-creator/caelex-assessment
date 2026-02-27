@@ -23,7 +23,7 @@ const OUTLOOK_CONFIG = {
     label: "Stable",
     color: "text-slate-600 dark:text-slate-300",
     bg: "bg-slate-50 dark:bg-white/5",
-    border: "border-slate-200 dark:border-white/10",
+    border: "border-slate-200 dark:border-[--glass-border-subtle]",
   },
   NEGATIVE: {
     icon: TrendingDown,

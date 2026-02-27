@@ -72,7 +72,7 @@ export default function CorrespondenceEntry({
       <div
         className={`
           w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-          ${isInbound ? "bg-emerald-500/10" : "bg-slate-100 dark:bg-white/[0.06]"}
+          ${isInbound ? "bg-emerald-500/10" : "bg-slate-100 dark:bg-[--glass-bg-elevated]"}
         `}
       >
         <Icon

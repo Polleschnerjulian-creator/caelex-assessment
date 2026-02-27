@@ -606,7 +606,7 @@ export default function IncidentsPage() {
         {/* Empty state */}
         {!loading && incidents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] flex items-center justify-center mb-4">
               <Shield
                 size={28}
                 className="text-slate-400 dark:text-white/30"
@@ -661,7 +661,7 @@ export default function IncidentsPage() {
                     </span>
 
                     {/* Category tag */}
-                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45 shrink-0">
+                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45 shrink-0">
                       {CATEGORY_LABELS[incident.category] || incident.category}
                     </span>
 
@@ -780,7 +780,7 @@ export default function IncidentsPage() {
                                                 ? "bg-emerald-500 text-white ring-2 ring-emerald-500/30"
                                                 : isPast
                                                   ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/10"
+                                                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30 border border-slate-200 dark:border-[--glass-border-subtle]"
                                             }`}
                                           >
                                             {isPast ? (
@@ -888,7 +888,7 @@ export default function IncidentsPage() {
                                               ? "bg-green-500/5 border-green-500/20"
                                               : isOverdue
                                                 ? "bg-red-500/5 border-red-500/20"
-                                                : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/10"
+                                                : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle]"
                                           }`}
                                         >
                                           {/* Status icon */}
@@ -952,7 +952,7 @@ export default function IncidentsPage() {
                                                   actionLoading ===
                                                   `draft-${incident.id}-${phase.phase}`
                                                 }
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-slate-600 dark:text-white/45 bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-slate-600 dark:text-white/45 bg-slate-100 dark:bg-[--glass-bg-elevated] border border-slate-200 dark:border-[--glass-border-subtle] rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
                                               >
                                                 {actionLoading ===
                                                 `draft-${incident.id}-${phase.phase}` ? (

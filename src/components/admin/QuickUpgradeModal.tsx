@@ -63,11 +63,11 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
   return (
     <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div
-        className="bg-white dark:bg-[#111113] border border-slate-200 dark:border-white/10 rounded-xl max-w-md w-full shadow-xl"
+        className="bg-white dark:bg-[#111113] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl max-w-md w-full shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-amber-500/10 rounded-lg flex items-center justify-center">
               <Zap size={18} className="text-amber-600 dark:text-amber-400" />
@@ -83,7 +83,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
           >
             <X size={18} className="text-slate-500 dark:text-white/45" />
           </button>
@@ -123,7 +123,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@example.com"
                   autoFocus
-                  className="w-full px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   required
                 />
               </div>
@@ -162,8 +162,8 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                               ? "border-purple-500 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 ring-2 ring-purple-500/30"
                               : p.value === "STARTER"
                                 ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 ring-2 ring-blue-500/30"
-                                : "border-slate-400 bg-slate-50 dark:bg-white/[0.06] text-slate-700 dark:text-white/70 ring-2 ring-slate-400/30"
-                          : "border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/45 hover:border-slate-300 dark:hover:border-white/20"
+                                : "border-slate-400 bg-slate-50 dark:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 ring-2 ring-slate-400/30"
+                          : "border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
                       }`}
                     >
                       {p.value === "ENTERPRISE" && (
@@ -187,7 +187,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="e.g., Customer request, partnership, trial extension"
-                  className="w-full px-3 py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 resize-none"
+                  className="w-full px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 resize-none"
                   rows={2}
                 />
               </div>
@@ -210,7 +210,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-white/70 text-body font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 text-body font-medium rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

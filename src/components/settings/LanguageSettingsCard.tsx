@@ -8,7 +8,7 @@ export function LanguageSettingsCard() {
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6 mt-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mt-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
           <Globe
@@ -43,7 +43,7 @@ export function LanguageSettingsCard() {
                 ${
                   language === code
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                    : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/45 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                    : "bg-white dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/45 hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
                 }
               `}
             >

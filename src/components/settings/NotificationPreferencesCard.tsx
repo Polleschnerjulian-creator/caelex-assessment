@@ -122,7 +122,7 @@ export default function NotificationPreferencesCard({
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
         </div>
@@ -131,7 +131,7 @@ export default function NotificationPreferencesCard({
   }
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
           <Bell
@@ -150,7 +150,7 @@ export default function NotificationPreferencesCard({
       </div>
 
       {/* Enable/Disable Toggle */}
-      <div className="mb-6 pb-6 border-b border-slate-200 dark:border-white/10">
+      <div className="mb-6 pb-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <p className="text-body-lg text-slate-900 dark:text-white font-medium">
@@ -216,7 +216,7 @@ export default function NotificationPreferencesCard({
               className={`p-3 rounded-lg border text-left transition-all ${
                 preferences.notificationMethod === method.value
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10"
-                  : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20"
+                  : "border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
               }`}
             >
               <p className="text-body text-slate-900 dark:text-white font-medium">
@@ -248,7 +248,7 @@ export default function NotificationPreferencesCard({
               reminderDaysAdvance: parseInt(e.target.value),
             }))
           }
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         >
           {reminderOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -281,7 +281,7 @@ export default function NotificationPreferencesCard({
             }))
           }
           placeholder={userEmail || "Enter email address"}
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         />
         <p className="text-caption text-slate-500 dark:text-white/45 mt-2">
           Leave empty to use your account email ({userEmail || "not set"})
@@ -306,7 +306,7 @@ export default function NotificationPreferencesCard({
               communicationLanguage: e.target.value,
             }))
           }
-          className="w-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
         >
           {languages.map((lang) => (
             <option key={lang.value} value={lang.value}>

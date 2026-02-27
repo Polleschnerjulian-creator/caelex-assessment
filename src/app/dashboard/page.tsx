@@ -268,7 +268,7 @@ function KPICard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-white/10 rounded-xl p-6 relative overflow-hidden"
+      className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 relative overflow-hidden"
     >
       <div className="flex justify-between items-start mb-3">
         <div>
@@ -440,7 +440,7 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 dark:hover:border-white/20 transition-all group"
+      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 dark:bg-white/5 dark:hover:bg-white/10 dark:border-[--glass-border-subtle] dark:hover:border-[--glass-border-hover] transition-all group"
     >
       <Icon className="w-5 h-5 text-slate-500 dark:text-white/45 group-hover:text-emerald-400 transition-colors" />
       <span className="text-micro text-slate-500 dark:text-white/45 group-hover:text-slate-700 dark:group-hover:text-white/70 transition-colors">
@@ -479,7 +479,7 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-white/10 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-[--glass-border-subtle] last:border-0">
       <div
         className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
@@ -1131,7 +1131,7 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-slate-200 dark:border-white/10">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-slate-200 dark:border-[--glass-border-subtle]">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
@@ -1202,7 +1202,7 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white border border-slate-200 dark:bg-dark-bg dark:border-white/10 rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
+                className="bg-white border border-slate-200 dark:bg-dark-bg dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-[400px] w-full shadow-2xl"
               >
                 <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
                   {t("dashboard.selectOperatorType")}
@@ -1217,7 +1217,7 @@ function DashboardContent() {
                   id="operator-type-select"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 dark:bg-white/5 dark:border-white/10 dark:text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 dark:bg-white/5 dark:border-[--glass-border-subtle] dark:text-white rounded-lg px-4 py-3 text-body-lg mb-6 focus:outline-none focus:border-emerald-500/50"
                 >
                   <option value="">
                     {t("dashboard.selectOperatorPlaceholder")}
@@ -1232,7 +1232,7 @@ function DashboardContent() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="flex-1 border border-slate-200 text-slate-500 dark:border-white/10 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                    className="flex-1 border border-slate-200 text-slate-500 dark:border-[--glass-border-subtle] dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                   >
                     {t("common.cancel")}
                   </button>

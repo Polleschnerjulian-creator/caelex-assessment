@@ -82,7 +82,7 @@ export function ComplianceScoreCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">

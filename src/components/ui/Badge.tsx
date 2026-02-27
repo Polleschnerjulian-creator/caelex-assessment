@@ -22,7 +22,7 @@ const variants: Record<
   { bg: string; text: string; dot: string }
 > = {
   default: {
-    bg: "bg-slate-100 dark:bg-white/10",
+    bg: "bg-slate-100 dark:bg-[--glass-bg-surface]",
     text: "text-slate-600 dark:text-white/70",
     dot: "bg-slate-400 dark:bg-white/50",
   },
@@ -47,7 +47,7 @@ const variants: Record<
     dot: "bg-blue-500 dark:bg-blue-400",
   },
   outline: {
-    bg: "bg-transparent border border-slate-300 dark:border-white/20",
+    bg: "bg-transparent border border-slate-300 dark:border-[--glass-border-hover]",
     text: "text-slate-600 dark:text-white/70",
     dot: "bg-slate-400 dark:bg-white/50",
   },

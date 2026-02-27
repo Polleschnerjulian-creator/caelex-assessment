@@ -319,7 +319,7 @@ function MetricCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-5 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
+      className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-200 dark:hover:border-[--glass-border-subtle] transition-colors"
     >
       <div className="flex items-start justify-between mb-4">
         <div
@@ -441,7 +441,7 @@ function TimeRangeSelector({
   ];
 
   return (
-    <div className="flex items-center gap-1 bg-slate-50 dark:bg-white/[0.03] rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg p-1">
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -449,7 +449,7 @@ function TimeRangeSelector({
           className={`px-3 py-1.5 text-small font-medium rounded-lg transition-colors ${
             value === opt.value
               ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white"
-              : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+              : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
           }`}
         >
           {opt.label}
@@ -583,7 +583,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* DAU Trend */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
@@ -645,7 +645,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Top Events */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
@@ -683,7 +683,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Engagement Summary
           </h3>
@@ -716,7 +716,7 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Alerts */}
-        <div className="lg:col-span-2 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="lg:col-span-2 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
               Alerts & Insights
@@ -797,7 +797,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* MRR Trend */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             MRR Trend
           </h3>
@@ -857,7 +857,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Revenue by Plan */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Revenue by Plan
           </h3>
@@ -928,7 +928,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Churn & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             Churn Rate
           </p>
@@ -939,7 +939,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
             {metrics?.churnedSubscriptions || 0} churned this period
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             New Subscriptions
           </p>
@@ -950,7 +950,7 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
             Added this period
           </p>
         </div>
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <p className="text-small text-slate-500 dark:text-white/45 uppercase tracking-wider mb-2">
             Customer LTV
           </p>
@@ -1022,7 +1022,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Module Usage */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Module Usage
           </h3>
@@ -1073,7 +1073,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Page Views Trend */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Page Views Over Time
           </h3>
@@ -1128,7 +1128,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* Assessment Breakdown */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Assessment Breakdown
         </h3>
@@ -1138,7 +1138,7 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
             {metrics.assessments.breakdown.map((assessment) => (
               <div
                 key={assessment.type}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-lg p-4"
+                className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg p-4"
               >
                 <p className="text-body text-slate-500 dark:text-white/45">
                   {assessment.type}
@@ -1216,7 +1216,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Plan Distribution */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Customers by Plan
           </h3>
@@ -1279,7 +1279,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Conversion Funnel */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Conversion Funnel
           </h3>
@@ -1314,7 +1314,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* Top Customers */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
           Top Customers by Activity
         </h3>
@@ -1322,7 +1322,7 @@ function CustomersTab({ timeRange }: { timeRange: TimeRange }) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-slate-100 dark:border-white/[0.06]">
+                <tr className="text-left border-b border-slate-100 dark:border-[--glass-border-subtle]">
                   <th className="pb-3 text-caption text-slate-500 dark:text-white/45 font-medium">
                     Organization
                   </th>
@@ -1440,7 +1440,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Traffic Sources */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Traffic Sources
           </h3>
@@ -1477,7 +1477,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Traffic Trend */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Traffic Over Time
           </h3>
@@ -1536,7 +1536,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
       {/* Channels & Geography */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Channel Attribution */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Channel Attribution
           </h3>
@@ -1569,7 +1569,7 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Geography */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
             Top Countries
           </h3>
@@ -1652,7 +1652,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       {/* API Performance Trend */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+      <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-6">
           API Performance
         </h3>
@@ -1723,7 +1723,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Health */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             System Health
           </h3>
@@ -1740,7 +1740,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
             ].map((metric) => (
               <div
                 key={metric.name}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-lg p-4"
+                className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg p-4"
               >
                 <p className="text-caption text-slate-500 dark:text-white/45 uppercase tracking-wider">
                   {metric.name}
@@ -1769,7 +1769,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
         </div>
 
         {/* Top Endpoints */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Top Endpoints
           </h3>
@@ -1778,7 +1778,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
               {endpoints.slice(0, 6).map((endpoint) => (
                 <div
                   key={endpoint.endpoint}
-                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/[0.03] rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg"
                 >
                   <span className="text-small text-slate-900 dark:text-white truncate flex-1">
                     {endpoint.endpoint}
@@ -1809,7 +1809,7 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 
       {/* Error Types */}
       {errors && errors.types.length > 0 && (
-        <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6">
+        <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
             Error Distribution
           </h3>
@@ -1873,7 +1873,7 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-100 dark:border-white/[0.06] bg-light-bg/80 dark:bg-dark-surface/80 backdrop-blur-xl sticky top-0 z-20">
+      <div className="border-b border-slate-100 dark:border-[--glass-border-subtle] bg-light-bg/80 dark:bg-dark-surface/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>

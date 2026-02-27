@@ -153,7 +153,7 @@ export function DocumentViewClient({
 
       {/* Content */}
       {sections.length > 0 ? (
-        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-6">
+        <div className="rounded-xl border border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-white/[0.02] p-6">
           <SectionRenderer sections={sections} />
         </div>
       ) : (

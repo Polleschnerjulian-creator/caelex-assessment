@@ -74,7 +74,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     pathname === "/dashboard/mission-control";
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-surface">
+    <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
       <div className="lg:grid lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <Sidebar

@@ -225,16 +225,16 @@ function RegistrationPageContent() {
   if (loading && !organizationId) {
     return (
       <div className="p-6 animate-pulse" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-50 dark:bg-white/[0.03] rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-slate-50 dark:bg-[--glass-bg-surface] rounded w-1/3 mb-6"></div>
         <div className="grid grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-24 bg-slate-50 dark:bg-white/[0.03] rounded-xl"
+              className="h-24 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl"
             ></div>
           ))}
         </div>
-        <div className="h-96 bg-slate-50 dark:bg-white/[0.03] rounded-xl"></div>
+        <div className="h-96 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl"></div>
         <span className="sr-only">Loading registration data...</span>
       </div>
     );
@@ -259,7 +259,7 @@ function RegistrationPageContent() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-white/[0.06] text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-[--glass-bg-elevated] text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
             Export for UNOOSA
@@ -303,7 +303,7 @@ function RegistrationPageContent() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-4">
+      <div className="flex items-center gap-4 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
         <div className="flex-1 relative">
           <label htmlFor="registration-search" className="sr-only">
             Search registrations
@@ -318,7 +318,7 @@ function RegistrationPageContent() {
             placeholder="Search by name, COSPAR ID, or spacecraft..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/15 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-medium] rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ function RegistrationPageContent() {
             id="registration-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/15 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-medium] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="all">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -342,7 +342,7 @@ function RegistrationPageContent() {
         </div>
         <button
           onClick={fetchRegistrations}
-          className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.06] rounded-lg transition-colors"
+          className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
           aria-label="Refresh registrations"
         >
           <RefreshCw className="w-4 h-4" aria-hidden="true" />
@@ -351,7 +351,7 @@ function RegistrationPageContent() {
 
       {/* Registrations List */}
       {filteredRegistrations.length === 0 ? (
-        <div className="text-center py-16 bg-slate-50 dark:bg-white/[0.03]/50 border border-slate-200 dark:border-white/10 rounded-xl">
+        <div className="text-center py-16 bg-slate-50 dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl">
           <Orbit
             className="w-16 h-16 text-slate-600 mx-auto mb-4"
             aria-hidden="true"
@@ -441,7 +441,7 @@ function StatCard({
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-4">
+    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-400">{title}</p>
@@ -526,9 +526,9 @@ function RegistrationDetailModal({
         role="dialog"
         aria-label="Registration details"
         aria-modal="true"
-        className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <div className="p-6 border-b border-slate-200 dark:border-white/10">
+        <div className="p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -579,7 +579,7 @@ function RegistrationDetailModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
             <button
               onClick={onClose}
               className="px-4 py-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"

@@ -80,11 +80,11 @@ export default function PricingTable({
           return (
             <div
               key={plan}
-              className={`relative bg-white dark:bg-white/[0.04] border rounded-xl p-6 transition-all ${
+              className={`relative bg-white dark:bg-[--glass-bg-surface] border rounded-xl p-6 transition-all ${
                 isPopular
                   ? "border-emerald-500 dark:border-emerald-500/50 ring-1 ring-emerald-500/20"
-                  : "border-slate-200 dark:border-white/10"
-              } ${isCurrent ? "bg-slate-50 dark:bg-white/[0.06]" : ""}`}
+                  : "border-slate-200 dark:border-[--glass-border-subtle]"
+              } ${isCurrent ? "bg-slate-50 dark:bg-[--glass-bg-elevated]" : ""}`}
             >
               {isPopular && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-600 text-white text-micro font-medium uppercase tracking-wider rounded-full">
@@ -98,7 +98,7 @@ export default function PricingTable({
                   className={`p-2 rounded-lg ${
                     isPopular
                       ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-slate-100 dark:bg-white/[0.06] text-slate-500 dark:text-white/45"
+                      : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45"
                   }`}
                 >
                   {planIcons[plan]}
@@ -218,14 +218,14 @@ export default function PricingTable({
               {isCurrent ? (
                 <button
                   disabled
-                  className="w-full py-2.5 px-4 bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-white/30 rounded-lg text-body font-medium cursor-not-allowed"
+                  className="w-full py-2.5 px-4 bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30 rounded-lg text-body font-medium cursor-not-allowed"
                 >
                   Current Plan
                 </button>
               ) : plan === "ENTERPRISE" ? (
                 <a
                   href="mailto:sales@caelex.eu?subject=Enterprise%20Plan%20Inquiry"
-                  className="block w-full py-2.5 px-4 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-white/45 rounded-lg text-body font-medium text-center hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all"
+                  className="block w-full py-2.5 px-4 border border-slate-200 dark:border-[--glass-border-medium] text-slate-700 dark:text-white/45 rounded-lg text-body font-medium text-center hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-all"
                 >
                   Contact Sales
                 </a>

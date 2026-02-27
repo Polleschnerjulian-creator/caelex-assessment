@@ -78,7 +78,7 @@ export default function SubscriptionCard({
   };
 
   return (
-    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
           <h3 className="text-caption uppercase tracking-[0.2em] text-slate-600 dark:text-white/70 mb-1">
@@ -198,7 +198,7 @@ export default function SubscriptionCard({
               <button
                 onClick={onCancelSubscription}
                 disabled={isLoading}
-                className="py-2.5 px-4 border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-white/45 rounded-lg text-body font-medium hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all disabled:opacity-50"
+                className="py-2.5 px-4 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 rounded-lg text-body font-medium hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

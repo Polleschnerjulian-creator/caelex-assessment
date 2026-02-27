@@ -2,7 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== LIQUID GLASS DESIGN SYSTEM ===== */
+/* 3-tier elevation system + 2 modifiers. Dark-mode only (no-op in light). */
+@layer utilities {
+  /* Tier 1 — Base layer: sidebar, inputs, default cards */
+  .glass-surface {
+    .dark & {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Tier 2 — Elevated: active cards, panels, charts */
+  .glass-elevated {
+    .dark & {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  /* Tier 3 — Floating: modals, toasts, tooltips, dropdowns */
+  .glass-floating {
+    .dark & {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  /* Modifier — Interactive: hover/transition states */
+  .glass-interactive {
+    .dark & {
+      transition:
+        background 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dark &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  /* Modifier — Accent: emerald glow for selected/active states */
+  .glass-accent {
+    .dark & {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow:
+        0 4px 20px rgba(16, 185, 129, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  /* Glass glow overlay — radial gradient for premium feel */
+  .glass-glow::before {
+    .dark & {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(
+        ellipse at 50% 0%,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+  }
+}
+
 @layer base {
+  /* Glass design tokens — dark mode defaults */
+  :root {
+    --glass-blur-surface: 12px;
+    --glass-blur-elevated: 16px;
+    --glass-blur-floating: 24px;
+    --glass-bg-surface: rgba(255, 255, 255, 0.05);
+    --glass-bg-elevated: rgba(255, 255, 255, 0.08);
+    --glass-bg-floating: rgba(255, 255, 255, 0.12);
+    --glass-border-subtle: rgba(255, 255, 255, 0.1);
+    --glass-border-medium: rgba(255, 255, 255, 0.12);
+    --glass-border-hover: rgba(255, 255, 255, 0.2);
+    --glass-glow-emerald: rgba(16, 185, 129, 0.1);
+    --glass-transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Light mode — tokens resolve to transparent/none (glass is dark-only) */
+  .light,
+  html:not(.dark) {
+    --glass-blur-surface: 0px;
+    --glass-blur-elevated: 0px;
+    --glass-blur-floating: 0px;
+    --glass-bg-surface: transparent;
+    --glass-bg-elevated: transparent;
+    --glass-bg-floating: transparent;
+    --glass-border-subtle: transparent;
+    --glass-border-medium: transparent;
+    --glass-border-hover: transparent;
+    --glass-glow-emerald: transparent;
+  }
+
   /* Force proper color scheme */
   .light,
   :root:not(.dark) {
@@ -284,7 +391,7 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .dark ::-webkit-scrollbar-thumb {
@@ -334,6 +441,7 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 /* High-contrast focus for dark mode */
 .dark *:focus-visible {
   outline-color: #34d399;
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
 }
 
 /* Reduced motion — WCAG 2.3.3 */
@@ -345,6 +453,14 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Disable backdrop-filter on glass classes for performance */
+  .glass-surface,
+  .glass-elevated,
+  .glass-floating {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 
@@ -419,6 +535,35 @@ body {
 }
 .animate-pulse-subtle {
   animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Glass animations */
+@keyframes glassReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes glassPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(16, 185, 129, 0.08);
+  }
+}
+
+.animate-glass-reveal {
+  animation: glassReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.animate-glass-pulse {
+  animation: glassPulse 3s ease-in-out infinite;
 }
 
 /* Custom scrollbar */

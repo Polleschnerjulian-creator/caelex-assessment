@@ -401,13 +401,13 @@ function InsurancePageContent() {
     return (
       <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 dark:bg-white/[0.05] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-white/[0.05] rounded w-1/2" />
+          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
+          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-slate-100 dark:bg-white/[0.04] rounded-xl"
+                className="h-24 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl"
               />
             ))}
           </div>
@@ -446,7 +446,7 @@ function InsurancePageContent() {
                 setReport(null);
               }}
               aria-label="Select insurance assessment"
-              className="bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+              className="bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
             >
               {assessments.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -489,7 +489,7 @@ function InsurancePageContent() {
                     id={`tab-step-${step.id}`}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
-                        ? "bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.1]"
+                        ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.1]"
                         : "hover:bg-slate-100 dark:hover:bg-white/[0.04]"
                     }`}
                   >
@@ -499,7 +499,7 @@ function InsurancePageContent() {
                           ? "bg-slate-900 dark:bg-white text-white dark:text-black"
                           : isCompleted
                             ? "bg-green-500/20 text-green-400"
-                            : "bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-white/70"
+                            : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70"
                       }`}
                     >
                       {isCompleted ? (
@@ -538,7 +538,7 @@ function InsurancePageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center"
+            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
           >
             <Shield
               className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
@@ -569,7 +569,7 @@ function InsurancePageContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Building2
                       className="w-5 h-5 text-emerald-400"
@@ -590,7 +590,7 @@ function InsurancePageContent() {
                             primaryJurisdiction: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {nationalInsuranceRequirements.map((req) => (
                           <option
@@ -612,7 +612,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ operatorType: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(operatorTypeConfig).map(
                           ([key, config]) => (
@@ -633,7 +633,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ companySize: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(companySizeConfig).map(
                           ([key, config]) => (
@@ -654,7 +654,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ orbitRegime: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         {Object.entries(orbitRegimeConfig).map(
                           ([key, config]) => (
@@ -679,7 +679,7 @@ function InsurancePageContent() {
                             satelliteCount: parseInt(e.target.value) || 1,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -696,7 +696,7 @@ function InsurancePageContent() {
                             missionDurationYears: parseInt(e.target.value) || 5,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -713,7 +713,7 @@ function InsurancePageContent() {
                             satelliteValueEur: parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -731,7 +731,7 @@ function InsurancePageContent() {
                               parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       />
                     </div>
 
@@ -746,7 +746,7 @@ function InsurancePageContent() {
                             launchProvider: e.target.value || null,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                       >
                         <option value="">Select provider</option>
                         {commonLaunchProviders.map((p) => (
@@ -758,7 +758,7 @@ function InsurancePageContent() {
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle]">
                     <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-4">
                       Risk Factors
                     </h3>
@@ -801,7 +801,7 @@ function InsurancePageContent() {
                             onChange={(e) =>
                               updateAssessment({ [key]: e.target.checked })
                             }
-                            className="w-4 h-4 bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded"
+                            className="w-4 h-4 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded"
                           />
                           <span className="text-sm text-slate-600 dark:text-white/70">
                             {label}
@@ -813,7 +813,7 @@ function InsurancePageContent() {
                 </div>
 
                 {nationalReqs && (
-                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <MapPin
                         className="w-5 h-5 text-amber-400"
@@ -880,7 +880,7 @@ function InsurancePageContent() {
                     </div>
 
                     {nationalReqs.notes && nationalReqs.notes.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
                         <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
                           Notes
                         </h3>
@@ -925,7 +925,7 @@ function InsurancePageContent() {
                 className="space-y-6"
               >
                 {tplRequirement && (
-                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Shield
                         className="w-5 h-5 text-red-400"
@@ -963,7 +963,7 @@ function InsurancePageContent() {
                     </div>
 
                     {tplRequirement.notes.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
                         <ul className="space-y-1">
                           {tplRequirement.notes.map((note, i) => (
                             <li
@@ -983,7 +983,7 @@ function InsurancePageContent() {
                   </div>
                 )}
 
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <FileText
                       className="w-5 h-5 text-emerald-400"
@@ -1004,7 +1004,7 @@ function InsurancePageContent() {
                             className={`p-4 rounded-lg border ${
                               isRequired
                                 ? "bg-emerald-500/10 border-emerald-500/30"
-                                : "bg-slate-50 dark:bg-white/[0.04] border-slate-200 dark:border-white/10"
+                                : "bg-slate-50 dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
                             }`}
                           >
                             <div className="flex items-center gap-3 mb-2">
@@ -1027,7 +1027,7 @@ function InsurancePageContent() {
                 </div>
 
                 {premiumEstimate && (
-                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <DollarSign
                         className="w-5 h-5 text-green-400"
@@ -1051,7 +1051,7 @@ function InsurancePageContent() {
                         ([type, range]) => (
                           <div
                             key={type}
-                            className="bg-slate-50 dark:bg-white/[0.04] rounded-lg p-3"
+                            className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg p-3"
                           >
                             <p className="text-xs text-slate-600 dark:text-white/70 mb-1">
                               {
@@ -1098,7 +1098,7 @@ function InsurancePageContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                       <CheckCircle2
@@ -1112,7 +1112,7 @@ function InsurancePageContent() {
                     </div>
                   </div>
                   <div
-                    className="w-full bg-slate-200 dark:bg-white/[0.05] rounded-full h-3"
+                    className="w-full bg-slate-200 dark:bg-[--glass-bg-surface] rounded-full h-3"
                     role="progressbar"
                     aria-valuenow={selectedAssessment.complianceScore || 0}
                     aria-valuemin={0}
@@ -1149,10 +1149,10 @@ function InsurancePageContent() {
                     return (
                       <div
                         key={policy.id}
-                        className={`bg-white dark:bg-white/[0.04] border rounded-xl p-6 ${
+                        className={`bg-white dark:bg-[--glass-bg-surface] border rounded-xl p-6 ${
                           isRequired
                             ? "border-emerald-500/30"
-                            : "border-slate-200 dark:border-white/10"
+                            : "border-slate-200 dark:border-[--glass-border-subtle]"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-4">
@@ -1185,7 +1185,7 @@ function InsurancePageContent() {
                                 })
                               }
                               aria-label={`Policy status for ${typeDef?.name || policy.insuranceType}`}
-                              className={`bg-white dark:bg-white/[0.04] border rounded-lg px-3 py-1.5 text-sm ${
+                              className={`bg-white dark:bg-[--glass-bg-surface] border rounded-lg px-3 py-1.5 text-sm ${
                                 statusConfig?.color === "green"
                                   ? "border-green-500/30 text-green-400"
                                   : statusConfig?.color === "blue"
@@ -1196,7 +1196,7 @@ function InsurancePageContent() {
                                         ? "border-orange-500/30 text-orange-400"
                                         : statusConfig?.color === "red"
                                           ? "border-red-500/30 text-red-400"
-                                          : "border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70"
+                                          : "border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/70"
                               }`}
                             >
                               {Object.entries(policyStatusConfig).map(
@@ -1236,7 +1236,7 @@ function InsurancePageContent() {
                                     parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1252,7 +1252,7 @@ function InsurancePageContent() {
                                   premium: parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1268,7 +1268,7 @@ function InsurancePageContent() {
                                   insurer: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                           <div>
@@ -1283,7 +1283,7 @@ function InsurancePageContent() {
                                   expirationDate: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                             />
                           </div>
                         </div>
@@ -1333,7 +1333,7 @@ function InsurancePageContent() {
                       </p>
                     </div>
 
-                    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         Organization Profile
                       </h3>
@@ -1365,7 +1365,7 @@ function InsurancePageContent() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         TPL Requirement
                       </h3>
@@ -1377,7 +1377,7 @@ function InsurancePageContent() {
                       </p>
                     </div>
 
-                    <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         Compliance Status
                       </h3>
@@ -1426,7 +1426,7 @@ function InsurancePageContent() {
                     </div>
 
                     {report.recommendations.length > 0 && (
-                      <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
                         <h3 className="text-lg font-semibold mb-4">
                           Recommendations
                         </h3>
@@ -1450,7 +1450,7 @@ function InsurancePageContent() {
                     )}
                   </>
                 ) : (
-                  <div className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl p-12 text-center">
+                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
                     <FileText
                       className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
                       aria-hidden="true"
@@ -1521,7 +1521,7 @@ function InsurancePageContent() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-white/10 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-label="New Insurance Assessment"
@@ -1555,7 +1555,7 @@ function InsurancePageContent() {
                         assessmentName: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   />
                 </div>
 
@@ -1571,7 +1571,7 @@ function InsurancePageContent() {
                         primaryJurisdiction: e.target.value as JurisdictionCode,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {nationalInsuranceRequirements.map((req) => (
                       <option
@@ -1596,7 +1596,7 @@ function InsurancePageContent() {
                         operatorType: e.target.value as OperatorType,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(operatorTypeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1618,7 +1618,7 @@ function InsurancePageContent() {
                         companySize: e.target.value as CompanySize,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(companySizeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1640,7 +1640,7 @@ function InsurancePageContent() {
                         orbitRegime: e.target.value as OrbitRegime,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
                   >
                     {Object.entries(orbitRegimeConfig).map(([key, config]) => (
                       <option key={key} value={key}>

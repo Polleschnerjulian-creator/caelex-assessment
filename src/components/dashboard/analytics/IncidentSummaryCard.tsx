@@ -109,7 +109,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-6">
+    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -215,7 +215,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
                 <Link
                   key={incident.id}
                   href={`/dashboard/supervision/incidents/${incident.id}`}
-                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.06]/50 transition-colors"
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]/50 transition-colors"
                 >
                   <div
                     className={`p-1.5 rounded ${getSeverityColor(incident.severity)}`}

@@ -275,11 +275,37 @@ text-display   32px   Page headings
 text-display-lg 48px  Hero headlines
 ```
 
+### Liquid Glass Design System
+
+3-tier glass elevation system (dark-mode only, no-op in light mode). Defined in `globals.css` `@layer utilities`.
+
+| Class               | Purpose    | Use for                                               |
+| ------------------- | ---------- | ----------------------------------------------------- |
+| `glass-surface`     | Base layer | Sidebar, inputs, default cards                        |
+| `glass-elevated`    | Mid layer  | Active cards, panels, charts                          |
+| `glass-floating`    | Top layer  | Modals, toasts, tooltips, dropdowns                   |
+| `glass-interactive` | Modifier   | Adds hover transition (combine with surface/elevated) |
+| `glass-accent`      | Modifier   | Emerald glow for selected/active states               |
+
+**Usage:** Keep light-mode classes, add glass class. Example: `bg-white border border-slate-200 glass-elevated`
+
+**CSS tokens** (use in Tailwind arbitrary values):
+
+- `--glass-bg-surface`, `--glass-bg-elevated`, `--glass-bg-floating`
+- `--glass-border-subtle`, `--glass-border-medium`, `--glass-border-hover`
+- `--glass-blur-surface` (12px), `--glass-blur-elevated` (16px), `--glass-blur-floating` (24px)
+- `--glass-glow-emerald`, `--glass-transition`
+
+**Tailwind extensions:** `backdrop-blur-glass`, `shadow-glass-elevated`, `ease-glass`
+
+**Motion:** `GlassMotion`, `GlassStagger`, `glassItemVariants` from `@/components/ui/GlassMotion`
+
+**Do NOT** use hardcoded `dark:bg-white/[0.06]`, `dark:backdrop-blur-xl`, `dark:border-white/10` — use glass classes or tokens instead.
+
 ### Component Patterns
 
-- Cards: `bg-navy-800 border border-navy-700 rounded-xl`
+- Cards: Use `Card` component with `variant` prop (default, glass, elevated, interactive)
 - Glass cards: Import `GlassCard` from `@/components/ui/GlassCard` (supports `hover`, `highlighted` props)
-- Glass effect: `bg-white/5 backdrop-blur-sm border border-white/10`
 - Buttons: `bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-6 py-3`
 - Transitions: Framer Motion for wizard steps, `transition-all duration-200` for hovers
 

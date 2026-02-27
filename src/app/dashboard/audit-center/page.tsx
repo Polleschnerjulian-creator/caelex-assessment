@@ -325,7 +325,7 @@ function AuditCenterContent() {
         <button
           onClick={() => fetchOverview(true)}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-white/10 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors disabled:opacity-50"
         >
           <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
           Refresh
@@ -349,7 +349,7 @@ function AuditCenterContent() {
       {/* ─── Metrics Row ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Compliance Score */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
             <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -359,7 +359,7 @@ function AuditCenterContent() {
           <div className="text-3xl font-bold text-slate-900 dark:text-white">
             {overview.complianceScore}%
           </div>
-          <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full mt-3 overflow-hidden">
+          <div className="h-2 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full mt-3 overflow-hidden">
             <motion.div
               className={`h-full rounded-full ${overview.complianceScore >= 80 ? "bg-green-500" : overview.complianceScore >= 50 ? "bg-amber-500" : "bg-red-500"}`}
               initial={{ width: 0 }}
@@ -373,7 +373,7 @@ function AuditCenterContent() {
         </div>
 
         {/* Evidence Coverage */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Archive className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
             <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -383,7 +383,7 @@ function AuditCenterContent() {
           <div className="text-3xl font-bold text-slate-900 dark:text-white">
             {overview.evidenceCoverage.percentage}%
           </div>
-          <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full mt-3 overflow-hidden">
+          <div className="h-2 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full mt-3 overflow-hidden">
             <motion.div
               className="h-full bg-cyan-500 rounded-full"
               initial={{ width: 0 }}
@@ -400,7 +400,7 @@ function AuditCenterContent() {
         </div>
 
         {/* Audit Trail */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
             <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -431,7 +431,7 @@ function AuditCenterContent() {
         </div>
 
         {/* Outstanding Items */}
-        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5">
+        <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
@@ -462,7 +462,7 @@ function AuditCenterContent() {
           className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
             regulationFilter === "all"
               ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+              : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
           }`}
         >
           All
@@ -480,7 +480,7 @@ function AuditCenterContent() {
               className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
                 regulationFilter === m.regulationType
                   ? `${rc.bg} ${rc.text}`
-                  : "bg-slate-100 dark:bg-white/[0.04] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                  : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
               }`}
             >
               {rc.label}
@@ -508,7 +508,7 @@ function AuditCenterContent() {
             <motion.div
               key={mod.module}
               layout
-              className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden"
+              className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
             >
               <button
                 onClick={() => toggleModuleExpand(mod.module)}
@@ -556,7 +556,7 @@ function AuditCenterContent() {
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="border-t border-slate-100 dark:border-white/[0.06] px-5 py-4"
+                    className="border-t border-slate-100 dark:border-[--glass-border-subtle] px-5 py-4"
                   >
                     {/* Status bar */}
                     <div className="flex gap-2 mb-4">
@@ -604,7 +604,7 @@ function AuditCenterContent() {
                     </div>
 
                     {/* Progress bar */}
-                    <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full overflow-hidden flex">
+                    <div className="h-2 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden flex">
                       {mod.totalRequirements > 0 && (
                         <>
                           <div
@@ -644,7 +644,7 @@ function AuditCenterContent() {
         })}
 
         {filteredModules.length === 0 && (
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-8 text-center">
+          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
             <Shield className="w-8 h-8 text-slate-400/30 dark:text-white/10 mx-auto mb-2" />
             <p className="text-sm text-slate-500 dark:text-white/45">
               No compliance modules found. Start an assessment to see data here.
@@ -661,7 +661,7 @@ function AuditCenterContent() {
             Action Items ({filteredActions.length})
           </h2>
 
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl divide-y divide-slate-100 dark:divide-white/[0.04]">
+          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl divide-y divide-slate-100 dark:divide-white/[0.04]">
             {filteredActions.slice(0, 20).map((item, idx) => {
               const rc = regulationColors[item.regulationType] || {
                 bg: "bg-slate-500/10",
@@ -720,7 +720,7 @@ function AuditCenterContent() {
       )}
 
       {/* ─── Export Panel ─── */}
-      <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl p-6">
+      <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
         <div className="flex items-center gap-3 mb-5">
           <Download className="w-4 h-4 text-slate-400 dark:text-white/45" />
           <h2 className="text-sm font-medium text-slate-900 dark:text-white">
@@ -733,7 +733,7 @@ function AuditCenterContent() {
           <button
             onClick={handleExportPdf}
             disabled={exportingPdf}
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-emerald-500/30 transition-colors text-left disabled:opacity-50"
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl hover:border-emerald-500/30 transition-colors text-left disabled:opacity-50"
           >
             {exportingPdf ? (
               <Loader2 size={16} className="animate-spin text-emerald-400" />
@@ -754,7 +754,7 @@ function AuditCenterContent() {
           <button
             onClick={handleExportCsv}
             disabled={exportingCsv}
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-cyan-500/30 transition-colors text-left disabled:opacity-50"
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl hover:border-cyan-500/30 transition-colors text-left disabled:opacity-50"
           >
             {exportingCsv ? (
               <Loader2 size={16} className="animate-spin text-cyan-400" />
@@ -775,7 +775,7 @@ function AuditCenterContent() {
           <button
             onClick={handleExportCertificate}
             disabled={exportingCert}
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-green-500/30 transition-colors text-left disabled:opacity-50"
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl hover:border-green-500/30 transition-colors text-left disabled:opacity-50"
           >
             {exportingCert ? (
               <Loader2 size={16} className="animate-spin text-green-400" />
@@ -796,7 +796,7 @@ function AuditCenterContent() {
           <button
             onClick={handleVerifyChain}
             disabled={verifyingChain}
-            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.06] rounded-xl hover:border-amber-500/30 transition-colors text-left disabled:opacity-50"
+            className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl hover:border-amber-500/30 transition-colors text-left disabled:opacity-50"
           >
             {verifyingChain ? (
               <Loader2 size={16} className="animate-spin text-amber-400" />
@@ -818,7 +818,7 @@ function AuditCenterContent() {
         {overview.evidenceCoverage.byStatus.accepted +
           overview.evidenceCoverage.byStatus.submitted >
           0 && (
-          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center gap-3 flex-wrap">
+          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[--glass-border-subtle] flex items-center gap-3 flex-wrap">
             <span className="text-caption text-slate-400 dark:text-white/30">
               Evidence:
             </span>

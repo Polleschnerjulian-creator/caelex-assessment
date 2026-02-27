@@ -36,7 +36,7 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 shadow-xl">
+      <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 shadow-xl">
         <p className="text-slate-500 dark:text-white/45 text-caption uppercase tracking-wider mb-2">
           {label}
         </p>

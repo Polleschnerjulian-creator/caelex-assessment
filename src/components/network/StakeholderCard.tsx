@@ -115,10 +115,10 @@ export default function StakeholderCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-white/10">
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-[--glass-border-subtle]">
           <button
             onClick={() => onView(engagement.id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium text-slate-700 dark:text-white/70 bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-caption font-medium text-slate-700 dark:text-white/70 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors"
           >
             <Eye size={12} aria-hidden="true" />
             View

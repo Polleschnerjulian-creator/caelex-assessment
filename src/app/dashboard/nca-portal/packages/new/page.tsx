@@ -179,7 +179,7 @@ export default function PackageBuilderPage() {
         <button
           onClick={() => (step > 0 ? setStep(step - 1) : router.back())}
           aria-label="Go back"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
@@ -210,7 +210,7 @@ export default function PackageBuilderPage() {
                     ? "bg-emerald-500 text-white"
                     : i === step
                       ? "bg-emerald-500 text-white"
-                      : "bg-slate-200 dark:bg-white/[0.06] text-slate-500 dark:text-white/45"
+                      : "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45"
                 }
               `}
             >
@@ -344,7 +344,7 @@ export default function PackageBuilderPage() {
                     </span>
                   )}
                   {doc.status === "optional" && (
-                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 font-medium">
+                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 font-medium">
                       OPTIONAL
                     </span>
                   )}
