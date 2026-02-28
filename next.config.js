@@ -75,6 +75,7 @@ const nextConfig = {
       {
         source: "/widget/:path*",
         headers: [
+          // Widget CORS: Allow GET only (read-only widget config, no state changes)
           { key: "Access-Control-Allow-Origin", value: "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
           {
@@ -83,7 +84,8 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "frame-ancestors *",
+            value:
+              "frame-ancestors https://*.caelex.eu https://caelex.eu https://localhost:*",
           },
         ],
       },
@@ -123,6 +125,8 @@ const nextConfig = {
     "@react-pdf/stylesheet",
     "@react-pdf/textkit",
     "@react-pdf/primitives",
+    "jsdom",
+    "isomorphic-dompurify",
   ],
 
   // Experimental features
