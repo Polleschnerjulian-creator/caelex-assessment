@@ -4190,11 +4190,49 @@ model DemoRequest {
   targetRaise        Float?
   demoTourCompleted  Boolean  @default(false)
 
+  // Booking relation
+  scheduledAt    DateTime?
+  booking        Booking?
+
   createdAt   DateTime   @default(now())
 
   @@index([status])
   @@index([email])
   @@index([createdAt])
+}
+
+// ============================================
+// BOOKING SYSTEM
+// ============================================
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  name           String
+  email          String
+  company        String
+  scheduledAt    DateTime
+  timezone       String        @default("Europe/Berlin")
+  status         BookingStatus @default(CONFIRMED)
+  notes          String?       @db.Text
+  cancelledAt    DateTime?
+  completedAt    DateTime?
+
+  demoRequestId  String?       @unique
+  demoRequest    DemoRequest?  @relation(fields: [demoRequestId], references: [id])
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([email])
 }
 
 // ============================================
