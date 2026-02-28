@@ -371,20 +371,20 @@ export default function AssureLandingPage() {
 
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Link
-                  href="/assure/onboarding"
+                  href="/assure/demo"
                   className="group bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-subtitle px-8 py-4 rounded-full transition-all flex items-center gap-2.5 shadow-[0_0_32px_rgba(16,185,129,0.3)] hover:shadow-[0_0_48px_rgba(16,185,129,0.4)]"
                 >
-                  Start Free
+                  Experience Assure
                   <ArrowRight
                     size={18}
                     className="group-hover:translate-x-0.5 transition-transform"
                   />
                 </Link>
                 <Link
-                  href="/assure/dashboard"
+                  href="/assure/book"
                   className="glass-surface border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-medium text-subtitle px-8 py-4 rounded-full transition-all backdrop-blur-xl"
                 >
-                  View Demo
+                  Book a Call
                 </Link>
               </div>
 
@@ -1015,20 +1015,20 @@ export default function AssureLandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link
-                    href="/assure/onboarding"
+                    href="/assure/demo"
                     className="group bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-subtitle px-10 py-4 rounded-full transition-all inline-flex items-center gap-2.5 shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.4)]"
                   >
-                    Get Started Free
+                    Experience Assure
                     <ArrowRight
                       size={18}
                       className="group-hover:translate-x-0.5 transition-transform"
                     />
                   </Link>
                   <Link
-                    href="/assure/dashboard"
+                    href="/assure/book"
                     className="glass-surface border border-white/10 hover:border-white/20 text-white/60 hover:text-white font-medium text-subtitle px-10 py-4 rounded-full transition-all backdrop-blur-xl"
                   >
-                    Explore Demo
+                    Book a Call
                   </Link>
                 </div>
                 <p className="text-small text-white/25 mt-6">
