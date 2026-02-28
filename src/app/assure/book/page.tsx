@@ -3,17 +3,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  Shield,
-  Clock,
-  Lock,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
+import CalendarPicker from "@/components/assure/booking/CalendarPicker";
+import type { Slot } from "@/components/assure/booking/CalendarPicker";
 
 // ─── Operator Type Options ───
 
@@ -52,6 +46,7 @@ export default function BookCallPage() {
     message: "",
     _hp: "",
   });
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [demoTourCompleted, setDemoTourCompleted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +90,10 @@ export default function BookCallPage() {
         payload.targetRaise = parseFloat(formData.targetRaise);
       }
 
+      if (selectedSlot) {
+        payload.scheduledAt = selectedSlot.dateTime;
+      }
+
       const res = await fetch("/api/assure/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,6 +102,12 @@ export default function BookCallPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        if (res.status === 409) {
+          setError("This slot was just booked. Please select another time.");
+          setSelectedSlot(null);
+          setSubmitting(false);
+          return;
+        }
         setError(data.error || "Something went wrong. Please try again.");
         setSubmitting(false);
         return;
@@ -176,13 +181,28 @@ export default function BookCallPage() {
                           />
                         </div>
                         <h2 className="text-display-sm font-bold text-white tracking-[-0.02em] mb-4">
-                          You&apos;re on the list!
+                          {selectedSlot
+                            ? "Call Confirmed!"
+                            : "You're on the list!"}
                         </h2>
                         <p className="text-body-lg text-white/45 leading-relaxed max-w-sm mx-auto mb-4">
                           Thank you,{" "}
                           <span className="text-white/70">{formData.name}</span>
-                          . We&apos;ll review your profile and get back to you
-                          within 24 hours to schedule your onboarding call.
+                          .{" "}
+                          {selectedSlot ? (
+                            <>
+                              Your call is confirmed for{" "}
+                              <span className="text-emerald-400 font-medium">
+                                {selectedSlot.date} at {selectedSlot.time} CET
+                              </span>
+                              . We&apos;ll send you a calendar invite shortly.
+                            </>
+                          ) : (
+                            <>
+                              We&apos;ll review your profile and get back to you
+                              within 24 hours to schedule your onboarding call.
+                            </>
+                          )}
                         </p>
                         <p className="text-body text-white/30 mb-10">
                           A confirmation has been sent to{" "}
@@ -509,6 +529,8 @@ export default function BookCallPage() {
                                 </svg>
                                 Submitting...
                               </span>
+                            ) : selectedSlot ? (
+                              `Book Call — ${selectedSlot.date} at ${selectedSlot.time}`
                             ) : (
                               "Book Your Call"
                             )}
@@ -542,7 +564,7 @@ export default function BookCallPage() {
               </div>
             </motion.div>
 
-            {/* Right — Trust Signals */}
+            {/* Right — Calendar Picker */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -551,109 +573,12 @@ export default function BookCallPage() {
                 delay: 0.15,
                 ease: [0.4, 0, 0.2, 1],
               }}
-              className="space-y-6 lg:sticky lg:top-32"
+              className="lg:sticky lg:top-32"
             >
-              {/* What happens next */}
-              <div className="glass-surface rounded-2xl border border-white/[0.08] p-6">
-                <h3 className="text-title font-semibold text-white mb-5">
-                  What happens next
-                </h3>
-                <div className="space-y-4">
-                  {[
-                    {
-                      step: 1,
-                      text: "We review your profile within 24 hours",
-                    },
-                    {
-                      step: 2,
-                      text: "We schedule a 30-minute onboarding call",
-                    },
-                    {
-                      step: 3,
-                      text: "We configure Assure for your operator type",
-                    },
-                    {
-                      step: 4,
-                      text: "You get full access and start your IRS journey",
-                    },
-                  ].map((item) => (
-                    <div key={item.step} className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-small font-semibold text-emerald-400">
-                          {item.step}
-                        </span>
-                      </div>
-                      <p className="text-body-lg text-white/50 leading-relaxed">
-                        {item.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Your data is safe */}
-              <div className="glass-surface rounded-2xl border border-white/[0.08] p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                    <Shield size={16} className="text-emerald-400/80" />
-                  </div>
-                  <h3 className="text-title font-semibold text-white">
-                    Your data is safe
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <Lock size={13} className="text-white/30 flex-shrink-0" />
-                    <span className="text-body text-white/40">
-                      AES-256 encryption at rest
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Shield size={13} className="text-white/30 flex-shrink-0" />
-                    <span className="text-body text-white/40">
-                      GDPR compliant data processing
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <Lock size={13} className="text-white/30 flex-shrink-0" />
-                    <span className="text-body text-white/40">
-                      No data shared with third parties
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 30 min setup */}
-              <div className="glass-surface rounded-2xl border border-white/[0.08] p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                    <Zap size={16} className="text-emerald-400/80" />
-                  </div>
-                  <h3 className="text-title font-semibold text-white">
-                    30 min setup
-                  </h3>
-                </div>
-                <p className="text-body text-white/40 leading-relaxed">
-                  From call to fully operational. We handle the heavy lifting so
-                  you can focus on your mission, not paperwork.
-                </p>
-              </div>
-
-              {/* Quick stats */}
-              <div className="glass-surface rounded-2xl border border-white/[0.08] p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                    <Clock size={16} className="text-emerald-400/80" />
-                  </div>
-                  <h3 className="text-title font-semibold text-white">
-                    Response within 24h
-                  </h3>
-                </div>
-                <p className="text-body text-white/40 leading-relaxed">
-                  We work with a select number of space companies each quarter
-                  to ensure personalized onboarding and attention.
-                </p>
-              </div>
+              <CalendarPicker
+                selectedSlot={selectedSlot}
+                onSelectSlot={setSelectedSlot}
+              />
             </motion.div>
           </div>
         </div>
