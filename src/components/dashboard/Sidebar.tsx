@@ -38,6 +38,7 @@ import {
   Sparkles,
   Users,
   ShieldAlert,
+  Calendar,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -739,6 +740,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   onClick={handleNavClick}
                 >
                   {t("sidebar.adminPanel")}
+                </NavItem>
+                <NavItem
+                  href="/dashboard/admin/bookings"
+                  icon={<Calendar size={16} strokeWidth={1.5} />}
+                  onClick={handleNavClick}
+                >
+                  {t("sidebar.bookings") || "Bookings"}
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/analytics"
