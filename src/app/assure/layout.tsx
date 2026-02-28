@@ -49,6 +49,9 @@ function AssureLayoutContent({ children }: { children: React.ReactNode }) {
   const isUnlayouted =
     pathname === "/assure" ||
     pathname === "/assure/onboarding" ||
+    pathname === "/assure/demo" ||
+    pathname === "/assure/book" ||
+    pathname === "/assure/request-access" ||
     pathname.startsWith("/assure/view/") ||
     pathname.startsWith("/assure/dataroom/view/");
 

@@ -39,7 +39,15 @@ function getApiRateLimiter(): Ratelimit | null {
   if (apiRateLimiter) return apiRateLimiter;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  if (!url || !token) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[CRITICAL SECURITY] API rate limiter disabled — Redis not configured in production. " +
+          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+      );
+    }
+    return null;
+  }
   apiRateLimiter = new Ratelimit({
     redis: new Redis({ url, token }),
     limiter: Ratelimit.slidingWindow(100, "1 m"),
@@ -53,7 +61,15 @@ function getAuthRateLimiter(): Ratelimit | null {
   if (authRateLimiter) return authRateLimiter;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  if (!url || !token) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[CRITICAL SECURITY] Auth rate limiter disabled — Redis not configured in production. " +
+          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+      );
+    }
+    return null;
+  }
   authRateLimiter = new Ratelimit({
     redis: new Redis({ url, token }),
     limiter: Ratelimit.slidingWindow(10, "1 m"),
@@ -101,6 +117,7 @@ function getSanitizedClientIp(req: NextRequest): string {
 // ─── Security Headers ───
 
 const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -193,7 +210,7 @@ const CSRF_EXEMPT_ROUTES = [
   "/api/auth/session", // NextAuth session endpoint (GET-like, read-only)
   "/api/assessment/", // Assessment is public, CSRF exempt (rate limited instead)
   "/api/nis2/calculate", // NIS2 assessment is public, CSRF exempt (rate limited instead)
-  "/api/astra/", // ASTRA has session auth + rate limiting, CSRF exempt
+  // ASTRA now requires CSRF protection (session-authenticated, performs actions on user's behalf)
   "/api/public/", // Public API endpoints use rate limiting, not CSRF
   "/api/widget/", // Widget config API uses session auth
   "/api/newsletter/", // Public newsletter subscribe/unsubscribe
@@ -264,6 +281,9 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Request size limit for API routes (10MB general, 50MB for document uploads)
+  // Note: Content-Length is client-controlled and can be spoofed. However,
+  // Vercel enforces a ~4.5MB serverless body limit at the platform level,
+  // providing a backstop against chunked-encoding bypass attempts.
   if (isApiRoute) {
     const contentLength = parseInt(
       req.headers.get("content-length") || "0",
@@ -388,7 +408,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Protected routes — check for session cookie
+  // Protected routes — check for session cookie and MFA status
   if (pathname.startsWith("/dashboard")) {
     const hasSession =
       req.cookies.has("__Secure-authjs.session-token") ||
@@ -414,7 +434,13 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Protected routes — check for session cookie (Assure)
-  const assurePublicPaths = ["/assure", "/assure/onboarding"];
+  const assurePublicPaths = [
+    "/assure",
+    "/assure/onboarding",
+    "/assure/demo",
+    "/assure/book",
+    "/assure/request-access",
+  ];
   const isAssurePublicPath =
     assurePublicPaths.includes(pathname) ||
     pathname.startsWith("/assure/view") ||
