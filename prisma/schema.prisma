@@ -4181,6 +4181,15 @@ model DemoRequest {
   followUpAt  DateTime?
   respondedAt DateTime?
   notes       String?    @db.Text
+
+  // Assure qualify data (from /assure/book form)
+  companyWebsite     String?
+  operatorType       String?
+  fundingStage       String?
+  isRaising          Boolean?
+  targetRaise        Float?
+  demoTourCompleted  Boolean  @default(false)
+
   createdAt   DateTime   @default(now())
 
   @@index([status])
@@ -5065,6 +5074,7 @@ model AssureCompanyProfile {
   solutionStatement String? @db.Text
 
   completionScore  Float    @default(0)
+  onboardingStep   Int      @default(0)   // 0=not started, 1-6=in progress, 7=complete
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
