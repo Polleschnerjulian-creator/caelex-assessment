@@ -5,6 +5,10 @@ import Link from "next/link";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
+interface FooterProps {
+  theme?: "light" | "dark";
+}
+
 const productLinks = [
   { label: "Caelex Comply", href: "/platform" },
   { label: "Caelex Assure", href: "/assure" },
@@ -77,12 +81,13 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-export default function Footer() {
+export default function Footer({ theme = "dark" }: FooterProps) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isLight = theme === "light";
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,16 +124,28 @@ export default function Footer() {
   };
 
   return (
-    <footer className="dark-section bg-black text-white border-t border-white/[0.06]">
+    <footer
+      className={
+        isLight
+          ? "bg-[#F7F8FA] text-[#111827] border-t border-[#E5E7EB]"
+          : "dark-section bg-black text-white border-t border-white/[0.06]"
+      }
+    >
       {/* Newsletter Section */}
-      <div className="border-b border-white/[0.06]">
+      <div
+        className={`border-b ${isLight ? "border-[#E5E7EB]" : "border-white/[0.06]"}`}
+      >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-14">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div className="max-w-md">
-              <h2 className="text-title font-medium text-white mb-2">
+              <h2
+                className={`text-title font-medium mb-2 ${isLight ? "text-[#111827]" : "text-white"}`}
+              >
                 Stay ahead of space regulatory changes
               </h2>
-              <p className="text-body text-white/45 leading-relaxed">
+              <p
+                className={`text-body leading-relaxed ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
+              >
                 Get updates on EU Space Act, NIS2, and national space laws.
                 Compliance insights and deadline reminders. Unsubscribe anytime.
               </p>
@@ -136,12 +153,12 @@ export default function Footer() {
 
             {subscribed ? (
               <div
-                className="flex items-center gap-2 text-emerald-400 text-body"
+                className={`flex items-center gap-2 text-body ${isLight ? "text-emerald-600" : "text-emerald-400"}`}
                 role="status"
                 aria-live="polite"
               >
                 <CheckCircle size={16} aria-hidden="true" />
-                <span>You're subscribed! We'll be in touch.</span>
+                <span>You&apos;re subscribed! We&apos;ll be in touch.</span>
               </div>
             ) : (
               <form
@@ -161,12 +178,20 @@ export default function Footer() {
                     placeholder="your@email.com"
                     required
                     aria-required="true"
-                    className="flex-1 md:w-[280px] bg-white/[0.06] border border-white/10 rounded-l-lg px-4 py-2.5 text-body text-white placeholder:text-white/25 outline-none focus:border-white/30 transition-colors"
+                    className={`flex-1 md:w-[280px] rounded-l-lg px-4 py-2.5 text-body outline-none transition-colors ${
+                      isLight
+                        ? "bg-white border border-[#E5E7EB] text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#D1D5DB]"
+                        : "bg-white/[0.06] border border-white/10 text-white placeholder:text-white/25 focus:border-white/30"
+                    }`}
                   />
                   <button
                     type="submit"
                     disabled={subscribing || !consent}
-                    className="bg-white text-black text-body font-medium px-5 py-2.5 rounded-r-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    className={`text-body font-medium px-5 py-2.5 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 ${
+                      isLight
+                        ? "bg-[#111827] text-white hover:bg-[#1f2937]"
+                        : "bg-white text-black hover:bg-white/90"
+                    }`}
                   >
                     {subscribing ? (
                       <span>...</span>
@@ -188,14 +213,20 @@ export default function Footer() {
                       setConsent(e.target.checked);
                       if (e.target.checked) setError(null);
                     }}
-                    className="mt-0.5 w-3.5 h-3.5 rounded border-white/20 bg-white/[0.06] accent-white cursor-pointer"
+                    className={`mt-0.5 w-3.5 h-3.5 rounded cursor-pointer ${
+                      isLight
+                        ? "border-[#D1D5DB] bg-white accent-emerald-600"
+                        : "border-white/20 bg-white/[0.06] accent-white"
+                    }`}
                   />
-                  <span className="text-caption text-white/45 leading-relaxed group-hover:text-white/45 transition-colors">
+                  <span
+                    className={`text-caption leading-relaxed transition-colors ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
+                  >
                     I agree to receive regulatory updates from Caelex. You can
                     unsubscribe at any time.{" "}
                     <Link
                       href="/legal/privacy"
-                      className="underline hover:text-white/70"
+                      className={`underline ${isLight ? "hover:text-[#111827]" : "hover:text-white/70"}`}
                     >
                       Privacy Policy
                     </Link>
@@ -203,7 +234,7 @@ export default function Footer() {
                 </label>
 
                 {error && (
-                  <p className="text-caption text-red-400 mt-2" role="alert">
+                  <p className="text-caption text-red-500 mt-2" role="alert">
                     {error}
                   </p>
                 )}
@@ -219,12 +250,20 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <CaelexIcon size={24} className="text-white" aria-hidden="true" />
-              <span className="text-heading text-white font-medium">
+              <CaelexIcon
+                size={24}
+                className={isLight ? "text-[#111827]" : "text-white"}
+                aria-hidden="true"
+              />
+              <span
+                className={`text-heading font-medium ${isLight ? "text-[#111827]" : "text-white"}`}
+              >
                 caelex
               </span>
             </div>
-            <p className="text-body text-white/45 leading-relaxed mb-4">
+            <p
+              className={`text-body leading-relaxed mb-4 ${isLight ? "text-[#4B5563]" : "text-white/45"}`}
+            >
               Space Regulatory Compliance Platform.
               <br />
               EU Space Act · NIS2 · National Laws
@@ -232,138 +271,126 @@ export default function Footer() {
 
             <a
               href="mailto:cs@caelex.eu"
-              className="text-body text-white/45 hover:text-white transition-colors block mb-6"
+              className={`text-body block mb-6 transition-colors ${
+                isLight
+                  ? "text-[#4B5563] hover:text-[#111827]"
+                  : "text-white/45 hover:text-white"
+              }`}
             >
               cs@caelex.eu
             </a>
 
-            {/* Social Links - min 44px touch targets for mobile */}
+            {/* Social Links */}
             <div className="flex items-center gap-3">
-              <a
-                href="https://linkedin.com/company/caelex"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
-                aria-label="Follow Caelex on LinkedIn"
-              >
-                <LinkedInIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-              </a>
-              <a
-                href="https://x.com/caboracaelex"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
-                aria-label="Follow Caelex on X"
-              >
-                <XIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-              </a>
-              <a
-                href="https://instagram.com/caelex.eu"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-11 h-11 sm:w-10 sm:h-10 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
-                aria-label="Follow Caelex on Instagram"
-              >
-                <InstagramIcon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-              </a>
+              {[
+                {
+                  href: "https://linkedin.com/company/caelex",
+                  Icon: LinkedInIcon,
+                  label: "LinkedIn",
+                },
+                { href: "https://x.com/caboracaelex", Icon: XIcon, label: "X" },
+                {
+                  href: "https://instagram.com/caelex.eu",
+                  Icon: InstagramIcon,
+                  label: "Instagram",
+                },
+              ].map(({ href, Icon, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-11 h-11 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center transition-all ${
+                    isLight
+                      ? "bg-white border-[#E5E7EB] text-[#9CA3AF] hover:text-[#111827] hover:border-[#D1D5DB]"
+                      : "bg-white/[0.06] border-white/10 text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20"
+                  }`}
+                  aria-label={`Follow Caelex on ${label}`}
+                >
+                  <Icon className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Product */}
-          <nav aria-label="Product links">
-            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
-              Product
-            </h3>
-            <ul className="space-y-3">
-              {productLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-body text-white/45 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Legal */}
-          <nav aria-label="Legal links">
-            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
-              Legal
-            </h3>
-            <ul className="space-y-3">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-body text-white/45 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <button
-                  onClick={() =>
-                    window.dispatchEvent(new Event("show-cookie-consent"))
-                  }
-                  className="text-body text-white/45 hover:text-white transition-colors"
-                >
-                  Cookie Settings
-                </button>
-              </li>
-            </ul>
-          </nav>
-
-          {/* Resources */}
-          <nav aria-label="Resource links">
-            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
-              Resources
-            </h3>
-            <ul className="space-y-3">
-              {resourceLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-body text-white/45 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Company */}
-          <nav aria-label="Company links">
-            <h3 className="text-caption text-white/45 uppercase tracking-wider mb-4">
-              Company
-            </h3>
-            <ul className="space-y-3">
-              {companyLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-body text-white/45 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Link columns */}
+          {[
+            {
+              title: "Product",
+              links: productLinks,
+              ariaLabel: "Product links",
+            },
+            {
+              title: "Legal",
+              links: legalLinks,
+              ariaLabel: "Legal links",
+              hasCookieSettings: true,
+            },
+            {
+              title: "Resources",
+              links: resourceLinks,
+              ariaLabel: "Resource links",
+            },
+            {
+              title: "Company",
+              links: companyLinks,
+              ariaLabel: "Company links",
+            },
+          ].map(({ title, links, ariaLabel, hasCookieSettings }) => (
+            <nav key={title} aria-label={ariaLabel}>
+              <h3
+                className={`text-caption uppercase tracking-wider mb-4 ${isLight ? "text-[#9CA3AF]" : "text-white/45"}`}
+              >
+                {title}
+              </h3>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={`text-body transition-colors ${
+                        isLight
+                          ? "text-[#4B5563] hover:text-[#111827]"
+                          : "text-white/45 hover:text-white"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                {hasCookieSettings && (
+                  <li>
+                    <button
+                      onClick={() =>
+                        window.dispatchEvent(new Event("show-cookie-consent"))
+                      }
+                      className={`text-body transition-colors ${
+                        isLight
+                          ? "text-[#4B5563] hover:text-[#111827]"
+                          : "text-white/45 hover:text-white"
+                      }`}
+                    >
+                      Cookie Settings
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </nav>
+          ))}
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/[0.06]">
+      <div
+        className={`border-t ${isLight ? "border-[#E5E7EB]" : "border-white/[0.06]"}`}
+      >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <div className="flex items-center gap-4">
-              <span className="text-small text-white/25">
+              <span
+                className={`text-small ${isLight ? "text-[#9CA3AF]" : "text-white/25"}`}
+              >
                 © {new Date().getFullYear()} Caelex. All rights reserved.
               </span>
             </div>
@@ -373,43 +400,41 @@ export default function Footer() {
               aria-label="External regulatory links"
               className="flex flex-wrap items-center justify-center gap-4 md:gap-6"
             >
-              <a
-                href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
-              >
-                EU Space Act
-              </a>
-              <a
-                href="https://eur-lex.europa.eu/eli/dir/2022/2555/oj"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
-              >
-                NIS2 Directive
-              </a>
-              <a
-                href="https://www.euspa.europa.eu/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
-              >
-                EUSPA
-              </a>
-              <a
-                href="https://www.esa.int/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-small sm:text-caption text-white/25 hover:text-white/45 transition-colors"
-              >
-                ESA
-              </a>
+              {[
+                {
+                  label: "EU Space Act",
+                  href: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=COM:2025:335:FIN",
+                },
+                {
+                  label: "NIS2 Directive",
+                  href: "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+                },
+                { label: "EUSPA", href: "https://www.euspa.europa.eu/" },
+                { label: "ESA", href: "https://www.esa.int/" },
+              ].map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`text-small sm:text-caption transition-colors ${
+                    isLight
+                      ? "text-[#9CA3AF] hover:text-[#4B5563]"
+                      : "text-white/25 hover:text-white/45"
+                  }`}
+                >
+                  {label}
+                </a>
+              ))}
             </nav>
           </div>
 
           {/* Disclaimer */}
-          <p className="text-caption sm:text-micro text-white/45 text-center md:text-left mt-6 max-w-[900px] leading-relaxed">
+          <p
+            className={`text-caption sm:text-micro text-center md:text-left mt-6 max-w-[900px] leading-relaxed ${
+              isLight ? "text-[#4B5563]" : "text-white/45"
+            }`}
+          >
             This platform provides regulatory guidance based on the EU Space Act
             (COM(2025) 335), NIS2 Directive (EU 2022/2555), and national space
             laws across European jurisdictions. Information provided does not

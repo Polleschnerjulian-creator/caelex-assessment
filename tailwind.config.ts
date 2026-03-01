@@ -17,6 +17,18 @@ const config: Config = {
           border: "#e2e8f0",
           muted: "#64748b",
         },
+        // Landing light-mode palette (Palantir x Apple)
+        landing: {
+          bg: "#F7F8FA",
+          card: "#FFFFFF",
+          subtle: "#F1F3F5",
+          inset: "#E9ECEF",
+          text: "#111827",
+          "text-secondary": "#4B5563",
+          "text-tertiary": "#9CA3AF",
+          border: "#E5E7EB",
+          "border-strong": "#D1D5DB",
+        },
         // Dark mode colors — single source of truth
         dark: {
           bg: "#0A0A0B",

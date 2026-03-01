@@ -101,48 +101,35 @@ function PipelineVisualization() {
 
   return (
     <div ref={ref} className="relative mb-16 md:mb-20">
-      {/* Scan-line overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none z-20 rounded-2xl overflow-hidden"
-        aria-hidden="true"
-        style={{
-          background:
-            "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.015) 2px, rgba(0,255,255,0.015) 4px)",
-        }}
-      />
-
       {/* Pipeline container */}
       <div
-        className="relative rounded-2xl p-6 md:p-10 overflow-hidden"
+        className="relative rounded-2xl p-6 md:p-10 overflow-hidden bg-white border border-[#E5E7EB]"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(6,182,212,0.04) 0%, rgba(0,0,0,0.3) 50%, rgba(6,182,212,0.02) 100%)",
-          boxShadow:
-            "0 0 0 1px rgba(6,182,212,0.1), 0 0 60px rgba(6,182,212,0.05), inset 0 1px 0 rgba(255,255,255,0.03)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}
       >
         {/* Live metrics bar */}
         <div className="flex items-center justify-between mb-8 md:mb-10">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-            <span className="text-caption font-medium text-cyan-400/70 uppercase tracking-[0.15em] font-mono">
+            <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+            <span className="text-caption font-medium text-cyan-600 uppercase tracking-[0.15em] font-mono">
               Evidence Pipeline — Live
             </span>
           </div>
           <div className="hidden sm:flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-caption text-white/30 font-mono">
+              <span className="text-caption text-[#9CA3AF] font-mono">
                 Evidence:
               </span>
-              <span className="text-body font-mono font-medium text-cyan-400">
+              <span className="text-body font-mono font-medium text-cyan-600">
                 {evidenceCount.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-caption text-white/30 font-mono">
+              <span className="text-caption text-[#9CA3AF] font-mono">
                 Score:
               </span>
-              <span className="text-body font-mono font-medium text-cyan-400">
+              <span className="text-body font-mono font-medium text-cyan-600">
                 {complianceScore}.2%
               </span>
             </div>
@@ -175,7 +162,7 @@ function PipelineVisualization() {
                       y1={node.y}
                       x2={next.x - 30}
                       y2={node.y}
-                      stroke="rgba(6,182,212,0.1)"
+                      stroke="rgba(6,182,212,0.2)"
                       strokeWidth="1"
                     />
                     {/* Animated dashed line */}
@@ -184,7 +171,7 @@ function PipelineVisualization() {
                       y1={node.y}
                       x2={next.x - 30}
                       y2={node.y}
-                      stroke="rgba(6,182,212,0.35)"
+                      stroke="rgba(6,182,212,0.5)"
                       strokeWidth="1.5"
                       strokeDasharray="6 8"
                     >
@@ -197,7 +184,7 @@ function PipelineVisualization() {
                       />
                     </line>
                     {/* Traveling data particle */}
-                    <circle r="2.5" fill="rgba(34,211,238,0.7)">
+                    <circle r="2.5" fill="rgba(6,182,212,0.8)">
                       <animate
                         attributeName="cx"
                         values={`${node.x + 30};${next.x - 30}`}
@@ -212,13 +199,13 @@ function PipelineVisualization() {
                       />
                       <animate
                         attributeName="opacity"
-                        values="0;0.8;0.8;0"
+                        values="0;0.9;0.9;0"
                         dur={`${2 + i * 0.4}s`}
                         repeatCount="indefinite"
                       />
                     </circle>
                     {/* Second particle, offset */}
-                    <circle r="1.5" fill="rgba(34,211,238,0.4)">
+                    <circle r="1.5" fill="rgba(6,182,212,0.5)">
                       <animate
                         attributeName="cx"
                         values={`${node.x + 30};${next.x - 30}`}
@@ -235,7 +222,7 @@ function PipelineVisualization() {
                       />
                       <animate
                         attributeName="opacity"
-                        values="0;0.5;0.5;0"
+                        values="0;0.6;0.6;0"
                         dur={`${2.5 + i * 0.3}s`}
                         begin={`${1 + i * 0.2}s`}
                         repeatCount="indefinite"
@@ -253,7 +240,7 @@ function PipelineVisualization() {
                   cy={node.y}
                   r="24"
                   fill="none"
-                  stroke="rgba(6,182,212,0.08)"
+                  stroke="rgba(6,182,212,0.15)"
                   strokeWidth="1"
                 >
                   <animate
@@ -264,7 +251,7 @@ function PipelineVisualization() {
                   />
                   <animate
                     attributeName="opacity"
-                    values="0.08;0.2;0.08"
+                    values="0.15;0.35;0.15"
                     dur={`${3 + i * 0.5}s`}
                     repeatCount="indefinite"
                   />
@@ -293,20 +280,19 @@ function PipelineVisualization() {
                   <div className="flex flex-col items-center gap-2.5">
                     {/* Icon node */}
                     <div
-                      className="w-14 h-14 rounded-xl bg-cyan-500/[0.08] border border-cyan-500/20 flex items-center justify-center backdrop-blur-sm"
+                      className="w-14 h-14 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center"
                       style={{
-                        boxShadow:
-                          "0 0 20px rgba(6,182,212,0.1), inset 0 1px 0 rgba(255,255,255,0.05)",
+                        boxShadow: "0 1px 3px rgba(6,182,212,0.1)",
                       }}
                     >
-                      <Icon size={22} className="text-cyan-400" />
+                      <Icon size={22} className="text-cyan-600" />
                     </div>
                     {/* Label */}
-                    <span className="text-body-lg font-medium text-white whitespace-nowrap">
+                    <span className="text-body-lg font-medium text-[#111827] whitespace-nowrap">
                       {stage.label}
                     </span>
                     {/* Hash snippet */}
-                    <span className="text-micro font-mono text-cyan-400/40 whitespace-nowrap">
+                    <span className="text-micro font-mono text-cyan-500 whitespace-nowrap">
                       {stage.hash}
                     </span>
                   </div>
@@ -326,10 +312,10 @@ function PipelineVisualization() {
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.1 }}
                 className="text-center"
               >
-                <div className="text-caption text-cyan-400/60 font-mono mb-1">
+                <div className="text-caption text-cyan-600 font-mono mb-1">
                   {stage.metric}
                 </div>
-                <p className="text-small text-white/35 leading-relaxed">
+                <p className="text-small text-[#4B5563] leading-relaxed">
                   {stage.description}
                 </p>
               </motion.div>
@@ -353,28 +339,28 @@ function PipelineVisualization() {
                   {/* Vertical connector + icon */}
                   <div className="flex flex-col items-center">
                     <div
-                      className="w-11 h-11 rounded-lg bg-cyan-500/[0.08] border border-cyan-500/20 flex items-center justify-center flex-shrink-0"
+                      className="w-11 h-11 rounded-lg bg-cyan-50 border border-cyan-200 flex items-center justify-center flex-shrink-0"
                       style={{
-                        boxShadow: "0 0 15px rgba(6,182,212,0.08)",
+                        boxShadow: "0 1px 3px rgba(6,182,212,0.08)",
                       }}
                     >
-                      <Icon size={18} className="text-cyan-400" />
+                      <Icon size={18} className="text-cyan-600" />
                     </div>
                     {i < stages.length - 1 && (
-                      <div className="w-px h-4 bg-gradient-to-b from-cyan-500/20 to-transparent mt-1" />
+                      <div className="w-px h-4 bg-gradient-to-b from-cyan-300 to-transparent mt-1" />
                     )}
                   </div>
                   {/* Content */}
                   <div className="pt-1 pb-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-body-lg font-medium text-white">
+                      <span className="text-body-lg font-medium text-[#111827]">
                         {stage.label}
                       </span>
-                      <span className="text-micro font-mono text-cyan-400/40">
+                      <span className="text-micro font-mono text-cyan-500">
                         {stage.hash}
                       </span>
                     </div>
-                    <p className="text-small text-white/40 leading-relaxed">
+                    <p className="text-small text-[#4B5563] leading-relaxed">
                       {stage.description}
                     </p>
                   </div>
@@ -393,32 +379,18 @@ function PipelineVisualization() {
 export default function AceSection() {
   return (
     <section
-      className="relative py-24 md:py-32 overflow-hidden"
+      className="relative py-24 md:py-32 overflow-hidden bg-[#F7F8FA]"
       aria-label="ACE — Autonomous Compliance Evidence Engine"
     >
-      {/* Dot grid background */}
+      {/* Dot grid background — increased opacity for light bg */}
       <div
         className="absolute inset-0 pointer-events-none"
         aria-hidden="true"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(6,182,212,0.07) 1px, transparent 0)",
+            "radial-gradient(circle at 1px 1px, rgba(6,182,212,0.12) 1px, transparent 0)",
           backgroundSize: "32px 32px",
         }}
-      />
-
-      {/* Cyan radial glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 40%, rgba(6,182,212,0.08) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute inset-0 bg-black/30 pointer-events-none"
-        aria-hidden="true"
       />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
@@ -430,16 +402,16 @@ export default function AceSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
-          <span className="inline-block text-caption font-medium text-cyan-400/70 uppercase tracking-[0.2em] mb-4">
+          <span className="inline-block text-caption font-medium text-cyan-600 uppercase tracking-[0.2em] mb-4">
             Coming Soon
           </span>
-          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
+          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-4">
             ACE.
           </h2>
-          <p className="text-heading md:text-heading text-white/70 mb-4 font-medium">
+          <p className="text-heading md:text-heading text-[#111827] mb-4 font-medium">
             Autonomous Compliance Evidence Engine
           </p>
-          <p className="text-subtitle md:text-title text-white/45 max-w-[900px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-[#4B5563] max-w-[900px] mx-auto leading-relaxed">
             Evidence-based compliance, fully automated. ACE continuously
             collects, validates, and maps compliance evidence across your entire
             operation — replacing manual audits with cryptographically
@@ -466,25 +438,24 @@ export default function AceSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
-              className="relative p-6 md:p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-cyan-500/[0.15] group overflow-hidden"
+              className="relative p-6 md:p-8 rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:border-cyan-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] group overflow-hidden"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               {/* Top accent line on hover */}
               <div
-                className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 aria-hidden="true"
               />
 
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-cyan-400/60 animate-pulse" />
-                <h3 className="text-heading font-medium text-white">
+                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                <h3 className="text-heading font-medium text-[#111827]">
                   {feature.title}
                 </h3>
               </div>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 {feature.description}
               </p>
             </motion.div>
@@ -499,15 +470,15 @@ export default function AceSection() {
           transition={{ duration: 0.4, delay: 0.9 }}
           className="text-center"
         >
-          <p className="text-body text-white/25">
+          <p className="text-body text-[#9CA3AF]">
             Autonomous evidence collection for the next era of space compliance.
           </p>
           <div className="flex items-center justify-center gap-3 mt-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 animate-pulse" />
-            <span className="text-caption font-mono text-cyan-400/30 uppercase tracking-[0.15em]">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+            <span className="text-caption font-mono text-cyan-500 uppercase tracking-[0.15em]">
               In Development
             </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/40 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
           </div>
         </motion.div>
       </div>

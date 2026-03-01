@@ -66,25 +66,10 @@ const categories = [
   },
 ];
 
-const colorClasses = {
-  blue: {
-    dot: "bg-emerald-400/60",
-    title: "text-emerald-400/80",
-  },
-  emerald: {
-    dot: "bg-emerald-400/60",
-    title: "text-emerald-400/80",
-  },
-  purple: {
-    dot: "bg-emerald-400/60",
-    title: "text-emerald-400/80",
-  },
-};
-
 export default function WhatWeCover() {
   return (
     <section
-      className="relative py-24 md:py-32 overflow-hidden bg-black"
+      className="relative py-24 md:py-32 overflow-hidden bg-[#F7F8FA]"
       aria-label="What we cover"
     >
       {/* Content */}
@@ -97,10 +82,10 @@ export default function WhatWeCover() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
+          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-[#111827] mb-5">
             Everything that governs space. Covered.
           </h2>
-          <p className="text-subtitle md:text-title text-white/45 max-w-[700px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-[#4B5563] max-w-[700px] mx-auto leading-relaxed">
             Each module includes guided assessments, gap analysis, and
             auto-generated compliance documents — tailored to your mission
             profile.
@@ -110,9 +95,6 @@ export default function WhatWeCover() {
         {/* Category Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
           {categories.map((category, categoryIndex) => {
-            const colors =
-              colorClasses[category.color as keyof typeof colorClasses];
-
             return (
               <motion.div
                 key={category.title}
@@ -125,12 +107,10 @@ export default function WhatWeCover() {
                 {/* Category Header */}
                 <div className="flex items-center gap-2.5 mb-5">
                   <div
-                    className={`w-2 h-2 rounded-full ${colors.dot}`}
+                    className="w-2 h-2 rounded-full bg-emerald-500"
                     aria-hidden="true"
                   />
-                  <h3
-                    className={`text-body font-medium uppercase tracking-wider ${colors.title}`}
-                  >
+                  <h3 className="text-body font-medium uppercase tracking-wider text-emerald-600">
                     {category.title}
                   </h3>
                 </div>
@@ -147,27 +127,16 @@ export default function WhatWeCover() {
                         duration: 0.3,
                         delay: categoryIndex * 0.06 + moduleIndex * 0.03,
                       }}
-                      className="group relative p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15] cursor-default"
+                      className="group relative p-4 rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] cursor-default"
                       style={{
-                        boxShadow:
-                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                       }}
                     >
-                      {/* Inner glow effect */}
-                      <div
-                        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                        aria-hidden="true"
-                        style={{
-                          background:
-                            "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 70%)",
-                        }}
-                      />
-
                       <div className="relative">
-                        <h4 className="text-subtitle font-medium text-white mb-1">
+                        <h4 className="text-subtitle font-medium text-[#111827] mb-1">
                           {module.name}
                         </h4>
-                        <p className="text-body text-white/45">
+                        <p className="text-body text-[#4B5563]">
                           {module.description}
                         </p>
                       </div>
@@ -185,7 +154,7 @@ export default function WhatWeCover() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center text-body-lg text-white/25 mt-16 md:mt-20"
+          className="text-center text-body-lg text-[#9CA3AF] mt-16 md:mt-20"
         >
           From assessment to audit-ready documentation — in minutes, not months.
         </motion.p>

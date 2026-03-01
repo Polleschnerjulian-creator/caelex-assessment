@@ -31,7 +31,7 @@ const steps = [
 export default function HowItWorks() {
   return (
     <section
-      className="relative py-24 md:py-32 overflow-hidden bg-black"
+      className="relative py-24 md:py-32 overflow-hidden bg-white"
       aria-label="How it works"
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
@@ -43,10 +43,10 @@ export default function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-white mb-5">
+          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-[#111827] mb-5">
             Audit-ready in three steps.
           </h2>
-          <p className="text-subtitle md:text-title text-white/45 max-w-[700px] mx-auto leading-relaxed">
+          <p className="text-subtitle md:text-title text-[#4B5563] max-w-[700px] mx-auto leading-relaxed">
             No consultants. No spreadsheets. No guesswork. Just a structured
             path from regulatory complexity to full compliance.
           </p>
@@ -59,13 +59,13 @@ export default function HowItWorks() {
             className="hidden lg:block absolute top-[80px] left-[16.67%] right-[16.67%] h-px"
             aria-hidden="true"
           >
-            <div className="w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-[#D1D5DB] to-transparent" />
             {/* Chevrons */}
             <div className="absolute top-1/2 left-1/3 -translate-y-1/2 -translate-x-1/2">
-              <ChevronRight className="w-4 h-4 text-white/45" />
+              <ChevronRight className="w-4 h-4 text-[#9CA3AF]" />
             </div>
             <div className="absolute top-1/2 left-2/3 -translate-y-1/2 -translate-x-1/2">
-              <ChevronRight className="w-4 h-4 text-white/45" />
+              <ChevronRight className="w-4 h-4 text-[#9CA3AF]" />
             </div>
           </div>
 
@@ -82,7 +82,7 @@ export default function HowItWorks() {
               >
                 {/* Large Ghost Number */}
                 <div
-                  className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-white/25 leading-none select-none pointer-events-none z-0"
+                  className="absolute -top-4 left-4 text-[60px] sm:text-[80px] md:text-[100px] lg:text-[140px] font-bold text-[#E5E7EB] leading-none select-none pointer-events-none z-0"
                   aria-hidden="true"
                 >
                   {step.number}
@@ -90,31 +90,30 @@ export default function HowItWorks() {
 
                 {/* Card */}
                 <div
-                  className="relative z-10 p-6 md:p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12] h-full"
+                  className="relative z-10 p-6 md:p-8 rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] h-full"
                   style={{
-                    boxShadow:
-                      "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                   }}
                 >
                   {/* Step Number Badge */}
                   <div className="inline-flex items-center gap-2 mb-5">
-                    <span className="text-body font-medium text-white/70">
+                    <span className="text-body font-medium text-[#4B5563]">
                       Step {step.number}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-heading md:text-heading font-medium text-white mb-4 leading-tight">
+                  <h3 className="text-heading md:text-heading font-medium text-[#111827] mb-4 leading-tight">
                     {step.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-body-lg text-white/45 leading-relaxed mb-6">
+                  <p className="text-body-lg text-[#4B5563] leading-relaxed mb-6">
                     {step.description}
                   </p>
 
                   {/* Replaces Label */}
-                  <p className="text-body font-medium text-emerald-400/80">
+                  <p className="text-body font-medium text-emerald-600">
                     {step.replaces}
                   </p>
                 </div>
@@ -131,10 +130,10 @@ export default function HowItWorks() {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="text-center mt-16 md:mt-20"
         >
-          <Button href="/assessment" variant="white" size="lg">
+          <Button href="/assessment" variant="landing-primary" size="lg">
             Start Your Assessment
           </Button>
-          <p className="text-body text-white/25 mt-4">
+          <p className="text-body text-[#9CA3AF] mt-4">
             Free to start. No credit card required.
           </p>
         </motion.div>

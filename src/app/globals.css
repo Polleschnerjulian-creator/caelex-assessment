@@ -158,7 +158,7 @@ body {
 
 /* ===== LANDING PAGE SPECIFIC STYLES ===== */
 
-/* Ultra-minimal scrollbar for landing page */
+/* Ultra-minimal scrollbar for landing page (dark) */
 .landing-page ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -177,10 +177,80 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Selection color for landing page */
+/* Selection color for landing page (dark) */
 .landing-page ::selection {
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
+}
+
+/* ===== LANDING LIGHT-MODE SCOPE ===== */
+/* .landing-light isolates the light-mode landing page from the dark app shell.
+   html still has class="dark" — this scope overrides it locally. */
+
+.landing-light {
+  color-scheme: light;
+}
+
+/* Override the global dark heading/text rules inside .landing-light */
+.dark .landing-light h1,
+.dark .landing-light h2,
+.dark .landing-light h3,
+.dark .landing-light h4,
+.dark .landing-light h5,
+.dark .landing-light h6 {
+  color: #111827;
+}
+
+.dark .landing-light p {
+  color: #4b5563;
+}
+
+.dark .landing-light input,
+.dark .landing-light select,
+.dark .landing-light textarea {
+  color: #111827;
+  background-color: #ffffff;
+  border-color: #e5e7eb;
+}
+
+.dark .landing-light input::placeholder,
+.dark .landing-light textarea::placeholder {
+  color: #9ca3af;
+}
+
+.dark .landing-light label {
+  color: #4b5563;
+}
+
+/* Landing light scrollbar */
+.landing-light ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.landing-light ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.landing-light ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.landing-light ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Landing light selection */
+.landing-light ::selection {
+  background: rgba(16, 185, 129, 0.15);
+  color: #111827;
+}
+
+/* Landing light focus-visible — emerald ring on light bg */
+.landing-light *:focus-visible {
+  outline-color: #059669;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
 }
 
 /* Horizontal scroll container */

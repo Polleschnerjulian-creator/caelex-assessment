@@ -12,7 +12,9 @@ type ButtonVariant =
   | "danger"
   | "dark"
   | "white"
-  | "white-outline";
+  | "white-outline"
+  | "landing-primary"
+  | "landing-outline";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonBaseProps {
@@ -80,6 +82,17 @@ const variants: Record<ButtonVariant, string> = {
     hover:border-white/40 hover:text-white
     active:bg-white/[0.04]
   `,
+  "landing-primary": `
+    bg-emerald-500 text-white
+    hover:bg-emerald-600
+    active:bg-emerald-700
+    shadow-[0_1px_3px_rgba(0,0,0,0.1)]
+  `,
+  "landing-outline": `
+    text-[#4B5563] border border-[#D1D5DB]
+    hover:border-[#111827] hover:text-[#111827]
+    active:bg-[#F1F3F5]
+  `,
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -95,7 +108,11 @@ function getButtonClasses(
   className: string,
 ) {
   const isLanding =
-    variant === "white" || variant === "white-outline" || variant === "dark";
+    variant === "white" ||
+    variant === "white-outline" ||
+    variant === "dark" ||
+    variant === "landing-primary" ||
+    variant === "landing-outline";
   const radius = pill || isLanding ? "rounded-full" : "rounded-lg";
 
   return `

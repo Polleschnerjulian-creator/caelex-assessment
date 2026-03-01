@@ -7,9 +7,14 @@ import Logo from "@/components/ui/Logo";
 import Button from "@/components/ui/Button";
 import { Menu, X } from "lucide-react";
 
-export default function Navigation() {
+interface NavigationProps {
+  theme?: "light" | "dark";
+}
+
+export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isLight = theme === "light";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,17 +45,21 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className="dark-section fixed top-0 left-0 right-0 z-50"
+        className={`fixed top-0 left-0 right-0 z-50 ${isLight ? "" : "dark-section"}`}
         aria-label="Main navigation"
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
-            {/* Liquid Glass Bar — wraps logo + nav */}
+            {/* Glass Bar / Light Bar */}
             <div
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
-                scrolled || mobileOpen
-                  ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+                isLight
+                  ? scrolled || mobileOpen
+                    ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+                    : "bg-white/60 backdrop-blur-lg border border-[#E5E7EB]/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                  : scrolled || mobileOpen
+                    ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
               }`}
             >
               {/* Logo */}
@@ -59,49 +68,55 @@ export default function Navigation() {
                 className="transition-opacity duration-300 hover:opacity-70"
                 aria-label="Caelex — Go to homepage"
               >
-                <Logo size={28} className="text-white" />
+                <Logo
+                  size={28}
+                  className={isLight ? "text-[#111827]" : "text-white"}
+                />
               </Link>
 
               {/* Right Side Navigation */}
               <div className="flex items-center gap-6">
                 {/* Links */}
-                <Link
-                  href="/platform"
-                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
-                >
-                  Platform
-                </Link>
-                <Link
-                  href="/resources"
-                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
-                >
-                  Resources
-                </Link>
-                <Link
-                  href="/modules"
-                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
-                >
-                  Modules
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="hidden md:block text-body text-white/45 hover:text-white transition-colors duration-300"
-                >
-                  Pricing
-                </Link>
+                {["Platform", "Resources", "Modules", "Pricing"].map(
+                  (label) => (
+                    <Link
+                      key={label}
+                      href={`/${label.toLowerCase()}`}
+                      className={`hidden md:block text-body transition-colors duration-300 ${
+                        isLight
+                          ? "text-[#4B5563] hover:text-[#111827]"
+                          : "text-white/45 hover:text-white"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ),
+                )}
 
                 {/* Auth + CTAs */}
                 <div className="hidden md:flex items-center gap-4">
                   <Link
                     href="/login"
-                    className="text-body text-white/45 hover:text-white transition-colors duration-300"
+                    className={`text-body transition-colors duration-300 ${
+                      isLight
+                        ? "text-[#4B5563] hover:text-[#111827]"
+                        : "text-white/45 hover:text-white"
+                    }`}
                   >
                     Log in
                   </Link>
-                  <Button href="/demo" variant="white-outline" size="sm">
+                  <Button
+                    href="/demo"
+                    variant={isLight ? "landing-outline" : "white-outline"}
+                    size="sm"
+                  >
                     Request Demo
                   </Button>
-                  <Button href="/assessment" variant="white" size="sm">
+                  <Button
+                    href="/assessment"
+                    variant={isLight ? "landing-primary" : "white"}
+                    size="sm"
+                  >
                     Start Assessment
                   </Button>
                 </div>
@@ -109,7 +124,11 @@ export default function Navigation() {
                 {/* Mobile Menu Button */}
                 <button
                   onClick={() => setMobileOpen(!mobileOpen)}
-                  className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
+                  className={`md:hidden p-2 transition-colors ${
+                    isLight
+                      ? "text-[#4B5563] hover:text-[#111827]"
+                      : "text-white/70 hover:text-white"
+                  }`}
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
                   aria-expanded={mobileOpen}
                   aria-controls="mobile-menu"
@@ -142,7 +161,11 @@ export default function Navigation() {
           >
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className={`absolute inset-0 ${
+                isLight
+                  ? "bg-black/20 backdrop-blur-sm"
+                  : "bg-black/80 backdrop-blur-sm"
+              }`}
               onClick={() => setMobileOpen(false)}
               aria-hidden="true"
             />
@@ -153,7 +176,11 @@ export default function Navigation() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, delay: 0.05 }}
-              className="relative mt-20 mx-6 p-6 rounded-xl bg-dark-surface border border-white/[0.08]"
+              className={`relative mt-20 mx-6 p-6 rounded-xl border ${
+                isLight
+                  ? "bg-white border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+                  : "bg-dark-surface border-white/[0.08]"
+              }`}
               role="navigation"
               aria-label="Mobile navigation"
             >
@@ -162,73 +189,72 @@ export default function Navigation() {
                 <Link
                   href="/assessment"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-colors"
+                  className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-body-lg font-medium transition-colors ${
+                    isLight
+                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                      : "bg-white text-black hover:bg-white/90"
+                  }`}
                 >
                   Start Assessment
                 </Link>
                 <Link
                   href="/demo"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white/70 text-body-lg font-medium border border-white/20 hover:border-white/40 transition-colors mt-2"
+                  className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-body-lg font-medium border transition-colors mt-2 ${
+                    isLight
+                      ? "text-[#4B5563] border-[#D1D5DB] hover:border-[#111827]"
+                      : "text-white/70 border-white/20 hover:border-white/40"
+                  }`}
                 >
                   Request Demo
                 </Link>
-                <div className="h-px bg-white/[0.06] my-3" />
-                <Link
-                  href="/platform"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  Platform
-                </Link>
-                <Link
-                  href="/resources"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  Resources
-                </Link>
-                <Link
-                  href="/modules"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  Modules
-                </Link>
-                <Link
-                  href="/about"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  About
-                </Link>
-                <Link
-                  href="/pricing"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  Pricing
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-body-lg text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors"
-                >
-                  Contact
-                </Link>
-                <div className="h-px bg-white/[0.06] my-3" />
+                <div
+                  className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
+                />
+                {[
+                  "Platform",
+                  "Resources",
+                  "Modules",
+                  "About",
+                  "Pricing",
+                  "Contact",
+                ].map((label) => (
+                  <Link
+                    key={label}
+                    href={`/${label.toLowerCase()}`}
+                    onClick={() => setMobileOpen(false)}
+                    className={`px-4 py-3 rounded-lg text-body-lg transition-colors ${
+                      isLight
+                        ? "text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F5]"
+                        : "text-white/70 hover:text-white hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+                <div
+                  className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
+                />
                 <div className="flex gap-3">
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white/70 hover:text-white border border-white/[0.08] hover:border-white/20 transition-colors"
+                    className={`flex-1 text-center px-4 py-2.5 rounded-lg text-body border transition-colors ${
+                      isLight
+                        ? "text-[#4B5563] border-[#E5E7EB] hover:border-[#D1D5DB]"
+                        : "text-white/70 border-white/[0.08] hover:border-white/20"
+                    }`}
                   >
                     Log in
                   </Link>
                   <Link
                     href="/signup"
                     onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 rounded-lg text-body text-white bg-white/[0.08] hover:bg-white/[0.12] transition-colors"
+                    className={`flex-1 text-center px-4 py-2.5 rounded-lg text-body transition-colors ${
+                      isLight
+                        ? "text-[#111827] bg-[#F1F3F5] hover:bg-[#E9ECEF]"
+                        : "text-white bg-white/[0.08] hover:bg-white/[0.12]"
+                    }`}
                   >
                     Sign up
                   </Link>

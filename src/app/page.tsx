@@ -8,7 +8,7 @@ import { SoftwareApplicationJsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
   return (
-    <main className="landing-page bg-black text-white min-h-screen">
+    <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">
       <SoftwareApplicationJsonLd />
       <Hero />
       <WhatWeCover />
