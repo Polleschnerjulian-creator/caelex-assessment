@@ -1,7 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 const chatExamples = [
@@ -70,12 +69,8 @@ const knowledgeDomains = [
 ];
 
 export default function AstraSection() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
     <section
-      ref={ref}
       className="relative py-24 md:py-32 overflow-hidden"
       aria-label="ASTRA AI compliance agent"
     >
@@ -97,7 +92,8 @@ export default function AstraSection() {
         {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -125,7 +121,8 @@ export default function AstraSection() {
           {/* Left: Chat Mockup */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-7"
           >
@@ -159,7 +156,8 @@ export default function AstraSection() {
                   <motion.div
                     key={i}
                     initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
                     className="space-y-3"
                   >
@@ -229,7 +227,8 @@ export default function AstraSection() {
           {/* Right: Capability Grid */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="lg:col-span-5 flex flex-col gap-3"
           >
@@ -237,7 +236,8 @@ export default function AstraSection() {
               <motion.div
                 key={cap.name}
                 initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
                 className="group relative p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12]"
                 style={{
@@ -274,7 +274,8 @@ export default function AstraSection() {
             {/* Knowledge Domain Tags */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, delay: 0.9 }}
               className="flex flex-wrap gap-2 mt-2"
             >
@@ -293,7 +294,8 @@ export default function AstraSection() {
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 1.0 }}
           className="text-center"
         >

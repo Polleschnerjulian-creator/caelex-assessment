@@ -1,7 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Scale,
@@ -69,12 +68,8 @@ const nodes = Array.from({ length: 6 }, (_, i) => nodeXY(i));
 // ─── Component ───
 
 export default function EcosystemSection() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
     <section
-      ref={ref}
       className="relative py-24 md:py-32 overflow-hidden bg-black"
       aria-label="Compliance Network Ecosystem"
     >
@@ -92,7 +87,8 @@ export default function EcosystemSection() {
         {/* ── Header ── */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -113,9 +109,8 @@ export default function EcosystemSection() {
         {/* ── Network Visualization ── */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
-          animate={
-            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
-          }
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-20 md:mb-24"
         >
@@ -349,17 +344,13 @@ export default function EcosystemSection() {
               style={{ transform: "translate(-50%, -50%)" }}
             >
               <motion.div
-                animate={
-                  isInView
-                    ? {
-                        boxShadow: [
-                          "0 0 20px rgba(16,185,129,0.05)",
-                          "0 0 40px rgba(16,185,129,0.12)",
-                          "0 0 20px rgba(16,185,129,0.05)",
-                        ],
-                      }
-                    : {}
-                }
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(16,185,129,0.05)",
+                    "0 0 40px rgba(16,185,129,0.12)",
+                    "0 0 20px rgba(16,185,129,0.05)",
+                  ],
+                }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
@@ -392,11 +383,8 @@ export default function EcosystemSection() {
                 >
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
-                    animate={
-                      isInView
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.95 }
-                    }
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
                   >
                     <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1] backdrop-blur-sm hover:bg-emerald-500/[0.06] hover:border-emerald-500/20 transition-all duration-300 cursor-default group">
@@ -432,11 +420,8 @@ export default function EcosystemSection() {
                   <motion.div
                     key={s.label}
                     initial={{ opacity: 0, scale: 0.95 }}
-                    animate={
-                      isInView
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.95 }
-                    }
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
                     className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1]"
                   >
@@ -461,9 +446,8 @@ export default function EcosystemSection() {
               <motion.div
                 key={pillar.title}
                 initial={{ opacity: 0, y: 20 }}
-                animate={
-                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                }
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
                 className="relative p-6 md:p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-emerald-500/[0.15] group overflow-hidden"
                 style={{
@@ -494,7 +478,8 @@ export default function EcosystemSection() {
         {/* ── CTA ── */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.4, delay: 0.9 }}
           className="text-center"
         >

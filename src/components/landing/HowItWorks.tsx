@@ -1,7 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import Button from "@/components/ui/Button";
 
@@ -30,12 +29,8 @@ const steps = [
 ];
 
 export default function HowItWorks() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
     <section
-      ref={ref}
       className="relative py-24 md:py-32 overflow-hidden bg-black"
       aria-label="How it works"
     >
@@ -43,7 +38,8 @@ export default function HowItWorks() {
         {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -79,7 +75,8 @@ export default function HowItWorks() {
               <motion.div
                 key={step.number}
                 initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 className="relative"
               >
@@ -129,7 +126,8 @@ export default function HowItWorks() {
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.4, delay: 0.3 }}
           className="text-center mt-16 md:mt-20"
         >

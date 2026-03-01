@@ -39,10 +39,7 @@ export default function Navigation() {
 
   return (
     <>
-      <motion.nav
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+      <nav
         className="dark-section fixed top-0 left-0 right-0 z-50"
         aria-label="Main navigation"
       >
@@ -127,7 +124,7 @@ export default function Navigation() {
             </div>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>

@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 
@@ -59,25 +56,16 @@ export default function Hero() {
           {/* Main grid: Headline left, CTA right */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
+            <div>
               <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
                 The World&apos;s Space
                 <br />
                 Compliance Platform.
               </h1>
-            </motion.div>
+            </div>
 
             {/* Right: CTA and Summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col gap-6"
-            >
+            <div className="flex flex-col gap-6">
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button href="/assessment" variant="white" size="md">
@@ -93,16 +81,11 @@ export default function Hero() {
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
-            </motion.div>
+            </div>
           </div>
 
           {/* Bottom bar: Module ticker - more prominent */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="pt-8 border-t border-white/[0.12]"
-          >
+          <div className="pt-8 border-t border-white/[0.12]">
             <ul
               className="flex flex-wrap gap-x-3 gap-y-2 md:gap-x-4"
               aria-label="Compliance modules covered"
@@ -124,7 +107,7 @@ export default function Hero() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
         </div>
       </div>
 
