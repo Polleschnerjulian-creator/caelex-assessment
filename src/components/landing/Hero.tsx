@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Button from "@/components/ui/Button";
 
 const MODULES = [
@@ -19,34 +18,32 @@ const MODULES = [
 export default function Hero() {
   return (
     <section
-      className="relative min-h-screen bg-[#F7F8FA] overflow-hidden"
+      className="relative min-h-screen bg-black overflow-hidden"
       aria-label="Hero"
     >
-      {/* Background Image */}
+      {/* Background Video */}
       <div className="absolute inset-0" aria-hidden="true">
-        <Image
-          src="/images/hero-planet.png"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          quality={90}
-        />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/images/hero-planet.png"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        </video>
       </div>
 
-      {/* Gray overlay to fade image into light bg */}
+      {/* Dark overlay to dim the video */}
       <div
-        className="absolute inset-0 bg-[#D1D5DB]/70 pointer-events-none"
+        className="absolute inset-0 bg-black/50 pointer-events-none"
         aria-hidden="true"
       />
 
-      {/* Gradient overlays for depth — light mode */}
+      {/* Gradient overlay — fade to page bg at bottom */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-[#F7F8FA] via-[#F7F8FA]/60 to-transparent pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 bg-gradient-to-r from-[#F7F8FA]/40 via-transparent to-[#F7F8FA]/20 pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-t from-[#F7F8FA] via-transparent to-transparent pointer-events-none"
         aria-hidden="true"
       />
 
@@ -57,7 +54,7 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <div>
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-[#111827]">
+              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
                 The World&apos;s Space
                 <br />
                 Compliance Platform.
@@ -68,16 +65,16 @@ export default function Hero() {
             <div className="flex flex-col gap-6">
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button href="/assessment" variant="landing-primary" size="md">
+                <Button href="/assessment" variant="white" size="md">
                   Start Assessment
                 </Button>
-                <Button href="/demo" variant="landing-outline" size="md">
+                <Button href="/demo" variant="white-outline" size="md">
                   Request Demo
                 </Button>
               </div>
 
               {/* Summary */}
-              <p className="text-body text-[#4B5563] leading-[1.7] max-w-[400px]">
+              <p className="text-body text-white/60 leading-[1.7] max-w-[400px]">
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
@@ -85,7 +82,7 @@ export default function Hero() {
           </div>
 
           {/* Bottom bar: Module ticker */}
-          <div className="pt-8 border-t border-[#D1D5DB]">
+          <div className="pt-8 border-t border-white/20">
             <ul
               className="flex flex-wrap gap-x-3 gap-y-2 md:gap-x-4"
               aria-label="Compliance modules covered"
@@ -93,12 +90,12 @@ export default function Hero() {
               {MODULES.map((module, i) => (
                 <li
                   key={module}
-                  className="text-body md:text-body-lg text-[#4B5563] whitespace-nowrap font-medium list-none"
+                  className="text-body md:text-body-lg text-white/60 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
                     <span
-                      className="ml-3 md:ml-4 text-[#9CA3AF]"
+                      className="ml-3 md:ml-4 text-white/30"
                       aria-hidden="true"
                     >
                       ·
