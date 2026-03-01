@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
@@ -906,11 +906,8 @@ export default function PricingPage() {
                 </thead>
                 <tbody>
                   {featureCategories.map((category) => (
-                    <>
-                      <tr
-                        key={category.name}
-                        className="border-b border-white/[0.08] bg-white/[0.02]"
-                      >
+                    <Fragment key={category.name}>
+                      <tr className="border-b border-white/[0.08] bg-white/[0.02]">
                         <td
                           colSpan={4}
                           className="py-4 px-6 text-subtitle font-semibold text-white"
@@ -982,7 +979,7 @@ export default function PricingPage() {
                           </td>
                         </tr>
                       ))}
-                    </>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
