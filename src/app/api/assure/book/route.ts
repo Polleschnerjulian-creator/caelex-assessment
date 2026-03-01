@@ -40,8 +40,13 @@ const bookingSchema = z.object({
   company: z.string().min(1, "Company name is required").max(200),
   companyWebsite: z
     .string()
-    .url("Invalid URL format")
-    .or(z.literal(""))
+    .max(500)
+    .transform((val) => {
+      if (!val) return val;
+      // Auto-prepend https:// for bare domains
+      return /^https?:\/\//i.test(val) ? val : `https://${val}`;
+    })
+    .pipe(z.string().url("Invalid URL format").or(z.literal("")))
     .optional(),
   operatorType: z.string().min(1, "Operator type is required").max(200),
   fundingStage: z.string().min(1, "Funding stage is required").max(200),

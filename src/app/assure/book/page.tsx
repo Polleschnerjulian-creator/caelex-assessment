@@ -73,11 +73,17 @@ export default function BookCallPage() {
     setError(null);
 
     try {
+      // Normalize website: auto-prepend https:// if user typed a bare domain
+      let website = formData.companyWebsite.trim();
+      if (website && !/^https?:\/\//i.test(website)) {
+        website = `https://${website}`;
+      }
+
       const payload: Record<string, unknown> = {
         name: formData.name,
         email: formData.email,
         company: formData.company,
-        companyWebsite: formData.companyWebsite || undefined,
+        companyWebsite: website || undefined,
         operatorType: formData.operatorType,
         fundingStage: formData.fundingStage,
         isRaising: formData.isRaising,
@@ -324,12 +330,13 @@ export default function BookCallPage() {
                                 Company Website
                               </label>
                               <input
-                                type="url"
+                                type="text"
+                                inputMode="url"
                                 value={formData.companyWebsite}
                                 onChange={(e) =>
                                   updateField("companyWebsite", e.target.value)
                                 }
-                                placeholder="https://company.space"
+                                placeholder="company.space"
                                 className={inputClasses}
                               />
                             </div>
