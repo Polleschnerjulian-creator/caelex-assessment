@@ -22,7 +22,7 @@ const categories = [
   },
   {
     title: "Security & Resilience",
-    color: "emerald",
+    color: "gray",
     modules: [
       {
         name: "Cybersecurity / NIS2",
@@ -107,10 +107,10 @@ export default function WhatWeCover() {
                 {/* Category Header */}
                 <div className="flex items-center gap-2.5 mb-5">
                   <div
-                    className="w-2 h-2 rounded-full bg-emerald-500"
+                    className="w-2 h-2 rounded-full bg-[#6B7280]"
                     aria-hidden="true"
                   />
-                  <h3 className="text-body font-medium uppercase tracking-wider text-emerald-600">
+                  <h3 className="text-body font-medium uppercase tracking-wider text-[#4B5563]">
                     {category.title}
                   </h3>
                 </div>

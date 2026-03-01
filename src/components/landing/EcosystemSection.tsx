@@ -82,7 +82,7 @@ export default function EcosystemSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
-          <span className="inline-block text-caption font-medium text-emerald-600 uppercase tracking-[0.2em] mb-4">
+          <span className="inline-block text-caption font-medium text-[#6B7280] uppercase tracking-[0.2em] mb-4">
             Compliance Network
           </span>
           <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-[#111827] mb-5">
@@ -126,7 +126,7 @@ export default function EcosystemSection() {
                 cy={C.y}
                 rx={RX}
                 ry={RY}
-                stroke="rgba(16,185,129,0.15)"
+                stroke="rgba(107,114,128,0.15)"
                 strokeWidth="1"
                 strokeDasharray="6 10"
               >
@@ -145,7 +145,7 @@ export default function EcosystemSection() {
                 cy={C.y}
                 rx={RX * 0.45}
                 ry={RY * 0.45}
-                stroke="rgba(16,185,129,0.10)"
+                stroke="rgba(107,114,128,0.10)"
                 strokeWidth="1"
                 strokeDasharray="3 9"
               >
@@ -168,7 +168,7 @@ export default function EcosystemSection() {
                     y1={n.y}
                     x2={next.x}
                     y2={next.y}
-                    stroke="rgba(16,185,129,0.08)"
+                    stroke="rgba(107,114,128,0.08)"
                     strokeWidth="1"
                   />
                 );
@@ -182,7 +182,7 @@ export default function EcosystemSection() {
                   y1={C.y}
                   x2={n.x}
                   y2={n.y}
-                  stroke="rgba(16,185,129,0.18)"
+                  stroke="rgba(107,114,128,0.18)"
                   strokeWidth="1"
                   strokeDasharray="4 8"
                 >
@@ -200,7 +200,7 @@ export default function EcosystemSection() {
               {nodes.map((n, i) => (
                 <g key={`p-${i}`}>
                   {/* Fast particle */}
-                  <circle r="1.5" fill="rgba(16,185,129,0.7)">
+                  <circle r="1.5" fill="rgba(107,114,128,0.7)">
                     <animate
                       attributeName="cx"
                       values={`${n.x};${C.x}`}
@@ -221,7 +221,7 @@ export default function EcosystemSection() {
                     />
                   </circle>
                   {/* Slower offset particle */}
-                  <circle r="1" fill="rgba(16,185,129,0.5)">
+                  <circle r="1" fill="rgba(107,114,128,0.5)">
                     <animate
                       attributeName="cx"
                       values={`${n.x};${C.x}`}
@@ -253,7 +253,7 @@ export default function EcosystemSection() {
                 cy={C.y}
                 r="15"
                 fill="none"
-                stroke="rgba(16,185,129,0.12)"
+                stroke="rgba(107,114,128,0.12)"
                 strokeWidth="1"
               >
                 <animate
@@ -276,7 +276,7 @@ export default function EcosystemSection() {
                 cy={C.y}
                 r="15"
                 fill="none"
-                stroke="rgba(16,185,129,0.12)"
+                stroke="rgba(107,114,128,0.12)"
                 strokeWidth="1"
               >
                 <animate
@@ -298,7 +298,7 @@ export default function EcosystemSection() {
               </circle>
 
               {/* Center breathing glow */}
-              <circle cx={C.x} cy={C.y} r="20" fill="rgba(16,185,129,0.08)">
+              <circle cx={C.x} cy={C.y} r="20" fill="rgba(107,114,128,0.08)">
                 <animate
                   attributeName="r"
                   values="20;35;20"
@@ -314,7 +314,7 @@ export default function EcosystemSection() {
               </circle>
 
               {/* Center dot */}
-              <circle cx={C.x} cy={C.y} r="3" fill="rgba(16,185,129,0.5)" />
+              <circle cx={C.x} cy={C.y} r="3" fill="rgba(107,114,128,0.5)" />
 
               {/* Node anchor dots */}
               {nodes.map((n, i) => (
@@ -323,7 +323,7 @@ export default function EcosystemSection() {
                   cx={n.x}
                   cy={n.y}
                   r="2"
-                  fill="rgba(16,185,129,0.35)"
+                  fill="rgba(107,114,128,0.35)"
                 />
               ))}
             </svg>
@@ -336,9 +336,9 @@ export default function EcosystemSection() {
               <motion.div
                 animate={{
                   boxShadow: [
-                    "0 0 20px rgba(16,185,129,0.08)",
-                    "0 0 40px rgba(16,185,129,0.18)",
-                    "0 0 20px rgba(16,185,129,0.08)",
+                    "0 0 20px rgba(107,114,128,0.08)",
+                    "0 0 40px rgba(107,114,128,0.18)",
+                    "0 0 20px rgba(107,114,128,0.08)",
                   ],
                 }}
                 transition={{
@@ -346,11 +346,11 @@ export default function EcosystemSection() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="px-6 py-3.5 rounded-2xl bg-emerald-50 border border-emerald-200"
+                className="px-6 py-3.5 rounded-2xl bg-[#F1F3F5] border border-[#D1D5DB]"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                  <span className="text-body-lg font-medium text-emerald-600 whitespace-nowrap">
+                  <div className="w-2 h-2 rounded-full bg-[#6B7280] shadow-[0_0_8px_rgba(107,114,128,0.6)]" />
+                  <span className="text-body-lg font-medium text-[#4B5563] whitespace-nowrap">
                     Your Organization
                   </span>
                 </div>
@@ -377,11 +377,11 @@ export default function EcosystemSection() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
                   >
-                    <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-300 cursor-default group shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                      <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors duration-300">
-                        <Icon size={18} className="text-emerald-600" />
+                    <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F1F3F5] hover:border-[#D1D5DB] transition-all duration-300 cursor-default group shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                      <div className="w-9 h-9 rounded-lg bg-[#F1F3F5] flex items-center justify-center group-hover:bg-[#E9ECEF] transition-colors duration-300">
+                        <Icon size={18} className="text-[#4B5563]" />
                       </div>
-                      <span className="text-small font-medium text-[#4B5563] group-hover:text-emerald-700 transition-colors duration-300 whitespace-nowrap">
+                      <span className="text-small font-medium text-[#4B5563] group-hover:text-[#111827] transition-colors duration-300 whitespace-nowrap">
                         {s.label}
                       </span>
                     </div>
@@ -394,10 +394,10 @@ export default function EcosystemSection() {
           {/* Mobile: Grid */}
           <div className="md:hidden">
             <div className="flex justify-center mb-6">
-              <div className="px-5 py-3 rounded-xl bg-emerald-50 border border-emerald-200">
+              <div className="px-5 py-3 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                  <span className="text-body font-medium text-emerald-600">
+                  <div className="w-2 h-2 rounded-full bg-[#6B7280] shadow-[0_0_8px_rgba(107,114,128,0.6)]" />
+                  <span className="text-body font-medium text-[#4B5563]">
                     Your Organization
                   </span>
                 </div>
@@ -413,10 +413,10 @@ export default function EcosystemSection() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-emerald-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                      <Icon size={20} className="text-emerald-600" />
+                    <div className="w-10 h-10 rounded-lg bg-[#F1F3F5] flex items-center justify-center">
+                      <Icon size={20} className="text-[#4B5563]" />
                     </div>
                     <span className="text-small text-[#4B5563] text-center leading-tight">
                       {s.label}
@@ -439,19 +439,19 @@ export default function EcosystemSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
-                className="relative p-6 md:p-8 rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:border-emerald-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] group overflow-hidden"
+                className="relative p-6 md:p-8 rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] group overflow-hidden"
                 style={{
                   boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                 }}
               >
                 {/* Top accent line on hover */}
                 <div
-                  className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9CA3AF]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   aria-hidden="true"
                 />
 
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-4 group-hover:bg-emerald-100 transition-colors duration-300">
-                  <Icon size={20} className="text-emerald-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#F1F3F5] flex items-center justify-center mb-4 group-hover:bg-[#E9ECEF] transition-colors duration-300">
+                  <Icon size={20} className="text-[#4B5563]" />
                 </div>
                 <h3 className="text-heading font-medium text-[#111827] mb-3">
                   {pillar.title}
@@ -474,7 +474,7 @@ export default function EcosystemSection() {
         >
           <Link
             href="/platform"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 text-white text-subtitle font-medium hover:bg-emerald-600 transition-all duration-200 hover:scale-[1.02] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-subtitle font-medium hover:bg-[#374151] transition-all duration-200 hover:scale-[1.02] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
           >
             Explore the Platform
             <ArrowRight size={16} />

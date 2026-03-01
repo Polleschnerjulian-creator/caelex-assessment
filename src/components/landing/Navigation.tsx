@@ -191,7 +191,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-body-lg font-medium transition-colors ${
                     isLight
-                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                      ? "bg-[#111827] text-white hover:bg-[#374151]"
                       : "bg-white text-black hover:bg-white/90"
                   }`}
                 >

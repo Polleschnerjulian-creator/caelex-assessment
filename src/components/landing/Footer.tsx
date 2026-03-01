@@ -153,7 +153,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
 
             {subscribed ? (
               <div
-                className={`flex items-center gap-2 text-body ${isLight ? "text-emerald-600" : "text-emerald-400"}`}
+                className={`flex items-center gap-2 text-body ${isLight ? "text-[#374151]" : "text-emerald-400"}`}
                 role="status"
                 aria-live="polite"
               >
@@ -215,7 +215,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                     }}
                     className={`mt-0.5 w-3.5 h-3.5 rounded cursor-pointer ${
                       isLight
-                        ? "border-[#D1D5DB] bg-white accent-emerald-600"
+                        ? "border-[#D1D5DB] bg-white accent-[#111827]"
                         : "border-white/20 bg-white/[0.06] accent-white"
                     }`}
                   />

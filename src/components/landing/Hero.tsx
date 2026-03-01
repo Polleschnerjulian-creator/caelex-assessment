@@ -34,9 +34,9 @@ export default function Hero() {
         />
       </div>
 
-      {/* White overlay to fade image into light bg */}
+      {/* Gray overlay to fade image into light bg */}
       <div
-        className="absolute inset-0 bg-white/70 pointer-events-none"
+        className="absolute inset-0 bg-[#D1D5DB]/70 pointer-events-none"
         aria-hidden="true"
       />
 

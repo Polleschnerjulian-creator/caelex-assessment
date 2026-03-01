@@ -243,14 +243,14 @@ body {
 
 /* Landing light selection */
 .landing-light ::selection {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(107, 114, 128, 0.15);
   color: #111827;
 }
 
-/* Landing light focus-visible — emerald ring on light bg */
+/* Landing light focus-visible — gray ring on light bg */
 .landing-light *:focus-visible {
-  outline-color: #059669;
-  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+  outline-color: #4b5563;
+  box-shadow: 0 0 0 4px rgba(75, 85, 99, 0.12);
 }
 
 /* Horizontal scroll container */

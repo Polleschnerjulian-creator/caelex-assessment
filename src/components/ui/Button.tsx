@@ -83,9 +83,9 @@ const variants: Record<ButtonVariant, string> = {
     active:bg-white/[0.04]
   `,
   "landing-primary": `
-    bg-emerald-500 text-white
-    hover:bg-emerald-600
-    active:bg-emerald-700
+    bg-[#111827] text-white
+    hover:bg-[#374151]
+    active:bg-[#1f2937]
     shadow-[0_1px_3px_rgba(0,0,0,0.1)]
   `,
   "landing-outline": `

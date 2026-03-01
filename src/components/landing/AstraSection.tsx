@@ -83,7 +83,7 @@ export default function AstraSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
-          <span className="inline-block text-caption font-medium text-emerald-600 uppercase tracking-[0.2em] mb-4">
+          <span className="inline-block text-caption font-medium text-[#6B7280] uppercase tracking-[0.2em] mb-4">
             AI Agent
           </span>
           <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-4">
@@ -122,10 +122,10 @@ export default function AstraSection() {
               <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <div
-                    className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+                    className="w-2 h-2 rounded-full bg-[#6B7280] animate-pulse"
                     aria-hidden="true"
                   />
-                  <span className="text-body font-medium text-emerald-600">
+                  <span className="text-body font-medium text-[#374151]">
                     ASTRA
                   </span>
                 </div>
@@ -157,14 +157,14 @@ export default function AstraSection() {
                       <div className="max-w-[85%]">
                         <div className="flex items-center gap-2 mb-1.5">
                           <div
-                            className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                            className="w-1.5 h-1.5 rounded-full bg-[#6B7280]"
                             aria-hidden="true"
                           />
-                          <span className="text-micro font-medium text-emerald-600 uppercase tracking-wider">
+                          <span className="text-micro font-medium text-[#374151] uppercase tracking-wider">
                             ASTRA
                           </span>
                         </div>
-                        <div className="px-4 py-2.5 rounded-xl rounded-bl-md bg-emerald-50 border border-emerald-200 text-body text-[#4B5563] leading-relaxed">
+                        <div className="px-4 py-2.5 rounded-xl rounded-bl-md bg-[#F1F3F5] border border-[#E5E7EB] text-body text-[#4B5563] leading-relaxed">
                           {example.response}
                         </div>
                       </div>
@@ -180,11 +180,11 @@ export default function AstraSection() {
                     Ask ASTRA anything about space compliance...
                   </span>
                   <div
-                    className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center"
+                    className="w-8 h-8 rounded-lg bg-[#E9ECEF] flex items-center justify-center"
                     aria-hidden="true"
                   >
                     <svg
-                      className="w-4 h-4 text-emerald-600"
+                      className="w-4 h-4 text-[#4B5563]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -233,7 +233,7 @@ export default function AstraSection() {
                         {cap.name}
                       </h4>
                       {cap.isNew && (
-                        <span className="px-1.5 py-0.5 text-micro sm:text-micro font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 text-micro sm:text-micro font-medium text-[#374151] bg-[#F1F3F5] border border-[#D1D5DB] rounded uppercase tracking-wider">
                           New
                         </span>
                       )}
@@ -260,7 +260,7 @@ export default function AstraSection() {
               {knowledgeDomains.map((domain) => (
                 <span
                   key={domain}
-                  className="px-2.5 py-1 text-micro text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full"
+                  className="px-2.5 py-1 text-micro text-[#374151] bg-[#F1F3F5] border border-[#D1D5DB] rounded-full"
                 >
                   {domain}
                 </span>
@@ -279,7 +279,7 @@ export default function AstraSection() {
         >
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-600 hover:scale-[1.02] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-[#111827] text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-[#374151] hover:scale-[1.02] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
           >
             Ask ASTRA
           </Link>

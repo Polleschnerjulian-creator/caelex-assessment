@@ -113,7 +113,7 @@ export default function HowItWorks() {
                   </p>
 
                   {/* Replaces Label */}
-                  <p className="text-body font-medium text-emerald-600">
+                  <p className="text-body font-medium text-[#374151]">
                     {step.replaces}
                   </p>
                 </div>
