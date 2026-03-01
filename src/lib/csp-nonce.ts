@@ -49,9 +49,11 @@ export const SCRIPT_HASHES = {
 /**
  * Build CSP header value.
  *
- * Note: Next.js framework scripts don't support nonces yet (as of Next.js 15).
- * We use 'unsafe-inline' for scripts but still get significant protection:
- * - Blocks external script injection (main XSS vector)
+ * IMPORTANT: Next.js 15 does NOT apply nonce attributes to its <script> tags.
+ * Using 'strict-dynamic' with nonces causes ALL JS to be blocked since none of
+ * the script tags carry the nonce. We use 'self' + 'unsafe-inline' instead,
+ * which still provides significant protection:
+ * - Blocks external script injection from untrusted domains
  * - Restricts connections to trusted domains
  * - Prevents clickjacking via frame-ancestors
  * - Blocks object/embed elements
@@ -62,14 +64,13 @@ export const SCRIPT_HASHES = {
 export function buildCspHeader(nonce: string, isDev = false): string {
   const scriptSrcParts = [
     "'self'",
-    // Nonce for inline scripts — with strict-dynamic, only nonced scripts
-    // and their dynamically loaded children are allowed, which overrides
-    // unsafe-inline on browsers that support CSP Level 3+
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'",
-    // Fallback for older browsers that don't support strict-dynamic/nonce
+    // Next.js 15 does not apply nonce attributes to its generated <script> tags.
+    // With 'strict-dynamic', browsers ignore 'self' and 'unsafe-inline', so
+    // ALL scripts were blocked — breaking hydration and every interactive element.
+    // Use 'unsafe-inline' (required by Next.js) + explicit trusted sources instead.
+    // When Next.js adds native CSP nonce support, switch back to nonce-based approach.
+    // See: https://github.com/vercel/next.js/discussions/54152
     "'unsafe-inline'",
-    // External trusted sources (ignored by browsers that support strict-dynamic)
     "https://accounts.google.com",
     "https://apis.google.com",
     "https://*.sentry.io",
