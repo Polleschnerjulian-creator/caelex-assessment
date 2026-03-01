@@ -1,21 +1,39 @@
-"use client";
+import { Metadata } from "next";
+import RegulationPicker from "@/components/assessment/RegulationPicker";
 
-import dynamic from "next/dynamic";
-
-const RegulationPicker = dynamic(
-  () => import("@/components/assessment/RegulationPicker"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-body text-white/45">Loading...</p>
-        </div>
-      </div>
-    ),
+export const metadata: Metadata = {
+  title: "Compliance Assessment",
+  description:
+    "Start your free space compliance assessment. Get your regulatory profile across EU Space Act, NIS2, and 10 national jurisdictions in minutes.",
+  keywords: [
+    "space compliance assessment",
+    "EU Space Act assessment",
+    "satellite compliance check",
+  ],
+  openGraph: {
+    title: "Compliance Assessment",
+    description:
+      "Start your free space compliance assessment. Get your regulatory profile across EU Space Act, NIS2, and 10 national jurisdictions in minutes.",
+    type: "website",
+    url: "https://caelex.eu/assessment",
+    images: [
+      {
+        url: "https://caelex.eu/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Compliance Assessment",
+      },
+    ],
   },
-);
+  twitter: {
+    card: "summary_large_image",
+    title: "Compliance Assessment",
+    description: "Start your free space compliance assessment.",
+  },
+  alternates: {
+    canonical: "https://caelex.eu/assessment",
+  },
+};
 
 export default function AssessmentPage() {
   return (
