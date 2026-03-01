@@ -65,7 +65,7 @@ export default function Lifecycle() {
     >
       {/* Section number */}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
@@ -77,7 +77,7 @@ export default function Lifecycle() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-14"
@@ -100,7 +100,7 @@ export default function Lifecycle() {
               return (
                 <motion.div
                   key={step.number}
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={isInView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                 >
@@ -153,7 +153,7 @@ export default function Lifecycle() {
             return (
               <motion.div
                 key={step.number}
-                initial={{ opacity: 0, x: -20 }}
+                initial={false}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.2 + i * 0.08 }}
                 className="relative"

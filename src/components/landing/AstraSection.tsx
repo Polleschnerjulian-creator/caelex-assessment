@@ -96,7 +96,7 @@ export default function AstraSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
@@ -124,7 +124,7 @@ export default function AstraSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 mb-12">
           {/* Left: Chat Mockup */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={false}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-7"
@@ -158,7 +158,7 @@ export default function AstraSection() {
                 {chatExamples.map((example, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
                     className="space-y-3"
@@ -228,7 +228,7 @@ export default function AstraSection() {
 
           {/* Right: Capability Grid */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={false}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="lg:col-span-5 flex flex-col gap-3"
@@ -236,7 +236,7 @@ export default function AstraSection() {
             {capabilities.map((cap, i) => (
               <motion.div
                 key={cap.name}
-                initial={{ opacity: 0 }}
+                initial={false}
                 animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
                 className="group relative p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.12]"
@@ -273,7 +273,7 @@ export default function AstraSection() {
 
             {/* Knowledge Domain Tags */}
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.9 }}
               className="flex flex-wrap gap-2 mt-2"
@@ -292,7 +292,7 @@ export default function AstraSection() {
 
         {/* CTA */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 1.0 }}
           className="text-center"

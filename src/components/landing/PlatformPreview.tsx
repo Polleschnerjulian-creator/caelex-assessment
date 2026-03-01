@@ -379,7 +379,7 @@ export default function PlatformPreview() {
     >
       {/* Section number */}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
@@ -391,7 +391,7 @@ export default function PlatformPreview() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
@@ -411,7 +411,7 @@ export default function PlatformPreview() {
 
         {/* Platform mockup */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="relative"

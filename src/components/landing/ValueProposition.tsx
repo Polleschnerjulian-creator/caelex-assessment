@@ -66,7 +66,7 @@ export default function ValueProposition() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-24"
@@ -86,7 +86,7 @@ export default function ValueProposition() {
           {/* Left: The Problem */}
           <div>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
@@ -101,7 +101,7 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                     className="flex gap-5"
@@ -130,7 +130,7 @@ export default function ValueProposition() {
           {/* Right: The Solution */}
           <div>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
@@ -145,7 +145,7 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.5, delay: 0.25 + i * 0.1 }}
                     className="flex gap-5"
@@ -174,7 +174,7 @@ export default function ValueProposition() {
 
         {/* Bottom: Key differentiators */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.7 }}
           className="mt-24 pt-16 border-t border-white/[0.06]"

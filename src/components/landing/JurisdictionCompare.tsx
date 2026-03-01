@@ -89,7 +89,7 @@ export default function JurisdictionCompare() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
@@ -112,7 +112,7 @@ export default function JurisdictionCompare() {
           {jurisdictions.map((jurisdiction, i) => (
             <motion.div
               key={jurisdiction.code}
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
               onMouseEnter={() => setHoveredIndex(i)}
@@ -212,7 +212,7 @@ export default function JurisdictionCompare() {
 
         {/* Additional Countries */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="text-center"

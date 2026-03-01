@@ -54,7 +54,7 @@ function AnimatedNumber({
   return (
     <div className="text-center md:text-left">
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay }}
         className="font-light text-[clamp(3rem,8vw,6rem)] tracking-[-0.04em] text-white leading-none"
@@ -63,7 +63,7 @@ function AnimatedNumber({
         <span className="text-white/45">{suffix}</span>
       </motion.div>
       <motion.p
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay: delay + 0.2 }}
         className="text-small text-white/45 mt-3 uppercase tracking-[0.15em]"
@@ -93,7 +93,7 @@ export default function Metrics() {
     >
       {/* Section number */}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
@@ -105,7 +105,7 @@ export default function Metrics() {
       <div className="max-w-[1400px] mx-auto">
         {/* Section label */}
         <motion.span
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-micro uppercase tracking-[0.3em] text-white/45 block mb-16 md:mb-24"

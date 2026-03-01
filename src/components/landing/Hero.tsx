@@ -60,7 +60,7 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
@@ -73,7 +73,7 @@ export default function Hero() {
 
             {/* Right: CTA and Summary */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
               className="flex flex-col gap-6"
@@ -98,7 +98,7 @@ export default function Hero() {
 
           {/* Bottom bar: Module ticker - more prominent */}
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
             className="pt-8 border-t border-white/[0.12]"

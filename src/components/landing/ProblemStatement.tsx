@@ -15,7 +15,7 @@ export default function ProblemStatement() {
     >
       {/* Section number */}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
@@ -27,7 +27,7 @@ export default function ProblemStatement() {
       <div className="max-w-[1000px] mx-auto">
         {/* Large statement */}
         <motion.h2
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 1, delay: 0.2 }}
           className="text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.35] text-white/90"
@@ -51,7 +51,7 @@ export default function ProblemStatement() {
 
         {/* Small supporting text */}
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-body text-white/45 mt-8 max-w-[400px]"
