@@ -34,18 +34,23 @@ import {
 // Initialize rate limiter only when Redis is configured
 let apiRateLimiter: Ratelimit | null = null;
 let authRateLimiter: Ratelimit | null = null;
+let redisWarningLogged = false;
+
+function logRedisWarningOnce(): void {
+  if (redisWarningLogged || process.env.NODE_ENV !== "production") return;
+  redisWarningLogged = true;
+  console.warn(
+    "[SECURITY] Rate limiting disabled — Redis not configured. " +
+      "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+  );
+}
 
 function getApiRateLimiter(): Ratelimit | null {
   if (apiRateLimiter) return apiRateLimiter;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    if (process.env.NODE_ENV === "production") {
-      console.error(
-        "[CRITICAL SECURITY] API rate limiter disabled — Redis not configured in production. " +
-          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
-      );
-    }
+    logRedisWarningOnce();
     return null;
   }
   apiRateLimiter = new Ratelimit({
@@ -62,12 +67,7 @@ function getAuthRateLimiter(): Ratelimit | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    if (process.env.NODE_ENV === "production") {
-      console.error(
-        "[CRITICAL SECURITY] Auth rate limiter disabled — Redis not configured in production. " +
-          "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
-      );
-    }
+    logRedisWarningOnce();
     return null;
   }
   authRateLimiter = new Ratelimit({

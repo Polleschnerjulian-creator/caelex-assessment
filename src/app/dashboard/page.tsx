@@ -52,11 +52,25 @@ const RegulatoryRadarChart = dynamic(
 );
 const Sparkline = dynamic(
   () => import("@/components/dashboard/charts/Sparkline"),
-  { ssr: false },
+  { ssr: false, loading: () => <div className="h-8 w-16" /> },
 );
 const ComplianceScoreCard = dynamic(
   () => import("@/components/dashboard/ComplianceScoreCard"),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="glass-elevated rounded-2xl p-6 animate-pulse">
+        <div className="flex items-center gap-4">
+          <div className="w-24 h-24 rounded-full bg-white/5" />
+          <div className="flex-1 space-y-3">
+            <div className="h-4 bg-white/5 rounded w-32" />
+            <div className="h-8 bg-white/5 rounded w-20" />
+            <div className="h-3 bg-white/5 rounded w-48" />
+          </div>
+        </div>
+      </div>
+    ),
+  },
 );
 
 // ─── Types ───
