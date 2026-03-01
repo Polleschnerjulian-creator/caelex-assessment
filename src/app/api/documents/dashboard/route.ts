@@ -94,6 +94,16 @@ export async function GET() {
       _count: { id: true },
     });
 
+    const docSelect = {
+      id: true,
+      name: true,
+      category: true,
+      status: true,
+      expiryDate: true,
+      isExpired: true,
+      createdAt: true,
+    } as const;
+
     // Get expiring documents
     const expiringDocuments = await prisma.document.findMany({
       where: {
@@ -102,6 +112,7 @@ export async function GET() {
         expiryDate: { gte: now, lte: ninetyDaysFromNow },
         isExpired: false,
       },
+      select: docSelect,
       orderBy: { expiryDate: "asc" },
       take: 10,
     });
@@ -113,6 +124,7 @@ export async function GET() {
         isLatest: true,
         isExpired: true,
       },
+      select: docSelect,
       orderBy: { expiryDate: "desc" },
       take: 5,
     });
@@ -123,6 +135,7 @@ export async function GET() {
         userId: session.user.id,
         isLatest: true,
       },
+      select: docSelect,
       orderBy: { createdAt: "desc" },
       take: 10,
     });
@@ -132,24 +145,31 @@ export async function GET() {
     const completeness =
       total > 0 ? Math.round((activeDocuments / total) * 100) : 0;
 
-    return NextResponse.json({
-      stats: {
-        total,
-        expired,
-        expiringThisMonth,
-        expiringNext90Days,
-        draft,
-        active,
-        completeness,
+    return NextResponse.json(
+      {
+        stats: {
+          total,
+          expired,
+          expiringThisMonth,
+          expiringNext90Days,
+          draft,
+          active,
+          completeness,
+        },
+        byCategory: byCategory.map((c) => ({
+          category: c.category,
+          count: c._count.id,
+        })),
+        expiringDocuments,
+        expiredDocuments,
+        recentDocuments,
       },
-      byCategory: byCategory.map((c) => ({
-        category: c.category,
-        count: c._count.id,
-      })),
-      expiringDocuments,
-      expiredDocuments,
-      recentDocuments,
-    });
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+        },
+      },
+    );
   } catch (error) {
     console.error("Error fetching document dashboard:", error);
     return NextResponse.json(

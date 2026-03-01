@@ -17,6 +17,7 @@ export async function GET() {
 
     const statuses = await prisma.articleStatus.findMany({
       where: { userId: session.user.id },
+      select: { articleId: true, status: true, notes: true, updatedAt: true },
     });
 
     // Transform to { [articleId]: { status, notes, updatedAt } }
@@ -32,7 +33,11 @@ export async function GET() {
       };
     }
 
-    return NextResponse.json(statusMap);
+    return NextResponse.json(statusMap, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    });
   } catch (error) {
     console.error("Error fetching article statuses:", error);
     return NextResponse.json(

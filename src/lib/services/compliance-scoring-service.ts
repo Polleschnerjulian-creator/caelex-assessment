@@ -153,8 +153,9 @@ export async function calculateComplianceScore(
 async function getAuthorizationData(userId: string) {
   const workflows = await prisma.authorizationWorkflow.findMany({
     where: { userId },
-    include: {
-      documents: true,
+    select: {
+      status: true,
+      documents: { select: { status: true } },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -165,6 +166,12 @@ async function getAuthorizationData(userId: string) {
 async function getDebrisData(userId: string) {
   const assessment = await prisma.debrisAssessment.findFirst({
     where: { userId },
+    select: {
+      planGenerated: true,
+      complianceScore: true,
+      hasPassivationCap: true,
+      deorbitStrategy: true,
+    },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -174,6 +181,11 @@ async function getDebrisData(userId: string) {
 async function getCybersecurityData(userId: string) {
   const assessment = await prisma.cybersecurityAssessment.findFirst({
     where: { userId },
+    select: {
+      frameworkGeneratedAt: true,
+      maturityScore: true,
+      hasIncidentResponsePlan: true,
+    },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -183,6 +195,7 @@ async function getCybersecurityData(userId: string) {
       category: "cyber_incident",
       detectedAt: { gte: new Date(new Date().getFullYear(), 0, 1) },
     },
+    select: { status: true },
   });
 
   return { assessment, incidents };
@@ -209,11 +222,13 @@ async function getInsuranceData(userId: string) {
 async function getEnvironmentalData(userId: string) {
   const assessment = await prisma.environmentalAssessment.findFirst({
     where: { userId },
+    select: { status: true, totalGWP: true },
     orderBy: { updatedAt: "desc" },
   });
 
   const supplierRequests = await prisma.supplierDataRequest.findMany({
     where: { assessment: { userId } },
+    select: { status: true },
   });
 
   return { assessment, supplierRequests };
@@ -222,14 +237,23 @@ async function getEnvironmentalData(userId: string) {
 async function getReportingData(userId: string) {
   const supervisionConfig = await prisma.supervisionConfig.findUnique({
     where: { userId },
+    select: { id: true },
   });
 
   const incidents = await prisma.incident.findMany({
     where: { supervision: { userId } },
+    select: {
+      status: true,
+      category: true,
+      detectedAt: true,
+      requiresNCANotification: true,
+      reportedToNCA: true,
+    },
   });
 
   const reports = await prisma.supervisionReport.findMany({
     where: { supervision: { userId } },
+    select: { status: true },
     orderBy: { createdAt: "desc" },
   });
 

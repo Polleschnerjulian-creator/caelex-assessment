@@ -16,7 +16,11 @@ export async function GET() {
 
     const score = await calculateComplianceScore(session.user.id);
 
-    return NextResponse.json(score);
+    return NextResponse.json(score, {
+      headers: {
+        "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+      },
+    });
   } catch (error) {
     console.error("Error calculating compliance score:", error);
     return NextResponse.json(
