@@ -40,9 +40,9 @@ const querySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Rate limit
+    // Rate limit — use assure tier (30/hr) since users browse weeks frequently
     const ip = getIdentifier(request);
-    const rateLimitResult = await checkRateLimit("public_api", ip);
+    const rateLimitResult = await checkRateLimit("assure", ip);
     if (!rateLimitResult.success) {
       return createRateLimitResponse(rateLimitResult);
     }
