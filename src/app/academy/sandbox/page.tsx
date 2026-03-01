@@ -333,7 +333,7 @@ export default function SandboxPage() {
             {result ? (
               <motion.div
                 key="results"
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="space-y-5"
@@ -440,7 +440,7 @@ export default function SandboxPage() {
             ) : (
               <motion.div
                 key="empty"
-                initial={false}
+                initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >

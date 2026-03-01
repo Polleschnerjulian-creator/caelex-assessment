@@ -146,14 +146,14 @@ export default function AssureRisksPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <motion.h1
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-display font-bold text-white mb-2"
           >
             Risk Intelligence
           </motion.h1>
           <motion.p
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/40"
@@ -235,7 +235,7 @@ export default function AssureRisksPage() {
       <AnimatePresence>
         {showAddModal && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"

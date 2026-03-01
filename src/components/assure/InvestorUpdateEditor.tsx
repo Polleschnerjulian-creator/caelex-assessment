@@ -231,7 +231,7 @@ export default function InvestorUpdateEditor({
       {/* Preview of included data */}
       {sections.metrics && keyMetrics.length > 0 && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           className="mb-5 p-3 rounded-lg bg-white/[0.02] border border-white/5"
         >

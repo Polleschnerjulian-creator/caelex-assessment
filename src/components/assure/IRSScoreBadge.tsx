@@ -144,7 +144,7 @@ export default function IRSScoreBadge({
 
       {showLabel && (
         <motion.span
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={`${sizeConfig.label} text-white/45 font-medium`}

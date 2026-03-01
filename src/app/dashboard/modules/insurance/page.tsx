@@ -535,7 +535,7 @@ function InsurancePageContent() {
         {!selectedAssessment ? (
           <motion.div
             key="empty"
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
@@ -564,7 +564,7 @@ function InsurancePageContent() {
             {currentStep === 1 && (
               <motion.div
                 key="step1"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
@@ -919,7 +919,7 @@ function InsurancePageContent() {
             {currentStep === 2 && (
               <motion.div
                 key="step2"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
@@ -1093,7 +1093,7 @@ function InsurancePageContent() {
             {currentStep === 3 && (
               <motion.div
                 key="step3"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
@@ -1316,7 +1316,7 @@ function InsurancePageContent() {
             {currentStep === 4 && (
               <motion.div
                 key="step4"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
@@ -1511,7 +1511,7 @@ function InsurancePageContent() {
       <AnimatePresence>
         {showNewAssessment && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"

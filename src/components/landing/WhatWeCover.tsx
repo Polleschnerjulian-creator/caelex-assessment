@@ -96,8 +96,8 @@ export default function WhatWeCover() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -120,8 +120,8 @@ export default function WhatWeCover() {
             return (
               <motion.div
                 key={category.title}
-                initial={false}
-                animate={isInView ? { opacity: 1 } : {}}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.4, delay: categoryIndex * 0.06 }}
                 className="flex flex-col"
               >
@@ -143,8 +143,8 @@ export default function WhatWeCover() {
                   {category.modules.map((module, moduleIndex) => (
                     <motion.div
                       key={module.name}
-                      initial={false}
-                      animate={isInView ? { opacity: 1 } : {}}
+                      initial={{ opacity: 0 }}
+                      animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                       transition={{
                         duration: 0.3,
                         delay: categoryIndex * 0.06 + moduleIndex * 0.03,
@@ -183,8 +183,8 @@ export default function WhatWeCover() {
 
         {/* Bottom Tagline */}
         <motion.p
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center text-body-lg text-white/25 mt-16 md:mt-20"
         >

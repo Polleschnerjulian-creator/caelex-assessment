@@ -73,7 +73,7 @@ export default function DataRoomExplorer({
           return (
             <motion.div
               key={folder.name}
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: folderIdx * 0.05 }}
             >

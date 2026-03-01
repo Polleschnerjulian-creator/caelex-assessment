@@ -70,7 +70,7 @@ export default function NextStepsCard({ steps }: NextStepsCardProps) {
         {sortedSteps.map((step, index) => (
           <motion.div
             key={step.action}
-            initial={false}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.06 }}
             className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all group cursor-pointer"

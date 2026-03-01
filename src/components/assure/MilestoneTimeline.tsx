@@ -118,7 +118,7 @@ export default function MilestoneTimeline({
           return (
             <motion.div
               key={milestone.id}
-              initial={false}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.06 }}
               className="relative flex items-start gap-4 pl-0"

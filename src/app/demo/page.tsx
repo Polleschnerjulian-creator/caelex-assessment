@@ -114,7 +114,7 @@ export default function DemoPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left: Content */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
@@ -161,7 +161,7 @@ export default function DemoPage() {
 
             {/* Right: Form Card */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
@@ -174,7 +174,7 @@ export default function DemoPage() {
                   <div className="relative">
                     {submitted ? (
                       <motion.div
-                        initial={false}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-center py-8"
                       >
@@ -289,7 +289,7 @@ export default function DemoPage() {
       <section className="py-20 relative overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
@@ -305,7 +305,7 @@ export default function DemoPage() {
 
           {/* Dashboard Preview */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
@@ -468,7 +468,7 @@ export default function DemoPage() {
             {benefits.map((benefit, i) => (
               <motion.div
                 key={benefit.title}
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
@@ -498,7 +498,7 @@ export default function DemoPage() {
             {testimonials.map((testimonial, i) => (
               <motion.div
                 key={i}
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
@@ -525,7 +525,7 @@ export default function DemoPage() {
       <section className="py-20 border-t border-white/[0.04]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center"

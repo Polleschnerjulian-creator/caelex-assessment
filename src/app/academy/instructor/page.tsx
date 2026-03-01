@@ -155,7 +155,7 @@ export default function InstructorDashboardPage() {
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
           >
@@ -182,7 +182,7 @@ export default function InstructorDashboardPage() {
             {classrooms.map((classroom, i) => (
               <motion.div
                 key={classroom.id}
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.06 }}
               >

@@ -86,7 +86,7 @@ export default function DDPackageGenerator({
       {/* Generating state */}
       {isGenerating && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
@@ -115,7 +115,7 @@ export default function DDPackageGenerator({
           {packages.map((pkg, index) => (
             <motion.div
               key={pkg.id}
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.06 }}
             >

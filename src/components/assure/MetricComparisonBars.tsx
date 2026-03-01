@@ -58,7 +58,7 @@ export default function MetricComparisonBars({
           return (
             <motion.div
               key={metric.name}
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.06 }}
             >
@@ -90,7 +90,7 @@ export default function MetricComparisonBars({
 
                 {/* Median marker */}
                 <motion.div
-                  initial={false}
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 + index * 0.06 }}
                   className="absolute top-0 bottom-0 w-px"

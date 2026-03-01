@@ -44,7 +44,7 @@ export default function ComplianceDonutChart({
 }: ComplianceDonutChartProps) {
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
       className="relative h-[280px] w-full"
@@ -74,7 +74,7 @@ export default function ComplianceDonutChart({
       {/* Center Score */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <motion.span
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
           className="text-[42px] font-bold text-slate-900 dark:text-white"
@@ -82,7 +82,7 @@ export default function ComplianceDonutChart({
           {totalScore}%
         </motion.span>
         <motion.span
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.4 }}
           className="text-caption uppercase tracking-wider text-slate-500 dark:text-white/45"

@@ -117,7 +117,7 @@ export default function RegulationTimeline() {
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
@@ -247,7 +247,7 @@ export default function RegulationTimeline() {
                   <AnimatePresence>
                     {isHovered && (
                       <motion.div
-                        initial={false}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -4, scale: 0.95 }}
                         transition={{ duration: 0.15 }}

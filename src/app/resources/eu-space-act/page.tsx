@@ -131,8 +131,8 @@ export default function EUSpaceActPage() {
       <section className="pt-32 pb-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6 }}
           >
             <Breadcrumbs
@@ -178,8 +178,10 @@ export default function EUSpaceActPage() {
             {keyStats.map((stat, index) => (
               <motion.div
                 key={stat.label}
-                initial={false}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={
+                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                }
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
@@ -203,8 +205,8 @@ export default function EUSpaceActPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <motion.div
-              initial={false}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="p-6 rounded-xl bg-amber-500/[0.08] border border-amber-500/20"
               style={{
@@ -228,8 +230,8 @@ export default function EUSpaceActPage() {
               </ul>
             </motion.div>
             <motion.div
-              initial={false}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              initial={{ opacity: 0, x: 20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               className="p-6 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/20"
               style={{
@@ -268,8 +270,10 @@ export default function EUSpaceActPage() {
             {scopeItems.map((item, index) => (
               <motion.div
                 key={item.title}
-                initial={false}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={
+                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                }
                 transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
                 className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
                 style={{
@@ -306,8 +310,10 @@ export default function EUSpaceActPage() {
             {chapters.map((chapter, index) => (
               <motion.div
                 key={chapter.number}
-                initial={false}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                initial={{ opacity: 0, x: -20 }}
+                animate={
+                  isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }
+                }
                 transition={{ duration: 0.4, delay: 0.1 + index * 0.03 }}
                 className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
                 style={{

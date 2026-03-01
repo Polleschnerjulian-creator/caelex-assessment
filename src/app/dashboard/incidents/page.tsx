@@ -481,7 +481,7 @@ export default function IncidentsPage() {
         <AnimatePresence>
           {hasUrgentDeadline && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3"

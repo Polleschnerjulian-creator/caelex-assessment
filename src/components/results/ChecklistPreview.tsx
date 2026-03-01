@@ -31,7 +31,7 @@ export default function ChecklistPreview({
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
@@ -50,7 +50,7 @@ export default function ChecklistPreview({
           {previewItems.map((item, index) => (
             <motion.div
               key={index}
-              initial={false}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + index * 0.05 }}
               className="p-4 flex items-start gap-4"

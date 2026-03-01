@@ -90,7 +90,7 @@ export default function ProgressRing({
         {/* Center percentage text */}
         <motion.span
           className={`absolute font-semibold tabular-nums ${textClass} ${size >= 80 ? "text-body-lg" : "text-small"}`}
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.3 }}
         >

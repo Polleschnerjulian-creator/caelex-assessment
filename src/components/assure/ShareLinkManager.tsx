@@ -140,7 +140,7 @@ function ShareLinkRow({
 
   return (
     <motion.tr
-      initial={false}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="border-b border-slate-100 dark:border-white/5 last:border-0"
     >

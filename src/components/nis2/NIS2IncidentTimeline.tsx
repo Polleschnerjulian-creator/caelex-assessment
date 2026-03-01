@@ -57,7 +57,7 @@ export default function NIS2IncidentTimeline({
 }: NIS2IncidentTimelineProps) {
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6"
@@ -85,7 +85,7 @@ export default function NIS2IncidentTimeline({
             return (
               <motion.div
                 key={step.key}
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
                 className="relative flex items-start gap-4 pl-0"

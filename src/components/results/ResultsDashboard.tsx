@@ -74,7 +74,7 @@ export default function ResultsDashboard({
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between mb-12"
         >
@@ -96,7 +96,7 @@ export default function ResultsDashboard({
 
         {/* Results title */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
@@ -145,7 +145,7 @@ export default function ResultsDashboard({
 
         {/* Footer CTA */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="mt-20 text-center"

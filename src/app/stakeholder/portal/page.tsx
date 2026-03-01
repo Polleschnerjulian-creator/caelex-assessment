@@ -176,7 +176,7 @@ export default function PortalDashboardPage() {
     <div>
       {/* Welcome Header */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="mb-8"
@@ -196,7 +196,7 @@ export default function PortalDashboardPage() {
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 }}
           >
@@ -227,7 +227,7 @@ export default function PortalDashboardPage() {
       {/* Pending Attestations Alert */}
       {pendingAttestations.length > 0 && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
           className="mb-8"
@@ -265,7 +265,7 @@ export default function PortalDashboardPage() {
 
       {/* Data Rooms */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
         className="mb-8"
@@ -325,7 +325,7 @@ export default function PortalDashboardPage() {
 
       {/* Recent Attestations */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
         className="mb-8"
@@ -419,7 +419,7 @@ export default function PortalDashboardPage() {
       {/* Recent Activity */}
       {data?.recentActivity && data.recentActivity.length > 0 && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
         >

@@ -200,7 +200,7 @@ export default function InviteStakeholderModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/50 dark:bg-black/70"
@@ -209,7 +209,7 @@ export default function InviteStakeholderModal({
 
       {/* Modal */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl shadow-2xl overflow-hidden"

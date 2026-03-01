@@ -42,8 +42,8 @@ export default function HowItWorks() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -78,8 +78,8 @@ export default function HowItWorks() {
             {steps.map((step, index) => (
               <motion.div
                 key={step.number}
-                initial={false}
-                animate={isInView ? { opacity: 1 } : {}}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 className="relative"
               >
@@ -128,8 +128,8 @@ export default function HowItWorks() {
 
         {/* CTA */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
           className="text-center mt-16 md:mt-20"
         >

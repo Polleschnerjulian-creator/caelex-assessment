@@ -157,7 +157,7 @@ export default function PositionPage({
       <section className="pt-32 pb-12 px-6 md:px-12 border-b border-white/[0.06]">
         <div className="max-w-[800px] mx-auto">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -194,7 +194,7 @@ export default function PositionPage({
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[800px] mx-auto">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="space-y-12"

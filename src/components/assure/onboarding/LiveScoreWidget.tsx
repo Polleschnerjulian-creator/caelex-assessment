@@ -235,7 +235,7 @@ export default function LiveScoreWidget({ score }: LiveScoreWidgetProps) {
         {/* Delta indicator */}
         {score.delta !== 0 && (
           <motion.span
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={`text-body font-semibold mt-1 ${
               score.delta > 0 ? "text-emerald-400" : "text-red-400"

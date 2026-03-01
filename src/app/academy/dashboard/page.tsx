@@ -186,14 +186,14 @@ export default function AcademyDashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <motion.h1
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-display font-medium text-white mb-1"
           >
             Welcome back, {firstName}
           </motion.h1>
           <motion.p
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/45"
@@ -203,7 +203,7 @@ export default function AcademyDashboardPage() {
         </div>
         {stats.currentStreak > 0 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20"
           >
@@ -245,7 +245,7 @@ export default function AcademyDashboardPage() {
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
           >
@@ -284,7 +284,7 @@ export default function AcademyDashboardPage() {
             {activeEnrollments.slice(0, 4).map((enrollment, i) => (
               <motion.div
                 key={enrollment.id}
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.08 }}
               >

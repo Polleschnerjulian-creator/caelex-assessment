@@ -83,7 +83,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
@@ -101,7 +101,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Company Summary Card */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="mb-8"
@@ -156,7 +156,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Overall Summary Stats */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
@@ -242,7 +242,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         <div className="space-y-6">
           {/* EU Space Act */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
@@ -537,7 +537,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
           {/* NIS2 Directive */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
@@ -747,7 +747,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
           {/* National Space Laws */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
@@ -886,7 +886,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         {result.crossFrameworkOverlap &&
           result.crossFrameworkOverlap.length > 0 && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.32 }}
               className="mt-6"
@@ -933,7 +933,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         {/* Confidence Score */}
         {result.confidenceScore !== undefined && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.34 }}
             className="mt-4"
@@ -1002,7 +1002,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
         {/* Immediate Actions */}
         {result.overallSummary.immediateActions.length > 0 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
             className="mt-8"
@@ -1039,7 +1039,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Legal Disclaimer */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="mt-8"
@@ -1049,7 +1049,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Primary CTA - Go to Dashboard */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
           className="mt-10"
@@ -1072,7 +1072,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Secondary Actions */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="mt-6 flex flex-wrap justify-center gap-4"
@@ -1105,7 +1105,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
 
         {/* Footer note */}
         <motion.p
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="text-center text-white/25 text-caption tracking-[0.05em] mt-12"

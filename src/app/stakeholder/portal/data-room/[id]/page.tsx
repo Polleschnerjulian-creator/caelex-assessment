@@ -336,7 +336,7 @@ export default function DataRoomViewPage() {
 
       {/* Room Header */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="mb-8"
@@ -389,7 +389,11 @@ export default function DataRoomViewPage() {
 
       {/* Expired Warning */}
       {isExpired && (
-        <motion.div initial={false} animate={{ opacity: 1 }} className="mb-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-6"
+        >
           <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <p className="text-body text-red-600 dark:text-red-400">
@@ -402,7 +406,7 @@ export default function DataRoomViewPage() {
 
       {/* Documents */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
         className="mb-8"
@@ -554,7 +558,7 @@ export default function DataRoomViewPage() {
       <AnimatePresence>
         {viewingDoc && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
@@ -647,7 +651,7 @@ export default function DataRoomViewPage() {
 
       {/* Comments Section */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
@@ -667,7 +671,7 @@ export default function DataRoomViewPage() {
         <AnimatePresence>
           {showComments && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
             >

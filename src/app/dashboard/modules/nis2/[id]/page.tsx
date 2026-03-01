@@ -580,7 +580,7 @@ function InlineAssessmentWizard({
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
@@ -624,7 +624,7 @@ function InlineAssessmentWizard({
       <div className="px-6 py-8">
         {outOfScope ? (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8"
           >
@@ -1134,7 +1134,7 @@ export default function NIS2AssessmentDetailPage() {
         {/* Delete confirm modal */}
         {showDeleteConfirm && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-red-500/10 border border-red-500/20 rounded-xl p-5"
           >
@@ -1182,7 +1182,7 @@ export default function NIS2AssessmentDetailPage() {
             />
           ) : (
             <motion.button
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => setShowWizard(true)}
               className="w-full group relative overflow-hidden bg-gradient-to-r from-emerald-600 via-emerald-500 to-cyan-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-cyan-600 rounded-xl p-6 text-left transition-all duration-300 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20"
@@ -1216,7 +1216,7 @@ export default function NIS2AssessmentDetailPage() {
         {/* ─── Smart Recommendations Panel ─── */}
         {recommendations && recommendations.recommendations.length > 0 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="relative bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
@@ -1348,7 +1348,7 @@ export default function NIS2AssessmentDetailPage() {
         {/* ─── Gap Analysis & Implementation Plan ─── */}
         {recommendations && recommendations.implementationPhases.length > 0 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="space-y-4"
@@ -1540,7 +1540,7 @@ export default function NIS2AssessmentDetailPage() {
                   <AnimatePresence>
                     {isPhaseExpanded && (
                       <motion.div
-                        initial={false}
+                        initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
@@ -1948,7 +1948,7 @@ export default function NIS2AssessmentDetailPage() {
 
                     {isExpanded && (
                       <motion.div
-                        initial={false}
+                        initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         className="border-t border-slate-200 dark:border-[--glass-border-subtle] px-4 py-4 space-y-4"

@@ -934,7 +934,7 @@ function UsRegulatoryPageContent() {
         {(activeStep === 0 || showNewAssessment) && (
           <motion.div
             key="profile"
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
@@ -1225,7 +1225,7 @@ function UsRegulatoryPageContent() {
         {activeStep === 1 && selectedAssessment && (
           <motion.div
             key="checklist"
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-3 sm:space-y-4"
@@ -1385,7 +1385,7 @@ function UsRegulatoryPageContent() {
         {activeStep === 2 && selectedAssessment && (
           <motion.div
             key="gaps"
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-3 sm:space-y-4"
@@ -1510,7 +1510,7 @@ function UsRegulatoryPageContent() {
         {activeStep === 3 && selectedAssessment && (
           <motion.div
             key="report"
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
@@ -1690,7 +1690,7 @@ function UsRegulatoryPageContent() {
           assessments.length > 0 && (
             <motion.div
               key="list"
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3 sm:space-y-4"
             >
@@ -1736,7 +1736,7 @@ function UsRegulatoryPageContent() {
           assessments.length === 0 && (
             <motion.div
               key="empty"
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 sm:p-8 text-center"
             >

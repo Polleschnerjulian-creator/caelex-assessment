@@ -623,7 +623,7 @@ function UkSpacePageContent() {
         {/* No Assessment Selected */}
         {!selectedAssessment && !showNewAssessment && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
@@ -706,7 +706,7 @@ function UkSpacePageContent() {
         {/* New Assessment Form */}
         {showNewAssessment && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6"
@@ -958,7 +958,7 @@ function UkSpacePageContent() {
         {/* Compliance Assessment Step */}
         {selectedAssessment && activeStep === 1 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
@@ -1152,7 +1152,7 @@ function UkSpacePageContent() {
         {/* Gap Analysis Step */}
         {selectedAssessment && activeStep === 2 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
@@ -1266,7 +1266,7 @@ function UkSpacePageContent() {
         {/* Report Step */}
         {selectedAssessment && activeStep === 3 && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"

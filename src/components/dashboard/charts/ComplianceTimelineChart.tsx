@@ -89,7 +89,7 @@ export default function ComplianceTimelineChart({
 }: ComplianceTimelineChartProps) {
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
       className="relative h-[280px] w-full"

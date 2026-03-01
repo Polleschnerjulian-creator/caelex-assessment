@@ -44,7 +44,7 @@ function useAnimatedSection(margin: `${number}px` = "-80px") {
 function fadeUp(isInView: boolean, delay = 0) {
   return {
     initial: { opacity: 0, y: 30 },
-    animate: isInView ? { opacity: 1, y: 0 } : {},
+    animate: isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 },
     transition: { duration: 0.5, delay },
   };
 }

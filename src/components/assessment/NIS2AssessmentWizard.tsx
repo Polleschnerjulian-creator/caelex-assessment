@@ -284,7 +284,7 @@ export default function NIS2AssessmentWizard() {
             {state.currentStep > 1 ? (
               <motion.button
                 key="back"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
@@ -296,7 +296,7 @@ export default function NIS2AssessmentWizard() {
             ) : (
               <motion.div
                 key="home"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
               >

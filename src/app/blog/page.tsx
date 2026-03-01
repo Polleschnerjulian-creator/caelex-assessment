@@ -11,8 +11,6 @@ import {
 
 export const metadata: Metadata = pageMetadata.blog;
 
-export const revalidate = 3600;
-
 export default function BlogPage() {
   const posts = getAllPosts();
   const featuredPosts = getFeaturedPosts();

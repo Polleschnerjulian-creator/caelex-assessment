@@ -16,7 +16,7 @@ export default function OutOfScopeResult({
 }: OutOfScopeResultProps) {
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="max-w-xl mx-auto text-center py-12"
     >
@@ -71,7 +71,7 @@ export default function OutOfScopeResult({
 
       {/* Caelex CTA */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         className="mt-16 pt-8 border-t border-white/[0.08]"

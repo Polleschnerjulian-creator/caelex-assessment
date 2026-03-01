@@ -250,7 +250,7 @@ export default function AssureScorePage() {
         <div className="flex items-center justify-between">
           <div>
             <motion.div
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
@@ -260,7 +260,7 @@ export default function AssureScorePage() {
               </h1>
             </motion.div>
             <motion.p
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
               className="text-body text-slate-500 dark:text-white/45"
@@ -287,7 +287,7 @@ export default function AssureScorePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Gauge */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -307,7 +307,7 @@ export default function AssureScorePage() {
 
         {/* Quick stats */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="lg:col-span-2"
@@ -364,7 +364,7 @@ export default function AssureScorePage() {
 
       {/* Component Breakdown */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="mb-8"
@@ -377,7 +377,7 @@ export default function AssureScorePage() {
 
       {/* Trend Chart */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="mb-8"
@@ -396,7 +396,7 @@ export default function AssureScorePage() {
 
       {/* Recommendations */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         className="mb-8"
@@ -443,7 +443,7 @@ export default function AssureScorePage() {
 
       {/* Methodology (Collapsible) */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >

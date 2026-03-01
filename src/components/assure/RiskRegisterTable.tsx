@@ -243,7 +243,7 @@ export default function RiskRegisterTable({
                     <motion.tr
                       key={risk.id}
                       layout
-                      initial={false}
+                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"

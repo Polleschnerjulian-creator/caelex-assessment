@@ -152,7 +152,7 @@ function MfaChallengeContent() {
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-500/[0.06] rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="w-full max-w-md relative z-10"
@@ -183,7 +183,7 @@ function MfaChallengeContent() {
             {!isBackupCode ? (
               <motion.div
                 key="totp"
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
@@ -249,7 +249,7 @@ function MfaChallengeContent() {
             ) : (
               <motion.div
                 key="backup"
-                initial={false}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
@@ -281,7 +281,7 @@ function MfaChallengeContent() {
           {/* Error Message */}
           {error && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center gap-2 p-3 mb-4 bg-red-500/10
                 border border-red-500/20 rounded-lg"

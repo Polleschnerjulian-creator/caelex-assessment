@@ -140,7 +140,7 @@ export default function BookCallPage() {
         <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Back link */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
@@ -156,7 +156,7 @@ export default function BookCallPage() {
           <div className="grid lg:grid-cols-[1fr_420px] gap-16 items-start">
             {/* Left — Form Card */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
             >
@@ -169,7 +169,7 @@ export default function BookCallPage() {
                     {submitted ? (
                       <motion.div
                         key="success"
-                        initial={false}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
                         className="p-10 md:p-12 text-center"
@@ -462,7 +462,7 @@ export default function BookCallPage() {
                           {/* Target Raise (conditional) */}
                           {formData.isRaising && (
                             <motion.div
-                              initial={false}
+                              initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.2 }}
@@ -566,7 +566,7 @@ export default function BookCallPage() {
 
             {/* Right — Calendar Picker */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.7,

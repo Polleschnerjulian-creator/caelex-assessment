@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Layers,
@@ -14,9 +13,6 @@ import Link from "next/link";
 import DisclaimerBanner from "@/components/ui/disclaimer-banner";
 
 export default function RegulationPicker() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
-
   return (
     <div className="min-h-screen bg-black flex flex-col">
       {/* Header */}
@@ -36,15 +32,12 @@ export default function RegulationPicker() {
       </div>
 
       {/* Main content */}
-      <div
-        ref={ref}
-        className="flex-1 flex items-center justify-center px-6 md:px-12 py-16 md:py-24"
-      >
+      <div className="flex-1 flex items-center justify-center px-6 md:px-12 py-16 md:py-24">
         <div className="max-w-[900px] w-full">
           {/* Title */}
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
@@ -64,8 +57,8 @@ export default function RegulationPicker() {
 
           {/* Legal disclaimer */}
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1 } : {}}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-10"
           >
@@ -74,8 +67,8 @@ export default function RegulationPicker() {
 
           {/* Unified Assessment Card */}
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <Link href="/assessment/unified" className="block group">
@@ -208,8 +201,8 @@ export default function RegulationPicker() {
 
           {/* Bottom note */}
           <motion.p
-            initial={false}
-            animate={isInView ? { opacity: 1 } : {}}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             className="text-center text-white/25 text-small sm:text-caption tracking-[0.05em] mt-10"
           >

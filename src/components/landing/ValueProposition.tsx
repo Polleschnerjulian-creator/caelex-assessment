@@ -66,8 +66,8 @@ export default function ValueProposition() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-24"
         >
@@ -86,8 +86,8 @@ export default function ValueProposition() {
           {/* Left: The Problem */}
           <div>
             <motion.div
-              initial={false}
-              animate={isInView ? { opacity: 1 } : {}}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <span className="text-micro uppercase tracking-[0.25em] text-red-400/60 block mb-8">
@@ -101,8 +101,8 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={false}
-                    animate={isInView ? { opacity: 1 } : {}}
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                     className="flex gap-5"
                   >
@@ -130,8 +130,8 @@ export default function ValueProposition() {
           {/* Right: The Solution */}
           <div>
             <motion.div
-              initial={false}
-              animate={isInView ? { opacity: 1 } : {}}
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
               <span className="text-micro uppercase tracking-[0.25em] text-emerald-400/60 block mb-8">
@@ -145,8 +145,8 @@ export default function ValueProposition() {
                 return (
                   <motion.div
                     key={i}
-                    initial={false}
-                    animate={isInView ? { opacity: 1 } : {}}
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                     transition={{ duration: 0.5, delay: 0.25 + i * 0.1 }}
                     className="flex gap-5"
                   >
@@ -174,8 +174,8 @@ export default function ValueProposition() {
 
         {/* Bottom: Key differentiators */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
           className="mt-24 pt-16 border-t border-white/[0.06]"
         >

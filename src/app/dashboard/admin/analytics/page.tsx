@@ -317,7 +317,7 @@ function MetricCard({
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-200 dark:hover:border-[--glass-border-subtle] transition-colors"
     >
@@ -1945,7 +1945,7 @@ export default function AnalyticsPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${activeTab}-${timeRange}-${lastUpdated.getTime()}`}
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}

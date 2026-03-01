@@ -15,7 +15,7 @@ export default function SpaceLawRecommendations({
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
@@ -36,7 +36,7 @@ export default function SpaceLawRecommendations({
           {recommendations.map((recommendation, index) => (
             <motion.div
               key={index}
-              initial={false}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.15 + index * 0.08 }}
             >
@@ -57,7 +57,7 @@ export default function SpaceLawRecommendations({
 
         {/* Bottom CTA */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{
             duration: 0.4,

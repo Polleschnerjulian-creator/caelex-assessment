@@ -362,7 +362,7 @@ function FeedItem({
   return (
     <motion.div
       layout
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: update.isRead ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}

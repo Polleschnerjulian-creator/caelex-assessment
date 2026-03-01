@@ -186,7 +186,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto"
     >
@@ -319,7 +319,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
             <AnimatePresence>
               {showGrade && (
                 <motion.text
-                  initial={false}
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   x={center}
                   y={center + size * 0.15}
@@ -344,7 +344,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
         <AnimatePresence>
           {showGrade && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="mb-2"
@@ -360,7 +360,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
         <AnimatePresence>
           {showGrade && (
             <motion.p
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
               className="text-body-lg text-white/40 mb-8"
@@ -374,7 +374,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
         <AnimatePresence>
           {showInsights && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="space-y-3 mb-8 text-left"
@@ -382,7 +382,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
               {insightMessages.map((msg, i) => (
                 <motion.div
                   key={i}
-                  initial={false}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.3 }}
                   className={`glass-surface rounded-lg p-4 border-l-2 ${getSentimentBorder(msg.sentiment)}`}
@@ -410,7 +410,7 @@ export default function ScoreReveal({ score, onComplete }: ScoreRevealProps) {
         <AnimatePresence>
           {showInsights && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5 }}
             >

@@ -161,8 +161,8 @@ export default function Modules() {
       <div className="px-6 md:px-12 mb-16">
         <div className="max-w-[1400px] mx-auto">
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1 } : {}}
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.6 }}
             className="flex items-end justify-between"
           >
@@ -207,8 +207,8 @@ export default function Modules() {
               return (
                 <motion.div
                   key={module.id}
-                  initial={false}
-                  animate={isInView ? { opacity: 1 } : {}}
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 + index * 0.05 }}
                   className="group"
                 >
@@ -329,8 +329,8 @@ export default function Modules() {
 
       {/* Bottom stats bar */}
       <motion.div
-        initial={false}
-        animate={isInView ? { opacity: 1 } : {}}
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.8, delay: 0.8 }}
         className="px-6 md:px-12 mt-16"
       >

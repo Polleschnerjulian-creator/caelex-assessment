@@ -97,7 +97,7 @@ export default function NIS2ResultsDashboard({
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* Title */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-8"
@@ -161,7 +161,7 @@ export default function NIS2ResultsDashboard({
 
           {/* Disclaimer */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
           >
@@ -174,7 +174,7 @@ export default function NIS2ResultsDashboard({
 
           {/* CTA */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
             className="text-center py-8"

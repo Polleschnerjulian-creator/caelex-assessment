@@ -185,7 +185,7 @@ export default function SimulationRunner({
   if (step === 0) {
     return (
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl mx-auto"
       >
@@ -294,7 +294,7 @@ export default function SimulationRunner({
 
     return (
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl mx-auto"
       >
@@ -337,7 +337,7 @@ export default function SimulationRunner({
             {result.feedback.map((item, idx) => (
               <motion.div
                 key={idx}
-                initial={false}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.08 }}
                 className={`
@@ -399,7 +399,7 @@ export default function SimulationRunner({
           <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-emerald-500"
-              initial={false}
+              initial={{ width: "0%" }}
               animate={{ width: `${stepProgress}%` }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             />
@@ -409,7 +409,7 @@ export default function SimulationRunner({
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={false}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}

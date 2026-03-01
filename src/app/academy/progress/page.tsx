@@ -313,7 +313,7 @@ export default function ProgressPage() {
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
           >

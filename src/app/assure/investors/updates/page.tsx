@@ -150,14 +150,14 @@ export default function InvestorUpdatesPage() {
       {/* Header */}
       <div className="mb-10">
         <motion.h1
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Investor Updates
         </motion.h1>
         <motion.p
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"
@@ -169,7 +169,7 @@ export default function InvestorUpdatesPage() {
       {/* Success banner */}
       {generated && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-8 flex items-center gap-3"
         >
@@ -219,7 +219,7 @@ export default function InvestorUpdatesPage() {
               {pastUpdates.map((update, index) => (
                 <motion.div
                   key={update.id}
-                  initial={false}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="p-3 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all"

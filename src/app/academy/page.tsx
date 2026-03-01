@@ -147,7 +147,7 @@ export default function AcademyLandingPage() {
       {/* Hero */}
       <section className="relative max-w-[1200px] mx-auto px-6 pt-28 pb-24">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center max-w-[680px] mx-auto"
@@ -186,7 +186,7 @@ export default function AcademyLandingPage() {
       {/* Features */}
       <section className="relative max-w-[1200px] mx-auto px-6 pb-28">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
@@ -206,7 +206,7 @@ export default function AcademyLandingPage() {
               return (
                 <motion.div
                   key={feature.title}
-                  initial={false}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     delay: 0.4 + index * 0.07,
@@ -243,7 +243,7 @@ export default function AcademyLandingPage() {
         <div className="border-t border-white/[0.04]" />
         <div className="max-w-[1200px] mx-auto px-6 pt-28">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
@@ -263,7 +263,7 @@ export default function AcademyLandingPage() {
                 return (
                   <motion.div
                     key={course.title}
-                    initial={false}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
                       delay: 0.6 + index * 0.07,

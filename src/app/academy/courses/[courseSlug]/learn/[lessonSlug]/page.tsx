@@ -342,7 +342,7 @@ function QuizView({
         {/* Explanation after submit */}
         {submitted && question.explanation && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10"
           >

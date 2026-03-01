@@ -97,7 +97,7 @@ export default function RCRMethodologyPage() {
         </Link>
 
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
@@ -107,7 +107,7 @@ export default function RCRMethodologyPage() {
           </h1>
         </motion.div>
         <motion.p
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body text-slate-500 dark:text-white/45"
@@ -119,7 +119,7 @@ export default function RCRMethodologyPage() {
 
       {/* Methodology Explorer */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >

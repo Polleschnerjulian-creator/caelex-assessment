@@ -101,7 +101,7 @@ function ApplicationFormContent() {
     return (
       <main className="dark-section min-h-screen bg-black text-white flex items-center justify-center px-6">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-[500px] text-center"
         >
@@ -155,7 +155,7 @@ function ApplicationFormContent() {
       <section className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[600px] mx-auto">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >

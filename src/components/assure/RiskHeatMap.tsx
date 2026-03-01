@@ -230,7 +230,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
       <AnimatePresence>
         {hoveredRisk && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             className="fixed z-50 pointer-events-none"

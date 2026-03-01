@@ -123,7 +123,10 @@ export default function ClassroomDetailPage() {
       </div>
 
       {/* Header */}
-      <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <GlassCard hover={false} className="p-6">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
@@ -180,7 +183,7 @@ export default function ClassroomDetailPage() {
             {classroom.assignedCourses.map((course, i) => (
               <motion.div
                 key={course.id}
-                initial={false}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
               >

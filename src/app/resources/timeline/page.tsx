@@ -163,8 +163,8 @@ export default function TimelinePage() {
       <section className="pt-32 pb-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <motion.div
-            initial={false}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6 }}
           >
             <Breadcrumbs
@@ -200,8 +200,10 @@ export default function TimelinePage() {
               return (
                 <motion.div
                   key={deadline.title}
-                  initial={false}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={
+                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                  }
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="p-6 rounded-xl bg-amber-500/[0.08] border border-amber-500/20"
                   style={{
@@ -251,8 +253,10 @@ export default function TimelinePage() {
               {timelineEvents.map((event, index) => (
                 <motion.div
                   key={event.title}
-                  initial={false}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={
+                    isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }
+                  }
                   transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
                   className="relative pl-12"
                 >

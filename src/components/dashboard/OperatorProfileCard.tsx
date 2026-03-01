@@ -99,7 +99,7 @@ export default function OperatorProfileCard() {
   const isComplete = profile.completeness >= 1;
 
   return (
-    <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <GlassCard hover={false} className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

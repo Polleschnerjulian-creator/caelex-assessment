@@ -91,8 +91,8 @@ export default function EcosystemSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* ── Header ── */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-20"
         >
@@ -112,8 +112,10 @@ export default function EcosystemSection() {
 
         {/* ── Network Visualization ── */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={
+            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
+          }
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-20 md:mb-24"
         >
@@ -389,8 +391,12 @@ export default function EcosystemSection() {
                   }}
                 >
                   <motion.div
-                    initial={false}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={
+                      isInView
+                        ? { opacity: 1, scale: 1 }
+                        : { opacity: 0, scale: 0.95 }
+                    }
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
                   >
                     <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1] backdrop-blur-sm hover:bg-emerald-500/[0.06] hover:border-emerald-500/20 transition-all duration-300 cursor-default group">
@@ -425,8 +431,12 @@ export default function EcosystemSection() {
                 return (
                   <motion.div
                     key={s.label}
-                    initial={false}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={
+                      isInView
+                        ? { opacity: 1, scale: 1 }
+                        : { opacity: 0, scale: 0.95 }
+                    }
                     transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
                     className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.03] border border-emerald-500/[0.1]"
                   >
@@ -450,8 +460,10 @@ export default function EcosystemSection() {
             return (
               <motion.div
                 key={pillar.title}
-                initial={false}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={
+                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                }
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
                 className="relative p-6 md:p-8 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.05] hover:border-emerald-500/[0.15] group overflow-hidden"
                 style={{
@@ -481,8 +493,8 @@ export default function EcosystemSection() {
 
         {/* ── CTA ── */}
         <motion.div
-          initial={false}
-          animate={isInView ? { opacity: 1 } : {}}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.4, delay: 0.9 }}
           className="text-center"
         >

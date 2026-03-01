@@ -51,7 +51,7 @@ export default function RegulatoryRadarChart({
 }: RegulatoryRadarChartProps) {
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
       className="relative h-[280px] w-full"

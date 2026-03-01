@@ -136,7 +136,7 @@ function AppealForm({
   };
 
   return (
-    <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <GlassCard highlighted className="p-6">
         <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
           Submit Rating Appeal
@@ -178,7 +178,7 @@ function AppealForm({
 
           {error && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
             >
@@ -317,7 +317,7 @@ export default function RCRAppealPage() {
         <div className="flex items-center justify-between">
           <div>
             <motion.div
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
@@ -327,7 +327,7 @@ export default function RCRAppealPage() {
               </h1>
             </motion.div>
             <motion.p
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
               className="text-body text-slate-500 dark:text-white/45"
@@ -338,7 +338,7 @@ export default function RCRAppealPage() {
 
           {currentRating && !hasActiveAppeal && !showForm && (
             <motion.button
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setShowForm(true)}
               className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg text-small font-medium hover:bg-emerald-600 transition-all"
@@ -353,7 +353,7 @@ export default function RCRAppealPage() {
       {/* Error */}
       {error && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
         >
@@ -365,7 +365,7 @@ export default function RCRAppealPage() {
       {/* Active Appeal Notice */}
       {hasActiveAppeal && !showForm && (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20"
         >
@@ -393,7 +393,7 @@ export default function RCRAppealPage() {
       {/* Appeal History */}
       {appeals.length === 0 ? (
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -418,7 +418,7 @@ export default function RCRAppealPage() {
           {appeals.map((appeal, index) => (
             <motion.div
               key={appeal.id}
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + index * 0.05 }}
             >

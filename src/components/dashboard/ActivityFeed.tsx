@@ -299,7 +299,7 @@ export default function ActivityFeed({
               return (
                 <motion.div
                   key={log.id}
-                  initial={false}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ delay: index * 0.02 }}

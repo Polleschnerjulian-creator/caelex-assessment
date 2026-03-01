@@ -49,7 +49,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
@@ -92,7 +92,7 @@ export default function ArticleBreakdown({ articles }: ArticleBreakdownProps) {
               return (
                 <motion.div
                   key={`${article.number}-${index}`}
-                  initial={false}
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="p-4"

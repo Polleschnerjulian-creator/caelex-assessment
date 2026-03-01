@@ -44,7 +44,7 @@ export default function UpgradePrompt({
         <>
           {/* Backdrop */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50"
@@ -53,7 +53,7 @@ export default function UpgradePrompt({
 
           {/* Modal */}
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}

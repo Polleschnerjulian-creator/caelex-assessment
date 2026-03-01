@@ -137,7 +137,7 @@ export default function AstraCoPilot({
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
@@ -162,7 +162,7 @@ export default function AstraCoPilot({
                   <AnimatePresence>
                     {msg.showTip && (
                       <motion.p
-                        initial={false}
+                        initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         className="text-micro text-white/40 mt-1.5 leading-relaxed overflow-hidden"
@@ -181,7 +181,7 @@ export default function AstraCoPilot({
         <AnimatePresence>
           {isTyping && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="glass-surface rounded-lg"

@@ -279,7 +279,7 @@ function KPICard({
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
       className="bg-white border border-slate-200 dark:bg-white/5 dark:backdrop-blur-sm dark:border-[--glass-border-subtle] rounded-xl p-6 relative overflow-hidden"
@@ -861,7 +861,7 @@ function DashboardContent() {
       <AnimatePresence>
         {showSuccessToast && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-4 right-4 z-50"
@@ -893,7 +893,7 @@ function DashboardContent() {
         {/* Pending Assessment Banner */}
         {pendingAssessment && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
           >
@@ -938,14 +938,14 @@ function DashboardContent() {
         {/* Header */}
         <div className="mb-10">
           <motion.h1
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-display font-medium text-slate-900 dark:text-white mb-1"
           >
             {t("dashboard.welcomeBack", { name: firstName })}
           </motion.h1>
           <motion.p
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-slate-500 dark:text-white/45"
@@ -960,7 +960,7 @@ function DashboardContent() {
         {/* Demo Mode Banner */}
         {!hasData && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex items-center gap-3 px-4 py-3 mb-6 rounded-lg bg-amber-500/10 border border-amber-500/20"
           >
@@ -1023,7 +1023,7 @@ function DashboardContent() {
         {/* No Data CTA */}
         {!hasData && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-slate-50 border border-dashed border-slate-300 dark:bg-white/5 dark:border-white/20 rounded-xl p-8 text-center mb-10"
           >
@@ -1202,7 +1202,7 @@ function DashboardContent() {
         <AnimatePresence>
           {showImportModal && (
             <motion.div
-              initial={false}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
