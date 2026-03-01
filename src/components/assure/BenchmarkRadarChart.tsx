@@ -150,7 +150,7 @@ export default function BenchmarkRadarChart({
           stroke="rgba(148,163,184,0.5)"
           strokeWidth={1.5}
           strokeDasharray="6 3"
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         />
@@ -161,7 +161,7 @@ export default function BenchmarkRadarChart({
           fill="rgba(16,185,129,0.12)"
           stroke="#10B981"
           strokeWidth={2}
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1, type: "spring" }}
           style={{ transformOrigin: `${cx}px ${cy}px` }}

@@ -156,14 +156,14 @@ export default function AssureProfilePage() {
       {/* Header */}
       <div className="mb-8">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Company Profile
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"
@@ -214,7 +214,7 @@ export default function AssureProfilePage() {
           return (
             <motion.div
               key={section.key}
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.04 }}
             >

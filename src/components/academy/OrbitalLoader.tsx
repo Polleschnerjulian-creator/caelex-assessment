@@ -174,7 +174,7 @@ export default function OrbitalLoader({
       {message && (
         <motion.p
           className={`${MESSAGE_SIZES[size]} text-white/40`}
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >

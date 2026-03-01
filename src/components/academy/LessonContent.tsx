@@ -144,7 +144,7 @@ function SectionRenderer({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
       className="mb-8"
@@ -203,7 +203,7 @@ function CaseStudyRenderer({ content }: { content: CaseStudyContent }) {
       {/* Scenario Box */}
       {content?.scenario && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="
             bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-xl
@@ -247,7 +247,7 @@ function CaseStudyRenderer({ content }: { content: CaseStudyContent }) {
       {/* Discussion Questions */}
       {content?.questions && content.questions.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: (content.sections?.length ?? 0) * 0.08 + 0.1 }}
           className="bg-white/[0.04] border border-white/10 rounded-xl p-5"

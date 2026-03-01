@@ -88,7 +88,7 @@ export default function RiskCategoryBreakdown({
           return (
             <motion.div
               key={cat.category}
-              initial={{ opacity: 0, x: -20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
             >

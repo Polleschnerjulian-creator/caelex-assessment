@@ -33,8 +33,8 @@ export default function TrustBar() {
     >
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          initial={false}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12"
         >
@@ -43,8 +43,8 @@ export default function TrustBar() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                initial={false}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
                 className="flex items-center gap-2.5"
               >

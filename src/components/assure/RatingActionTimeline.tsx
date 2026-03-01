@@ -126,7 +126,7 @@ export default function RatingActionTimeline({
             <motion.div
               key={action.id}
               role="listitem"
-              initial={{ opacity: 0, x: -20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.08, duration: 0.3 }}
               className="relative flex gap-4 pb-6 last:pb-0"

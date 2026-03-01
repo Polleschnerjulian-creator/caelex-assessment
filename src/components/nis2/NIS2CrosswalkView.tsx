@@ -58,7 +58,7 @@ export default function NIS2CrosswalkView({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.4 }}
       className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6"
@@ -133,7 +133,7 @@ export default function NIS2CrosswalkView({
           return (
             <motion.div
               key={`${req.nis2RequirementId}-${req.euSpaceActArticle}`}
-              initial={{ opacity: 0, x: -20 }}
+              initial={false}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 + index * 0.05 }}
               className={`flex items-center gap-3 p-3 rounded-lg ${config.bgColor} border ${config.borderColor}`}

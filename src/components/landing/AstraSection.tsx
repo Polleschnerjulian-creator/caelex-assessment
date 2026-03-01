@@ -91,7 +91,7 @@ export default function AstraSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
@@ -120,7 +120,7 @@ export default function AstraSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 mb-12">
           {/* Left: Chat Mockup */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -155,7 +155,7 @@ export default function AstraSection() {
                 {chatExamples.map((example, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
@@ -226,7 +226,7 @@ export default function AstraSection() {
 
           {/* Right: Capability Grid */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -235,7 +235,7 @@ export default function AstraSection() {
             {capabilities.map((cap, i) => (
               <motion.div
                 key={cap.name}
-                initial={{ opacity: 0 }}
+                initial={false}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
@@ -273,7 +273,7 @@ export default function AstraSection() {
 
             {/* Knowledge Domain Tags */}
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, delay: 0.9 }}
@@ -293,7 +293,7 @@ export default function AstraSection() {
 
         {/* CTA */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 1.0 }}

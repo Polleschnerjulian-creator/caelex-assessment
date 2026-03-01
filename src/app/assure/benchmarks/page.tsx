@@ -96,14 +96,14 @@ export default function BenchmarksPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <motion.h1
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="text-display font-bold text-white mb-2"
           >
             Benchmark Intelligence
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/40"

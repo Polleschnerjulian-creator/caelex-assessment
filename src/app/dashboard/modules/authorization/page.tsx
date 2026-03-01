@@ -363,7 +363,7 @@ function AuthorizationPageContent() {
         {activeStep === 0 && (
           <motion.div
             key="nca"
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
@@ -591,7 +591,7 @@ function AuthorizationPageContent() {
                 {/* NCA Result */}
                 {ncaDetermination && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6"
                   >
@@ -749,7 +749,7 @@ function AuthorizationPageContent() {
         {activeStep === 1 && (
           <motion.div
             key="documents"
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
@@ -927,7 +927,7 @@ function AuthorizationPageContent() {
         {activeStep === 2 && (
           <motion.div
             key="timeline"
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
@@ -1066,7 +1066,7 @@ function AuthorizationPageContent() {
         {activeStep === 3 && (
           <motion.div
             key="status"
-            initial={{ opacity: 0, x: -20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"

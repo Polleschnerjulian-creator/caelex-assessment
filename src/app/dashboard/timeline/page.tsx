@@ -936,7 +936,7 @@ function TimelinePageContent() {
       <AnimatePresence mode="wait">
         <motion.div
           key={activeStep}
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}

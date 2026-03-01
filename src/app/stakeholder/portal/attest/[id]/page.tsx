@@ -324,7 +324,7 @@ export default function AttestationSigningPage() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
@@ -400,7 +400,7 @@ export default function AttestationSigningPage() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
           className="max-w-2xl mx-auto"
@@ -510,7 +510,7 @@ export default function AttestationSigningPage() {
           {/* Hash Chain Visualization */}
           {attestation?.hashChain && attestation.hashChain.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
@@ -572,7 +572,7 @@ export default function AttestationSigningPage() {
       <div className="max-w-3xl mx-auto">
         {/* Attestation Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="mb-6"
@@ -622,7 +622,7 @@ export default function AttestationSigningPage() {
 
         {/* Statement */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-6"
@@ -641,7 +641,7 @@ export default function AttestationSigningPage() {
         {/* Scope Summary */}
         {(attestation!.scopeSummary || attestation!.scope) && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
             className="mb-6"
@@ -660,7 +660,7 @@ export default function AttestationSigningPage() {
         {/* Hash Chain */}
         {attestation!.hashChain && attestation!.hashChain.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mb-6"
@@ -690,7 +690,7 @@ export default function AttestationSigningPage() {
         {/* Timeline */}
         {attestation!.timeline && attestation!.timeline.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.25 }}
             className="mb-8"
@@ -723,7 +723,7 @@ export default function AttestationSigningPage() {
         {/* Sign Section (only for PENDING) */}
         {attestation!.status === "PENDING" && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
           >
@@ -789,7 +789,7 @@ export default function AttestationSigningPage() {
           {(attestation!.status === "EXPIRED" ||
             attestation!.status === "REJECTED") && (
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               className="mt-6"
             >

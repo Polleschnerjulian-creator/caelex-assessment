@@ -10,7 +10,7 @@ import {
 
 // Exportable Framer Motion variants for glass card entrance
 export const glassItemVariants: Variants = {
-  hidden: { opacity: 0, y: 12, scale: 0.98 },
+  hidden: {},
   visible: {
     opacity: 1,
     y: 0,

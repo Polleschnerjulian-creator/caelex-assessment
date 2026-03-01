@@ -46,7 +46,7 @@ const statusLabels: Record<ModuleStatusType, string> = {
 };
 
 const container = {
-  hidden: { opacity: 0 },
+  hidden: {},
   show: {
     opacity: 1,
     transition: {
@@ -56,14 +56,14 @@ const container = {
 };
 
 const item = {
-  hidden: { opacity: 0, y: 10 },
+  hidden: {},
   show: { opacity: 1, y: 0 },
 };
 
 export default function ModuleCards({ modules }: ModuleCardsProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >

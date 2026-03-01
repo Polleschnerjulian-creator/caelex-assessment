@@ -91,7 +91,7 @@ export default function WhatWeCover() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
@@ -116,7 +116,7 @@ export default function WhatWeCover() {
             return (
               <motion.div
                 key={category.title}
-                initial={{ opacity: 0 }}
+                initial={false}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: categoryIndex * 0.06 }}
@@ -140,7 +140,7 @@ export default function WhatWeCover() {
                   {category.modules.map((module, moduleIndex) => (
                     <motion.div
                       key={module.name}
-                      initial={{ opacity: 0 }}
+                      initial={false}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true, margin: "-100px" }}
                       transition={{
@@ -181,7 +181,7 @@ export default function WhatWeCover() {
 
         {/* Bottom Tagline */}
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 0.8 }}

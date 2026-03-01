@@ -68,8 +68,8 @@ export default function FeatureGrid() {
     >
       {/* Section number */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+        initial={false}
+        animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
         className="absolute top-12 right-6 md:right-12"
         aria-hidden="true"
@@ -80,8 +80,8 @@ export default function FeatureGrid() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          initial={false}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5 }}
           className="text-center mb-20"
         >
@@ -102,8 +102,8 @@ export default function FeatureGrid() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                initial={false}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.4, delay: i * 0.04 }}
                 className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-500"
               >

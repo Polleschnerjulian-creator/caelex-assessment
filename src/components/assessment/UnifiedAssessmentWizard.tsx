@@ -536,7 +536,7 @@ export default function UnifiedAssessmentWizard() {
             {state.currentStep > 1 ? (
               <motion.button
                 key="back"
-                initial={{ opacity: 0, x: -20 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
@@ -548,7 +548,7 @@ export default function UnifiedAssessmentWizard() {
             ) : (
               <motion.div
                 key="home"
-                initial={{ opacity: 0, x: -20 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
               >
@@ -978,7 +978,7 @@ export default function UnifiedAssessmentWizard() {
                         multiSelect.length <
                         (currentQuestion.minSelections || 1)
                       }
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={false}
                       animate={{
                         opacity:
                           multiSelect.length >=

@@ -50,7 +50,7 @@ const RELATIONSHIP_CONFIG: Record<
 };
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
     opacity: 1,
     transition: {
@@ -60,7 +60,7 @@ const containerVariants = {
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: {},
   visible: {
     opacity: 1,
     y: 0,

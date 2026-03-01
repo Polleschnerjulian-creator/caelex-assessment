@@ -17,7 +17,7 @@ export default function GlobeWidget() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden"
     >

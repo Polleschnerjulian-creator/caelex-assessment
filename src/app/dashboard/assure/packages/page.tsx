@@ -89,7 +89,7 @@ export default function AssurePackagesPage() {
         </Link>
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
@@ -99,7 +99,7 @@ export default function AssurePackagesPage() {
           </h1>
         </motion.div>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body text-slate-500 dark:text-white/45"
@@ -111,7 +111,7 @@ export default function AssurePackagesPage() {
 
       {/* Info banner */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="mb-6"
@@ -137,7 +137,7 @@ export default function AssurePackagesPage() {
 
       {generateError && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
         >
@@ -156,7 +156,7 @@ export default function AssurePackagesPage() {
 
       {/* Main content */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
@@ -170,7 +170,7 @@ export default function AssurePackagesPage() {
       {/* Stats footer */}
       {packages.length > 0 && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           className="mt-8"

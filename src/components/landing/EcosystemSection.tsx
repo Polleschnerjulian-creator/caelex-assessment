@@ -86,7 +86,7 @@ export default function EcosystemSection() {
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
         {/* ── Header ── */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
@@ -108,7 +108,7 @@ export default function EcosystemSection() {
 
         {/* ── Network Visualization ── */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={false}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -382,7 +382,7 @@ export default function EcosystemSection() {
                   }}
                 >
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={false}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
@@ -419,7 +419,7 @@ export default function EcosystemSection() {
                 return (
                   <motion.div
                     key={s.label}
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={false}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.3, delay: 0.3 + i * 0.06 }}
@@ -445,7 +445,7 @@ export default function EcosystemSection() {
             return (
               <motion.div
                 key={pillar.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
@@ -477,7 +477,7 @@ export default function EcosystemSection() {
 
         {/* ── CTA ── */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.4, delay: 0.9 }}

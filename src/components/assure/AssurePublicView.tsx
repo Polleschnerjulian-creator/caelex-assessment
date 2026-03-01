@@ -162,10 +162,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
       {/* Header */}
       <div className="bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-[--glass-border-subtle]">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-center gap-2 mb-4">
               <Shield className="w-5 h-5 text-emerald-500" />
               <span className="text-caption uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-medium">
@@ -196,7 +193,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
         {/* RRS Score Section */}
         {includes.rrs && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
@@ -262,7 +259,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
         {includes.rrs &&
           (granularity === "COMPONENT" || granularity === "DETAILED") && (
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
@@ -276,7 +273,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
         {/* Gap Analysis (DETAILED only) */}
         {includes.gapAnalysis && granularity === "DETAILED" && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
@@ -320,7 +317,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
         {/* Trend Chart */}
         {includes.trend && data.trendData && data.trendData.length > 1 && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
@@ -378,7 +375,7 @@ export default function AssurePublicView({ data }: AssurePublicViewProps) {
           data.riskItems &&
           data.riskItems.length > 0 && (
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >

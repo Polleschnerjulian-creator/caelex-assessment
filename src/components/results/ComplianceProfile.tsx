@@ -19,7 +19,7 @@ export default function ComplianceProfile({ result }: ComplianceProfileProps) {
   ];
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
       <div className="bg-white/[0.05] border border-white/[0.12] rounded-xl p-6 md:p-8">
         {/* Header */}
         <div className="mb-6">

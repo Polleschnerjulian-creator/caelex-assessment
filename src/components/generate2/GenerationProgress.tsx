@@ -46,7 +46,7 @@ export function GenerationProgress({
     <div className="flex items-center justify-center min-h-[50vh]">
       <div className="w-full max-w-lg">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-6"
         >
@@ -171,7 +171,7 @@ function PhaseRow({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
+      initial={false}
       animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
       transition={{ duration: 0.25 }}
       className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors duration-300 ${
@@ -220,7 +220,7 @@ function PhaseRow({
         <AnimatePresence>
           {isActive && subtitle && (
             <motion.p
-              initial={{ opacity: 0, height: 0 }}
+              initial={false}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="text-xs text-white/45 mt-0.5"

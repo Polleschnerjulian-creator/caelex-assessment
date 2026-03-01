@@ -117,7 +117,7 @@ export default function DataRoomPublicViewPage() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
@@ -150,7 +150,7 @@ export default function DataRoomPublicViewPage() {
         {/* Expired Warning */}
         {isExpired && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-8 flex items-center gap-3"
           >
@@ -167,7 +167,7 @@ export default function DataRoomPublicViewPage() {
           {data.folders.map((folder, folderIdx) => (
             <motion.div
               key={folder.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: folderIdx * 0.08 }}
               className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"

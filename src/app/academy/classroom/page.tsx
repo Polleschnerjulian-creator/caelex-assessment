@@ -103,7 +103,7 @@ export default function ClassroomPage() {
           {classrooms.map((classroom, i) => (
             <motion.div
               key={classroom.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
             >

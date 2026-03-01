@@ -122,14 +122,14 @@ export default function AssureScorePage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <motion.h1
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="text-display font-bold text-white mb-2"
           >
             Investment Readiness Score
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/40"
@@ -193,7 +193,7 @@ export default function AssureScorePage() {
                 .map(([key, value], index) => (
                   <motion.div
                     key={key}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
@@ -280,7 +280,7 @@ export default function AssureScorePage() {
                   .map((item, index) => (
                     <motion.tr
                       key={index}
-                      initial={{ opacity: 0 }}
+                      initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
                       className="border-b border-white/5 last:border-0"
@@ -334,7 +334,7 @@ export default function AssureScorePage() {
             {history.map((entry, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0 }}
+                initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.03 }}
                 className="flex items-center gap-4 p-3 rounded-lg bg-white/[0.02]"

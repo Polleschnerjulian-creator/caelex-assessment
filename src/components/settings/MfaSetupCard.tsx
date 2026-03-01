@@ -262,7 +262,7 @@ export function MfaSetupCard() {
         {!isSettingUp && !showDisableConfirm && !showRegenerateBackupCodes ? (
           <motion.div
             key="status"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
@@ -337,7 +337,7 @@ export function MfaSetupCard() {
         ) : showDisableConfirm ? (
           <motion.div
             key="disable"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
@@ -410,7 +410,7 @@ export function MfaSetupCard() {
         ) : showRegenerateBackupCodes ? (
           <motion.div
             key="regenerate"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
@@ -480,7 +480,7 @@ export function MfaSetupCard() {
         ) : (
           <motion.div
             key="setup"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"

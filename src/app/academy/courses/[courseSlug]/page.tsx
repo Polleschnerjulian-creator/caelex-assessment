@@ -237,10 +237,7 @@ export default function CourseDetailPage() {
       {/* Course Header */}
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                 <CategoryIcon className="w-7 h-7 text-emerald-400" />
@@ -300,7 +297,7 @@ export default function CourseDetailPage() {
 
         {/* Progress / Enroll Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="lg:w-80 flex-shrink-0"
@@ -399,7 +396,7 @@ export default function CourseDetailPage() {
               return (
                 <motion.div
                   key={mod.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: modIndex * 0.06 }}
                 >

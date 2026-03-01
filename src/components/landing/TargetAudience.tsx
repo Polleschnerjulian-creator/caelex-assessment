@@ -84,8 +84,8 @@ export default function TargetAudience() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          initial={false}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
@@ -109,8 +109,8 @@ export default function TargetAudience() {
             return (
               <motion.div
                 key={audience.code}
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                initial={false}
+                animate={isInView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.05 }}
                 className="group bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:bg-white/[0.04] hover:border-emerald-500/20 transition-all duration-500"
               >
@@ -142,8 +142,8 @@ export default function TargetAudience() {
 
         {/* Bottom note */}
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          initial={false}
+          animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-center text-body text-white/25 mt-8"
         >

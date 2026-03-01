@@ -96,14 +96,14 @@ export default function MaterialGeneratorPage() {
       {/* Header */}
       <div className="mb-10">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Generate Material
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"
@@ -145,7 +145,7 @@ export default function MaterialGeneratorPage() {
         {step === 0 && (
           <motion.div
             key="step-0"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
@@ -156,7 +156,7 @@ export default function MaterialGeneratorPage() {
         {step === 1 && (
           <motion.div
             key="step-1"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
@@ -219,7 +219,7 @@ export default function MaterialGeneratorPage() {
         {step === 2 && (
           <motion.div
             key="step-2"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >

@@ -229,7 +229,7 @@ export default function MultiSelectQuestionStep({
           <motion.button
             onClick={handleContinue}
             disabled={localSelected.length === 0}
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{
               opacity: localSelected.length > 0 ? 1 : 0.3,
               y: 0,

@@ -18,7 +18,7 @@ export default function ScrollReveal({
 
   return (
     <motion.div
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
+      initial={prefersReducedMotion ? false : {}}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={

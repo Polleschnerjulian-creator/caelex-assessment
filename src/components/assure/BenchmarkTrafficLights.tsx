@@ -91,7 +91,7 @@ export default function BenchmarkTrafficLights({
           return (
             <motion.div
               key={item.metric}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.04 }}
             >

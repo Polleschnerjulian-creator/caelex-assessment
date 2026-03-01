@@ -180,10 +180,7 @@ export default function SimulationRunnerPage() {
 
       {/* Intro Phase */}
       {phase === "intro" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <GlassCard hover={false} className="p-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
@@ -249,7 +246,7 @@ export default function SimulationRunnerPage() {
       {phase === "deciding" && step && (
         <motion.div
           key={step.id}
-          initial={{ opacity: 0, x: 20 }}
+          initial={false}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
         >
@@ -337,7 +334,7 @@ export default function SimulationRunnerPage() {
       {/* Calculating Phase */}
       {phase === "calculating" && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="py-20 text-center"
         >
@@ -354,7 +351,7 @@ export default function SimulationRunnerPage() {
       {/* Results Phase */}
       {phase === "results" && result && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >

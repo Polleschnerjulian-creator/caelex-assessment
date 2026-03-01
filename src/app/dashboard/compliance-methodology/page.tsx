@@ -270,7 +270,7 @@ function SectionCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
       className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mb-6"
@@ -297,7 +297,7 @@ export default function ComplianceMethodologyPage() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
@@ -389,7 +389,7 @@ export default function ComplianceMethodologyPage() {
 
         {/* Module Breakdown */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="mb-6"
@@ -409,7 +409,7 @@ export default function ComplianceMethodologyPage() {
               return (
                 <motion.div
                   key={mod.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.08 }}
                   className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
