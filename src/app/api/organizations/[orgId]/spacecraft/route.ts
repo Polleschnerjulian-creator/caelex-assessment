@@ -4,9 +4,10 @@
  * POST: Create new spacecraft
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { getSafeErrorMessage } from "@/lib/validations";
+import { getSafeErrorMessage, parsePaginationLimit } from "@/lib/validations";
 import { verifyOrganizationAccess } from "@/lib/middleware/organization-guard";
 import {
   getSpacecraftList,
@@ -48,7 +49,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     const orbitType = url.searchParams.get("orbitType");
     const missionType = url.searchParams.get("missionType");
     const search = url.searchParams.get("search");
-    const limit = parseInt(url.searchParams.get("limit") || "50");
+    const limit = parsePaginationLimit(url.searchParams.get("limit"));
     const offset = parseInt(url.searchParams.get("offset") || "0");
     const includeStats = url.searchParams.get("stats") === "true";
 
@@ -112,7 +113,68 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
+    const createSpacecraftSchema = z.object({
+      name: z.string().min(2, "Spacecraft name must be at least 2 characters"),
+      cosparId: z.string().optional(),
+      noradId: z.string().optional(),
+      missionType: z.enum(
+        [
+          "communication",
+          "earth_observation",
+          "navigation",
+          "scientific",
+          "technology_demonstration",
+          "weather",
+          "military",
+          "commercial",
+          "space_station",
+          "debris_removal",
+          "in_orbit_servicing",
+          "other",
+        ],
+        { message: "Mission type is required" },
+      ),
+      launchDate: z.string().optional(),
+      endOfLifeDate: z.string().optional(),
+      orbitType: z.enum(
+        [
+          "LEO",
+          "MEO",
+          "GEO",
+          "HEO",
+          "SSO",
+          "polar",
+          "cislunar",
+          "deep_space",
+          "other",
+        ],
+        { message: "Orbit type is required" },
+      ),
+      altitudeKm: z.union([z.string(), z.number()]).optional(),
+      inclinationDeg: z.union([z.string(), z.number()]).optional(),
+      status: z
+        .enum([
+          "PRE_LAUNCH",
+          "LAUNCHED",
+          "OPERATIONAL",
+          "DECOMMISSIONING",
+          "DEORBITED",
+          "LOST",
+        ])
+        .optional(),
+      description: z.string().optional(),
+      metadata: z.record(z.string(), z.unknown()).optional(),
+    });
+
     const body = await request.json();
+    const parsed = createSpacecraftSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       name,
       cosparId,
@@ -126,29 +188,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       status,
       description,
       metadata,
-    } = body;
-
-    // Validation
-    if (!name || name.trim().length < 2) {
-      return NextResponse.json(
-        { error: "Spacecraft name must be at least 2 characters" },
-        { status: 400 },
-      );
-    }
-
-    if (!missionType) {
-      return NextResponse.json(
-        { error: "Mission type is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!orbitType) {
-      return NextResponse.json(
-        { error: "Orbit type is required" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const spacecraft = await createSpacecraft(
       {
@@ -160,8 +200,10 @@ export async function POST(request: Request, { params }: RouteParams) {
         launchDate: launchDate ? new Date(launchDate) : undefined,
         endOfLifeDate: endOfLifeDate ? new Date(endOfLifeDate) : undefined,
         orbitType,
-        altitudeKm: altitudeKm ? parseFloat(altitudeKm) : undefined,
-        inclinationDeg: inclinationDeg ? parseFloat(inclinationDeg) : undefined,
+        altitudeKm: altitudeKm ? parseFloat(String(altitudeKm)) : undefined,
+        inclinationDeg: inclinationDeg
+          ? parseFloat(String(inclinationDeg))
+          : undefined,
         status: status || "PRE_LAUNCH",
         description,
         metadata,

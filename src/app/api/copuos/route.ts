@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -58,6 +59,48 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const createSchema = z.object({
+      assessmentName: z.string().optional(),
+      missionName: z.string().optional(),
+      orbitRegime: z.enum([
+        "LEO",
+        "MEO",
+        "GEO",
+        "HEO",
+        "GTO",
+        "cislunar",
+        "deep_space",
+      ]),
+      altitudeKm: z.number().optional(),
+      inclinationDeg: z.number().optional(),
+      missionType: z.enum([
+        "commercial",
+        "scientific",
+        "governmental",
+        "educational",
+        "military",
+      ]),
+      satelliteMassKg: z.number().positive(),
+      hasManeuverability: z.boolean().optional().default(false),
+      hasPropulsion: z.boolean().optional().default(false),
+      plannedLifetimeYears: z.number().optional().default(5),
+      isConstellation: z.boolean().optional().default(false),
+      constellationSize: z.number().int().optional(),
+      launchDate: z.string().optional(),
+      countryOfRegistry: z.string().optional(),
+      deorbitStrategy: z.string().optional(),
+      deorbitTimelineYears: z.number().optional(),
+      caServiceProvider: z.string().optional(),
+    });
+
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       missionName,
@@ -66,60 +109,17 @@ export async function POST(request: Request) {
       inclinationDeg,
       missionType,
       satelliteMassKg,
-      hasManeuverability = false,
-      hasPropulsion = false,
-      plannedLifetimeYears = 5,
-      isConstellation = false,
+      hasManeuverability,
+      hasPropulsion,
+      plannedLifetimeYears,
+      isConstellation,
       constellationSize,
       launchDate,
       countryOfRegistry,
       deorbitStrategy,
       deorbitTimelineYears,
       caServiceProvider,
-    } = body;
-
-    // Validate required fields
-    if (!orbitRegime || !missionType || !satelliteMassKg) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: orbitRegime, missionType, satelliteMassKg",
-        },
-        { status: 400 },
-      );
-    }
-
-    // Validate orbit regime
-    const validOrbitRegimes: OrbitRegime[] = [
-      "LEO",
-      "MEO",
-      "GEO",
-      "HEO",
-      "GTO",
-      "cislunar",
-      "deep_space",
-    ];
-    if (!validOrbitRegimes.includes(orbitRegime)) {
-      return NextResponse.json(
-        { error: "Invalid orbit regime" },
-        { status: 400 },
-      );
-    }
-
-    // Validate mission type
-    const validMissionTypes: MissionType[] = [
-      "commercial",
-      "scientific",
-      "governmental",
-      "educational",
-      "military",
-    ];
-    if (!validMissionTypes.includes(missionType)) {
-      return NextResponse.json(
-        { error: "Invalid mission type" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Determine satellite category
     const satelliteCategory = getSatelliteCategory(satelliteMassKg);

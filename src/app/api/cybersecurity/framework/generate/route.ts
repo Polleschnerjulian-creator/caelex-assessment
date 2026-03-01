@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { safeJsonParseArray } from "@/lib/validations";
 import {
@@ -101,14 +102,19 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { assessmentId } = body;
+    const schema = z.object({
+      assessmentId: z.string().min(1),
+    });
 
-    if (!assessmentId) {
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "assessmentId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { assessmentId } = parsed.data;
 
     // Get assessment with requirements
     const assessment = await prisma.cybersecurityAssessment.findFirst({

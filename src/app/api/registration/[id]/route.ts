@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 import { getSafeErrorMessage } from "@/lib/validations";
 import {
   getRegistration,
@@ -86,14 +87,33 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { organizationId } = body;
 
-    if (!organizationId) {
+    const patchSchema = z.object({
+      organizationId: z.string().min(1, "Organization ID is required"),
+      objectName: z.string().optional(),
+      objectType: z.string().optional(),
+      cosparId: z.string().optional(),
+      noradId: z.string().optional(),
+      orbitType: z.string().optional(),
+      launchDate: z.string().optional(),
+      launchState: z.string().optional(),
+      launchSite: z.string().optional(),
+      operatingEntity: z.string().optional(),
+      ownerCountry: z.string().optional(),
+      nodeName: z.string().optional(),
+      registrationDate: z.string().optional(),
+      notes: z.string().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, ...allowedData } = parsed.data;
 
     // Verify user has access to organization
     const membership = await prisma.organizationMember.findFirst({
@@ -107,27 +127,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // Explicitly pick only allowed fields to prevent mass assignment
-    const allowedFields = [
-      "objectName",
-      "objectType",
-      "cosparId",
-      "noradId",
-      "orbitType",
-      "launchDate",
-      "launchState",
-      "launchSite",
-      "operatingEntity",
-      "ownerCountry",
-      "nodeName",
-      "registrationDate",
-      "notes",
-    ] as const;
-
+    // Build update data from validated fields (excluding organizationId)
     const updateData: Record<string, unknown> = {};
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
+    for (const [field, value] of Object.entries(allowedData)) {
+      if (value !== undefined) {
+        updateData[field] = value;
       }
     }
 

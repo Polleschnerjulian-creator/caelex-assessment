@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { advanceIncidentWorkflow } from "@/lib/services/incident-autopilot";
@@ -79,8 +80,7 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to get workflow",
+        error: "Failed to get workflow",
       },
       { status: 500 },
     );
@@ -99,12 +99,22 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const { event, notes } = body;
 
-    if (!event || typeof event !== "string") {
-      return NextResponse.json({ error: "Missing event" }, { status: 400 });
+    const workflowEventSchema = z.object({
+      event: z.string().min(1),
+      notes: z.string().optional(),
+    });
+
+    const body = await req.json();
+    const parsed = workflowEventSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
+
+    const { event, notes } = parsed.data;
 
     // Verify ownership
     const config = await prisma.supervisionConfig.findUnique({
@@ -141,8 +151,7 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to advance workflow",
+        error: "Failed to advance workflow",
       },
       { status: 500 },
     );

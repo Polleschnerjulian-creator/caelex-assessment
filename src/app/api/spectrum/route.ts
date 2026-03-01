@@ -5,6 +5,7 @@
  * Covers ITU Radio Regulations, frequency filings, and multi-jurisdiction licensing.
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -105,6 +106,107 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const createSchema = z.object({
+      assessmentName: z.string().optional(),
+      networkName: z.string().optional(),
+      operatorName: z.string().optional(),
+      orbitType: z.enum(["GEO", "NGSO", "LEO", "MEO", "HEO"]),
+      altitudeKm: z.number().optional(),
+      inclinationDeg: z.number().optional(),
+      satelliteCount: z.number().int().min(1).optional().default(1),
+      isConstellation: z.boolean().optional().default(false),
+      administrationCode: z.string().optional(),
+      serviceTypes: z
+        .array(
+          z.enum([
+            "FSS",
+            "MSS",
+            "BSS",
+            "EESS",
+            "SRS",
+            "RNS",
+            "AMSS",
+            "MMSS",
+            "ISL",
+          ]),
+        )
+        .min(1),
+      frequencyBands: z
+        .array(
+          z.enum([
+            "L",
+            "S",
+            "C",
+            "X",
+            "Ku",
+            "Ka",
+            "V",
+            "Q",
+            "W",
+            "O",
+            "UHF",
+            "VHF",
+          ]),
+        )
+        .min(1),
+      frequencyDetails: z.unknown().optional(),
+      requiresEPFD: z.boolean().optional().default(false),
+      primaryJurisdiction: z
+        .enum(["ITU", "FCC", "OFCOM", "BNETZA", "CEPT", "WRC"])
+        .optional(),
+      additionalJurisdictions: z
+        .array(z.enum(["ITU", "FCC", "OFCOM", "BNETZA", "CEPT", "WRC"]))
+        .optional()
+        .default([]),
+      hasExistingFilings: z.boolean().optional().default(false),
+      targetLaunchDate: z.string().optional(),
+      uplinkBands: z
+        .array(
+          z.enum([
+            "L",
+            "S",
+            "C",
+            "X",
+            "Ku",
+            "Ka",
+            "V",
+            "Q",
+            "W",
+            "O",
+            "UHF",
+            "VHF",
+          ]),
+        )
+        .optional(),
+      downlinkBands: z
+        .array(
+          z.enum([
+            "L",
+            "S",
+            "C",
+            "X",
+            "Ku",
+            "Ka",
+            "V",
+            "Q",
+            "W",
+            "O",
+            "UHF",
+            "VHF",
+          ]),
+        )
+        .optional(),
+      intersatelliteLinks: z.boolean().optional().default(false),
+    });
+
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       networkName,
@@ -112,82 +214,21 @@ export async function POST(request: Request) {
       orbitType,
       altitudeKm,
       inclinationDeg,
-      satelliteCount = 1,
-      isConstellation = false,
+      satelliteCount,
+      isConstellation,
       administrationCode,
       serviceTypes,
       frequencyBands,
       frequencyDetails,
-      requiresEPFD = false,
+      requiresEPFD,
       primaryJurisdiction,
-      additionalJurisdictions = [],
-      hasExistingFilings = false,
+      additionalJurisdictions,
+      hasExistingFilings,
       targetLaunchDate,
       uplinkBands,
       downlinkBands,
-      intersatelliteLinks = false,
-    } = body;
-
-    // Validate required fields
-    if (!serviceTypes || serviceTypes.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required field: serviceTypes" },
-        { status: 400 },
-      );
-    }
-
-    if (!frequencyBands || frequencyBands.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required field: frequencyBands" },
-        { status: 400 },
-      );
-    }
-
-    if (!orbitType) {
-      return NextResponse.json(
-        { error: "Missing required field: orbitType" },
-        { status: 400 },
-      );
-    }
-
-    // Validate service types
-    for (const st of serviceTypes) {
-      if (!validServiceTypes.includes(st)) {
-        return NextResponse.json(
-          { error: `Invalid service type: ${st}` },
-          { status: 400 },
-        );
-      }
-    }
-
-    // Validate frequency bands
-    for (const fb of frequencyBands) {
-      if (!validFrequencyBands.includes(fb)) {
-        return NextResponse.json(
-          { error: `Invalid frequency band: ${fb}` },
-          { status: 400 },
-        );
-      }
-    }
-
-    // Validate orbit type
-    if (!validOrbitTypes.includes(orbitType)) {
-      return NextResponse.json(
-        { error: `Invalid orbit type: ${orbitType}` },
-        { status: 400 },
-      );
-    }
-
-    // Validate jurisdictions
-    if (
-      primaryJurisdiction &&
-      !validJurisdictions.includes(primaryJurisdiction)
-    ) {
-      return NextResponse.json(
-        { error: `Invalid jurisdiction: ${primaryJurisdiction}` },
-        { status: 400 },
-      );
-    }
+      intersatelliteLinks,
+    } = parsed.data;
 
     // Create profile for getting applicable requirements
     const profile: SpectrumProfile = {

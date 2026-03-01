@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import {
   getSecurityLogs,
   getSecurityStats,
@@ -127,13 +128,13 @@ export async function GET(request: NextRequest) {
           { status: 403 },
         );
       }
-      const limit = parseInt(searchParams.get("limit") || "20");
+      const limit = parsePaginationLimit(searchParams.get("limit"), 20);
       const logs = await getHighRiskEvents(limit, organizationId || undefined);
       return NextResponse.json({ logs });
     }
 
     if (view === "user") {
-      const limit = parseInt(searchParams.get("limit") || "100");
+      const limit = parsePaginationLimit(searchParams.get("limit"), 100);
       const logs = await getUserSecurityLogs(effectiveUserId, limit);
       return NextResponse.json({ logs });
     }

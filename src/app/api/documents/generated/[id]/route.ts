@@ -7,6 +7,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -56,7 +57,19 @@ export async function PATCH(
     }
 
     const { id } = await params;
+
+    const generatedDocPatchSchema = z.object({
+      editedContent: z.string().min(1, "editedContent is required"),
+    });
+
     const body = await req.json();
+    const parsed = generatedDocPatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
 
     const doc = await prisma.generatedDocument.findFirst({
       where: { id, userId: session.user.id },
@@ -72,7 +85,7 @@ export async function PATCH(
     const updated = await prisma.generatedDocument.update({
       where: { id },
       data: {
-        editedContent: body.editedContent,
+        editedContent: parsed.data.editedContent,
         isEdited: true,
       },
     });

@@ -7,11 +7,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { CreateApiKeySchema, CuidSchema } from "@/lib/validations";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   getOrganizationApiKeys,
   createApiKey,
   API_SCOPES,
 } from "@/lib/services/api-key-service";
+
+const CreateApiKeyBodySchema = CreateApiKeySchema.extend({
+  organizationId: CuidSchema,
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,14 +76,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { organizationId, name, scopes, rateLimit, expiresAt } = body;
-
-    if (!organizationId) {
+    const parsed = CreateApiKeyBodySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, name, scopes, rateLimit, expiresAt } = parsed.data;
 
     // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
@@ -98,18 +106,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!name || typeof name !== "string") {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    }
-
-    if (!scopes || !Array.isArray(scopes) || scopes.length === 0) {
-      return NextResponse.json(
-        { error: "At least one scope is required" },
-        { status: 400 },
-      );
-    }
-
-    // Validate scopes
+    // Validate scopes against known scopes
     const validScopes = Object.keys(API_SCOPES);
     const invalidScopes = scopes.filter(
       (s: string) => !validScopes.includes(s) && s !== "*",
@@ -128,6 +125,24 @@ export async function POST(request: NextRequest) {
       rateLimit: rateLimit || 1000,
       expiresAt: expiresAt ? new Date(expiresAt) : undefined,
       createdById: session.user.id,
+    });
+
+    // Audit log API key creation
+    const { ipAddress, userAgent } = getRequestContext(request);
+    await logAuditEvent({
+      userId: session.user.id,
+      action: "api_key_created",
+      entityType: "api_key",
+      entityId: apiKey.id,
+      newValue: {
+        name,
+        scopes,
+        organizationId,
+        keyPrefix: apiKey.keyPrefix,
+      },
+      description: `Created API key "${name}" for organization ${organizationId}`,
+      ipAddress,
+      userAgent,
     });
 
     return NextResponse.json({

@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
 import { safeJsonParse, safeJsonParseArray } from "@/lib/validations";
@@ -23,33 +24,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const ncaSubmitSchema = z.object({
+      reportId: z.string().min(1, "Report ID is required"),
+      ncaAuthority: z.string().min(1, "NCA authority is required"),
+      submissionMethod: z.string().min(1, "Submission method is required"),
+      coverLetter: z.string().optional(),
+      attachments: z.any().optional(),
+    });
+
     const body = await request.json();
+    const parsed = ncaSubmitSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       reportId,
       ncaAuthority,
       submissionMethod,
       coverLetter,
       attachments,
-    } = body;
+    } = parsed.data;
 
-    // Validation
-    if (!reportId) {
-      return NextResponse.json(
-        { error: "Report ID is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!ncaAuthority || !NCA_AUTHORITY_INFO[ncaAuthority as NCAAuthority]) {
+    // Validate NCA authority against known authorities
+    if (!NCA_AUTHORITY_INFO[ncaAuthority as NCAAuthority]) {
       return NextResponse.json(
         { error: "Valid NCA authority is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!submissionMethod) {
-      return NextResponse.json(
-        { error: "Submission method is required" },
         { status: 400 },
       );
     }
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
       action: "NCA_REPORT_SUBMITTED",
       entityType: "nca_submission",
       entityId: submission.id,
-      description: `Submitted report to ${getNCAAuthorityLabel(ncaAuthority)} via ${getSubmissionMethodLabel(submissionMethod)}`,
+      description: `Submitted report to ${getNCAAuthorityLabel(ncaAuthority as NCAAuthority)} via ${getSubmissionMethodLabel(submissionMethod as SubmissionMethod)}`,
       newValue: {
         reportId,
         ncaAuthority,

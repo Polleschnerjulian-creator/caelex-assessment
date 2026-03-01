@@ -6,6 +6,13 @@ import {
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
+import { z } from "zod";
+
+const UpdateChecklistStatusSchema = z.object({
+  checklistId: z.string().min(1).max(100),
+  completed: z.boolean(),
+  notes: z.string().max(5000).optional().nullable(),
+});
 
 export async function GET() {
   try {
@@ -49,14 +56,16 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
-    const { checklistId, completed, notes } = await request.json();
-
-    if (!checklistId || typeof completed !== "boolean") {
+    const body = await request.json();
+    const parsed = UpdateChecklistStatusSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing checklistId or completed" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { checklistId, completed, notes } = parsed.data;
 
     // Get previous value for audit logging
     const previous = await prisma.checklistStatus.findUnique({

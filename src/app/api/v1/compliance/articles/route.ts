@@ -7,6 +7,7 @@
 
 import { NextRequest } from "next/server";
 import { withApiAuth, apiSuccess, apiError, ApiContext } from "@/lib/api-auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { loadSpaceActDataFromDisk } from "@/lib/engine.server";
 import { withCache } from "@/lib/cache.server";
 import type { Article, OperatorAbbreviation } from "@/lib/types";
@@ -41,10 +42,7 @@ export const GET = withApiAuth(
   async (request: NextRequest, _context: ApiContext) => {
     const url = new URL(request.url);
     const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
-    const limit = Math.min(
-      100,
-      Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10)),
-    );
+    const limit = parsePaginationLimit(url.searchParams.get("limit"), 20);
     const operatorType = url.searchParams.get(
       "operatorType",
     ) as OperatorAbbreviation | null;

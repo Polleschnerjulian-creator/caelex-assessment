@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -150,9 +151,22 @@ export async function PATCH(
 
     const { id: incidentId } = await params;
     const userId = session.user.id;
-    const body = await request.json();
 
-    const { ncaReferenceNumber, notifyEUSPA } = body;
+    const ncaNotificationSchema = z.object({
+      ncaReferenceNumber: z.string().optional(),
+      notifyEUSPA: z.boolean().optional(),
+    });
+
+    const body = await request.json();
+    const parsed = ncaNotificationSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { ncaReferenceNumber, notifyEUSPA } = parsed.data;
 
     // Verify ownership
     const incident = await prisma.incident.findUnique({

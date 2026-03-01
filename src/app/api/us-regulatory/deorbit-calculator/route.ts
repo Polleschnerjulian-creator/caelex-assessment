@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   calculateDeorbitRequirements,
   type DeorbitCalculation,
@@ -185,35 +186,44 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    const deorbitPostSchema = z.object({
+      orbitRegime: z
+        .enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"])
+        .optional()
+        .default("LEO"),
+      altitudeKm: z.number().optional(),
+      launchDate: z.string().optional(),
+      missionDurationYears: z.number().optional(),
+      plannedDisposalYears: z.number().optional(),
+      plannedDisposalDate: z.string().optional(),
+      hasPropulsion: z.boolean().optional().default(false),
+      hasManeuverability: z.boolean().optional().default(false),
+      isConstellation: z.boolean().optional().default(false),
+      satelliteCount: z.number().optional(),
+      isSmallSatellite: z.boolean().optional().default(false),
+    });
+
+    const parsed = deorbitPostSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
-      orbitRegime = "LEO",
+      orbitRegime,
       altitudeKm,
       launchDate,
       missionDurationYears,
       plannedDisposalYears,
       plannedDisposalDate,
-      hasPropulsion = false,
-      hasManeuverability = false,
-      isConstellation = false,
+      hasPropulsion,
+      hasManeuverability,
+      isConstellation,
       satelliteCount,
-      isSmallSatellite = false,
-    } = body;
-
-    // Validate orbit regime
-    const validOrbitRegimes = [
-      "LEO",
-      "MEO",
-      "GEO",
-      "HEO",
-      "cislunar",
-      "deep_space",
-    ];
-    if (!validOrbitRegimes.includes(orbitRegime)) {
-      return NextResponse.json(
-        { error: `Invalid orbit regime: ${orbitRegime}` },
-        { status: 400 },
-      );
-    }
+      isSmallSatellite,
+    } = parsed.data;
 
     // Parse dates
     const parsedLaunchDate = launchDate ? new Date(launchDate) : undefined;

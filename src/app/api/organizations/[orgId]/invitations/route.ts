@@ -138,17 +138,26 @@ export async function POST(request: Request, { params }: RouteParams) {
         where: { id: orgId },
         select: { name: true },
       });
-      const inviterName =
-        session.user.name || session.user.email || "A team member";
-      const orgName = org?.name || "an organization";
+      // HTML-escape user-controlled strings to prevent email HTML injection
+      const escapeHtml = (str: string): string =>
+        str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      const safeInviterName = escapeHtml(
+        session.user.name || session.user.email || "A team member",
+      );
+      const safeOrgName = escapeHtml(org?.name || "an organization");
+      const safeRole = escapeHtml(role);
 
       await sendEmail({
         to: email,
-        subject: `You've been invited to join ${orgName} on Caelex`,
+        subject: `You've been invited to join ${safeOrgName} on Caelex`,
         html: `
           <div style="font-family: sans-serif; padding: 20px; max-width: 600px;">
             <h1 style="color: #3B82F6;">You're Invited</h1>
-            <p>${inviterName} has invited you to join <strong>${orgName}</strong> on Caelex as a <strong>${role}</strong>.</p>
+            <p>${safeInviterName} has invited you to join <strong>${safeOrgName}</strong> on Caelex as a <strong>${safeRole}</strong>.</p>
             <p>Caelex helps space operators manage regulatory compliance with the EU Space Act, NIS2 Directive, and national space laws.</p>
             <div style="margin: 30px 0;">
               <a href="${inviteUrl}" style="background: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">

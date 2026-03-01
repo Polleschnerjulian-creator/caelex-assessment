@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import {
   getReportArchives,
   getReportTypeLabel,
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const scheduledReportId = searchParams.get("scheduledReportId");
     const fromDate = searchParams.get("fromDate");
     const toDate = searchParams.get("toDate");
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const { archives, total } = await getReportArchives(session.user.id, {

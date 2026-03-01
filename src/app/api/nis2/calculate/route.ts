@@ -10,6 +10,7 @@
  * Rate limited: 10 requests per hour per IP (public endpoint).
  */
 
+import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 import {
   calculateNIS2Compliance,
@@ -133,11 +134,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    // Expect { answers: NIS2AssessmentAnswers, startedAt?: number }
-    const { answers, startedAt } = body as {
-      answers: unknown;
-      startedAt?: number;
-    };
+    const calculateSchema = z.object({
+      answers: z.object({
+        sector: z.enum(["space"]).nullable().optional(),
+        spaceSubSector: z
+          .enum([
+            "ground_infrastructure",
+            "satellite_communications",
+            "spacecraft_manufacturing",
+            "launch_services",
+            "earth_observation",
+            "navigation",
+            "space_situational_awareness",
+          ])
+          .nullable()
+          .optional(),
+        entitySize: z
+          .enum(["micro", "small", "medium", "large"])
+          .nullable()
+          .optional(),
+        employeeCount: z.number().nullable().optional(),
+        annualRevenue: z.number().nullable().optional(),
+        memberStateCount: z.number().int().min(0).max(27).nullable().optional(),
+        isEUEstablished: z.boolean().nullable().optional(),
+        operatesGroundInfra: z.boolean().nullable().optional(),
+        operatesSatComms: z.boolean().nullable().optional(),
+        manufacturesSpacecraft: z.boolean().nullable().optional(),
+        providesLaunchServices: z.boolean().nullable().optional(),
+        providesEOData: z.boolean().nullable().optional(),
+        hasISO27001: z.boolean().nullable().optional(),
+        hasExistingCSIRT: z.boolean().nullable().optional(),
+        hasRiskManagement: z.boolean().nullable().optional(),
+      }),
+      startedAt: z.number().optional(),
+    });
+
+    const parsed = calculateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { answers, startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
     if (startedAt && typeof startedAt === "number") {
@@ -151,7 +191,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ─── Input Validation ───
+    // ─── Legacy Input Validation ───
     const validationError = validateNIS2Answers(answers);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });

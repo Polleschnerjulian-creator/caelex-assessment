@@ -5,6 +5,7 @@
 
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { parsePaginationLimit } from "@/lib/validations";
 import { searchAuditLogs } from "@/lib/services/audit-export-service";
 
 export async function GET(request: Request) {
@@ -25,11 +26,11 @@ export async function GET(request: Request) {
       );
     }
 
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const result = await searchAuditLogs(userId, query, {
-      limit: Math.min(limit, 100),
+      limit,
       offset,
     });
 

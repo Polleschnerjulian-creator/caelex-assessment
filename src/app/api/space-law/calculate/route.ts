@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   calculateSpaceLawCompliance,
   redactSpaceLawResultForClient,
@@ -19,125 +20,40 @@ import {
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import type { SpaceLawAssessmentAnswers } from "@/lib/space-law-types";
 
-const VALID_ACTIVITY_TYPES = [
-  "spacecraft_operation",
-  "launch_vehicle",
-  "launch_site",
-  "in_orbit_services",
-  "earth_observation",
-  "satellite_communications",
-  "space_resources",
-] as const;
+const spaceLawAnswersSchema = z.object({
+  selectedJurisdictions: z
+    .array(z.enum(SPACE_LAW_COUNTRY_CODES as unknown as [string, ...string[]]))
+    .min(1, "Select at least 1 jurisdiction")
+    .max(3, "Select at most 3 jurisdictions"),
+  activityType: z
+    .enum([
+      "spacecraft_operation",
+      "launch_vehicle",
+      "launch_site",
+      "in_orbit_services",
+      "earth_observation",
+      "satellite_communications",
+      "space_resources",
+    ])
+    .nullable()
+    .optional(),
+  entityNationality: z
+    .enum(["domestic", "eu_other", "non_eu", "esa_member"])
+    .nullable()
+    .optional(),
+  entitySize: z.enum(["small", "medium", "large"]).nullable().optional(),
+  primaryOrbit: z.enum(["LEO", "MEO", "GEO", "beyond"]).nullable().optional(),
+  constellationSize: z.number().min(0).nullable().optional(),
+  licensingStatus: z
+    .enum(["new_application", "existing_license", "renewal", "pre_assessment"])
+    .nullable()
+    .optional(),
+});
 
-const VALID_ENTITY_NATIONALITIES = [
-  "domestic",
-  "eu_other",
-  "non_eu",
-  "esa_member",
-] as const;
-
-const VALID_ENTITY_SIZES = ["small", "medium", "large"] as const;
-
-const VALID_ORBITS = ["LEO", "MEO", "GEO", "beyond"] as const;
-
-const VALID_LICENSING_STATUSES = [
-  "new_application",
-  "existing_license",
-  "renewal",
-  "pre_assessment",
-] as const;
-
-function validateSpaceLawAnswers(answers: unknown): string | null {
-  if (!answers || typeof answers !== "object") {
-    return "Invalid request body: expected an object";
-  }
-
-  const a = answers as Record<string, unknown>;
-
-  // selectedJurisdictions: required, array of valid country codes, 1-3
-  if (!Array.isArray(a.selectedJurisdictions)) {
-    return "selectedJurisdictions must be an array";
-  }
-  if (
-    a.selectedJurisdictions.length < 1 ||
-    a.selectedJurisdictions.length > 3
-  ) {
-    return "Select 1 to 3 jurisdictions";
-  }
-  for (const code of a.selectedJurisdictions) {
-    if (
-      !SPACE_LAW_COUNTRY_CODES.includes(
-        code as (typeof SPACE_LAW_COUNTRY_CODES)[number],
-      )
-    ) {
-      return `Invalid jurisdiction code: ${code}`;
-    }
-  }
-
-  // activityType: optional but if present must be valid
-  if (
-    a.activityType !== null &&
-    a.activityType !== undefined &&
-    !VALID_ACTIVITY_TYPES.includes(
-      a.activityType as (typeof VALID_ACTIVITY_TYPES)[number],
-    )
-  ) {
-    return "Invalid activityType";
-  }
-
-  // entityNationality
-  if (
-    a.entityNationality !== null &&
-    a.entityNationality !== undefined &&
-    !VALID_ENTITY_NATIONALITIES.includes(
-      a.entityNationality as (typeof VALID_ENTITY_NATIONALITIES)[number],
-    )
-  ) {
-    return "Invalid entityNationality";
-  }
-
-  // entitySize
-  if (
-    a.entitySize !== null &&
-    a.entitySize !== undefined &&
-    !VALID_ENTITY_SIZES.includes(
-      a.entitySize as (typeof VALID_ENTITY_SIZES)[number],
-    )
-  ) {
-    return "Invalid entitySize";
-  }
-
-  // primaryOrbit
-  if (
-    a.primaryOrbit !== null &&
-    a.primaryOrbit !== undefined &&
-    !VALID_ORBITS.includes(a.primaryOrbit as (typeof VALID_ORBITS)[number])
-  ) {
-    return "Invalid primaryOrbit";
-  }
-
-  // constellationSize
-  if (
-    a.constellationSize !== null &&
-    a.constellationSize !== undefined &&
-    (typeof a.constellationSize !== "number" || a.constellationSize < 0)
-  ) {
-    return "Invalid constellationSize";
-  }
-
-  // licensingStatus
-  if (
-    a.licensingStatus !== null &&
-    a.licensingStatus !== undefined &&
-    !VALID_LICENSING_STATUSES.includes(
-      a.licensingStatus as (typeof VALID_LICENSING_STATUSES)[number],
-    )
-  ) {
-    return "Invalid licensingStatus";
-  }
-
-  return null;
-}
+const spaceLawBodySchema = z.object({
+  answers: spaceLawAnswersSchema,
+  startedAt: z.number().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -157,10 +73,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { answers, startedAt } = body as {
-      answers: unknown;
-      startedAt?: number;
-    };
+    const parsed = spaceLawBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { answers, startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
     if (startedAt && typeof startedAt === "number") {
@@ -171,12 +92,6 @@ export async function POST(request: NextRequest) {
           { status: 429 },
         );
       }
-    }
-
-    // ─── Validation ───
-    const validationError = validateSpaceLawAnswers(answers);
-    if (validationError) {
-      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     // ─── Calculate ───

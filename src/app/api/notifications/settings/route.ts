@@ -11,6 +11,7 @@ import {
   updateNotificationPreferences,
   NOTIFICATION_CATEGORIES,
 } from "@/lib/services/notification-service";
+import { NotificationSettingsSchema } from "@/lib/validations";
 
 export async function GET() {
   try {
@@ -55,6 +56,14 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
+    const parsed = NotificationSettingsSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       emailEnabled,
       pushEnabled,
@@ -65,30 +74,7 @@ export async function PUT(request: Request) {
       quietHoursTimezone,
       digestEnabled,
       digestFrequency,
-    } = body;
-
-    // Validate quiet hours format if provided
-    if (quietHoursStart && !/^\d{2}:\d{2}$/.test(quietHoursStart)) {
-      return NextResponse.json(
-        { error: "quietHoursStart must be in HH:MM format" },
-        { status: 400 },
-      );
-    }
-
-    if (quietHoursEnd && !/^\d{2}:\d{2}$/.test(quietHoursEnd)) {
-      return NextResponse.json(
-        { error: "quietHoursEnd must be in HH:MM format" },
-        { status: 400 },
-      );
-    }
-
-    // Validate digest frequency
-    if (digestFrequency && !["daily", "weekly"].includes(digestFrequency)) {
-      return NextResponse.json(
-        { error: "digestFrequency must be 'daily' or 'weekly'" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const settings = await updateNotificationPreferences(session.user.id, {
       emailEnabled,

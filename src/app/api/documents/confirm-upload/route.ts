@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -45,7 +46,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: ConfirmUploadRequest = await request.json();
+    const confirmUploadSchema = z.object({
+      fileKey: z.string().min(1, "fileKey is required"),
+      name: z.string().min(1, "name is required"),
+      description: z.string().optional(),
+      category: z.string().min(1, "category is required"),
+      subcategory: z.string().optional(),
+      moduleType: z.string().optional(),
+      issueDate: z.string().optional(),
+      expiryDate: z.string().optional(),
+      regulatoryRef: z.string().optional(),
+      accessLevel: z
+        .enum([
+          "PUBLIC",
+          "INTERNAL",
+          "CONFIDENTIAL",
+          "RESTRICTED",
+          "TOP_SECRET",
+        ])
+        .optional()
+        .default("INTERNAL"),
+      tags: z.array(z.string()).optional().default([]),
+      organizationId: z.string().optional(),
+    });
+
+    const body = await request.json();
+    const parsed = confirmUploadSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       fileKey,
       name,
@@ -56,17 +89,9 @@ export async function POST(request: NextRequest) {
       issueDate,
       expiryDate,
       regulatoryRef,
-      accessLevel = "INTERNAL",
-      tags = [],
-    } = body;
-
-    // Validate required fields
-    if (!fileKey || !name || !category) {
-      return NextResponse.json(
-        { error: "Missing required fields: fileKey, name, category" },
-        { status: 400 },
-      );
-    }
+      accessLevel,
+      tags,
+    } = parsed.data;
 
     // Verify file exists in R2
     const exists = await fileExists(fileKey);

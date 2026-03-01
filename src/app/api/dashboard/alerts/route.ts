@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { getDashboardAlerts } from "@/lib/services";
 
 export async function GET(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 50);
+    const limit = parsePaginationLimit(searchParams.get("limit"), 10, 50);
 
     const alerts = await getDashboardAlerts(session.user.id, limit);
 

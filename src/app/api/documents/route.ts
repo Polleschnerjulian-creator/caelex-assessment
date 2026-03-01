@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { prisma } from "@/lib/prisma";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import crypto from "crypto";
@@ -59,7 +61,7 @@ export async function GET(req: Request) {
     const expiringWithinDays = searchParams.get("expiringWithinDays");
     const expired = searchParams.get("expired");
     const search = searchParams.get("search");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Resolve organization context for multi-tenant scoping
@@ -145,24 +147,102 @@ export async function POST(req: Request) {
     const formData = await req.formData();
 
     // Extract metadata
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string | null;
-    const category = formData.get("category") as string;
-    const subcategory = formData.get("subcategory") as string | null;
-    const moduleType = formData.get("moduleType") as string | null;
-    const issueDate = formData.get("issueDate") as string | null;
-    const expiryDate = formData.get("expiryDate") as string | null;
-    const regulatoryRef = formData.get("regulatoryRef") as string | null;
-    const accessLevel = (formData.get("accessLevel") as string) || "INTERNAL";
-    const tags = formData.get("tags") as string | null;
+    const formDataSchema = z.object({
+      name: z.string().min(1, "Name is required"),
+      description: z.string().nullable().optional(),
+      category: z.enum([
+        "LICENSE",
+        "PERMIT",
+        "AUTHORIZATION",
+        "CERTIFICATE",
+        "ISO_CERTIFICATE",
+        "SECURITY_CERT",
+        "INSURANCE_POLICY",
+        "INSURANCE_CERT",
+        "COMPLIANCE_REPORT",
+        "AUDIT_REPORT",
+        "INCIDENT_REPORT",
+        "ANNUAL_REPORT",
+        "TECHNICAL_SPEC",
+        "DESIGN_DOC",
+        "TEST_REPORT",
+        "SAFETY_ANALYSIS",
+        "CONTRACT",
+        "NDA",
+        "SLA",
+        "REGULATORY_FILING",
+        "CORRESPONDENCE",
+        "NOTIFICATION",
+        "POLICY",
+        "PROCEDURE",
+        "TRAINING",
+        "OTHER",
+      ]),
+      subcategory: z.string().nullable().optional(),
+      moduleType: z
+        .enum([
+          "AUTHORIZATION",
+          "DEBRIS",
+          "INSURANCE",
+          "CYBERSECURITY",
+          "ENVIRONMENTAL",
+          "SUPERVISION",
+          "REGISTRATION",
+          "TIMELINE",
+          "DOCUMENTS",
+        ])
+        .nullable()
+        .optional(),
+      issueDate: z.string().nullable().optional(),
+      expiryDate: z.string().nullable().optional(),
+      regulatoryRef: z.string().nullable().optional(),
+      accessLevel: z
+        .enum([
+          "PUBLIC",
+          "INTERNAL",
+          "CONFIDENTIAL",
+          "RESTRICTED",
+          "TOP_SECRET",
+        ])
+        .optional()
+        .default("INTERNAL"),
+      tags: z.string().nullable().optional(),
+    });
+
+    const rawFields = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string | null,
+      category: formData.get("category") as string,
+      subcategory: formData.get("subcategory") as string | null,
+      moduleType: formData.get("moduleType") as string | null,
+      issueDate: formData.get("issueDate") as string | null,
+      expiryDate: formData.get("expiryDate") as string | null,
+      regulatoryRef: formData.get("regulatoryRef") as string | null,
+      accessLevel: (formData.get("accessLevel") as string) || "INTERNAL",
+      tags: formData.get("tags") as string | null,
+    };
     const file = formData.get("file") as File | null;
 
-    if (!name || !category) {
+    const parsed = formDataSchema.safeParse(rawFields);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields: name, category" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const {
+      name,
+      description,
+      category,
+      subcategory,
+      moduleType,
+      issueDate,
+      expiryDate,
+      regulatoryRef,
+      accessLevel,
+      tags,
+    } = parsed.data;
 
     // If no file, create document record without storage
     let fileName = "";

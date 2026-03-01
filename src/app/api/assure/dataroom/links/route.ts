@@ -9,7 +9,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
-import { randomBytes, createHash } from "crypto";
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -160,10 +161,10 @@ export async function POST(request: Request) {
     // Generate crypto token
     const token = randomBytes(32).toString("hex");
 
-    // Hash PIN if provided
+    // Hash PIN with bcrypt (not SHA-256 — PINs are short and need slow hashing)
     let hashedPin: string | null = null;
     if (data.pin) {
-      hashedPin = createHash("sha256").update(data.pin).digest("hex");
+      hashedPin = await bcrypt.hash(data.pin, 12);
     }
 
     const link = await prisma.assureDataRoomLink.create({

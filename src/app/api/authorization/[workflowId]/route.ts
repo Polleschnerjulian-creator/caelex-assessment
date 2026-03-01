@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   logAuditEvent,
   getRequestContext,
@@ -63,9 +64,42 @@ export async function PUT(
 
     const { workflowId } = await params;
     const userId = session.user.id;
-    const body = await request.json();
 
-    const { status, notes, targetSubmission } = body;
+    const VALID_STATUSES = [
+      "not_started",
+      "in_progress",
+      "submitted",
+      "under_review",
+      "approved",
+      "rejected",
+    ] as const;
+
+    // Users can only move forward through the workflow; admin-only states are excluded
+    const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+      not_started: ["in_progress"],
+      in_progress: ["submitted"],
+      submitted: ["in_progress"], // allow retraction before NCA review
+      under_review: [], // NCA-controlled, not user-settable
+      approved: [], // terminal
+      rejected: ["in_progress"], // allow restart after rejection
+    };
+
+    const updateWorkflowSchema = z.object({
+      status: z.enum(VALID_STATUSES).optional(),
+      notes: z.string().optional(),
+      targetSubmission: z.string().nullable().optional(),
+    });
+
+    const body = await request.json();
+    const parsed = updateWorkflowSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { status, notes, targetSubmission } = parsed.data;
 
     // Get existing workflow
     const existingWorkflow = await prisma.authorizationWorkflow.findFirst({
@@ -80,6 +114,19 @@ export async function PUT(
         { error: "Workflow not found" },
         { status: 404 },
       );
+    }
+
+    // Validate status transition
+    if (status !== undefined && status !== existingWorkflow.status) {
+      const allowed = ALLOWED_TRANSITIONS[existingWorkflow.status] ?? [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json(
+          {
+            error: `Cannot transition from "${existingWorkflow.status}" to "${status}"`,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // Build update data

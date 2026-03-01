@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   logAuditEvent,
   getRequestContext,
@@ -60,24 +61,33 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user.id;
+
+    const createWorkflowSchema = z.object({
+      operatorType: z.string().min(1),
+      establishmentCountry: z.string().optional(),
+      launchCountry: z.string().optional(),
+      isThirdCountry: z.boolean().optional().default(false),
+      targetSubmission: z.string().optional(),
+    });
+
     const body = await request.json();
+    const parsed = createWorkflowSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
 
     const {
       operatorType,
       establishmentCountry,
       launchCountry,
-      isThirdCountry = false,
+      isThirdCountry,
       targetSubmission,
-    } = body;
+    } = parsed.data;
 
     // Validate required fields
-    if (!operatorType) {
-      return NextResponse.json(
-        { error: "operatorType is required" },
-        { status: 400 },
-      );
-    }
-
     if (!isThirdCountry && !establishmentCountry) {
       return NextResponse.json(
         { error: "establishmentCountry is required for EU operators" },
@@ -88,15 +98,15 @@ export async function POST(request: Request) {
     // Determine NCA
     const ncaDetermination = determineNCA(
       operatorType,
-      establishmentCountry,
-      launchCountry,
+      establishmentCountry ?? null,
+      launchCountry ?? null,
       isThirdCountry,
     );
 
     // Get required documents for this operator type
     const requiredDocs = getRequiredDocuments(operatorType);
 
-    // Create workflow with documents in a transaction
+    // Create workflow + documents + update user profile atomically
     const workflow = await prisma.$transaction(async (tx) => {
       // Create the workflow
       const newWorkflow = await tx.authorizationWorkflow.create({
@@ -136,17 +146,17 @@ export async function POST(request: Request) {
         ),
       );
 
-      return { ...newWorkflow, documents };
-    });
+      // Update user profile (inside transaction for atomicity)
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          operatorType,
+          establishmentCountry,
+          isThirdCountry,
+        },
+      });
 
-    // Update user profile
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        operatorType,
-        establishmentCountry,
-        isThirdCountry,
-      },
+      return { ...newWorkflow, documents };
     });
 
     // Log audit event

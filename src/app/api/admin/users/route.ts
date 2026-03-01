@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { parsePaginationLimit } from "@/lib/validations";
 import type { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
@@ -25,10 +26,7 @@ export async function GET(request: Request) {
     const isActiveParam = searchParams.get("isActive");
     const isActive =
       isActiveParam !== null ? isActiveParam === "true" : undefined;
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || "50", 10),
-      100,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const where: Prisma.UserWhereInput = {

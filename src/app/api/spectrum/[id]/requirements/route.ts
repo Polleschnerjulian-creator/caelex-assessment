@@ -4,6 +4,7 @@
  * Handles GET and PUT for individual requirement statuses within a spectrum assessment.
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -128,24 +129,39 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { updates } = body as {
-      updates: Array<{
-        requirementId: string;
-        status?: ComplianceStatus;
-        notes?: string;
-        evidenceNotes?: string;
-        targetDate?: string;
-        responsibleParty?: string;
-        filingReference?: string;
-      }>;
-    };
+    const requirementsSchema = z.object({
+      updates: z
+        .array(
+          z.object({
+            requirementId: z.string().min(1),
+            status: z
+              .enum([
+                "compliant",
+                "partial",
+                "non_compliant",
+                "not_assessed",
+                "not_applicable",
+              ])
+              .optional(),
+            notes: z.string().optional(),
+            evidenceNotes: z.string().optional(),
+            targetDate: z.string().optional(),
+            responsibleParty: z.string().optional(),
+            filingReference: z.string().optional(),
+          }),
+        )
+        .min(1),
+    });
 
-    if (!updates || !Array.isArray(updates)) {
+    const parsed = requirementsSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required field: updates array" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { updates } = parsed.data;
 
     // Verify ownership
     const assessment = await prisma.spectrumAssessment.findFirst({
@@ -166,23 +182,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
       if (!validRequirementIds.has(update.requirementId)) {
         return NextResponse.json(
           { error: `Invalid requirement ID: ${update.requirementId}` },
-          { status: 400 },
-        );
-      }
-    }
-
-    // Validate status values
-    const validStatuses: ComplianceStatus[] = [
-      "compliant",
-      "partial",
-      "non_compliant",
-      "not_assessed",
-      "not_applicable",
-    ];
-    for (const update of updates) {
-      if (update.status && !validStatuses.includes(update.status)) {
-        return NextResponse.json(
-          { error: `Invalid status: ${update.status}` },
           { status: 400 },
         );
       }

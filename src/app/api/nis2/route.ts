@@ -7,6 +7,7 @@
  * POST /api/nis2 — Create a new NIS2 assessment
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -87,6 +88,44 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const createSchema = z.object({
+      assessmentName: z.string().optional(),
+      sector: z.string().optional(),
+      subSector: z
+        .enum([
+          "ground_infrastructure",
+          "satellite_communications",
+          "spacecraft_manufacturing",
+          "launch_services",
+          "earth_observation",
+          "navigation",
+          "space_situational_awareness",
+        ])
+        .nullable()
+        .optional(),
+      entitySize: z.enum(["micro", "small", "medium", "large"]),
+      employeeCount: z.number().nullable().optional(),
+      annualRevenue: z.number().nullable().optional(),
+      memberStateCount: z.number().int().min(0).max(27).optional().default(1),
+      isEUEstablished: z.boolean().optional().default(true),
+      operatesGroundInfra: z.boolean().optional().default(false),
+      operatesSatComms: z.boolean().optional().default(false),
+      manufacturesSpacecraft: z.boolean().optional().default(false),
+      providesLaunchServices: z.boolean().optional().default(false),
+      providesEOData: z.boolean().optional().default(false),
+      hasISO27001: z.boolean().optional().default(false),
+      hasExistingCSIRT: z.boolean().optional().default(false),
+      hasRiskManagement: z.boolean().optional().default(false),
+    });
+
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       sector,
@@ -94,27 +133,17 @@ export async function POST(request: Request) {
       entitySize,
       employeeCount,
       annualRevenue,
-      memberStateCount = 1,
-      isEUEstablished = true,
-      operatesGroundInfra = false,
-      operatesSatComms = false,
-      manufacturesSpacecraft = false,
-      providesLaunchServices = false,
-      providesEOData = false,
-      hasISO27001 = false,
-      hasExistingCSIRT = false,
-      hasRiskManagement = false,
-    } = body;
-
-    // Validate required fields
-    if (!entitySize) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields: entitySize",
-        },
-        { status: 400 },
-      );
-    }
+      memberStateCount,
+      isEUEstablished,
+      operatesGroundInfra,
+      operatesSatComms,
+      manufacturesSpacecraft,
+      providesLaunchServices,
+      providesEOData,
+      hasISO27001,
+      hasExistingCSIRT,
+      hasRiskManagement,
+    } = parsed.data;
 
     // Build answers for classification — Caelex is space-only
     const answers: NIS2AssessmentAnswers = {
@@ -195,10 +224,11 @@ export async function POST(request: Request) {
         complianceResult.applicableRequirements,
         answers,
       );
-      let autoAssessedCount = 0;
-      for (const auto of autoAssessments) {
-        if (auto.suggestedStatus === "partial" && auto.reason) {
-          const result = await prisma.nIS2RequirementStatus.updateMany({
+      // Batch auto-assess requirements (avoid N+1 sequential updates)
+      const autoUpdates = autoAssessments
+        .filter((auto) => auto.suggestedStatus === "partial" && auto.reason)
+        .map((auto) =>
+          prisma.nIS2RequirementStatus.updateMany({
             where: {
               assessmentId: assessment.id,
               requirementId: auto.requirementId,
@@ -208,10 +238,10 @@ export async function POST(request: Request) {
               status: auto.suggestedStatus,
               notes: auto.reason,
             },
-          });
-          if (result.count > 0) autoAssessedCount++;
-        }
-      }
+          }),
+        );
+      const autoResults = await Promise.all(autoUpdates);
+      const autoAssessedCount = autoResults.filter((r) => r.count > 0).length;
 
       // Recalculate maturity score after auto-assessment
       if (autoAssessedCount > 0) {

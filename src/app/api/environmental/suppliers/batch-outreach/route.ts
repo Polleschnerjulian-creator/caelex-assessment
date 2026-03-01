@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 import { sendBatchOutreach } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 
@@ -19,14 +20,20 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { assessmentId, expirationDays } = body;
+    const schema = z.object({
+      assessmentId: z.string().min(1),
+      expirationDays: z.number().optional(),
+    });
 
-    if (!assessmentId) {
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "assessmentId required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { assessmentId, expirationDays } = parsed.data;
 
     // Verify assessment ownership
     const assessment = await prisma.environmentalAssessment.findFirst({

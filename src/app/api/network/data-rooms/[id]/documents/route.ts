@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
@@ -92,22 +93,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+
+    const schema = z.object({
+      organizationId: z.string().min(1),
+      documentId: z.string().min(1),
+      note: z.string().optional(),
+    });
+
     const body = await request.json();
-    const { organizationId, documentId, note } = body;
-
-    if (!organizationId) {
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    if (!documentId) {
-      return NextResponse.json(
-        { error: "documentId is required" },
-        { status: 400 },
-      );
-    }
+    const { organizationId, documentId, note } = parsed.data;
 
     // Verify membership and permissions
     const member = await prisma.organizationMember.findFirst({

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   calculateInsuranceComplianceScore,
@@ -82,6 +83,31 @@ export async function PATCH(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentId: z.string().min(1),
+      insuranceType: z.string().min(1),
+      status: z.string().optional(),
+      policyNumber: z.string().optional(),
+      insurer: z.string().optional(),
+      broker: z.string().optional(),
+      coverageAmount: z.number().optional(),
+      premium: z.number().optional(),
+      deductible: z.number().optional(),
+      effectiveDate: z.string().nullable().optional(),
+      expirationDate: z.string().nullable().optional(),
+      renewalDate: z.string().nullable().optional(),
+      notes: z.string().optional(),
+      quoteNotes: z.string().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentId,
       insuranceType,
@@ -97,16 +123,7 @@ export async function PATCH(request: Request) {
       renewalDate,
       notes,
       quoteNotes,
-    } = body;
-
-    if (!assessmentId || !insuranceType) {
-      return NextResponse.json(
-        {
-          error: "assessmentId and insuranceType are required",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify assessment ownership
     const assessment = await prisma.insuranceAssessment.findFirst({

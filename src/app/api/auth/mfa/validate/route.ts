@@ -23,6 +23,7 @@ import {
 } from "@/lib/login-security.server";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { isTotpCodeUsed, markTotpCodeUsed } from "@/lib/mfa.server";
 
 const validateSchema = z.object({
   code: z.string().min(6).max(10), // 6 for TOTP, 8 for backup code
@@ -33,17 +34,6 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = isProduction
   ? "__Secure-authjs.session-token"
   : "authjs.session-token";
-
-// TOTP replay protection — track recently used codes
-const usedTotpCodes = new Map<string, number>();
-setInterval(() => {
-  const cutoff = Date.now() - 60_000;
-  for (const [key, timestamp] of usedTotpCodes) {
-    if (timestamp < cutoff) {
-      usedTotpCodes.delete(key);
-    }
-  }
-}, 30_000);
 
 export async function POST(request: Request) {
   try {
@@ -250,13 +240,12 @@ export async function POST(request: Request) {
         );
       }
 
-      // Step 5c: Replay protection
+      // Step 5c: Replay protection (Redis-backed, distributed across instances)
       if (isValid) {
-        const replayKey = `${userId}:${code}`;
-        if (usedTotpCodes.has(replayKey)) {
+        if (await isTotpCodeUsed(userId, code)) {
           isValid = false;
         } else {
-          usedTotpCodes.set(replayKey, Date.now());
+          await markTotpCodeUsed(userId, code);
         }
       }
     }
@@ -372,9 +361,8 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error("[MFA] Unhandled error:", error);
-    const detail = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: `MFA validation failed: ${detail}` },
+      { error: "MFA validation failed" },
       { status: 500 },
     );
   }

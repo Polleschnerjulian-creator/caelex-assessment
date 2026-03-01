@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import {
@@ -36,25 +37,25 @@ export async function POST(request: NextRequest) {
       return createRateLimitResponse(rateLimitResult);
     }
 
+    const demoSchema = z.object({
+      name: z.string().min(1, "Name is required").max(200),
+      email: z.string().email("Invalid email format").max(320),
+      company: z.string().max(200).optional(),
+      role: z.string().max(200).optional(),
+      message: z.string().max(5000).optional(),
+    });
+
     const body = await request.json();
-    const { name, email, company, role, message } = body;
+    const parsed = demoSchema.safeParse(body);
 
-    // Validate required fields
-    if (!name || !email) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields: name and email are required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
-    }
+    const { name, email, company, role, message } = parsed.data;
 
     // Create demo request with 48h follow-up
     const followUpAt = new Date(Date.now() + 48 * 60 * 60 * 1000);

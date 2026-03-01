@@ -7,11 +7,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { CreateWebhookSchema } from "@/lib/validations";
 import {
   getOrganizationWebhooks,
   createWebhook,
   WEBHOOK_EVENTS,
 } from "@/lib/services/webhook-service";
+
+const CreateWebhookBodySchema = CreateWebhookSchema.extend({
+  headers: z.record(z.string(), z.string().max(500)).optional(),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +62,7 @@ export async function GET(request: NextRequest) {
     const sanitizedWebhooks = webhooks.map((wh) => ({
       ...wh,
       secret: undefined,
-      secretPrefix: wh.secret.slice(0, 12) + "...",
+      secretPrefix: "..." + wh.secret.slice(-4),
     }));
 
     return NextResponse.json({
@@ -85,14 +91,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { organizationId, name, url, events, headers } = body;
-
-    if (!organizationId) {
+    const parsed = CreateWebhookBodySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, name, url, events, headers } = parsed.data;
 
     // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
@@ -114,40 +121,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!name || typeof name !== "string") {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    }
-
-    if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
-    }
-
-    // Validate URL
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid URL format" },
-        { status: 400 },
-      );
-    }
-
-    // Must be HTTPS in production
-    if (process.env.NODE_ENV === "production" && !url.startsWith("https://")) {
-      return NextResponse.json(
-        { error: "Webhook URL must use HTTPS" },
-        { status: 400 },
-      );
-    }
-
-    if (!events || !Array.isArray(events) || events.length === 0) {
-      return NextResponse.json(
-        { error: "At least one event is required" },
-        { status: 400 },
-      );
-    }
-
-    // Validate events
+    // Validate events against known events
     const validEvents = Object.keys(WEBHOOK_EVENTS);
     const invalidEvents = events.filter(
       (e: string) => !validEvents.includes(e) && e !== "*",

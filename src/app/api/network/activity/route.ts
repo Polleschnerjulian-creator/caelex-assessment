@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getActivities } from "@/lib/services/activity-service";
+import { parsePaginationLimit } from "@/lib/validations";
 
 const NETWORK_ENTITY_TYPES = [
   "stakeholder_engagement",
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const organizationId = searchParams.get("organizationId");
     const entityType = searchParams.get("entityType");
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
 
     if (!organizationId) {
       return NextResponse.json(

@@ -9,7 +9,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAILS = ["julian@caelex.eu", "cs@ahrensandco.de"];
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS
+  ? process.env.ADMIN_EMAILS.split(",")
+      .map((e) => e.trim())
+      .filter(Boolean)
+  : ["julian@caelex.eu", "cs@ahrensandco.de"];
 
 async function main() {
   console.log(`\n🔐 Setting admin accounts...\n`);

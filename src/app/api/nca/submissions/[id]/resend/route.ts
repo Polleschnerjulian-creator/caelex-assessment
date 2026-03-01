@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
 import { safeJsonParse, safeJsonParseArray } from "@/lib/validations";
@@ -28,8 +29,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+
+    const resendSchema = z.object({
+      coverLetter: z.string().optional(),
+      additionalAttachments: z.any().optional(),
+    });
+
     const body = await request.json();
-    const { coverLetter, additionalAttachments } = body;
+    const parsed = resendSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { coverLetter, additionalAttachments } = parsed.data;
 
     // Check if original submission exists
     const original = await getSubmission(id, session.user.id);

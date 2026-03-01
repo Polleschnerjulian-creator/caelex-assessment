@@ -147,8 +147,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Digital Twin scenarios POST error:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to run simulation";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to run simulation" },
+      { status: 500 },
+    );
   }
 }

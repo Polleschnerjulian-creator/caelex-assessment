@@ -17,7 +17,16 @@ export async function GET() {
       include: {
         organization: {
           include: {
-            subscription: true,
+            subscription: {
+              select: {
+                id: true,
+                plan: true,
+                status: true,
+                currentPeriodStart: true,
+                currentPeriodEnd: true,
+                cancelAtPeriodEnd: true,
+              },
+            },
           },
         },
       },

@@ -128,13 +128,21 @@ export async function GET(request: Request, { params }: RouteParams) {
     const lastActiveDates: Record<string, Date | null> = {};
 
     if (studentIds.length > 0) {
-      for (const studentId of studentIds) {
-        const lastCompletion = await prisma.academyLessonCompletion.findFirst({
-          where: { userId: studentId },
-          orderBy: { completedAt: "desc" },
-          select: { completedAt: true },
-        });
-        lastActiveDates[studentId] = lastCompletion?.completedAt ?? null;
+      // Batch query: get latest completion per student in one query
+      const latestCompletions = await prisma.academyLessonCompletion.findMany({
+        where: { userId: { in: studentIds } },
+        orderBy: { completedAt: "desc" },
+        distinct: ["userId"],
+        select: { userId: true, completedAt: true },
+      });
+      for (const c of latestCompletions) {
+        lastActiveDates[c.userId] = c.completedAt;
+      }
+      // Fill in nulls for students with no completions
+      for (const id of studentIds) {
+        if (!(id in lastActiveDates)) {
+          lastActiveDates[id] = null;
+        }
       }
     }
 

@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { UpdateWebhookSchema, CuidSchema } from "@/lib/validations";
 import {
   getWebhookById,
   updateWebhook,
@@ -16,6 +18,13 @@ import {
   testWebhook,
   getWebhookStats,
 } from "@/lib/services/webhook-service";
+
+const PatchWebhookBodySchema = UpdateWebhookSchema.extend({
+  organizationId: CuidSchema,
+  headers: z.record(z.string(), z.string().max(500)).optional(),
+  regenerateSecret: z.boolean().optional(),
+  test: z.boolean().optional(),
+});
 
 export async function GET(
   request: NextRequest,
@@ -68,7 +77,7 @@ export async function GET(
     const sanitizedWebhook = {
       ...webhook,
       secret: undefined,
-      secretPrefix: webhook.secret.slice(0, 12) + "...",
+      secretPrefix: "..." + webhook.secret.slice(-4),
     };
 
     let stats = null;
@@ -101,6 +110,14 @@ export async function PATCH(
     }
 
     const body = await request.json();
+    const parsed = PatchWebhookBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       organizationId,
       name,
@@ -110,14 +127,7 @@ export async function PATCH(
       isActive,
       regenerateSecret,
       test,
-    } = body;
-
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: "Organization ID is required" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
@@ -168,18 +178,7 @@ export async function PATCH(
     } = {};
 
     if (name !== undefined) updates.name = name;
-    if (url !== undefined) {
-      // Validate URL
-      try {
-        new URL(url);
-      } catch {
-        return NextResponse.json(
-          { error: "Invalid URL format" },
-          { status: 400 },
-        );
-      }
-      updates.url = url;
-    }
+    if (url !== undefined) updates.url = url;
     if (events !== undefined) updates.events = events;
     if (headers !== undefined) updates.headers = headers;
     if (isActive !== undefined) updates.isActive = isActive;
@@ -190,7 +189,7 @@ export async function PATCH(
       webhook: {
         ...webhook,
         secret: undefined,
-        secretPrefix: webhook.secret.slice(0, 12) + "...",
+        secretPrefix: "..." + webhook.secret.slice(-4),
       },
     });
   } catch (error) {

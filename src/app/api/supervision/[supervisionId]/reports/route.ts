@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePaginationLimit } from "@/lib/validations";
 
 interface RouteParams {
   params: Promise<{
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Optional filters
     const reportType = searchParams.get("type");
     const status = searchParams.get("status");
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     // Verify supervision exists

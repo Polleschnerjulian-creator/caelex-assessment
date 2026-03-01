@@ -51,7 +51,7 @@ export const GET = withApiAuth(
     // Deduct for incomplete workflows
     const totalWorkflows = workflowStats.reduce((sum, s) => sum + s._count, 0);
     const completedWorkflows =
-      workflowStats.find((s) => s.status === "APPROVED")?._count || 0;
+      workflowStats.find((s) => s.status === "approved")?._count || 0;
     if (totalWorkflows > 0) {
       const workflowCompletion = completedWorkflows / totalWorkflows;
       score -= Math.round((1 - workflowCompletion) * 30);

@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
 import {
@@ -68,7 +69,28 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+
+    const scheduledReportPatchSchema = z.object({
+      name: z.string().min(1).optional(),
+      schedule: z.string().optional(),
+      timezone: z.string().optional(),
+      recipients: z.array(z.string()).optional(),
+      sendToSelf: z.boolean().optional(),
+      format: z.string().optional(),
+      includeCharts: z.boolean().optional(),
+      filters: z.any().optional(),
+      isActive: z.boolean().optional(),
+    });
+
     const body = await request.json();
+    const parsed = scheduledReportPatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       name,
       schedule,
@@ -79,7 +101,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       includeCharts,
       filters,
       isActive,
-    } = body;
+    } = parsed.data;
 
     // Check if report exists
     const existing = await getScheduledReport(id, session.user.id);

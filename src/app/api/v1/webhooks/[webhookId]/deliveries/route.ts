@@ -6,12 +6,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSafeErrorMessage } from "@/lib/validations";
+import { z } from "zod";
+import { getSafeErrorMessage, CuidSchema } from "@/lib/validations";
 import {
   getWebhookById,
   getWebhookDeliveries,
   retryDelivery,
 } from "@/lib/services/webhook-service";
+
+const RetryDeliverySchema = z.object({
+  organizationId: CuidSchema,
+  deliveryId: CuidSchema,
+  action: z.enum(["retry"]),
+});
 
 export async function GET(
   request: NextRequest,
@@ -97,14 +104,15 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { organizationId, deliveryId, action } = body;
-
-    if (!organizationId) {
+    const parsed = RetryDeliverySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, deliveryId } = parsed.data;
 
     // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({
@@ -132,12 +140,8 @@ export async function POST(
       return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
     }
 
-    if (action === "retry" && deliveryId) {
-      await retryDelivery(deliveryId);
-      return NextResponse.json({ success: true, message: "Retry initiated" });
-    }
-
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    await retryDelivery(deliveryId);
+    return NextResponse.json({ success: true, message: "Retry initiated" });
   } catch (error) {
     console.error("Error processing delivery action:", error);
     return NextResponse.json(

@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
@@ -12,6 +13,7 @@ import {
   createEngagement,
   getEngagements,
 } from "@/lib/services/stakeholder-engagement";
+import { parsePaginationLimit } from "@/lib/validations";
 import type { StakeholderType, EngagementStatus } from "@prisma/client";
 
 // ─── GET: List Engagements ───
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") as EngagementStatus | null;
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
 
     if (!organizationId) {
       return NextResponse.json(
@@ -88,15 +90,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { organizationId, ...engagementData } = body;
+    const schema = z.object({
+      organizationId: z.string().min(1),
+      type: z.enum([
+        "LEGAL_COUNSEL",
+        "INSURER",
+        "AUDITOR",
+        "SUPPLIER",
+        "NCA",
+        "CONSULTANT",
+        "LAUNCH_PROVIDER",
+      ]),
+      companyName: z.string().min(1),
+      contactName: z.string().min(1),
+      contactEmail: z.string().email(),
+      contactPhone: z.string().optional(),
+      jurisdiction: z.string().optional(),
+      licenseNumber: z.string().optional(),
+      website: z.string().optional(),
+      scope: z.string().min(1),
+      contractRef: z.string().optional(),
+      retainerStart: z.string().optional(),
+      retainerEnd: z.string().optional(),
+      ipAllowlist: z.array(z.string()).optional(),
+      mfaRequired: z.boolean().optional(),
+      tokenExpiryDays: z.number().optional(),
+    });
 
-    if (!organizationId) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, ...engagementData } = parsed.data;
 
     // Verify membership and permissions
     const member = await prisma.organizationMember.findFirst({
@@ -117,23 +147,6 @@ export async function POST(request: NextRequest) {
         : getPermissionsForRole(member.role);
     if (!hasPermission(perms, "network:write")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Validate required fields
-    if (
-      !engagementData.type ||
-      !engagementData.companyName ||
-      !engagementData.contactName ||
-      !engagementData.contactEmail ||
-      !engagementData.scope
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: type, companyName, contactName, contactEmail, scope",
-        },
-        { status: 400 },
-      );
     }
 
     const result = await createEngagement(

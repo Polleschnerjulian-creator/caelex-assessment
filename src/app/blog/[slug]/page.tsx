@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateBlogBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
 import { generateBlogPostMetadata, siteConfig } from "@/lib/seo";
+import DOMPurify from "isomorphic-dompurify";
 import {
   getAllPosts,
   getPostBySlug,
@@ -133,7 +134,33 @@ function renderMarkdown(content: string): string {
     '<ul class="space-y-2 mb-4 list-disc list-inside">$&</ul>',
   );
 
-  return html;
+  // Sanitize to prevent XSS from any dynamic content
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "h2",
+      "h3",
+      "h4",
+      "p",
+      "strong",
+      "em",
+      "ul",
+      "ol",
+      "li",
+      "code",
+      "pre",
+      "table",
+      "tr",
+      "td",
+      "th",
+      "thead",
+      "tbody",
+      "a",
+      "span",
+      "br",
+      "div",
+    ],
+    ALLOWED_ATTR: ["class", "id", "href", "target", "rel"],
+  });
 }
 
 // ============================================================================

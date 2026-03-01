@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { z } from "zod";
 
 // Schema for incoming tracking events
@@ -45,6 +46,20 @@ export async function POST(request: Request) {
     }
 
     const data = result.data;
+
+    // Validate userId: if provided, must match authenticated session
+    // Prevents users from attributing events to other users
+    if (data.userId) {
+      try {
+        const session = await auth();
+        if (!session?.user?.id || session.user.id !== data.userId) {
+          // Silently drop mismatched userId — don't reveal auth state to tracking
+          data.userId = null;
+        }
+      } catch {
+        data.userId = null;
+      }
+    }
 
     // GDPR: Check cookie consent (header from fetch, or embedded from sendBeacon)
     // Analytics events should only be stored if the user has consented

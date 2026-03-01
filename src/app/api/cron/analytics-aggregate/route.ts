@@ -201,34 +201,36 @@ export async function GET(request: Request) {
 
     for (const org of organizations) {
       const userIds = org.members.map((m) => m.userId);
+      const thirtyDaysAgo = subDays(new Date(), 30);
 
-      // Login frequency: events in last 30 days
-      const loginEvents = await prisma.analyticsEvent.count({
-        where: {
-          userId: { in: userIds },
-          eventType: { in: ["page_view", "login"] },
-          timestamp: { gte: subDays(new Date(), 30) },
-        },
-      });
-
-      // Active features: unique module paths in last 30 days
-      const activeFeatures = await prisma.analyticsEvent.groupBy({
-        by: ["path"],
-        where: {
-          userId: { in: userIds },
-          path: { startsWith: "/dashboard" },
-          timestamp: { gte: subDays(new Date(), 30) },
-        },
-      });
-
-      // Sessions in last 30 days
-      const sessions = await prisma.analyticsEvent.groupBy({
-        by: ["sessionId"],
-        where: {
-          userId: { in: userIds },
-          timestamp: { gte: subDays(new Date(), 30) },
-        },
-      });
+      // Run all 3 independent queries in parallel (avoid sequential N+1)
+      const [loginEvents, activeFeatures, sessions] = await Promise.all([
+        // Login frequency: events in last 30 days
+        prisma.analyticsEvent.count({
+          where: {
+            userId: { in: userIds },
+            eventType: { in: ["page_view", "login"] },
+            timestamp: { gte: thirtyDaysAgo },
+          },
+        }),
+        // Active features: unique module paths in last 30 days
+        prisma.analyticsEvent.groupBy({
+          by: ["path"],
+          where: {
+            userId: { in: userIds },
+            path: { startsWith: "/dashboard" },
+            timestamp: { gte: thirtyDaysAgo },
+          },
+        }),
+        // Sessions in last 30 days
+        prisma.analyticsEvent.groupBy({
+          by: ["sessionId"],
+          where: {
+            userId: { in: userIds },
+            timestamp: { gte: thirtyDaysAgo },
+          },
+        }),
+      ]);
 
       // Last login
       const lastActivity = org.members.reduce<Date | null>((latest, m) => {
@@ -416,10 +418,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("[Analytics Aggregation] Error:", error);
-    return NextResponse.json(
-      { error: "Aggregation failed", details: String(error) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Aggregation failed" }, { status: 500 });
   }
 }
 

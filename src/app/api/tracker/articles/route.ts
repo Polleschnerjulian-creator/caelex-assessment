@@ -6,6 +6,7 @@ import {
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
+import { UpdateArticleStatusSchema } from "@/lib/validations";
 
 export async function GET() {
   try {
@@ -49,14 +50,16 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user.id;
-    const { articleId, status, notes } = await request.json();
-
-    if (!articleId || !status) {
+    const body = await request.json();
+    const parsed = UpdateArticleStatusSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing articleId or status" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { articleId, status, notes } = parsed.data;
 
     // Get previous value for audit logging
     const previous = await prisma.articleStatus.findUnique({

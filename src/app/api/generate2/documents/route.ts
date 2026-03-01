@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     console.error("Generate2 init error:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Initialization failed",
+        error: "Initialization failed",
       },
       { status: 500 },
     );

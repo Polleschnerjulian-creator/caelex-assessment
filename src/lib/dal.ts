@@ -54,6 +54,15 @@ export const getAuthenticatedUser = cache(
       throw new UnauthorizedError();
     }
 
+    // Block access if MFA is required but not yet verified
+    // This prevents API access with a pre-MFA JWT token
+    if (
+      session.user.mfaRequired === true &&
+      session.user.mfaVerified !== true
+    ) {
+      throw new UnauthorizedError("MFA verification required");
+    }
+
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

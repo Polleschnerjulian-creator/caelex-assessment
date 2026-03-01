@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -10,7 +11,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const milestoneSchema = z.object({
+      phaseId: z.string().min(1),
+      name: z.string().min(1),
+      description: z.string().optional(),
+      targetDate: z.string().min(1),
+      isCritical: z.boolean().optional(),
+      isRegulatory: z.boolean().optional(),
+      regulatoryRef: z.string().optional(),
+      icon: z.string().optional(),
+    });
+
     const body = await req.json();
+    const parsed = milestoneSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       phaseId,
       name,
@@ -20,14 +40,7 @@ export async function POST(req: Request) {
       isRegulatory,
       regulatoryRef,
       icon,
-    } = body;
-
-    if (!phaseId || !name || !targetDate) {
-      return NextResponse.json(
-        { error: "Missing required fields: phaseId, name, targetDate" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify phase ownership
     const phase = await prisma.missionPhase.findFirst({
@@ -69,15 +82,28 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { id, ...updates } = body;
+    const updateMilestoneSchema = z.object({
+      id: z.string().min(1),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      targetDate: z.string().optional(),
+      status: z.string().optional(),
+      isCritical: z.boolean().optional(),
+      isRegulatory: z.boolean().optional(),
+      regulatoryRef: z.string().optional(),
+      icon: z.string().optional(),
+    });
 
-    if (!id) {
+    const body = await req.json();
+    const parsed = updateMilestoneSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Milestone ID required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { id, ...updates } = parsed.data;
 
     // Verify ownership through phase
     const existing = await prisma.milestone.findFirst({

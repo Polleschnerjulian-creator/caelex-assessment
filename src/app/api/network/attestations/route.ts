@@ -5,10 +5,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { createAttestation, getAttestations } from "@/lib/services/attestation";
+import { parsePaginationLimit } from "@/lib/validations";
 import type { AttestationType } from "@prisma/client";
 
 // ─── GET: List Attestations ───
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
     const engagementId = searchParams.get("engagementId");
     const isRevoked = searchParams.get("isRevoked");
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
 
     if (!organizationId) {
       return NextResponse.json(
@@ -85,15 +87,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { organizationId, ...attestationData } = body;
+    const schema = z.object({
+      organizationId: z.string().min(1),
+      engagementId: z.string().min(1),
+      type: z.enum([
+        "LEGAL_REVIEW",
+        "AUDIT_CLEARANCE",
+        "INSURANCE_BINDING",
+        "SUPPLIER_CERT",
+        "NCA_APPROVAL",
+        "COMPLIANCE_SIGN_OFF",
+      ]),
+      title: z.string().min(1),
+      statement: z.string().min(1),
+      scope: z.string().min(1),
+      signerName: z.string().min(1),
+      signerTitle: z.string().min(1),
+      signerEmail: z.string().email(),
+      signerOrg: z.string().min(1),
+      validUntil: z.string().optional(),
+      entityType: z.string().optional(),
+      entityId: z.string().optional(),
+    });
 
-    if (!organizationId) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, ...attestationData } = parsed.data;
 
     // Verify membership and permissions
     const member = await prisma.organizationMember.findFirst({
@@ -114,27 +140,6 @@ export async function POST(request: NextRequest) {
         : getPermissionsForRole(member.role);
     if (!hasPermission(perms, "network:attest")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Validate required fields
-    if (
-      !attestationData.engagementId ||
-      !attestationData.type ||
-      !attestationData.title ||
-      !attestationData.statement ||
-      !attestationData.scope ||
-      !attestationData.signerName ||
-      !attestationData.signerTitle ||
-      !attestationData.signerEmail ||
-      !attestationData.signerOrg
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: engagementId, type, title, statement, scope, signerName, signerTitle, signerEmail, signerOrg",
-        },
-        { status: 400 },
-      );
     }
 
     // Extract IP and user-agent from request headers

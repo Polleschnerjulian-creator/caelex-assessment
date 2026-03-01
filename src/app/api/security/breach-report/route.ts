@@ -13,7 +13,7 @@ import {
 import type { BreachSeverity, BreachStatus } from "@prisma/client";
 import { verifyOrganizationAccess } from "@/lib/middleware/organization-guard";
 import { logger } from "@/lib/logger";
-import { getSafeErrorMessage } from "@/lib/validations";
+import { getSafeErrorMessage, parsePaginationLimit } from "@/lib/validations";
 import { z } from "zod";
 
 // ─── Validation ───
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     const organizationId = searchParams.get("organizationId");
     const status = searchParams.get("status") as BreachStatus | null;
     const severity = searchParams.get("severity") as BreachSeverity | null;
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // If org-scoped, verify admin/owner access

@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import type { OrganizationPlan } from "@prisma/client";
+import { z } from "zod";
 
 const VALID_PLANS: OrganizationPlan[] = [
   "FREE",
@@ -18,6 +19,13 @@ const VALID_PLANS: OrganizationPlan[] = [
   "PROFESSIONAL",
   "ENTERPRISE",
 ];
+
+const updateOrgSchema = z.object({
+  plan: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+  maxUsers: z.number().int().positive().optional(),
+  maxSpacecraft: z.number().int().positive().optional(),
+  reason: z.string().optional(),
+});
 
 const PLAN_LIMITS: Record<
   OrganizationPlan,
@@ -119,7 +127,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const { orgId } = await params;
     const body = await request.json();
-    const { plan, maxUsers, maxSpacecraft, reason } = body;
+    const parsed = updateOrgSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+    const { plan, maxUsers, maxSpacecraft, reason } = parsed.data;
 
     // Get current org state for audit
     const previousOrg = await prisma.organization.findUnique({

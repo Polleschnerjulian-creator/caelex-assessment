@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -84,7 +85,27 @@ export async function POST(req: Request) {
       );
     }
 
+    const calendarEventSchema = z.object({
+      eventType: z.string().min(1),
+      title: z.string().min(1),
+      description: z.string().optional(),
+      dueDate: z.string().min(1),
+      reminderDays: z.array(z.number().int()).optional(),
+      assignee: z.string().optional(),
+      linkedReportId: z.string().optional(),
+      linkedAssetIds: z.array(z.string()).optional(),
+      notes: z.string().optional(),
+    });
+
     const body = await req.json();
+    const parsed = calendarEventSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       eventType,
       title,
@@ -95,14 +116,7 @@ export async function POST(req: Request) {
       linkedReportId,
       linkedAssetIds,
       notes,
-    } = body;
-
-    if (!eventType || !title || !dueDate) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const event = await prisma.supervisionCalendarEvent.create({
       data: {

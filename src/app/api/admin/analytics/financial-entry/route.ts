@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { parsePaginationLimit } from "@/lib/validations";
 
 const financialEntrySchema = z.object({
   type: z.enum(["revenue", "expense", "investment", "refund"]),
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const type = searchParams.get("type");
 
     const where = type ? { type } : {};

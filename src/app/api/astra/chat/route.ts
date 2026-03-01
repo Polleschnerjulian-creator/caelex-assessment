@@ -213,7 +213,6 @@ export async function POST(request: NextRequest) {
           userId: session.user.id,
           metadata: {
             error: error instanceof Error ? error.message : "Unknown error",
-            stack: error instanceof Error ? error.stack : undefined,
           },
         });
       }

@@ -4,6 +4,7 @@
  * Handles GET, PUT, DELETE for individual spectrum assessments.
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -210,6 +211,115 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      networkName: z.string().optional(),
+      operatorName: z.string().optional(),
+      orbitType: z.enum(["GEO", "NGSO", "LEO", "MEO", "HEO"]).optional(),
+      altitudeKm: z.number().optional(),
+      inclinationDeg: z.number().optional(),
+      satelliteCount: z.number().int().min(1).optional(),
+      isConstellation: z.boolean().optional(),
+      administrationCode: z.string().optional(),
+      serviceTypes: z
+        .array(
+          z.enum([
+            "FSS",
+            "MSS",
+            "BSS",
+            "EESS",
+            "SRS",
+            "RNS",
+            "AMSS",
+            "MMSS",
+            "ISL",
+          ]),
+        )
+        .optional(),
+      frequencyBands: z
+        .array(
+          z.enum([
+            "L",
+            "S",
+            "C",
+            "X",
+            "Ku",
+            "Ka",
+            "V",
+            "Q",
+            "W",
+            "O",
+            "UHF",
+            "VHF",
+          ]),
+        )
+        .optional(),
+      frequencyDetails: z.unknown().optional(),
+      requiresEPFD: z.boolean().optional(),
+      epfdCompliant: z.boolean().optional(),
+      epfdStudyCompleted: z.boolean().optional(),
+      epfdStudyDate: z.string().optional(),
+      // Filing statuses
+      apiStatus: z.string().optional(),
+      apiFilingDate: z.string().optional(),
+      apiPublicationDate: z.string().optional(),
+      apiExpiryDate: z.string().optional(),
+      apiReference: z.string().optional(),
+      crCStatus: z.string().optional(),
+      crCFilingDate: z.string().optional(),
+      crCPublicationDate: z.string().optional(),
+      crCReference: z.string().optional(),
+      notificationStatus: z.string().optional(),
+      notificationFilingDate: z.string().optional(),
+      notificationExaminationDate: z.string().optional(),
+      notificationReference: z.string().optional(),
+      recordingStatus: z.string().optional(),
+      recordingDate: z.string().optional(),
+      recordingReference: z.string().optional(),
+      mfrnReference: z.string().optional(),
+      // Bringing into Use
+      biuDeadline: z.string().optional(),
+      biuAchieved: z.boolean().optional(),
+      biuDate: z.string().optional(),
+      biuEvidenceDocument: z.string().optional(),
+      // NGSO Milestones
+      milestone10Percent: z.string().optional(),
+      milestone50Percent: z.string().optional(),
+      milestone100Percent: z.string().optional(),
+      milestone10Achieved: z.boolean().optional(),
+      milestone50Achieved: z.boolean().optional(),
+      milestone100Achieved: z.boolean().optional(),
+      // Coordination
+      coordinationStatus: z.unknown().optional(),
+      hasCoordinationAgreements: z.boolean().optional(),
+      coordinationAgreementsJson: z.unknown().optional(),
+      // Jurisdictions
+      jurisdictionLicenses: z.unknown().optional(),
+      primaryJurisdiction: z
+        .enum(["ITU", "FCC", "OFCOM", "BNETZA", "CEPT", "WRC"])
+        .optional(),
+      additionalJurisdictions: z
+        .array(z.enum(["ITU", "FCC", "OFCOM", "BNETZA", "CEPT", "WRC"]))
+        .optional(),
+      // WRC
+      wrcDecisionsApplicable: z.unknown().optional(),
+      wrcCompliant: z.boolean().optional(),
+      // Interference
+      interferenceAnalysisComplete: z.boolean().optional(),
+      interferenceAnalysisDate: z.string().optional(),
+      identifiedInterferenceRisks: z.unknown().optional(),
+      mitigationMeasures: z.unknown().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existingAssessment = await prisma.spectrumAssessment.findFirst({
       where: { id, userId },
@@ -287,7 +397,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       interferenceAnalysisDate,
       identifiedInterferenceRisks,
       mitigationMeasures,
-    } = body;
+    } = parsed.data;
 
     // Build update data
     const updateData: Record<string, unknown> = {};

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import {
   validateToken,
   logStakeholderAccess,
@@ -8,12 +9,20 @@ import {
 // POST /api/stakeholder/auth — Validate token and return engagement + org info
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { token } = body;
+    const schema = z.object({
+      token: z.string().min(1),
+    });
 
-    if (!token) {
-      return NextResponse.json({ error: "Token required" }, { status: 401 });
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
+
+    const { token } = parsed.data;
 
     const ipAddress =
       request.headers.get("x-forwarded-for") ||

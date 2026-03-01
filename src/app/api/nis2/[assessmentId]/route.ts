@@ -8,6 +8,7 @@
  * DELETE /api/nis2/[assessmentId] — Delete assessment
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -175,6 +176,60 @@ export async function PATCH(
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentName: z.string().optional(),
+      sector: z
+        .enum([
+          "space",
+          "energy",
+          "transport",
+          "banking",
+          "financial_market",
+          "health",
+          "drinking_water",
+          "waste_water",
+          "digital_infrastructure",
+          "ict_service_management",
+        ])
+        .optional(),
+      subSector: z
+        .enum([
+          "ground_infrastructure",
+          "satellite_communications",
+          "spacecraft_manufacturing",
+          "launch_services",
+          "earth_observation",
+          "navigation",
+          "space_situational_awareness",
+        ])
+        .nullable()
+        .optional(),
+      organizationSize: z
+        .enum(["micro", "small", "medium", "large"])
+        .optional(),
+      employeeCount: z.number().nullable().optional(),
+      annualRevenue: z.number().nullable().optional(),
+      memberStateCount: z.number().int().min(0).max(27).optional(),
+      operatesGroundInfra: z.boolean().optional(),
+      operatesSatComms: z.boolean().optional(),
+      manufacturesSpacecraft: z.boolean().optional(),
+      providesLaunchServices: z.boolean().optional(),
+      providesEOData: z.boolean().optional(),
+      hasISO27001: z.boolean().optional(),
+      hasExistingCSIRT: z.boolean().optional(),
+      hasRiskManagement: z.boolean().optional(),
+      isEUEstablished: z.boolean().optional(),
+      maturityScore: z.number().min(0).max(100).optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existing = await prisma.nIS2Assessment.findFirst({
       where: {
@@ -192,37 +247,38 @@ export async function PATCH(
 
     // Build update data
     const updateData: Record<string, unknown> = {};
+    const data = parsed.data;
 
-    if (body.assessmentName !== undefined)
-      updateData.assessmentName = body.assessmentName;
-    if (body.sector !== undefined) updateData.sector = body.sector;
-    if (body.subSector !== undefined) updateData.subSector = body.subSector;
-    if (body.organizationSize !== undefined)
-      updateData.organizationSize = body.organizationSize;
-    if (body.employeeCount !== undefined)
-      updateData.employeeCount = body.employeeCount;
-    if (body.annualRevenue !== undefined)
-      updateData.annualRevenue = body.annualRevenue;
-    if (body.memberStateCount !== undefined)
-      updateData.memberStateCount = body.memberStateCount;
-    if (body.operatesGroundInfra !== undefined)
-      updateData.operatesGroundInfra = body.operatesGroundInfra;
-    if (body.operatesSatComms !== undefined)
-      updateData.operatesSatComms = body.operatesSatComms;
-    if (body.manufacturesSpacecraft !== undefined)
-      updateData.manufacturesSpacecraft = body.manufacturesSpacecraft;
-    if (body.providesLaunchServices !== undefined)
-      updateData.providesLaunchServices = body.providesLaunchServices;
-    if (body.providesEOData !== undefined)
-      updateData.providesEOData = body.providesEOData;
-    if (body.hasISO27001 !== undefined)
-      updateData.hasISO27001 = body.hasISO27001;
-    if (body.hasExistingCSIRT !== undefined)
-      updateData.hasExistingCSIRT = body.hasExistingCSIRT;
-    if (body.hasRiskManagement !== undefined)
-      updateData.hasRiskManagement = body.hasRiskManagement;
-    if (body.maturityScore !== undefined)
-      updateData.maturityScore = body.maturityScore;
+    if (data.assessmentName !== undefined)
+      updateData.assessmentName = data.assessmentName;
+    if (data.sector !== undefined) updateData.sector = data.sector;
+    if (data.subSector !== undefined) updateData.subSector = data.subSector;
+    if (data.organizationSize !== undefined)
+      updateData.organizationSize = data.organizationSize;
+    if (data.employeeCount !== undefined)
+      updateData.employeeCount = data.employeeCount;
+    if (data.annualRevenue !== undefined)
+      updateData.annualRevenue = data.annualRevenue;
+    if (data.memberStateCount !== undefined)
+      updateData.memberStateCount = data.memberStateCount;
+    if (data.operatesGroundInfra !== undefined)
+      updateData.operatesGroundInfra = data.operatesGroundInfra;
+    if (data.operatesSatComms !== undefined)
+      updateData.operatesSatComms = data.operatesSatComms;
+    if (data.manufacturesSpacecraft !== undefined)
+      updateData.manufacturesSpacecraft = data.manufacturesSpacecraft;
+    if (data.providesLaunchServices !== undefined)
+      updateData.providesLaunchServices = data.providesLaunchServices;
+    if (data.providesEOData !== undefined)
+      updateData.providesEOData = data.providesEOData;
+    if (data.hasISO27001 !== undefined)
+      updateData.hasISO27001 = data.hasISO27001;
+    if (data.hasExistingCSIRT !== undefined)
+      updateData.hasExistingCSIRT = data.hasExistingCSIRT;
+    if (data.hasRiskManagement !== undefined)
+      updateData.hasRiskManagement = data.hasRiskManagement;
+    if (data.maturityScore !== undefined)
+      updateData.maturityScore = data.maturityScore;
 
     // Recalculate classification if profile fields changed
     const profileFields = [
@@ -232,30 +288,34 @@ export async function PATCH(
       "operatesGroundInfra",
       "operatesSatComms",
       "isEUEstablished",
-    ];
-    const profileChanged = profileFields.some((f) => body[f] !== undefined);
+    ] as const;
+    const profileChanged = profileFields.some((f) => data[f] !== undefined);
 
     if (profileChanged) {
       // Build new answers from merged existing + new data
       const answers: NIS2AssessmentAnswers = {
-        sector: body.sector || existing.sector,
-        spaceSubSector: body.subSector ?? existing.subSector ?? null,
+        sector: (data.sector ||
+          existing.sector) as NIS2AssessmentAnswers["sector"],
+        spaceSubSector: (data.subSector ??
+          existing.subSector ??
+          null) as NIS2AssessmentAnswers["spaceSubSector"],
         operatesGroundInfra:
-          body.operatesGroundInfra ?? existing.operatesGroundInfra,
-        operatesSatComms: body.operatesSatComms ?? existing.operatesSatComms,
+          data.operatesGroundInfra ?? existing.operatesGroundInfra,
+        operatesSatComms: data.operatesSatComms ?? existing.operatesSatComms,
         manufacturesSpacecraft:
-          body.manufacturesSpacecraft ?? existing.manufacturesSpacecraft,
+          data.manufacturesSpacecraft ?? existing.manufacturesSpacecraft,
         providesLaunchServices:
-          body.providesLaunchServices ?? existing.providesLaunchServices,
-        providesEOData: body.providesEOData ?? existing.providesEOData,
-        entitySize: body.organizationSize || existing.organizationSize,
-        employeeCount: body.employeeCount ?? existing.employeeCount ?? null,
-        annualRevenue: body.annualRevenue ?? existing.annualRevenue ?? null,
-        memberStateCount: body.memberStateCount ?? existing.memberStateCount,
+          data.providesLaunchServices ?? existing.providesLaunchServices,
+        providesEOData: data.providesEOData ?? existing.providesEOData,
+        entitySize: (data.organizationSize ||
+          existing.organizationSize) as NIS2AssessmentAnswers["entitySize"],
+        employeeCount: data.employeeCount ?? existing.employeeCount ?? null,
+        annualRevenue: data.annualRevenue ?? existing.annualRevenue ?? null,
+        memberStateCount: data.memberStateCount ?? existing.memberStateCount,
         isEUEstablished: true, // Must be EU-established to be in scope
-        hasISO27001: body.hasISO27001 ?? existing.hasISO27001,
-        hasExistingCSIRT: body.hasExistingCSIRT ?? existing.hasExistingCSIRT,
-        hasRiskManagement: body.hasRiskManagement ?? existing.hasRiskManagement,
+        hasISO27001: data.hasISO27001 ?? existing.hasISO27001,
+        hasExistingCSIRT: data.hasExistingCSIRT ?? existing.hasExistingCSIRT,
+        hasRiskManagement: data.hasRiskManagement ?? existing.hasRiskManagement,
       };
 
       // Reclassify
@@ -298,10 +358,12 @@ export async function PATCH(
         });
 
         // Auto-assess newly added requirements based on updated answers
+        // Batch all auto-assessment updates in parallel (avoid N+1)
         const autoAssessments = generateAutoAssessments(toAdd, answers);
-        for (const auto of autoAssessments) {
-          if (auto.suggestedStatus === "partial" && auto.reason) {
-            await prisma.nIS2RequirementStatus.updateMany({
+        const autoUpdates = autoAssessments
+          .filter((auto) => auto.suggestedStatus === "partial" && auto.reason)
+          .map((auto) =>
+            prisma.nIS2RequirementStatus.updateMany({
               where: {
                 assessmentId,
                 requirementId: auto.requirementId,
@@ -311,9 +373,9 @@ export async function PATCH(
                 status: auto.suggestedStatus,
                 notes: auto.reason,
               },
-            });
-          }
-        }
+            }),
+          );
+        await Promise.all(autoUpdates);
       }
 
       // Also auto-assess existing requirements that are still "not_assessed"
@@ -331,9 +393,11 @@ export async function PATCH(
           existingApplicable,
           answers,
         );
-        for (const auto of autoForExisting) {
-          if (auto.suggestedStatus === "partial" && auto.reason) {
-            await prisma.nIS2RequirementStatus.updateMany({
+        // Batch all existing auto-assessment updates in parallel (avoid N+1)
+        const existingAutoUpdates = autoForExisting
+          .filter((auto) => auto.suggestedStatus === "partial" && auto.reason)
+          .map((auto) =>
+            prisma.nIS2RequirementStatus.updateMany({
               where: {
                 assessmentId,
                 requirementId: auto.requirementId,
@@ -343,9 +407,9 @@ export async function PATCH(
                 status: auto.suggestedStatus,
                 notes: auto.reason,
               },
-            });
-          }
-        }
+            }),
+          );
+        await Promise.all(existingAutoUpdates);
       }
 
       // Recalculate maturity score
@@ -385,7 +449,7 @@ export async function PATCH(
       entityType: "nis2_assessment",
       entityId: assessmentId,
       previousValue: { ...existing },
-      newValue: body,
+      newValue: data,
       description: "Updated NIS2 assessment profile",
       ipAddress,
       userAgent,

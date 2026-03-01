@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
@@ -89,15 +90,31 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const body = await request.json();
-    const { organizationId, ...updateData } = body;
 
-    if (!organizationId) {
+    const schema = z.object({
+      organizationId: z.string().min(1),
+      name: z.string().min(1).optional(),
+      description: z.string().optional(),
+      purpose: z.string().optional(),
+      accessLevel: z
+        .enum(["VIEW_ONLY", "COMMENT", "CONTRIBUTE", "FULL_ACCESS"])
+        .optional(),
+      watermark: z.boolean().optional(),
+      downloadable: z.boolean().optional(),
+      printable: z.boolean().optional(),
+      expiresAt: z.string().optional(),
+    });
+
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, ...updateData } = parsed.data;
 
     // Verify membership and permissions
     const member = await prisma.organizationMember.findFirst({

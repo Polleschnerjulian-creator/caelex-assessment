@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { parsePaginationLimit } from "@/lib/validations";
 import { getAuditLogs } from "@/lib/audit";
 
 // GET /api/audit - Get audit logs for the current user
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
     const entityType = searchParams.get("entityType") || undefined;
     const action = searchParams.get("action") || undefined;
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
       : undefined;
 
     const result = await getAuditLogs(userId, {
-      limit: Math.min(limit, 100), // Cap at 100
+      limit,
       offset,
       entityType,
       action,

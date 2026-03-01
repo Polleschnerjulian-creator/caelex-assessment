@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { parsePaginationLimit } from "@/lib/validations";
 
 export const runtime = "nodejs";
 
@@ -40,10 +41,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limitParam = searchParams.get("limit");
-    const limit = limitParam
-      ? Math.min(Math.max(1, parseInt(limitParam, 10) || 50), 200)
-      : 50;
+    const limit = parsePaginationLimit(searchParams.get("limit"), 50, 200);
 
     const scores = await prisma.investmentReadinessScore.findMany({
       where: { organizationId: membership.organizationId },

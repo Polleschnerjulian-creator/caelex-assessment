@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   generateSupplierDataRequests,
@@ -69,6 +70,23 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const postSchema = z.object({
+      assessmentId: z.string().min(1),
+      generateDefaults: z.boolean().optional(),
+      supplierName: z.string().optional(),
+      componentType: z.string().optional(),
+      dataRequired: z.array(z.string()).optional(),
+      deadline: z.string().optional(),
+    });
+
+    const parsed = postSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentId,
       generateDefaults,
@@ -76,14 +94,7 @@ export async function POST(request: Request) {
       componentType,
       dataRequired,
       deadline,
-    } = body;
-
-    if (!assessmentId) {
-      return NextResponse.json(
-        { error: "assessmentId is required" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify assessment ownership
     const assessment = await prisma.environmentalAssessment.findFirst({

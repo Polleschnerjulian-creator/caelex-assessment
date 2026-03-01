@@ -85,8 +85,7 @@ export async function POST(request: NextRequest) {
     console.error("Package creation error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Package creation failed",
+        error: "Package creation failed",
       },
       { status: 500 },
     );

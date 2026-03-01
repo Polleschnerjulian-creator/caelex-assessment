@@ -7,6 +7,7 @@
  */
 
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -24,10 +25,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || "50", 10),
-      100,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const status = searchParams.get("status");
     const exportFormat = searchParams.get("export");
 

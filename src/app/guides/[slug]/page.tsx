@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateGuideBreadcrumbs } from "@/lib/breadcrumbs";
 import { ArticleJsonLd } from "@/components/seo/JsonLd";
 import { generateMetadata as genMeta, siteConfig } from "@/lib/seo";
+import DOMPurify from "isomorphic-dompurify";
 import { getAllGuides, getGuideBySlug } from "@/content/guides/guides";
 
 // ============================================================================
@@ -161,7 +162,32 @@ function renderMarkdown(content: string): string {
     },
   );
 
-  return html;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "h2",
+      "h3",
+      "h4",
+      "p",
+      "strong",
+      "em",
+      "ul",
+      "ol",
+      "li",
+      "code",
+      "pre",
+      "table",
+      "tr",
+      "td",
+      "th",
+      "thead",
+      "tbody",
+      "a",
+      "span",
+      "br",
+      "div",
+    ],
+    ALLOWED_ATTR: ["class", "id", "href", "target", "rel"],
+  });
 }
 
 // ============================================================================

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   calculateTPLRequirement,
@@ -117,6 +118,38 @@ export async function PATCH(
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentName: z.string().optional(),
+      primaryJurisdiction: z.string().optional(),
+      operatorType: z.string().optional(),
+      companySize: z.string().optional(),
+      orbitRegime: z.string().optional(),
+      satelliteCount: z.number().optional(),
+      satelliteValueEur: z.number().optional(),
+      totalMissionValueEur: z.number().optional(),
+      isConstellationOperator: z.boolean().optional(),
+      hasManeuverability: z.boolean().optional(),
+      missionDurationYears: z.number().optional(),
+      hasFlightHeritage: z.boolean().optional(),
+      launchVehicle: z.string().optional(),
+      launchProvider: z.string().optional(),
+      launchDate: z.string().nullable().optional(),
+      hasADR: z.boolean().optional(),
+      hasPropulsion: z.boolean().optional(),
+      hasHazardousMaterials: z.boolean().optional(),
+      crossBorderOps: z.boolean().optional(),
+      annualRevenueEur: z.number().optional(),
+      turnoversShareSpace: z.number().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existing = await prisma.insuranceAssessment.findFirst({
       where: {
@@ -136,49 +169,50 @@ export async function PATCH(
     // Build update data
     const updateData: Record<string, unknown> = {};
 
-    if (body.assessmentName !== undefined)
-      updateData.assessmentName = body.assessmentName;
-    if (body.primaryJurisdiction !== undefined)
-      updateData.primaryJurisdiction = body.primaryJurisdiction;
-    if (body.operatorType !== undefined)
-      updateData.operatorType = body.operatorType;
-    if (body.companySize !== undefined)
-      updateData.companySize = body.companySize;
-    if (body.orbitRegime !== undefined)
-      updateData.orbitRegime = body.orbitRegime;
-    if (body.satelliteCount !== undefined)
-      updateData.satelliteCount = body.satelliteCount;
-    if (body.satelliteValueEur !== undefined)
-      updateData.satelliteValueEur = body.satelliteValueEur;
-    if (body.totalMissionValueEur !== undefined)
-      updateData.totalMissionValueEur = body.totalMissionValueEur;
-    if (body.isConstellationOperator !== undefined)
-      updateData.isConstellationOperator = body.isConstellationOperator;
-    if (body.hasManeuverability !== undefined)
-      updateData.hasManeuverability = body.hasManeuverability;
-    if (body.missionDurationYears !== undefined)
-      updateData.missionDurationYears = body.missionDurationYears;
-    if (body.hasFlightHeritage !== undefined)
-      updateData.hasFlightHeritage = body.hasFlightHeritage;
-    if (body.launchVehicle !== undefined)
-      updateData.launchVehicle = body.launchVehicle;
-    if (body.launchProvider !== undefined)
-      updateData.launchProvider = body.launchProvider;
-    if (body.launchDate !== undefined)
-      updateData.launchDate = body.launchDate
-        ? new Date(body.launchDate)
+    if (parsed.data.assessmentName !== undefined)
+      updateData.assessmentName = parsed.data.assessmentName;
+    if (parsed.data.primaryJurisdiction !== undefined)
+      updateData.primaryJurisdiction = parsed.data.primaryJurisdiction;
+    if (parsed.data.operatorType !== undefined)
+      updateData.operatorType = parsed.data.operatorType;
+    if (parsed.data.companySize !== undefined)
+      updateData.companySize = parsed.data.companySize;
+    if (parsed.data.orbitRegime !== undefined)
+      updateData.orbitRegime = parsed.data.orbitRegime;
+    if (parsed.data.satelliteCount !== undefined)
+      updateData.satelliteCount = parsed.data.satelliteCount;
+    if (parsed.data.satelliteValueEur !== undefined)
+      updateData.satelliteValueEur = parsed.data.satelliteValueEur;
+    if (parsed.data.totalMissionValueEur !== undefined)
+      updateData.totalMissionValueEur = parsed.data.totalMissionValueEur;
+    if (parsed.data.isConstellationOperator !== undefined)
+      updateData.isConstellationOperator = parsed.data.isConstellationOperator;
+    if (parsed.data.hasManeuverability !== undefined)
+      updateData.hasManeuverability = parsed.data.hasManeuverability;
+    if (parsed.data.missionDurationYears !== undefined)
+      updateData.missionDurationYears = parsed.data.missionDurationYears;
+    if (parsed.data.hasFlightHeritage !== undefined)
+      updateData.hasFlightHeritage = parsed.data.hasFlightHeritage;
+    if (parsed.data.launchVehicle !== undefined)
+      updateData.launchVehicle = parsed.data.launchVehicle;
+    if (parsed.data.launchProvider !== undefined)
+      updateData.launchProvider = parsed.data.launchProvider;
+    if (parsed.data.launchDate !== undefined)
+      updateData.launchDate = parsed.data.launchDate
+        ? new Date(parsed.data.launchDate)
         : null;
-    if (body.hasADR !== undefined) updateData.hasADR = body.hasADR;
-    if (body.hasPropulsion !== undefined)
-      updateData.hasPropulsion = body.hasPropulsion;
-    if (body.hasHazardousMaterials !== undefined)
-      updateData.hasHazardousMaterials = body.hasHazardousMaterials;
-    if (body.crossBorderOps !== undefined)
-      updateData.crossBorderOps = body.crossBorderOps;
-    if (body.annualRevenueEur !== undefined)
-      updateData.annualRevenueEur = body.annualRevenueEur;
-    if (body.turnoversShareSpace !== undefined)
-      updateData.turnoversShareSpace = body.turnoversShareSpace;
+    if (parsed.data.hasADR !== undefined)
+      updateData.hasADR = parsed.data.hasADR;
+    if (parsed.data.hasPropulsion !== undefined)
+      updateData.hasPropulsion = parsed.data.hasPropulsion;
+    if (parsed.data.hasHazardousMaterials !== undefined)
+      updateData.hasHazardousMaterials = parsed.data.hasHazardousMaterials;
+    if (parsed.data.crossBorderOps !== undefined)
+      updateData.crossBorderOps = parsed.data.crossBorderOps;
+    if (parsed.data.annualRevenueEur !== undefined)
+      updateData.annualRevenueEur = parsed.data.annualRevenueEur;
+    if (parsed.data.turnoversShareSpace !== undefined)
+      updateData.turnoversShareSpace = parsed.data.turnoversShareSpace;
 
     // Recalculate TPL and risk if profile changed
     const profileFields = [
@@ -193,42 +227,54 @@ export async function PATCH(
       "hasFlightHeritage",
       "crossBorderOps",
       "annualRevenueEur",
-    ];
-    const profileChanged = profileFields.some((f) => body[f] !== undefined);
+    ] as const;
+    const profileChanged = profileFields.some(
+      (f) => parsed.data[f] !== undefined,
+    );
 
     if (profileChanged) {
       const profile: InsuranceRiskProfile = {
-        primaryJurisdiction: (body.primaryJurisdiction ||
+        primaryJurisdiction: (parsed.data.primaryJurisdiction ||
           existing.primaryJurisdiction) as JurisdictionCode,
-        operatorType: (body.operatorType ||
+        operatorType: (parsed.data.operatorType ||
           existing.operatorType) as OperatorType,
-        companySize: (body.companySize || existing.companySize) as CompanySize,
-        orbitRegime: (body.orbitRegime || existing.orbitRegime) as OrbitRegime,
-        satelliteCount: body.satelliteCount ?? existing.satelliteCount,
+        companySize: (parsed.data.companySize ||
+          existing.companySize) as CompanySize,
+        orbitRegime: (parsed.data.orbitRegime ||
+          existing.orbitRegime) as OrbitRegime,
+        satelliteCount: parsed.data.satelliteCount ?? existing.satelliteCount,
         satelliteValueEur:
-          body.satelliteValueEur ?? existing.satelliteValueEur ?? 0,
+          parsed.data.satelliteValueEur ?? existing.satelliteValueEur ?? 0,
         totalMissionValueEur:
-          body.totalMissionValueEur ?? existing.totalMissionValueEur ?? 0,
+          parsed.data.totalMissionValueEur ??
+          existing.totalMissionValueEur ??
+          0,
         isConstellationOperator:
-          body.isConstellationOperator ?? existing.isConstellationOperator,
+          parsed.data.isConstellationOperator ??
+          existing.isConstellationOperator,
         hasManeuverability:
-          body.hasManeuverability ?? existing.hasManeuverability,
+          parsed.data.hasManeuverability ?? existing.hasManeuverability,
         missionDurationYears:
-          body.missionDurationYears ?? existing.missionDurationYears,
-        hasFlightHeritage: body.hasFlightHeritage ?? existing.hasFlightHeritage,
+          parsed.data.missionDurationYears ?? existing.missionDurationYears,
+        hasFlightHeritage:
+          parsed.data.hasFlightHeritage ?? existing.hasFlightHeritage,
         launchVehicle:
-          body.launchVehicle ?? existing.launchVehicle ?? undefined,
+          parsed.data.launchVehicle ?? existing.launchVehicle ?? undefined,
         launchProvider:
-          body.launchProvider ?? existing.launchProvider ?? undefined,
-        hasADR: body.hasADR ?? existing.hasADR,
-        hasPropulsion: body.hasPropulsion ?? existing.hasPropulsion,
+          parsed.data.launchProvider ?? existing.launchProvider ?? undefined,
+        hasADR: parsed.data.hasADR ?? existing.hasADR,
+        hasPropulsion: parsed.data.hasPropulsion ?? existing.hasPropulsion,
         hasHazardousMaterials:
-          body.hasHazardousMaterials ?? existing.hasHazardousMaterials,
-        crossBorderOps: body.crossBorderOps ?? existing.crossBorderOps,
+          parsed.data.hasHazardousMaterials ?? existing.hasHazardousMaterials,
+        crossBorderOps: parsed.data.crossBorderOps ?? existing.crossBorderOps,
         annualRevenueEur:
-          body.annualRevenueEur ?? existing.annualRevenueEur ?? undefined,
+          parsed.data.annualRevenueEur ??
+          existing.annualRevenueEur ??
+          undefined,
         turnoversShareSpace:
-          body.turnoversShareSpace ?? existing.turnoversShareSpace ?? undefined,
+          parsed.data.turnoversShareSpace ??
+          existing.turnoversShareSpace ??
+          undefined,
       };
 
       const tplRequirement = calculateTPLRequirement(profile);
@@ -238,18 +284,34 @@ export async function PATCH(
       updateData.calculatedTPL = tplRequirement.amount;
       updateData.riskLevel = riskLevel;
 
-      // Update required status for policies
-      for (const policy of existing.policies) {
-        const isNowRequired = requiredTypes.includes(
-          policy.insuranceType as any,
-        );
-        if (policy.isRequired !== isNowRequired) {
-          await prisma.insurancePolicy.update({
-            where: { id: policy.id },
-            data: { isRequired: isNowRequired },
-          });
-        }
-      }
+      // Batch update required status for policies (avoid N+1)
+      const nowRequiredIds = existing.policies
+        .filter(
+          (p) =>
+            requiredTypes.includes(p.insuranceType as any) && !p.isRequired,
+        )
+        .map((p) => p.id);
+      const nowOptionalIds = existing.policies
+        .filter(
+          (p) =>
+            !requiredTypes.includes(p.insuranceType as any) && p.isRequired,
+        )
+        .map((p) => p.id);
+
+      await Promise.all([
+        nowRequiredIds.length > 0
+          ? prisma.insurancePolicy.updateMany({
+              where: { id: { in: nowRequiredIds } },
+              data: { isRequired: true },
+            })
+          : Promise.resolve(),
+        nowOptionalIds.length > 0
+          ? prisma.insurancePolicy.updateMany({
+              where: { id: { in: nowOptionalIds } },
+              data: { isRequired: false },
+            })
+          : Promise.resolve(),
+      ]);
     }
 
     const updated = await prisma.insuranceAssessment.update({
@@ -266,7 +328,7 @@ export async function PATCH(
       entityType: "insurance_assessment",
       entityId: assessmentId,
       previousValue: { ...existing, policies: undefined },
-      newValue: body,
+      newValue: parsed.data,
       description: "Updated insurance assessment profile",
       ipAddress,
       userAgent,

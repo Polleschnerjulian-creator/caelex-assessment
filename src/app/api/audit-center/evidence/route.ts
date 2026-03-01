@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getOrganizationId } from "@/lib/services/audit-center-service.server";
@@ -78,7 +79,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const evidenceSchema = z.object({
+      regulationType: z.string().min(1, "regulationType is required"),
+      requirementId: z.string().min(1, "requirementId is required"),
+      title: z.string().min(1, "title is required"),
+      description: z.string().optional(),
+      evidenceType: z.string().min(1, "evidenceType is required"),
+      validFrom: z.string().optional(),
+      validUntil: z.string().optional(),
+      documentIds: z.array(z.string()).optional(),
+    });
+
     const body = await request.json();
+    const parsed = evidenceSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       regulationType,
       requirementId,
@@ -88,27 +108,18 @@ export async function POST(request: Request) {
       validFrom,
       validUntil,
       documentIds,
-    } = body;
-
-    if (!regulationType || !requirementId || !title || !evidenceType) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: regulationType, requirementId, title, evidenceType",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const evidence = await prisma.complianceEvidence.create({
       data: {
         organizationId,
         createdBy: session.user.id,
-        regulationType,
+        regulationType:
+          regulationType as import("@prisma/client").RegulationType,
         requirementId,
         title,
         description: description || null,
-        evidenceType,
+        evidenceType: evidenceType as import("@prisma/client").EvidenceType,
         validFrom: validFrom ? new Date(validFrom) : null,
         validUntil: validUntil ? new Date(validUntil) : null,
       },

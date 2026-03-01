@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
@@ -62,6 +63,43 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const schema = z.object({
+      assessmentName: z.string().optional(),
+      missionName: z.string().optional(),
+      operatorType: z.enum(["spacecraft", "launch", "launch_site"]).optional(),
+      missionType: z
+        .enum(["commercial", "research", "government", "educational"])
+        .optional(),
+      spacecraftMassKg: z.number().positive(),
+      spacecraftCount: z.number().optional(),
+      orbitType: z.enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"]),
+      altitudeKm: z.number().optional(),
+      missionDurationYears: z.number().optional(),
+      launchVehicle: z.string().min(1),
+      launchSharePercent: z.number().optional(),
+      launchSiteCountry: z.string().optional(),
+      spacecraftPropellant: z.string().optional(),
+      propellantMassKg: z.number().optional(),
+      groundStationCount: z.number().optional(),
+      dailyContactHours: z.number().optional(),
+      deorbitStrategy: z.enum([
+        "controlled_deorbit",
+        "passive_decay",
+        "graveyard_orbit",
+        "retrieval",
+      ]),
+      isSmallEnterprise: z.boolean().optional(),
+      isResearchEducation: z.boolean().optional(),
+    });
+
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       missionName,
@@ -82,18 +120,7 @@ export async function POST(request: Request) {
       deorbitStrategy,
       isSmallEnterprise,
       isResearchEducation,
-    } = body;
-
-    // Validate required fields
-    if (!spacecraftMassKg || !orbitType || !launchVehicle || !deorbitStrategy) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: spacecraftMassKg, orbitType, launchVehicle, deorbitStrategy",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Resolve organization context for multi-tenant scoping
     const orgCtx = await getCurrentOrganization(userId);

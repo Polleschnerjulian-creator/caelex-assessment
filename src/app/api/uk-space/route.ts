@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -56,65 +57,64 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const createSchema = z.object({
+      assessmentName: z.string().optional(),
+      operatorType: z.enum([
+        "launch_operator",
+        "return_operator",
+        "satellite_operator",
+        "spaceport_operator",
+        "range_control",
+      ]),
+      activityTypes: z
+        .array(
+          z.enum([
+            "launch",
+            "return",
+            "orbital_operations",
+            "suborbital",
+            "spaceport_operations",
+            "range_services",
+          ]),
+        )
+        .min(1),
+      launchFromUk: z.boolean().optional().default(false),
+      launchToOrbit: z.boolean().optional().default(false),
+      isSuborbital: z.boolean().optional().default(false),
+      hasUkNexus: z.boolean().optional().default(true),
+      involvesPeople: z.boolean().optional().default(false),
+      isCommercial: z.boolean().optional().default(true),
+      spacecraftName: z.string().optional(),
+      spacecraftMassKg: z.number().optional(),
+      plannedLaunchSite: z.string().optional(),
+      targetOrbit: z.string().optional(),
+      missionDurationYears: z.number().optional(),
+    });
+
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       operatorType,
       activityTypes,
-      launchFromUk = false,
-      launchToOrbit = false,
-      isSuborbital = false,
-      hasUkNexus = true,
-      involvesPeople = false,
-      isCommercial = true,
+      launchFromUk,
+      launchToOrbit,
+      isSuborbital,
+      hasUkNexus,
+      involvesPeople,
+      isCommercial,
       spacecraftName,
       spacecraftMassKg,
       plannedLaunchSite,
       targetOrbit,
       missionDurationYears,
-    } = body;
-
-    // Validate required fields
-    if (!operatorType || !activityTypes || activityTypes.length === 0) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields: operatorType, activityTypes",
-        },
-        { status: 400 },
-      );
-    }
-
-    // Validate operator type
-    const validOperatorTypes: UkOperatorType[] = [
-      "launch_operator",
-      "return_operator",
-      "satellite_operator",
-      "spaceport_operator",
-      "range_control",
-    ];
-    if (!validOperatorTypes.includes(operatorType)) {
-      return NextResponse.json(
-        { error: "Invalid operator type" },
-        { status: 400 },
-      );
-    }
-
-    // Validate activity types
-    const validActivityTypes: UkActivityType[] = [
-      "launch",
-      "return",
-      "orbital_operations",
-      "suborbital",
-      "spaceport_operations",
-      "range_services",
-    ];
-    for (const activity of activityTypes) {
-      if (!validActivityTypes.includes(activity)) {
-        return NextResponse.json(
-          { error: `Invalid activity type: ${activity}` },
-          { status: 400 },
-        );
-      }
-    }
+    } = parsed.data;
 
     // Create profile for getting applicable requirements
     const profile: UkSpaceProfile = {

@@ -62,9 +62,14 @@ export const SCRIPT_HASHES = {
 export function buildCspHeader(nonce: string, isDev = false): string {
   const scriptSrcParts = [
     "'self'",
-    // Unfortunately needed for Next.js framework scripts
+    // Nonce for inline scripts — with strict-dynamic, only nonced scripts
+    // and their dynamically loaded children are allowed, which overrides
+    // unsafe-inline on browsers that support CSP Level 3+
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
+    // Fallback for older browsers that don't support strict-dynamic/nonce
     "'unsafe-inline'",
-    // External trusted sources only
+    // External trusted sources (ignored by browsers that support strict-dynamic)
     "https://accounts.google.com",
     "https://apis.google.com",
     "https://*.sentry.io",

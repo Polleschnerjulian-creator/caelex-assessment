@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import {
   validateToken,
   logStakeholderAccess,
@@ -69,7 +70,25 @@ export async function POST(request: NextRequest) {
 
     const engagement = result.engagement;
 
+    const schema = z.object({
+      type: z.string().min(1),
+      title: z.string().min(1),
+      statement: z.string().min(1),
+      scope: z.string().min(1),
+      signerName: z.string().min(1),
+      signerTitle: z.string().min(1),
+      validUntil: z.string().optional(),
+    });
+
     const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       type,
       title,
@@ -78,25 +97,7 @@ export async function POST(request: NextRequest) {
       signerName,
       signerTitle,
       validUntil,
-    } = body;
-
-    // Validate required fields
-    if (
-      !type ||
-      !title ||
-      !statement ||
-      !scope ||
-      !signerName ||
-      !signerTitle
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "type, title, statement, scope, signerName, and signerTitle are required",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Create the attestation, auto-filling signer email and org from engagement
     const attestation = await createAttestation({

@@ -9,6 +9,7 @@
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { NextResponse } from "next/server";
+import { parsePaginationLimit } from "@/lib/validations";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
@@ -22,10 +23,7 @@ export async function GET(request: Request) {
     await requireRole(["admin"]);
 
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || "50", 10),
-      100,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
     const entityType = searchParams.get("entityType") || undefined;
     const action = searchParams.get("action") || undefined;

@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { prisma } from "@/lib/prisma";
 import type {
   DocumentGenerationType,
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
     const status = searchParams.get(
       "status",
     ) as DocumentGenerationStatus | null;
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+    const limit = parsePaginationLimit(searchParams.get("limit"), 20, 50);
     const offset = parseInt(searchParams.get("offset") || "0");
 
     const where: Record<string, unknown> = {

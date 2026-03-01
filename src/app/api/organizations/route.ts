@@ -4,6 +4,7 @@
  * POST: Create a new organization
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -53,7 +54,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const createOrgSchema = z.object({
+      name: z
+        .string()
+        .min(2, "Organization name must be at least 2 characters"),
+      slug: z
+        .string()
+        .regex(
+          /^[a-z0-9-]+$/,
+          "Slug can only contain lowercase letters, numbers, and hyphens",
+        )
+        .optional(),
+      logoUrl: z.string().url().optional(),
+      timezone: z.string().optional(),
+      defaultLanguage: z.string().optional(),
+      billingEmail: z.string().email().optional(),
+    });
+
     const body = await request.json();
+    const parsed = createOrgSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       name,
       slug: providedSlug,
@@ -61,28 +87,11 @@ export async function POST(request: Request) {
       timezone,
       defaultLanguage,
       billingEmail,
-    } = body;
-
-    if (!name || name.trim().length < 2) {
-      return NextResponse.json(
-        { error: "Organization name must be at least 2 characters" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Generate or validate slug
     let slug = providedSlug;
     if (slug) {
-      // Validate provided slug format
-      if (!/^[a-z0-9-]+$/.test(slug)) {
-        return NextResponse.json(
-          {
-            error:
-              "Slug can only contain lowercase letters, numbers, and hyphens",
-          },
-          { status: 400 },
-        );
-      }
       if (!(await isSlugAvailable(slug))) {
         return NextResponse.json(
           { error: "This slug is already taken" },

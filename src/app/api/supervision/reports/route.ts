@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePaginationLimit } from "@/lib/validations";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
 // GET /api/supervision/reports - List reports
@@ -14,7 +16,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const reportType = searchParams.get("type");
     const status = searchParams.get("status");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parsePaginationLimit(searchParams.get("limit"));
 
     const config = await prisma.supervisionConfig.findUnique({
       where: { userId: session.user.id },
@@ -81,15 +83,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json();
-    const { reportType, reportPeriod, title, dueDate, content } = body;
+    const reportSchema = z.object({
+      reportType: z.string().min(1),
+      reportPeriod: z.string().optional(),
+      title: z.string().optional(),
+      dueDate: z.string().min(1),
+      content: z.unknown().optional(),
+    });
 
-    if (!reportType || !dueDate) {
+    const body = await req.json();
+    const parsed = reportSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { reportType, reportPeriod, title, dueDate, content } = parsed.data;
 
     // Encrypt content before storage
     const contentString = content ? JSON.stringify(content) : null;

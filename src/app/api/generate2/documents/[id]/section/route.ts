@@ -43,6 +43,19 @@ export async function POST(
       );
     }
 
+    // Validate bounds to prevent array index manipulation
+    if (
+      typeof sectionIndex !== "number" ||
+      !Number.isInteger(sectionIndex) ||
+      sectionIndex < 0 ||
+      sectionIndex > 50
+    ) {
+      return NextResponse.json(
+        { error: "Invalid sectionIndex" },
+        { status: 400 },
+      );
+    }
+
     // Verify the document belongs to this user AND is in GENERATING state (atomic check)
     const doc = await prisma.nCADocument.findFirst({
       where: { id: documentId, userId: session.user.id, status: "GENERATING" },
@@ -77,27 +90,30 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Section generation failed";
+    const safeMessage = "Section generation failed";
     const status = (error as { status?: number }).status;
 
     console.error(
       `[section/route] Section generation error (doc=${documentId}):`,
-      { message, status, error },
+      {
+        message: error instanceof Error ? error.message : safeMessage,
+        status,
+        error,
+      },
     );
 
     // Mark document as FAILED for permanent errors (not transient/retryable)
     const isPermanentFailure =
       status !== 429 && status !== 529 && status !== 503;
     if (documentId && isPermanentFailure) {
-      markGenerationFailed(documentId, message).catch((e) =>
+      markGenerationFailed(documentId, safeMessage).catch((e) =>
         console.error("[section/route] Failed to mark doc as FAILED:", e),
       );
     }
 
     return NextResponse.json(
       {
-        error: message,
+        error: safeMessage,
         code: status === 429 ? "RATE_LIMITED" : "GENERATION_FAILED",
         retryable: !isPermanentFailure,
       },

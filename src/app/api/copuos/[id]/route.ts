@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -125,6 +126,35 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      guidelineStatuses: z
+        .array(
+          z.object({
+            guidelineId: z.string().min(1),
+            status: z.string().min(1),
+            notes: z.string().optional(),
+            evidenceNotes: z.string().optional(),
+            targetDate: z.string().optional(),
+          }),
+        )
+        .optional(),
+      deorbitStrategy: z.string().optional(),
+      deorbitTimelineYears: z.number().optional(),
+      passivationPlan: z.string().optional(),
+      caServiceProvider: z.string().optional(),
+      caServiceActive: z.boolean().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existingAssessment = await prisma.copuosAssessment.findFirst({
       where: { id, userId },
@@ -146,7 +176,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       passivationPlan,
       caServiceProvider,
       caServiceActive,
-    } = body;
+    } = parsed.data;
 
     // Update assessment
     const updates: Record<string, unknown> = {};

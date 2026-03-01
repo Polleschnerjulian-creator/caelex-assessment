@@ -63,11 +63,10 @@ async function checkBadgeEligibility(
       });
     }
 
-    // Award badges (upsert to avoid duplicates)
-    const awarded: string[] = [];
-    for (const badge of badgesToAward) {
-      try {
-        await prisma.academyBadge.upsert({
+    // Award badges (parallel upserts to avoid N+1)
+    const badgeResults = await Promise.allSettled(
+      badgesToAward.map((badge) =>
+        prisma.academyBadge.upsert({
           where: {
             userId_badgeType: {
               userId,
@@ -80,12 +79,12 @@ async function checkBadgeEligibility(
             metadata: badge.metadata as Prisma.InputJsonValue,
           },
           update: {},
-        });
-        awarded.push(badge.badgeType);
-      } catch {
-        // Badge already exists or other error — skip silently
-      }
-    }
+        }),
+      ),
+    );
+    const awarded = badgesToAward
+      .filter((_, i) => badgeResults[i].status === "fulfilled")
+      .map((b) => b.badgeType);
 
     return awarded;
   } catch (error) {

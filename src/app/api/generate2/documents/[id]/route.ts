@@ -72,7 +72,7 @@ export async function PATCH(
     const { editedContent } = body as { editedContent: unknown };
 
     const updated = await prisma.nCADocument.update({
-      where: { id },
+      where: { id, userId: session.user.id },
       data: {
         editedContent: editedContent as object,
         isEdited: true,
@@ -113,7 +113,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.nCADocument.delete({ where: { id } });
+    await prisma.nCADocument.delete({ where: { id, userId: session.user.id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

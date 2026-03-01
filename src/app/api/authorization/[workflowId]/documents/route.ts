@@ -1,12 +1,23 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   logAuditEvent,
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
 import { evaluateWorkflowTransitions } from "@/lib/services";
+
+// Authorization document status transition rules
+const ALLOWED_DOC_TRANSITIONS: Record<string, string[]> = {
+  not_started: ["in_progress"],
+  in_progress: ["ready", "not_started"],
+  ready: ["submitted", "in_progress"],
+  submitted: ["approved", "rejected", "in_progress"],
+  approved: [],
+  rejected: ["in_progress"],
+};
 
 // PUT /api/authorization/[workflowId]/documents - Update document status
 export async function PUT(
@@ -21,16 +32,24 @@ export async function PUT(
 
     const { workflowId } = await params;
     const userId = session.user.id;
+
+    const updateDocumentSchema = z.object({
+      documentId: z.string().min(1),
+      status: z.string().optional(),
+      notes: z.string().optional(),
+      dueDate: z.string().nullable().optional(),
+    });
+
     const body = await request.json();
-
-    const { documentId, status, notes, dueDate } = body;
-
-    if (!documentId) {
+    const parsed = updateDocumentSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "documentId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { documentId, status, notes, dueDate } = parsed.data;
 
     // Verify workflow ownership
     const workflow = await prisma.authorizationWorkflow.findFirst({
@@ -60,6 +79,20 @@ export async function PUT(
         { error: "Document not found" },
         { status: 404 },
       );
+    }
+
+    // Validate status transition
+    if (status !== undefined && status !== existingDoc.status) {
+      const allowed = ALLOWED_DOC_TRANSITIONS[existingDoc.status] ?? [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json(
+          {
+            error: `Cannot transition document from "${existingDoc.status}" to "${status}"`,
+            allowedTransitions: allowed,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // Build update data
@@ -176,23 +209,27 @@ export async function POST(
 
     const { workflowId } = await params;
     const userId = session.user.id;
+
+    const createDocumentSchema = z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      documentType: z.string().min(1),
+      articleRef: z.string().optional(),
+      required: z.boolean().optional().default(false),
+      dueDate: z.string().optional(),
+    });
+
     const body = await request.json();
-
-    const {
-      name,
-      description,
-      documentType,
-      articleRef,
-      required = false,
-      dueDate,
-    } = body;
-
-    if (!name || !documentType) {
+    const parsed = createDocumentSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "name and documentType are required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { name, description, documentType, articleRef, required, dueDate } =
+      parsed.data;
 
     // Verify workflow ownership
     const workflow = await prisma.authorizationWorkflow.findFirst({

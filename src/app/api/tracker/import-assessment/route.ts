@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { articles, OperatorType } from "@/data/articles";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
+
+const ImportAssessmentSchema = z.object({
+  operatorType: z.string().min(1, "operatorType is required").max(50),
+});
 
 // Map assessment operator type to article OperatorType
 const operatorTypeMap: Record<string, OperatorType> = {
@@ -24,14 +29,16 @@ export async function POST(request: Request) {
 
     const userId = session.user.id;
 
-    const { operatorType } = await request.json();
-
-    if (!operatorType) {
+    const body = await request.json();
+    const parsed = ImportAssessmentSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing operatorType" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { operatorType } = parsed.data;
 
     const opType = operatorTypeMap[operatorType] || operatorType;
 

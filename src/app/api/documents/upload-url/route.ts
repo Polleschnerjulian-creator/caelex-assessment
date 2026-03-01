@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -38,7 +39,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: UploadUrlRequest = await request.json();
+    const uploadUrlSchema = z.object({
+      filename: z.string().min(1, "filename is required"),
+      mimeType: z.string().min(1, "mimeType is required"),
+      fileSize: z.number().positive("fileSize must be positive"),
+      category: z.string().min(1, "category is required"),
+      organizationId: z.string().optional(),
+      documentId: z.string().optional(),
+    });
+
+    const body = await request.json();
+    const parsed = uploadUrlSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       filename,
       mimeType,
@@ -46,18 +64,7 @@ export async function POST(request: NextRequest) {
       category,
       organizationId,
       documentId,
-    } = body;
-
-    // Validate required fields
-    if (!filename || !mimeType || !fileSize || !category) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: filename, mimeType, fileSize, category",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Validate MIME type
     if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
@@ -98,7 +105,7 @@ export async function POST(request: NextRequest) {
     // Generate presigned upload URL
     const result = await generatePresignedUploadUrl(
       ownerId,
-      category,
+      category as DocumentCategory,
       filename,
       mimeType,
       fileSize,

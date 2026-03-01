@@ -51,16 +51,21 @@ function createPrismaProxy(): PrismaClient {
     });
   }
 
+  // For Neon serverless: append connection_limit if not already in URL.
+  // Each Vercel function instance should use few connections (Neon pools at proxy level).
+  const url = process.env.DATABASE_URL!;
+  const hasConnectionLimit =
+    url.includes("connection_limit") || url.includes("pool_timeout");
+
   return new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    datasourceUrl: hasConnectionLimit
+      ? undefined // Use DATABASE_URL as-is
+      : `${url}${url.includes("?") ? "&" : "?"}connection_limit=5`,
   });
 }
 
 // Standard Prisma client works with Neon PostgreSQL via pooled connections
-// For edge deployments, consider using @prisma/adapter-neon with dynamic imports
 export const prisma: PrismaClient =
   globalForPrisma.prisma ?? createPrismaProxy();
 

@@ -5,6 +5,7 @@
 
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { parsePaginationLimit } from "@/lib/validations";
 import {
   getUserNotifications,
   NOTIFICATION_CONFIG,
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     const severity = url.searchParams.get(
       "severity",
     ) as NotificationSeverity | null;
-    const limit = parseInt(url.searchParams.get("limit") || "20");
+    const limit = parsePaginationLimit(url.searchParams.get("limit"), 20);
     const offset = parseInt(url.searchParams.get("offset") || "0");
 
     const { notifications, total, unreadCount } = await getUserNotifications(

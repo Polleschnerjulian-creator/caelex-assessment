@@ -16,8 +16,16 @@ import {
   CSRF_HEADER_NAME,
   validateCsrfToken,
 } from "@/lib/csrf";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+
+const deleteAccountSchema = z.object({
+  password: z.string().optional(),
+  confirmation: z.literal("DELETE MY ACCOUNT", {
+    message: "Please type 'DELETE MY ACCOUNT' to confirm",
+  }),
+});
 
 /**
  * DELETE /api/user/delete
@@ -48,17 +56,18 @@ export async function DELETE(req: Request) {
 
     const userId = session.user.id;
 
-    // Parse request body
+    // Parse and validate request body
     const body = await req.json();
-    const { password, confirmation } = body;
+    const parsed = deleteAccountSchema.safeParse(body);
 
-    // Validate confirmation string
-    if (confirmation !== "DELETE MY ACCOUNT") {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Please type 'DELETE MY ACCOUNT' to confirm" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { password, confirmation } = parsed.data;
 
     // Get user from database
     const user = await prisma.user.findUnique({

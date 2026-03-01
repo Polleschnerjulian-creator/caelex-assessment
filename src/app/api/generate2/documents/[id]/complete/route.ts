@@ -225,8 +225,6 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[generate2/complete] Finalize error:", error);
-    const message =
-      error instanceof Error ? error.message : "Finalization failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Finalization failed" }, { status: 500 });
   }
 }

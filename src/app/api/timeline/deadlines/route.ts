@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import type { DeadlineCategory, Priority, ModuleType } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parsePaginationLimit } from "@/lib/validations";
 
 // GET /api/timeline/deadlines - List deadlines with filters
 export async function GET(req: Request) {
@@ -17,7 +20,7 @@ export async function GET(req: Request) {
     const moduleSource = searchParams.get("moduleSource");
     const from = searchParams.get("from");
     const to = searchParams.get("to");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
     const where: Record<string, unknown> = { userId: session.user.id };
@@ -99,7 +102,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const deadlineSchema = z.object({
+      title: z.string().min(1),
+      description: z.string().optional(),
+      dueDate: z.string().min(1),
+      category: z.string().min(1),
+      priority: z.string().min(1),
+      moduleSource: z.string().optional(),
+      relatedEntityId: z.string().optional(),
+      reminderDays: z.array(z.number().int()).optional(),
+      isRecurring: z.boolean().optional(),
+      recurrenceRule: z.string().optional(),
+      assignedTo: z.string().optional(),
+      assignedTeam: z.string().optional(),
+      regulatoryRef: z.string().optional(),
+      penaltyInfo: z.string().optional(),
+    });
+
     const body = await req.json();
+    const parsed = deadlineSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       title,
       description,
@@ -115,16 +143,7 @@ export async function POST(req: Request) {
       assignedTeam,
       regulatoryRef,
       penaltyInfo,
-    } = body;
-
-    if (!title || !dueDate || !category || !priority) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields: title, dueDate, category, priority",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Determine initial status
     const dueDateObj = new Date(dueDate);
@@ -144,10 +163,10 @@ export async function POST(req: Request) {
         title,
         description,
         dueDate: dueDateObj,
-        category,
-        priority,
+        category: category as DeadlineCategory,
+        priority: priority as Priority,
         status,
-        moduleSource,
+        moduleSource: moduleSource as ModuleType | undefined,
         relatedEntityId,
         reminderDays: reminderDays || [30, 14, 7, 3, 1],
         isRecurring: isRecurring || false,

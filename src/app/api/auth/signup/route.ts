@@ -5,9 +5,20 @@ import { generateUniqueSlug } from "@/lib/services/organization-service";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { RegisterSchema, formatZodErrors } from "@/lib/validations";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
   try {
+    // Rate limit signup to prevent mass account creation
+    const identifier = getIdentifier(request);
+    const rateLimit = await checkRateLimit("auth", identifier);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many signup attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
 
     // Validate input using the centralized schema

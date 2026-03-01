@@ -11,6 +11,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { generateGlossaryBreadcrumbs } from "@/lib/breadcrumbs";
 import { siteConfig } from "@/lib/seo";
+import DOMPurify from "isomorphic-dompurify";
 import {
   getAllTerms,
   getTermBySlug,
@@ -164,7 +165,25 @@ function renderMarkdown(content: string): string {
     return match;
   });
 
-  return html;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "h2",
+      "h3",
+      "h4",
+      "p",
+      "strong",
+      "em",
+      "ul",
+      "ol",
+      "li",
+      "code",
+      "pre",
+      "a",
+      "span",
+      "br",
+    ],
+    ALLOWED_ATTR: ["class", "id", "href", "target", "rel"],
+  });
 }
 
 // ============================================================================

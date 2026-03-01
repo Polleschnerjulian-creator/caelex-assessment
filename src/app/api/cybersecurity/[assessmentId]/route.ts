@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { safeJsonParseArray } from "@/lib/validations";
 import { decrypt, isEncrypted } from "@/lib/encryption";
@@ -89,6 +90,47 @@ export async function PATCH(
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentName: z.string().optional(),
+      organizationSize: z
+        .enum(["micro", "small", "medium", "large"])
+        .optional(),
+      employeeCount: z.number().optional(),
+      annualRevenue: z.number().optional(),
+      spaceSegmentComplexity: z
+        .enum([
+          "ground_only",
+          "single_satellite",
+          "small_constellation",
+          "large_constellation",
+        ])
+        .optional(),
+      satelliteCount: z.number().optional(),
+      hasGroundSegment: z.boolean().optional(),
+      groundStationCount: z.number().optional(),
+      dataSensitivityLevel: z
+        .enum(["public", "internal", "confidential", "classified"])
+        .optional(),
+      processesPersonalData: z.boolean().optional(),
+      handlesGovData: z.boolean().optional(),
+      existingCertifications: z.array(z.string()).optional(),
+      hasSecurityTeam: z.boolean().optional(),
+      securityTeamSize: z.number().optional(),
+      hasIncidentResponsePlan: z.boolean().optional(),
+      hasBCP: z.boolean().optional(),
+      criticalSupplierCount: z.number().optional(),
+      supplierSecurityAssessed: z.boolean().optional(),
+      // maturityScore is server-calculated only — not accepted from client input
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existing = await prisma.cybersecurityAssessment.findFirst({
       where: {
@@ -107,45 +149,45 @@ export async function PATCH(
     // Build update data
     const updateData: Record<string, unknown> = {};
 
-    if (body.assessmentName !== undefined)
-      updateData.assessmentName = body.assessmentName;
-    if (body.organizationSize !== undefined)
-      updateData.organizationSize = body.organizationSize;
-    if (body.employeeCount !== undefined)
-      updateData.employeeCount = body.employeeCount;
-    if (body.annualRevenue !== undefined)
-      updateData.annualRevenue = body.annualRevenue;
-    if (body.spaceSegmentComplexity !== undefined)
-      updateData.spaceSegmentComplexity = body.spaceSegmentComplexity;
-    if (body.satelliteCount !== undefined)
-      updateData.satelliteCount = body.satelliteCount;
-    if (body.hasGroundSegment !== undefined)
-      updateData.hasGroundSegment = body.hasGroundSegment;
-    if (body.groundStationCount !== undefined)
-      updateData.groundStationCount = body.groundStationCount;
-    if (body.dataSensitivityLevel !== undefined)
-      updateData.dataSensitivityLevel = body.dataSensitivityLevel;
-    if (body.processesPersonalData !== undefined)
-      updateData.processesPersonalData = body.processesPersonalData;
-    if (body.handlesGovData !== undefined)
-      updateData.handlesGovData = body.handlesGovData;
-    if (body.existingCertifications !== undefined)
+    if (parsed.data.assessmentName !== undefined)
+      updateData.assessmentName = parsed.data.assessmentName;
+    if (parsed.data.organizationSize !== undefined)
+      updateData.organizationSize = parsed.data.organizationSize;
+    if (parsed.data.employeeCount !== undefined)
+      updateData.employeeCount = parsed.data.employeeCount;
+    if (parsed.data.annualRevenue !== undefined)
+      updateData.annualRevenue = parsed.data.annualRevenue;
+    if (parsed.data.spaceSegmentComplexity !== undefined)
+      updateData.spaceSegmentComplexity = parsed.data.spaceSegmentComplexity;
+    if (parsed.data.satelliteCount !== undefined)
+      updateData.satelliteCount = parsed.data.satelliteCount;
+    if (parsed.data.hasGroundSegment !== undefined)
+      updateData.hasGroundSegment = parsed.data.hasGroundSegment;
+    if (parsed.data.groundStationCount !== undefined)
+      updateData.groundStationCount = parsed.data.groundStationCount;
+    if (parsed.data.dataSensitivityLevel !== undefined)
+      updateData.dataSensitivityLevel = parsed.data.dataSensitivityLevel;
+    if (parsed.data.processesPersonalData !== undefined)
+      updateData.processesPersonalData = parsed.data.processesPersonalData;
+    if (parsed.data.handlesGovData !== undefined)
+      updateData.handlesGovData = parsed.data.handlesGovData;
+    if (parsed.data.existingCertifications !== undefined)
       updateData.existingCertifications = JSON.stringify(
-        body.existingCertifications,
+        parsed.data.existingCertifications,
       );
-    if (body.hasSecurityTeam !== undefined)
-      updateData.hasSecurityTeam = body.hasSecurityTeam;
-    if (body.securityTeamSize !== undefined)
-      updateData.securityTeamSize = body.securityTeamSize;
-    if (body.hasIncidentResponsePlan !== undefined)
-      updateData.hasIncidentResponsePlan = body.hasIncidentResponsePlan;
-    if (body.hasBCP !== undefined) updateData.hasBCP = body.hasBCP;
-    if (body.criticalSupplierCount !== undefined)
-      updateData.criticalSupplierCount = body.criticalSupplierCount;
-    if (body.supplierSecurityAssessed !== undefined)
-      updateData.supplierSecurityAssessed = body.supplierSecurityAssessed;
-    if (body.maturityScore !== undefined)
-      updateData.maturityScore = body.maturityScore;
+    if (parsed.data.hasSecurityTeam !== undefined)
+      updateData.hasSecurityTeam = parsed.data.hasSecurityTeam;
+    if (parsed.data.securityTeamSize !== undefined)
+      updateData.securityTeamSize = parsed.data.securityTeamSize;
+    if (parsed.data.hasIncidentResponsePlan !== undefined)
+      updateData.hasIncidentResponsePlan = parsed.data.hasIncidentResponsePlan;
+    if (parsed.data.hasBCP !== undefined)
+      updateData.hasBCP = parsed.data.hasBCP;
+    if (parsed.data.criticalSupplierCount !== undefined)
+      updateData.criticalSupplierCount = parsed.data.criticalSupplierCount;
+    if (parsed.data.supplierSecurityAssessed !== undefined)
+      updateData.supplierSecurityAssessed =
+        parsed.data.supplierSecurityAssessed;
 
     // Recalculate simplified regime if profile changed
     const profileFields = [
@@ -154,45 +196,55 @@ export async function PATCH(
       "processesPersonalData",
       "handlesGovData",
       "satelliteCount",
-    ];
-    const profileChanged = profileFields.some((f) => body[f] !== undefined);
+    ] as const;
+    const profileChanged = profileFields.some(
+      (f) => parsed.data[f] !== undefined,
+    );
 
     if (profileChanged) {
       // Build new profile
       const profile: CybersecurityProfile = {
-        organizationSize: (body.organizationSize ||
+        organizationSize: (parsed.data.organizationSize ||
           existing.organizationSize) as OrganizationSize,
         employeeCount:
-          body.employeeCount ?? existing.employeeCount ?? undefined,
+          parsed.data.employeeCount ?? existing.employeeCount ?? undefined,
         annualRevenue:
-          body.annualRevenue ?? existing.annualRevenue ?? undefined,
-        spaceSegmentComplexity: (body.spaceSegmentComplexity ||
+          parsed.data.annualRevenue ?? existing.annualRevenue ?? undefined,
+        spaceSegmentComplexity: (parsed.data.spaceSegmentComplexity ||
           existing.spaceSegmentComplexity) as SpaceSegmentComplexity,
         satelliteCount:
-          body.satelliteCount ?? existing.satelliteCount ?? undefined,
-        hasGroundSegment: body.hasGroundSegment ?? existing.hasGroundSegment,
+          parsed.data.satelliteCount ?? existing.satelliteCount ?? undefined,
+        hasGroundSegment:
+          parsed.data.hasGroundSegment ?? existing.hasGroundSegment,
         groundStationCount:
-          body.groundStationCount ?? existing.groundStationCount ?? undefined,
-        dataSensitivityLevel: (body.dataSensitivityLevel ||
+          parsed.data.groundStationCount ??
+          existing.groundStationCount ??
+          undefined,
+        dataSensitivityLevel: (parsed.data.dataSensitivityLevel ||
           existing.dataSensitivityLevel) as DataSensitivityLevel,
         processesPersonalData:
-          body.processesPersonalData ?? existing.processesPersonalData,
-        handlesGovData: body.handlesGovData ?? existing.handlesGovData,
+          parsed.data.processesPersonalData ?? existing.processesPersonalData,
+        handlesGovData: parsed.data.handlesGovData ?? existing.handlesGovData,
         existingCertifications:
-          body.existingCertifications ||
+          parsed.data.existingCertifications ||
           safeJsonParseArray<string>(existing.existingCertifications),
-        hasSecurityTeam: body.hasSecurityTeam ?? existing.hasSecurityTeam,
+        hasSecurityTeam:
+          parsed.data.hasSecurityTeam ?? existing.hasSecurityTeam,
         securityTeamSize:
-          body.securityTeamSize ?? existing.securityTeamSize ?? undefined,
+          parsed.data.securityTeamSize ??
+          existing.securityTeamSize ??
+          undefined,
         hasIncidentResponsePlan:
-          body.hasIncidentResponsePlan ?? existing.hasIncidentResponsePlan,
-        hasBCP: body.hasBCP ?? existing.hasBCP,
+          parsed.data.hasIncidentResponsePlan ??
+          existing.hasIncidentResponsePlan,
+        hasBCP: parsed.data.hasBCP ?? existing.hasBCP,
         criticalSupplierCount:
-          body.criticalSupplierCount ??
+          parsed.data.criticalSupplierCount ??
           existing.criticalSupplierCount ??
           undefined,
         supplierSecurityAssessed:
-          body.supplierSecurityAssessed ?? existing.supplierSecurityAssessed,
+          parsed.data.supplierSecurityAssessed ??
+          existing.supplierSecurityAssessed,
       };
 
       updateData.isSimplifiedRegime = isEligibleForSimplifiedRegime(profile);
@@ -249,7 +301,7 @@ export async function PATCH(
       entityType: "cybersecurity_assessment",
       entityId: assessmentId,
       previousValue: { ...existing },
-      newValue: body,
+      newValue: parsed.data,
       description: "Updated cybersecurity assessment profile",
       ipAddress,
       userAgent,

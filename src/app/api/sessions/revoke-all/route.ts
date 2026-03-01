@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import {
@@ -52,8 +53,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const revokeAllSchema = z.object({
+      exceptCurrent: z.boolean().optional().default(false),
+    });
+
     const body = await request.json().catch(() => ({}));
-    const { exceptCurrent } = body;
+    const parsed = revokeAllSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { exceptCurrent } = parsed.data;
 
     // Resolve the current session ID so we can optionally keep it alive
     const currentSessionId = exceptCurrent

@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
 import {
   type ExportControlProfile,
   type ExportControlApplicability,
@@ -152,6 +153,79 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      companyTypes: z
+        .array(
+          z.enum([
+            "spacecraft_manufacturer",
+            "satellite_operator",
+            "launch_provider",
+            "component_supplier",
+            "software_developer",
+            "technology_provider",
+            "defense_contractor",
+            "research_institution",
+            "university",
+            "foreign_subsidiary",
+            "all",
+          ]),
+        )
+        .optional(),
+      hasITARItems: z.boolean().optional(),
+      hasEARItems: z.boolean().optional(),
+      hasForeignNationals: z.boolean().optional(),
+      foreignNationalCountries: z.array(z.string()).optional(),
+      exportsToCountries: z.array(z.string()).optional(),
+      hasTechnologyTransfer: z.boolean().optional(),
+      hasDefenseContracts: z.boolean().optional(),
+      hasManufacturingAbroad: z.boolean().optional(),
+      hasJointVentures: z.boolean().optional(),
+      annualExportValue: z.number().optional(),
+      registeredWithDDTC: z.boolean().optional(),
+      ddtcRegistrationNo: z.string().optional(),
+      ddtcRegistrationExpiry: z.string().optional(),
+      hasTCP: z.boolean().optional(),
+      tcpLastReviewDate: z.string().optional(),
+      hasECL: z.boolean().optional(),
+      hasAutomatedScreening: z.boolean().optional(),
+      screeningVendor: z.string().optional(),
+      empoweredOfficialName: z.string().optional(),
+      empoweredOfficialEmail: z.string().optional(),
+      empoweredOfficialTitle: z.string().optional(),
+      jurisdictionDetermination: z.string().optional(),
+      hasCJRequest: z.boolean().optional(),
+      cjRequestDate: z.string().optional(),
+      cjDeterminationDate: z.string().optional(),
+      cjDetermination: z.string().optional(),
+      activeITARLicenses: z.number().optional(),
+      pendingITARLicenses: z.number().optional(),
+      activeTAAs: z.number().optional(),
+      activeMLAs: z.number().optional(),
+      activeEARLicenses: z.number().optional(),
+      pendingEARLicenses: z.number().optional(),
+      usesLicenseExceptions: z.boolean().optional(),
+      licenseExceptionsUsed: z.array(z.string()).optional(),
+      lastTrainingDate: z.string().optional(),
+      nextTrainingDue: z.string().optional(),
+      trainingCompletionRate: z.number().optional(),
+      lastAuditDate: z.string().optional(),
+      nextAuditDue: z.string().optional(),
+      lastAuditFindings: z.number().optional(),
+      hasVoluntaryDisclosures: z.boolean().optional(),
+      voluntaryDisclosureCount: z.number().optional(),
+      lastVoluntaryDisclosureDate: z.string().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existingAssessment = await prisma.exportControlAssessment.findFirst({
       where: { id, userId },
@@ -212,7 +286,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       hasVoluntaryDisclosures,
       voluntaryDisclosureCount,
       lastVoluntaryDisclosureDate,
-    } = body;
+    } = parsed.data;
 
     // Build update data
     const updateData: Record<string, unknown> = {};

@@ -3,6 +3,8 @@
  *
  * Validates all required environment variables on startup.
  * Fails fast if critical variables are missing or invalid.
+ *
+ * Set SKIP_ENV_VALIDATION=true to bypass validation (CI builds).
  */
 
 import { z } from "zod";
@@ -85,6 +87,12 @@ const envSchema = z.object({
 
   // ─── Tracking (optional) ───
   LOGSNAG_TOKEN: z.string().optional(),
+
+  // ─── Client-side (NEXT_PUBLIC_) ───
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+  NEXT_PUBLIC_AUTH_ENABLED: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
 });
 
 /**
@@ -119,9 +127,17 @@ let validatedEnv: Env | null = null;
 /**
  * Validate environment variables.
  * Call this at application startup.
+ *
+ * Set SKIP_ENV_VALIDATION=true to bypass (used in CI builds).
  */
 export function validateEnv(): Env {
   if (validatedEnv) {
+    return validatedEnv;
+  }
+
+  // Allow CI builds to skip validation entirely
+  if (process.env.SKIP_ENV_VALIDATION === "true") {
+    validatedEnv = process.env as unknown as Env;
     return validatedEnv;
   }
 

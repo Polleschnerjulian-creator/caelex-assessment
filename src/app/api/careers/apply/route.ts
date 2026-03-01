@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { Resend } from "resend";
+import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 function escapeHtml(str: string): string {
   if (!str) return "";
@@ -17,21 +19,80 @@ function getResend() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: prevent spam applications
+    const identifier = getIdentifier(request);
+    const rateLimit = await checkRateLimit("sensitive", identifier);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many applications. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const formData = await request.formData();
 
-    const position = formData.get("position") as string;
-    const positionId = formData.get("positionId") as string;
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const linkedin = formData.get("linkedin") as string;
-    const location = formData.get("location") as string;
-    const experience = formData.get("experience") as string;
-    const motivation = formData.get("motivation") as string;
-    const availability = formData.get("availability") as string;
-    const salary = formData.get("salary") as string;
-    const referral = formData.get("referral") as string;
+    const applicationSchema = z.object({
+      position: z.string().min(1, "Position is required").max(200),
+      positionId: z.string().min(1, "Position ID is required").max(100),
+      firstName: z.string().min(1, "First name is required").max(100),
+      lastName: z.string().min(1, "Last name is required").max(100),
+      email: z.string().email("Invalid email format").max(320),
+      phone: z.string().max(50).optional().default(""),
+      linkedin: z
+        .string()
+        .url("Invalid LinkedIn URL")
+        .max(500)
+        .or(z.literal(""))
+        .optional()
+        .default(""),
+      location: z.string().min(1, "Location is required").max(200),
+      experience: z.string().min(1, "Experience is required").max(50),
+      motivation: z.string().min(1, "Motivation is required").max(5000),
+      availability: z.string().min(1, "Availability is required").max(200),
+      salary: z.string().max(200).optional().default(""),
+      referral: z.string().max(500).optional().default(""),
+    });
+
+    const formFields = {
+      position: formData.get("position") ?? "",
+      positionId: formData.get("positionId") ?? "",
+      firstName: formData.get("firstName") ?? "",
+      lastName: formData.get("lastName") ?? "",
+      email: formData.get("email") ?? "",
+      phone: formData.get("phone") ?? "",
+      linkedin: formData.get("linkedin") ?? "",
+      location: formData.get("location") ?? "",
+      experience: formData.get("experience") ?? "",
+      motivation: formData.get("motivation") ?? "",
+      availability: formData.get("availability") ?? "",
+      salary: formData.get("salary") ?? "",
+      referral: formData.get("referral") ?? "",
+    };
+
+    const parsed = applicationSchema.safeParse(formFields);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const {
+      position,
+      positionId,
+      firstName,
+      lastName,
+      email,
+      phone,
+      linkedin,
+      location,
+      experience,
+      motivation,
+      availability,
+      salary,
+      referral,
+    } = parsed.data;
     const resumeFile = formData.get("resume") as File | null;
 
     // Prepare attachments (with file validation)

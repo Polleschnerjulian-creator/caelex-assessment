@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nationalAuthorities } from "@/data/national-authorities";
@@ -105,7 +106,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const supervisionConfigSchema = z.object({
+      primaryCountry: z.string().min(1),
+      additionalCountries: z.array(z.string()).optional(),
+      designatedContactName: z.string().optional(),
+      designatedContactEmail: z.string().optional(),
+      designatedContactPhone: z.string().optional(),
+      designatedContactRole: z.string().optional(),
+      communicationLanguage: z.string().optional(),
+      notificationMethod: z.string().optional(),
+      enableAutoReminders: z.boolean().optional(),
+      reminderDaysAdvance: z.number().int().optional(),
+    });
+
     const body = await req.json();
+    const parsed = supervisionConfigSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       primaryCountry,
       additionalCountries,
@@ -117,10 +139,10 @@ export async function POST(req: Request) {
       notificationMethod,
       enableAutoReminders,
       reminderDaysAdvance,
-    } = body;
+    } = parsed.data;
 
     // Validate primary country
-    if (!primaryCountry || !nationalAuthorities[primaryCountry]) {
+    if (!nationalAuthorities[primaryCountry]) {
       return NextResponse.json(
         { error: "Invalid primary country" },
         { status: 400 },

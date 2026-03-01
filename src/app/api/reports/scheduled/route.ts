@@ -5,7 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { parsePaginationLimit } from "@/lib/validations";
 import { logAuditEvent } from "@/lib/audit";
 import {
   createScheduledReport,
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
       "reportType",
     ) as ScheduledReportType | null;
     const isActive = searchParams.get("isActive");
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const { reports, total } = await getScheduledReports(session.user.id, {
@@ -73,7 +75,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const scheduledReportSchema = z.object({
+      name: z
+        .string()
+        .min(1, "Name is required")
+        .transform((s) => s.trim()),
+      reportType: z.string().min(1, "Report type is required"),
+      schedule: z.string().optional(),
+      timezone: z.string().optional(),
+      recipients: z.array(z.string()).optional(),
+      sendToSelf: z.boolean().optional(),
+      format: z.string().optional(),
+      includeCharts: z.boolean().optional(),
+      filters: z.any().optional(),
+    });
+
     const body = await request.json();
+    const parsed = scheduledReportSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       name,
       reportType,
@@ -84,22 +109,11 @@ export async function POST(request: NextRequest) {
       format,
       includeCharts,
       filters,
-    } = body;
-
-    // Validation
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
-    }
-
-    if (!reportType) {
-      return NextResponse.json(
-        { error: "Report type is required" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Use default schedule if not provided
-    const finalSchedule = schedule || getDefaultScheduleForType(reportType);
+    const finalSchedule =
+      schedule || getDefaultScheduleForType(reportType as ScheduledReportType);
 
     // Validate cron expression
     try {

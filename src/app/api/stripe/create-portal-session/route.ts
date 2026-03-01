@@ -9,6 +9,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createPortalSession } from "@/lib/services/subscription-service";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { CuidSchema } from "@/lib/validations";
+
+const PortalSessionBodySchema = z.object({
+  organizationId: CuidSchema,
+  returnUrl: z.string().url().max(2048).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +25,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { organizationId } = body;
-
-    if (!organizationId) {
+    const parsed = PortalSessionBodySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId } = parsed.data;
 
     // Verify user has access to organization
     const membership = await prisma.organizationMember.findFirst({

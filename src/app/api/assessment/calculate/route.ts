@@ -11,6 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   calculateCompliance,
   loadSpaceActDataFromDisk,
@@ -23,100 +24,37 @@ import {
 } from "@/lib/ratelimit";
 import type { AssessmentAnswers } from "@/lib/types";
 
-// Valid values for input validation
-const VALID_ACTIVITY_TYPES = [
-  "spacecraft",
-  "launch_vehicle",
-  "launch_site",
-  "isos",
-  "data_provider",
-] as const;
-const VALID_ENTITY_SIZES = ["small", "research", "medium", "large"] as const;
-const VALID_ORBITS = ["LEO", "MEO", "GEO", "beyond"] as const;
-const VALID_ESTABLISHMENTS = [
-  "eu",
-  "third_country_eu_services",
-  "third_country_no_eu",
-] as const;
+const answersSchema = z.object({
+  activityType: z
+    .enum([
+      "spacecraft",
+      "launch_vehicle",
+      "launch_site",
+      "isos",
+      "data_provider",
+    ])
+    .nullable()
+    .optional(),
+  entitySize: z
+    .enum(["small", "research", "medium", "large"])
+    .nullable()
+    .optional(),
+  primaryOrbit: z.enum(["LEO", "MEO", "GEO", "beyond"]).nullable().optional(),
+  establishment: z
+    .enum(["eu", "third_country_eu_services", "third_country_no_eu"])
+    .nullable()
+    .optional(),
+  constellationSize: z.number().min(0).max(100000).nullable().optional(),
+  isDefenseOnly: z.boolean().nullable().optional(),
+  hasPostLaunchAssets: z.boolean().nullable().optional(),
+  operatesConstellation: z.boolean().nullable().optional(),
+  offersEUServices: z.boolean().nullable().optional(),
+});
 
-/**
- * Basic input validation for assessment answers.
- * Returns null if valid, or an error message string if invalid.
- */
-function validateAnswers(answers: unknown): string | null {
-  if (!answers || typeof answers !== "object") {
-    return "Invalid request body: expected an object";
-  }
-
-  const a = answers as Record<string, unknown>;
-
-  // activityType is required
-  if (
-    a.activityType !== null &&
-    !VALID_ACTIVITY_TYPES.includes(
-      a.activityType as (typeof VALID_ACTIVITY_TYPES)[number],
-    )
-  ) {
-    return "Invalid activityType";
-  }
-
-  // entitySize validation
-  if (
-    a.entitySize !== null &&
-    !VALID_ENTITY_SIZES.includes(
-      a.entitySize as (typeof VALID_ENTITY_SIZES)[number],
-    )
-  ) {
-    return "Invalid entitySize";
-  }
-
-  // primaryOrbit validation
-  if (
-    a.primaryOrbit !== null &&
-    !VALID_ORBITS.includes(a.primaryOrbit as (typeof VALID_ORBITS)[number])
-  ) {
-    return "Invalid primaryOrbit";
-  }
-
-  // establishment validation
-  if (
-    a.establishment !== null &&
-    !VALID_ESTABLISHMENTS.includes(
-      a.establishment as (typeof VALID_ESTABLISHMENTS)[number],
-    )
-  ) {
-    return "Invalid establishment";
-  }
-
-  // constellationSize must be a positive number or null
-  if (
-    a.constellationSize !== null &&
-    a.constellationSize !== undefined &&
-    (typeof a.constellationSize !== "number" ||
-      a.constellationSize < 0 ||
-      a.constellationSize > 100000)
-  ) {
-    return "Invalid constellationSize";
-  }
-
-  // Boolean fields
-  for (const field of [
-    "isDefenseOnly",
-    "hasPostLaunchAssets",
-    "operatesConstellation",
-    "offersEUServices",
-  ]) {
-    if (
-      a[field] !== null &&
-      a[field] !== undefined &&
-      typeof a[field] !== "boolean"
-    ) {
-      return `Invalid ${field}: expected boolean or null`;
-    }
-  }
-
-  return null;
-}
+const calculateBodySchema = z.object({
+  answers: answersSchema,
+  startedAt: z.number().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -136,11 +74,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    // Expect { answers: AssessmentAnswers, startedAt?: number }
-    const { answers, startedAt } = body as {
-      answers: unknown;
-      startedAt?: number;
-    };
+    const parsed = calculateBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { answers, startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
     if (startedAt && typeof startedAt === "number") {
@@ -152,12 +94,6 @@ export async function POST(request: NextRequest) {
           { status: 429 },
         );
       }
-    }
-
-    // ─── Input Validation ───
-    const validationError = validateAnswers(answers);
-    if (validationError) {
-      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     // ─── Calculate Compliance ───

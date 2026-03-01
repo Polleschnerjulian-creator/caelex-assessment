@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { safeJsonParseArray } from "@/lib/validations";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
@@ -147,6 +148,32 @@ export async function PATCH(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentId: z.string().min(1),
+      requirementId: z.string().min(1),
+      status: z
+        .enum([
+          "not_assessed",
+          "compliant",
+          "partial",
+          "non_compliant",
+          "not_applicable",
+        ])
+        .optional(),
+      notes: z.string().nullable().optional(),
+      evidenceNotes: z.string().nullable().optional(),
+      targetDate: z.string().nullable().optional(),
+      responses: z.record(z.string(), z.unknown()).nullable().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentId,
       requirementId,
@@ -155,16 +182,7 @@ export async function PATCH(request: Request) {
       evidenceNotes,
       targetDate,
       responses,
-    } = body;
-
-    if (!assessmentId || !requirementId) {
-      return NextResponse.json(
-        {
-          error: "assessmentId and requirementId are required",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify assessment ownership
     const assessment = await prisma.cybersecurityAssessment.findFirst({
@@ -212,7 +230,7 @@ export async function PATCH(request: Request) {
         notes: encryptedNotes ?? undefined,
         evidenceNotes: encryptedEvidenceNotes ?? undefined,
         targetDate: targetDate ? new Date(targetDate) : undefined,
-        ...(responses !== undefined ? { responses } : {}),
+        ...(responses !== undefined ? { responses: responses as any } : {}),
       },
       create: {
         assessmentId,
@@ -221,7 +239,7 @@ export async function PATCH(request: Request) {
         notes: encryptedNotes,
         evidenceNotes: encryptedEvidenceNotes,
         targetDate: targetDate ? new Date(targetDate) : null,
-        ...(responses !== undefined ? { responses } : {}),
+        ...(responses !== undefined ? { responses: responses as any } : {}),
       },
     });
 

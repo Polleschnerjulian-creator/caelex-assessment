@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import type { PhaseStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -70,7 +72,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const missionPhaseSchema = z.object({
+      missionId: z.string().min(1),
+      missionName: z.string().optional(),
+      name: z.string().min(1),
+      description: z.string().optional(),
+      startDate: z.string().min(1),
+      endDate: z.string().min(1),
+      status: z.string().optional(),
+      color: z.string().optional(),
+      dependsOn: z.array(z.string()).optional(),
+      milestones: z
+        .array(
+          z.object({
+            name: z.string(),
+            description: z.string().optional(),
+            targetDate: z.string(),
+            isCritical: z.boolean().optional(),
+            isRegulatory: z.boolean().optional(),
+            regulatoryRef: z.string().optional(),
+            icon: z.string().optional(),
+          }),
+        )
+        .optional(),
+    });
+
     const body = await req.json();
+    const parsed = missionPhaseSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       missionId,
       missionName,
@@ -82,16 +117,7 @@ export async function POST(req: Request) {
       color,
       dependsOn,
       milestones,
-    } = body;
-
-    if (!missionId || !name || !startDate || !endDate) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields: missionId, name, startDate, endDate",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const phase = await prisma.missionPhase.create({
       data: {
@@ -102,7 +128,7 @@ export async function POST(req: Request) {
         description,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        status: status || "PLANNED",
+        status: (status || "PLANNED") as PhaseStatus,
         color,
         dependsOn: dependsOn || [],
         milestones: milestones

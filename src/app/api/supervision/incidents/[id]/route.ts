@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
@@ -106,7 +107,33 @@ export async function PATCH(
       );
     }
 
+    const updateIncidentSchema = z.object({
+      status: z.string().optional(),
+      severity: z.string().optional(),
+      rootCause: z.string().nullable().optional(),
+      impactAssessment: z.string().nullable().optional(),
+      immediateActions: z.array(z.string()).optional(),
+      containmentMeasures: z.array(z.string()).optional(),
+      resolutionSteps: z.array(z.string()).optional(),
+      lessonsLearned: z.string().nullable().optional(),
+      containedAt: z.string().nullable().optional(),
+      resolvedAt: z.string().nullable().optional(),
+      reportedToNCA: z.boolean().optional(),
+      ncaReportDate: z.string().nullable().optional(),
+      ncaReferenceNumber: z.string().nullable().optional(),
+      reportedToEUSPA: z.boolean().optional(),
+      euspaReportDate: z.string().nullable().optional(),
+    });
+
     const body = await req.json();
+    const parsed = updateIncidentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       status,
       severity,
@@ -123,7 +150,7 @@ export async function PATCH(
       ncaReferenceNumber,
       reportedToEUSPA,
       euspaReportDate,
-    } = body;
+    } = parsed.data;
 
     const updateData: Record<string, unknown> = {};
 

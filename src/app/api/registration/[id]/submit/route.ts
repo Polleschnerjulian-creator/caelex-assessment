@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 import { submitToURSO } from "@/lib/services/registration-service";
 import { getSafeErrorMessage } from "@/lib/validations";
 
@@ -21,14 +22,20 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json();
-    const { organizationId } = body;
 
-    if (!organizationId) {
+    const submitSchema = z.object({
+      organizationId: z.string().min(1, "Organization ID is required"),
+    });
+
+    const parsed = submitSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId } = parsed.data;
 
     // Verify user has access to organization with sufficient permissions
     const membership = await prisma.organizationMember.findFirst({

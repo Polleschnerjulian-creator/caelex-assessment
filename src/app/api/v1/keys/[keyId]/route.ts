@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { CuidSchema, sanitizeString } from "@/lib/validations";
 import {
   getApiKeyById,
   updateApiKey,
@@ -15,6 +17,24 @@ import {
   regenerateApiKey,
   getApiKeyUsageStats,
 } from "@/lib/services/api-key-service";
+
+const PatchApiKeySchema = z.object({
+  organizationId: CuidSchema,
+  name: z.string().min(1).max(100).transform(sanitizeString).optional(),
+  scopes: z
+    .array(
+      z
+        .string()
+        .max(50)
+        .regex(/^[a-z:_*]+$/, "Invalid scope format"),
+    )
+    .min(1)
+    .max(20)
+    .optional(),
+  rateLimit: z.coerce.number().int().min(10).max(10000).optional(),
+  isActive: z.boolean().optional(),
+  regenerate: z.boolean().optional(),
+});
 
 export async function GET(
   request: NextRequest,
@@ -84,15 +104,16 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { organizationId, name, scopes, rateLimit, isActive, regenerate } =
-      body;
-
-    if (!organizationId) {
+    const parsed = PatchApiKeySchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, name, scopes, rateLimit, isActive, regenerate } =
+      parsed.data;
 
     // Verify user is a member of the organization with sufficient permissions
     const member = await prisma.organizationMember.findFirst({

@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { z } from "zod";
 import {
   type ExportControlProfile,
   type ExportControlApplicability,
@@ -66,62 +67,79 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const {
-      assessmentName,
-      companyTypes,
-      hasITARItems = false,
-      hasEARItems = false,
-      hasForeignNationals = false,
-      foreignNationalCountries = [],
-      exportsToCountries = [],
-      hasTechnologyTransfer = false,
-      hasDefenseContracts = false,
-      hasManufacturingAbroad = false,
-      hasJointVentures = false,
-      annualExportValue,
-      registeredWithDDTC = false,
-      ddtcRegistrationNo,
-      ddtcRegistrationExpiry,
-      hasTCP = false,
-      hasECL = false,
-      hasAutomatedScreening = false,
-      screeningVendor,
-      empoweredOfficialName,
-      empoweredOfficialEmail,
-      empoweredOfficialTitle,
-    } = body;
+    const postSchema = z.object({
+      assessmentName: z.string().optional(),
+      companyTypes: z
+        .array(
+          z.enum([
+            "spacecraft_manufacturer",
+            "satellite_operator",
+            "launch_provider",
+            "component_supplier",
+            "software_developer",
+            "technology_provider",
+            "defense_contractor",
+            "research_institution",
+            "university",
+            "foreign_subsidiary",
+            "all",
+          ]),
+        )
+        .min(1, "At least one company type is required"),
+      hasITARItems: z.boolean().optional().default(false),
+      hasEARItems: z.boolean().optional().default(false),
+      hasForeignNationals: z.boolean().optional().default(false),
+      foreignNationalCountries: z.array(z.string()).optional().default([]),
+      exportsToCountries: z.array(z.string()).optional().default([]),
+      hasTechnologyTransfer: z.boolean().optional().default(false),
+      hasDefenseContracts: z.boolean().optional().default(false),
+      hasManufacturingAbroad: z.boolean().optional().default(false),
+      hasJointVentures: z.boolean().optional().default(false),
+      annualExportValue: z.number().optional(),
+      registeredWithDDTC: z.boolean().optional().default(false),
+      ddtcRegistrationNo: z.string().optional(),
+      ddtcRegistrationExpiry: z.string().optional(),
+      hasTCP: z.boolean().optional().default(false),
+      hasECL: z.boolean().optional().default(false),
+      hasAutomatedScreening: z.boolean().optional().default(false),
+      screeningVendor: z.string().optional(),
+      empoweredOfficialName: z.string().optional(),
+      empoweredOfficialEmail: z.string().optional(),
+      empoweredOfficialTitle: z.string().optional(),
+    });
 
-    // Validate required fields
-    if (!companyTypes || companyTypes.length === 0) {
+    const parsed = postSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required field: companyTypes" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate company types
-    const validCompanyTypes: ExportControlApplicability[] = [
-      "spacecraft_manufacturer",
-      "satellite_operator",
-      "launch_provider",
-      "component_supplier",
-      "software_developer",
-      "technology_provider",
-      "defense_contractor",
-      "research_institution",
-      "university",
-      "foreign_subsidiary",
-      "all",
-    ];
-
-    for (const companyType of companyTypes) {
-      if (!validCompanyTypes.includes(companyType)) {
-        return NextResponse.json(
-          { error: `Invalid company type: ${companyType}` },
-          { status: 400 },
-        );
-      }
-    }
+    const {
+      assessmentName,
+      companyTypes,
+      hasITARItems,
+      hasEARItems,
+      hasForeignNationals,
+      foreignNationalCountries,
+      exportsToCountries,
+      hasTechnologyTransfer,
+      hasDefenseContracts,
+      hasManufacturingAbroad,
+      hasJointVentures,
+      annualExportValue,
+      registeredWithDDTC,
+      ddtcRegistrationNo,
+      ddtcRegistrationExpiry,
+      hasTCP,
+      hasECL,
+      hasAutomatedScreening,
+      screeningVendor,
+      empoweredOfficialName,
+      empoweredOfficialEmail,
+      empoweredOfficialTitle,
+    } = parsed.data;
 
     // Create profile for getting applicable requirements
     const profile: ExportControlProfile = {

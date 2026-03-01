@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSafeErrorMessage } from "@/lib/validations";
+import { z } from "zod";
+import {
+  getSafeErrorMessage,
+  parsePaginationLimit,
+  CuidSchema,
+} from "@/lib/validations";
+
+const MarkUpdateReadSchema = z.object({
+  updateId: CuidSchema,
+});
 
 /**
  * GET /api/regulatory-feed
@@ -22,10 +31,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(
-      50,
-      Math.max(1, parseInt(searchParams.get("limit") || "20", 10)),
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"), 20);
     const severity = searchParams.get("severity");
     const moduleFilter = searchParams.get("module");
 
@@ -111,14 +117,15 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const updateId = body?.updateId;
-
-    if (!updateId || typeof updateId !== "string") {
+    const parsed = MarkUpdateReadSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "updateId is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { updateId } = parsed.data;
 
     // Verify the update exists
     const update = await prisma.regulatoryUpdate.findUnique({

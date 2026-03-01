@@ -5,8 +5,10 @@
  * DELETE: Delete organization (soft delete)
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { smartDecrypt } from "@/lib/encryption";
 import {
   getOrganization,
   updateOrganization,
@@ -70,7 +72,9 @@ export async function GET(request: Request, { params }: RouteParams) {
         maxUsers: organization.maxUsers,
         maxSpacecraft: organization.maxSpacecraft,
         billingEmail: organization.billingEmail,
-        vatNumber: organization.vatNumber,
+        vatNumber: organization.vatNumber
+          ? await smartDecrypt(organization.vatNumber)
+          : null,
         billingAddress: organization.billingAddress,
         isActive: organization.isActive,
         createdAt: organization.createdAt,
@@ -122,7 +126,26 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
+    const updateOrgSchema = z.object({
+      name: z.string().min(2).optional(),
+      logoUrl: z.string().url().optional(),
+      primaryColor: z.string().optional(),
+      timezone: z.string().optional(),
+      defaultLanguage: z.string().optional(),
+      billingEmail: z.string().email().optional(),
+      vatNumber: z.string().optional(),
+      billingAddress: z.record(z.string(), z.unknown()).optional(),
+    });
+
     const body = await request.json();
+    const parsed = updateOrgSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       name,
       logoUrl,
@@ -132,7 +155,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       billingEmail,
       vatNumber,
       billingAddress,
-    } = body;
+    } = parsed.data;
 
     const updated = await updateOrganization(orgId, session.user.id, {
       name,

@@ -9,8 +9,14 @@ import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
 
 const VALID_ROLES = ["user", "admin", "auditor"];
+
+const updateUserSchema = z.object({
+  role: z.enum(["user", "admin", "auditor"]).optional(),
+  isActive: z.boolean().optional(),
+});
 
 interface RouteParams {
   params: Promise<{ userId: string }>;
@@ -99,7 +105,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const { userId } = await params;
     const body = await request.json();
-    const { role, isActive } = body;
+    const parsed = updateUserSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+    const { role, isActive } = parsed.data;
 
     // Get current user state for audit
     const previousUser = await prisma.user.findUnique({

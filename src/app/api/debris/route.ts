@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
@@ -60,31 +61,48 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const schema = z.object({
+      missionName: z.string().optional(),
+      orbitType: z.enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"]),
+      altitudeKm: z.number().optional(),
+      satelliteCount: z.number().optional().default(1),
+      hasManeuverability: z.enum(["full", "limited", "none"]),
+      hasPropulsion: z.boolean().optional().default(false),
+      hasPassivationCapability: z.boolean().optional().default(false),
+      plannedMissionDurationYears: z.number().optional().default(5),
+      launchDate: z.string().optional(),
+      deorbitStrategy: z.enum([
+        "active_deorbit",
+        "passive_decay",
+        "graveyard_orbit",
+        "adr_contracted",
+      ]),
+      deorbitTimelineYears: z.number().optional(),
+      caServiceProvider: z.string().optional(),
+    });
+
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       missionName,
       orbitType,
       altitudeKm,
-      satelliteCount = 1,
+      satelliteCount,
       hasManeuverability,
-      hasPropulsion = false,
-      hasPassivationCapability = false,
-      plannedMissionDurationYears = 5,
+      hasPropulsion,
+      hasPassivationCapability,
+      plannedMissionDurationYears,
       launchDate,
       deorbitStrategy,
       deorbitTimelineYears,
       caServiceProvider,
-    } = body;
-
-    // Validate required fields
-    if (!orbitType || !hasManeuverability || !deorbitStrategy) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: orbitType, hasManeuverability, deorbitStrategy",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Determine constellation tier
     const constellationTier = getConstellationTier(satelliteCount);
@@ -262,8 +280,7 @@ export async function PUT(request: Request) {
       prismaUpdateData.deorbitTimelineYears = updateData.deorbitTimelineYears;
     if (updateData.caServiceProvider !== undefined)
       prismaUpdateData.caServiceProvider = updateData.caServiceProvider;
-    if (updateData.complianceScore !== undefined)
-      prismaUpdateData.complianceScore = updateData.complianceScore;
+    // complianceScore is server-calculated only — not accepted from client input
 
     const updated = await prisma.debrisAssessment.update({
       where: { id: assessmentId },

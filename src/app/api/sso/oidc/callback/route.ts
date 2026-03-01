@@ -10,6 +10,7 @@ import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 import { validateExternalUrl } from "@/lib/url-validation";
 import { headers } from "next/headers";
 import { SSOProvider } from "@prisma/client";
+import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
 export async function GET(request: NextRequest) {
   try {
@@ -105,51 +106,31 @@ export async function GET(request: NextRequest) {
 
     const tokens = await tokenResponse.json();
 
-    // H11: Validate nonce from id_token to prevent replay attacks
+    // Cryptographically verify id_token signature via JWKS + validate claims
     if (tokens.id_token) {
-      const idTokenPayload = verifyAndParseJwt(tokens.id_token);
-
-      // Validate issuer matches the expected issuer URL
-      if (connection.issuerUrl && idTokenPayload.iss !== connection.issuerUrl) {
-        return NextResponse.json(
-          { error: "Token issuer mismatch" },
-          { status: 401 },
+      let idTokenPayload: JWTPayload;
+      try {
+        idTokenPayload = await verifyAndParseJwt(
+          tokens.id_token,
+          connection.issuerUrl,
+          connection.clientId,
+          connection.provider,
         );
+      } catch (jwtError) {
+        await logSecurityEvent({
+          event: "SSO_LOGIN",
+          description:
+            "OIDC login failed: id_token signature verification failed",
+          organizationId,
+          riskLevel: "CRITICAL",
+          metadata: {
+            error: jwtError instanceof Error ? jwtError.message : "Unknown",
+          },
+        });
+        return redirectWithError("ID token verification failed");
       }
 
-      // Validate audience matches our client ID
-      if (idTokenPayload.aud !== connection.clientId) {
-        // aud can be a string or array
-        const audiences = Array.isArray(idTokenPayload.aud)
-          ? idTokenPayload.aud
-          : [idTokenPayload.aud];
-        if (!audiences.includes(connection.clientId)) {
-          return NextResponse.json(
-            { error: "Token audience mismatch" },
-            { status: 401 },
-          );
-        }
-      }
-
-      // Validate token is not expired
-      if (
-        typeof idTokenPayload.exp === "number" &&
-        idTokenPayload.exp < Math.floor(Date.now() / 1000)
-      ) {
-        return NextResponse.json({ error: "Token expired" }, { status: 401 });
-      }
-
-      // Validate iat is not in the future (with 60s clock skew tolerance)
-      if (
-        typeof idTokenPayload.iat === "number" &&
-        idTokenPayload.iat > Math.floor(Date.now() / 1000) + 60
-      ) {
-        return NextResponse.json(
-          { error: "Token issued in the future" },
-          { status: 401 },
-        );
-      }
-
+      // Validate nonce to prevent replay attacks
       if (idTokenPayload.nonce !== stateData.nonce) {
         await logSecurityEvent({
           event: "SSO_LOGIN",
@@ -267,10 +248,7 @@ export async function GET(request: NextRequest) {
       `${baseUrl}/api/auth/callback/sso?token=${ssoToken}&returnUrl=${encodeURIComponent(returnUrl)}`,
     );
   } catch (error) {
-    console.error(
-      "Error in OIDC callback:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    console.error("Error in OIDC callback:", error);
     return redirectWithError("Internal server error");
   }
 }
@@ -308,29 +286,55 @@ function getUserInfoEndpoint(
 }
 
 /**
- * Decode and validate a JWT payload from a token received directly from the
- * provider's token endpoint over HTTPS.
+ * Cryptographically verify and decode an OIDC id_token using the IdP's JWKS.
  *
- * Validates structural integrity (3-part JWT) and standard claims:
- * - iss, aud, exp, iat checks are performed by the caller after decoding.
+ * Fetches the IdP's public keys from the JWKS endpoint and verifies the JWT
+ * signature, issuer, audience, and expiry. This prevents token forgery even
+ * if the token endpoint response is compromised.
  */
-function verifyAndParseJwt(jwt: string): Record<string, unknown> {
-  const parts = jwt.split(".");
-  if (parts.length !== 3) throw new Error("Invalid JWT format");
+async function verifyAndParseJwt(
+  jwt: string,
+  issuerUrl: string | null,
+  clientId: string | null,
+  provider: SSOProvider,
+): Promise<JWTPayload> {
+  const jwksUrl = getJwksEndpoint(provider, issuerUrl);
 
-  // Verify all parts are non-empty (header, payload, signature must all be present)
-  if (!parts[0] || !parts[1] || !parts[2]) {
-    throw new Error("Invalid JWT: missing required segments");
+  const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+
+  const verifyOptions: {
+    issuer?: string;
+    audience?: string;
+    clockTolerance: number;
+  } = {
+    clockTolerance: 60, // 60 seconds clock skew tolerance
+  };
+
+  if (issuerUrl) {
+    verifyOptions.issuer = issuerUrl;
+  }
+  if (clientId) {
+    verifyOptions.audience = clientId;
   }
 
-  const payload = Buffer.from(parts[1], "base64url").toString("utf-8");
-  const parsed = JSON.parse(payload);
+  const { payload } = await jwtVerify(jwt, JWKS, verifyOptions);
+  return payload;
+}
 
-  if (typeof parsed !== "object" || parsed === null) {
-    throw new Error("Invalid JWT: payload is not an object");
+function getJwksEndpoint(
+  provider: SSOProvider,
+  issuerUrl: string | null,
+): string {
+  switch (provider) {
+    case SSOProvider.GOOGLE_WORKSPACE:
+      return "https://www.googleapis.com/oauth2/v3/certs";
+    case SSOProvider.AZURE_AD:
+      return `${issuerUrl}/discovery/v2.0/keys`;
+    case SSOProvider.OKTA:
+      return `${issuerUrl}/v1/keys`;
+    default:
+      return `${issuerUrl}/.well-known/jwks.json`;
   }
-
-  return parsed;
 }
 
 function redirectWithError(message: string): NextResponse {

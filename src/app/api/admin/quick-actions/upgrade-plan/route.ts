@@ -12,6 +12,13 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import type { OrganizationPlan } from "@prisma/client";
+import { z } from "zod";
+
+const upgradePlanSchema = z.object({
+  email: z.string().email(),
+  plan: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]),
+  reason: z.string().optional(),
+});
 
 const VALID_PLANS: OrganizationPlan[] = [
   "FREE",
@@ -40,21 +47,14 @@ export async function POST(request: Request) {
     await requireRole(["admin"]);
 
     const body = await request.json();
-    const { email, plan, reason } = body;
-
-    // Validate inputs
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    if (!plan || !VALID_PLANS.includes(plan as OrganizationPlan)) {
+    const parsed = upgradePlanSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        {
-          error: `Invalid plan. Must be one of: ${VALID_PLANS.join(", ")}`,
-        },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+    const { email, plan, reason } = parsed.data;
 
     // Find user by email
     const user = await prisma.user.findUnique({

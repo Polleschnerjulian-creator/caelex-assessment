@@ -7,7 +7,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 import { getSafeErrorMessage } from "@/lib/validations";
+import type { SpaceObjectType, OrbitalRegime } from "@prisma/client";
 import {
   createRegistration,
   listRegistrations,
@@ -90,6 +92,38 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    const postSchema = z
+      .object({
+        organizationId: z.string().min(1, "organizationId is required"),
+        spacecraftId: z.string().min(1, "spacecraftId is required"),
+        objectName: z.string().min(1, "objectName is required"),
+        objectType: z.string().min(1, "objectType is required"),
+        ownerOperator: z.string().min(1, "ownerOperator is required"),
+        stateOfRegistry: z.string().min(1, "stateOfRegistry is required"),
+        orbitalRegime: z.string().min(1, "orbitalRegime is required"),
+        cosparId: z.string().optional(),
+        noradId: z.string().optional(),
+        orbitType: z.string().optional(),
+        launchDate: z.string().optional(),
+        launchState: z.string().optional(),
+        launchSite: z.string().optional(),
+        operatingEntity: z.string().optional(),
+        ownerCountry: z.string().optional(),
+        nodeName: z.string().optional(),
+        registrationDate: z.string().optional(),
+        notes: z.string().optional(),
+      })
+      .passthrough();
+
+    const parsed = postSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       organizationId,
       spacecraftId,
@@ -99,23 +133,7 @@ export async function POST(request: NextRequest) {
       stateOfRegistry,
       orbitalRegime,
       ...optionalFields
-    } = body;
-
-    // Validate required fields
-    if (
-      !organizationId ||
-      !spacecraftId ||
-      !objectName ||
-      !objectType ||
-      !ownerOperator ||
-      !stateOfRegistry ||
-      !orbitalRegime
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify user has access to organization
     const membership = await prisma.organizationMember.findFirst({
@@ -144,17 +162,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const input: CreateRegistrationInput = {
+    const input = {
       organizationId,
       spacecraftId,
       createdBy: session.user.id,
       objectName,
-      objectType,
+      objectType: objectType as SpaceObjectType,
       ownerOperator,
       stateOfRegistry,
-      orbitalRegime,
+      orbitalRegime: orbitalRegime as OrbitalRegime,
       ...optionalFields,
-    };
+    } as CreateRegistrationInput;
 
     const registration = await createRegistration(input);
 

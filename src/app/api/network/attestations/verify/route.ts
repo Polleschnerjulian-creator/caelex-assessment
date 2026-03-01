@@ -5,30 +5,30 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { verifyByHash } from "@/lib/services/attestation";
 
 export async function POST(request: NextRequest) {
   try {
+    const schema = z.object({
+      signatureHash: z
+        .string()
+        .regex(
+          /^[a-f0-9]{64}$/i,
+          "Expected a 64-character hex string (SHA-256)",
+        ),
+    });
+
     const body = await request.json();
-    const { signatureHash } = body;
-
-    if (!signatureHash || typeof signatureHash !== "string") {
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "signatureHash is required and must be a string" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate hash format (SHA-256 hex string)
-    if (!/^[a-f0-9]{64}$/i.test(signatureHash)) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid hash format. Expected a 64-character hex string (SHA-256).",
-        },
-        { status: 400 },
-      );
-    }
+    const { signatureHash } = parsed.data;
 
     const result = await verifyByHash(signatureHash);
 

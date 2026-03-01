@@ -6,8 +6,11 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
-const VALID_LANGUAGES = ["en", "de", "fr", "es"];
+const preferencesSchema = z.object({
+  language: z.enum(["en", "de", "fr", "es"]),
+});
 
 export async function PATCH(request: Request) {
   try {
@@ -17,19 +20,18 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const updates: Record<string, string> = {};
+    const parsed = preferencesSchema.safeParse(body);
 
-    if (body.language && VALID_LANGUAGES.includes(body.language)) {
-      updates.language = body.language;
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No valid fields" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: updates,
+      data: { language: parsed.data.language },
     });
 
     return NextResponse.json({ success: true });

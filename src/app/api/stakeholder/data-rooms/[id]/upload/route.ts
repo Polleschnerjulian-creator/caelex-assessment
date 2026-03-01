@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import {
   validateToken,
   logStakeholderAccess,
@@ -64,15 +65,24 @@ export async function POST(
     }
 
     // Parse upload metadata from request body
-    const body = await request.json();
-    const { fileName, fileSize, mimeType, category, description } = body;
+    const schema = z.object({
+      fileName: z.string().min(1),
+      fileSize: z.number().positive(),
+      mimeType: z.string().min(1),
+      category: z.string().optional(),
+      description: z.string().optional(),
+    });
 
-    if (!fileName || !fileSize || !mimeType) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "fileName, fileSize, and mimeType are required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { fileName, fileSize, mimeType, category, description } = parsed.data;
 
     // Log the upload access
     await logDataRoomAccess(id, "file_uploaded", "stakeholder", engagement.id, {

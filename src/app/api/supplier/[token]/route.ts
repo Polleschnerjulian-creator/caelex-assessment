@@ -6,6 +6,17 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { z } from "zod";
+
+const SupplierSubmissionSchema = z.object({
+  componentType: z.string().max(200).optional(),
+  lcaData: z
+    .record(z.string(), z.unknown())
+    .refine((val) => Object.keys(val).length > 0, {
+      message: "LCA data must not be empty",
+    }),
+  submittedAt: z.string().datetime().optional(),
+});
 
 /**
  * GET /api/supplier/[token]
@@ -157,14 +168,15 @@ export async function POST(
     }
 
     // Validate submission data
-    const { componentType, lcaData, submittedAt } = body;
-
-    if (!lcaData) {
+    const parsed = SupplierSubmissionSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing LCA data in submission" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { componentType, lcaData, submittedAt } = parsed.data;
 
     // Update supplier data request with response
     const updatedRequest = await prisma.supplierDataRequest.update({

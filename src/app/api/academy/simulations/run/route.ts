@@ -414,22 +414,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update best sim score on any active enrollment for relevant courses
+    // Batch update best sim score on active enrollments (avoid N+1)
     try {
-      const enrollments = await prisma.academyEnrollment.findMany({
-        where: { userId, status: "ACTIVE" },
+      await prisma.academyEnrollment.updateMany({
+        where: {
+          userId,
+          status: "ACTIVE",
+          OR: [{ bestSimScore: null }, { bestSimScore: { lt: score } }],
+        },
+        data: { bestSimScore: score },
       });
-      for (const enrollment of enrollments) {
-        if (
-          enrollment.bestSimScore === null ||
-          score > enrollment.bestSimScore
-        ) {
-          await prisma.academyEnrollment.update({
-            where: { id: enrollment.id },
-            data: { bestSimScore: score },
-          });
-        }
-      }
     } catch {
       // Non-critical update
     }

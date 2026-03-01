@@ -9,9 +9,19 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
-import { getSafeErrorMessage } from "@/lib/validations";
+import { getSafeErrorMessage, parsePaginationLimit } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import type { Prisma } from "@prisma/client";
+import { z } from "zod";
+
+const updateDemoSchema = z.object({
+  id: z.string().min(1),
+  status: z
+    .enum(["NEW", "CONTACTED", "SCHEDULED", "COMPLETED", "NO_RESPONSE"])
+    .optional(),
+  notes: z.string().optional(),
+  respondedAt: z.string().datetime({ offset: true }).optional(),
+});
 
 /**
  * GET /api/admin/demos
@@ -34,10 +44,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(
-      Math.max(1, parseInt(searchParams.get("limit") || "20", 10)),
-      100,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"), 20);
     const status = searchParams.get("status") || undefined;
     const offset = (page - 1) * limit;
 
@@ -106,14 +113,14 @@ export async function PATCH(request: NextRequest) {
     await requireRole(["admin"]);
 
     const body = await request.json();
-    const { id, status, notes, respondedAt } = body;
-
-    if (!id) {
+    const parsed = updateDemoSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required field: id" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+    const { id, status, notes, respondedAt } = parsed.data;
 
     // Verify the demo request exists
     const existing = await prisma.demoRequest.findUnique({

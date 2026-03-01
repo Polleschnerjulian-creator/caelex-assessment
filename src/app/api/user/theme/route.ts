@@ -19,7 +19,16 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { theme } = themeSchema.parse(body);
+    const parsed = themeSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const { theme } = parsed.data;
 
     await prisma.user.update({
       where: { id: session.user.id },
@@ -28,12 +37,6 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true, theme });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid theme value. Must be 'light', 'dark', or 'system'." },
-        { status: 400 },
-      );
-    }
     console.error("Failed to update theme:", error);
     return NextResponse.json(
       { error: "Failed to update theme" },

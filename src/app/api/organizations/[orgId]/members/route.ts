@@ -4,6 +4,7 @@
  * POST: Add a member directly (requires user ID)
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +15,6 @@ import {
   hasPermission,
   getDefaultPermissionsForRole,
 } from "@/lib/services/organization-service";
-import type { OrganizationRole } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ orgId: string }>;
@@ -109,27 +109,23 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    const body = await request.json();
-    const { userId, role = "MEMBER" } = body;
+    const addMemberSchema = z.object({
+      userId: z.string().min(1, "User ID is required"),
+      role: z
+        .enum(["OWNER", "ADMIN", "MANAGER", "MEMBER", "VIEWER"])
+        .default("MEMBER"),
+    });
 
-    if (!userId) {
+    const body = await request.json();
+    const parsed = addMemberSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "User ID is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate role
-    const validRoles: OrganizationRole[] = [
-      "OWNER",
-      "ADMIN",
-      "MANAGER",
-      "MEMBER",
-      "VIEWER",
-    ];
-    if (!validRoles.includes(role)) {
-      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-    }
+    const { userId, role } = parsed.data;
 
     // Cannot add someone as owner unless you're an owner
     if (role === "OWNER" && userRole !== "OWNER") {

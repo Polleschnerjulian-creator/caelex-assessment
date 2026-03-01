@@ -321,7 +321,7 @@ function calculateAuthorizationScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.authorization,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.authorization),
+    weightedScore: score * MODULE_WEIGHTS.authorization,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 6-27"],
@@ -406,7 +406,7 @@ function calculateDebrisScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.debris,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.debris),
+    weightedScore: score * MODULE_WEIGHTS.debris,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 55-73"],
@@ -505,7 +505,7 @@ function calculateCybersecurityScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.cybersecurity,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.cybersecurity),
+    weightedScore: score * MODULE_WEIGHTS.cybersecurity,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 74-95"],
@@ -612,7 +612,7 @@ function calculateInsuranceScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.insurance,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.insurance),
+    weightedScore: score * MODULE_WEIGHTS.insurance,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 28-32"],
@@ -698,7 +698,7 @@ function calculateEnvironmentalScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.environmental,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.environmental),
+    weightedScore: score * MODULE_WEIGHTS.environmental,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 96-100"],
@@ -799,7 +799,7 @@ function calculateReportingScore(data: {
   return {
     score,
     weight: MODULE_WEIGHTS.reporting,
-    weightedScore: Math.round(score * MODULE_WEIGHTS.reporting),
+    weightedScore: score * MODULE_WEIGHTS.reporting,
     status: getModuleStatus(score),
     factors,
     articleReferences: ["Art. 33-54"],

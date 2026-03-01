@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 import {
   validateToken,
   logStakeholderAccess,
@@ -9,6 +10,7 @@ import {
   logDataRoomAccess,
 } from "@/lib/services/data-room";
 import { prisma } from "@/lib/prisma";
+import { parsePaginationLimit } from "@/lib/validations";
 
 // GET /api/stakeholder/data-rooms/[id]/comments — List comments for a data room
 export async function GET(
@@ -52,10 +54,7 @@ export async function GET(
     // Fetch comments for this data room
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || "50", 10),
-      100,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const skip = (page - 1) * limit;
 
     const where = {
@@ -174,19 +173,21 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
-    const { content, parentId } = body;
+    const schema = z.object({
+      content: z.string().min(1, "Comment content is required"),
+      parentId: z.string().optional(),
+    });
 
-    if (
-      !content ||
-      typeof content !== "string" ||
-      content.trim().length === 0
-    ) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Comment content is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { content, parentId } = parsed.data;
 
     // Create comment using prisma directly (comment-service expects userId as authorId,
     // but stakeholders don't have a user account — we use engagement.id as authorId)

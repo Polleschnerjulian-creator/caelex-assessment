@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getOrganizationId } from "@/lib/services/audit-center-service.server";
@@ -94,26 +95,52 @@ export async function PATCH(
       );
     }
 
+    const evidencePatchSchema = z.object({
+      title: z.string().min(1).optional(),
+      description: z.string().nullable().optional(),
+      evidenceType: z.string().optional(),
+      status: z.string().optional(),
+      validFrom: z.string().nullable().optional(),
+      validUntil: z.string().nullable().optional(),
+      reviewNotes: z.string().nullable().optional(),
+      addDocumentIds: z.array(z.string()).optional(),
+      removeDocumentIds: z.array(z.string()).optional(),
+    });
+
     const body = await request.json();
+    const parsed = evidencePatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const updateData: Record<string, unknown> = {};
 
-    if (body.title !== undefined) updateData.title = body.title;
-    if (body.description !== undefined)
-      updateData.description = body.description;
-    if (body.evidenceType !== undefined)
-      updateData.evidenceType = body.evidenceType;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.validFrom !== undefined)
-      updateData.validFrom = body.validFrom ? new Date(body.validFrom) : null;
-    if (body.validUntil !== undefined)
-      updateData.validUntil = body.validUntil
-        ? new Date(body.validUntil)
+    if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
+    if (parsed.data.description !== undefined)
+      updateData.description = parsed.data.description;
+    if (parsed.data.evidenceType !== undefined)
+      updateData.evidenceType = parsed.data.evidenceType;
+    if (parsed.data.status !== undefined)
+      updateData.status = parsed.data.status;
+    if (parsed.data.validFrom !== undefined)
+      updateData.validFrom = parsed.data.validFrom
+        ? new Date(parsed.data.validFrom)
         : null;
-    if (body.reviewNotes !== undefined)
-      updateData.reviewNotes = body.reviewNotes;
+    if (parsed.data.validUntil !== undefined)
+      updateData.validUntil = parsed.data.validUntil
+        ? new Date(parsed.data.validUntil)
+        : null;
+    if (parsed.data.reviewNotes !== undefined)
+      updateData.reviewNotes = parsed.data.reviewNotes;
 
     // Handle review action
-    if (body.status === "ACCEPTED" || body.status === "REJECTED") {
+    if (
+      parsed.data.status === "ACCEPTED" ||
+      parsed.data.status === "REJECTED"
+    ) {
       updateData.reviewedBy = session.user.id;
       updateData.reviewedAt = new Date();
     }
@@ -139,11 +166,7 @@ export async function PATCH(
     });
 
     // Link new documents if provided (with ownership verification)
-    if (
-      body.addDocumentIds &&
-      Array.isArray(body.addDocumentIds) &&
-      body.addDocumentIds.length > 0
-    ) {
+    if (parsed.data.addDocumentIds && parsed.data.addDocumentIds.length > 0) {
       // Verify all documents belong to users in the same organization
       const orgMembers = await prisma.organizationMember.findMany({
         where: { organizationId },
@@ -153,14 +176,14 @@ export async function PATCH(
 
       const docs = await prisma.document.findMany({
         where: {
-          id: { in: body.addDocumentIds },
+          id: { in: parsed.data.addDocumentIds },
           userId: { in: orgUserIds },
         },
         select: { id: true },
       });
       const validDocIds = new Set(docs.map((d) => d.id));
-      const verifiedDocIds = body.addDocumentIds.filter((docId: string) =>
-        validDocIds.has(docId),
+      const verifiedDocIds = parsed.data.addDocumentIds!.filter(
+        (docId: string) => validDocIds.has(docId),
       );
 
       if (verifiedDocIds.length > 0) {
@@ -176,20 +199,19 @@ export async function PATCH(
 
     // Unlink documents if provided
     if (
-      body.removeDocumentIds &&
-      Array.isArray(body.removeDocumentIds) &&
-      body.removeDocumentIds.length > 0
+      parsed.data.removeDocumentIds &&
+      parsed.data.removeDocumentIds.length > 0
     ) {
       await prisma.complianceEvidenceDocument.deleteMany({
         where: {
           evidenceId: id,
-          documentId: { in: body.removeDocumentIds },
+          documentId: { in: parsed.data.removeDocumentIds },
         },
       });
     }
 
     const action =
-      body.status && body.status !== existing.status
+      parsed.data.status && parsed.data.status !== existing.status
         ? "evidence_status_changed"
         : "evidence_updated";
 

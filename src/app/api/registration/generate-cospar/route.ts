@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
 import { generateCOSPARSuggestion } from "@/lib/services/registration-service";
 
 export async function POST(request: NextRequest) {
@@ -15,26 +16,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { launchYear, launchNumber, sequence } = body;
 
-    if (!launchYear) {
+    const cosparSchema = z.object({
+      launchYear: z.union([z.string(), z.number()]).refine(
+        (val) => {
+          const num = typeof val === "string" ? parseInt(val) : val;
+          return !isNaN(num) && num >= 1957 && num <= 2100;
+        },
+        { message: "Launch year must be between 1957 and 2100" },
+      ),
+      launchNumber: z.union([z.string(), z.number()]).optional(),
+      sequence: z.string().optional(),
+    });
+
+    const parsed = cosparSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Launch year is required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    const year = parseInt(launchYear);
-    if (isNaN(year) || year < 1957 || year > 2100) {
-      return NextResponse.json(
-        { error: "Invalid launch year" },
-        { status: 400 },
-      );
-    }
+    const { launchYear, launchNumber, sequence } = parsed.data;
+
+    const year =
+      typeof launchYear === "string" ? parseInt(launchYear) : launchYear;
 
     const suggestion = generateCOSPARSuggestion(
       year,
-      launchNumber ? parseInt(launchNumber) : undefined,
+      launchNumber
+        ? typeof launchNumber === "string"
+          ? parseInt(launchNumber)
+          : launchNumber
+        : undefined,
       sequence,
     );
 

@@ -6,6 +6,7 @@
 export const maxDuration = 60; // Allow up to 60s for PDF generation
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { renderToBuffer } from "@react-pdf/renderer";
@@ -56,8 +57,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const exportSchema = z.object({
+      format: z.enum(["pdf", "zip"]).optional().default("pdf"),
+    });
+
     const body = await request.json();
-    const format = body.format || "pdf";
+    const parsed = exportSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const format = parsed.data.format;
 
     const ctx = getRequestContext(request);
 
@@ -207,11 +220,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   } catch (error) {
-    console.error(
-      "Audit export error:",
-      error instanceof Error ? error.message : "Unknown error",
-      error instanceof Error ? error.stack : "",
-    );
+    console.error("Audit export error:", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to generate audit package"),

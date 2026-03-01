@@ -381,6 +381,22 @@ export function createValidationErrorResponse(error: z.ZodError): Response {
   );
 }
 
+// ─── Pagination Helpers ───
+
+/**
+ * Parse and clamp a pagination limit parameter.
+ * Prevents DoS via unbounded limit values (e.g., ?limit=999999).
+ */
+export function parsePaginationLimit(
+  raw: string | null,
+  defaultLimit = 50,
+  maxLimit = 100,
+): number {
+  const parsed = parseInt(raw || String(defaultLimit), 10);
+  if (isNaN(parsed) || parsed < 1) return defaultLimit;
+  return Math.min(parsed, maxLimit);
+}
+
 // ─── Safe Error Handling ───
 
 /**
@@ -580,6 +596,7 @@ export const NotificationSettingsSchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format")
     .optional(),
+  quietHoursTimezone: z.string().max(50).optional(),
   digestEnabled: z.boolean().optional(),
   digestFrequency: z.enum(["daily", "weekly"]).optional(),
 });

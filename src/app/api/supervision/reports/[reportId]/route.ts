@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -121,24 +122,25 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { reportId } = await params;
+
+    const updateReportSchema = z.object({
+      status: z
+        .enum(["draft", "generated", "submitted", "acknowledged", "archived"])
+        .optional(),
+      ncaReferenceNumber: z.string().optional(),
+      submittedAt: z.string().optional(),
+    });
+
     const body = await request.json();
-
-    const { status, ncaReferenceNumber, submittedAt } = body;
-
-    // Validate status
-    const validStatuses = [
-      "draft",
-      "generated",
-      "submitted",
-      "acknowledged",
-      "archived",
-    ];
-    if (status && !validStatuses.includes(status)) {
+    const parsed = updateReportSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid status", validStatuses },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { status, ncaReferenceNumber, submittedAt } = parsed.data;
 
     // Fetch existing report
     const existingReport = await prisma.supervisionReport.findUnique({

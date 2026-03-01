@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { parsePaginationLimit } from "@/lib/validations";
 
 export const runtime = "nodejs";
 
@@ -51,11 +52,7 @@ export async function GET(request: Request) {
 
     // Parse limit query param
     const { searchParams } = new URL(request.url);
-    const limitParam = searchParams.get("limit");
-    const limit = Math.min(
-      Math.max(parseInt(limitParam || "50", 10) || 50, 1),
-      200,
-    );
+    const limit = parsePaginationLimit(searchParams.get("limit"));
 
     // Query all ratings for org, ordered by computedAt desc
     const ratings = await prisma.regulatoryCreditRating.findMany({

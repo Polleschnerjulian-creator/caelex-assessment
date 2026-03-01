@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
@@ -107,7 +108,79 @@ export async function PATCH(
       );
     }
 
+    const patchSchema = z.object({
+      name: z.string().min(1).optional(),
+      description: z.string().nullable().optional(),
+      category: z
+        .enum([
+          "LICENSE",
+          "PERMIT",
+          "AUTHORIZATION",
+          "CERTIFICATE",
+          "ISO_CERTIFICATE",
+          "SECURITY_CERT",
+          "INSURANCE_POLICY",
+          "INSURANCE_CERT",
+          "COMPLIANCE_REPORT",
+          "AUDIT_REPORT",
+          "INCIDENT_REPORT",
+          "ANNUAL_REPORT",
+          "TECHNICAL_SPEC",
+          "DESIGN_DOC",
+          "TEST_REPORT",
+          "SAFETY_ANALYSIS",
+          "CONTRACT",
+          "NDA",
+          "SLA",
+          "REGULATORY_FILING",
+          "CORRESPONDENCE",
+          "NOTIFICATION",
+          "POLICY",
+          "PROCEDURE",
+          "TRAINING",
+          "OTHER",
+        ])
+        .optional(),
+      subcategory: z.string().nullable().optional(),
+      tags: z.array(z.string()).optional(),
+      issueDate: z.string().nullable().optional(),
+      expiryDate: z.string().nullable().optional(),
+      moduleType: z
+        .enum([
+          "AUTHORIZATION",
+          "DEBRIS",
+          "INSURANCE",
+          "CYBERSECURITY",
+          "ENVIRONMENTAL",
+          "SUPERVISION",
+          "REGISTRATION",
+          "TIMELINE",
+          "DOCUMENTS",
+        ])
+        .nullable()
+        .optional(),
+      regulatoryRef: z.string().nullable().optional(),
+      accessLevel: z
+        .enum([
+          "PUBLIC",
+          "INTERNAL",
+          "CONFIDENTIAL",
+          "RESTRICTED",
+          "TOP_SECRET",
+        ])
+        .optional(),
+      status: z.string().optional(),
+    });
+
     const body = await req.json();
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const updateData: Record<string, unknown> = {};
 
     // Allowed fields to update
@@ -126,22 +199,26 @@ export async function PATCH(
     ];
 
     for (const field of allowedFields) {
-      if (body[field] !== undefined) {
+      if (parsed.data[field as keyof typeof parsed.data] !== undefined) {
         if (field === "issueDate" || field === "expiryDate") {
-          updateData[field] = body[field] ? new Date(body[field]) : null;
+          const val = parsed.data[field as keyof typeof parsed.data];
+          updateData[field] = val ? new Date(val as string) : null;
         } else {
-          updateData[field] = body[field];
+          updateData[field] = parsed.data[field as keyof typeof parsed.data];
         }
       }
     }
 
     // Handle status changes
-    if (body.status === "APPROVED" && existing.status !== "APPROVED") {
+    if (parsed.data.status === "APPROVED" && existing.status !== "APPROVED") {
       updateData.approvedBy = session.user.id;
       updateData.approvedAt = new Date();
     }
 
-    if (body.status === "UNDER_REVIEW" && existing.status !== "UNDER_REVIEW") {
+    if (
+      parsed.data.status === "UNDER_REVIEW" &&
+      existing.status !== "UNDER_REVIEW"
+    ) {
       updateData.reviewedBy = session.user.id;
       updateData.reviewedAt = new Date();
     }
@@ -155,8 +232,15 @@ export async function PATCH(
       }
     }
 
+    // Atomic update with ownership check to prevent TOCTOU race conditions
     const document = await prisma.document.update({
-      where: { id },
+      where: {
+        id,
+        userId: session.user.id,
+        ...(orgCtxPatch?.organizationId && {
+          organizationId: orgCtxPatch.organizationId,
+        }),
+      },
       data: updateData,
     });
 

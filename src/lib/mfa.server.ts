@@ -10,6 +10,7 @@ import * as OTPAuth from "otpauth";
 import QRCode from "qrcode";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { Redis } from "@upstash/redis";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 
@@ -20,22 +21,68 @@ const ALGORITHM = "SHA256";
 const DIGITS = 6;
 const PERIOD = 30; // seconds
 
-// TOTP replay protection — track recently used codes per user
-// Using in-memory Map is appropriate here since:
-// 1. TOTP window is only 30 seconds
-// 2. Same code being accepted on different instances is acceptable (each verifies independently)
-// 3. No persistence needed — worst case is code reuse during server restart
-const usedTotpCodes = new Map<string, number>(); // key: `${userId}:${code}`, value: timestamp
+// ─── TOTP Replay Protection (Redis-backed) ───
+// Distributed replay protection across all Vercel instances.
+// Falls back to in-memory Map when Redis is not configured (dev only).
+const REPLAY_TTL_SECONDS = 60; // Codes expire after 60s (2x TOTP period)
+const REPLAY_PREFIX = "totp:replay:";
 
-// Clean up expired entries periodically
-setInterval(() => {
-  const cutoff = Date.now() - 60_000; // 60 second TTL
-  for (const [key, timestamp] of usedTotpCodes) {
-    if (timestamp < cutoff) {
-      usedTotpCodes.delete(key);
-    }
+const replayRedis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
+
+// In-memory fallback for development (not safe for multi-instance production)
+const usedTotpCodes = new Map<string, number>();
+
+/**
+ * Check if a TOTP code was already used (replay attack detection).
+ * Uses Redis in production for distributed protection across instances.
+ */
+export async function isTotpCodeUsed(
+  userId: string,
+  code: string,
+): Promise<boolean> {
+  const key = `${REPLAY_PREFIX}${userId}:${code}`;
+  if (replayRedis) {
+    const exists = await replayRedis.exists(key);
+    return exists === 1;
   }
-}, 30_000); // Every 30 seconds
+  // In-memory fallback
+  const ts = usedTotpCodes.get(`${userId}:${code}`);
+  return ts !== undefined && Date.now() - ts < REPLAY_TTL_SECONDS * 1000;
+}
+
+/**
+ * Mark a TOTP code as used to prevent replay within the TTL window.
+ */
+export async function markTotpCodeUsed(
+  userId: string,
+  code: string,
+): Promise<void> {
+  const key = `${REPLAY_PREFIX}${userId}:${code}`;
+  if (replayRedis) {
+    await replayRedis.set(key, "1", { ex: REPLAY_TTL_SECONDS });
+    return;
+  }
+  // In-memory fallback
+  usedTotpCodes.set(`${userId}:${code}`, Date.now());
+}
+
+// Clean up in-memory fallback periodically (no-op when Redis is used)
+if (!replayRedis) {
+  setInterval(() => {
+    const cutoff = Date.now() - REPLAY_TTL_SECONDS * 1000;
+    for (const [key, timestamp] of usedTotpCodes) {
+      if (timestamp < cutoff) {
+        usedTotpCodes.delete(key);
+      }
+    }
+  }, 30_000);
+}
 
 // Generate a new TOTP secret
 export function generateTotpSecret(): string {
@@ -254,12 +301,11 @@ export async function validateMfaCode(
     return false;
   }
 
-  // Replay protection — reject previously used codes
-  const replayKey = `${userId}:${code}`;
-  if (usedTotpCodes.has(replayKey)) {
+  // Replay protection — reject previously used codes (Redis-backed)
+  if (await isTotpCodeUsed(userId, code)) {
     return false;
   }
-  usedTotpCodes.set(replayKey, Date.now());
+  await markTotpCodeUsed(userId, code);
 
   return true;
 }

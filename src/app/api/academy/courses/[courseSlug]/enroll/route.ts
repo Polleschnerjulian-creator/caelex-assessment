@@ -106,17 +106,38 @@ export async function POST(request: Request, { params }: RouteParams) {
     const firstLesson = course.modules[0]?.lessons[0];
     const currentLessonId = firstLesson?.id ?? null;
 
-    // Create enrollment
-    const enrollment = await prisma.academyEnrollment.create({
-      data: {
-        userId,
-        courseId: course.id,
-        status: "ACTIVE",
-        progressPercent: 0,
-        totalTimeSpent: 0,
-        currentLessonId,
-      },
-    });
+    // Create enrollment (catch unique constraint for concurrent race condition)
+    let enrollment;
+    try {
+      enrollment = await prisma.academyEnrollment.create({
+        data: {
+          userId,
+          courseId: course.id,
+          status: "ACTIVE",
+          progressPercent: 0,
+          totalTimeSpent: 0,
+          currentLessonId,
+        },
+      });
+    } catch (createError: unknown) {
+      // P2002: Unique constraint violation — concurrent enrollment race
+      if (
+        createError &&
+        typeof createError === "object" &&
+        "code" in createError &&
+        (createError as { code: string }).code === "P2002"
+      ) {
+        const existing = await prisma.academyEnrollment.findUnique({
+          where: { userId_courseId: { userId, courseId: course.id } },
+        });
+        return NextResponse.json({
+          enrollment: existing,
+          message: "Already enrolled",
+          alreadyEnrolled: true,
+        });
+      }
+      throw createError;
+    }
 
     return NextResponse.json({
       enrollment,

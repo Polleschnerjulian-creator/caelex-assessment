@@ -199,10 +199,7 @@ export async function GET() {
       error,
       "Failed to fetch satellite data",
     );
-    console.error(
-      "CelesTrak fetch error:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    console.error("CelesTrak fetch error:", error);
     return Response.json(
       { error: message, satellites: [], stats: null },
       { status: 502 },

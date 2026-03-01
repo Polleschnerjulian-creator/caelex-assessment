@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { z } from "zod";
 import {
   getApplicableRequirements,
   type UsOperatorProfile,
@@ -60,83 +61,85 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const {
-      assessmentName,
-      operatorTypes,
-      activityTypes,
-      isUsEntity = true,
-      usNexus = "us_licensed",
-      orbitRegime,
-      altitudeKm,
-      frequencyBands,
-      satelliteCount,
-      hasManeuverability = false,
-      hasPropulsion = false,
-      missionDurationYears,
-      isConstellation = false,
-      isSmallSatellite = false,
-      isNGSO,
-      providesRemoteSensing = false,
-      remoteSensingResolutionM,
-      launchVehicle,
-      launchSite,
-      launchDate,
-    } = body;
+    const postSchema = z.object({
+      assessmentName: z.string().optional(),
+      operatorTypes: z
+        .array(
+          z.enum([
+            "satellite_operator",
+            "launch_operator",
+            "reentry_operator",
+            "remote_sensing_operator",
+            "spectrum_user",
+            "spaceport_operator",
+          ]),
+        )
+        .min(1, "At least one operator type is required"),
+      activityTypes: z
+        .array(
+          z.enum([
+            "satellite_communications",
+            "earth_observation",
+            "scientific_research",
+            "commercial_launch",
+            "commercial_reentry",
+            "spectrum_operations",
+            "remote_sensing",
+            "navigation",
+            "broadband",
+            "direct_broadcast",
+          ]),
+        )
+        .min(1, "At least one activity type is required"),
+      isUsEntity: z.boolean().optional().default(true),
+      usNexus: z.string().optional().default("us_licensed"),
+      orbitRegime: z.string().optional(),
+      altitudeKm: z.number().optional(),
+      frequencyBands: z.array(z.string()).optional(),
+      satelliteCount: z.number().optional(),
+      hasManeuverability: z.boolean().optional().default(false),
+      hasPropulsion: z.boolean().optional().default(false),
+      missionDurationYears: z.number().optional(),
+      isConstellation: z.boolean().optional().default(false),
+      isSmallSatellite: z.boolean().optional().default(false),
+      isNGSO: z.boolean().optional(),
+      providesRemoteSensing: z.boolean().optional().default(false),
+      remoteSensingResolutionM: z.number().optional(),
+      launchVehicle: z.string().optional(),
+      launchSite: z.string().optional(),
+      launchDate: z.string().optional(),
+    });
 
-    // Validate required fields
-    if (
-      !operatorTypes ||
-      operatorTypes.length === 0 ||
-      !activityTypes ||
-      activityTypes.length === 0
-    ) {
+    const parsed = postSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        {
-          error: "Missing required fields: operatorTypes, activityTypes",
-        },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate operator types
-    const validOperatorTypes: UsOperatorType[] = [
-      "satellite_operator",
-      "launch_operator",
-      "reentry_operator",
-      "remote_sensing_operator",
-      "spectrum_user",
-      "spaceport_operator",
-    ];
-    for (const opType of operatorTypes) {
-      if (!validOperatorTypes.includes(opType)) {
-        return NextResponse.json(
-          { error: `Invalid operator type: ${opType}` },
-          { status: 400 },
-        );
-      }
-    }
-
-    // Validate activity types
-    const validActivityTypes: UsActivityType[] = [
-      "satellite_communications",
-      "earth_observation",
-      "scientific_research",
-      "commercial_launch",
-      "commercial_reentry",
-      "spectrum_operations",
-      "remote_sensing",
-      "navigation",
-      "broadband",
-      "direct_broadcast",
-    ];
-    for (const activity of activityTypes) {
-      if (!validActivityTypes.includes(activity)) {
-        return NextResponse.json(
-          { error: `Invalid activity type: ${activity}` },
-          { status: 400 },
-        );
-      }
-    }
+    const {
+      assessmentName,
+      operatorTypes,
+      activityTypes,
+      isUsEntity,
+      usNexus,
+      orbitRegime,
+      altitudeKm,
+      frequencyBands,
+      satelliteCount,
+      hasManeuverability,
+      hasPropulsion,
+      missionDurationYears,
+      isConstellation,
+      isSmallSatellite,
+      isNGSO,
+      providesRemoteSensing,
+      remoteSensingResolutionM,
+      launchVehicle,
+      launchSite,
+      launchDate,
+    } = parsed.data;
 
     // Create profile for getting applicable requirements
     const profile: UsOperatorProfile = {
@@ -144,8 +147,8 @@ export async function POST(request: Request) {
       activityTypes: activityTypes as UsActivityType[],
       agencies: [] as UsAgency[], // Will be determined
       isUsEntity,
-      usNexus,
-      orbitRegime,
+      usNexus: usNexus as UsOperatorProfile["usNexus"],
+      orbitRegime: orbitRegime as UsOperatorProfile["orbitRegime"],
       altitudeKm,
       frequencyBands,
       satelliteCount,

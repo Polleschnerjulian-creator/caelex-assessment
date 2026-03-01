@@ -9,6 +9,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
@@ -20,28 +21,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    // Parse body
-    let body: { email?: string; source?: string };
+    // Parse and validate body
+    const newsletterSchema = z.object({
+      email: z.string().email("Invalid email format"),
+      source: z.string().max(100).optional().default("footer"),
+    });
+
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { email, source = "footer" } = body;
+    const parsed = newsletterSchema.safeParse(body);
 
-    // Validate email
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid email format" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { email, source } = parsed.data;
 
     // Check if subscription already exists
     const existing = await prisma.newsletterSubscription.findUnique({

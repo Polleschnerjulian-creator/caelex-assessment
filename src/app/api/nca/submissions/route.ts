@@ -5,7 +5,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { safeJsonParse, safeJsonParseArray } from "@/lib/validations";
+import {
+  safeJsonParse,
+  safeJsonParseArray,
+  parsePaginationLimit,
+} from "@/lib/validations";
 import {
   getSubmissions,
   getSubmissionStats,
@@ -32,7 +36,7 @@ export async function GET(request: NextRequest) {
     const fromDate = searchParams.get("fromDate");
     const toDate = searchParams.get("toDate");
     const includeStats = searchParams.get("includeStats") === "true";
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     const [{ submissions, total }, stats] = await Promise.all([

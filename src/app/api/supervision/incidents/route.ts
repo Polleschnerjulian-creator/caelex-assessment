@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import { parsePaginationLimit } from "@/lib/validations";
 import {
   INCIDENT_CLASSIFICATION,
   calculateSeverity,
@@ -23,7 +25,7 @@ export async function GET(req: Request) {
     const category = searchParams.get("category");
     const severity = searchParams.get("severity");
     const status = searchParams.get("status");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parsePaginationLimit(searchParams.get("limit"));
     const offset = parseInt(searchParams.get("offset") || "0");
 
     const config = await prisma.supervisionConfig.findUnique({
@@ -154,7 +156,45 @@ export async function POST(req: Request) {
       );
     }
 
+    const incidentSchema = z.object({
+      category: z.string().min(1),
+      severity: z.string().optional(),
+      title: z.string().min(1),
+      description: z.string().min(1),
+      detectedAt: z.string().min(1),
+      detectedBy: z.string().min(1),
+      detectionMethod: z.string().optional(),
+      affectedAssets: z
+        .array(
+          z.object({
+            cosparId: z.string().optional(),
+            noradId: z.string().optional(),
+            assetName: z.string(),
+          }),
+        )
+        .optional(),
+      immediateActions: z.array(z.string()).optional(),
+      impactAssessment: z.string().optional(),
+      severityFactors: z
+        .object({
+          affectedSpacecraft: z.number().optional(),
+          hasDataLoss: z.boolean().optional(),
+          affectsThirdParty: z.boolean().optional(),
+          isRecurring: z.boolean().optional(),
+          estimatedFinancialImpact: z.number().optional(),
+        })
+        .optional(),
+    });
+
     const body = await req.json();
+    const parsed = incidentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       category,
       severity: providedSeverity,
@@ -168,18 +208,7 @@ export async function POST(req: Request) {
       impactAssessment,
       // Severity factors for auto-classification
       severityFactors,
-    } = body;
-
-    // Validate required fields
-    if (!category || !title || !description || !detectedAt || !detectedBy) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: category, title, description, detectedAt, detectedBy",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Validate category
     const validCategories = Object.keys(INCIDENT_CLASSIFICATION);
@@ -198,12 +227,14 @@ export async function POST(req: Request) {
     // Auto-calculate severity if not provided
     let severity = providedSeverity;
     if (!severity) {
-      const factors: SeverityFactors = severityFactors || {
-        affectedSpacecraft: affectedAssets?.length || 1,
-        hasDataLoss: false,
-        affectsThirdParty: false,
-        isRecurring: false,
-        estimatedFinancialImpact: 0,
+      const factors: SeverityFactors = {
+        affectedAssetCount:
+          severityFactors?.affectedSpacecraft ?? affectedAssets?.length ?? 1,
+        hasDebrisGenerated: false,
+        hasDataBreach: severityFactors?.hasDataLoss ?? false,
+        hasThirdPartyImpact: severityFactors?.affectsThirdParty ?? false,
+        hasMediaAttention: false,
+        isRecurring: severityFactors?.isRecurring ?? false,
       };
       severity = calculateSeverity(incidentCategory, factors);
     }
@@ -221,81 +252,86 @@ export async function POST(req: Request) {
       ? await encrypt(impactAssessment)
       : undefined;
 
-    // Create incident with auto-classification
-    const incident = await prisma.incident.create({
-      data: {
-        supervisionId: config.id,
-        incidentNumber,
-        category,
-        severity,
-        status: "detected",
-        title,
-        description: encryptedDescription,
-        detectedAt: detectionTime,
-        detectedBy,
-        detectionMethod: detectionMethod || "manual",
-        immediateActions: immediateActions || [],
-        impactAssessment: encryptedImpactAssessment,
-        requiresNCANotification: classification.requiresNCANotification,
-        affectedAssets: affectedAssets?.length
-          ? {
-              create: affectedAssets.map(
-                (asset: {
-                  cosparId?: string;
-                  noradId?: string;
-                  assetName: string;
-                }) => ({
-                  cosparId: asset.cosparId,
-                  noradId: asset.noradId,
-                  assetName: asset.assetName,
-                }),
-              ),
-            }
-          : undefined,
-      },
-      include: {
-        affectedAssets: true,
-      },
-    });
-
-    // Create calendar event for NCA deadline if notification required
-    if (classification.requiresNCANotification) {
-      await prisma.supervisionCalendarEvent.create({
+    // Create incident + calendar event + audit log atomically
+    const incident = await prisma.$transaction(async (tx) => {
+      // Create incident with auto-classification
+      const newIncident = await tx.incident.create({
         data: {
           supervisionId: config.id,
-          eventType: "regulatory_deadline",
-          title: `NCA Notification Deadline: ${incidentNumber}`,
-          description: `${classification.ncaDeadlineHours}-hour deadline for NCA notification of ${incidentCategory} incident. Severity: ${severity}`,
-          dueDate: ncaDeadline,
-          status: "pending",
-          notes: JSON.stringify({
-            incidentId: incident.id,
-            incidentNumber,
-            category,
-            severity,
-          }),
-        },
-      });
-    }
-
-    // Log audit event
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: "incident_created",
-        entityType: "incident",
-        entityId: incident.id,
-        newValue: JSON.stringify({
           incidentNumber,
           category,
           severity,
+          status: "detected",
           title,
-          autoClassified: !providedSeverity,
+          description: encryptedDescription,
+          detectedAt: detectionTime,
+          detectedBy,
+          detectionMethod: detectionMethod || "manual",
+          immediateActions: immediateActions || [],
+          impactAssessment: encryptedImpactAssessment,
           requiresNCANotification: classification.requiresNCANotification,
-          ncaDeadline: ncaDeadline.toISOString(),
-        }),
-        description: `Created incident ${incidentNumber}: ${title} (${severity} severity, ${classification.ncaDeadlineHours}h NCA deadline)`,
-      },
+          affectedAssets: affectedAssets?.length
+            ? {
+                create: affectedAssets.map(
+                  (asset: {
+                    cosparId?: string;
+                    noradId?: string;
+                    assetName: string;
+                  }) => ({
+                    cosparId: asset.cosparId,
+                    noradId: asset.noradId,
+                    assetName: asset.assetName,
+                  }),
+                ),
+              }
+            : undefined,
+        },
+        include: {
+          affectedAssets: true,
+        },
+      });
+
+      // Create calendar event for NCA deadline if notification required
+      if (classification.requiresNCANotification) {
+        await tx.supervisionCalendarEvent.create({
+          data: {
+            supervisionId: config.id,
+            eventType: "regulatory_deadline",
+            title: `NCA Notification Deadline: ${incidentNumber}`,
+            description: `${classification.ncaDeadlineHours}-hour deadline for NCA notification of ${incidentCategory} incident. Severity: ${severity}`,
+            dueDate: ncaDeadline,
+            status: "pending",
+            notes: JSON.stringify({
+              incidentId: newIncident.id,
+              incidentNumber,
+              category,
+              severity,
+            }),
+          },
+        });
+      }
+
+      // Log audit event
+      await tx.auditLog.create({
+        data: {
+          userId: session.user.id,
+          action: "incident_created",
+          entityType: "incident",
+          entityId: newIncident.id,
+          newValue: JSON.stringify({
+            incidentNumber,
+            category,
+            severity,
+            title,
+            autoClassified: !providedSeverity,
+            requiresNCANotification: classification.requiresNCANotification,
+            ncaDeadline: ncaDeadline.toISOString(),
+          }),
+          description: `Created incident ${incidentNumber}: ${title} (${severity} severity, ${classification.ncaDeadlineHours}h NCA deadline)`,
+        },
+      });
+
+      return newIncident;
     });
 
     return NextResponse.json({

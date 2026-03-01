@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   debrisRequirements,
@@ -112,6 +113,31 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentId: z.string().min(1),
+      requirementId: z.string().min(1),
+      status: z
+        .enum([
+          "not_assessed",
+          "compliant",
+          "partial",
+          "non_compliant",
+          "not_applicable",
+        ])
+        .optional(),
+      notes: z.string().nullable().optional(),
+      evidenceNotes: z.string().nullable().optional(),
+      responses: z.record(z.string(), z.unknown()).nullable().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentId,
       requirementId,
@@ -119,16 +145,7 @@ export async function PUT(request: Request) {
       notes,
       evidenceNotes,
       responses,
-    } = body;
-
-    if (!assessmentId || !requirementId) {
-      return NextResponse.json(
-        {
-          error: "assessmentId and requirementId are required",
-        },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Verify assessment ownership
     const assessment = await prisma.debrisAssessment.findFirst({
@@ -167,7 +184,7 @@ export async function PUT(request: Request) {
         status: status ?? undefined,
         notes: notes ?? undefined,
         evidenceNotes: evidenceNotes ?? undefined,
-        responses: responses !== undefined ? responses : undefined,
+        responses: responses !== undefined ? (responses as any) : undefined,
       },
       create: {
         assessmentId,
@@ -175,7 +192,7 @@ export async function PUT(request: Request) {
         status: status || "not_assessed",
         notes,
         evidenceNotes,
-        responses: responses || undefined,
+        responses: responses ? (responses as any) : undefined,
       },
     });
 

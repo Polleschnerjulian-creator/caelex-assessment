@@ -123,6 +123,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -131,6 +132,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -773,7 +776,7 @@ model SupplierPortalToken {
 
   createdAt DateTime @default(now())
 
-  @@index([token])
+  // @@index([token]) — removed: redundant with @unique
   @@index([requestId])
   @@index([expiresAt])
 }
@@ -1366,7 +1369,7 @@ model LoginAttempt {
   userAgent String?
   createdAt DateTime @default(now())
 
-  @@index([email])
+  @@index([email, createdAt]) // Composite: brute force detection queries
   @@index([createdAt])
 }
 
@@ -1899,7 +1902,7 @@ model DocumentShare {
   createdAt    DateTime  @default(now())
   lastAccessed DateTime?
 
-  @@index([shareToken])
+  // @@index([shareToken]) — removed: redundant with @unique
   @@index([documentId])
 }
 
@@ -2518,7 +2521,7 @@ model Organization {
   environmentalAssessments     EnvironmentalAssessment[]
   nis2Assessments              NIS2Assessment[]
 
-  @@index([slug])
+  // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
   @@index([createdAt])
@@ -2602,7 +2605,7 @@ model OrganizationInvitation {
 
   createdAt DateTime @default(now())
 
-  @@index([token])
+  // @@index([token]) — removed: redundant with @unique
   @@index([email])
   @@index([organizationId])
 }
@@ -2849,6 +2852,7 @@ model Notification {
   @@index([userId, read])
   @@index([userId, createdAt])
   @@index([organizationId])
+  @@index([type])
 }
 
 model NotificationPreference {
@@ -3021,7 +3025,7 @@ model WebAuthnCredential {
   createdAt  DateTime  @default(now())
 
   @@index([userId])
-  @@index([credentialId])
+  // @@index([credentialId]) — removed: redundant with @unique
 }
 
 // ============================================
@@ -3252,7 +3256,7 @@ model HoneyToken {
   // Relations
   triggers HoneyTokenTrigger[]
 
-  @@index([tokenValue])
+  // @@index([tokenValue]) — removed: redundant with @unique
   @@index([tokenHash])
   @@index([tokenType, isActive])
 }
@@ -4156,7 +4160,7 @@ model NewsletterSubscription {
   unsubscribedAt DateTime?
 
   @@index([status])
-  @@index([email])
+  // @@index([email]) — removed: redundant with @unique
 }
 
 // ─── Demo Requests ───

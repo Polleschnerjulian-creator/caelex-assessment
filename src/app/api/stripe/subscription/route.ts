@@ -15,6 +15,13 @@ import {
 } from "@/lib/services/subscription-service";
 import { PRICING_TIERS } from "@/lib/stripe/pricing";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { CuidSchema } from "@/lib/validations";
+
+const SubscriptionActionSchema = z.object({
+  organizationId: CuidSchema,
+  action: z.enum(["cancel", "reactivate"]),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -95,14 +102,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { organizationId, action } = body;
-
-    if (!organizationId || !action) {
+    const parsed = SubscriptionActionSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "organizationId and action are required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { organizationId, action } = parsed.data;
 
     // Verify user has access to organization
     const membership = await prisma.organizationMember.findFirst({

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 
 // GET /api/environmental/[assessmentId] - Get assessment details
@@ -64,6 +65,48 @@ export async function PATCH(
     const userId = session.user.id;
     const body = await request.json();
 
+    const patchSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      missionName: z.string().optional(),
+      operatorType: z.enum(["spacecraft", "launch", "launch_site"]).optional(),
+      missionType: z
+        .enum(["commercial", "research", "government", "educational"])
+        .optional(),
+      spacecraftMassKg: z.number().optional(),
+      spacecraftCount: z.number().optional(),
+      orbitType: z
+        .enum(["LEO", "MEO", "GEO", "HEO", "cislunar", "deep_space"])
+        .optional(),
+      altitudeKm: z.number().optional(),
+      missionDurationYears: z.number().optional(),
+      launchVehicle: z.string().optional(),
+      launchSharePercent: z.number().optional(),
+      launchSiteCountry: z.string().optional(),
+      spacecraftPropellant: z.string().optional(),
+      propellantMassKg: z.number().optional(),
+      groundStationCount: z.number().optional(),
+      dailyContactHours: z.number().optional(),
+      deorbitStrategy: z
+        .enum([
+          "controlled_deorbit",
+          "passive_decay",
+          "graveyard_orbit",
+          "retrieval",
+        ])
+        .optional(),
+      isSmallEnterprise: z.boolean().optional(),
+      isResearchEducation: z.boolean().optional(),
+    });
+
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existing = await prisma.environmentalAssessment.findFirst({
       where: {
@@ -79,35 +122,12 @@ export async function PATCH(
       );
     }
 
-    // Build update data
+    // Build update data from validated fields
     const updateData: Record<string, unknown> = {};
 
-    const allowedFields = [
-      "assessmentName",
-      "status",
-      "missionName",
-      "operatorType",
-      "missionType",
-      "spacecraftMassKg",
-      "spacecraftCount",
-      "orbitType",
-      "altitudeKm",
-      "missionDurationYears",
-      "launchVehicle",
-      "launchSharePercent",
-      "launchSiteCountry",
-      "spacecraftPropellant",
-      "propellantMassKg",
-      "groundStationCount",
-      "dailyContactHours",
-      "deorbitStrategy",
-      "isSmallEnterprise",
-      "isResearchEducation",
-    ];
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
+    for (const [key, value] of Object.entries(parsed.data)) {
+      if (value !== undefined) {
+        updateData[key] = value;
       }
     }
 
@@ -128,7 +148,7 @@ export async function PATCH(
       entityType: "environmental_assessment",
       entityId: assessmentId,
       previousValue: existing,
-      newValue: body,
+      newValue: parsed.data,
       description: "Updated environmental assessment",
       ipAddress,
       userAgent,

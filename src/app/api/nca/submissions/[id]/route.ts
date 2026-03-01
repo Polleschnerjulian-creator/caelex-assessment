@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
 import { safeJsonParse, safeJsonParseArray } from "@/lib/validations";
@@ -19,6 +20,18 @@ import {
   NCA_AUTHORITY_INFO,
 } from "@/lib/services/nca-submission-service";
 import type { NCASubmissionStatus } from "@prisma/client";
+
+// NCA submission status transition rules
+const ALLOWED_NCA_TRANSITIONS: Record<string, string[]> = {
+  DRAFT: ["PENDING_SUBMISSION"],
+  PENDING_SUBMISSION: ["SUBMITTED", "DRAFT"],
+  SUBMITTED: ["ACKNOWLEDGED", "UNDER_REVIEW", "REJECTED"],
+  ACKNOWLEDGED: ["UNDER_REVIEW", "APPROVED", "REJECTED"],
+  UNDER_REVIEW: ["APPROVED", "REJECTED", "ADDITIONAL_INFO_REQUIRED"],
+  ADDITIONAL_INFO_REQUIRED: ["SUBMITTED"],
+  APPROVED: [],
+  REJECTED: ["DRAFT"],
+};
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -83,7 +96,27 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+
+    const submissionPatchSchema = z.object({
+      status: z.string().optional(),
+      ncaReference: z.string().optional(),
+      acknowledgedBy: z.string().optional(),
+      notes: z.string().optional(),
+      rejectionReason: z.string().optional(),
+      followUpRequired: z.boolean().optional(),
+      followUpDeadline: z.string().optional(),
+      followUpNotes: z.string().optional(),
+    });
+
     const body = await request.json();
+    const parsed = submissionPatchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       status,
       ncaReference,
@@ -93,7 +126,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       followUpRequired,
       followUpDeadline,
       followUpNotes,
-    } = body;
+    } = parsed.data;
 
     // Check if submission exists
     const existing = await getSubmission(id, session.user.id);
@@ -102,6 +135,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { error: "Submission not found" },
         { status: 404 },
       );
+    }
+
+    // Validate status transition
+    if (status) {
+      const allowed = ALLOWED_NCA_TRANSITIONS[existing.status] ?? [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json(
+          {
+            error: `Cannot transition from "${existing.status}" to "${status}"`,
+            allowedTransitions: allowed,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // Handle acknowledgment specifically
@@ -168,7 +215,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       action: "NCA_SUBMISSION_STATUS_UPDATED",
       entityType: "nca_submission",
       entityId: id,
-      description: `Updated submission status to ${getSubmissionStatusLabel(status)}`,
+      description: `Updated submission status to ${getSubmissionStatusLabel(status as NCASubmissionStatus)}`,
       previousValue: { status: existing.status },
       newValue: { status },
     });

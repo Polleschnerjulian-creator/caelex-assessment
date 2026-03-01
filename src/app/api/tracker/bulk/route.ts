@@ -1,6 +1,20 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { ArticleStatusEnum } from "@/lib/validations";
+
+const BulkUpdateSchema = z.object({
+  updates: z
+    .array(
+      z.object({
+        articleId: z.string().min(1).max(50),
+        status: ArticleStatusEnum,
+      }),
+    )
+    .min(1, "At least one update is required")
+    .max(500, "Too many updates"),
+});
 
 export async function PUT(request: Request) {
   try {
@@ -11,18 +25,20 @@ export async function PUT(request: Request) {
 
     const userId = session.user.id;
 
-    const { updates } = await request.json();
-
-    if (!Array.isArray(updates)) {
+    const body = await request.json();
+    const parsed = BulkUpdateSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Updates must be an array" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
+    const { updates } = parsed.data;
+
     // Use transaction for bulk upsert
     const results = await prisma.$transaction(
-      updates.map((update: { articleId: string; status: string }) =>
+      updates.map((update) =>
         prisma.articleStatus.upsert({
           where: {
             userId_articleId: {

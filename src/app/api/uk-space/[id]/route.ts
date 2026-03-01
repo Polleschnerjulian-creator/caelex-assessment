@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -146,6 +147,37 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      requirementStatuses: z
+        .array(
+          z.object({
+            requirementId: z.string().min(1),
+            status: z.string().min(1),
+            notes: z.string().optional(),
+            evidenceNotes: z.string().optional(),
+            targetDate: z.string().optional(),
+          }),
+        )
+        .optional(),
+      safetyCaseStatus: z.string().optional(),
+      safetyCaseRef: z.string().optional(),
+      insuranceProvider: z.string().optional(),
+      insuranceCoverage: z.number().optional(),
+      insuranceConfirmed: z.boolean().optional(),
+      ukRegistryRef: z.string().optional(),
+      registrationStatus: z.string().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existingAssessment = await prisma.ukSpaceAssessment.findFirst({
       where: { id, userId },
@@ -169,7 +201,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       insuranceConfirmed,
       ukRegistryRef,
       registrationStatus,
-    } = body;
+    } = parsed.data;
 
     // Update assessment
     const updates: Record<string, unknown> = {};

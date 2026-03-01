@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
@@ -59,6 +60,45 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const schema = z.object({
+      assessmentName: z.string().optional(),
+      organizationSize: z.enum(["micro", "small", "medium", "large"]),
+      employeeCount: z.number().optional(),
+      annualRevenue: z.number().optional(),
+      spaceSegmentComplexity: z.enum([
+        "ground_only",
+        "single_satellite",
+        "small_constellation",
+        "large_constellation",
+      ]),
+      satelliteCount: z.number().optional(),
+      hasGroundSegment: z.boolean().optional().default(true),
+      groundStationCount: z.number().optional(),
+      dataSensitivityLevel: z.enum([
+        "public",
+        "internal",
+        "confidential",
+        "classified",
+      ]),
+      processesPersonalData: z.boolean().optional().default(false),
+      handlesGovData: z.boolean().optional().default(false),
+      existingCertifications: z.array(z.string()).optional().default([]),
+      hasSecurityTeam: z.boolean().optional().default(false),
+      securityTeamSize: z.number().optional(),
+      hasIncidentResponsePlan: z.boolean().optional().default(false),
+      hasBCP: z.boolean().optional().default(false),
+      criticalSupplierCount: z.number().optional(),
+      supplierSecurityAssessed: z.boolean().optional().default(false),
+    });
+
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const {
       assessmentName,
       organizationSize,
@@ -66,30 +106,19 @@ export async function POST(request: Request) {
       annualRevenue,
       spaceSegmentComplexity,
       satelliteCount,
-      hasGroundSegment = true,
+      hasGroundSegment,
       groundStationCount,
       dataSensitivityLevel,
-      processesPersonalData = false,
-      handlesGovData = false,
-      existingCertifications = [],
-      hasSecurityTeam = false,
+      processesPersonalData,
+      handlesGovData,
+      existingCertifications,
+      hasSecurityTeam,
       securityTeamSize,
-      hasIncidentResponsePlan = false,
-      hasBCP = false,
+      hasIncidentResponsePlan,
+      hasBCP,
       criticalSupplierCount,
-      supplierSecurityAssessed = false,
-    } = body;
-
-    // Validate required fields
-    if (!organizationSize || !spaceSegmentComplexity || !dataSensitivityLevel) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing required fields: organizationSize, spaceSegmentComplexity, dataSensitivityLevel",
-        },
-        { status: 400 },
-      );
-    }
+      supplierSecurityAssessed,
+    } = parsed.data;
 
     // Build profile for requirement calculation
     const profile: CybersecurityProfile = {
@@ -215,8 +244,7 @@ export async function POST(request: Request) {
       applicableRequirements: applicableRequirements.map((r) => r.id),
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("Error creating cybersecurity assessment:", msg, error);
+    console.error("Error creating cybersecurity assessment:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decrypt, isEncrypted } from "@/lib/encryption";
@@ -16,21 +17,26 @@ export async function POST(
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const { phase } = body;
 
-    const validPhases = [
-      "early_warning",
-      "notification",
-      "intermediate_report",
-      "final_report",
-    ];
-    if (!phase || !validPhases.includes(phase)) {
+    const draftNotificationSchema = z.object({
+      phase: z.enum([
+        "early_warning",
+        "notification",
+        "intermediate_report",
+        "final_report",
+      ]),
+    });
+
+    const body = await req.json();
+    const parsed = draftNotificationSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid phase. Must be one of: " + validPhases.join(", ") },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { phase } = parsed.data;
 
     // Verify ownership
     const config = await prisma.supervisionConfig.findUnique({
@@ -115,8 +121,7 @@ export async function POST(
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to generate draft",
+        error: "Failed to generate draft",
       },
       { status: 500 },
     );

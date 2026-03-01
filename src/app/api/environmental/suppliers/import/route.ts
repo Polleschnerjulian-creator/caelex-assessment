@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 
 /**
@@ -20,14 +21,19 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    const { requestId } = body;
+    const schema = z.object({
+      requestId: z.string().min(1),
+    });
 
-    if (!requestId) {
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "requestId required" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { requestId } = parsed.data;
 
     // Get the supplier request with response data
     const supplierRequest = await prisma.supplierDataRequest.findUnique({

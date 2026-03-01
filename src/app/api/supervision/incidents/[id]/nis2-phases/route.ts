@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { submitNIS2Phase } from "@/lib/services/incident-autopilot";
@@ -72,7 +73,7 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to get phases",
+        error: "Failed to get phases",
       },
       { status: 500 },
     );
@@ -91,12 +92,22 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const { phase, referenceNumber } = body;
 
-    if (!phase || typeof phase !== "string") {
-      return NextResponse.json({ error: "Missing phase" }, { status: 400 });
+    const nis2PhaseSchema = z.object({
+      phase: z.string().min(1),
+      referenceNumber: z.string().optional(),
+    });
+
+    const body = await req.json();
+    const parsed = nis2PhaseSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
+
+    const { phase, referenceNumber } = parsed.data;
 
     // Verify ownership
     const config = await prisma.supervisionConfig.findUnique({
@@ -134,8 +145,7 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Failed to submit phase",
+        error: "Failed to submit phase",
       },
       { status: 500 },
     );

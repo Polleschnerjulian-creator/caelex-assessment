@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
 import {
   type ExportControlProfile,
   type ExportControlApplicability,
@@ -142,6 +143,36 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const requirementUpdateSchema = z.object({
+      requirementId: z.string(),
+      status: z
+        .enum([
+          "compliant",
+          "partial",
+          "non_compliant",
+          "not_assessed",
+          "not_applicable",
+        ])
+        .optional(),
+      notes: z.string().optional(),
+      evidenceNotes: z.string().optional(),
+      targetDate: z.string().optional(),
+      responsibleParty: z.string().optional(),
+    });
+
+    const putSchema = z.union([
+      requirementUpdateSchema,
+      z.array(requirementUpdateSchema),
+    ]);
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const assessment = await prisma.exportControlAssessment.findFirst({
       where: { id, userId },
@@ -156,31 +187,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     // Handle both single and batch updates
-    const updates = Array.isArray(body) ? body : [body];
-
-    // Validate statuses
-    const validStatuses: ComplianceStatus[] = [
-      "compliant",
-      "partial",
-      "non_compliant",
-      "not_assessed",
-      "not_applicable",
-    ];
-
-    for (const update of updates) {
-      if (!update.requirementId) {
-        return NextResponse.json(
-          { error: "Missing requirementId" },
-          { status: 400 },
-        );
-      }
-      if (update.status && !validStatuses.includes(update.status)) {
-        return NextResponse.json(
-          { error: `Invalid status: ${update.status}` },
-          { status: 400 },
-        );
-      }
-    }
+    const updates = Array.isArray(parsed.data) ? parsed.data : [parsed.data];
 
     // Update each requirement status
     const updatedStatuses = await prisma.$transaction(

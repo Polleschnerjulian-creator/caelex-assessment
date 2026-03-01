@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
 import {
@@ -62,43 +63,59 @@ export async function POST(request: Request) {
     const userId = session.user.id;
     const body = await request.json();
 
-    // Validate required fields
-    const requiredFields = [
-      "primaryJurisdiction",
-      "operatorType",
-      "companySize",
-      "orbitRegime",
-    ];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { error: `${field} is required` },
-          { status: 400 },
-        );
-      }
+    const schema = z.object({
+      assessmentName: z.string().optional(),
+      primaryJurisdiction: z.string().min(1),
+      operatorType: z.string().min(1),
+      companySize: z.string().min(1),
+      orbitRegime: z.string().min(1),
+      satelliteCount: z.number().optional(),
+      satelliteValueEur: z.number().optional(),
+      totalMissionValueEur: z.number().optional(),
+      isConstellationOperator: z.boolean().optional(),
+      hasManeuverability: z.boolean().optional(),
+      missionDurationYears: z.number().optional(),
+      hasFlightHeritage: z.boolean().optional(),
+      launchVehicle: z.string().optional(),
+      launchProvider: z.string().optional(),
+      launchDate: z.string().optional(),
+      hasADR: z.boolean().optional(),
+      hasPropulsion: z.boolean().optional(),
+      hasHazardousMaterials: z.boolean().optional(),
+      crossBorderOps: z.boolean().optional(),
+      annualRevenueEur: z.number().optional(),
+      turnoversShareSpace: z.number().optional(),
+    });
+
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
 
     // Build risk profile for calculations
     const profile: InsuranceRiskProfile = {
-      primaryJurisdiction: body.primaryJurisdiction as JurisdictionCode,
-      operatorType: body.operatorType as OperatorType,
-      companySize: body.companySize as CompanySize,
-      orbitRegime: body.orbitRegime as OrbitRegime,
-      satelliteCount: body.satelliteCount || 1,
-      satelliteValueEur: body.satelliteValueEur || 0,
-      totalMissionValueEur: body.totalMissionValueEur || 0,
-      isConstellationOperator: body.isConstellationOperator || false,
-      hasManeuverability: body.hasManeuverability || false,
-      missionDurationYears: body.missionDurationYears || 5,
-      hasFlightHeritage: body.hasFlightHeritage || false,
-      launchVehicle: body.launchVehicle || undefined,
-      launchProvider: body.launchProvider || undefined,
-      hasADR: body.hasADR || false,
-      hasPropulsion: body.hasPropulsion || false,
-      hasHazardousMaterials: body.hasHazardousMaterials || false,
-      crossBorderOps: body.crossBorderOps || false,
-      annualRevenueEur: body.annualRevenueEur || undefined,
-      turnoversShareSpace: body.turnoversShareSpace || undefined,
+      primaryJurisdiction: parsed.data.primaryJurisdiction as JurisdictionCode,
+      operatorType: parsed.data.operatorType as OperatorType,
+      companySize: parsed.data.companySize as CompanySize,
+      orbitRegime: parsed.data.orbitRegime as OrbitRegime,
+      satelliteCount: parsed.data.satelliteCount || 1,
+      satelliteValueEur: parsed.data.satelliteValueEur || 0,
+      totalMissionValueEur: parsed.data.totalMissionValueEur || 0,
+      isConstellationOperator: parsed.data.isConstellationOperator || false,
+      hasManeuverability: parsed.data.hasManeuverability || false,
+      missionDurationYears: parsed.data.missionDurationYears || 5,
+      hasFlightHeritage: parsed.data.hasFlightHeritage || false,
+      launchVehicle: parsed.data.launchVehicle || undefined,
+      launchProvider: parsed.data.launchProvider || undefined,
+      hasADR: parsed.data.hasADR || false,
+      hasPropulsion: parsed.data.hasPropulsion || false,
+      hasHazardousMaterials: parsed.data.hasHazardousMaterials || false,
+      crossBorderOps: parsed.data.crossBorderOps || false,
+      annualRevenueEur: parsed.data.annualRevenueEur || undefined,
+      turnoversShareSpace: parsed.data.turnoversShareSpace || undefined,
     };
 
     // Calculate TPL requirement
@@ -118,27 +135,29 @@ export async function POST(request: Request) {
       data: {
         userId,
         organizationId: orgCtx?.organizationId || null,
-        assessmentName: body.assessmentName || null,
-        primaryJurisdiction: body.primaryJurisdiction,
-        operatorType: body.operatorType,
-        companySize: body.companySize,
-        orbitRegime: body.orbitRegime,
-        satelliteCount: body.satelliteCount || 1,
-        satelliteValueEur: body.satelliteValueEur || null,
-        totalMissionValueEur: body.totalMissionValueEur || null,
-        isConstellationOperator: body.isConstellationOperator || false,
-        hasManeuverability: body.hasManeuverability || false,
-        missionDurationYears: body.missionDurationYears || 5,
-        hasFlightHeritage: body.hasFlightHeritage || false,
-        launchVehicle: body.launchVehicle || null,
-        launchProvider: body.launchProvider || null,
-        launchDate: body.launchDate ? new Date(body.launchDate) : null,
-        hasADR: body.hasADR || false,
-        hasPropulsion: body.hasPropulsion || false,
-        hasHazardousMaterials: body.hasHazardousMaterials || false,
-        crossBorderOps: body.crossBorderOps || false,
-        annualRevenueEur: body.annualRevenueEur || null,
-        turnoversShareSpace: body.turnoversShareSpace || null,
+        assessmentName: parsed.data.assessmentName || null,
+        primaryJurisdiction: parsed.data.primaryJurisdiction,
+        operatorType: parsed.data.operatorType,
+        companySize: parsed.data.companySize,
+        orbitRegime: parsed.data.orbitRegime,
+        satelliteCount: parsed.data.satelliteCount || 1,
+        satelliteValueEur: parsed.data.satelliteValueEur || null,
+        totalMissionValueEur: parsed.data.totalMissionValueEur || null,
+        isConstellationOperator: parsed.data.isConstellationOperator || false,
+        hasManeuverability: parsed.data.hasManeuverability || false,
+        missionDurationYears: parsed.data.missionDurationYears || 5,
+        hasFlightHeritage: parsed.data.hasFlightHeritage || false,
+        launchVehicle: parsed.data.launchVehicle || null,
+        launchProvider: parsed.data.launchProvider || null,
+        launchDate: parsed.data.launchDate
+          ? new Date(parsed.data.launchDate)
+          : null,
+        hasADR: parsed.data.hasADR || false,
+        hasPropulsion: parsed.data.hasPropulsion || false,
+        hasHazardousMaterials: parsed.data.hasHazardousMaterials || false,
+        crossBorderOps: parsed.data.crossBorderOps || false,
+        annualRevenueEur: parsed.data.annualRevenueEur || null,
+        turnoversShareSpace: parsed.data.turnoversShareSpace || null,
         calculatedTPL: tplRequirement.amount,
         riskLevel,
       },
@@ -180,8 +199,8 @@ export async function POST(request: Request) {
       entityType: "insurance_assessment",
       entityId: assessment.id,
       newValue: {
-        primaryJurisdiction: body.primaryJurisdiction,
-        operatorType: body.operatorType,
+        primaryJurisdiction: parsed.data.primaryJurisdiction,
+        operatorType: parsed.data.operatorType,
         calculatedTPL: tplRequirement.amount,
         riskLevel,
       },

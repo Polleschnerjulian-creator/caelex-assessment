@@ -112,62 +112,71 @@ export async function POST(request: Request) {
     }
 
     // Create enrollments for all assigned courses
-    const createdEnrollments: string[] = [];
+    // Batch lookup: fetch all existing enrollments for this user + these courses in one query
+    const existingEnrollments = await prisma.academyEnrollment.findMany({
+      where: {
+        userId,
+        courseId: { in: classroom.assignedCourses },
+      },
+    });
+    const existingByCourse = new Map(
+      existingEnrollments.map((e) => [e.courseId, e]),
+    );
 
-    for (const courseId of classroom.assignedCourses) {
-      // Check if already enrolled in this course (independently)
-      const existing = await prisma.academyEnrollment.findUnique({
-        where: {
-          userId_courseId: { userId, courseId },
-        },
+    // Batch update: link existing enrollments without a classroomId
+    const toLink = existingEnrollments.filter((e) => !e.classroomId);
+    if (toLink.length > 0) {
+      await prisma.academyEnrollment.updateMany({
+        where: { id: { in: toLink.map((e) => e.id) } },
+        data: { classroomId: classroom.id },
       });
+    }
 
-      if (existing) {
-        // Update existing enrollment to link to classroom
-        if (!existing.classroomId) {
-          await prisma.academyEnrollment.update({
-            where: { id: existing.id },
-            data: { classroomId: classroom.id },
-          });
-        }
-        createdEnrollments.push(courseId);
-      } else {
-        // Verify the course exists and is published
-        const course = await prisma.academyCourse.findUnique({
-          where: { id: courseId, isPublished: true },
-          include: {
-            modules: {
-              orderBy: { sortOrder: "asc" },
-              take: 1,
-              include: {
-                lessons: {
-                  orderBy: { sortOrder: "asc" },
-                  take: 1,
-                  select: { id: true },
+    // Find courses that need new enrollments
+    const newCourseIds = classroom.assignedCourses.filter(
+      (cid) => !existingByCourse.has(cid),
+    );
+
+    // Batch lookup: fetch all needed courses with first lesson in one query
+    const courses =
+      newCourseIds.length > 0
+        ? await prisma.academyCourse.findMany({
+            where: { id: { in: newCourseIds }, isPublished: true },
+            include: {
+              modules: {
+                orderBy: { sortOrder: "asc" },
+                take: 1,
+                include: {
+                  lessons: {
+                    orderBy: { sortOrder: "asc" },
+                    take: 1,
+                    select: { id: true },
+                  },
                 },
               },
             },
-          },
-        });
+          })
+        : [];
 
-        if (course) {
-          const firstLessonId = course.modules[0]?.lessons[0]?.id ?? null;
-
-          await prisma.academyEnrollment.create({
-            data: {
-              userId,
-              courseId,
-              classroomId: classroom.id,
-              status: "ACTIVE",
-              progressPercent: 0,
-              totalTimeSpent: 0,
-              currentLessonId: firstLessonId,
-            },
-          });
-          createdEnrollments.push(courseId);
-        }
-      }
+    // Batch create: all new enrollments at once
+    if (courses.length > 0) {
+      await prisma.academyEnrollment.createMany({
+        data: courses.map((course) => ({
+          userId,
+          courseId: course.id,
+          classroomId: classroom.id,
+          status: "ACTIVE",
+          progressPercent: 0,
+          totalTimeSpent: 0,
+          currentLessonId: course.modules[0]?.lessons[0]?.id ?? null,
+        })),
+      });
     }
+
+    const createdEnrollments = [
+      ...existingEnrollments.map((e) => e.courseId),
+      ...courses.map((c) => c.id),
+    ];
 
     return NextResponse.json({
       message: "Successfully joined classroom",

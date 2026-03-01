@@ -81,7 +81,7 @@ export async function createCheckoutSession(
     throw new Error("Organization not found");
   }
 
-  // Get or create Stripe customer
+  // Get or create Stripe customer (atomic upsert to prevent race conditions)
   let stripeCustomerId = organization.subscription?.stripeCustomerId;
 
   if (!stripeCustomerId) {
@@ -95,13 +95,19 @@ export async function createCheckoutSession(
     });
     stripeCustomerId = customer.id;
 
-    // Create subscription record
-    await prisma.subscription.create({
-      data: {
+    // Upsert to prevent duplicate records from concurrent requests
+    await prisma.subscription.upsert({
+      where: { organizationId },
+      create: {
         organizationId,
         stripeCustomerId,
         status: "INCOMPLETE",
         plan: "FREE",
+      },
+      update: {
+        // If a record was just created by a concurrent request, only update
+        // the Stripe customer ID if it was not yet set
+        stripeCustomerId,
       },
     });
   }

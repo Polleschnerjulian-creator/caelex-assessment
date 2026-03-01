@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -68,7 +69,30 @@ export async function PATCH(
       );
     }
 
+    const updateDeadlineSchema = z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      dueDate: z.string().optional(),
+      category: z.string().optional(),
+      priority: z.string().optional(),
+      status: z.string().optional(),
+      reminderDays: z.array(z.number().int()).optional(),
+      assignedTo: z.string().optional(),
+      assignedTeam: z.string().optional(),
+      regulatoryRef: z.string().optional(),
+      penaltyInfo: z.string().optional(),
+      completionNotes: z.string().optional(),
+    });
+
     const body = await req.json();
+    const parsed = updateDeadlineSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     const updateData: Record<string, unknown> = {};
 
     // Allowed fields to update
@@ -87,26 +111,27 @@ export async function PATCH(
     ];
 
     for (const field of allowedFields) {
-      if (body[field] !== undefined) {
+      if (parsed.data[field as keyof typeof parsed.data] !== undefined) {
         if (field === "dueDate") {
-          updateData.dueDate = new Date(body.dueDate);
+          updateData.dueDate = new Date(parsed.data.dueDate!);
         } else {
-          updateData[field] = body[field];
+          updateData[field] = parsed.data[field as keyof typeof parsed.data];
         }
       }
     }
 
     // Handle completion
-    if (body.status === "COMPLETED" && existing.status !== "COMPLETED") {
+    if (parsed.data.status === "COMPLETED" && existing.status !== "COMPLETED") {
       updateData.completedAt = new Date();
       updateData.completedBy = session.user.id;
-      if (body.completionNotes) {
-        updateData.completionNotes = body.completionNotes;
+      if (parsed.data.completionNotes) {
+        updateData.completionNotes = parsed.data.completionNotes;
       }
     }
 
+    // Use findFirst + update pattern with userId to prevent IDOR
     const deadline = await prisma.deadline.update({
-      where: { id },
+      where: { id, userId: session.user.id },
       data: updateData,
     });
 
@@ -158,7 +183,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.deadline.delete({ where: { id } });
+    await prisma.deadline.delete({ where: { id, userId: session.user.id } });
 
     // Log audit event
     await prisma.auditLog.create({

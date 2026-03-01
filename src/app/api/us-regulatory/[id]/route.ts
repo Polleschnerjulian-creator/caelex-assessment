@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
 import {
   calculateComplianceScore,
   determineRiskLevel,
@@ -187,6 +188,55 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const userId = session.user.id;
     const body = await request.json();
 
+    const putSchema = z.object({
+      assessmentName: z.string().optional(),
+      status: z.string().optional(),
+      requirementStatuses: z
+        .array(
+          z.object({
+            requirementId: z.string(),
+            status: z.string(),
+            notes: z.string().optional(),
+            evidenceNotes: z.string().optional(),
+            targetDate: z.string().optional(),
+          }),
+        )
+        .optional(),
+      // FCC fields
+      fccSpaceStationLicense: z.string().optional(),
+      fccSpaceStationLicenseNo: z.string().optional(),
+      fccSpectrumLicense: z.string().optional(),
+      fccSpectrumLicenseNo: z.string().optional(),
+      fccDebrisPlanStatus: z.string().optional(),
+      // FAA fields
+      faaLaunchLicense: z.string().optional(),
+      faaLaunchLicenseNo: z.string().optional(),
+      faaReentryLicense: z.string().optional(),
+      faaSiteOperatorLicense: z.string().optional(),
+      faaFinancialResponsibility: z.string().optional(),
+      // NOAA fields
+      noaaRemoteSensingLicense: z.string().optional(),
+      noaaLicenseNo: z.string().optional(),
+      noaaTierClassification: z.string().optional(),
+      // Insurance
+      insuranceProvider: z.string().optional(),
+      insuranceCoverageUsd: z.number().optional(),
+      insuranceConfirmed: z.boolean().optional(),
+      mplDetermination: z.string().optional(),
+      // Deorbit
+      plannedDisposalYears: z.number().optional(),
+      deorbitStrategy: z.string().optional(),
+      deorbitCapabilityConfirmed: z.boolean().optional(),
+    });
+
+    const parsed = putSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
     // Verify ownership
     const existingAssessment = await prisma.usRegulatoryAssessment.findFirst({
       where: { id, userId },
@@ -228,7 +278,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       plannedDisposalYears,
       deorbitStrategy,
       deorbitCapabilityConfirmed,
-    } = body;
+    } = parsed.data;
 
     // Update assessment
     const updates: Record<string, unknown> = {};

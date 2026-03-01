@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { Resend } from "resend";
 import {
   checkRateLimit,
@@ -24,36 +25,28 @@ export async function POST(request: NextRequest) {
       return createRateLimitResponse(rateLimitResult);
     }
 
+    const contactSchema = z.object({
+      name: z.string().min(1, "Name is required").max(200),
+      email: z.string().email("Invalid email format").max(320),
+      company: z.string().max(200).optional(),
+      message: z.string().min(1, "Message is required").max(5000),
+      _hp: z.string().optional(),
+    });
+
     const body = await request.json();
-    const { name, email, company, message } = body;
+    const parsed = contactSchema.safeParse(body);
 
-    // Validate required fields
-    if (!name || !email || !message) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    // Validate string lengths to prevent abuse
-    if (name.length > 200 || email.length > 320 || message.length > 5000) {
-      return NextResponse.json({ error: "Input too long" }, { status: 400 });
-    }
-    if (company && company.length > 200) {
-      return NextResponse.json({ error: "Input too long" }, { status: 400 });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
-    }
+    const { name, email, company, message } = parsed.data;
 
     // Honeypot: reject if hidden field is filled (bots fill all fields)
-    if (body._hp) {
+    if (parsed.data._hp) {
       // Silently succeed to not tip off the bot
       return NextResponse.json({ success: true });
     }

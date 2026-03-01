@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -14,15 +15,23 @@ export async function POST(
     }
 
     const { id } = await params;
-    const body = await req.json();
-    const { newDueDate, reason, approvedBy } = body;
 
-    if (!newDueDate || !reason) {
+    const extendDeadlineSchema = z.object({
+      newDueDate: z.string().min(1),
+      reason: z.string().min(1),
+      approvedBy: z.string().optional(),
+    });
+
+    const body = await req.json();
+    const parsed = extendDeadlineSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields: newDueDate, reason" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
+
+    const { newDueDate, reason, approvedBy } = parsed.data;
 
     // Verify ownership
     const existing = await prisma.deadline.findFirst({

@@ -46,39 +46,75 @@ const DIGEST_ALGORITHMS: Record<string, string | undefined> = {
 /**
  * Verify the XML signature on a SAML response using the IdP's X.509 certificate.
  *
- * Steps performed:
- * 1. Extract Reference URI and validate it matches the Assertion ID
- * 2. Compute the digest of the referenced Assertion and verify it matches DigestValue
- * 3. Verify the SignatureValue over SignedInfo using the IdP certificate
+ * SECURITY: Uses structural validation to prevent XML Signature Wrapping (XSW) attacks:
+ * 1. Extracts the Assertion that contains the Signature (not just any Assertion)
+ * 2. Validates the Reference URI points to the parent Assertion's ID
+ * 3. Verifies DigestValue matches the Assertion content (minus Signature)
+ * 4. Cryptographically verifies the SignatureValue over SignedInfo
  *
- * Returns true only if all checks pass.
+ * This prevents wrapping attacks where a forged Assertion is placed before
+ * the legitimately signed one.
  */
 function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
   try {
-    // ── Step 0: Extract key XML elements ──
+    // ── Step 0: Extract the Assertion that CONTAINS the Signature ──
+    // This is the critical XSW defense: we only trust the Assertion that
+    // wraps the Signature element, not the first Assertion found.
 
-    // Extract the SignatureValue
-    const sigValueMatch = xml.match(
+    // Find ALL Assertion elements and identify which one contains a Signature
+    const assertionRegex =
+      /(<(?:saml:|samlp?:)?Assertion[^>]+ID="([^"]+)"[\s\S]*?<\/(?:saml:|samlp?:)?Assertion>)/g;
+    let signedAssertion: string | null = null;
+    let signedAssertionId: string | null = null;
+    let match: RegExpExecArray | null;
+
+    while ((match = assertionRegex.exec(xml)) !== null) {
+      const assertion = match[1];
+      const assertionId = match[2];
+      // The signed Assertion is the one that contains the ds:Signature
+      if (
+        assertion.includes("<ds:Signature") ||
+        assertion.includes("<Signature")
+      ) {
+        if (signedAssertion !== null) {
+          // Multiple Assertions contain signatures — reject as suspicious
+          console.error("SAML: Multiple signed Assertions found — rejecting");
+          return false;
+        }
+        signedAssertion = assertion;
+        signedAssertionId = assertionId;
+      }
+    }
+
+    // If no Assertion contains a Signature, check for Response-level signature
+    if (!signedAssertion) {
+      // Response-level signatures are also valid but we extract claims from
+      // the Assertion inside. For now, require Assertion-level signatures.
+      console.error("SAML: No Assertion with embedded Signature found");
+      return false;
+    }
+
+    // ── Step 1: Extract signature components from the SIGNED Assertion ──
+
+    const sigValueMatch = signedAssertion.match(
       /<ds:SignatureValue[^>]*>([\s\S]*?)<\/ds:SignatureValue>/,
     );
     if (!sigValueMatch) return false;
     const signatureValue = sigValueMatch[1].replace(/\s/g, "");
 
-    // Extract the SignedInfo element (the data that was signed)
-    const signedInfoMatch = xml.match(
+    const signedInfoMatch = signedAssertion.match(
       /(<ds:SignedInfo[\s\S]*?<\/ds:SignedInfo>)/,
     );
     if (!signedInfoMatch) return false;
     const signedInfoXml = signedInfoMatch[1];
 
-    // Extract DigestValue
-    const digestMatch = xml.match(
+    const digestMatch = signedAssertion.match(
       /<ds:DigestValue>([\s\S]*?)<\/ds:DigestValue>/,
     );
     if (!digestMatch) return false;
     const expectedDigest = digestMatch[1].replace(/\s/g, "");
 
-    // ── Step 1: Validate Reference URI matches the Assertion ID ──
+    // ── Step 2: Validate Reference URI points to THIS Assertion's ID ──
 
     const referenceUriMatch = signedInfoXml.match(
       /<ds:Reference\s+URI="([^"]*)"/,
@@ -86,52 +122,33 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
     if (!referenceUriMatch) return false;
     const referenceUri = referenceUriMatch[1];
 
-    // The Reference URI should be "#<AssertionID>" or empty (whole document)
-    // Extract the Assertion ID from the SAML response
-    const assertionIdMatch =
-      xml.match(/<saml:Assertion[^>]+ID="([^"]+)"/) ||
-      xml.match(/<Assertion[^>]+ID="([^"]+)"/);
-
     if (referenceUri) {
-      // URI must start with "#" and reference the Assertion ID
       if (!referenceUri.startsWith("#")) return false;
       const referencedId = referenceUri.substring(1);
-      if (!assertionIdMatch || referencedId !== assertionIdMatch[1]) {
+      if (referencedId !== signedAssertionId) {
+        console.error(
+          "SAML: Reference URI does not match the signed Assertion ID",
+        );
         return false;
       }
     }
 
-    // ── Step 2: Verify DigestValue matches the digest of the referenced Assertion ──
+    // ── Step 3: Verify DigestValue of the Assertion (minus its Signature element) ──
 
-    // Determine the digest algorithm from DigestMethod
     const digestMethodMatch = signedInfoXml.match(
       /<ds:DigestMethod\s+Algorithm="([^"]+)"/,
     );
     const digestAlgUri = digestMethodMatch?.[1] || "";
     const digestAlgorithm = DIGEST_ALGORITHMS[digestAlgUri] || "sha256";
 
-    // Extract the referenced element for digest computation
-    // If URI references an Assertion, extract that element; otherwise use the whole response
-    let referencedContent: string;
-    if (referenceUri && assertionIdMatch) {
-      // Extract the full Assertion element
-      const assertionMatch =
-        xml.match(/(<saml:Assertion[\s\S]*?<\/saml:Assertion>)/) ||
-        xml.match(/(<Assertion[\s\S]*?<\/Assertion>)/);
-      if (!assertionMatch) return false;
-      referencedContent = assertionMatch[1];
-    } else {
-      referencedContent = xml;
-    }
-
-    // Compute digest of the referenced content (after removing the Signature element)
-    const contentWithoutSignature = referencedContent.replace(
+    // Remove the Signature element from the signed Assertion for digest computation
+    const assertionWithoutSignature = signedAssertion.replace(
       /<ds:Signature[\s\S]*?<\/ds:Signature>/,
       "",
     );
     const computedDigest = crypto
       .createHash(digestAlgorithm)
-      .update(contentWithoutSignature)
+      .update(assertionWithoutSignature)
       .digest("base64");
 
     if (computedDigest !== expectedDigest) {
@@ -141,14 +158,12 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       return false;
     }
 
-    // ── Step 3: Verify the SignatureValue over SignedInfo using the certificate ──
+    // ── Step 4: Verify the SignatureValue over SignedInfo using the certificate ──
 
-    // Normalize the certificate PEM
     const certPem = pemCertificate.includes("BEGIN CERTIFICATE")
       ? pemCertificate
       : `-----BEGIN CERTIFICATE-----\n${pemCertificate}\n-----END CERTIFICATE-----`;
 
-    // Determine signature algorithm from SignatureMethod
     const algMatch = signedInfoXml.match(
       /<ds:SignatureMethod\s+Algorithm="([^"]+)"/,
     );
@@ -158,7 +173,6 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       digest: "sha256",
     };
 
-    // Verify the cryptographic signature over SignedInfo
     const verifier = crypto.createVerify(algorithms.verify);
     verifier.update(signedInfoXml);
 
@@ -243,11 +257,17 @@ export async function POST(request: NextRequest) {
         return redirectWithError("SAML response signature verification failed");
       }
 
-      // ── Extract Claims (only after signature verification) ──
-      const emailMatch = decoded.match(
+      // ── Extract Claims from the SIGNED Assertion only ──
+      // SECURITY: Extract claims from the verified Assertion, not from the
+      // full XML document (which could contain forged unsigned Assertions).
+      // Find the Assertion that contains the Signature (same logic as verifySAMLSignature)
+      const assertionForClaims = extractSignedAssertion(decoded);
+      const claimsSource = assertionForClaims || decoded;
+
+      const emailMatch = claimsSource.match(
         /<saml:NameID[^>]*>([^<]+)<\/saml:NameID>/,
       );
-      const nameMatch = decoded.match(
+      const nameMatch = claimsSource.match(
         /<saml:Attribute Name="displayName"[^>]*>[\s\S]*?<saml:AttributeValue[^>]*>([^<]+)<\/saml:AttributeValue>/,
       );
 
@@ -350,6 +370,22 @@ export async function POST(request: NextRequest) {
     console.error("Error in SAML ACS:", error);
     return redirectWithError("Internal server error");
   }
+}
+
+/**
+ * Extract the Assertion element that contains the ds:Signature.
+ * Used to ensure claims are extracted from the verified Assertion only.
+ */
+function extractSignedAssertion(xml: string): string | null {
+  const assertionRegex =
+    /(<(?:saml:|samlp?:)?Assertion[^>]+ID="[^"]+"[\s\S]*?<\/(?:saml:|samlp?:)?Assertion>)/g;
+  let match: RegExpExecArray | null;
+  while ((match = assertionRegex.exec(xml)) !== null) {
+    if (match[1].includes("<ds:Signature") || match[1].includes("<Signature")) {
+      return match[1];
+    }
+  }
+  return null;
 }
 
 function redirectWithError(message: string): NextResponse {

@@ -6,6 +6,11 @@
 import { NextResponse } from "next/server";
 import { verifyUnlockToken } from "@/lib/login-security.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { z } from "zod";
+
+const unlockTokenSchema = z.object({
+  token: z.string().min(1, "Token is required").max(512, "Token is too long"),
+});
 
 interface RouteParams {
   params: Promise<{ token: string }>;
@@ -13,12 +18,18 @@ interface RouteParams {
 
 export async function POST(request: Request, { params }: RouteParams) {
   try {
-    const { token } = await params;
-    const { ipAddress, userAgent } = getRequestContext(request);
+    const resolvedParams = await params;
+    const parsed = unlockTokenSchema.safeParse(resolvedParams);
 
-    if (!token) {
-      return NextResponse.json({ error: "Token is required" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
+
+    const { token } = parsed.data;
+    const { ipAddress, userAgent } = getRequestContext(request);
 
     const result = await verifyUnlockToken(token);
 

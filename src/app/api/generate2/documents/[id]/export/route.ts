@@ -85,9 +85,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Export error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Export failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
 }

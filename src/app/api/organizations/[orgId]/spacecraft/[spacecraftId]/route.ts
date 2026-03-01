@@ -5,6 +5,7 @@
  * DELETE: Delete spacecraft
  */
 
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getSafeErrorMessage } from "@/lib/validations";
@@ -92,14 +93,72 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       );
     }
 
+    const updateSpacecraftSchema = z.object({
+      name: z.string().min(2).optional(),
+      cosparId: z.string().optional(),
+      noradId: z.string().optional(),
+      missionType: z
+        .enum([
+          "communication",
+          "earth_observation",
+          "navigation",
+          "scientific",
+          "technology_demonstration",
+          "weather",
+          "military",
+          "commercial",
+          "space_station",
+          "debris_removal",
+          "in_orbit_servicing",
+          "other",
+        ])
+        .optional(),
+      launchDate: z.string().optional(),
+      endOfLifeDate: z.string().optional(),
+      orbitType: z
+        .enum([
+          "LEO",
+          "MEO",
+          "GEO",
+          "HEO",
+          "SSO",
+          "polar",
+          "cislunar",
+          "deep_space",
+          "other",
+        ])
+        .optional(),
+      altitudeKm: z.union([z.string(), z.number()]).optional(),
+      inclinationDeg: z.union([z.string(), z.number()]).optional(),
+      status: z
+        .enum([
+          "PRE_LAUNCH",
+          "LAUNCHED",
+          "OPERATIONAL",
+          "DECOMMISSIONING",
+          "DEORBITED",
+          "LOST",
+        ])
+        .optional(),
+      description: z.string().optional(),
+      metadata: z.record(z.string(), z.unknown()).optional(),
+    });
+
     const body = await request.json();
+    const parsed = updateSpacecraftSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
 
     // Check if this is just a status update
-    if (body.status && Object.keys(body).length === 1) {
+    if (parsed.data.status && Object.keys(parsed.data).length === 1) {
       const spacecraft = await updateSpacecraftStatus(
         spacecraftId,
         orgId,
-        body.status,
+        parsed.data.status,
         session.user.id,
       );
 
@@ -123,7 +182,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       status,
       description,
       metadata,
-    } = body;
+    } = parsed.data;
 
     const spacecraft = await updateSpacecraft(
       spacecraftId,
@@ -137,9 +196,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         endOfLifeDate: endOfLifeDate ? new Date(endOfLifeDate) : undefined,
         orbitType,
         altitudeKm:
-          altitudeKm !== undefined ? parseFloat(altitudeKm) : undefined,
+          altitudeKm !== undefined ? parseFloat(String(altitudeKm)) : undefined,
         inclinationDeg:
-          inclinationDeg !== undefined ? parseFloat(inclinationDeg) : undefined,
+          inclinationDeg !== undefined
+            ? parseFloat(String(inclinationDeg))
+            : undefined,
         status,
         description,
         metadata,

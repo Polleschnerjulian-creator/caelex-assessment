@@ -123,7 +123,7 @@ const authResult = isAuthConfigured
       session: {
         strategy: "jwt",
         maxAge: 24 * 60 * 60, // 24 hours
-        updateAge: 60 * 60, // Refresh token every hour
+        updateAge: 5 * 60, // Refresh token every 5 minutes (fast role propagation)
       },
 
       // ─── Secure Cookie Settings ───
@@ -367,6 +367,8 @@ const authResult = isAuthConfigured
                 role: true,
                 isActive: true,
                 theme: true,
+                lockedUntil: true,
+                failedLoginAttempts: true,
                 mfaConfig: {
                   select: { enabled: true },
                 },
@@ -385,10 +387,33 @@ const authResult = isAuthConfigured
               );
             }
 
+            // Account locked (user-level lockout)
+            if (user.lockedUntil && user.lockedUntil > new Date()) {
+              throw new Error(
+                "Account is temporarily locked due to too many failed attempts. Please try again later.",
+              );
+            }
+
             // ─── Verify Password ───
             const isValid = await bcrypt.compare(password, user.password);
 
             if (!isValid) {
+              // Record failed attempt for user-level lockout
+              const newAttempts = (user.failedLoginAttempts || 0) + 1;
+              const lockoutData: {
+                failedLoginAttempts: number;
+                lockedUntil?: Date;
+              } = {
+                failedLoginAttempts: newAttempts,
+              };
+              // Lock account after 10 failed attempts for 30 minutes
+              if (newAttempts >= 10) {
+                lockoutData.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+              }
+              await prisma.user.update({
+                where: { id: user.id },
+                data: lockoutData,
+              });
               return null;
             }
 
@@ -404,6 +429,14 @@ const authResult = isAuthConfigured
                 success: true,
               },
             });
+
+            // Reset user-level lockout counters on successful login
+            if (user.failedLoginAttempts && user.failedLoginAttempts > 0) {
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: 0, lockedUntil: null },
+              });
+            }
 
             // ─── Return User ───
             // If user has MFA enabled, mark session as requiring MFA verification.
