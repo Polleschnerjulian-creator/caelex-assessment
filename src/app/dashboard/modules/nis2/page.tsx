@@ -449,7 +449,7 @@ function OutOfScopeCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={false}
       animate={{ opacity: 1, scale: 1 }}
       className="text-center py-8"
     >
@@ -629,7 +629,7 @@ function NIS2Wizard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
@@ -734,7 +734,7 @@ function NIS2Wizard({
         {/* Assessment Name (shown on last step after answering) */}
         {isLastStep && currentAnswer !== null && !outOfScope && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 max-w-xl mx-auto"
           >
@@ -955,7 +955,7 @@ export default function NIS2ModulePage() {
         {/* Empty state */}
         {assessments.length === 0 && !error && !showWizard && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
           >
@@ -1004,7 +1004,7 @@ export default function NIS2ModulePage() {
                 <motion.a
                   key={assessment.id}
                   href={`/dashboard/modules/nis2/${assessment.id}`}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="block bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[--glass-border-hover] transition-colors"

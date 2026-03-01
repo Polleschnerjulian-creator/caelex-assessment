@@ -255,7 +255,7 @@ function CommentInput({
       <AnimatePresence>
         {showMentions && filteredUsers.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -5 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             className="absolute z-20 bottom-full left-0 mb-1 w-64 max-h-48 overflow-y-auto bg-[#0F1629] border border-white/10 rounded-lg shadow-xl"
@@ -362,7 +362,7 @@ function CommentItem({
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={`p-4 ${depth > 0 ? "pl-12 bg-white/[0.01]" : ""}`}

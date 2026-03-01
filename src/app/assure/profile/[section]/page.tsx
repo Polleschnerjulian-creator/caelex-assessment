@@ -409,7 +409,7 @@ export default function ProfileSectionPage() {
       {/* Section title */}
       <div className="mb-8">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >

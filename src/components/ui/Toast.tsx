@@ -94,7 +94,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <motion.div
               key={toast.id}
               layout
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={false}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}

@@ -81,7 +81,7 @@ export default function CrossRegulationAlerts({
   if (alerts.length === 0) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
       >
@@ -115,7 +115,7 @@ export default function CrossRegulationAlerts({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="bg-white border border-slate-200 dark:bg-[--glass-bg-surface] dark:border-[--glass-border-subtle] rounded-xl p-6"
@@ -157,7 +157,7 @@ export default function CrossRegulationAlerts({
             return (
               <motion.div
                 key={alert.id}
-                initial={{ opacity: 0, y: -8 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ delay: index * 0.03 }}

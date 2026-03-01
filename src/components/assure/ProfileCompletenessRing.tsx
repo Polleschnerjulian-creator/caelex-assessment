@@ -38,7 +38,7 @@ function MiniRing({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
       className="flex flex-col items-center gap-1.5"

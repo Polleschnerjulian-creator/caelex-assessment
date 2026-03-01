@@ -288,7 +288,7 @@ export default function AssessmentWizard() {
             {state.currentStep > 1 ? (
               <motion.button
                 key="back"
-                initial={{ opacity: 0, x: -10 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
@@ -300,7 +300,7 @@ export default function AssessmentWizard() {
             ) : (
               <motion.div
                 key="home"
-                initial={{ opacity: 0, x: -10 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
               >
@@ -358,7 +358,7 @@ export default function AssessmentWizard() {
             state.answers.entitySize === "research") &&
             state.currentStep > 5 && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 className="mt-10 max-w-2xl mx-auto"

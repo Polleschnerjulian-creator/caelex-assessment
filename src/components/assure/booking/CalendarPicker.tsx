@@ -247,7 +247,7 @@ export default function CalendarPicker({
         {loading ? (
           <motion.div
             key="loading"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="flex items-center justify-center py-12"
@@ -257,7 +257,7 @@ export default function CalendarPicker({
         ) : error ? (
           <motion.div
             key="error"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="flex flex-col items-center gap-3 py-10"
@@ -274,7 +274,7 @@ export default function CalendarPicker({
         ) : activeSlots.length === 0 ? (
           <motion.div
             key="empty"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="flex flex-col items-center gap-2 py-10"
@@ -287,7 +287,7 @@ export default function CalendarPicker({
         ) : (
           <motion.div
             key={activeDateStr}
-            initial={{ opacity: 0, y: 6 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}

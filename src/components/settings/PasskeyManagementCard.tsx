@@ -243,7 +243,7 @@ export function PasskeyManagementCard() {
         {showRegisterForm ? (
           <motion.div
             key="register"
-            initial={{ opacity: 0, y: 10 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4 p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]"
@@ -295,7 +295,7 @@ export function PasskeyManagementCard() {
         ) : (
           <motion.div
             key="list"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >

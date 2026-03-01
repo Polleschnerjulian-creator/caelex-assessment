@@ -354,7 +354,7 @@ export default function ComparisonMatrixView({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15, duration: 0.4 }}
     >

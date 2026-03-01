@@ -109,14 +109,14 @@ export default function AssureSettingsPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <motion.h1
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="text-display font-bold text-white mb-2"
           >
             Assure Settings
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/40"
@@ -142,10 +142,7 @@ export default function AssureSettingsPage() {
 
       <div className="space-y-6">
         {/* Company Information */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <GlassCard hover={false} className="p-6">
             <div className="flex items-center gap-2 mb-5">
               <Globe size={16} className="text-emerald-400" />
@@ -202,7 +199,7 @@ export default function AssureSettingsPage() {
 
         {/* Notifications */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
@@ -276,7 +273,7 @@ export default function AssureSettingsPage() {
 
         {/* Data Room Security */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -330,7 +327,7 @@ export default function AssureSettingsPage() {
 
               {settings.watermarkEnabled && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
+                  initial={false}
                   animate={{ opacity: 1, height: "auto" }}
                   className="pl-14"
                 >
@@ -379,7 +376,7 @@ export default function AssureSettingsPage() {
 
         {/* Integrations */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >

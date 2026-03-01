@@ -84,14 +84,14 @@ export default function InvestorsPage() {
       <div className="flex items-start justify-between mb-10">
         <div>
           <motion.h1
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="text-display font-bold text-white mb-2"
           >
             Investor Relations
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
             className="text-body-lg text-white/40"
@@ -120,7 +120,7 @@ export default function InvestorsPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
         >
@@ -134,7 +134,7 @@ export default function InvestorsPage() {
           </GlassCard>
         </motion.div>
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
@@ -148,7 +148,7 @@ export default function InvestorsPage() {
           </GlassCard>
         </motion.div>
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -162,7 +162,7 @@ export default function InvestorsPage() {
           </GlassCard>
         </motion.div>
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >

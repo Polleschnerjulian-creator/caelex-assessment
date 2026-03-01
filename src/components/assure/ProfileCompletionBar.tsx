@@ -37,7 +37,7 @@ export default function ProfileCompletionBar({
       {sections.map((section, index) => (
         <motion.div
           key={section.name}
-          initial={{ opacity: 0, y: 6 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
         >

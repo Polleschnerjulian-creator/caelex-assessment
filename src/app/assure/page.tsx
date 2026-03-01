@@ -52,7 +52,7 @@ function ScoreRing({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
+      initial={false}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
       className="relative inline-flex items-center justify-center"
@@ -87,7 +87,7 @@ function ScoreRing({
       </svg>
       <div className="absolute flex flex-col items-center">
         <motion.span
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: delay + 0.8 }}
           className="text-[42px] font-bold text-white tabular-nums leading-none"
@@ -95,7 +95,7 @@ function ScoreRing({
           {score}
         </motion.span>
         <motion.span
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: delay + 1 }}
           className="text-emerald-400 font-semibold text-body-lg mt-1"
@@ -124,7 +124,7 @@ function AnimatedSection({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
+      initial={false}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.7, delay, ease: [0.4, 0, 0.2, 1] }}
       className={className}
@@ -341,7 +341,7 @@ export default function AssureLandingPage() {
           <div className="grid lg:grid-cols-[1fr_auto] gap-16 items-center">
             {/* Left — Copy */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
             >
@@ -401,7 +401,7 @@ export default function AssureLandingPage() {
 
             {/* Right — Animated Score Ring */}
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 1 }}
               className="hidden lg:flex flex-col items-center"

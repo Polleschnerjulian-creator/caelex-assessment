@@ -220,10 +220,7 @@ export default function RatingReportPage() {
       />
 
       {/* Rating Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <GlassCard highlighted>
           <div className="p-6 flex items-center gap-8">
             <RCRGradeBadge grade={rating.grade} size="xl" showLabel />
@@ -269,7 +266,7 @@ export default function RatingReportPage() {
 
       {/* Component Breakdown */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
@@ -353,7 +350,7 @@ export default function RatingReportPage() {
 
       {/* Risk Register */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
@@ -447,7 +444,7 @@ export default function RatingReportPage() {
       {/* Rating Action */}
       {rating.actionRationale && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
@@ -478,7 +475,7 @@ export default function RatingReportPage() {
       {/* Peer Comparison */}
       {benchmark && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
@@ -500,7 +497,7 @@ export default function RatingReportPage() {
       {/* Rating History */}
       {history.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >

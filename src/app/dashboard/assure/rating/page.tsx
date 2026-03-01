@@ -122,7 +122,7 @@ function EmptyRatingState({
         <Shield className="w-10 h-10 text-emerald-500" />
       </motion.div>
       <motion.h2
-        initial={{ opacity: 0, y: 8 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="text-heading font-medium text-slate-900 dark:text-white mb-2"
@@ -130,7 +130,7 @@ function EmptyRatingState({
         No Rating Computed Yet
       </motion.h2>
       <motion.p
-        initial={{ opacity: 0, y: 8 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="text-body text-slate-500 dark:text-white/45 mb-8 max-w-md"
@@ -139,7 +139,7 @@ function EmptyRatingState({
         assessment of your organization&apos;s regulatory compliance posture.
       </motion.p>
       <motion.button
-        initial={{ opacity: 0, y: 8 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         onClick={onCompute}
@@ -276,7 +276,7 @@ export default function RCROverviewPage() {
             Back to Assure
           </Link>
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="flex items-center gap-2 mb-1"
           >
@@ -308,7 +308,7 @@ export default function RCROverviewPage() {
         <div className="flex items-center justify-between">
           <div>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
@@ -318,7 +318,7 @@ export default function RCROverviewPage() {
               </h1>
             </motion.div>
             <motion.p
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
               className="text-body text-slate-500 dark:text-white/45"
@@ -346,7 +346,7 @@ export default function RCROverviewPage() {
       {/* Error banner */}
       {error && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
         >
@@ -373,7 +373,7 @@ export default function RCROverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Grade Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -407,7 +407,7 @@ export default function RCROverviewPage() {
 
         {/* Quick Stats */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="lg:col-span-2"
@@ -518,7 +518,7 @@ export default function RCROverviewPage() {
       {/* Recent Rating Actions */}
       {rating.recentActions && rating.recentActions.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
           className="mb-8"
@@ -534,7 +534,7 @@ export default function RCROverviewPage() {
 
       {/* Sub-navigation */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
       >
@@ -567,7 +567,7 @@ export default function RCROverviewPage() {
             return (
               <motion.div
                 key={item.label}
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + index * 0.08 }}
               >

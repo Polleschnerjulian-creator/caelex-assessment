@@ -199,7 +199,7 @@ export default function JurisdictionCompare() {
               {/* Highlight on hover */}
               {hoveredIndex === i && (
                 <motion.div
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
                   className="mt-3 text-caption text-emerald-400/80"
                 >

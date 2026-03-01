@@ -216,7 +216,7 @@ export default function AssureDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
@@ -226,7 +226,7 @@ export default function AssureDashboardPage() {
           </span>
         </motion.div>
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-display font-medium text-slate-900 dark:text-white mb-1"
@@ -234,7 +234,7 @@ export default function AssureDashboardPage() {
           Regulatory Readiness
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="text-body-lg text-slate-500 dark:text-white/45"
@@ -248,7 +248,7 @@ export default function AssureDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Gauge card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
@@ -276,7 +276,7 @@ export default function AssureDashboardPage() {
 
         {/* Component quick view */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="lg:col-span-2"
@@ -314,7 +314,7 @@ export default function AssureDashboardPage() {
                 return (
                   <motion.div
                     key={key}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.25 + index * 0.05 }}
                   >
@@ -360,7 +360,7 @@ export default function AssureDashboardPage() {
           return (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + index * 0.08 }}
             >
@@ -392,7 +392,7 @@ export default function AssureDashboardPage() {
       {/* Priority Recommendations */}
       {criticalRecs.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >

@@ -104,22 +104,10 @@ export const metadata: Metadata = {
   },
 };
 
-// Script to prevent flash of wrong theme on initial load
+// Force dark mode — this is a dark-mode-only platform
 const themeScript = `
   (function() {
-    try {
-      const theme = localStorage.getItem('caelex-theme') || 'system';
-      const isDark = theme === 'dark' ||
-        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.add('light');
-      }
-    } catch (e) {
-      // Default to dark mode on error
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.add('dark');
   })();
 `;
 
@@ -129,7 +117,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} dark`}
+      suppressHydrationWarning
+    >
       <head>
         <meta
           name="format-detection"
@@ -146,7 +138,7 @@ export default function RootLayout({
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${inter.className} font-sans antialiased bg-white dark:bg-dark-bg text-slate-900 dark:text-white transition-colors`}
+        className={`${inter.className} font-sans antialiased bg-dark-bg text-white`}
       >
         <a href="#main-content" className="skip-to-main">
           Skip to main content

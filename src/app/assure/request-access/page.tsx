@@ -1,24 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Shield,
+  Clock,
+  Users,
+  Lock,
+  Sparkles,
+  ArrowLeft,
+} from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
-import CalendarPicker from "@/components/assure/booking/CalendarPicker";
-import type { Slot } from "@/components/assure/booking/CalendarPicker";
 
 // ─── Operator Type Options ───
 
 const OPERATOR_TYPES = [
-  { value: "SCO", label: "Satellite / Constellation Operator (SCO)" },
-  { value: "LO", label: "Launch Operator (LO)" },
-  { value: "LSO", label: "Launch Service Operator (LSO)" },
-  { value: "ISOS", label: "In-Orbit Servicing (ISOS)" },
-  { value: "CAP", label: "Capacity Provider (CAP)" },
-  { value: "PDP", label: "Payload Data Provider (PDP)" },
-  { value: "TCO", label: "Tracking & Command Operator (TCO)" },
+  { value: "satellite", label: "Satellite Operator" },
+  { value: "launch", label: "Launch Service Provider" },
+  { value: "ground", label: "Ground Segment Operator" },
+  { value: "inorbit", label: "In-Orbit Servicing" },
+  { value: "data", label: "Space Data Provider" },
+  { value: "manufacturing", label: "Spacecraft Manufacturing" },
+  { value: "other", label: "Other" },
 ];
 
 const FUNDING_STAGES = [
@@ -27,41 +34,28 @@ const FUNDING_STAGES = [
   { value: "series-a", label: "Series A" },
   { value: "series-b", label: "Series B+" },
   { value: "growth", label: "Growth / Late Stage" },
+  { value: "not-raising", label: "Not currently raising" },
 ];
 
 // ═══════════════════════════════════════════
 // ─── PAGE ─────────────────────────────────
 // ═══════════════════════════════════════════
 
-export default function BookCallPage() {
+export default function RequestAccessPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
-    companyWebsite: "",
-    operatorType: "",
+    role: "",
     fundingStage: "",
-    isRaising: false,
-    targetRaise: "",
+    operatorType: "",
     message: "",
-    _hp: "",
   });
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [demoTourCompleted, setDemoTourCompleted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Track whether user arrived from the demo tour
-  useEffect(() => {
-    if (typeof document !== "undefined" && document.referrer) {
-      if (document.referrer.includes("/assure/demo")) {
-        setDemoTourCompleted(true);
-      }
-    }
-  }, []);
-
-  const updateField = (field: string, value: string | boolean) => {
+  const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -73,41 +67,14 @@ export default function BookCallPage() {
     setError(null);
 
     try {
-      const payload: Record<string, unknown> = {
-        name: formData.name,
-        email: formData.email,
-        company: formData.company,
-        companyWebsite: formData.companyWebsite || undefined,
-        operatorType: formData.operatorType,
-        fundingStage: formData.fundingStage,
-        isRaising: formData.isRaising,
-        message: formData.message || undefined,
-        demoTourCompleted,
-        _hp: formData._hp,
-      };
-
-      if (formData.isRaising && formData.targetRaise) {
-        payload.targetRaise = parseFloat(formData.targetRaise);
-      }
-
-      if (selectedSlot) {
-        payload.scheduledAt = selectedSlot.dateTime;
-      }
-
-      const res = await fetch("/api/assure/book", {
+      const res = await fetch("/api/assure/request-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(formData),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (res.status === 409) {
-          setError("This slot was just booked. Please select another time.");
-          setSelectedSlot(null);
-          setSubmitting(false);
-          return;
-        }
         setError(data.error || "Something went wrong. Please try again.");
         setSubmitting(false);
         return;
@@ -131,34 +98,115 @@ export default function BookCallPage() {
     <div className="min-h-screen bg-black">
       <Navigation />
 
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[160px]" />
-      </div>
-
       <section className="relative pt-36 pb-28 overflow-hidden">
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
-          {/* Back link */}
-          <motion.div
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Link
-              href="/assure/demo"
-              className="inline-flex items-center gap-2 text-small text-white/35 hover:text-white/60 transition-colors mb-8"
-            >
-              <ArrowLeft size={14} />
-              Back to demo
-            </Link>
-          </motion.div>
+        {/* Ambient glows */}
+        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[160px] pointer-events-none" />
+        <div className="absolute bottom-0 right-[-200px] w-[400px] h-[400px] bg-blue-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
 
-          <div className="grid lg:grid-cols-[1fr_420px] gap-16 items-start">
-            {/* Left — Form Card */}
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
+          <div className="grid lg:grid-cols-[1fr_520px] gap-16 items-start">
+            {/* Left — Copy */}
             <motion.div
               initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+              className="lg:sticky lg:top-32"
+            >
+              <Link
+                href="/assure"
+                className="inline-flex items-center gap-2 text-small text-white/35 hover:text-white/60 transition-colors mb-8"
+              >
+                <ArrowLeft size={14} />
+                Back to Assure
+              </Link>
+
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
+                <Sparkles size={14} className="text-emerald-400" />
+                <span className="text-small font-medium text-emerald-400 tracking-wide">
+                  Early Access
+                </span>
+              </div>
+
+              <h1 className="text-[42px] md:text-[52px] font-bold text-white leading-[1.08] tracking-[-0.035em] mb-6">
+                Request access to
+                <br />
+                <span className="bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
+                  Caelex Assure
+                </span>
+              </h1>
+
+              <p className="text-body-lg md:text-subtitle text-white/45 leading-relaxed max-w-[480px] mb-10">
+                We work with a select number of space companies each quarter to
+                ensure personalized onboarding. Tell us about your company and
+                we'll get back to you within 24 hours.
+              </p>
+
+              {/* Trust indicators */}
+              <div className="space-y-4 mb-12">
+                {[
+                  {
+                    icon: Clock,
+                    text: "Response within 24 hours",
+                  },
+                  {
+                    icon: Users,
+                    text: "Personalized onboarding call",
+                  },
+                  {
+                    icon: Shield,
+                    text: "Included with any Caelex plan",
+                  },
+                  {
+                    icon: Lock,
+                    text: "Your data stays confidential",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.text}
+                    className="flex items-center gap-3 text-body-lg text-white/50"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
+                      <item.icon size={14} className="text-emerald-400/80" />
+                    </div>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <div className="hidden lg:block glass-surface rounded-xl border border-white/[0.06] p-6">
+                <p className="text-body-lg text-white/50 italic leading-relaxed mb-4">
+                  "Assure transformed how we present to investors. Our IRS score
+                  and verified compliance data gave VCs the confidence they
+                  needed to move fast."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                    <span className="text-small font-semibold text-emerald-400">
+                      M
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-body font-medium text-white/70">
+                      Head of Strategy
+                    </div>
+                    <div className="text-small text-white/35">
+                      European LEO Satellite Operator
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right — Form */}
+            <motion.div
+              initial={false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.7,
+                delay: 0.15,
+                ease: [0.4, 0, 0.2, 1],
+              }}
             >
               <div className="relative">
                 {/* Subtle glow behind card */}
@@ -181,28 +229,13 @@ export default function BookCallPage() {
                           />
                         </div>
                         <h2 className="text-display-sm font-bold text-white tracking-[-0.02em] mb-4">
-                          {selectedSlot
-                            ? "Call Confirmed!"
-                            : "You're on the list!"}
+                          Request received
                         </h2>
                         <p className="text-body-lg text-white/45 leading-relaxed max-w-sm mx-auto mb-4">
                           Thank you,{" "}
                           <span className="text-white/70">{formData.name}</span>
-                          .{" "}
-                          {selectedSlot ? (
-                            <>
-                              Your call is confirmed for{" "}
-                              <span className="text-emerald-400 font-medium">
-                                {selectedSlot.date} at {selectedSlot.time} CET
-                              </span>
-                              . We&apos;ll send you a calendar invite shortly.
-                            </>
-                          ) : (
-                            <>
-                              We&apos;ll review your profile and get back to you
-                              within 24 hours to schedule your onboarding call.
-                            </>
-                          )}
+                          . We'll review your application and get back to you
+                          within 24 hours.
                         </p>
                         <p className="text-body text-white/30 mb-10">
                           A confirmation has been sent to{" "}
@@ -223,11 +256,11 @@ export default function BookCallPage() {
                             />
                           </Link>
                           <Link
-                            href="/assure/demo"
+                            href="/assure"
                             className="w-full text-body text-white/35 hover:text-white/60 transition-colors flex items-center justify-center gap-1.5 py-2"
                           >
                             <ArrowLeft size={13} />
-                            Back to demo
+                            Back to Assure
                           </Link>
                         </div>
                       </motion.div>
@@ -241,11 +274,11 @@ export default function BookCallPage() {
                         {/* Form Header */}
                         <div className="p-8 pb-0 md:p-10 md:pb-0">
                           <h2 className="text-heading font-bold text-white mb-1">
-                            Book Your Onboarding Call
+                            Request Access
                           </h2>
                           <p className="text-body text-white/40">
-                            Tell us about your company so we can prepare a
-                            tailored session. All fields marked * are required.
+                            Tell us about your company. All fields marked * are
+                            required.
                           </p>
                         </div>
 
@@ -261,10 +294,6 @@ export default function BookCallPage() {
                               name="_hp"
                               tabIndex={-1}
                               autoComplete="off"
-                              value={formData._hp}
-                              onChange={(e) =>
-                                updateField("_hp", e.target.value)
-                              }
                             />
                           </div>
 
@@ -272,7 +301,7 @@ export default function BookCallPage() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label className={labelClasses}>
-                                Full Name *
+                                Full name *
                               </label>
                               <input
                                 type="text"
@@ -287,7 +316,7 @@ export default function BookCallPage() {
                             </div>
                             <div>
                               <label className={labelClasses}>
-                                Work Email *
+                                Work email *
                               </label>
                               <input
                                 type="email"
@@ -302,11 +331,11 @@ export default function BookCallPage() {
                             </div>
                           </div>
 
-                          {/* Company + Website row */}
+                          {/* Company + Role row */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label className={labelClasses}>
-                                Company Name *
+                                Company name *
                               </label>
                               <input
                                 type="text"
@@ -320,16 +349,14 @@ export default function BookCallPage() {
                               />
                             </div>
                             <div>
-                              <label className={labelClasses}>
-                                Company Website
-                              </label>
+                              <label className={labelClasses}>Your role</label>
                               <input
-                                type="url"
-                                value={formData.companyWebsite}
+                                type="text"
+                                value={formData.role}
                                 onChange={(e) =>
-                                  updateField("companyWebsite", e.target.value)
+                                  updateField("role", e.target.value)
                                 }
-                                placeholder="https://company.space"
+                                placeholder="CEO, CFO, Head of Strategy..."
                                 className={inputClasses}
                               />
                             </div>
@@ -339,7 +366,7 @@ export default function BookCallPage() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label className={labelClasses}>
-                                Operator Type *
+                                Operator type
                               </label>
                               <div className="relative">
                                 <select
@@ -347,7 +374,6 @@ export default function BookCallPage() {
                                   onChange={(e) =>
                                     updateField("operatorType", e.target.value)
                                   }
-                                  required
                                   className={`${selectClasses} ${!formData.operatorType ? "text-white/25" : ""}`}
                                 >
                                   <option value="" disabled>
@@ -384,7 +410,7 @@ export default function BookCallPage() {
                             </div>
                             <div>
                               <label className={labelClasses}>
-                                Funding Stage *
+                                Funding stage
                               </label>
                               <div className="relative">
                                 <select
@@ -392,7 +418,6 @@ export default function BookCallPage() {
                                   onChange={(e) =>
                                     updateField("fundingStage", e.target.value)
                                   }
-                                  required
                                   className={`${selectClasses} ${!formData.fundingStage ? "text-white/25" : ""}`}
                                 >
                                   <option value="" disabled>
@@ -429,70 +454,17 @@ export default function BookCallPage() {
                             </div>
                           </div>
 
-                          {/* Currently Raising toggle */}
-                          <div>
-                            <div className="flex items-center justify-between">
-                              <label className={labelClasses}>
-                                Currently Raising
-                              </label>
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={formData.isRaising}
-                                onClick={() =>
-                                  updateField("isRaising", !formData.isRaising)
-                                }
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                                  formData.isRaising
-                                    ? "bg-emerald-500"
-                                    : "bg-white/[0.08]"
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                                    formData.isRaising
-                                      ? "translate-x-6"
-                                      : "translate-x-1"
-                                  }`}
-                                />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Target Raise (conditional) */}
-                          {formData.isRaising && (
-                            <motion.div
-                              initial={false}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <label className={labelClasses}>
-                                Target Raise (EUR)
-                              </label>
-                              <input
-                                type="number"
-                                value={formData.targetRaise}
-                                onChange={(e) =>
-                                  updateField("targetRaise", e.target.value)
-                                }
-                                placeholder="e.g. 5000000"
-                                min="0"
-                                step="any"
-                                className={inputClasses}
-                              />
-                            </motion.div>
-                          )}
-
                           {/* Message */}
                           <div>
-                            <label className={labelClasses}>Message</label>
+                            <label className={labelClasses}>
+                              Tell us about your fundraising goals
+                            </label>
                             <textarea
                               value={formData.message}
                               onChange={(e) =>
                                 updateField("message", e.target.value)
                               }
-                              placeholder="Anything you'd like us to prepare for the call?"
+                              placeholder="What are you building? What stage are you at? How can Assure help you?"
                               rows={4}
                               className={`${inputClasses} resize-none`}
                             />
@@ -502,10 +474,10 @@ export default function BookCallPage() {
                           <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-medium text-body py-3.5 rounded-full shadow-[0_0_24px_rgba(16,185,129,0.2)] transition-all"
+                            className="group w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-body-lg px-6 py-4 rounded-full transition-all shadow-[0_0_24px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {submitting ? (
-                              <span className="flex items-center justify-center gap-2">
+                              <span className="flex items-center gap-2">
                                 <svg
                                   className="animate-spin h-4 w-4"
                                   viewBox="0 0 24 24"
@@ -529,10 +501,14 @@ export default function BookCallPage() {
                                 </svg>
                                 Submitting...
                               </span>
-                            ) : selectedSlot ? (
-                              `Book Call — ${selectedSlot.date} at ${selectedSlot.time}`
                             ) : (
-                              "Book Your Call"
+                              <>
+                                Request Access
+                                <ArrowRight
+                                  size={16}
+                                  className="group-hover:translate-x-0.5 transition-transform"
+                                />
+                              </>
                             )}
                           </button>
 
@@ -553,8 +529,7 @@ export default function BookCallPage() {
                             >
                               Privacy Policy
                             </Link>
-                            . We&apos;ll never share your data with third
-                            parties.
+                            . We'll never share your data with third parties.
                           </p>
                         </form>
                       </motion.div>
@@ -562,23 +537,6 @@ export default function BookCallPage() {
                   </AnimatePresence>
                 </div>
               </div>
-            </motion.div>
-
-            {/* Right — Calendar Picker */}
-            <motion.div
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.7,
-                delay: 0.15,
-                ease: [0.4, 0, 0.2, 1],
-              }}
-              className="lg:sticky lg:top-32"
-            >
-              <CalendarPicker
-                selectedSlot={selectedSlot}
-                onSelectSlot={setSelectedSlot}
-              />
             </motion.div>
           </div>
         </div>

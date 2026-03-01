@@ -101,7 +101,7 @@ function SectionHeader({
   return (
     <div className={center ? "text-center" : ""}>
       <motion.span
-        initial={{ opacity: 0, y: 10 }}
+        initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4"
@@ -109,7 +109,7 @@ function SectionHeader({
         {label}
       </motion.span>
       <motion.h2
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
@@ -119,7 +119,7 @@ function SectionHeader({
       </motion.h2>
       {description && (
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
@@ -175,7 +175,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left: Content */}
             <motion.div
-              initial={{ opacity: 0, x: -40 }}
+              initial={false}
               animate={heroInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8 }}
             >
@@ -220,7 +220,7 @@ export default function AboutPage() {
 
             {/* Right: Stats Grid */}
             <motion.div
-              initial={{ opacity: 0, x: 40 }}
+              initial={false}
               animate={heroInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="grid grid-cols-2 gap-4"
@@ -228,7 +228,7 @@ export default function AboutPage() {
               {stats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={heroInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
                 >
@@ -263,7 +263,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
@@ -289,7 +289,7 @@ export default function AboutPage() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
@@ -299,7 +299,7 @@ export default function AboutPage() {
                   {modules.map((module, i) => (
                     <motion.div
                       key={module.name}
-                      initial={{ opacity: 0, scale: 0.9 }}
+                      initial={false}
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.3 + i * 0.05 }}
@@ -338,7 +338,7 @@ export default function AboutPage() {
             {values.map((value, i) => (
               <motion.div
                 key={value.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
@@ -375,7 +375,7 @@ export default function AboutPage() {
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="grid lg:grid-cols-2 gap-16">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
@@ -405,7 +405,7 @@ export default function AboutPage() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
@@ -433,7 +433,7 @@ export default function AboutPage() {
               ].map((item, i) => (
                 <motion.div
                   key={item.title}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={false}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 + i * 0.1 }}
@@ -478,7 +478,7 @@ export default function AboutPage() {
                 {timeline.map((item, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={false}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
@@ -593,7 +593,7 @@ export default function AboutPage() {
       <section className="relative py-24 md:py-32">
         <div className="max-w-[800px] mx-auto px-6 md:px-12 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >

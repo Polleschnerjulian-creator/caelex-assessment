@@ -548,7 +548,7 @@ function DebrisPageContent() {
         {activeStep === 0 && (
           <motion.div
             key="profile"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
@@ -964,7 +964,7 @@ function DebrisPageContent() {
         {activeStep === 1 && (
           <motion.div
             key="checklist"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
@@ -1286,7 +1286,7 @@ function DebrisPageContent() {
         {activeStep === 2 && (
           <motion.div
             key="plan"
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"

@@ -93,7 +93,7 @@ function LinkRow({
 
   return (
     <motion.tr
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       className="border-b border-white/5 last:border-0"
     >

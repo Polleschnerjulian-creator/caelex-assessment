@@ -135,7 +135,7 @@ export default function AssureSidebar({ isOpen, onClose }: AssureSidebarProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"

@@ -157,14 +157,14 @@ export default function AssureDashboardPage() {
       {/* Header */}
       <div className="mb-10">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Assure Dashboard
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"
@@ -235,7 +235,7 @@ export default function AssureDashboardPage() {
             return (
               <motion.div
                 key={link.href}
-                initial={{ opacity: 0, y: 10 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
@@ -263,7 +263,7 @@ export default function AssureDashboardPage() {
             {Object.entries(score.components).map(([key, value], index) => (
               <motion.div
                 key={key}
-                initial={{ opacity: 0, y: 10 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.04 }}
               >

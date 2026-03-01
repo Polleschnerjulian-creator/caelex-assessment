@@ -62,7 +62,7 @@ export default function ModuleProgressChart({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
+      initial={false}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
       className="relative h-[280px] w-full"

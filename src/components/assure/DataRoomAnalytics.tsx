@@ -46,7 +46,7 @@ function StatCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
     >
@@ -114,7 +114,7 @@ export default function DataRoomAnalytics({
             return (
               <motion.div
                 key={doc.name}
-                initial={{ opacity: 0, x: -10 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + index * 0.06 }}
               >

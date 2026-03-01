@@ -137,7 +137,7 @@ export function ComplianceScoreCard({
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
               className="text-4xl font-bold text-slate-900 dark:text-white"
-              initial={{ opacity: 0, scale: 0.5 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
             >

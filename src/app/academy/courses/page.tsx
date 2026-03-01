@@ -238,7 +238,7 @@ export default function CourseCatalogPage() {
                 <motion.div
                   key={course.id}
                   layout
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
@@ -322,7 +322,7 @@ export default function CourseCatalogPage() {
           </motion.div>
         ) : (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             className="py-16 text-center"
           >

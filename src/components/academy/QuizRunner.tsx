@@ -122,7 +122,7 @@ export default function QuizRunner({ questions, onComplete }: QuizRunnerProps) {
 
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={false}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-lg mx-auto text-center py-8"
       >
@@ -209,7 +209,7 @@ export default function QuizRunner({ questions, onComplete }: QuizRunnerProps) {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, x: 20 }}
+          initial={false}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.25 }}
@@ -234,7 +234,7 @@ export default function QuizRunner({ questions, onComplete }: QuizRunnerProps) {
           <AnimatePresence>
             {showHint && current.hint && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
+                initial={false}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
@@ -339,7 +339,7 @@ export default function QuizRunner({ questions, onComplete }: QuizRunnerProps) {
           <AnimatePresence>
             {isRevealed && current.explanation && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="mt-4 bg-white/[0.04] border border-white/10 rounded-xl p-4"

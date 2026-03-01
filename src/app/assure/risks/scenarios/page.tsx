@@ -173,14 +173,14 @@ export default function ScenariosPage() {
       {/* Header */}
       <div className="mb-10">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Scenario Analysis
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"
@@ -195,7 +195,7 @@ export default function ScenariosPage() {
         {scenarios.map((scenario, index) => (
           <motion.div
             key={scenario.id}
-            initial={{ opacity: 0, y: 10 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.06 }}
           >

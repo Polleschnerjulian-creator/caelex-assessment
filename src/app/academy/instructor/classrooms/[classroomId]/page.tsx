@@ -173,10 +173,7 @@ export default function InstructorClassroomPage() {
       </div>
 
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <GlassCard hover={false} className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">

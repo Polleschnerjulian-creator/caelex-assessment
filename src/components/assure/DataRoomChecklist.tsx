@@ -97,7 +97,7 @@ export default function DataRoomChecklist({ items }: DataRoomChecklistProps) {
           return (
             <motion.div
               key={folder}
-              initial={{ opacity: 0, y: 6 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: folderIdx * 0.05 }}
             >

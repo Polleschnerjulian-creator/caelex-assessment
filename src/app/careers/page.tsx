@@ -107,7 +107,7 @@ export default function CareersPage() {
 
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-12">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="max-w-[800px]"
@@ -151,7 +151,7 @@ export default function CareersPage() {
       <section className="relative py-20 px-6 md:px-12">
         <div className="max-w-[1200px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
@@ -170,7 +170,7 @@ export default function CareersPage() {
               return (
                 <motion.div
                   key={benefit.title}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
@@ -208,7 +208,7 @@ export default function CareersPage() {
 
         <div className="relative z-10 max-w-[1000px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="flex items-center gap-3 mb-10"
@@ -232,7 +232,7 @@ export default function CareersPage() {
               return (
                 <motion.div
                   key={position.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
@@ -321,7 +321,7 @@ export default function CareersPage() {
               {values.map((value, i) => (
                 <motion.div
                   key={value}
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={false}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
@@ -348,7 +348,7 @@ export default function CareersPage() {
 
         <div className="relative z-10 max-w-[600px] mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >

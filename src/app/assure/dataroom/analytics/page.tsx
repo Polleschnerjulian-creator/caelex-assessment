@@ -80,14 +80,14 @@ export default function DataRoomAnalyticsPage() {
       {/* Header */}
       <div className="mb-10">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white mb-2"
         >
           Data Room Analytics
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"

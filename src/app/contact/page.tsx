@@ -106,7 +106,7 @@ export default function ContactPage() {
 
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-12 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -154,7 +154,7 @@ export default function ContactPage() {
               return (
                 <motion.div
                   key={method.title}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                 >
@@ -176,7 +176,7 @@ export default function ContactPage() {
       <section className="relative py-16 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >

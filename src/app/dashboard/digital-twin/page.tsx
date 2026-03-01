@@ -299,7 +299,7 @@ function KPICard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-4 hover:border-slate-200 dark:hover:border-white/10 transition-colors"
     >
@@ -1277,7 +1277,7 @@ function ScenariosTab() {
       {/* Results */}
       {simResult && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/[0.06] rounded-xl p-6"
         >
@@ -1421,7 +1421,7 @@ function ScenariosTab() {
       {/* Comparison Result */}
       {compareResult && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-emerald-500/20 rounded-xl p-6"
         >
@@ -1957,7 +1957,7 @@ export default function DigitalTwinPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}

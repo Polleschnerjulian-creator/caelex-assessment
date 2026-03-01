@@ -38,7 +38,7 @@ export default function OnboardingChecklist({
   if (isComplete) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={false}
         animate={{ opacity: 1, scale: 1 }}
         className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-6 text-center"
       >
@@ -150,7 +150,7 @@ function OnboardingStepItem({
   const content = (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2, delay: index * 0.05 }}

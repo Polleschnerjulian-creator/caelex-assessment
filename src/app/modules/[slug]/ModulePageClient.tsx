@@ -42,7 +42,7 @@ function RevealSection({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
+      initial={false}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay, ease: "easeOut" }}
       className={className}
@@ -71,7 +71,7 @@ export default function ModulePageClient({
              1. BREADCRUMBS
           ───────────────────────────────────────────────────────────── */}
           <motion.nav
-            initial={{ opacity: 0, y: -10 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             aria-label="Breadcrumb"
@@ -96,7 +96,7 @@ export default function ModulePageClient({
           ───────────────────────────────────────────────────────────── */}
           <section className="mb-16">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
@@ -109,7 +109,7 @@ export default function ModulePageClient({
             </motion.div>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-heading md:text-heading-lg text-white/45 font-light leading-[1.5] max-w-[650px] mb-8"
@@ -118,7 +118,7 @@ export default function ModulePageClient({
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >

@@ -549,7 +549,7 @@ export default function PricingPage() {
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-12 text-center">
           {/* Headline */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
@@ -619,7 +619,7 @@ export default function PricingPage() {
               return (
                 <motion.div
                   key={plan.name}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -760,7 +760,7 @@ export default function PricingPage() {
 
           {/* Trust Elements */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mt-16 flex flex-wrap items-center justify-center gap-8 text-subtitle text-white/45"
@@ -791,7 +791,7 @@ export default function PricingPage() {
       <section className="relative py-24 px-6 md:px-12">
         <div className="max-w-[1000px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-14"
@@ -815,7 +815,7 @@ export default function PricingPage() {
               return (
                 <motion.div
                   key={workstream.title}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
@@ -848,7 +848,7 @@ export default function PricingPage() {
 
           {/* Context text */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mt-10 text-center"
@@ -872,7 +872,7 @@ export default function PricingPage() {
       <section className="relative py-24 px-6 md:px-12">
         <div className="max-w-[1100px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-14"
@@ -997,7 +997,7 @@ export default function PricingPage() {
       <section className="relative py-24 px-6 md:px-12">
         <div className="max-w-[800px] mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-14"
@@ -1018,7 +1018,7 @@ export default function PricingPage() {
               return (
                 <motion.div
                   key={faq.question}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
@@ -1080,7 +1080,7 @@ export default function PricingPage() {
         <div className="relative z-10 max-w-[900px] mx-auto">
           <GlassCard className="p-8 sm:p-12 md:p-16" hover={false}>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center"

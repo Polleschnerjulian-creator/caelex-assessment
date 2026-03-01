@@ -138,7 +138,7 @@ export default function PortalLayout({
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1E] flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-center"
         >

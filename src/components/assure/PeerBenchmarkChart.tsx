@@ -166,7 +166,7 @@ export default function PeerBenchmarkChart({
             strokeWidth={2}
             strokeDasharray="4 2"
             className="text-slate-400 dark:text-white/30"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           />
@@ -180,7 +180,7 @@ export default function PeerBenchmarkChart({
             stroke="currentColor"
             strokeWidth={2}
             className="text-slate-500 dark:text-white/40"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           />
@@ -213,7 +213,7 @@ export default function PeerBenchmarkChart({
             textAnchor="middle"
             className="fill-emerald-600 dark:fill-emerald-400"
             style={{ fontSize: 11, fontWeight: 600 }}
-            initial={{ opacity: 0, y: midY - 16 }}
+            initial={false}
             animate={{ opacity: 1, y: midY - 22 }}
             transition={{ delay: 0.9 }}
           >
@@ -337,7 +337,7 @@ export default function PeerBenchmarkChart({
                       fill="none"
                       stroke="#10B981"
                       strokeWidth={2}
-                      initial={{ opacity: 0 }}
+                      initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.8 }}
                     />
@@ -351,7 +351,7 @@ export default function PeerBenchmarkChart({
                       textAnchor="middle"
                       className="fill-slate-500 dark:fill-white/40"
                       style={{ fontSize: 9, fontWeight: 500 }}
-                      initial={{ opacity: 0 }}
+                      initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.6 + i * 0.03 }}
                     >

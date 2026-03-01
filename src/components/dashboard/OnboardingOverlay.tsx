@@ -204,7 +204,7 @@ export default function OnboardingOverlay() {
     <AnimatePresence>
       {!closing && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
@@ -222,7 +222,7 @@ export default function OnboardingOverlay() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="onboarding-title"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{
@@ -258,7 +258,7 @@ export default function OnboardingOverlay() {
                 {step === 1 && (
                   <motion.div
                     key="step-1"
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
@@ -322,7 +322,7 @@ export default function OnboardingOverlay() {
                 {step === 2 && hasPendingAssessment && (
                   <motion.div
                     key="step-2"
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
@@ -355,7 +355,7 @@ export default function OnboardingOverlay() {
                     {/* Status indicator */}
                     {importSuccess && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={false}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex items-center gap-2 justify-center text-emerald-600 dark:text-emerald-400 mb-4"
                       >
@@ -368,7 +368,7 @@ export default function OnboardingOverlay() {
 
                     {importError && (
                       <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={false}
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center text-body text-red-500 dark:text-red-400 mb-4"
                       >
@@ -425,7 +425,7 @@ export default function OnboardingOverlay() {
                 {step === 3 && (
                   <motion.div
                     key="step-3"
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}

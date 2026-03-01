@@ -459,7 +459,7 @@ export default function PlatformPreview() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}

@@ -67,10 +67,7 @@ export default function JoinClassroomPage() {
         Back to Classrooms
       </Link>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
         <GlassCard hover={false} className="p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
@@ -88,7 +85,7 @@ export default function JoinClassroomPage() {
 
           {success ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-8"
             >

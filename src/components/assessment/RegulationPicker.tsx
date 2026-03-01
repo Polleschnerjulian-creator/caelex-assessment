@@ -43,7 +43,7 @@ export default function RegulationPicker() {
         <div className="max-w-[900px] w-full">
           {/* Title */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
@@ -64,7 +64,7 @@ export default function RegulationPicker() {
 
           {/* Legal disclaimer */}
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-10"
@@ -74,7 +74,7 @@ export default function RegulationPicker() {
 
           {/* Unified Assessment Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
@@ -208,7 +208,7 @@ export default function RegulationPicker() {
 
           {/* Bottom note */}
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.5 }}
             className="text-center text-white/25 text-small sm:text-caption tracking-[0.05em] mt-10"

@@ -70,7 +70,7 @@ export default function JurisdictionCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-6"

@@ -59,7 +59,7 @@ export default function ComplyIntegrationBanner({
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
       <GlassCard hover className="p-5 cursor-pointer" onClick={onLink}>
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">

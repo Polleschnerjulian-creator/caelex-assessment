@@ -85,14 +85,14 @@ export default function RiskCategoryPage() {
       {/* Header */}
       <div className="mb-8">
         <motion.h1
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           className="text-display font-bold text-white capitalize mb-2"
         >
           {category} Risks
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
           className="text-body-lg text-white/40"

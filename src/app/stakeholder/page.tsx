@@ -134,7 +134,7 @@ function StakeholderLandingContent() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1E] flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
@@ -172,7 +172,7 @@ function StakeholderLandingContent() {
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-md">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
@@ -220,7 +220,7 @@ function StakeholderLandingContent() {
                 <AnimatePresence>
                   {error && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
+                      initial={false}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-3"
