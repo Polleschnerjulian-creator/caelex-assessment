@@ -684,6 +684,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               >
                 {t("sidebar.missionControl")}
               </NavItem>
+              <NavItem
+                href="/dashboard/evidence"
+                icon={<FileCheck size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={t("sidebar.new")}
+              >
+                Evidence
+              </NavItem>
             </div>
           </div>
 

@@ -2481,6 +2481,7 @@ model Organization {
   comments              Comment[] // Collaboration: organization's comments
   activities            Activity[] // Collaboration: organization's activities
   complianceEvidence    ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
+  regulatoryRequirements RegulatoryRequirement[] // ACE: org-scoped regulatory requirements
   astraConversations    AstraConversation[] // ASTRA AI conversations
   generatedDocuments    GeneratedDocument[] // AI-generated compliance documents
   healthScore           CustomerHealthScore? // CEO Analytics: customer health
@@ -3566,6 +3567,25 @@ enum RegulationType {
   REGISTRATION
   SUPERVISION
   NATIONAL_SPACE_LAW
+  UK_SPACE_ACT
+  US_REGULATORY
+  COPUOS_IADC
+  ITU_SPECTRUM
+  EXPORT_CONTROL
+}
+
+enum EvidenceSourceType {
+  MANUAL
+  DOCUMENT_UPLOAD
+  API_IMPORT
+  AUTOMATED
+  EXTERNAL
+}
+
+enum EvidenceMappingType {
+  DIRECT
+  PARTIAL
+  SUPPORTING
 }
 
 enum EvidenceStatus {
@@ -3614,8 +3634,20 @@ model ComplianceEvidence {
   reviewedAt  DateTime?
   reviewNotes String?   @db.Text
 
+  // ACE: Hash-chain integrity (mirrors AuditLog pattern)
+  entryHash    String? // SHA-256 hash of this evidence record
+  previousHash String? // Hash of the previous evidence record (chain link)
+
+  // ACE: Source and confidence tracking
+  sourceType EvidenceSourceType @default(MANUAL)
+  confidence Float?            // 0.0-1.0, how reliable is this evidence
+  metadata   Json?             // Additional structured metadata (scan job ID, source URL, etc.)
+
   // Linked documents (from existing Document vault)
   documents ComplianceEvidenceDocument[]
+
+  // ACE: Requirement mappings (coverage tracking)
+  requirementMappings EvidenceRequirementMapping[]
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -3626,6 +3658,8 @@ model ComplianceEvidence {
   @@index([organizationId, regulationType])
   @@index([regulationType, requirementId])
   @@index([status])
+  @@index([sourceType])
+  @@index([entryHash])
 }
 
 model ComplianceEvidenceDocument {
@@ -5741,4 +5775,100 @@ enum AcademyBadgeType {
   CROSS_REGULATORY
   JURISDICTION_EXPLORER
   COMPLIANCE_CHAMPION
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACE — Autonomous Compliance Evidence Engine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Regulation-agnostic requirement registry. Stores requirements from ALL
+// regulations (NIS2, EU Space Act, UK Space Act, COPUOS, etc.) in a single
+// table. Each requirement knows what evidence it demands, how to auto-assess
+// compliance, and which operator types it applies to.
+model RegulatoryRequirement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Regulation identification
+  regulationType RegulationType                  // NIS2, EU_SPACE_ACT, UK_SPACE_ACT, etc.
+  requirementId  String                          // Unique within regulationType: "nis2-001", "uksa-lic-3"
+
+  // Content
+  title          String
+  description    String        @db.Text
+  category       String                          // "cybersecurity", "debris_mitigation", "authorization"
+  subcategory    String?                          // More specific grouping
+  jurisdiction   String?                          // "EU", "UK", "US", "AU", "global"
+
+  // Evidence specification — what ACE hunts for
+  evidenceRequired  Json                          // string[] of required evidence descriptions
+  assessmentFields  Json?                         // AssessmentField[] definitions for structured assessment
+  complianceRule    Json?                         // ComplianceRule definition for auto-assessment
+
+  // Applicability
+  mandatory     Boolean        @default(true)
+  applicableTo  Json?                             // { operatorTypes?, sectors?, organizationSizes? }
+  severity      String?                           // "critical", "major", "moderate", "minor"
+
+  // Guidance
+  implementationGuide   String?   @db.Text
+  implementationTimeWeeks Int?
+
+  // Regulatory source
+  sourceArticle   String?                         // "Art. 21(2)(a)", "Section 3(1)", "§4 LuftVG"
+  sourceDocument  String?                         // "Regulation (EU) 2022/2555", "Space Industry Act 2018"
+
+  // Cross-references to other frameworks
+  crossReferences Json?                           // { euSpaceActRef?, iso27001Ref?, enisaControlIds?, etc. }
+
+  // Validity
+  validFrom   DateTime?
+  validUntil  DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  evidenceMappings EvidenceRequirementMapping[]
+
+  @@unique([organizationId, regulationType, requirementId])
+  @@index([organizationId, regulationType])
+  @@index([regulationType, category])
+  @@index([jurisdiction])
+  @@index([mandatory])
+}
+
+// Maps evidence records to regulatory requirements with coverage tracking.
+// A single piece of evidence can satisfy multiple requirements (DIRECT, PARTIAL,
+// SUPPORTING), and a single requirement can be covered by multiple pieces of evidence.
+model EvidenceRequirementMapping {
+  id             String       @id @default(cuid())
+  organizationId String
+
+  // Evidence → Requirement link
+  evidenceId    String
+  evidence      ComplianceEvidence    @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  requirementId String
+  requirement   RegulatoryRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  // Coverage details
+  mappingType     EvidenceMappingType   @default(DIRECT)
+  coveragePercent Float                 @default(100)  // 0-100, how much of the requirement this covers
+  autoMapped      Boolean               @default(false) // Was this mapping created by ACE or manually?
+  notes           String?               @db.Text
+
+  // Validity (evidence may only satisfy a requirement for a specific period)
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([evidenceId, requirementId])
+  @@index([requirementId, organizationId])
+  @@index([evidenceId])
+  @@index([organizationId])
 }

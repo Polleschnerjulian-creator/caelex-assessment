@@ -93,7 +93,16 @@ export type AuditAction =
   | "assure_comply_linked"
   | "assure_dataroom_doc_added"
   | "assure_update_generated"
-  | "assure_dataroom_accessed";
+  | "assure_dataroom_accessed"
+  | "ace_evidence_created"
+  | "ace_evidence_submitted"
+  | "ace_evidence_accepted"
+  | "ace_evidence_rejected"
+  | "ace_evidence_expired"
+  | "ace_requirement_seeded"
+  | "ace_coverage_changed"
+  | "ace_gap_detected"
+  | "ace_chain_verified";
 
 // Entity types for audit logging
 export type AuditEntityType =
@@ -131,7 +140,9 @@ export type AuditEntityType =
   | "assure_dataroom_link"
   | "assure_dataroom_document"
   | "assure_milestone"
-  | "investment_readiness_score";
+  | "investment_readiness_score"
+  | "regulatory_requirement"
+  | "evidence_requirement_mapping";
 
 export interface AuditLogEntry {
   userId: string;

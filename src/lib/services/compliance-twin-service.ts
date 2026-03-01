@@ -11,6 +11,10 @@ import {
   calculateComplianceScore,
   MODULE_WEIGHTS,
 } from "./compliance-scoring-service";
+import {
+  getModuleEvidencePctMap,
+  calculateRegulationEvidencePct,
+} from "./ace-evidence-service.server";
 
 // ============================================================================
 // Types
@@ -258,11 +262,15 @@ export async function getComplianceTwinState(
     nis2Assessment?.requirements || [],
   );
 
-  // Build module statuses
+  // Build module statuses (with ACE evidence percentages)
+  const evidencePctMap = orgMember?.organizationId
+    ? await getModuleEvidencePctMap(orgMember.organizationId)
+    : {};
   const modules = buildModuleStatuses(
     complianceScore.breakdown,
     snapshots,
     deadlineData.nextDeadlineByModule,
+    evidencePctMap,
   );
 
   // Build history points
@@ -346,6 +354,7 @@ export async function getFrameworkComparison(
     cybersecurity,
     insurance,
     environmental,
+    orgMember,
   ] = await Promise.all([
     calculateComplianceScore(userId),
     prisma.nIS2Assessment.findFirst({
@@ -371,11 +380,33 @@ export async function getFrameworkComparison(
       where: { userId },
       orderBy: { updatedAt: "desc" },
     }),
+    prisma.organizationMember.findFirst({
+      where: { userId },
+      select: { organizationId: true },
+    }),
   ]);
+
+  // Fetch ACE evidence coverage percentages (graceful fallback to 0)
+  const evidencePctMap = orgMember?.organizationId
+    ? await getModuleEvidencePctMap(orgMember.organizationId)
+    : {};
 
   const frameworks: FrameworkRow[] = [];
 
-  // EU Space Act
+  // EU Space Act — average of authorization, debris, cybersecurity, insurance, environmental evidence
+  const euSpaceActEvPct = [
+    evidencePctMap.authorization ?? 0,
+    evidencePctMap.debris ?? 0,
+    evidencePctMap.cybersecurity ?? 0,
+    evidencePctMap.insurance ?? 0,
+    evidencePctMap.environmental ?? 0,
+  ];
+  const euSpaceActEvidencePct =
+    euSpaceActEvPct.length > 0
+      ? Math.round(
+          euSpaceActEvPct.reduce((a, b) => a + b, 0) / euSpaceActEvPct.length,
+        )
+      : 0;
   frameworks.push({
     id: "eu_space_act",
     name: "EU Space Act",
@@ -390,7 +421,7 @@ export async function getFrameworkComparison(
         sum + m.factors.filter((f) => f.earnedPoints === f.maxPoints).length,
       0,
     ),
-    evidencePct: 0,
+    evidencePct: euSpaceActEvidencePct,
     lastAssessed: complianceScore.lastCalculated.toISOString(),
   });
 
@@ -410,7 +441,7 @@ export async function getFrameworkComparison(
       requirementsTotal: nis2Reqs.length,
       requirementsCompliant: nis2Reqs.filter((r) => r.status === "compliant")
         .length,
-      evidencePct: 0,
+      evidencePct: evidencePctMap.nis2 ?? 0,
       lastAssessed: nis2.updatedAt.toISOString(),
     });
   }
@@ -426,7 +457,7 @@ export async function getFrameworkComparison(
       requirementsTotal: debrisReqs.length,
       requirementsCompliant: debrisReqs.filter((r) => r.status === "compliant")
         .length,
-      evidencePct: 0,
+      evidencePct: evidencePctMap.debris ?? 0,
       lastAssessed: debris.updatedAt.toISOString(),
     });
   }
@@ -442,7 +473,7 @@ export async function getFrameworkComparison(
       requirementsTotal: cyberReqs.length,
       requirementsCompliant: cyberReqs.filter((r) => r.status === "compliant")
         .length,
-      evidencePct: 0,
+      evidencePct: evidencePctMap.cybersecurity ?? 0,
       lastAssessed: cybersecurity.updatedAt.toISOString(),
     });
   }
@@ -458,7 +489,7 @@ export async function getFrameworkComparison(
       requirementsCompliant: complianceScore.breakdown.insurance.factors.filter(
         (f) => f.earnedPoints === f.maxPoints,
       ).length,
-      evidencePct: 0,
+      evidencePct: evidencePctMap.insurance ?? 0,
       lastAssessed: insurance.updatedAt.toISOString(),
     });
   }
@@ -475,7 +506,7 @@ export async function getFrameworkComparison(
         complianceScore.breakdown.environmental.factors.filter(
           (f) => f.earnedPoints === f.maxPoints,
         ).length,
-      evidencePct: 0,
+      evidencePct: evidencePctMap.environmental ?? 0,
       lastAssessed: environmental.updatedAt.toISOString(),
     });
   }
@@ -994,6 +1025,7 @@ function buildModuleStatuses(
   >,
   snapshots: Array<{ moduleScores: string; snapshotDate: Date }>,
   nextDeadlineByModule: Record<string, string>,
+  evidencePctMap?: Record<string, number>,
 ): TwinModuleStatus[] {
   // Get 7-day-ago snapshot for trend
   const sevenDaysAgo = new Date();
@@ -1023,7 +1055,7 @@ function buildModuleStatuses(
       oldModuleScores[moduleId] !== undefined
         ? module.score - oldModuleScores[moduleId]
         : 0,
-    evidencePct: 0, // Would need per-module evidence query
+    evidencePct: evidencePctMap?.[moduleId] ?? 0,
     nextDeadline: nextDeadlineByModule[moduleId.toUpperCase()] || null,
     articleRefs: MODULE_ARTICLE_REFS[moduleId] || [],
   }));

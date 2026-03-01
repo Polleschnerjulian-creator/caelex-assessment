@@ -97,6 +97,16 @@ export const WEBHOOK_EVENTS = {
   "network.data_room_accessed": "Data room accessed by stakeholder",
   "network.attestation_signed": "Compliance attestation signed",
   "network.attestation_revoked": "Compliance attestation revoked",
+
+  // ACE — Autonomous Compliance Evidence Engine
+  "evidence.created": "Evidence record created",
+  "evidence.submitted": "Evidence submitted for review",
+  "evidence.accepted": "Evidence accepted and verified",
+  "evidence.rejected": "Evidence rejected during review",
+  "evidence.expired": "Evidence validity period expired",
+  "evidence.coverage_changed": "Evidence coverage changed for a requirement",
+  "evidence.gap_detected":
+    "Critical compliance gap detected — missing evidence",
 } as const;
 
 export type WebhookEvent = keyof typeof WEBHOOK_EVENTS;

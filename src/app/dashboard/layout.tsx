@@ -37,6 +37,7 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
   "/dashboard/assure/rating/report": "_literal:Rating Report",
   "/dashboard/assure/rating/methodology": "_literal:Rating Methodology",
   "/dashboard/assure/rating/appeal": "_literal:Rating Appeals",
+  "/dashboard/evidence": "_literal:Evidence Coverage",
   "/dashboard/settings": "sidebar.settings",
   "/dashboard/admin": "sidebar.adminPanel",
 };
