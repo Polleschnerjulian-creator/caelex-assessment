@@ -1,11 +1,9 @@
 import Hero from "@/components/landing/Hero";
 import BlogShowcase from "@/components/landing/BlogShowcase";
 import MissionStatement from "@/components/landing/MissionStatement";
+import ModulesShowcase from "@/components/landing/ModulesShowcase";
 import WhatWeCover from "@/components/landing/WhatWeCover";
-import HowItWorks from "@/components/landing/HowItWorks";
-import AstraSection from "@/components/landing/AstraSection";
 import EcosystemSection from "@/components/landing/EcosystemSection";
-import AceSection from "@/components/landing/AceSection";
 import { SoftwareApplicationJsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
@@ -16,11 +14,9 @@ export default function Home() {
       <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">
         <BlogShowcase />
         <MissionStatement />
+        <ModulesShowcase />
         <WhatWeCover />
-        <HowItWorks />
-        <AstraSection />
         <EcosystemSection />
-        <AceSection />
       </main>
     </>
   );
