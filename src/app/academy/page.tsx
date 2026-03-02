@@ -88,41 +88,35 @@ const COURSES = [
 ];
 
 const LEVEL_STYLES: Record<string, string> = {
-  Beginner: "text-emerald-400/80",
-  Intermediate: "text-amber-400/80",
-  Advanced: "text-red-400/80",
+  Beginner: "text-emerald-600",
+  Intermediate: "text-amber-600",
+  Advanced: "text-red-500",
 };
 
 // ─── Liquid Glass Utility ───
 
 const glass = {
-  card: "bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]",
+  card: "bg-white border border-[#E5E7EB] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]",
   cardHover:
-    "hover:bg-white/[0.06] hover:border-white/[0.14] hover:shadow-[0_16px_48px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-500",
-  nav: "bg-white/[0.04] backdrop-blur-2xl border-b border-white/[0.06]",
+    "hover:border-[#D1D5DB] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-500",
+  nav: "bg-white/80 backdrop-blur-2xl border-b border-[#E5E7EB]",
 };
 
 // ─── Component ───
 
 export default function AcademyLandingPage() {
   return (
-    <div className="min-h-screen bg-black text-white antialiased">
-      {/* Ambient glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-emerald-500/[0.04] rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[400px] bg-emerald-500/[0.02] rounded-full blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827] antialiased">
       {/* Nav — Liquid Glass */}
       <nav className={glass.nav}>
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/academy" className="flex items-center gap-3">
-            <CaelexIcon size={22} className="text-emerald-400" />
+            <CaelexIcon size={22} className="text-[#111827]" />
             <div className="flex flex-col">
-              <span className="text-[13px] font-medium text-white/90 tracking-[-0.02em] leading-none">
+              <span className="text-[13px] font-medium text-[#111827] tracking-[-0.02em] leading-none">
                 caelex
               </span>
-              <span className="text-[9px] font-medium text-emerald-400/70 tracking-[0.15em] leading-none mt-1 uppercase">
+              <span className="text-[9px] font-medium text-[#4B5563] tracking-[0.15em] leading-none mt-1 uppercase">
                 Academy
               </span>
             </div>
@@ -130,13 +124,13 @@ export default function AcademyLandingPage() {
           <div className="flex items-center gap-5">
             <Link
               href="/dashboard"
-              className="text-[13px] text-white/35 hover:text-white/60 transition-colors duration-300"
+              className="text-[13px] text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-300"
             >
               Back to Comply
             </Link>
             <Link
               href="/login?callbackUrl=/academy/dashboard"
-              className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[13px] px-5 py-2 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+              className="bg-[#111827] hover:bg-[#374151] text-white font-semibold text-[13px] px-5 py-2 rounded-full transition-all duration-300"
             >
               Start Learning
             </Link>
@@ -152,15 +146,13 @@ export default function AcademyLandingPage() {
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center max-w-[680px] mx-auto"
         >
-          <h1 className="text-[56px] font-bold text-white leading-[1.1] tracking-tight mb-5">
+          <h1 className="text-[56px] font-bold text-[#111827] leading-[1.1] tracking-tight mb-5">
             Master Space
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
-              Regulatory Compliance
-            </span>
+            <span className="text-[#111827]">Regulatory Compliance</span>
           </h1>
 
-          <p className="text-[17px] text-white/40 leading-relaxed max-w-[520px] mx-auto mb-10 font-light">
+          <p className="text-[17px] text-[#4B5563] leading-relaxed max-w-[520px] mx-auto mb-10 font-light">
             Interactive courses, compliance simulations, and hands-on practice
             for EU Space Act, NIS2, and national space law professionals.
           </p>
@@ -168,14 +160,14 @@ export default function AcademyLandingPage() {
           <div className="flex items-center justify-center gap-3.5">
             <Link
               href="/login?callbackUrl=/academy/dashboard"
-              className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 flex items-center gap-2.5 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+              className="bg-[#111827] hover:bg-[#374151] text-white font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 flex items-center gap-2.5"
             >
               Start Learning
               <ArrowRight size={16} strokeWidth={2.5} />
             </Link>
             <Link
               href="#courses"
-              className="bg-white/[0.06] hover:bg-white/[0.1] backdrop-blur-xl border border-white/[0.1] hover:border-white/[0.18] text-white/70 hover:text-white font-medium text-[15px] px-7 py-3 rounded-full transition-all duration-300"
+              className="bg-white hover:bg-[#F1F3F5] border border-[#E5E7EB] hover:border-[#D1D5DB] text-[#4B5563] hover:text-[#111827] font-medium text-[15px] px-7 py-3 rounded-full transition-all duration-300"
             >
               View Courses
             </Link>
@@ -191,10 +183,10 @@ export default function AcademyLandingPage() {
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <div className="text-center mb-16">
-            <h2 className="text-[36px] font-bold text-white tracking-tight mb-3">
+            <h2 className="text-[36px] font-bold text-[#111827] tracking-tight mb-3">
               Everything You Need
             </h2>
-            <p className="text-[16px] text-white/35 max-w-[440px] mx-auto font-light">
+            <p className="text-[16px] text-[#9CA3AF] max-w-[440px] mx-auto font-light">
               Six integrated modules designed to build real regulatory
               competence.
             </p>
@@ -217,17 +209,17 @@ export default function AcademyLandingPage() {
                   <div
                     className={`${glass.card} ${glass.cardHover} p-6 h-full`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/[0.08] border border-emerald-500/[0.15] flex items-center justify-center mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center mb-5">
                       <Icon
                         size={18}
-                        className="text-emerald-400"
+                        className="text-[#111827]"
                         strokeWidth={1.5}
                       />
                     </div>
-                    <h3 className="text-[15px] font-semibold text-white/90 mb-2 tracking-[-0.01em]">
+                    <h3 className="text-[15px] font-semibold text-[#111827] mb-2 tracking-[-0.01em]">
                       {feature.title}
                     </h3>
-                    <p className="text-[13px] text-white/35 leading-[1.65] font-light">
+                    <p className="text-[13px] text-[#4B5563] leading-[1.65] font-light">
                       {feature.description}
                     </p>
                   </div>
@@ -240,7 +232,7 @@ export default function AcademyLandingPage() {
 
       {/* Courses */}
       <section id="courses" className="relative pb-28">
-        <div className="border-t border-white/[0.04]" />
+        <div className="border-t border-[#E5E7EB]" />
         <div className="max-w-[1200px] mx-auto px-6 pt-28">
           <motion.div
             initial={false}
@@ -248,10 +240,10 @@ export default function AcademyLandingPage() {
             transition={{ delay: 0.5, duration: 0.6 }}
           >
             <div className="text-center mb-16">
-              <h2 className="text-[36px] font-bold text-white tracking-tight mb-3">
+              <h2 className="text-[36px] font-bold text-[#111827] tracking-tight mb-3">
                 Featured Courses
               </h2>
-              <p className="text-[16px] text-white/35 max-w-[440px] mx-auto font-light">
+              <p className="text-[16px] text-[#9CA3AF] max-w-[440px] mx-auto font-light">
                 Start with fundamentals or go deep into specific regulatory
                 frameworks.
               </p>
@@ -275,31 +267,31 @@ export default function AcademyLandingPage() {
                       className={`${glass.card} ${glass.cardHover} p-6 h-full flex flex-col`}
                     >
                       <div className="flex items-start justify-between mb-5">
-                        <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center">
                           <Icon
                             size={18}
-                            className="text-emerald-400/80"
+                            className="text-[#111827]"
                             strokeWidth={1.5}
                           />
                         </div>
                         <span
-                          className={`text-[11px] font-medium tracking-wide ${LEVEL_STYLES[course.level] ?? "text-white/35"}`}
+                          className={`text-[11px] font-medium tracking-wide ${LEVEL_STYLES[course.level] ?? "text-[#9CA3AF]"}`}
                         >
                           {course.level}
                         </span>
                       </div>
 
-                      <p className="text-[10px] text-emerald-400/50 uppercase tracking-[0.15em] mb-2 font-medium">
+                      <p className="text-[10px] text-[#9CA3AF] uppercase tracking-[0.15em] mb-2 font-medium">
                         {course.category}
                       </p>
-                      <h3 className="text-[15px] font-semibold text-white/90 mb-2.5 tracking-[-0.01em]">
+                      <h3 className="text-[15px] font-semibold text-[#111827] mb-2.5 tracking-[-0.01em]">
                         {course.title}
                       </h3>
-                      <p className="text-[13px] text-white/35 leading-[1.65] flex-1 font-light">
+                      <p className="text-[13px] text-[#4B5563] leading-[1.65] flex-1 font-light">
                         {course.description}
                       </p>
 
-                      <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-white/[0.04] text-[12px] text-white/25">
+                      <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-[#E5E7EB] text-[12px] text-[#9CA3AF]">
                         <Clock size={12} strokeWidth={1.5} />
                         <span>{course.duration}</span>
                       </div>
@@ -314,17 +306,17 @@ export default function AcademyLandingPage() {
 
       {/* Footer CTA */}
       <section className="relative pb-20">
-        <div className="border-t border-white/[0.04]" />
+        <div className="border-t border-[#E5E7EB]" />
         <div className="max-w-[1200px] mx-auto px-6 pt-20 text-center">
-          <h3 className="text-[28px] font-bold text-white tracking-tight mb-4">
+          <h3 className="text-[28px] font-bold text-[#111827] tracking-tight mb-4">
             Ready to build regulatory expertise?
           </h3>
-          <p className="text-[16px] text-white/30 mb-9 font-light">
+          <p className="text-[16px] text-[#9CA3AF] mb-9 font-light">
             Free access to all courses. No credit card required.
           </p>
           <Link
             href="/signup?callbackUrl=/academy/dashboard"
-            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 inline-flex items-center gap-2.5 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+            className="bg-[#111827] hover:bg-[#374151] text-white font-semibold text-[15px] px-7 py-3 rounded-full transition-all duration-300 inline-flex items-center gap-2.5"
           >
             Create Free Account
             <ArrowRight size={16} strokeWidth={2.5} />

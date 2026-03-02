@@ -27,32 +27,32 @@ const values = [
     title: "Precision",
     description:
       "We translate complex regulations into clear, actionable guidance. Every feature is built with regulatory accuracy in mind.",
-    gradient: "from-emerald-500/20 to-emerald-400/20",
-    iconColor: "text-emerald-400",
+    gradient: "from-[#F1F3F5] to-[#F1F3F5]",
+    iconColor: "text-[#111827]",
   },
   {
     icon: Zap,
     title: "Efficiency",
     description:
       "We automate the tedious parts of compliance so our customers can focus on what matters — their space missions.",
-    gradient: "from-emerald-500/20 to-emerald-400/20",
-    iconColor: "text-emerald-400",
+    gradient: "from-[#F1F3F5] to-[#F1F3F5]",
+    iconColor: "text-[#111827]",
   },
   {
     icon: Shield,
     title: "Trust",
     description:
       "We handle sensitive compliance data. Security and reliability aren't features — they're foundations.",
-    gradient: "from-emerald-500/20 to-emerald-400/20",
-    iconColor: "text-emerald-400",
+    gradient: "from-[#F1F3F5] to-[#F1F3F5]",
+    iconColor: "text-[#111827]",
   },
   {
     icon: Users,
     title: "Partnership",
     description:
       "We succeed when our customers succeed. We're building long-term relationships, not just software.",
-    gradient: "from-emerald-500/20 to-emerald-400/20",
-    iconColor: "text-emerald-400",
+    gradient: "from-[#F1F3F5] to-[#F1F3F5]",
+    iconColor: "text-[#111827]",
   },
 ];
 
@@ -104,7 +104,7 @@ function SectionHeader({
         initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4"
+        className="inline-block text-caption font-medium text-[#9CA3AF] uppercase tracking-[0.2em] mb-4"
       >
         {label}
       </motion.span>
@@ -113,7 +113,7 @@ function SectionHeader({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4"
+        className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-4"
       >
         {title}
       </motion.h2>
@@ -123,7 +123,7 @@ function SectionHeader({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className={`text-subtitle md:text-title text-white/45 leading-relaxed ${center ? "max-w-[600px] mx-auto" : "max-w-[600px]"}`}
+          className={`text-subtitle md:text-title text-[#4B5563] leading-relaxed ${center ? "max-w-[600px] mx-auto" : "max-w-[600px]"}`}
         >
           {description}
         </motion.p>
@@ -137,36 +137,18 @@ export default function AboutPage() {
   const heroInView = useInView(heroRef, { once: true });
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       {/* Hero Section */}
       <section
         ref={heroRef}
         className="relative min-h-[90vh] flex items-center overflow-hidden"
       >
-        {/* Background Effects */}
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 60%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 40% at 80% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)",
-            }}
-          />
-        </div>
-
         {/* Grid Pattern */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.5]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)`,
             backgroundSize: "60px 60px",
           }}
         />
@@ -179,22 +161,20 @@ export default function AboutPage() {
               animate={heroInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-small text-white/45 mb-8">
-                <MapPin size={14} className="text-emerald-400" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] text-small text-[#4B5563] mb-8">
+                <MapPin size={14} className="text-[#111827]" />
                 <span>Berlin, Germany</span>
-                <span className="w-1 h-1 rounded-full bg-white/30" />
+                <span className="w-1 h-1 rounded-full bg-[#9CA3AF]" />
                 <span>Founded 2025</span>
               </div>
 
               <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-6">
                 Building the compliance
                 <br />
-                <span className="text-emerald-400">
-                  infrastructure for space
-                </span>
+                <span className="text-[#111827]">infrastructure for space</span>
               </h1>
 
-              <p className="text-title md:text-heading text-white/45 leading-relaxed max-w-[520px] mb-8">
+              <p className="text-title md:text-heading text-[#4B5563] leading-relaxed max-w-[520px] mb-8">
                 Caelex is the first regulatory compliance platform designed
                 specifically for the European space industry. We help satellite
                 operators, launch providers, and space companies navigate
@@ -204,14 +184,14 @@ export default function AboutPage() {
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-body-lg font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#111827] text-white text-body-lg font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
                 >
                   Start Free Assessment
                   <ArrowRight size={16} />
                 </Link>
                 <Link
                   href="/demo"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium transition-all duration-300 hover:bg-[#F1F3F5] hover:border-[#D1D5DB]"
                 >
                   Request Demo
                 </Link>
@@ -233,13 +213,13 @@ export default function AboutPage() {
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
                 >
                   <GlassCard className="p-6 h-full">
-                    <div className="text-[36px] md:text-[42px] font-light tracking-[-0.02em] text-white mb-1">
+                    <div className="text-[36px] md:text-[42px] font-light tracking-[-0.02em] text-[#111827] mb-1">
                       {stat.value}
                     </div>
-                    <div className="text-body-lg font-medium text-white/70 mb-1">
+                    <div className="text-body-lg font-medium text-[#4B5563] mb-1">
                       {stat.label}
                     </div>
-                    <div className="text-small text-white/45">
+                    <div className="text-small text-[#4B5563]">
                       {stat.sublabel}
                     </div>
                   </GlassCard>
@@ -252,14 +232,6 @@ export default function AboutPage() {
 
       {/* Mission Section */}
       <section className="relative py-24 md:py-32 overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 100% 50% at 0% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%)",
-          }}
-        />
-
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -273,14 +245,14 @@ export default function AboutPage() {
                 center={false}
               />
               <div className="mt-8 space-y-5">
-                <p className="text-subtitle text-white/45 leading-relaxed">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed">
                   The EU Space Act introduces 119 regulatory articles covering
                   authorization, registration, environmental assessment,
                   cybersecurity, debris mitigation, and insurance.
                   Non-compliance can result in penalties of up to 2% of global
                   turnover.
                 </p>
-                <p className="text-subtitle text-white/45 leading-relaxed">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed">
                   We believe compliance shouldn't be a barrier to innovation.
                   Caelex transforms complex regulatory requirements into guided
                   workflows, automated tracking, and actionable insights.
@@ -303,19 +275,19 @@ export default function AboutPage() {
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.3 + i * 0.05 }}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB]"
                     >
-                      <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                        <module.icon size={18} className="text-emerald-400" />
+                      <div className="w-9 h-9 rounded-lg bg-[#F1F3F5] flex items-center justify-center flex-shrink-0">
+                        <module.icon size={18} className="text-[#111827]" />
                       </div>
-                      <span className="text-small text-white/70 leading-tight">
+                      <span className="text-small text-[#4B5563] leading-tight">
                         {module.name}
                       </span>
                     </motion.div>
                   ))}
                 </div>
-                <div className="mt-6 pt-6 border-t border-white/[0.06] text-center">
-                  <span className="text-body text-white/45">
+                <div className="mt-6 pt-6 border-t border-[#E5E7EB] text-center">
+                  <span className="text-body text-[#4B5563]">
                     One platform. Complete EU Space Act coverage.
                   </span>
                 </div>
@@ -349,10 +321,10 @@ export default function AboutPage() {
                   >
                     <value.icon size={26} className={value.iconColor} />
                   </div>
-                  <h3 className="text-heading font-medium text-white mb-3">
+                  <h3 className="text-heading font-medium text-[#111827] mb-3">
                     {value.title}
                   </h3>
-                  <p className="text-body-lg text-white/45 leading-relaxed">
+                  <p className="text-body-lg text-[#4B5563] leading-relaxed">
                     {value.description}
                   </p>
                 </GlassCard>
@@ -364,14 +336,6 @@ export default function AboutPage() {
 
       {/* Why Section */}
       <section className="relative py-24 md:py-32 overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 100% 50%, rgba(59, 130, 246, 0.06) 0%, transparent 50%)",
-          }}
-        />
-
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="grid lg:grid-cols-2 gap-16">
             <motion.div
@@ -385,18 +349,18 @@ export default function AboutPage() {
                 center={false}
               />
               <div className="mt-8 space-y-5">
-                <p className="text-subtitle text-white/45 leading-relaxed">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed">
                   Today, space companies manage compliance with spreadsheets,
                   email chains, and expensive consultants charging 200-500 EUR
                   per hour. Documentation lives in scattered folders. Deadlines
                   are tracked manually.
                 </p>
-                <p className="text-subtitle text-white/45 leading-relaxed">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed">
                   This approach worked when space was a niche industry. But with
                   150+ new European space startups since 2020 and comprehensive
                   regulation coming, the old way doesn't scale.
                 </p>
-                <p className="text-subtitle text-white/45 leading-relaxed">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed">
                   We believe every satellite operator — from a 10-person startup
                   to a multinational corporation — should have access to
                   enterprise-grade compliance infrastructure.
@@ -440,14 +404,14 @@ export default function AboutPage() {
                 >
                   <GlassCard className="p-5">
                     <div className="flex items-start gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                        <item.icon size={22} className="text-emerald-400" />
+                      <div className="w-11 h-11 rounded-xl bg-[#F1F3F5] flex items-center justify-center flex-shrink-0">
+                        <item.icon size={22} className="text-[#111827]" />
                       </div>
                       <div>
-                        <h4 className="text-subtitle font-medium text-white mb-1">
+                        <h4 className="text-subtitle font-medium text-[#111827] mb-1">
                           {item.title}
                         </h4>
-                        <p className="text-body text-white/45 leading-relaxed">
+                        <p className="text-body text-[#4B5563] leading-relaxed">
                           {item.description}
                         </p>
                       </div>
@@ -472,7 +436,7 @@ export default function AboutPage() {
           <div className="mt-16 max-w-[800px] mx-auto">
             <div className="relative">
               {/* Vertical Line */}
-              <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/50 via-white/10 to-transparent" />
+              <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gradient-to-b from-[#111827] via-[#E5E7EB] to-transparent" />
 
               <div className="space-y-6">
                 {timeline.map((item, i) => (
@@ -488,28 +452,28 @@ export default function AboutPage() {
                     <div
                       className={`absolute left-[11px] top-5 w-4 h-4 rounded-full border-2 ${
                         item.status === "completed"
-                          ? "bg-emerald-500 border-emerald-500"
+                          ? "bg-[#111827] border-[#111827]"
                           : item.status === "current"
-                            ? "bg-emerald-500/30 border-emerald-500 animate-pulse"
-                            : "bg-transparent border-white/30"
+                            ? "bg-[#111827]/30 border-[#111827] animate-pulse"
+                            : "bg-transparent border-[#9CA3AF]"
                       }`}
                     />
 
                     <GlassCard className="p-5">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <Calendar size={14} className="text-white/45" />
-                          <span className="text-body font-medium text-white/45">
+                          <Calendar size={14} className="text-[#4B5563]" />
+                          <span className="text-body font-medium text-[#4B5563]">
                             {item.year}
                           </span>
                         </div>
                         {item.status === "current" && (
-                          <span className="px-2 py-0.5 text-micro font-medium text-emerald-400 bg-emerald-500/15 rounded-full uppercase tracking-wider">
+                          <span className="px-2 py-0.5 text-micro font-medium text-[#111827] bg-[#F1F3F5] rounded-full uppercase tracking-wider">
                             Current
                           </span>
                         )}
                       </div>
-                      <p className="text-subtitle text-white mt-2">
+                      <p className="text-subtitle text-[#111827] mt-2">
                         {item.event}
                       </p>
                     </GlassCard>
@@ -523,27 +487,19 @@ export default function AboutPage() {
 
       {/* Berlin Section */}
       <section className="relative py-24 md:py-32 overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(16, 185, 129, 0.08) 0%, transparent 50%)",
-          }}
-        />
-
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <GlassCard className="p-8 md:p-12" hover={false}>
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <span className="inline-block text-caption font-medium text-emerald-400/70 uppercase tracking-[0.2em] mb-4">
+                <span className="inline-block text-caption font-medium text-[#9CA3AF] uppercase tracking-[0.2em] mb-4">
                   Built in Berlin
                 </span>
-                <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-6">
+                <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-6">
                   European roots,
                   <br />
                   global ambition.
                 </h2>
-                <p className="text-subtitle text-white/45 leading-relaxed mb-8">
+                <p className="text-subtitle text-[#4B5563] leading-relaxed mb-8">
                   We're headquartered in Berlin, at the heart of Europe's
                   growing space ecosystem. Being close to EU institutions,
                   national space agencies, and the NewSpace community means we
@@ -558,12 +514,12 @@ export default function AboutPage() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                      className="p-4 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB]"
                     >
-                      <div className="text-caption text-white/45 uppercase tracking-wider mb-1">
+                      <div className="text-caption text-[#4B5563] uppercase tracking-wider mb-1">
                         {item.label}
                       </div>
-                      <div className="text-subtitle font-medium text-white">
+                      <div className="text-subtitle font-medium text-[#111827]">
                         {item.value}
                       </div>
                     </div>
@@ -572,13 +528,10 @@ export default function AboutPage() {
               </div>
 
               <div className="relative">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-white/[0.08] flex items-center justify-center">
+                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center">
                   <div className="text-center">
-                    <Globe
-                      size={64}
-                      className="text-emerald-400/50 mx-auto mb-4"
-                    />
-                    <p className="text-body-lg text-white/45">
+                    <Globe size={64} className="text-[#9CA3AF] mx-auto mb-4" />
+                    <p className="text-body-lg text-[#4B5563]">
                       Serving space operators across Europe
                     </p>
                   </div>
@@ -597,10 +550,10 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] text-white mb-6">
+            <h2 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] text-[#111827] mb-6">
               Join us on this journey
             </h2>
-            <p className="text-title text-white/45 mb-10 max-w-[500px] mx-auto">
+            <p className="text-title text-[#4B5563] mb-10 max-w-[500px] mx-auto">
               Whether you're a space company looking for compliance solutions or
               want to shape the future of space regulation — we'd love to hear
               from you.
@@ -608,14 +561,14 @@ export default function AboutPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-subtitle font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
               >
                 Get in Touch
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/careers"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-subtitle font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white border border-[#D1D5DB] text-[#4B5563] text-subtitle font-medium transition-all duration-300 hover:bg-[#F1F3F5] hover:border-[#D1D5DB]"
               >
                 View Open Positions
               </Link>

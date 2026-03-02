@@ -158,7 +158,10 @@ export default function TimelinePage() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
+    <main
+      ref={ref}
+      className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]"
+    >
       {/* Hero */}
       <section className="pt-32 pb-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
@@ -177,7 +180,7 @@ export default function TimelinePage() {
             <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em] mb-6">
               Compliance Timeline
             </h1>
-            <p className="text-title text-white/45 leading-relaxed">
+            <p className="text-title text-[#4B5563] leading-relaxed">
               Key dates and deadlines for EU Space Act implementation. Plan your
               compliance roadmap with these critical milestones.
             </p>
@@ -189,8 +192,8 @@ export default function TimelinePage() {
       <section className="py-12 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-6">
-            <AlertCircle size={18} className="text-amber-400" />
-            <h2 className="text-small text-amber-400 uppercase tracking-wider">
+            <AlertCircle size={18} className="text-amber-600" />
+            <h2 className="text-small text-amber-600 uppercase tracking-wider">
               Critical Deadlines
             </h2>
           </div>
@@ -203,26 +206,26 @@ export default function TimelinePage() {
                   initial={false}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="p-6 rounded-xl bg-amber-500/[0.08] border border-amber-500/20"
+                  className="p-6 rounded-2xl bg-amber-50 border border-amber-200"
                   style={{
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                   }}
                 >
-                  <div className="flex items-center gap-2 text-small text-amber-400 mb-3">
+                  <div className="flex items-center gap-2 text-small text-amber-600 mb-3">
                     <Calendar size={14} />
                     <span>{deadline.date}</span>
                   </div>
-                  <h3 className="text-title font-medium text-white mb-2">
+                  <h3 className="text-title font-medium text-[#111827] mb-2">
                     {deadline.title}
                   </h3>
-                  <p className="text-body text-white/45 mb-4">
+                  <p className="text-body text-[#4B5563] mb-4">
                     {deadline.description}
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[28px] font-medium text-amber-400">
+                    <span className="text-[28px] font-medium text-amber-600">
                       {days > 0 ? days : 0}
                     </span>
-                    <span className="text-small text-white/45">
+                    <span className="text-small text-[#4B5563]">
                       {deadline.daysLabel}
                     </span>
                   </div>
@@ -237,15 +240,15 @@ export default function TimelinePage() {
       <section className="py-16 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <Clock size={18} className="text-white/45" />
-            <h2 className="text-small text-white/45 uppercase tracking-wider">
+            <Clock size={18} className="text-[#4B5563]" />
+            <h2 className="text-small text-[#4B5563] uppercase tracking-wider">
               Full Implementation Timeline
             </h2>
           </div>
 
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-white/[0.08]" />
+            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-[#E5E7EB]" />
 
             <div className="space-y-6">
               {timelineEvents.map((event, index) => (
@@ -260,61 +263,57 @@ export default function TimelinePage() {
                   <div
                     className={`absolute left-0 w-10 h-10 rounded-full flex items-center justify-center ${
                       event.status === "completed"
-                        ? "bg-emerald-500/20"
+                        ? "bg-emerald-100"
                         : event.critical
-                          ? "bg-amber-500/20"
-                          : "bg-white/[0.06]"
+                          ? "bg-amber-100"
+                          : "bg-[#F1F3F5]"
                     }`}
                   >
                     {event.status === "completed" ? (
-                      <Check size={18} className="text-emerald-400" />
+                      <Check size={18} className="text-emerald-600" />
                     ) : event.critical ? (
-                      <AlertCircle size={18} className="text-amber-400" />
+                      <AlertCircle size={18} className="text-amber-600" />
                     ) : (
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
+                      <div className="w-2 h-2 rounded-full bg-[#9CA3AF]" />
                     )}
                   </div>
 
                   {/* Content */}
                   <div
-                    className={`p-5 rounded-xl border transition-all duration-300 ${
+                    className={`p-5 rounded-2xl border transition-all duration-300 ${
                       event.critical
-                        ? "bg-amber-500/[0.08] border-amber-500/20"
-                        : "bg-white/[0.03] backdrop-blur-[10px] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
+                        ? "bg-amber-50 border-amber-200"
+                        : "bg-white border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                     }`}
-                    style={{
-                      boxShadow:
-                        "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-                    }}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-small text-white/45">
+                      <span className="text-small text-[#4B5563]">
                         {event.date}
                       </span>
                       {event.critical && (
-                        <span className="text-micro font-medium text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-micro font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-wider">
                           Critical
                         </span>
                       )}
                       {event.status === "completed" && (
-                        <span className="text-micro font-medium text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-micro font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider">
                           Completed
                         </span>
                       )}
                     </div>
-                    <h3 className="text-title font-medium text-white mb-2">
+                    <h3 className="text-title font-medium text-[#111827] mb-2">
                       {event.title}
                     </h3>
-                    <p className="text-body-lg text-white/45 mb-4">
+                    <p className="text-body-lg text-[#4B5563] mb-4">
                       {event.description}
                     </p>
                     <ul className="space-y-2">
                       {event.details.map((detail, i) => (
                         <li
                           key={i}
-                          className="flex items-start gap-2 text-body text-white/45"
+                          className="flex items-start gap-2 text-body text-[#4B5563]"
                         >
-                          <span className="text-emerald-400/60 mt-1">•</span>
+                          <span className="text-[#9CA3AF] mt-1">•</span>
                           <span>{detail}</span>
                         </li>
                       ))}
@@ -333,13 +332,13 @@ export default function TimelinePage() {
           <h2 className="text-display-sm font-medium mb-4">
             Don&apos;t wait until the deadline
           </h2>
-          <p className="text-subtitle text-white/45 mb-8">
+          <p className="text-subtitle text-[#4B5563] mb-8">
             Start your compliance journey today. Our assessment helps you
             identify requirements and build a realistic timeline.
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-[#111827] text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-[#374151]"
           >
             Start Assessment
           </Link>

@@ -27,11 +27,11 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 const categoryColors: Record<string, string> = {
-  regulation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  operator: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  technical: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  legal: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  cybersecurity: "bg-red-500/10 text-red-400 border-red-500/20",
+  regulation: "bg-blue-50 text-blue-700 border-blue-200",
+  operator: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  technical: "bg-purple-50 text-purple-700 border-purple-200",
+  legal: "bg-amber-50 text-amber-700 border-amber-200",
+  cybersecurity: "bg-red-50 text-red-700 border-red-200",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -48,7 +48,7 @@ export default function GlossaryPage() {
   const categories = getAllCategories();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <DefinedTermSetJsonLd
         name="Space Compliance Glossary"
         description="Comprehensive glossary of space compliance terminology covering EU Space Act, NIS2, operator types, technical standards, and regulatory concepts."
@@ -68,10 +68,10 @@ export default function GlossaryPage() {
 
           {/* Header */}
           <div className="max-w-3xl mb-12">
-            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
               Space Compliance Glossary
             </h1>
-            <p className="text-title text-white/45 leading-relaxed">
+            <p className="text-title text-[#4B5563] leading-relaxed">
               Comprehensive definitions for EU Space Act, NIS2 Directive,
               operator classifications, technical standards, and regulatory
               terminology. Your reference guide for space compliance.
@@ -80,21 +80,21 @@ export default function GlossaryPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
-            <div className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-              <div className="text-[28px] font-medium text-white">
+            <div className="p-4 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <div className="text-[28px] font-medium text-[#111827]">
                 {terms.length}
               </div>
-              <div className="text-body text-white/45">Total Terms</div>
+              <div className="text-body text-[#4B5563]">Total Terms</div>
             </div>
             {categories.map((cat) => (
               <div
                 key={cat}
-                className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.08]"
+                className="p-4 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
               >
-                <div className="text-[28px] font-medium text-white">
+                <div className="text-[28px] font-medium text-[#111827]">
                   {getTermsByCategory(cat).length}
                 </div>
-                <div className="text-body text-white/45">
+                <div className="text-body text-[#4B5563]">
                   {categoryLabels[cat]}
                 </div>
               </div>
@@ -102,12 +102,12 @@ export default function GlossaryPage() {
           </div>
 
           {/* A-Z Navigation */}
-          <div className="flex flex-wrap gap-2 mb-12 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+          <div className="flex flex-wrap gap-2 mb-12 p-4 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB]">
             {alphabet.map((letter) => (
               <a
                 key={letter}
                 href={`#letter-${letter}`}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-white/45 hover:text-emerald-400 text-body-lg font-medium transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white hover:bg-[#F1F3F5] text-[#4B5563] hover:text-[#111827] text-body-lg font-medium transition-colors"
               >
                 {letter}
               </a>
@@ -118,7 +118,7 @@ export default function GlossaryPage() {
           <div className="flex flex-wrap gap-2 mb-12">
             <Link
               href="/glossary"
-              className="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-body text-emerald-400"
+              className="px-4 py-2 rounded-full bg-[#111827] border border-[#111827] text-body text-white"
             >
               All Terms
             </Link>
@@ -144,12 +144,12 @@ export default function GlossaryPage() {
               return (
                 <section key={letter} id={`letter-${letter}`}>
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <span className="text-display-sm font-medium text-emerald-400">
+                    <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center">
+                      <span className="text-display-sm font-medium text-[#111827]">
                         {letter}
                       </span>
                     </div>
-                    <div className="h-px flex-1 bg-white/[0.08]" />
+                    <div className="h-px flex-1 bg-[#E5E7EB]" />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
@@ -157,27 +157,27 @@ export default function GlossaryPage() {
                       <Link
                         key={term.slug}
                         href={`/glossary/${term.slug}`}
-                        className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+                        className="group p-6 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F1F3F5] hover:border-[#D1D5DB] transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 rounded-lg bg-[#F1F3F5] flex items-center justify-center flex-shrink-0">
                             <BookText
                               size={18}
-                              className="text-white/45 group-hover:text-emerald-400 transition-colors"
+                              className="text-[#4B5563] group-hover:text-[#111827] transition-colors"
                             />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <h2 className="text-title font-medium text-white group-hover:text-emerald-400 transition-colors truncate">
+                              <h2 className="text-title font-medium text-[#111827] group-hover:text-[#111827] transition-colors truncate">
                                 {term.term}
                               </h2>
                               {term.acronym && (
-                                <span className="px-2 py-0.5 rounded bg-white/[0.08] text-caption text-white/45">
+                                <span className="px-2 py-0.5 rounded bg-[#F1F3F5] text-caption text-[#4B5563]">
                                   {term.acronym}
                                 </span>
                               )}
                             </div>
-                            <p className="text-body text-white/45 leading-relaxed line-clamp-2 mb-3">
+                            <p className="text-body text-[#4B5563] leading-relaxed line-clamp-2 mb-3">
                               {term.definition}
                             </p>
                             <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export default function GlossaryPage() {
                               >
                                 {categoryLabels[term.category]}
                               </span>
-                              <span className="text-small text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                              <span className="text-small text-[#111827] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                 Read more <ArrowRight size={12} />
                               </span>
                             </div>
@@ -201,18 +201,18 @@ export default function GlossaryPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="mt-20 text-center p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-            <BookText size={32} className="text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-display-sm font-medium text-white mb-4">
+          <div className="mt-20 text-center p-8 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <BookText size={32} className="text-[#111827] mx-auto mb-4" />
+            <h2 className="text-display-sm font-medium text-[#111827] mb-4">
               Need help understanding compliance requirements?
             </h2>
-            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-[#4B5563] mb-8 max-w-xl mx-auto">
               Our AI-powered assessment helps you navigate complex space
               regulations and understand exactly what applies to your mission.
             </p>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
             >
               Start Free Assessment
               <ArrowRight size={16} />

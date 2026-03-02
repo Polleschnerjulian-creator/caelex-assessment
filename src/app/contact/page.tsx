@@ -80,7 +80,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       {/* Hero Section */}
       <section className="relative pt-32 pb-16 overflow-hidden">
         {/* Background Effects */}
@@ -89,7 +89,7 @@ export default function ContactPage() {
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse 80% 50% at 50% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 60%)",
+                "radial-gradient(ellipse 80% 50% at 50% 20%, rgba(0, 0, 0, 0.02) 0%, transparent 60%)",
             }}
           />
         </div>
@@ -98,8 +98,8 @@ export default function ContactPage() {
         <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)`,
             backgroundSize: "60px 60px",
           }}
         />
@@ -110,13 +110,13 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-caption font-medium text-emerald-400 uppercase tracking-[0.2em] mb-4">
+            <span className="inline-block text-caption font-medium text-[#111827] uppercase tracking-[0.2em] mb-4">
               Contact
             </span>
             <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-medium tracking-[-0.03em] leading-[1.1] mb-6">
-              Get in <span className="text-emerald-400">touch</span>
+              Get in <span className="text-[#111827]">touch</span>
             </h1>
-            <p className="text-title md:text-heading text-white/45 max-w-[500px] mx-auto">
+            <p className="text-title md:text-heading text-[#4B5563] max-w-[500px] mx-auto">
               Questions about compliance, partnerships, or the platform? We'd
               love to hear from you.
             </p>
@@ -133,17 +133,17 @@ export default function ContactPage() {
               const content = (
                 <GlassCard className="p-6 h-full">
                   <div className="flex flex-col h-full">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                      <Icon size={22} className="text-emerald-400" />
+                    <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center mb-4">
+                      <Icon size={22} className="text-[#111827]" />
                     </div>
-                    <h3 className="text-title font-medium text-white mb-1">
+                    <h3 className="text-title font-medium text-[#111827] mb-1">
                       {method.title}
                     </h3>
-                    <p className="text-body text-white/45 mb-3">
+                    <p className="text-body text-[#4B5563] mb-3">
                       {method.description}
                     </p>
                     <p
-                      className={`text-body-lg mt-auto ${method.href ? "text-emerald-400" : "text-white/70"}`}
+                      className={`text-body-lg mt-auto ${method.href ? "text-[#111827]" : "text-[#4B5563]"}`}
                     >
                       {method.value}
                     </p>
@@ -188,19 +188,19 @@ export default function ContactPage() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-10 h-10 text-emerald-400" />
+                    <div className="w-20 h-20 rounded-full bg-[#F1F3F5] flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-10 h-10 text-[#111827]" />
                     </div>
                     <h2 className="text-display-sm font-medium mb-3">
                       Message sent
                     </h2>
-                    <p className="text-subtitle text-white/45 mb-8">
+                    <p className="text-subtitle text-[#4B5563] mb-8">
                       Thank you for reaching out. We'll get back to you as soon
                       as possible.
                     </p>
                     <button
                       onClick={() => setFormState("idle")}
-                      className="text-body-lg text-emerald-400 hover:text-emerald-300 transition-colors"
+                      className="text-body-lg text-[#111827] hover:text-[#374151] transition-colors"
                     >
                       Send another message
                     </button>
@@ -209,14 +209,14 @@ export default function ContactPage() {
               ) : (
                 <>
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <MessageSquare size={20} className="text-emerald-400" />
+                    <div className="w-10 h-10 rounded-xl bg-[#F1F3F5] flex items-center justify-center">
+                      <MessageSquare size={20} className="text-[#111827]" />
                     </div>
                     <div>
-                      <h2 className="text-heading font-medium text-white">
+                      <h2 className="text-heading font-medium text-[#111827]">
                         Send us a message
                       </h2>
-                      <p className="text-body text-white/45">
+                      <p className="text-body text-[#4B5563]">
                         We typically respond within 24 hours
                       </p>
                     </div>
@@ -225,7 +225,7 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-[#4B5563] uppercase tracking-wider mb-2">
                           Name *
                         </label>
                         <input
@@ -235,12 +235,12 @@ export default function ContactPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, name: e.target.value })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-subtitle text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-all"
                           placeholder="Your name"
                         />
                       </div>
                       <div>
-                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-[#4B5563] uppercase tracking-wider mb-2">
                           Email *
                         </label>
                         <input
@@ -250,7 +250,7 @@ export default function ContactPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, email: e.target.value })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-subtitle text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-all"
                           placeholder="you@company.com"
                         />
                       </div>
@@ -258,7 +258,7 @@ export default function ContactPage() {
 
                     <div className="grid md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-[#4B5563] uppercase tracking-wider mb-2">
                           Company
                         </label>
                         <input
@@ -270,12 +270,12 @@ export default function ContactPage() {
                               company: e.target.value,
                             })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-subtitle text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-all"
                           placeholder="Your company"
                         />
                       </div>
                       <div>
-                        <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
+                        <label className="block text-small text-[#4B5563] uppercase tracking-wider mb-2">
                           Subject
                         </label>
                         <select
@@ -286,24 +286,24 @@ export default function ContactPage() {
                               subject: e.target.value,
                             })
                           }
-                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all appearance-none cursor-pointer"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-subtitle text-[#111827] focus:outline-none focus:border-[#111827] transition-all appearance-none cursor-pointer"
                         >
-                          <option value="" className="bg-black">
+                          <option value="" className="bg-white">
                             Select a topic
                           </option>
-                          <option value="General Inquiry" className="bg-black">
+                          <option value="General Inquiry" className="bg-white">
                             General Inquiry
                           </option>
-                          <option value="Platform Demo" className="bg-black">
+                          <option value="Platform Demo" className="bg-white">
                             Platform Demo
                           </option>
-                          <option value="Enterprise Sales" className="bg-black">
+                          <option value="Enterprise Sales" className="bg-white">
                             Enterprise Sales
                           </option>
-                          <option value="Partnership" className="bg-black">
+                          <option value="Partnership" className="bg-white">
                             Partnership
                           </option>
-                          <option value="Support" className="bg-black">
+                          <option value="Support" className="bg-white">
                             Support
                           </option>
                         </select>
@@ -311,7 +311,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-small text-white/45 uppercase tracking-wider mb-2">
+                      <label className="block text-small text-[#4B5563] uppercase tracking-wider mb-2">
                         Message *
                       </label>
                       <textarea
@@ -321,7 +321,7 @@ export default function ContactPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, message: e.target.value })
                         }
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3.5 text-subtitle text-white placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none"
+                        className="w-full bg-white border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-subtitle text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-all resize-none"
                         placeholder="How can we help you?"
                       />
                     </div>
@@ -341,7 +341,7 @@ export default function ContactPage() {
                     <button
                       type="submit"
                       disabled={formState === "sending"}
-                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-xl transition-all duration-300 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-[#111827] text-white text-subtitle font-medium rounded-xl transition-all duration-300 hover:bg-[#374151] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {formState === "sending" ? (
                         <>
@@ -367,19 +367,19 @@ export default function ContactPage() {
       <section className="relative py-16 px-6 md:px-12">
         <div className="max-w-[700px] mx-auto">
           <GlassCard className="p-8 text-center" hover={false}>
-            <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-5">
-              <Sparkles size={26} className="text-emerald-400" />
+            <div className="w-14 h-14 rounded-xl bg-[#F1F3F5] flex items-center justify-center mx-auto mb-5">
+              <Sparkles size={26} className="text-[#111827]" />
             </div>
-            <h3 className="text-heading-lg font-medium text-white mb-3">
+            <h3 className="text-heading-lg font-medium text-[#111827] mb-3">
               Looking for a demo?
             </h3>
-            <p className="text-subtitle text-white/45 mb-6 max-w-[400px] mx-auto">
+            <p className="text-subtitle text-[#4B5563] mb-6 max-w-[400px] mx-auto">
               See how Caelex can streamline your EU Space Act compliance with a
               personalized demo.
             </p>
             <Link
               href="/demo"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/[0.08] border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.12] hover:border-white/[0.2]"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium transition-all duration-300 hover:bg-[#F1F3F5] hover:border-[#111827]"
             >
               Request Demo
             </Link>

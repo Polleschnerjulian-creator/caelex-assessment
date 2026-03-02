@@ -30,8 +30,6 @@ export default function PublicLayout({
     return <>{children}</>;
   }
 
-  const isLandingPage = pathname === "/";
-
   return (
     <>
       <a
@@ -40,9 +38,9 @@ export default function PublicLayout({
       >
         Skip to main content
       </a>
-      <Navigation theme={isLandingPage ? "light" : "dark"} />
+      <Navigation theme="light" />
       <main id="main-content">{children}</main>
-      <Footer theme={isLandingPage ? "light" : "dark"} />
+      <Footer theme="light" />
     </>
   );
 }

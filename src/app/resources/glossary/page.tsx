@@ -203,7 +203,10 @@ export default function GlossaryPage() {
   );
 
   return (
-    <main ref={ref} className="landing-page min-h-screen bg-black text-white">
+    <main
+      ref={ref}
+      className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]"
+    >
       {/* Hero */}
       <section className="pt-32 pb-8 px-6 md:px-12">
         <div className="max-w-[900px] mx-auto">
@@ -220,36 +223,35 @@ export default function GlossaryPage() {
               className="mb-6"
             />
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                <BookMarked size={24} className="text-emerald-400" />
+              <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center">
+                <BookMarked size={24} className="text-[#111827]" />
               </div>
               <h1 className="text-[clamp(2rem,5vw,3rem)] font-medium tracking-[-0.02em]">
                 Space Law Glossary
               </h1>
             </div>
-            <p className="text-title text-white/45 leading-relaxed mb-8">
+            <p className="text-title text-[#4B5563] leading-relaxed mb-8">
               {glossaryTerms.length} essential terms for understanding EU Space
               Act compliance and space regulation terminology.
             </p>
 
             {/* Search */}
             <div
-              className="relative rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+              className="relative rounded-xl bg-white border border-[#E5E7EB]"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "0_1px_3px_rgba(0,0,0,0.04)",
               }}
             >
               <Search
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]"
               />
               <input
                 type="text"
                 placeholder="Search terms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-transparent pl-12 pr-4 py-3 text-subtitle text-white placeholder:text-white/30 focus:outline-none"
+                className="w-full bg-transparent pl-12 pr-4 py-3 text-subtitle text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none"
               />
             </div>
           </motion.div>
@@ -261,7 +263,7 @@ export default function GlossaryPage() {
         <div className="max-w-[900px] mx-auto">
           {Object.keys(termsByLetter).length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-white/45">
+              <p className="text-[#4B5563]">
                 No terms found matching &quot;{searchTerm}&quot;
               </p>
             </div>
@@ -274,8 +276,8 @@ export default function GlossaryPage() {
                 transition={{ duration: 0.4 }}
                 className="mb-12"
               >
-                <div className="sticky top-16 bg-black/90 backdrop-blur-sm py-3 mb-4 z-10">
-                  <span className="text-display-sm font-medium text-emerald-400/80">
+                <div className="sticky top-16 bg-[#F7F8FA]/90 backdrop-blur-sm py-3 mb-4 z-10">
+                  <span className="text-display-sm font-medium text-[#111827]">
                     {letter}
                   </span>
                 </div>
@@ -283,27 +285,23 @@ export default function GlossaryPage() {
                   {terms.map((item) => (
                     <div
                       key={item.term}
-                      className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.15]"
-                      style={{
-                        boxShadow:
-                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
-                      }}
+                      className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                     >
-                      <h3 className="text-title font-medium text-white mb-2">
+                      <h3 className="text-title font-medium text-[#111827] mb-2">
                         {item.term}
                       </h3>
-                      <p className="text-body-lg text-white/45 leading-relaxed mb-3">
+                      <p className="text-body-lg text-[#4B5563] leading-relaxed mb-3">
                         {item.definition}
                       </p>
                       {item.related.length > 0 && (
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-caption text-white/30">
+                          <span className="text-caption text-[#9CA3AF]">
                             Related:
                           </span>
                           {item.related.map((rel) => (
                             <span
                               key={rel}
-                              className="text-caption text-emerald-400/60 bg-emerald-500/10 px-2 py-1 rounded"
+                              className="text-caption text-[#111827] bg-[#F1F3F5] px-2 py-1 rounded"
                             >
                               {rel}
                             </span>
@@ -325,13 +323,13 @@ export default function GlossaryPage() {
           <h2 className="text-display-sm font-medium mb-4">
             Ready to assess your compliance?
           </h2>
-          <p className="text-subtitle text-white/45 mb-8">
+          <p className="text-subtitle text-[#4B5563] mb-8">
             Use our free tool to understand which EU Space Act requirements
             apply to you.
           </p>
           <Link
             href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-emerald-400 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+            className="inline-flex items-center justify-center px-8 py-4 bg-[#111827] text-white text-subtitle font-medium rounded-full transition-all duration-200 hover:bg-[#374151]"
           >
             Start Assessment
           </Link>

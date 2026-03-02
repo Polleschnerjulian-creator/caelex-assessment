@@ -101,13 +101,13 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px]" />
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#E5E7EB]/30 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#E5E7EB]/30 rounded-full blur-[100px]" />
         </div>
 
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative">
@@ -118,15 +118,13 @@ export default function DemoPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+              <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
                 See Caelex
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-300">
-                  in Action
-                </span>
+                <span className="text-[#111827]">in Action</span>
               </h1>
 
-              <p className="text-title text-white/45 leading-relaxed mb-8 max-w-lg">
+              <p className="text-title text-[#4B5563] leading-relaxed mb-8 max-w-lg">
                 Get a personalized walkthrough of how Caelex helps satellite
                 operators, launch providers, and space service companies
                 navigate EU Space Act, NIS2, and national space law compliance.
@@ -136,10 +134,10 @@ export default function DemoPage() {
               <div className="grid grid-cols-4 gap-4 mb-8">
                 {stats.map((stat, i) => (
                   <div key={i} className="text-center">
-                    <div className="text-display-sm font-semibold text-white">
+                    <div className="text-display-sm font-semibold text-[#111827]">
                       {stat.value}
                     </div>
-                    <div className="text-caption text-white/45 uppercase tracking-wider">
+                    <div className="text-caption text-[#4B5563] uppercase tracking-wider">
                       {stat.label}
                     </div>
                   </div>
@@ -147,13 +145,13 @@ export default function DemoPage() {
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex items-center gap-6 text-body text-white/45">
+              <div className="flex items-center gap-6 text-body text-[#4B5563]">
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={14} className="text-emerald-400" />
+                  <CheckCircle size={14} className="text-[#111827]" />
                   <span>No credit card required</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-emerald-400" />
+                  <Clock size={14} className="text-[#111827]" />
                   <span>15 min demo</span>
                 </div>
               </div>
@@ -167,9 +165,9 @@ export default function DemoPage() {
             >
               <div className="relative">
                 {/* Liquid Glass Card */}
-                <div className="relative bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-emerald-400/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
+                <div className="relative bg-white border border-[#E5E7EB] rounded-3xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                  {/* Subtle shadow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#E5E7EB]/20 via-[#D1D5DB]/20 to-[#E5E7EB]/20 rounded-3xl blur-xl opacity-50" />
 
                   <div className="relative">
                     {submitted ? (
@@ -178,19 +176,19 @@ export default function DemoPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-center py-8"
                       >
-                        <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-                          <CheckCircle size={32} className="text-emerald-400" />
+                        <div className="w-16 h-16 rounded-full bg-[#F1F3F5] flex items-center justify-center mx-auto mb-6">
+                          <CheckCircle size={32} className="text-[#111827]" />
                         </div>
-                        <h3 className="text-heading-lg font-medium text-white mb-3">
+                        <h3 className="text-heading-lg font-medium text-[#111827] mb-3">
                           You're on the list!
                         </h3>
-                        <p className="text-subtitle text-white/45 mb-6">
+                        <p className="text-subtitle text-[#4B5563] mb-6">
                           We'll reach out within 24 hours to schedule your
                           personalized demo.
                         </p>
                         <Link
                           href="/assessment"
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
                         >
                           Try Free Assessment
                           <ArrowRight size={16} />
@@ -199,14 +197,14 @@ export default function DemoPage() {
                     ) : (
                       <>
                         <div className="flex items-center gap-3 mb-6">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-xl bg-[#111827] flex items-center justify-center">
                             <Calendar size={20} className="text-white" />
                           </div>
                           <div>
-                            <h3 className="text-heading font-medium text-white">
+                            <h3 className="text-heading font-medium text-[#111827]">
                               Book Your Demo
                             </h3>
-                            <p className="text-body text-white/45">
+                            <p className="text-body text-[#4B5563]">
                               Free • 15 minutes • No commitment
                             </p>
                           </div>
@@ -220,7 +218,7 @@ export default function DemoPage() {
                               onChange={(e) => setName(e.target.value)}
                               placeholder="Your name"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
                             />
                           </div>
                           <div>
@@ -230,7 +228,7 @@ export default function DemoPage() {
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="Work email"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
                             />
                           </div>
                           <div>
@@ -240,14 +238,14 @@ export default function DemoPage() {
                               onChange={(e) => setCompany(e.target.value)}
                               placeholder="Company name"
                               required
-                              className="w-full bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-3.5 text-body-lg text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors"
+                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
                             />
                           </div>
 
                           <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-body-lg font-medium px-6 py-4 rounded-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="w-full bg-[#111827] text-white text-body-lg font-medium px-6 py-4 rounded-xl hover:bg-[#374151] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
                           >
                             {submitting ? (
                               <span>Submitting...</span>
@@ -266,11 +264,11 @@ export default function DemoPage() {
                           </p>
                         )}
 
-                        <p className="text-caption text-white/30 text-center mt-4">
+                        <p className="text-caption text-[#9CA3AF] text-center mt-4">
                           By submitting, you agree to our{" "}
                           <Link
                             href="/legal/privacy"
-                            className="underline hover:text-white/70"
+                            className="underline hover:text-[#4B5563]"
                           >
                             Privacy Policy
                           </Link>
@@ -294,10 +292,10 @@ export default function DemoPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-display font-medium text-white mb-4">
+            <h2 className="text-display font-medium text-[#111827] mb-4">
               What You'll See in the Demo
             </h2>
-            <p className="text-title text-white/45 max-w-2xl mx-auto">
+            <p className="text-title text-[#4B5563] max-w-2xl mx-auto">
               A complete walkthrough of the platform tailored to your specific
               needs
             </p>
@@ -311,20 +309,20 @@ export default function DemoPage() {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            {/* Glowing border effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/30 via-emerald-400/30 to-emerald-500/30 rounded-3xl blur-xl" />
+            {/* Subtle shadow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#D1D5DB]/30 via-[#E5E7EB]/30 to-[#D1D5DB]/30 rounded-3xl blur-xl" />
 
             {/* Preview Container */}
-            <div className="relative bg-white/[0.04] backdrop-blur-xl border border-white/[0.1] rounded-3xl p-2 overflow-hidden">
+            <div className="relative bg-white border border-[#E5E7EB] rounded-3xl p-2 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
               {/* Browser Chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E5E7EB]">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-500/60" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                   <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1.5 rounded-lg bg-white/[0.06] text-small text-white/45">
+                  <div className="px-4 py-1.5 rounded-lg bg-[#F1F3F5] text-small text-[#4B5563]">
                     app.caelex.eu/dashboard
                   </div>
                 </div>
@@ -474,14 +472,14 @@ export default function DemoPage() {
                 transition={{ delay: i * 0.1 }}
                 className="group"
               >
-                <div className="h-full p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-400/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <benefit.icon size={24} className="text-emerald-400" />
+                <div className="h-full p-6 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F1F3F5] hover:border-[#D1D5DB] transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                  <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <benefit.icon size={24} className="text-[#111827]" />
                   </div>
-                  <h3 className="text-title font-medium text-white mb-2">
+                  <h3 className="text-title font-medium text-[#111827] mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-body text-white/45 leading-relaxed">
+                  <p className="text-body text-[#4B5563] leading-relaxed">
                     {benefit.description}
                   </p>
                 </div>
@@ -492,7 +490,7 @@ export default function DemoPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 border-t border-white/[0.04]">
+      <section className="py-20 border-t border-[#E5E7EB]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="grid md:grid-cols-2 gap-8">
             {testimonials.map((testimonial, i) => (
@@ -502,16 +500,16 @@ export default function DemoPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-xl bg-white/[0.04] border border-white/[0.08]"
+                className="p-8 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
               >
-                <p className="text-title text-white/70 leading-relaxed mb-6 italic">
-                  "{testimonial.quote}"
+                <p className="text-title text-[#4B5563] leading-relaxed mb-6 italic">
+                  &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div>
-                  <div className="text-body-lg font-medium text-white">
+                  <div className="text-body-lg font-medium text-[#111827]">
                     {testimonial.author}
                   </div>
-                  <div className="text-body text-white/45">
+                  <div className="text-body text-[#4B5563]">
                     {testimonial.company}
                   </div>
                 </div>
@@ -522,7 +520,7 @@ export default function DemoPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 border-t border-white/[0.04]">
+      <section className="py-20 border-t border-[#E5E7EB]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <motion.div
             initial={false}
@@ -530,24 +528,24 @@ export default function DemoPage() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-display font-medium text-white mb-4">
+            <h2 className="text-display font-medium text-[#111827] mb-4">
               Ready to simplify your compliance?
             </h2>
-            <p className="text-title text-white/45 mb-8 max-w-xl mx-auto">
+            <p className="text-title text-[#4B5563] mb-8 max-w-xl mx-auto">
               Join leading space companies who trust Caelex for their regulatory
               compliance.
             </p>
             <div className="flex items-center justify-center gap-4">
               <Link
                 href="/assessment"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
               >
                 Start Free Assessment
                 <ArrowRight size={16} />
               </Link>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/20 text-white text-body-lg font-medium hover:border-white/40 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium hover:border-[#111827] transition-all"
               >
                 <Users size={16} />
                 Book Demo

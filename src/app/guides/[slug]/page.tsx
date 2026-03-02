@@ -91,47 +91,47 @@ function renderMarkdown(content: string): string {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      return `<h2 id="${id}" class="text-[28px] font-medium text-white mt-16 mb-6 scroll-mt-32">${text}</h2>`;
+      return `<h2 id="${id}" class="text-[28px] font-medium text-[#111827] mt-16 mb-6 scroll-mt-32">${text}</h2>`;
     })
     // H3 headings
     .replace(
       /^### (.+)$/gm,
-      '<h3 class="text-heading-lg font-medium text-white mt-10 mb-4">$1</h3>',
+      '<h3 class="text-heading-lg font-medium text-[#111827] mt-10 mb-4">$1</h3>',
     )
     // H4 headings
     .replace(
       /^#### (.+)$/gm,
-      '<h4 class="text-title font-medium text-white mt-6 mb-3">$1</h4>',
+      '<h4 class="text-title font-medium text-[#111827] mt-6 mb-3">$1</h4>',
     )
     // Bold
     .replace(
       /\*\*(.+?)\*\*/g,
-      '<strong class="font-semibold text-white">$1</strong>',
+      '<strong class="font-semibold text-[#111827]">$1</strong>',
     )
     // Italic
     .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
     // Code blocks
     .replace(
       /`([^`]+)`/g,
-      '<code class="px-1.5 py-0.5 rounded bg-white/10 text-body text-emerald-400 font-mono">$1</code>',
+      '<code class="px-1.5 py-0.5 rounded bg-[#F1F3F5] text-body text-[#111827] font-mono">$1</code>',
     )
     // Lists
     .replace(
       /^- (.+)$/gm,
-      '<li class="ml-4 text-white/45 leading-relaxed">$1</li>',
+      '<li class="ml-4 text-[#4B5563] leading-relaxed">$1</li>',
     )
     .replace(
       /^\d+\. (.+)$/gm,
-      '<li class="ml-4 text-white/45 leading-relaxed list-decimal">$1</li>',
+      '<li class="ml-4 text-[#4B5563] leading-relaxed list-decimal">$1</li>',
     )
     // Paragraphs
     .replace(
       /\n\n/g,
-      '</p><p class="text-title text-white/45 leading-[1.8] mb-4">',
+      '</p><p class="text-title text-[#4B5563] leading-[1.8] mb-4">',
     );
 
   // Wrap in paragraph
-  html = `<p class="text-title text-white/45 leading-[1.8] mb-4">${html}</p>`;
+  html = `<p class="text-title text-[#4B5563] leading-[1.8] mb-4">${html}</p>`;
 
   // Fix list wrapping
   html = html.replace(
@@ -149,16 +149,16 @@ function renderMarkdown(content: string): string {
   html = html.replace(
     /\|(.+?)\|(.+?)\|\n\|[-|]+\|\n((?:\|.+?\|.+?\|\n?)+)/g,
     (_, h1, h2, rows) => {
-      const headerRow = `<tr class="border-b border-white/10"><th class="px-4 py-3 text-left text-body font-medium text-white">${h1.trim()}</th><th class="px-4 py-3 text-left text-body font-medium text-white">${h2.trim()}</th></tr>`;
+      const headerRow = `<tr class="border-b border-[#E5E7EB]"><th class="px-4 py-3 text-left text-body font-medium text-[#111827]">${h1.trim()}</th><th class="px-4 py-3 text-left text-body font-medium text-[#111827]">${h2.trim()}</th></tr>`;
       const dataRows = rows
         .trim()
         .split("\n")
         .map((row: string) => {
           const cells = row.split("|").filter((c: string) => c.trim());
-          return `<tr class="border-b border-white/[0.06]"><td class="px-4 py-3 text-body text-white/45">${cells[0]?.trim() || ""}</td><td class="px-4 py-3 text-body text-white/45">${cells[1]?.trim() || ""}</td></tr>`;
+          return `<tr class="border-b border-[#E5E7EB]"><td class="px-4 py-3 text-body text-[#4B5563]">${cells[0]?.trim() || ""}</td><td class="px-4 py-3 text-body text-[#4B5563]">${cells[1]?.trim() || ""}</td></tr>`;
         })
         .join("");
-      return `<table class="w-full mb-6 border border-white/10 rounded-lg overflow-hidden"><thead class="bg-white/[0.04]">${headerRow}</thead><tbody>${dataRows}</tbody></table>`;
+      return `<table class="w-full mb-6 border border-[#E5E7EB] rounded-lg overflow-hidden"><thead class="bg-[#F1F3F5]">${headerRow}</thead><tbody>${dataRows}</tbody></table>`;
     },
   );
 
@@ -208,7 +208,7 @@ export default async function GuidePage({ params }: PageProps) {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       {/* JSON-LD */}
       <ArticleJsonLd
         title={guide.title}
@@ -231,7 +231,7 @@ export default async function GuidePage({ params }: PageProps) {
           {/* Back Link */}
           <Link
             href="/guides"
-            className="inline-flex items-center gap-2 text-body text-white/45 hover:text-white/70 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-body text-[#4B5563] hover:text-[#111827] transition-colors mb-8"
           >
             <ArrowLeft size={14} />
             All Guides
@@ -242,8 +242,8 @@ export default async function GuidePage({ params }: PageProps) {
             <article>
               {/* Header */}
               <header className="mb-12">
-                <div className="flex items-center gap-3 text-small text-white/45 mb-4">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center gap-1">
+                <div className="flex items-center gap-3 text-small text-[#4B5563] mb-4">
+                  <span className="px-2.5 py-1 rounded-full bg-[#F1F3F5] text-[#111827] flex items-center gap-1">
                     <BookOpen size={12} />
                     Comprehensive Guide
                   </span>
@@ -260,35 +260,35 @@ export default async function GuidePage({ params }: PageProps) {
                   </span>
                 </div>
 
-                <h1 className="text-[36px] md:text-display-lg font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+                <h1 className="text-[36px] md:text-display-lg font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
                   {guide.h1}
                 </h1>
 
-                <p className="text-heading text-white/45 leading-relaxed">
+                <p className="text-heading text-[#4B5563] leading-relaxed">
                   {guide.description}
                 </p>
               </header>
 
               {/* Content */}
               <div
-                className="prose prose-invert max-w-none"
+                className="prose max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: renderMarkdown(guide.content),
                 }}
               />
 
               {/* CTA */}
-              <div className="mt-16 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
-                <h3 className="text-heading-lg font-medium text-white mb-3">
+              <div className="mt-16 p-8 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <h3 className="text-heading-lg font-medium text-[#111827] mb-3">
                   Ready to assess your compliance?
                 </h3>
-                <p className="text-subtitle text-white/45 mb-6">
+                <p className="text-subtitle text-[#4B5563] mb-6">
                   Get your personalized regulatory profile across EU Space Act,
                   NIS2, and national space laws in minutes.
                 </p>
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-colors"
                 >
                   Start Free Assessment
                   <ArrowRight size={16} />
@@ -300,8 +300,8 @@ export default async function GuidePage({ params }: PageProps) {
             <aside className="space-y-8">
               {/* Table of Contents */}
               {toc.length > 0 && (
-                <div className="sticky top-32 p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h4 className="text-body-lg font-medium text-white mb-4">
+                <div className="sticky top-32 p-6 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                  <h4 className="text-body-lg font-medium text-[#111827] mb-4">
                     Table of Contents
                   </h4>
                   <nav className="space-y-2 max-h-[60vh] overflow-y-auto">
@@ -309,7 +309,7 @@ export default async function GuidePage({ params }: PageProps) {
                       <a
                         key={item.id}
                         href={`#${item.id}`}
-                        className="block text-body text-white/45 hover:text-white/70 transition-colors py-1"
+                        className="block text-body text-[#4B5563] hover:text-[#111827] transition-colors py-1"
                       >
                         {item.text}
                       </a>
@@ -320,8 +320,8 @@ export default async function GuidePage({ params }: PageProps) {
 
               {/* Other Guides */}
               {otherGuides.length > 0 && (
-                <div className="p-6 rounded-xl bg-white/[0.04] border border-white/[0.08]">
-                  <h4 className="text-body-lg font-medium text-white mb-4">
+                <div className="p-6 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                  <h4 className="text-body-lg font-medium text-[#111827] mb-4">
                     More Guides
                   </h4>
                   <div className="space-y-4">
@@ -331,10 +331,10 @@ export default async function GuidePage({ params }: PageProps) {
                         href={`/guides/${otherGuide.slug}`}
                         className="block group"
                       >
-                        <h5 className="text-body text-white/45 group-hover:text-emerald-400 transition-colors line-clamp-2">
+                        <h5 className="text-body text-[#4B5563] group-hover:text-[#111827] transition-colors line-clamp-2">
                           {otherGuide.title}
                         </h5>
-                        <span className="text-caption text-white/30">
+                        <span className="text-caption text-[#9CA3AF]">
                           {otherGuide.readingTime} min read
                         </span>
                       </Link>

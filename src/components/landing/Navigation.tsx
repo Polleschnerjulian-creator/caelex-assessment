@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
 import Button from "@/components/ui/Button";
@@ -14,7 +15,9 @@ interface NavigationProps {
 export default function Navigation({ theme = "dark" }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
   const isLight = theme === "light";
+  const isLandingHero = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,8 +45,10 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     };
   }, [mobileOpen]);
 
-  // On light theme: start dark-text=false (white text over hero), switch when scrolled
-  const showDarkText = isLight && (scrolled || mobileOpen);
+  // On landing page: start transparent/white over dark hero, transition when scrolled
+  // On all other pages: always show dark text (light background, no dark hero)
+  const showDarkText =
+    isLight && (isLandingHero ? scrolled || mobileOpen : true);
 
   return (
     <>

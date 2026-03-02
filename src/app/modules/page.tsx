@@ -40,7 +40,7 @@ const moduleIcons: Record<string, LucideIcon> = {
 
 export default function ModulesPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <main className="pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           {/* Breadcrumbs */}
@@ -51,10 +51,10 @@ export default function ModulesPage() {
 
           {/* Header */}
           <div className="max-w-3xl mb-16">
-            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
               Compliance Modules
             </h1>
-            <p className="text-title text-white/45 leading-relaxed">
+            <p className="text-title text-[#4B5563] leading-relaxed">
               12 specialized modules covering every aspect of space regulatory
               compliance — from authorization and licensing to cybersecurity,
               debris mitigation, and export control.
@@ -70,17 +70,17 @@ export default function ModulesPage() {
                 <Link
                   key={module.slug}
                   href={`/modules/${module.slug}`}
-                  className="group p-6 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                  className="group p-6 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F1F3F5] hover:border-[#D1D5DB] transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                      <Icon size={24} className="text-emerald-400" />
+                    <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center flex-shrink-0">
+                      <Icon size={24} className="text-[#111827]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-title font-medium text-white mb-2 group-hover:text-emerald-400 transition-colors">
+                      <h2 className="text-title font-medium text-[#111827] mb-2 group-hover:text-[#111827] transition-colors">
                         {module.title}
                       </h2>
-                      <p className="text-body text-white/45 leading-relaxed line-clamp-2">
+                      <p className="text-body text-[#4B5563] leading-relaxed line-clamp-2">
                         {module.description}
                       </p>
 
@@ -89,13 +89,13 @@ export default function ModulesPage() {
                         {module.jurisdictions.slice(0, 3).map((j) => (
                           <span
                             key={j}
-                            className="px-2 py-0.5 rounded-full bg-white/[0.06] text-micro text-white/45"
+                            className="px-2 py-0.5 rounded-full bg-[#F1F3F5] text-micro text-[#4B5563]"
                           >
                             {j}
                           </span>
                         ))}
                         {module.jurisdictions.length > 3 && (
-                          <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-micro text-white/45">
+                          <span className="px-2 py-0.5 rounded-full bg-[#F1F3F5] text-micro text-[#4B5563]">
                             +{module.jurisdictions.length - 3}
                           </span>
                         )}
@@ -103,7 +103,7 @@ export default function ModulesPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 mt-4 text-body text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 mt-4 text-body text-[#111827] opacity-0 group-hover:opacity-100 transition-opacity">
                     Learn more
                     <ArrowRight size={14} />
                   </div>
@@ -114,16 +114,16 @@ export default function ModulesPage() {
 
           {/* CTA Section */}
           <div className="mt-20 text-center">
-            <h2 className="text-display-sm font-medium text-white mb-4">
+            <h2 className="text-display-sm font-medium text-[#111827] mb-4">
               Not sure which modules apply to you?
             </h2>
-            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-[#4B5563] mb-8 max-w-xl mx-auto">
               Take our free compliance assessment to get a personalized
               regulatory profile across all relevant frameworks.
             </p>
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
             >
               Start Free Assessment
               <ArrowRight size={16} />

@@ -63,29 +63,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex">
+    <div className="min-h-screen bg-[#F7F8FA] flex">
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden items-center justify-center">
         {/* Grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
         {/* Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/[0.08] rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#E5E7EB]/50 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F7F8FA] to-transparent" />
 
         {/* Content */}
         <div className="relative z-10 max-w-md px-12">
           <div className="mb-8">
-            <Logo size={28} className="text-white" />
+            <Logo size={28} className="text-[#111827]" />
           </div>
 
-          <h2 className="text-3xl font-medium text-white mb-4 leading-tight">
+          <h2 className="text-3xl font-medium text-[#111827] mb-4 leading-tight">
             Space Compliance,
             <br />
-            <span className="text-emerald-400">Simplified.</span>
+            <span className="text-[#111827]">Simplified.</span>
           </h2>
 
-          <p className="text-white/45 text-subtitle leading-relaxed mb-10">
+          <p className="text-[#4B5563] text-subtitle leading-relaxed mb-10">
             The regulatory compliance platform trusted by satellite operators,
             launch providers, and space service companies across Europe.
           </p>
@@ -98,8 +98,8 @@ export default function LoginPage() {
               "AI-powered document generation",
             ].map((feature) => (
               <div key={feature} className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="text-white/45 text-sm">{feature}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#111827]" />
+                <span className="text-[#4B5563] text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -109,20 +109,20 @@ export default function LoginPage() {
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
         {/* Subtle border */}
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-px bg-white/[0.06]" />
+        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-px bg-[#E5E7EB]" />
 
         <div className="max-w-[400px] w-full">
           {/* Mobile logo */}
           <div className="lg:hidden mb-10">
-            <Logo size={24} className="text-white" />
+            <Logo size={24} className="text-[#111827]" />
           </div>
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-medium text-white mb-2">
+            <h1 className="text-2xl font-medium text-[#111827] mb-2">
               Welcome back
             </h1>
-            <p className="text-white/45 text-body-lg">
+            <p className="text-[#4B5563] text-body-lg">
               Sign in to access your compliance dashboard
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
           <div className="flex gap-3 mb-6">
             <button
               onClick={handleGoogleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-[#E5E7EB] hover:border-[#D1D5DB] bg-white hover:bg-[#F1F3F5] text-[#111827] py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path
@@ -155,7 +155,7 @@ export default function LoginPage() {
             </button>
             <button
               onClick={handleAppleSignIn}
-              className="flex-1 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.03] hover:bg-white/[0.05] text-white py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
+              className="flex-1 border border-[#E5E7EB] hover:border-[#D1D5DB] bg-white hover:bg-[#F1F3F5] text-[#111827] py-3 rounded-lg text-body-lg transition-all duration-200 flex items-center justify-center gap-2.5"
             >
               <svg
                 width="18"
@@ -171,17 +171,17 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-px bg-white/[0.06] flex-1" />
-            <span className="text-white/30 text-small uppercase tracking-wider">
+            <div className="h-px bg-[#E5E7EB] flex-1" />
+            <span className="text-[#9CA3AF] text-small uppercase tracking-wider">
               or
             </span>
-            <div className="h-px bg-white/[0.06] flex-1" />
+            <div className="h-px bg-[#E5E7EB] flex-1" />
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-small font-medium text-white/45 mb-2">
+              <label className="block text-small font-medium text-[#4B5563] mb-2">
                 Email
               </label>
               <input
@@ -190,19 +190,19 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                className="w-full bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] rounded-lg px-4 py-3 text-subtitle focus:border-[#111827] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 transition-all"
                 required
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-small font-medium text-white/45">
+                <label className="block text-small font-medium text-[#4B5563]">
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-small text-emerald-400/70 hover:text-emerald-400 transition-colors"
+                  className="text-small text-[#111827] hover:text-[#374151] underline transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -212,13 +212,13 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.08] text-white placeholder-white/20 rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-emerald-500/40 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                  className="w-full bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] rounded-lg px-4 py-3 pr-11 text-subtitle focus:border-[#111827] focus:outline-none focus:ring-1 focus:ring-[#111827]/10 transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#4B5563] transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -239,11 +239,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold py-3 rounded-lg text-subtitle transition-all duration-200 disabled:opacity-50 disabled:hover:bg-emerald-500 flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-[#111827] hover:bg-[#374151] text-white font-semibold py-3 rounded-lg text-subtitle transition-all duration-200 disabled:opacity-50 disabled:hover:bg-[#111827] flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -256,11 +256,11 @@ export default function LoginPage() {
           </form>
 
           {/* Sign up link */}
-          <p className="text-center mt-8 text-body text-white/45">
+          <p className="text-center mt-8 text-body text-[#4B5563]">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="text-emerald-400/80 hover:text-emerald-400 transition-colors"
+              className="text-[#111827] hover:text-[#374151] underline transition-colors"
             >
               Create account
             </Link>

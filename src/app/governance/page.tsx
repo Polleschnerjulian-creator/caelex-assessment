@@ -372,14 +372,14 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="text-caption uppercase tracking-[0.2em] text-white/30 mb-4 block">
+      <span className="text-caption uppercase tracking-[0.2em] text-[#9CA3AF] mb-4 block">
         {eyebrow}
       </span>
-      <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
+      <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-subtitle md:text-title text-white/45 leading-relaxed max-w-[650px] mx-auto">
+        <p className="text-subtitle md:text-title text-[#4B5563] leading-relaxed max-w-[650px] mx-auto">
           {subtitle}
         </p>
       )}
@@ -395,23 +395,23 @@ function StatusBadge({
   const config = {
     achieved: {
       label: "Achieved",
-      className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
     planned: {
       label: "Planned",
-      className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+      className: "bg-amber-50 text-amber-700 border-amber-200",
     },
     available: {
       label: "Available",
-      className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
     "on-request": {
       label: "On Request",
-      className: "bg-blue-500/15 text-blue-400 border-blue-500/20",
+      className: "bg-blue-50 text-blue-700 border-blue-200",
     },
     "coming-soon": {
       label: "Coming Soon",
-      className: "bg-white/10 text-white/45 border-white/10",
+      className: "bg-[#F1F3F5] text-[#4B5563] border-[#E5E7EB]",
     },
   };
   const { label, className } = config[status];
@@ -436,33 +436,25 @@ function HeroSection() {
       ref={ref}
       className="relative pt-40 pb-24 md:pt-48 md:pb-32 overflow-hidden"
     >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(16, 185, 129, 0.10) 0%, transparent 60%)",
-        }}
-      />
-
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 text-center">
         <motion.div {...fadeUp(isInView, 0)}>
-          <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
+          <span className="inline-block text-small font-semibold text-[#111827] uppercase tracking-[0.2em] mb-6">
             Corporate Governance
           </span>
         </motion.div>
 
         <motion.h1
           {...fadeUp(isInView, 0.1)}
-          className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-white mb-6"
+          className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-[#111827] mb-6"
         >
           Responsibility is not a feature
           <br />
-          <span className="text-white/45">— it is our foundation.</span>
+          <span className="text-[#4B5563]">— it is our foundation.</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
-          className="text-heading md:text-heading-lg text-white/45 max-w-[700px] mx-auto mb-14 leading-relaxed"
+          className="text-heading md:text-heading-lg text-[#4B5563] max-w-[700px] mx-auto mb-14 leading-relaxed"
         >
           Caelex manages sensitive compliance data for the European space
           industry. This commits us to the highest standards in data protection,
@@ -477,12 +469,12 @@ function HeroSection() {
           {governanceMetrics.map((metric) => (
             <div
               key={metric.label}
-              className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-xl px-5 py-4"
+              className="bg-white border border-[#E5E7EB] rounded-xl px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
             >
-              <div className="text-display-sm md:text-[28px] font-medium text-white tracking-[-0.02em]">
+              <div className="text-display-sm md:text-[28px] font-medium text-[#111827] tracking-[-0.02em]">
                 {metric.value}
               </div>
-              <div className="text-small text-white/45 mt-1">
+              <div className="text-small text-[#4B5563] mt-1">
                 {metric.label}
               </div>
             </div>
@@ -498,13 +490,6 @@ function FrameworkSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Framework"
@@ -521,18 +506,18 @@ function FrameworkSection() {
             >
               <GlassCard className="p-8 h-full" hover={false}>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 rounded-lg bg-emerald-500/10">
+                  <div className="p-2.5 rounded-lg bg-[#F1F3F5]">
                     <pillar.icon
                       size={20}
-                      className="text-emerald-400"
+                      className="text-[#111827]"
                       aria-hidden="true"
                     />
                   </div>
                   <div>
-                    <h3 className="text-heading font-medium text-white">
+                    <h3 className="text-heading font-medium text-[#111827]">
                       {pillar.title}
                     </h3>
-                    <span className="text-small text-white/30 uppercase tracking-wider">
+                    <span className="text-small text-[#9CA3AF] uppercase tracking-wider">
                       {pillar.subtitle}
                     </span>
                   </div>
@@ -542,10 +527,10 @@ function FrameworkSection() {
                     <li key={j} className="flex items-start gap-2.5">
                       <CircleDot
                         size={14}
-                        className="text-emerald-500/50 mt-1 shrink-0"
+                        className="text-[#9CA3AF] mt-1 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-body text-white/45 leading-[1.6]">
+                      <span className="text-body text-[#4B5563] leading-[1.6]">
                         {item}
                       </span>
                     </li>
@@ -582,17 +567,17 @@ function CodexSection() {
               <GlassCard className="p-6 md:p-8" hover={false}>
                 <div className="flex gap-5 md:gap-8">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                      <span className="text-title font-medium text-emerald-400 font-mono">
+                    <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center">
+                      <span className="text-title font-medium text-[#111827] font-mono">
                         {article.number}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-title md:text-heading font-medium text-white mb-2">
+                    <h3 className="text-title md:text-heading font-medium text-[#111827] mb-2">
                       {article.title}
                     </h3>
-                    <p className="text-body md:text-body-lg text-white/45 leading-[1.8]">
+                    <p className="text-body md:text-body-lg text-[#4B5563] leading-[1.8]">
                       {article.text}
                     </p>
                   </div>
@@ -611,31 +596,24 @@ function ESGSection() {
 
   const accentColors = {
     emerald: {
-      iconBg: "bg-emerald-500/10",
-      iconText: "text-emerald-400",
+      iconBg: "bg-emerald-50",
+      iconText: "text-emerald-700",
       dotBg: "bg-emerald-500",
     },
     blue: {
-      iconBg: "bg-blue-500/10",
-      iconText: "text-blue-400",
+      iconBg: "bg-blue-50",
+      iconText: "text-blue-700",
       dotBg: "bg-blue-500",
     },
     purple: {
-      iconBg: "bg-purple-500/10",
-      iconText: "text-purple-400",
+      iconBg: "bg-purple-50",
+      iconText: "text-purple-700",
       dotBg: "bg-purple-500",
     },
   };
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 40% at 20% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="ESG"
@@ -663,12 +641,12 @@ function ESGSection() {
                       />
                     </div>
                     <div>
-                      <h3 className="text-heading font-medium text-white">
+                      <h3 className="text-heading font-medium text-[#111827]">
                         {pillar.title}
                       </h3>
                     </div>
                   </div>
-                  <p className="text-small text-white/30 uppercase tracking-wider mb-6">
+                  <p className="text-small text-[#9CA3AF] uppercase tracking-wider mb-6">
                     {pillar.subtitle}
                   </p>
 
@@ -679,11 +657,11 @@ function ESGSection() {
                           <div
                             className={`w-1.5 h-1.5 rounded-full ${colors.dotBg}`}
                           />
-                          <span className="text-body-lg font-medium text-white">
+                          <span className="text-body-lg font-medium text-[#111827]">
                             {commitment.title}
                           </span>
                         </div>
-                        <p className="text-body text-white/45 leading-[1.6] ml-3.5">
+                        <p className="text-body text-[#4B5563] leading-[1.6] ml-3.5">
                           {commitment.description}
                         </p>
                       </div>
@@ -717,12 +695,12 @@ function ComplianceFrameworkSection() {
             <motion.div key={fw.name} {...fadeUp(isInView, 0.15 + i * 0.06)}>
               <GlassCard className="p-6 h-full">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-title font-medium text-white">
+                  <h3 className="text-title font-medium text-[#111827]">
                     {fw.name}
                   </h3>
                   <StatusBadge status={fw.status} />
                 </div>
-                <p className="text-body text-white/45 leading-[1.7]">
+                <p className="text-body text-[#4B5563] leading-[1.7]">
                   {fw.description}
                 </p>
               </GlassCard>
@@ -733,7 +711,7 @@ function ComplianceFrameworkSection() {
         <motion.div {...fadeUp(isInView, 0.5)} className="text-center mt-8">
           <Link
             href="/security"
-            className="inline-flex items-center gap-2 text-body-lg text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-2 text-body-lg text-[#111827] hover:text-[#374151] transition-colors"
           >
             Technical security details
             <ArrowRight size={14} aria-hidden="true" />
@@ -749,13 +727,6 @@ function RiskManagementSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 40% at 80% 70%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Risk Management"
@@ -772,14 +743,14 @@ function RiskManagementSection() {
             >
               <GlassCard className="p-8 h-full group">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors">
+                  <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#E5E7EB] transition-colors">
                     <category.icon
                       size={20}
-                      className="text-white/45"
+                      className="text-[#4B5563]"
                       aria-hidden="true"
                     />
                   </div>
-                  <h3 className="text-heading font-medium text-white">
+                  <h3 className="text-heading font-medium text-[#111827]">
                     {category.title}
                   </h3>
                 </div>
@@ -788,10 +759,10 @@ function RiskManagementSection() {
                     <li key={j} className="flex items-start gap-2.5">
                       <CheckCircle2
                         size={14}
-                        className="text-emerald-500/60 mt-0.5 shrink-0"
+                        className="text-emerald-500 mt-0.5 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-body text-white/45 leading-[1.6]">
+                      <span className="text-body text-[#4B5563] leading-[1.6]">
                         {measure}
                       </span>
                     </li>
@@ -827,14 +798,14 @@ function EthicalPoliciesSection() {
             >
               <GlassCard className="p-8 h-full" hover={false}>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 rounded-lg bg-white/[0.04]">
+                  <div className="p-2.5 rounded-lg bg-[#F1F3F5]">
                     <policy.icon
                       size={20}
-                      className="text-white/45"
+                      className="text-[#4B5563]"
                       aria-hidden="true"
                     />
                   </div>
-                  <h3 className="text-title font-medium text-white">
+                  <h3 className="text-title font-medium text-[#111827]">
                     {policy.title}
                   </h3>
                 </div>
@@ -843,10 +814,10 @@ function EthicalPoliciesSection() {
                     <li key={j} className="flex items-start gap-2.5">
                       <CheckCircle2
                         size={14}
-                        className="text-emerald-500/60 mt-0.5 shrink-0"
+                        className="text-emerald-500 mt-0.5 shrink-0"
                         aria-hidden="true"
                       />
-                      <span className="text-body text-white/45 leading-[1.6]">
+                      <span className="text-body text-[#4B5563] leading-[1.6]">
                         {point}
                       </span>
                     </li>
@@ -866,13 +837,6 @@ function ReportingSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Reporting"
@@ -888,22 +852,22 @@ function ReportingSection() {
               {...fadeUp(isInView, 0.15 + i * 0.08)}
             >
               <GlassCard className="p-8 h-full group flex flex-col">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#E5E7EB] transition-colors w-fit mb-5">
                   <channel.icon
                     size={20}
-                    className="text-white/45"
+                    className="text-[#4B5563]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-heading font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-[#111827] mb-2">
                   {channel.title}
                 </h3>
-                <p className="text-body text-white/45 leading-[1.7] mb-5 flex-1">
+                <p className="text-body text-[#4B5563] leading-[1.7] mb-5 flex-1">
                   {channel.description}
                 </p>
                 <a
                   href={`mailto:${channel.email}`}
-                  className="inline-flex items-center gap-2 text-body text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 text-body text-[#111827] hover:text-[#374151] transition-colors font-medium"
                 >
                   <Mail size={14} aria-hidden="true" />
                   {channel.email}
@@ -935,26 +899,26 @@ function DocumentsSection() {
             className="max-w-[800px] mx-auto overflow-hidden"
             hover={false}
           >
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-[#E5E7EB]">
               {governanceDocuments.map((doc) => (
                 <div
                   key={doc.title}
-                  className="flex items-center justify-between px-6 md:px-8 py-5 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center justify-between px-6 md:px-8 py-5 hover:bg-[#F1F3F5] transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     <BookOpen
                       size={18}
-                      className="text-white/30 shrink-0"
+                      className="text-[#9CA3AF] shrink-0"
                       aria-hidden="true"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-body-lg font-medium text-white">
+                        <span className="text-body-lg font-medium text-[#111827]">
                           {doc.title}
                         </span>
                         <StatusBadge status={doc.status} />
                       </div>
-                      <p className="text-small text-white/25 mt-0.5 truncate">
+                      <p className="text-small text-[#9CA3AF] mt-0.5 truncate">
                         {doc.description}
                       </p>
                     </div>
@@ -962,12 +926,12 @@ function DocumentsSection() {
                   {doc.href && (
                     <Link
                       href={doc.href}
-                      className="ml-4 p-2 rounded-lg hover:bg-white/[0.06] transition-colors shrink-0"
+                      className="ml-4 p-2 rounded-lg hover:bg-[#E5E7EB] transition-colors shrink-0"
                       aria-label={`Open ${doc.title}`}
                     >
                       <ExternalLink
                         size={16}
-                        className="text-white/45"
+                        className="text-[#4B5563]"
                         aria-hidden="true"
                       />
                     </Link>
@@ -987,27 +951,20 @@ function CTASection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)",
-        }}
-      />
       <div className="relative max-w-[1200px] mx-auto px-6 md:px-12">
         <motion.div {...fadeUp(isInView, 0)}>
           <GlassCard className="p-12 md:p-16 text-center" hover={false}>
-            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
+            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-[#111827] mb-4">
               Questions about our governance?
             </h2>
-            <p className="text-title text-white/45 max-w-[560px] mx-auto mb-10 leading-relaxed">
+            <p className="text-title text-[#4B5563] max-w-[560px] mx-auto mb-10 leading-relaxed">
               We are committed to open dialogue — about governance, data
               protection, or how we work.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/contact"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-subtitle font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
               >
                 Get in Touch
                 <ArrowRight
@@ -1018,7 +975,7 @@ function CTASection() {
               </Link>
               <Link
                 href="/security"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/70 text-subtitle font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-[#4B5563] text-subtitle font-medium border border-[#D1D5DB] transition-all duration-300 hover:border-[#9CA3AF] hover:text-[#111827] hover:scale-[1.02]"
               >
                 Security & Compliance
                 <Server size={16} aria-hidden="true" />
@@ -1037,7 +994,7 @@ function CTASection() {
 
 export default function GovernancePage() {
   return (
-    <main className="bg-black min-h-screen">
+    <main className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <HeroSection />
       <FrameworkSection />
       <CodexSection />

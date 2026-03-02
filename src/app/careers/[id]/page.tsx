@@ -131,20 +131,20 @@ export default function PositionPage({
   const Icon = position.icon;
 
   return (
-    <main className="dark-section min-h-screen bg-black text-white">
+    <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F7F8FA]/80 backdrop-blur-xl border-b border-[#E5E7EB]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
               className="transition-opacity duration-300 hover:opacity-70"
             >
-              <Logo size={24} className="text-white" />
+              <Logo size={24} className="text-[#111827]" />
             </Link>
             <Link
               href="/careers"
-              className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-body text-[#4B5563] hover:text-[#111827] transition-colors"
             >
               <ArrowLeft size={16} />
               <span>All Positions</span>
@@ -154,7 +154,7 @@ export default function PositionPage({
       </nav>
 
       {/* Header */}
-      <section className="pt-32 pb-12 px-6 md:px-12 border-b border-white/[0.06]">
+      <section className="pt-32 pb-12 px-6 md:px-12 border-b border-[#E5E7EB]">
         <div className="max-w-[800px] mx-auto">
           <motion.div
             initial={false}
@@ -162,8 +162,8 @@ export default function PositionPage({
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-xl bg-white/[0.05] flex items-center justify-center">
-                <Icon size={28} className="text-white/45" />
+              <div className="w-16 h-16 rounded-xl bg-[#F1F3F5] flex items-center justify-center">
+                <Icon size={28} className="text-[#4B5563]" />
               </div>
               <div>
                 <h1 className="text-display font-light tracking-[-0.02em]">
@@ -172,7 +172,7 @@ export default function PositionPage({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-6 text-body-lg text-white/45">
+            <div className="flex flex-wrap gap-6 text-body-lg text-[#4B5563]">
               <span className="flex items-center gap-2">
                 <MapPin size={16} />
                 {position.location}
@@ -204,7 +204,7 @@ export default function PositionPage({
               <h2 className="text-heading-lg font-medium mb-4">
                 About the Role
               </h2>
-              <p className="text-subtitle text-white/45 leading-relaxed whitespace-pre-line">
+              <p className="text-subtitle text-[#4B5563] leading-relaxed whitespace-pre-line">
                 {position.longDescription.trim()}
               </p>
             </div>
@@ -218,11 +218,11 @@ export default function PositionPage({
                 {position.responsibilities.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-body-lg text-white/45"
+                    className="flex items-start gap-3 text-body-lg text-[#4B5563]"
                   >
                     <Check
                       size={18}
-                      className="flex-shrink-0 mt-0.5 text-emerald-400/60"
+                      className="flex-shrink-0 mt-0.5 text-[#111827]"
                     />
                     <span>{item}</span>
                   </li>
@@ -239,9 +239,9 @@ export default function PositionPage({
                 {position.requirements.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-body-lg text-white/45"
+                    className="flex items-start gap-3 text-body-lg text-[#4B5563]"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/30 flex-shrink-0 mt-2" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] flex-shrink-0 mt-2" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -255,9 +255,9 @@ export default function PositionPage({
                 {position.niceToHave.map((item, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 text-body-lg text-white/45"
+                    className="flex items-start gap-3 text-body-lg text-[#4B5563]"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/20 flex-shrink-0 mt-2" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] flex-shrink-0 mt-2" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -265,7 +265,7 @@ export default function PositionPage({
             </div>
 
             {/* What We Offer */}
-            <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="p-6 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
               <h2 className="text-heading-lg font-medium mb-4">
                 What We Offer
               </h2>
@@ -286,13 +286,13 @@ export default function PositionPage({
                   <div key={index} className="flex items-start gap-3">
                     <Check
                       size={16}
-                      className="flex-shrink-0 mt-0.5 text-emerald-400/60"
+                      className="flex-shrink-0 mt-0.5 text-[#111827]"
                     />
                     <div>
-                      <span className="text-body-lg text-white/70">
+                      <span className="text-body-lg text-[#4B5563]">
                         {benefit.title}
                       </span>
-                      <span className="text-body-lg text-white/45">
+                      <span className="text-body-lg text-[#4B5563]">
                         {" "}
                         – {benefit.desc}
                       </span>
@@ -306,18 +306,18 @@ export default function PositionPage({
       </section>
 
       {/* Application CTA */}
-      <section className="py-16 px-6 md:px-12 border-t border-white/[0.06]">
+      <section className="py-16 px-6 md:px-12 border-t border-[#E5E7EB]">
         <div className="max-w-[600px] mx-auto text-center">
           <h2 className="text-display-sm font-light tracking-[-0.02em] mb-4">
             Interested?
           </h2>
-          <p className="text-subtitle text-white/45 mb-8">
+          <p className="text-subtitle text-[#4B5563] mb-8">
             Apply now and tell us about yourself. We look forward to meeting
             you.
           </p>
           <Link
             href={`/careers/apply?position=${resolvedParams.id}`}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-colors"
           >
             Apply Now
             <ChevronRight size={16} />

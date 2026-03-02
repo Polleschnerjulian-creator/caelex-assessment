@@ -99,26 +99,26 @@ function ApplicationFormContent() {
 
   if (submitStatus === "success") {
     return (
-      <main className="dark-section min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center px-6">
         <motion.div
           initial={false}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-[500px] text-center"
         >
-          <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-emerald-400" />
+          <div className="w-20 h-20 rounded-full bg-[#F1F3F5] flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={40} className="text-[#111827]" />
           </div>
           <h1 className="text-[28px] font-light tracking-[-0.02em] mb-4">
             Application Submitted
           </h1>
-          <p className="text-subtitle text-white/45 mb-8">
+          <p className="text-subtitle text-[#4B5563] mb-8">
             Thank you for your interest in joining Caelex as {positionTitle}.
             We'll review your application and get back to you within 5 business
             days.
           </p>
           <Link
             href="/careers"
-            className="inline-flex items-center gap-2 text-body-lg text-white/45 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-body-lg text-[#4B5563] hover:text-[#111827] transition-colors"
           >
             <ArrowLeft size={16} />
             Back to Careers
@@ -129,20 +129,20 @@ function ApplicationFormContent() {
   }
 
   return (
-    <main className="dark-section min-h-screen bg-black text-white">
+    <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/[0.06]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F7F8FA]/80 backdrop-blur-xl border-b border-[#E5E7EB]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
               className="transition-opacity duration-300 hover:opacity-70"
             >
-              <Logo size={24} className="text-white" />
+              <Logo size={24} className="text-[#111827]" />
             </Link>
             <Link
               href={positionId ? `/careers/${positionId}` : "/careers"}
-              className="flex items-center gap-2 text-body text-white/45 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-body text-[#4B5563] hover:text-[#111827] transition-colors"
             >
               <ArrowLeft size={16} />
               <span>Back</span>
@@ -162,7 +162,7 @@ function ApplicationFormContent() {
             <h1 className="text-display font-light tracking-[-0.02em] mb-2">
               Apply for {positionTitle}
             </h1>
-            <p className="text-subtitle text-white/45 mb-10">
+            <p className="text-subtitle text-[#4B5563] mb-10">
               Tell us about yourself and why you'd be a great fit for this role.
             </p>
 
@@ -186,12 +186,12 @@ function ApplicationFormContent() {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Personal Information */}
               <div>
-                <h2 className="text-title font-medium mb-4 text-white/70">
+                <h2 className="text-title font-medium mb-4 text-[#4B5563]">
                   Personal Information
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       First Name <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -200,12 +200,12 @@ function ApplicationFormContent() {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="John"
                     />
                   </div>
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       Last Name <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -214,7 +214,7 @@ function ApplicationFormContent() {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="Doe"
                     />
                   </div>
@@ -222,7 +222,7 @@ function ApplicationFormContent() {
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       Email <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -231,12 +231,12 @@ function ApplicationFormContent() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="john@example.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       Phone
                     </label>
                     <input
@@ -244,14 +244,14 @@ function ApplicationFormContent() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="+49 123 456 789"
                     />
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-body text-white/45 mb-2">
+                  <label className="block text-body text-[#4B5563] mb-2">
                     LinkedIn Profile
                   </label>
                   <input
@@ -259,13 +259,13 @@ function ApplicationFormContent() {
                     name="linkedin"
                     value={formData.linkedin}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                     placeholder="https://linkedin.com/in/johndoe"
                   />
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-body text-white/45 mb-2">
+                  <label className="block text-body text-[#4B5563] mb-2">
                     Current Location <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -274,7 +274,7 @@ function ApplicationFormContent() {
                     value={formData.location}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                     placeholder="Berlin, Germany"
                   />
                 </div>
@@ -282,21 +282,21 @@ function ApplicationFormContent() {
 
               {/* Resume Upload */}
               <div>
-                <h2 className="text-title font-medium mb-4 text-white/70">
+                <h2 className="text-title font-medium mb-4 text-[#4B5563]">
                   Resume / CV
                 </h2>
                 <div className="relative">
                   {resumeFile ? (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white border border-[#E5E7EB]">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-white/[0.05] flex items-center justify-center">
-                          <Upload size={18} className="text-white/45" />
+                        <div className="w-10 h-10 rounded-lg bg-[#F1F3F5] flex items-center justify-center">
+                          <Upload size={18} className="text-[#4B5563]" />
                         </div>
                         <div>
-                          <p className="text-body-lg text-white/70">
+                          <p className="text-body-lg text-[#4B5563]">
                             {resumeFile.name}
                           </p>
-                          <p className="text-small text-white/45">
+                          <p className="text-small text-[#4B5563]">
                             {(resumeFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
@@ -304,18 +304,18 @@ function ApplicationFormContent() {
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center hover:bg-white/[0.1] transition-colors"
+                        className="w-8 h-8 rounded-full bg-[#F1F3F5] flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"
                       >
-                        <X size={16} className="text-white/45" />
+                        <X size={16} className="text-[#4B5563]" />
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center p-8 rounded-xl bg-white/[0.02] border border-dashed border-white/[0.1] cursor-pointer hover:bg-white/[0.04] hover:border-white/[0.15] transition-colors">
-                      <Upload size={24} className="text-white/45 mb-3" />
-                      <p className="text-body-lg text-white/45 mb-1">
+                    <label className="flex flex-col items-center justify-center p-8 rounded-xl bg-[#F1F3F5] border border-dashed border-[#D1D5DB] cursor-pointer hover:bg-[#E5E7EB] hover:border-[#9CA3AF] transition-colors">
+                      <Upload size={24} className="text-[#4B5563] mb-3" />
+                      <p className="text-body-lg text-[#4B5563] mb-1">
                         Drop your resume here or click to upload
                       </p>
-                      <p className="text-small text-white/30">
+                      <p className="text-small text-[#9CA3AF]">
                         PDF, DOC, or DOCX (max 10MB)
                       </p>
                       <input
@@ -331,11 +331,11 @@ function ApplicationFormContent() {
 
               {/* Experience */}
               <div>
-                <h2 className="text-title font-medium mb-4 text-white/70">
+                <h2 className="text-title font-medium mb-4 text-[#4B5563]">
                   Experience
                 </h2>
                 <div>
-                  <label className="block text-body text-white/45 mb-2">
+                  <label className="block text-body text-[#4B5563] mb-2">
                     Years of Relevant Experience{" "}
                     <span className="text-red-400">*</span>
                   </label>
@@ -344,21 +344,21 @@ function ApplicationFormContent() {
                     value={formData.experience}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg focus:outline-none focus:border-white/20 transition-colors appearance-none"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg focus:outline-none focus:border-[#111827] transition-colors appearance-none"
                   >
-                    <option value="" className="bg-black">
+                    <option value="" className="bg-white">
                       Select...
                     </option>
-                    <option value="3-5" className="bg-black">
+                    <option value="3-5" className="bg-white">
                       3-5 years
                     </option>
-                    <option value="5-7" className="bg-black">
+                    <option value="5-7" className="bg-white">
                       5-7 years
                     </option>
-                    <option value="7-10" className="bg-black">
+                    <option value="7-10" className="bg-white">
                       7-10 years
                     </option>
-                    <option value="10+" className="bg-black">
+                    <option value="10+" className="bg-white">
                       10+ years
                     </option>
                   </select>
@@ -367,11 +367,11 @@ function ApplicationFormContent() {
 
               {/* Motivation */}
               <div>
-                <h2 className="text-title font-medium mb-4 text-white/70">
+                <h2 className="text-title font-medium mb-4 text-[#4B5563]">
                   About You
                 </h2>
                 <div>
-                  <label className="block text-body text-white/45 mb-2">
+                  <label className="block text-body text-[#4B5563] mb-2">
                     Why do you want to join Caelex as a co-founder?{" "}
                     <span className="text-red-400">*</span>
                   </label>
@@ -381,7 +381,7 @@ function ApplicationFormContent() {
                     onChange={handleInputChange}
                     required
                     rows={5}
-                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors resize-none"
                     placeholder="Tell us about your motivation, relevant experience, and what you would bring to the team..."
                   />
                 </div>
@@ -389,12 +389,12 @@ function ApplicationFormContent() {
 
               {/* Availability & Compensation */}
               <div>
-                <h2 className="text-title font-medium mb-4 text-white/70">
+                <h2 className="text-title font-medium mb-4 text-[#4B5563]">
                   Availability & Expectations
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       Earliest Start Date{" "}
                       <span className="text-red-400">*</span>
                     </label>
@@ -404,12 +404,12 @@ function ApplicationFormContent() {
                       value={formData.availability}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="e.g., Immediately, Q2 2026"
                     />
                   </div>
                   <div>
-                    <label className="block text-body text-white/45 mb-2">
+                    <label className="block text-body text-[#4B5563] mb-2">
                       Salary Expectations (optional)
                     </label>
                     <input
@@ -417,7 +417,7 @@ function ApplicationFormContent() {
                       name="salary"
                       value={formData.salary}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                       placeholder="e.g., €80-100k + equity"
                     />
                   </div>
@@ -426,34 +426,34 @@ function ApplicationFormContent() {
 
               {/* Referral */}
               <div>
-                <label className="block text-body text-white/45 mb-2">
+                <label className="block text-body text-[#4B5563] mb-2">
                   How did you hear about this position?
                 </label>
                 <select
                   name="referral"
                   value={formData.referral}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-body-lg focus:outline-none focus:border-white/20 transition-colors appearance-none"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] text-body-lg focus:outline-none focus:border-[#111827] transition-colors appearance-none"
                 >
-                  <option value="" className="bg-black">
+                  <option value="" className="bg-white">
                     Select...
                   </option>
-                  <option value="linkedin" className="bg-black">
+                  <option value="linkedin" className="bg-white">
                     LinkedIn
                   </option>
-                  <option value="website" className="bg-black">
+                  <option value="website" className="bg-white">
                     Caelex Website
                   </option>
-                  <option value="esa-bic" className="bg-black">
+                  <option value="esa-bic" className="bg-white">
                     ESA BIC Network
                   </option>
-                  <option value="referral" className="bg-black">
+                  <option value="referral" className="bg-white">
                     Personal Referral
                   </option>
-                  <option value="conference" className="bg-black">
+                  <option value="conference" className="bg-white">
                     Conference / Event
                   </option>
-                  <option value="other" className="bg-black">
+                  <option value="other" className="bg-white">
                     Other
                   </option>
                 </select>
@@ -464,11 +464,11 @@ function ApplicationFormContent() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white text-black text-subtitle font-medium hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#111827] text-white text-subtitle font-medium hover:bg-[#374151] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       Submitting...
                     </>
                   ) : (
@@ -478,11 +478,11 @@ function ApplicationFormContent() {
                     </>
                   )}
                 </button>
-                <p className="text-small text-white/30 text-center mt-4">
+                <p className="text-small text-[#9CA3AF] text-center mt-4">
                   By submitting this form, you agree to our{" "}
                   <Link
                     href="/legal/privacy"
-                    className="underline hover:text-white/70"
+                    className="underline hover:text-[#4B5563]"
                   >
                     Privacy Policy
                   </Link>
@@ -500,8 +500,8 @@ export default function ApplicationPage() {
   return (
     <Suspense
       fallback={
-        <main className="dark-section min-h-screen bg-black text-white flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-[#9CA3AF]/20 border-t-[#111827] rounded-full animate-spin" />
         </main>
       }
     >

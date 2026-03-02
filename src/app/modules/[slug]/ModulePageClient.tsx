@@ -64,7 +64,7 @@ export default function ModulePageClient({
   const totalModules = 14;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <main className="pt-32 pb-0">
         <div className="max-w-[900px] mx-auto px-6 md:px-12">
           {/* ─────────────────────────────────────────────────────────────
@@ -75,20 +75,20 @@ export default function ModulePageClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             aria-label="Breadcrumb"
-            className="flex items-center gap-2 text-body text-white/45 mb-12"
+            className="flex items-center gap-2 text-body text-[#4B5563] mb-12"
           >
-            <Link href="/" className="hover:text-white/70 transition-colors">
+            <Link href="/" className="hover:text-[#111827] transition-colors">
               Home
             </Link>
-            <ChevronRight size={12} className="text-white/20" />
+            <ChevronRight size={12} className="text-[#9CA3AF]" />
             <Link
               href="/#modules"
-              className="hover:text-white/70 transition-colors"
+              className="hover:text-[#111827] transition-colors"
             >
               Modules
             </Link>
-            <ChevronRight size={12} className="text-white/20" />
-            <span className="text-white/70">{mod.name}</span>
+            <ChevronRight size={12} className="text-[#9CA3AF]" />
+            <span className="text-[#111827]">{mod.name}</span>
           </motion.nav>
 
           {/* ─────────────────────────────────────────────────────────────
@@ -100,10 +100,10 @@ export default function ModulePageClient({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <span className="text-caption uppercase tracking-[0.3em] text-emerald-500/50 block mb-4">
+              <span className="text-caption uppercase tracking-[0.3em] text-[#9CA3AF] block mb-4">
                 Module {mod.id} of {String(totalModules).padStart(2, "0")}
               </span>
-              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-white mb-6">
+              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-light tracking-[-0.03em] leading-[1.1] text-[#111827] mb-6">
                 {mod.name}
               </h1>
             </motion.div>
@@ -112,7 +112,7 @@ export default function ModulePageClient({
               initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-heading md:text-heading-lg text-white/45 font-light leading-[1.5] max-w-[650px] mb-8"
+              className="text-heading md:text-heading-lg text-[#4B5563] font-light leading-[1.5] max-w-[650px] mb-8"
             >
               {mod.headline}
             </motion.p>
@@ -122,7 +122,7 @@ export default function ModulePageClient({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <span className="inline-block text-caption text-white/30 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-full">
+              <span className="inline-block text-caption text-[#9CA3AF] bg-[#F1F3F5] border border-[#E5E7EB] px-3 py-1.5 rounded-full">
                 {mod.articleRange}
               </span>
             </motion.div>
@@ -132,8 +132,8 @@ export default function ModulePageClient({
              3. OVERVIEW
           ───────────────────────────────────────────────────────────── */}
           <RevealSection className="mb-20">
-            <div className="w-16 h-[1px] bg-white/[0.1] mb-8" />
-            <p className="text-subtitle text-white/45 leading-[1.8] max-w-[700px]">
+            <div className="w-16 h-[1px] bg-[#E5E7EB] mb-8" />
+            <p className="text-subtitle text-[#4B5563] leading-[1.8] max-w-[700px]">
               {mod.overview}
             </p>
           </RevealSection>
@@ -144,21 +144,21 @@ export default function ModulePageClient({
           {(mod.seo.regulations.length > 0 ||
             mod.seo.jurisdictions.length > 0) && (
             <RevealSection className="mb-20">
-              <span className="text-micro uppercase tracking-[0.25em] text-white/25 block mb-6">
+              <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF] block mb-6">
                 Regulatory Context
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Regulations */}
                 {mod.seo.regulations.length > 0 && (
                   <div>
-                    <h2 className="text-body-lg font-medium text-white/70 mb-4">
+                    <h2 className="text-body-lg font-medium text-[#4B5563] mb-4">
                       Regulations
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       {mod.seo.regulations.map((reg) => (
                         <span
                           key={reg}
-                          className="px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-small text-white/45"
+                          className="px-3 py-1.5 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] text-small text-[#4B5563]"
                         >
                           {reg}
                         </span>
@@ -169,14 +169,14 @@ export default function ModulePageClient({
                 {/* Jurisdictions */}
                 {mod.seo.jurisdictions.length > 0 && (
                   <div>
-                    <h2 className="text-body-lg font-medium text-white/70 mb-4">
+                    <h2 className="text-body-lg font-medium text-[#4B5563] mb-4">
                       Jurisdictions
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       {mod.seo.jurisdictions.map((j) => (
                         <span
                           key={j}
-                          className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-small text-emerald-400/80"
+                          className="px-3 py-1.5 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] text-small text-[#111827]"
                         >
                           {j}
                         </span>
@@ -192,10 +192,10 @@ export default function ModulePageClient({
              5. KEY CAPABILITIES — 2x2 Glass Cards
           ───────────────────────────────────────────────────────────── */}
           <RevealSection className="mb-20">
-            <span className="text-micro uppercase tracking-[0.25em] text-white/25 block mb-4">
+            <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF] block mb-4">
               Key Capabilities
             </span>
-            <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em] mb-10">
+            <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-[#111827] tracking-[-0.01em] mb-10">
               What this module does
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -203,12 +203,12 @@ export default function ModulePageClient({
                 <RevealSection
                   key={cap.title}
                   delay={0.1 + i * 0.06}
-                  className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-6 hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-500"
+                  className="bg-white border border-[#E5E7EB] rounded-xl p-6 hover:border-[#D1D5DB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-500"
                 >
-                  <h3 className="text-subtitle font-medium text-white mb-3">
+                  <h3 className="text-subtitle font-medium text-[#111827] mb-3">
                     {cap.title}
                   </h3>
-                  <p className="text-body text-white/45 leading-[1.7]">
+                  <p className="text-body text-[#4B5563] leading-[1.7]">
                     {cap.description}
                   </p>
                 </RevealSection>
@@ -221,10 +221,10 @@ export default function ModulePageClient({
           ───────────────────────────────────────────────────────────── */}
           {mod.assessmentIncludes.length > 0 && (
             <RevealSection className="mb-20">
-              <span className="text-micro uppercase tracking-[0.25em] text-white/25 block mb-4">
+              <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF] block mb-4">
                 Assessment
               </span>
-              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em] mb-8">
+              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-[#111827] tracking-[-0.01em] mb-8">
                 What the assessment includes
               </h2>
               <ul className="space-y-4">
@@ -236,9 +236,9 @@ export default function ModulePageClient({
                   >
                     <CheckCircle
                       size={16}
-                      className="text-emerald-500 mt-0.5 flex-shrink-0"
+                      className="text-emerald-600 mt-0.5 flex-shrink-0"
                     />
-                    <span className="text-body-lg text-white/45 leading-[1.6]">
+                    <span className="text-body-lg text-[#4B5563] leading-[1.6]">
                       {item}
                     </span>
                   </RevealSection>
@@ -252,10 +252,10 @@ export default function ModulePageClient({
           ───────────────────────────────────────────────────────────── */}
           {mod.documentsGenerated.length > 0 && (
             <RevealSection className="mb-20">
-              <span className="text-micro uppercase tracking-[0.25em] text-white/25 block mb-4">
+              <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF] block mb-4">
                 Output
               </span>
-              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em] mb-8">
+              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-[#111827] tracking-[-0.01em] mb-8">
                 Auto-generated compliance documents
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -263,13 +263,13 @@ export default function ModulePageClient({
                   <RevealSection
                     key={doc}
                     delay={0.1 + i * 0.06}
-                    className="flex items-start gap-3 bg-white/[0.03] border border-white/[0.08] rounded-xl px-5 py-4"
+                    className="flex items-start gap-3 bg-white border border-[#E5E7EB] rounded-xl px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                   >
                     <FileText
                       size={16}
-                      className="text-white/25 mt-0.5 flex-shrink-0"
+                      className="text-[#9CA3AF] mt-0.5 flex-shrink-0"
                     />
-                    <span className="text-body-lg text-white/45">{doc}</span>
+                    <span className="text-body-lg text-[#4B5563]">{doc}</span>
                   </RevealSection>
                 ))}
               </div>
@@ -282,12 +282,12 @@ export default function ModulePageClient({
           {mod.automations.length > 0 && (
             <RevealSection className="mb-20">
               <div className="flex items-center gap-2.5 mb-4">
-                <Sparkles size={14} className="text-emerald-500/50" />
-                <span className="text-micro uppercase tracking-[0.25em] text-white/25">
+                <Sparkles size={14} className="text-[#9CA3AF]" />
+                <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF]">
                   Automation
                 </span>
               </div>
-              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em] mb-8">
+              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-[#111827] tracking-[-0.01em] mb-8">
                 What we automate for you
               </h2>
               <div className="space-y-4">
@@ -299,9 +299,9 @@ export default function ModulePageClient({
                   >
                     <CheckCircle
                       size={16}
-                      className="text-emerald-500/40 mt-0.5 flex-shrink-0"
+                      className="text-emerald-600 mt-0.5 flex-shrink-0"
                     />
-                    <p className="text-body-lg text-white/45 leading-[1.6]">
+                    <p className="text-body-lg text-[#4B5563] leading-[1.6]">
                       {automation}
                     </p>
                   </RevealSection>
@@ -315,7 +315,7 @@ export default function ModulePageClient({
           ───────────────────────────────────────────────────────────── */}
           {mod.relatedModules.length > 0 && (
             <RevealSection className="mb-20">
-              <span className="text-micro uppercase tracking-[0.25em] text-white/25 block mb-6">
+              <span className="text-micro uppercase tracking-[0.25em] text-[#9CA3AF] block mb-6">
                 Related Modules
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -323,14 +323,14 @@ export default function ModulePageClient({
                   <RevealSection key={slug} delay={0.1 + i * 0.06}>
                     <Link
                       href={`/modules/${slug}`}
-                      className="group block bg-white/[0.03] border border-white/[0.08] rounded-xl px-5 py-4 hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-500"
+                      className="group block bg-white border border-[#E5E7EB] rounded-xl px-5 py-4 hover:border-[#D1D5DB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-500"
                     >
-                      <span className="text-body-lg text-white/70 group-hover:text-emerald-400 transition-colors">
+                      <span className="text-body-lg text-[#4B5563] group-hover:text-[#111827] transition-colors">
                         {formatSlugToName(slug)}
                       </span>
                       <ArrowRight
                         size={14}
-                        className="inline-block ml-2 text-white/25 group-hover:text-emerald-400 transition-all duration-300 group-hover:translate-x-1"
+                        className="inline-block ml-2 text-[#9CA3AF] group-hover:text-[#111827] transition-all duration-300 group-hover:translate-x-1"
                       />
                     </Link>
                   </RevealSection>
@@ -342,18 +342,18 @@ export default function ModulePageClient({
           {/* ─────────────────────────────────────────────────────────────
              10. CTA
           ───────────────────────────────────────────────────────────── */}
-          <RevealSection className="mb-20 text-center py-16 border-t border-white/[0.04]">
-            <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-white tracking-[-0.01em] mb-4">
+          <RevealSection className="mb-20 text-center py-16 border-t border-[#E5E7EB]">
+            <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-light text-[#111827] tracking-[-0.01em] mb-4">
               See if this module applies to you
             </h2>
-            <p className="text-body-lg text-white/45 mb-8 max-w-[450px] mx-auto">
+            <p className="text-body-lg text-[#4B5563] mb-8 max-w-[450px] mx-auto">
               Take the free compliance assessment to find out which modules are
               relevant to your operation.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/assessment"
-                className="group inline-flex items-center gap-3 px-7 py-3.5 bg-white text-black text-body-lg font-medium rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-[1.02]"
+                className="group inline-flex items-center gap-3 px-7 py-3.5 bg-[#111827] text-white text-body-lg font-medium rounded-full hover:bg-[#374151] transition-all duration-300 hover:scale-[1.02]"
               >
                 <span>Start assessment</span>
                 <ArrowRight
@@ -363,7 +363,7 @@ export default function ModulePageClient({
               </Link>
               <Link
                 href="/demo"
-                className="inline-flex items-center gap-3 px-7 py-3.5 border border-white/[0.15] text-white/70 text-body-lg font-medium rounded-full hover:border-white/[0.3] hover:text-white transition-all duration-300"
+                className="inline-flex items-center gap-3 px-7 py-3.5 border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium rounded-full hover:border-[#9CA3AF] hover:text-[#111827] transition-all duration-300"
               >
                 Request a demo
               </Link>
@@ -373,19 +373,19 @@ export default function ModulePageClient({
           {/* ─────────────────────────────────────────────────────────────
              11. PREV / NEXT NAVIGATION
           ───────────────────────────────────────────────────────────── */}
-          <section className="py-12 border-t border-white/[0.04]">
+          <section className="py-12 border-t border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               {prevModule ? (
                 <Link
                   href={`/modules/${prevModule.slug}`}
-                  className="group flex items-center gap-3 text-body text-white/45 hover:text-white/70 transition-colors"
+                  className="group flex items-center gap-3 text-body text-[#4B5563] hover:text-[#111827] transition-colors"
                 >
                   <ArrowLeft
                     size={14}
                     className="transition-transform group-hover:-translate-x-1"
                   />
                   <div>
-                    <span className="text-micro text-white/25 block">
+                    <span className="text-micro text-[#9CA3AF] block">
                       Module {prevModule.id}
                     </span>
                     <span>{prevModule.name}</span>
@@ -398,10 +398,10 @@ export default function ModulePageClient({
               {nextModule ? (
                 <Link
                   href={`/modules/${nextModule.slug}`}
-                  className="group flex items-center gap-3 text-body text-white/45 hover:text-white/70 transition-colors text-right"
+                  className="group flex items-center gap-3 text-body text-[#4B5563] hover:text-[#111827] transition-colors text-right"
                 >
                   <div>
-                    <span className="text-micro text-white/25 block">
+                    <span className="text-micro text-[#9CA3AF] block">
                       Module {nextModule.id}
                     </span>
                     <span>{nextModule.name}</span>

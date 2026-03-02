@@ -273,14 +273,14 @@ function SectionHeader({
       {...fadeUp(isInView, delay)}
       className="text-center mb-16 md:mb-20"
     >
-      <span className="text-caption uppercase tracking-[0.2em] text-white/30 mb-4 block">
+      <span className="text-caption uppercase tracking-[0.2em] text-[#9CA3AF] mb-4 block">
         {eyebrow}
       </span>
-      <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-white mb-4">
+      <h2 className="text-[clamp(1.75rem,4vw,2.5rem)] font-medium tracking-[-0.02em] text-[#111827] mb-4">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-subtitle md:text-title text-white/45 leading-relaxed max-w-[650px] mx-auto">
+        <p className="text-subtitle md:text-title text-[#4B5563] leading-relaxed max-w-[650px] mx-auto">
           {subtitle}
         </p>
       )}
@@ -300,33 +300,25 @@ function HeroSection() {
       ref={ref}
       className="relative pt-40 pb-24 md:pt-48 md:pb-32 overflow-hidden"
     >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(16, 185, 129, 0.10) 0%, transparent 60%)",
-        }}
-      />
-
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 text-center">
         <motion.div {...fadeUp(isInView, 0)}>
-          <span className="inline-block text-small font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-6">
+          <span className="inline-block text-small font-semibold text-[#111827] uppercase tracking-[0.2em] mb-6">
             Security & Compliance
           </span>
         </motion.div>
 
         <motion.h1
           {...fadeUp(isInView, 0.1)}
-          className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-white mb-6"
+          className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium tracking-[-0.03em] leading-[1.1] text-[#111827] mb-6"
         >
           Your compliance data
           <br />
-          <span className="text-white/45">in safe hands</span>
+          <span className="text-[#4B5563]">in safe hands</span>
         </motion.h1>
 
         <motion.p
           {...fadeUp(isInView, 0.2)}
-          className="text-heading md:text-heading-lg text-white/45 max-w-[650px] mx-auto mb-10 leading-relaxed"
+          className="text-heading md:text-heading-lg text-[#4B5563] max-w-[650px] mx-auto mb-10 leading-relaxed"
         >
           Enterprise-grade security for the most sensitive data in space
           regulation. Hosted in the EU, end-to-end encrypted, with no
@@ -341,11 +333,11 @@ function HeroSection() {
           {trustBadges.map((badge) => (
             <div
               key={badge.label}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] text-small text-white/45"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] text-small text-[#4B5563]"
             >
               <badge.icon
                 size={14}
-                className="text-emerald-400"
+                className="text-[#111827]"
                 aria-hidden="true"
               />
               {badge.label}
@@ -360,14 +352,14 @@ function HeroSection() {
         >
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black text-body-lg font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#111827] text-white text-body-lg font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
           >
             Start Free Assessment
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.12] text-white text-body-lg font-medium transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.2]"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium transition-all duration-300 hover:bg-[#F1F3F5] hover:border-[#D1D5DB]"
           >
             Contact Security Team
           </Link>
@@ -382,13 +374,6 @@ function InfrastructureSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Infrastructure"
@@ -401,17 +386,17 @@ function InfrastructureSection() {
           {infrastructureItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
               <GlassCard className="p-8 h-full group">
-                <div className="p-2.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors w-fit mb-5">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#F1F3F5] transition-colors w-fit mb-5">
                   <item.icon
                     size={20}
-                    className="text-emerald-400"
+                    className="text-[#111827]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-heading font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-[#111827] mb-2">
                   {item.title}
                 </h3>
-                <p className="text-body-lg text-white/45 leading-[1.7]">
+                <p className="text-body-lg text-[#4B5563] leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -440,17 +425,17 @@ function ApplicationSecuritySection() {
           {applicationSecurityItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
               <GlassCard className="p-6 h-full group">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#F1F3F5] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-white/45"
+                    className="text-[#4B5563]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-[#111827] mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-body text-white/45 leading-[1.7]">
+                <p className="text-body text-[#4B5563] leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -467,13 +452,6 @@ function GDPRSection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 40% at 80% 70%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)",
-        }}
-      />
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12">
         <SectionHeader
           eyebrow="Data Protection"
@@ -486,17 +464,17 @@ function GDPRSection() {
           {gdprItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
               <GlassCard className="p-6 h-full group">
-                <div className="p-2.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors w-fit mb-4">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#F1F3F5] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-emerald-400"
+                    className="text-[#111827]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-[#111827] mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-body text-white/45 leading-[1.7]">
+                <p className="text-body text-[#4B5563] leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -527,14 +505,14 @@ function AISecuritySection() {
             hover={false}
           >
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2.5 rounded-lg bg-purple-500/10">
+              <div className="p-2.5 rounded-lg bg-purple-50">
                 <Brain
                   size={20}
-                  className="text-purple-400"
+                  className="text-purple-500"
                   aria-hidden="true"
                 />
               </div>
-              <h3 className="text-heading font-medium text-white">
+              <h3 className="text-heading font-medium text-[#111827]">
                 ASTRA — Responsible AI
               </h3>
             </div>
@@ -548,14 +526,14 @@ function AISecuritySection() {
                 >
                   <CheckCircle2
                     size={18}
-                    className="text-emerald-400 mt-0.5 shrink-0"
+                    className="text-emerald-500 mt-0.5 shrink-0"
                     aria-hidden="true"
                   />
                   <div>
-                    <span className="text-body-lg font-medium text-white">
+                    <span className="text-body-lg font-medium text-[#111827]">
                       {item.label}
                     </span>
-                    <p className="text-body text-white/45 mt-0.5 leading-[1.6]">
+                    <p className="text-body text-[#4B5563] mt-0.5 leading-[1.6]">
                       {item.description}
                     </p>
                   </div>
@@ -586,17 +564,17 @@ function AuditSection() {
           {auditItems.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
               <GlassCard className="p-8 h-full group">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-5">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#F1F3F5] transition-colors w-fit mb-5">
                   <item.icon
                     size={20}
-                    className="text-white/45"
+                    className="text-[#4B5563]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-heading font-medium text-white mb-2">
+                <h3 className="text-heading font-medium text-[#111827] mb-2">
                   {item.title}
                 </h3>
-                <p className="text-body-lg text-white/45 leading-[1.7]">
+                <p className="text-body-lg text-[#4B5563] leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -625,17 +603,17 @@ function EnterpriseSection() {
           {enterpriseFeatures.map((item, i) => (
             <motion.div key={item.title} {...fadeUp(isInView, 0.15 + i * 0.08)}>
               <GlassCard className="p-6 h-full group">
-                <div className="p-2.5 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.06] transition-colors w-fit mb-4">
+                <div className="p-2.5 rounded-lg bg-[#F1F3F5] group-hover:bg-[#F1F3F5] transition-colors w-fit mb-4">
                   <item.icon
                     size={18}
-                    className="text-white/45"
+                    className="text-[#4B5563]"
                     aria-hidden="true"
                   />
                 </div>
-                <h3 className="text-subtitle font-medium text-white mb-2 tracking-[-0.01em]">
+                <h3 className="text-subtitle font-medium text-[#111827] mb-2 tracking-[-0.01em]">
                   {item.title}
                 </h3>
-                <p className="text-body text-white/45 leading-[1.7]">
+                <p className="text-body text-[#4B5563] leading-[1.7]">
                   {item.description}
                 </p>
               </GlassCard>
@@ -652,27 +630,20 @@ function CTASection() {
 
   return (
     <section ref={ref} className="relative py-24 md:py-32">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 60%)",
-        }}
-      />
       <div className="relative max-w-[1200px] mx-auto px-6 md:px-12">
         <motion.div {...fadeUp(isInView, 0)}>
           <GlassCard className="p-12 md:p-16 text-center" hover={false}>
-            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-white mb-4">
+            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-light tracking-[-0.02em] leading-[1.2] text-[#111827] mb-4">
               Ready for secure space compliance?
             </h2>
-            <p className="text-title text-white/45 max-w-[520px] mx-auto mb-10 leading-relaxed">
+            <p className="text-title text-[#4B5563] max-w-[520px] mx-auto mb-10 leading-relaxed">
               Start with a free assessment or talk to our team about enterprise
               security.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/assessment"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black text-subtitle font-medium transition-all duration-300 hover:bg-white/90 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-subtitle font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
               >
                 Free Assessment
                 <ArrowRight
@@ -683,7 +654,7 @@ function CTASection() {
               </Link>
               <Link
                 href="/contact"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-white/70 text-subtitle font-medium border border-white/20 transition-all duration-300 hover:border-white/40 hover:text-white hover:scale-[1.02]"
+                className="group inline-flex items-center gap-2 px-8 py-4 rounded-full text-[#4B5563] text-subtitle font-medium border border-[#D1D5DB] transition-all duration-300 hover:border-[#D1D5DB] hover:text-[#111827] hover:scale-[1.02]"
               >
                 Contact Sales
               </Link>
@@ -701,7 +672,7 @@ function CTASection() {
 
 export default function SecurityPage() {
   return (
-    <main className="bg-black min-h-screen">
+    <main className="min-h-screen landing-light bg-[#F7F8FA] text-[#111827]">
       <HeroSection />
       <InfrastructureSection />
       <ApplicationSecuritySection />

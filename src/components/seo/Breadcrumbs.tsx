@@ -40,11 +40,11 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
       {/* Visual Breadcrumbs */}
       <nav
         aria-label="Breadcrumb"
-        className={`flex items-center gap-1.5 text-body text-white/45 ${className}`}
+        className={`flex items-center gap-1.5 text-body text-[#9CA3AF] ${className}`}
       >
         <Link
           href="/"
-          className="flex items-center gap-1 hover:text-white/70 transition-colors"
+          className="flex items-center gap-1 hover:text-[#4B5563] transition-colors"
         >
           <Home size={14} />
           <span className="sr-only">Home</span>
@@ -55,15 +55,15 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
 
           return (
             <span key={item.href} className="flex items-center gap-1.5">
-              <ChevronRight size={14} className="text-white/20" />
+              <ChevronRight size={14} className="text-[#D1D5DB]" />
               {isLast ? (
-                <span className="text-white/45" aria-current="page">
+                <span className="text-[#4B5563]" aria-current="page">
                   {item.label}
                 </span>
               ) : (
                 <Link
                   href={item.href}
-                  className="hover:text-white/70 transition-colors"
+                  className="hover:text-[#4B5563] transition-colors"
                 >
                   {item.label}
                 </Link>

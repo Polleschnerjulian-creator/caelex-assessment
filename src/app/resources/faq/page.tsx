@@ -55,34 +55,34 @@ const categoryColors: Record<
   { bg: string; text: string; border: string }
 > = {
   "eu-space-act": {
-    bg: "bg-blue-500/10",
-    text: "text-blue-400",
-    border: "border-blue-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
   nis2: {
-    bg: "bg-red-500/10",
-    text: "text-red-400",
-    border: "border-red-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
   licensing: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
-    border: "border-emerald-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
   compliance: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    border: "border-amber-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
   platform: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
-    border: "border-purple-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
   technical: {
-    bg: "bg-cyan-500/10",
-    text: "text-cyan-400",
-    border: "border-cyan-500/20",
+    bg: "bg-[#F1F3F5]",
+    text: "text-[#111827]",
+    border: "border-[#E5E7EB]",
   },
 };
 
@@ -91,7 +91,7 @@ export default function FAQPage() {
   const categories = getAllCategories();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       <FAQPageJsonLd faqs={allFaqs} />
 
       <main className="pt-32 pb-20">
@@ -105,25 +105,27 @@ export default function FAQPage() {
           />
 
           <div className="max-w-3xl mb-12">
-            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-white mb-6">
+            <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
               Frequently Asked Questions
             </h1>
-            <p className="text-title text-white/45 leading-relaxed">
+            <p className="text-title text-[#4B5563] leading-relaxed">
               Get answers to common questions about EU Space Act, NIS2
               Directive, space licensing, and regulatory compliance.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-              <span className="text-body-lg text-white/45">
-                <span className="text-white font-medium">{allFaqs.length}</span>{" "}
+            <div className="px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <span className="text-body-lg text-[#4B5563]">
+                <span className="text-[#111827] font-medium">
+                  {allFaqs.length}
+                </span>{" "}
                 Questions
               </span>
             </div>
-            <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-              <span className="text-body-lg text-white/45">
-                <span className="text-white font-medium">
+            <div className="px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <span className="text-body-lg text-[#4B5563]">
+                <span className="text-[#111827] font-medium">
                   {categories.length}
                 </span>{" "}
                 Categories
@@ -159,7 +161,7 @@ export default function FAQPage() {
                     >
                       <HelpCircle size={20} className={colors.text} />
                     </div>
-                    <h2 className="text-display-sm font-medium text-white">
+                    <h2 className="text-display-sm font-medium text-[#111827]">
                       {getCategoryLabel(category)}
                     </h2>
                   </div>
@@ -167,19 +169,19 @@ export default function FAQPage() {
                     {categoryFaqs.map((faq) => (
                       <details
                         key={faq.id}
-                        className="group rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.12] transition-colors"
+                        className="group rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-colors"
                       >
                         <summary className="flex items-center justify-between p-6 cursor-pointer list-none">
-                          <h3 className="text-title font-medium text-white pr-8 group-hover:text-emerald-400 transition-colors">
+                          <h3 className="text-title font-medium text-[#111827] pr-8 group-hover:text-[#111827] transition-colors">
                             {faq.question}
                           </h3>
                           <ChevronDown
                             size={20}
-                            className="text-white/45 flex-shrink-0 transition-transform group-open:rotate-180"
+                            className="text-[#4B5563] flex-shrink-0 transition-transform group-open:rotate-180"
                           />
                         </summary>
                         <div className="px-6 pb-6 pt-0">
-                          <p className="text-subtitle text-white/45 leading-relaxed">
+                          <p className="text-subtitle text-[#4B5563] leading-relaxed">
                             {faq.answer}
                           </p>
                         </div>
@@ -191,25 +193,25 @@ export default function FAQPage() {
             })}
           </div>
 
-          <section className="mt-20 p-8 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 text-center">
-            <HelpCircle size={32} className="text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-display-sm font-medium text-white mb-4">
+          <section className="mt-20 p-8 rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)] text-center">
+            <HelpCircle size={32} className="text-[#111827] mx-auto mb-4" />
+            <h2 className="text-display-sm font-medium text-[#111827] mb-4">
               Still have questions?
             </h2>
-            <p className="text-subtitle text-white/45 mb-8 max-w-xl mx-auto">
+            <p className="text-subtitle text-[#4B5563] mb-8 max-w-xl mx-auto">
               Our AI assistant ASTRA can answer complex regulatory questions
               instantly.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/astra"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black text-body-lg font-medium hover:bg-white/90 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
               >
                 Ask ASTRA AI <ArrowRight size={16} />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-body-lg font-medium hover:border-white/40 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium hover:border-[#111827] hover:text-[#111827] transition-all"
               >
                 Contact Team
               </Link>

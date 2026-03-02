@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="dark-section min-h-screen bg-black text-white">
+    <main className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
       {/* Content */}
       <div className="pt-32 pb-20 px-6 md:px-12">
         <div className="max-w-[800px] mx-auto">
@@ -31,7 +31,7 @@ export default function TermsPage() {
           <div className="flex justify-end mb-6">
             <Link
               href="/legal/terms-en"
-              className="text-small text-white/45 hover:text-white/70 transition-colors border border-white/10 rounded-full px-3 py-1"
+              className="text-small text-[#4B5563] hover:text-[#4B5563] transition-colors border border-[#E5E7EB] rounded-full px-3 py-1"
             >
               English Version
             </Link>
@@ -40,17 +40,17 @@ export default function TermsPage() {
           <h1 className="text-display font-light tracking-[-0.02em] mb-4">
             Allgemeine Geschäftsbedingungen
           </h1>
-          <p className="text-body text-white/45 mb-8">
+          <p className="text-body text-[#4B5563] mb-8">
             Stand: Februar 2026 · Caelex, Berlin, Deutschland
           </p>
 
-          <div className="prose prose-invert prose-sm max-w-none space-y-8">
+          <div className="prose prose-sm max-w-none space-y-8">
             {/* § 1 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 1 Geltungsbereich
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend "AGB")
                 gelten für alle Verträge zwischen Caelex, vertreten durch Julian
                 Polleschner, Am Maselakepark 37, 13587 Berlin (nachfolgend
@@ -60,12 +60,12 @@ export default function TermsPage() {
                 Compliance Assessments, des Compliance-Dashboards und
                 zukünftiger kostenpflichtiger Module.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Abweichende Bedingungen des Kunden werden nicht anerkannt,
                 es sei denn, der Anbieter stimmt ihrer Geltung ausdrücklich
                 schriftlich zu.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Diese AGB gelten sowohl für Verbraucher als auch für
                 Unternehmer, es sei denn, in der jeweiligen Klausel wird eine
                 Differenzierung vorgenommen.
@@ -74,19 +74,19 @@ export default function TermsPage() {
 
             {/* § 2 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 2 Vertragsgegenstand
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Gegenstand des Vertrages ist die Bereitstellung der
                 Caelex-Plattform zur Unterstützung bei der Compliance mit dem EU
                 Space Act (COM(2025) 335), der NIS2-Richtlinie (EU 2022/2555)
                 und nationalen Weltraumgesetzen.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Die Plattform bietet folgende Leistungen:
               </p>
-              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-[#4B5563] mt-2 space-y-1">
                 <li>
                   Compliance-Assessments zur Feststellung der Anwendbarkeit
                   regulatorischer Anforderungen
@@ -96,7 +96,7 @@ export default function TermsPage() {
                 <li>ASTRA KI-Assistent für regulatorische Fragen</li>
                 <li>Informationsressourcen zum EU Space Act und NIS2</li>
               </ul>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Die Plattform stellt keine Rechtsberatung dar. Für
                 verbindliche rechtliche Einschätzungen ist qualifizierter
                 Rechtsrat einzuholen.
@@ -105,10 +105,10 @@ export default function TermsPage() {
 
             {/* § 3 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 3 Geistiges Eigentum
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Alle Inhalte der Plattform, einschließlich, aber nicht
                 beschränkt auf Quellcode, regulatorische Mappings,
                 Compliance-Algorithmen, Assessment-Logik, Datenstrukturen,
@@ -117,13 +117,13 @@ export default function TermsPage() {
                 seiner Lizenzgeber und durch Urheberrecht, Geschäftsgeheimnis
                 und andere geistige Eigentumsrechte geschützt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Die regulatorischen Mapping-Daten, Compliance-Checklisten,
                 Entscheidungsbäume und Assessment-Algorithmen der Plattform
                 stellen erhebliche Forschungs- und Entwicklungsinvestitionen dar
                 und sind proprietäre Geschäftsgeheimnisse des Anbieters.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Der Kunde erhält ein beschränktes, nicht ausschließliches,
                 nicht übertragbares, widerrufliches Recht zur Nutzung der
                 Plattform für ihren bestimmungsgemäßen Zweck während der
@@ -131,7 +131,7 @@ export default function TermsPage() {
                 Unterlizenzierung, Verbreitung oder Erstellung abgeleiteter
                 Werke.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Die Inhalte der Plattform dürfen ohne vorherige schriftliche
                 Zustimmung des Anbieters nicht vervielfältigt, verbreitet,
                 modifiziert, öffentlich zugänglich gemacht oder anderweitig
@@ -141,16 +141,16 @@ export default function TermsPage() {
 
             {/* § 4 - Prohibited Activities */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 4 Verbotene Aktivitäten
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 Die folgenden Aktivitäten sind strikt untersagt und stellen eine
                 wesentliche Vertragsverletzung dar:
               </p>
-              <ul className="list-disc list-inside text-body-lg text-white/45 mt-3 space-y-3">
+              <ul className="list-disc list-inside text-body-lg text-[#4B5563] mt-3 space-y-3">
                 <li>
-                  <strong className="text-white/70">
+                  <strong className="text-[#4B5563]">
                     Reverse Engineering:
                   </strong>{" "}
                   Dekompilierung, Disassemblierung oder jeglicher Versuch, den
@@ -158,7 +158,7 @@ export default function TermsPage() {
                   Geschäftslogik der Plattform abzuleiten.
                 </li>
                 <li>
-                  <strong className="text-white/70">
+                  <strong className="text-[#4B5563]">
                     Automatisierte Datenextraktion:
                   </strong>{" "}
                   Scraping, Crawling, Spidering oder jegliches automatisierte
@@ -166,7 +166,7 @@ export default function TermsPage() {
                   Mappings oder Inhalten von der Plattform.
                 </li>
                 <li>
-                  <strong className="text-white/70">
+                  <strong className="text-[#4B5563]">
                     Wettbewerbliche Nutzung:
                   </strong>{" "}
                   Nutzung von Daten, Inhalten, Algorithmen oder Know-how, das
@@ -175,7 +175,7 @@ export default function TermsPage() {
                   verbessern, zu trainieren oder zu entwickeln.
                 </li>
                 <li>
-                  <strong className="text-white/70">
+                  <strong className="text-[#4B5563]">
                     Unberechtigter Zugriff:
                   </strong>{" "}
                   Versuche, auf Systeme oder Netzwerke im Zusammenhang mit der
@@ -184,13 +184,13 @@ export default function TermsPage() {
                   Authentifizierungsmaßnahmen zu umgehen.
                 </li>
                 <li>
-                  <strong className="text-white/70">API-Missbrauch:</strong>{" "}
+                  <strong className="text-[#4B5563]">API-Missbrauch:</strong>{" "}
                   Übermäßige oder automatisierte API-Anfragen, Umgehung von
                   Rate-Limits oder Nutzung der API in einer Weise, die nicht
                   ausdrücklich von Caelex autorisiert ist.
                 </li>
                 <li>
-                  <strong className="text-white/70">
+                  <strong className="text-[#4B5563]">
                     Inhaltsveröffentlichung:
                   </strong>{" "}
                   Neuveröffentlichung, Weiterverteilung oder Bereitstellung
@@ -198,7 +198,7 @@ export default function TermsPage() {
                   Compliance-Assessments oder Plattforminhalte an Dritte.
                 </li>
               </ul>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-4">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-4">
                 Der Anbieter behält sich das Recht vor, den Zugang sofort zu
                 beenden und alle verfügbaren Rechtsmittel, einschließlich
                 einstweiliger Verfügungen und Schadensersatz, gegen jede Person
@@ -209,23 +209,23 @@ export default function TermsPage() {
 
             {/* § 5 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 5 Kostenloses Assessment-Tool
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Das EU Space Act Compliance Assessment-Tool wird kostenlos
                 für die individuelle Nutzung bereitgestellt. Es soll
                 Weltraumbetreibern ein erstes Verständnis dafür vermitteln, wie
                 der EU Space Act auf ihre Tätigkeiten anwendbar sein könnte.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Die Assessment-Ergebnisse werden auf Basis des
                 Verordnungsvorschlags (COM(2025) 335) generiert und können sich
                 im Laufe des Gesetzgebungsprozesses ändern. Die Ergebnisse
                 stellen keine definitive Feststellung regulatorischer
                 Verpflichtungen dar.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Generierte Compliance-Berichte sind nur für die persönliche
                 Nutzung des anfragenden Nutzers bestimmt. Berichte enthalten
                 eindeutige Kennungen und Wasserzeichen. Die Weiterverbreitung
@@ -235,23 +235,23 @@ export default function TermsPage() {
 
             {/* § 6 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 6 Kostenpflichtige Dienste
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Die aktuellen Preise ergeben sich aus der Preisliste auf der
                 Website oder dem individuellen Angebot.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Alle Preise verstehen sich zuzüglich der gesetzlichen
                 Mehrwertsteuer.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Die Zahlung erfolgt per SEPA-Lastschrift, Kreditkarte oder
                 auf Rechnung über unseren Zahlungsdienstleister Stripe, je nach
                 gewähltem Tarif und Vereinbarung.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Bei Zahlungsverzug ist der Anbieter berechtigt, den Zugang
                 zur Plattform zu sperren.
               </p>
@@ -259,14 +259,14 @@ export default function TermsPage() {
 
             {/* § 6a */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 6a Widerrufsrecht und Ausnahmen
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Verbrauchern steht grundsätzlich ein Widerrufsrecht von 14
                 Tagen gemäß §§ 312g, 355 BGB zu.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Das Widerrufsrecht erlischt gemäß § 356 Abs. 5 BGB bei
                 Verträgen über die Lieferung digitaler Inhalte, die nicht auf
                 einem körperlichen Datenträger geliefert werden, wenn der
@@ -277,19 +277,19 @@ export default function TermsPage() {
                 dass er durch seine Zustimmung mit Beginn der Ausführung sein
                 Widerrufsrecht verliert.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Kostenpflichtige Abonnements und API-Zugänge werden
                 unmittelbar nach Zahlungseingang freigeschaltet. Mit der
                 Registrierung für einen kostenpflichtigen Dienst stimmt der
                 Verbraucher ausdrücklich dem sofortigen Beginn der Leistung zu
                 und bestätigt seine Kenntnis vom Verlust des Widerrufsrechts.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Das kostenlose Assessment-Tool kann jederzeit ohne Angabe
                 von Gründen eingestellt werden. Es besteht kein Anspruch auf
                 fortlaufende Bereitstellung kostenloser Dienste.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (5) Unberührt bleibt das Recht zur ordentlichen Kündigung gemäß
                 § 12 dieser AGB.
               </p>
@@ -297,23 +297,23 @@ export default function TermsPage() {
 
             {/* § 7 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 7 Verfügbarkeit und SLA
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Der Anbieter bemüht sich um eine Verfügbarkeit der Plattform
                 von 99,5% im Jahresmittel. Hiervon ausgenommen sind Zeiten, in
                 denen die Plattform aufgrund von technischen oder sonstigen
                 Problemen, die nicht im Einflussbereich des Anbieters liegen,
                 nicht erreichbar ist (höhere Gewalt, Wartung).
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Der Anbieter ist berechtigt, die Plattform für
                 Wartungsarbeiten vorübergehend außer Betrieb zu setzen. Geplante
                 Wartungsarbeiten werden mindestens 48 Stunden im Voraus per
                 E-Mail oder In-App-Benachrichtigung angekündigt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Bei Unterschreitung der garantierten Verfügbarkeit in
                 Enterprise-Tarifen werden Gutschriften gemäß dem individuellen
                 Service Level Agreement gewährt.
@@ -322,16 +322,16 @@ export default function TermsPage() {
 
             {/* § 8 - Force Majeure */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 8 Höhere Gewalt
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Keine Partei haftet für Verzögerungen oder Nichterfüllung
                 ihrer Verpflichtungen, wenn diese auf Umstände zurückzuführen
                 sind, die außerhalb ihrer zumutbaren Kontrolle liegen,
                 einschließlich, aber nicht beschränkt auf:
               </p>
-              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-[#4B5563] mt-2 space-y-1">
                 <li>Naturkatastrophen, Epidemien oder Pandemien</li>
                 <li>Krieg, Terrorismus, Aufstände oder Unruhen</li>
                 <li>
@@ -349,12 +349,12 @@ export default function TermsPage() {
                   erfolgen
                 </li>
               </ul>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Die betroffene Partei muss die andere Partei unverzüglich
                 über das Eintreten und die voraussichtliche Dauer des
                 Ereignisses höherer Gewalt informieren.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Dauert ein Ereignis höherer Gewalt länger als 90 Tage, kann
                 jede Partei den Vertrag mit einer Frist von 30 Tagen kündigen.
               </p>
@@ -362,38 +362,38 @@ export default function TermsPage() {
 
             {/* § 9 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 9 Haftung
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Der Anbieter haftet unbeschränkt für Vorsatz und grobe
                 Fahrlässigkeit sowie für Schäden aus der Verletzung des Lebens,
                 des Körpers oder der Gesundheit.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Bei leichter Fahrlässigkeit haftet der Anbieter nur bei
                 Verletzung wesentlicher Vertragspflichten (Kardinalpflichten)
                 und nur begrenzt auf den vorhersehbaren, vertragstypischen
                 Schaden, maximal jedoch auf die vom Kunden in den letzten 12
                 Monaten gezahlten Entgelte.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Die Haftung für mittelbare Schäden, insbesondere entgangenen
                 Gewinn, Datenverlust oder Betriebsunterbrechung, ist
                 ausgeschlossen, soweit gesetzlich zulässig.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Die vorstehenden Haftungsbeschränkungen gelten nicht für
                 Ansprüche nach dem Produkthaftungsgesetz oder bei arglistigem
                 Verschweigen von Mängeln.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (5) Die Plattform ersetzt keine professionelle Rechtsberatung.
                 Der Anbieter übernimmt keine Haftung für Entscheidungen, die auf
                 Basis der bereitgestellten Informationen oder KI-generierten
                 Inhalte getroffen werden.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (6) Die KI-Funktionen der Plattform (insbesondere ASTRA und die
                 automatische Dokumentengenerierung) verwenden Large Language
                 Models. Die KI-generierten Ausgaben können unvollständig,
@@ -407,16 +407,16 @@ export default function TermsPage() {
 
             {/* § 10 - Indemnification */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 10 Freistellung
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Der Kunde stellt den Anbieter von allen Ansprüchen Dritter
                 frei, die aus einer rechtswidrigen Nutzung der Plattform durch
                 den Kunden resultieren, einschließlich, aber nicht beschränkt
                 auf:
               </p>
-              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-[#4B5563] mt-2 space-y-1">
                 <li>Verletzung dieser AGB oder der Nutzungsrichtlinien</li>
                 <li>Verletzung von Rechten Dritter</li>
                 <li>
@@ -426,12 +426,12 @@ export default function TermsPage() {
                   Verstoß gegen anwendbare Gesetze oder behördliche Vorschriften
                 </li>
               </ul>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Die Freistellungspflicht umfasst auch die angemessenen
                 Kosten der Rechtsverteidigung, einschließlich Anwalts- und
                 Gerichtskosten.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Der Anbieter wird den Kunden unverzüglich über geltend
                 gemachte Ansprüche informieren und ihm die Möglichkeit zur
                 Verteidigung einräumen.
@@ -440,21 +440,21 @@ export default function TermsPage() {
 
             {/* § 11 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 11 Datenschutz
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Die Erhebung und Verarbeitung personenbezogener Daten
                 erfolgt gemäß unserer{" "}
                 <Link
                   href="/legal/privacy"
-                  className="text-emerald-400 hover:text-emerald-300"
+                  className="text-[#111827] hover:text-[#111827]"
                 >
                   Datenschutzerklärung
                 </Link>
                 .
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Soweit der Kunde uns personenbezogene Daten zur Verarbeitung
                 überlässt, schließen wir auf Anfrage einen
                 Auftragsverarbeitungsvertrag gemäß Art. 28 DSGVO ab.
@@ -463,30 +463,30 @@ export default function TermsPage() {
 
             {/* § 12 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 12 Vertragslaufzeit und Kündigung
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Kostenlose Accounts können jederzeit ohne Angabe von Gründen
                 gekündigt werden.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Kostenpflichtige Tarife haben eine Mindestlaufzeit gemäß dem
                 gewählten Abrechnungszeitraum (monatlich oder jährlich) und
                 verlängern sich automatisch um den gleichen Zeitraum, wenn nicht
                 mindestens 30 Tage vor Ablauf der Laufzeit gekündigt wird.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Die Kündigung bedarf der Textform (E-Mail an cs@caelex.eu
                 ist ausreichend) oder kann über die Kontoeinstellungen erfolgen.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Das Recht zur außerordentlichen Kündigung aus wichtigem
                 Grund bleibt unberührt. Ein wichtiger Grund liegt insbesondere
                 vor bei wesentlicher Vertragsverletzung, wiederholtem Verstoß
                 gegen diese AGB oder Insolvenz einer Partei.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (5) Mit Beendigung des Vertrages erlöschen alle eingeräumten
                 Rechte. Der Kunde muss alle Kopien von Plattforminhalten in
                 seinem Besitz vernichten oder löschen.
@@ -495,14 +495,14 @@ export default function TermsPage() {
 
             {/* § 13 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 13 API-Nutzung
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Die Nutzung der Caelex API unterliegt zusätzlich zu diesen
                 AGB den folgenden Bedingungen:
               </p>
-              <ul className="list-disc list-inside text-body-lg text-white/45 mt-2 space-y-1">
+              <ul className="list-disc list-inside text-body-lg text-[#4B5563] mt-2 space-y-1">
                 <li>
                   API-Schlüssel sind vertraulich zu behandeln und dürfen nicht
                   an Dritte weitergegeben werden
@@ -514,7 +514,7 @@ export default function TermsPage() {
                 </li>
                 <li>Anwendungen müssen ordnungsgemäß authentifiziert sein</li>
               </ul>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Der Anbieter behält sich vor, API-Zugang bei Missbrauch oder
                 Verstoß gegen diese Bedingungen sofort zu sperren.
               </p>
@@ -522,20 +522,20 @@ export default function TermsPage() {
 
             {/* § 14 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 14 Beta-Funktionen
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Von Zeit zu Zeit können wir Beta- oder Vorschau-Funktionen
                 anbieten, die als "Beta", "Vorschau", "Experimentell" oder
                 ähnlich gekennzeichnet sind.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Beta-Funktionen werden "wie besehen" ohne jegliche Garantie
                 bereitgestellt und können jederzeit ohne Vorankündigung geändert
                 oder eingestellt werden.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Die Nutzung von Beta-Funktionen erfolgt auf eigenes Risiko.
                 Der Anbieter übernimmt keine Haftung für Schäden aus der Nutzung
                 von Beta-Funktionen.
@@ -544,23 +544,23 @@ export default function TermsPage() {
 
             {/* § 15 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 15 Änderungen der AGB
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Der Anbieter behält sich vor, diese AGB jederzeit zu ändern.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Änderungen werden dem Kunden mindestens 30 Tage vor
                 Inkrafttreten per E-Mail mitgeteilt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Widerspricht der Kunde nicht innerhalb von 30 Tagen nach
                 Zugang der Änderungsmitteilung, gelten die geänderten AGB als
                 akzeptiert. Der Kunde wird in der Änderungsmitteilung auf diese
                 Rechtsfolge hingewiesen.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Im Falle eines Widerspruchs ist jede Partei berechtigt, den
                 Vertrag zum Zeitpunkt des geplanten Inkrafttretens der Änderung
                 zu kündigen.
@@ -569,17 +569,17 @@ export default function TermsPage() {
 
             {/* § 16 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 16 Verbraucherschutz (B2C)
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Die nachfolgenden Bestimmungen gelten ausschließlich für
                 Kunden, die Verbraucher im Sinne des § 13 BGB sind (natürliche
                 Person, die den Vertrag zu Zwecken abschließt, die überwiegend
                 weder ihrer gewerblichen noch ihrer selbständigen beruflichen
                 Tätigkeit zugerechnet werden können).
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Soweit Bestimmungen dieser AGB gemäß §§ 305-310 BGB
                 gegenüber Verbrauchern unwirksam sind, bleiben die übrigen
                 Bestimmungen unberührt. Insbesondere gelten die gesetzlichen
@@ -587,19 +587,19 @@ export default function TermsPage() {
                 Widerrufsrecht (§§ 312g, 355 ff. BGB, siehe § 6a) und
                 Haftungsbeschränkungen uneingeschränkt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Der Gerichtsstand gemäß § 17(2) dieser AGB gilt nicht für
                 Verbraucher. Für Verbraucher gelten die gesetzlichen
                 Zuständigkeitsregelungen.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Die Haftungsbeschränkungen in § 9 gelten gegenüber
                 Verbrauchern nur insoweit, als sie nicht gegen zwingendes
                 Verbraucherrecht verstoßen. Ansprüche aus der Produkthaftung
                 (ProdHaftG) und bei Verletzung von Leben, Körper und Gesundheit
                 bleiben in jedem Fall unberührt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (5) Für Unternehmer im Sinne des § 14 BGB gelten die allgemeinen
                 Bestimmungen dieser AGB ohne die Einschränkungen dieses
                 Paragraphen.
@@ -608,27 +608,27 @@ export default function TermsPage() {
 
             {/* § 17 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 17 Schlussbestimmungen
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 (1) Es gilt das Recht der Bundesrepublik Deutschland unter
                 Ausschluss des UN-Kaufrechts (CISG).
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (2) Ist der Kunde Kaufmann, juristische Person des öffentlichen
                 Rechts oder öffentlich-rechtliches Sondervermögen, ist
                 ausschließlicher Gerichtsstand für alle Streitigkeiten aus
                 diesem Vertrag Berlin, Deutschland.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (3) Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder
                 werden, bleibt die Wirksamkeit der übrigen Bestimmungen
                 unberührt. Anstelle der unwirksamen Bestimmung gilt eine
                 Regelung, die dem wirtschaftlichen Zweck der unwirksamen
                 Bestimmung am nächsten kommt.
               </p>
-              <p className="text-body-lg text-white/45 leading-relaxed mt-3">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mt-3">
                 (4) Es bestehen keine mündlichen Nebenabreden. Änderungen und
                 Ergänzungen dieses Vertrages bedürfen der Textform.
               </p>
@@ -636,10 +636,10 @@ export default function TermsPage() {
 
             {/* § 17 */}
             <section>
-              <h2 className="text-heading font-medium text-white mb-4">
+              <h2 className="text-heading font-medium text-[#111827] mb-4">
                 § 18 Kontakt
               </h2>
-              <p className="text-body-lg text-white/45 leading-relaxed">
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
                 Caelex
                 <br />
                 Julian Polleschner
@@ -652,7 +652,7 @@ export default function TermsPage() {
                 Allgemeine Anfragen:{" "}
                 <a
                   href="mailto:cs@caelex.eu"
-                  className="text-emerald-400 hover:text-emerald-300"
+                  className="text-[#111827] hover:text-[#111827]"
                 >
                   cs@caelex.eu
                 </a>
@@ -660,7 +660,7 @@ export default function TermsPage() {
                 Rechtliche Anfragen:{" "}
                 <a
                   href="mailto:legal@caelex.eu"
-                  className="text-emerald-400 hover:text-emerald-300"
+                  className="text-[#111827] hover:text-[#111827]"
                 >
                   legal@caelex.eu
                 </a>
@@ -668,7 +668,7 @@ export default function TermsPage() {
                 Sicherheitsmeldungen:{" "}
                 <a
                   href="mailto:security@caelex.eu"
-                  className="text-emerald-400 hover:text-emerald-300"
+                  className="text-[#111827] hover:text-[#111827]"
                 >
                   security@caelex.eu
                 </a>
@@ -676,26 +676,26 @@ export default function TermsPage() {
             </section>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-white/[0.06]">
-            <p className="text-small text-white/30">
+          <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
+            <p className="text-small text-[#9CA3AF]">
               Stand: Februar 2026 · Version 2.0
             </p>
             <div className="flex gap-4 mt-4">
               <Link
                 href="/legal/terms-en"
-                className="text-small text-emerald-400 hover:text-emerald-300"
+                className="text-small text-[#111827] hover:text-[#111827]"
               >
                 English Version →
               </Link>
               <Link
                 href="/legal/privacy"
-                className="text-small text-white/45 hover:text-white/70"
+                className="text-small text-[#4B5563] hover:text-[#4B5563]"
               >
                 Datenschutzerklärung
               </Link>
               <Link
                 href="/legal/cookies"
-                className="text-small text-white/45 hover:text-white/70"
+                className="text-small text-[#4B5563] hover:text-[#4B5563]"
               >
                 Cookie-Richtlinie
               </Link>
