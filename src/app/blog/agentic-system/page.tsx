@@ -1,49 +1,26 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, Fragment } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Shield,
-  Activity,
-  Database,
-  FileCheck,
-  Radio,
-  Satellite,
-  Lock,
-  Eye,
-  Zap,
-  GitBranch,
-  BarChart3,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Server,
-  Cpu,
-  Network,
-} from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 // ============================================================================
-// ANIMATION VARIANTS
+// ANIMATION
 // ============================================================================
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
-const stagger = {
-  visible: { transition: { staggerChildren: 0.1 } },
-};
+const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
-function AnimatedSection({
+function Section({
   children,
   className = "",
 }: {
@@ -51,12 +28,12 @@ function AnimatedSection({
   className?: string;
 }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
     <motion.div
       ref={ref}
       initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      animate={inView ? "visible" : "hidden"}
       variants={stagger}
       className={className}
     >
@@ -69,861 +46,955 @@ function AnimatedSection({
 // DATA
 // ============================================================================
 
-const CAPABILITIES = [
+const PROBLEMS = [
   {
-    icon: Activity,
-    title: "Continuous Monitoring",
-    description:
-      "Real-time telemetry ingestion from satellite buses, ground stations, and mission control systems. No polling, no batching — continuous.",
-    metric: "< 200ms",
-    metricLabel: "ingestion latency",
+    number: "01",
+    title: "Manual",
+    body: "A human copies numbers from Mission Control into a spreadsheet, emails it to a compliance officer, who manually enters it into whatever tool they use. This happens quarterly if they're diligent. Annually if they're not.",
   },
   {
-    icon: Shield,
-    title: "Regulatory Mapping",
-    description:
-      "Every data point is automatically mapped to the relevant articles of the EU Space Act, NIS2 Directive, and national space laws across 10 jurisdictions.",
-    metric: "119",
-    metricLabel: "articles covered",
+    number: "02",
+    title: "Unverifiable",
+    body: 'A regulator asks "What was your orbital altitude on March 15?" — the operator provides a number. Was it real? Was it current? Did anyone modify it? There is no chain of custody, no cryptographic proof, no independent verification.',
   },
   {
-    icon: FileCheck,
-    title: "Evidence Generation",
-    description:
-      "Transforms raw operational data into structured, audit-ready compliance evidence with full traceability — from sensor to article.",
-    metric: "100%",
-    metricLabel: "audit trail",
-  },
-  {
-    icon: Lock,
-    title: "Zero-Trust Architecture",
-    description:
-      "The agent runs inside your perimeter. Data is encrypted at rest and in transit. Compliance evidence is cryptographically signed before transmission.",
-    metric: "AES-256",
-    metricLabel: "encryption",
-  },
-  {
-    icon: Database,
-    title: "Intelligent Classification",
-    description:
-      "Automatically classifies your entity type, determines applicable regime (standard vs. light), and identifies which of the 9 compliance modules apply.",
-    metric: "7",
-    metricLabel: "operator types",
-  },
-  {
-    icon: Zap,
-    title: "Autonomous Remediation",
-    description:
-      "When compliance gaps are detected, the agent generates remediation plans with prioritized actions, timelines, and documentation templates.",
-    metric: "< 60s",
-    metricLabel: "gap-to-plan",
+    number: "03",
+    title: "A Snapshot",
+    body: "Annual audits capture one moment in time. What happened the other 364 days? An operator could be non-compliant for months — a decaying orbit, a failed thruster, an unreported cyber incident — and nobody would know until the next audit cycle.",
   },
 ];
 
-const PIPELINE_STEPS = [
+const COLLECTORS = [
   {
-    step: "01",
-    title: "Deploy",
-    subtitle: "Agent Installation",
-    description:
-      "A lightweight agent is deployed into your infrastructure — on-premise, private cloud, or air-gapped environments. Single binary, no dependencies.",
-    icon: Server,
-    detail: "Docker, Kubernetes, or bare metal",
+    id: "orbit",
+    number: "/01",
+    name: "Orbit & Debris",
+    sources: "Mission Control System, Flight Dynamics, Conjunction Assessment",
+    protocols: "CCSDS MO · REST API · PostgreSQL · TDM",
+    frequency: "Every 15 minutes",
+    dataPoints: [
+      { point: "Orbital altitude", ref: "Art. 68", freq: "15 min" },
+      { point: "Remaining fuel mass", ref: "Art. 70", freq: "1 hour" },
+      { point: "Thruster status", ref: "Art. 66", freq: "15 min" },
+      { point: "CA events (Pc > 1e-4)", ref: "Art. 102", freq: "Real-time" },
+      { point: "Estimated orbital lifetime", ref: "Art. 68", freq: "Daily" },
+      { point: "Deorbit capability", ref: "Art. 72", freq: "Daily" },
+    ],
+    compression: {
+      raw: "800 MB/day",
+      extracted: "4 KB/day",
+      ratio: "1 : 200,000",
+    },
   },
   {
-    step: "02",
-    title: "Ingest",
-    subtitle: "Data Collection",
-    description:
-      "The agent connects to your operational systems — CCSDS telemetry streams, SNMP endpoints, log aggregators, access control systems, and configuration management databases.",
-    icon: Network,
-    detail: "50+ protocol adapters",
+    id: "cyber",
+    number: "/02",
+    name: "Cybersecurity",
+    sources:
+      "SIEM (Splunk, Sentinel, QRadar), EDR, Vulnerability Scanner, Patch Management",
+    protocols: "REST API · Syslog · STIX/TAXII · SNMP",
+    frequency: "Real-time for incidents, hourly for posture",
+    dataPoints: [
+      {
+        point: "Security incidents (30d)",
+        ref: "NIS2 Art. 21",
+        freq: "Real-time",
+      },
+      { point: "MTTD / MTTR", ref: "NIS2 Art. 23", freq: "Daily" },
+      {
+        point: "Critical vulns (unpatched)",
+        ref: "NIS2 Art. 21(2)(e)",
+        freq: "Hourly",
+      },
+      { point: "MFA adoption rate", ref: "NIS2 Art. 21(2)(j)", freq: "Daily" },
+      {
+        point: "Backup verification",
+        ref: "NIS2 Art. 21(2)(c)",
+        freq: "Daily",
+      },
+      { point: "Encryption status", ref: "NIS2 Art. 21(2)(h)", freq: "Daily" },
+    ],
+    compression: {
+      raw: "1.2 TB/day",
+      extracted: "6 KB/day",
+      ratio: "1 : 200,000,000",
+    },
   },
   {
-    step: "03",
-    title: "Analyze",
-    subtitle: "Compliance Engine",
-    description:
-      "Collected data is processed through our regulatory intelligence engine. Each data point is validated against applicable articles, cross-referenced across jurisdictions, and scored for compliance.",
-    icon: Cpu,
-    detail: "3 compliance engines, 10 jurisdictions",
+    id: "ground",
+    number: "/03",
+    name: "Ground Station",
+    sources:
+      "Ground Station Management (ATOS, Kongsberg), Antenna Control, Network Management",
+    protocols: "REST API · SNMP · Syslog · DB Read",
+    frequency: "Per-pass and daily aggregates",
+    dataPoints: [
+      { point: "Contact success rate", ref: "Art. 64", freq: "Per pass" },
+      { point: "Ground station availability", ref: "Art. 64", freq: "Daily" },
+      { point: "Command uplink success", ref: "Art. 66", freq: "Daily" },
+      { point: "Time since last contact", ref: "Art. 64", freq: "Real-time" },
+      { point: "Signal margin (dB)", ref: "ITU RR", freq: "Per pass" },
+      { point: "Frequency coordination", ref: "Art. 70", freq: "Monthly" },
+    ],
+    compression: {
+      raw: "50 GB/day",
+      extracted: "1.5 KB/day",
+      ratio: "1 : 33,000,000",
+    },
   },
   {
-    step: "04",
-    title: "Report",
-    subtitle: "Evidence Delivery",
-    description:
-      "Structured compliance evidence is cryptographically signed and transmitted to the Caelex platform. Dashboards update in real time. Audit-ready reports generate automatically.",
-    icon: BarChart3,
-    detail: "Real-time dashboards + PDF export",
+    id: "documents",
+    number: "/04",
+    name: "Document Watch",
+    sources: "Network Drives, SharePoint, Confluence, Certificate Stores",
+    protocols: "inotify · SharePoint API · REST API",
+    frequency: "Real-time (file system events)",
+    dataPoints: [
+      { point: "Certificate expiry dates", ref: "Art. 7", freq: "Event" },
+      { point: "Insurance policy renewal", ref: "Art. 8", freq: "Event" },
+      { point: "Export license status", ref: "ITAR/EAR", freq: "Event" },
+      {
+        point: "Training certifications",
+        ref: "NIS2 Art. 21(2)(g)",
+        freq: "Event",
+      },
+      { point: "Audit report metadata", ref: "Art. 29", freq: "Event" },
+      { point: "Policy document hashes", ref: "NIS2 Art. 21", freq: "Event" },
+    ],
+    compression: {
+      raw: "Variable",
+      extracted: "0.5 KB/event",
+      ratio: "Docs never leave",
+    },
   },
 ];
 
-const USE_CASES = [
+const TRUST_LEVELS = [
   {
-    icon: Radio,
-    title: "Ground Station Operators",
-    regulation: "NIS2 · EU Space Act Art. 14",
-    description:
-      "Ground stations are classified as critical infrastructure under NIS2. The Caelex agent monitors uptime, access logs, RF interference patterns, and physical security systems — generating continuous evidence of compliance with Art. 21 security measures.",
-    tags: [
-      "NIS2 Art. 21",
-      "Critical Infrastructure",
-      "Access Control",
-      "Incident Response",
-    ],
+    level: 6,
+    score: "0.98",
+    label: "Agent + Cross-Verification",
+    desc: "Sentinel says 548km, Space-Track confirms 548km",
   },
   {
-    icon: Satellite,
-    title: "Satellite Constellation Operators",
-    regulation: "EU Space Act Art. 5-9 · Art. 10-13",
-    description:
-      "For operators managing satellite fleets, the agent ingests TLE data, propulsion telemetry, and collision avoidance maneuvers to validate debris mitigation compliance, end-of-life disposal planning, and passivation readiness across every asset.",
-    tags: [
-      "Authorization",
-      "Debris Mitigation",
-      "Disposal Planning",
-      "Fleet Management",
-    ],
+    level: 5,
+    score: "0.92",
+    label: "Agent-Collected",
+    desc: "Extracted from Mission Control — no human intervention",
   },
   {
-    icon: Eye,
-    title: "SSA & Tracking Providers",
-    regulation: "EU Space Act Art. 18-20",
-    description:
-      "Positional data providers must meet accuracy and availability standards. The agent validates data quality metrics, tracks service uptime, and documents integration with the EUSST network — ensuring continuous compliance with data provider obligations.",
-    tags: [
-      "Data Quality",
-      "EUSST Integration",
-      "Service Availability",
-      "PDP Obligations",
-    ],
+    level: 4,
+    score: "0.90",
+    label: "Platform-Generated",
+    desc: "Caelex generated from assessment data — reproducible",
+  },
+  {
+    level: 3,
+    score: "0.88",
+    label: "Public API Only",
+    desc: "Space-Track TLE data — independent but limited",
+  },
+  {
+    level: 2,
+    score: "0.75",
+    label: "Operator Push",
+    desc: "CI/CD pipeline — automated but source unverified",
+  },
+  {
+    level: 1,
+    score: "0.65",
+    label: "Manual Upload",
+    desc: "Compliance officer uploaded PDF — content unverified",
+  },
+  {
+    level: 0,
+    score: "0.50",
+    label: "Self-Assessment",
+    desc: "Operator clicked 'Yes' in checklist — just a claim",
   },
 ];
+
+const EVIDENCE_PACKET = `{
+  "packet_id": "sp_2026031514320744_58421_orbit",
+  "sentinel_id": "snt_a7f3d09e-4b21-4c89-9e67",
+  "data": {
+    "altitude_km": 548.317,
+    "remaining_fuel_pct": 57.66,
+    "thruster_status": "NOMINAL",
+    "estimated_lifetime_yr": 4.2
+  },
+  "regulation_mapping": [
+    { "ref": "art_68", "status": "COMPLIANT" },
+    { "ref": "art_70", "status": "COMPLIANT" },
+    { "ref": "art_72", "status": "COMPLIANT" }
+  ],
+  "integrity": {
+    "content_hash": "sha256:a7f3d09e...",
+    "previous_hash": "sha256:059669e4...",
+    "chain_position": 147832,
+    "signature": "ed25519:MGUCMQCxN8T7..."
+  }
+}`;
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 
-export default function AgenticSystemPage() {
+export default function SentinelPage() {
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.96]);
-  const heroY = useTransform(scrollYProgress, [0, 0.6], [0, 60]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
-    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
-      {/* ================================================================ */}
-      {/* HERO — Dark cinematic section */}
-      {/* ================================================================ */}
+    <div className="min-h-screen bg-white text-[#111]">
+      {/* ============================================================== */}
+      {/* HERO */}
+      {/* ============================================================== */}
       <section
         ref={heroRef}
-        className="relative min-h-[85vh] flex items-end overflow-hidden bg-[#0A0F1E]"
+        className="relative min-h-screen flex flex-col justify-end bg-[#0A0A0A] overflow-hidden"
       >
-        {/* Background image */}
         <motion.div
-          className="absolute inset-0"
-          style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+          className="absolute inset-0 opacity-[0.03]"
+          style={{ y: heroY }}
         >
-          <Image
-            src="/images/blog/agentic-system.png"
-            alt="Caelex Agentic System visualization"
-            fill
-            className="object-cover opacity-40"
-            priority
-            sizes="100vw"
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.15) 59px, rgba(255,255,255,0.15) 60px),
+                              repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.15) 59px, rgba(255,255,255,0.15) 60px)`,
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1E] via-[#0A0F1E]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0F1E]/80 to-transparent" />
         </motion.div>
 
-        {/* Content */}
-        <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 pb-20 pt-40 w-full">
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 pb-16 md:pb-24 pt-32 w-full">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
           >
-            {/* Back link */}
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors text-body mb-10"
+              className="inline-flex items-center gap-2 text-white/25 hover:text-white/50 transition-colors text-body mb-16"
             >
               <ArrowLeft size={14} />
               Back
             </Link>
 
-            {/* Label */}
-            <div className="flex items-center gap-3 mb-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-caption font-medium uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Product
-              </span>
+            <div className="mb-8">
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-[13px] font-mono uppercase tracking-[0.3em] text-white/30 mb-6"
+              >
+                Caelex Sentinel
+              </motion.p>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="text-[clamp(2.5rem,7vw,6rem)] font-medium leading-[1.0] tracking-[-0.04em] text-white"
+              >
+                Autonomous compliance
+                <br />
+                evidence collection.
+              </motion.h1>
             </div>
 
-            {/* Headline */}
-            <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.05] tracking-[-0.03em] text-white max-w-4xl mb-6">
-              Autonomous Compliance.{" "}
-              <span className="text-white/40">Zero Manual Effort.</span>
-            </h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="text-[clamp(0.95rem,1.8vw,1.15rem)] text-white/40 leading-relaxed max-w-3xl mb-16"
+            >
+              A lightweight, cryptographically-sealed compliance data extraction
+              layer that transforms raw operational telemetry into verified,
+              regulation-mapped evidence — without ever exposing sensitive data
+              to the outside world.
+            </motion.p>
 
-            <p className="text-[clamp(1rem,2vw,1.25rem)] text-white/50 leading-relaxed max-w-2xl mb-10">
-              The Caelex Agentic System deploys an autonomous agent into your
-              infrastructure that continuously monitors operational data,
-              validates it against regulatory requirements, and sends
-              evidence-based compliance reports — fully automated.
-            </p>
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="flex flex-wrap gap-12 md:gap-20"
+            >
+              {[
+                { value: "2 TB", label: "raw data per day" },
+                { value: "12 KB", label: "evidence transmitted" },
+                { value: "147,832", label: "sealed packets" },
+                { value: "0", label: "inbound ports" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div className="text-[clamp(1.5rem,3vw,2.25rem)] font-medium text-white tracking-tight font-mono">
+                    {s.value}
+                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-white/20 mt-1">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4">
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-white/[0.06]" />
+      </section>
+
+      {/* ============================================================== */}
+      {/* THE PROBLEM */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-white">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section>
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#999] mb-4"
+            >
+              The Problem
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-[#111] mb-6 max-w-4xl"
+            >
+              Compliance in space is manual, unverifiable,{" "}
+              <span className="text-[#C0C0C0]">
+                and a snapshot of one day per year.
+              </span>
+            </motion.h2>
+          </Section>
+
+          <div className="grid md:grid-cols-3 gap-px mt-16 bg-[#E5E5E5] rounded-2xl overflow-hidden">
+            {PROBLEMS.map((p) => (
+              <Section key={p.number}>
+                <motion.div
+                  variants={fadeUp}
+                  className="bg-white p-8 md:p-10 h-full"
+                >
+                  <span className="text-[11px] font-mono text-[#CCC] tracking-wider">
+                    {p.number}
+                  </span>
+                  <h3 className="text-[clamp(1.25rem,2vw,1.5rem)] font-medium text-[#111] mt-3 mb-4 tracking-[-0.02em]">
+                    {p.title}
+                  </h3>
+                  <p className="text-[14px] text-[#666] leading-relaxed">
+                    {p.body}
+                  </p>
+                </motion.div>
+              </Section>
+            ))}
+          </div>
+
+          <Section className="mt-16">
+            <motion.p
+              variants={fadeUp}
+              className="text-[clamp(1.1rem,2vw,1.35rem)] font-medium text-[#111] tracking-[-0.01em]"
+            >
+              Sentinel eliminates all three problems simultaneously.
+            </motion.p>
+          </Section>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* THE COMPRESSION — Hero stat */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-[#FAFAFA] border-y border-[#E5E5E5]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section className="text-center">
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#999] mb-8"
+            >
+              Compliance Extraction
+            </motion.p>
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8"
+            >
+              <span className="text-[clamp(3rem,8vw,7rem)] font-medium tracking-[-0.04em] text-[#111] font-mono">
+                2 TB
+              </span>
+              <span className="text-[clamp(1.5rem,3vw,2.5rem)] text-[#CCC]">
+                →
+              </span>
+              <span className="text-[clamp(3rem,8vw,7rem)] font-medium tracking-[-0.04em] text-[#111] font-mono">
+                12 KB
+              </span>
+            </motion.div>
+            <motion.p
+              variants={fadeUp}
+              className="text-[14px] text-[#999] mt-6 max-w-xl mx-auto leading-relaxed"
+            >
+              99.9999994% of operational data stays inside your network. Only
+              structured, signed compliance evidence is transmitted.
+            </motion.p>
+          </Section>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* ARCHITECTURE — Simplified visual */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-[#0A0A0A]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section>
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-white/25 mb-4"
+            >
+              Architecture
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-white mb-16 max-w-3xl"
+            >
+              Your data never leaves your perimeter{" "}
+              <span className="text-white/25">
+                until it&apos;s compliance evidence.
+              </span>
+            </motion.h2>
+          </Section>
+
+          <Section>
+            <motion.div
+              variants={fadeUp}
+              className="rounded-xl border border-white/[0.08] overflow-hidden font-mono text-[12px]"
+            >
+              {/* Terminal chrome */}
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
+                <div className="flex gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-white/[0.08]" />
+                  <div className="w-2 h-2 rounded-full bg-white/[0.08]" />
+                  <div className="w-2 h-2 rounded-full bg-white/[0.08]" />
+                </div>
+                <span className="text-white/15 ml-2 text-[11px]">
+                  sentinel-topology.txt
+                </span>
+              </div>
+
+              <div className="p-6 md:p-10 space-y-8">
+                {/* Row 1: Sources */}
+                <div>
+                  <div className="text-white/20 text-[10px] uppercase tracking-[0.2em] mb-3">
+                    Source Systems
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {[
+                      "Mission Control",
+                      "SIEM / SOC",
+                      "Ground Station",
+                      "Document Store",
+                    ].map((s) => (
+                      <div
+                        key={s}
+                        className="px-3 py-2 rounded border border-white/[0.06] bg-white/[0.02] text-white/40 text-center"
+                      >
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex justify-center text-white/10">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-px h-6 bg-white/10" />
+                    <span className="text-[10px] text-white/15">READ-ONLY</span>
+                    <div className="w-px h-6 bg-white/10" />
+                  </div>
+                </div>
+
+                {/* Row 2: Sentinel */}
+                <div className="border border-white/[0.12] rounded-lg p-6">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
+                    <span className="text-white/60 text-[11px] uppercase tracking-[0.15em]">
+                      Caelex Sentinel
+                    </span>
+                  </div>
+                  <div className="grid md:grid-cols-4 gap-3">
+                    {[
+                      { step: "Collect", desc: "4 collector modules" },
+                      { step: "Extract", desc: "Regulatory rule engine" },
+                      { step: "Seal", desc: "SHA-256 + Ed25519" },
+                      { step: "Transmit", desc: "mTLS 1.3 → HTTPS" },
+                    ].map((s, i) => (
+                      <div key={s.step} className="flex items-center gap-3">
+                        <div className="px-3 py-2 rounded bg-white/[0.04] border border-white/[0.08] flex-1">
+                          <div className="text-white/50">{s.step}</div>
+                          <div className="text-white/20 text-[10px] mt-0.5">
+                            {s.desc}
+                          </div>
+                        </div>
+                        {i < 3 && (
+                          <span className="text-white/10 hidden md:block">
+                            →
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex justify-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-px h-6 bg-white/10" />
+                    <span className="text-[10px] text-white/15 px-3 py-1 rounded border border-white/[0.06]">
+                      outbound only · HTTPS 443 · no inbound · no SSH · no
+                      tunnels
+                    </span>
+                    <div className="w-px h-6 bg-white/10" />
+                  </div>
+                </div>
+
+                {/* Row 3: Caelex Platform */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  {[
+                    {
+                      name: "Ingest API",
+                      desc: "Verify signature, validate hash chain, store",
+                    },
+                    {
+                      name: "Cross-Verification",
+                      desc: "Space-Track · ESA DISCOS · LeoLabs · CelesTrak",
+                    },
+                    {
+                      name: "Evidence Engine",
+                      desc: "119 articles · 51 NIS2 req · 10 jurisdictions",
+                    },
+                  ].map((p) => (
+                    <div
+                      key={p.name}
+                      className="px-3 py-2 rounded border border-white/[0.06] bg-white/[0.02]"
+                    >
+                      <div className="text-white/50">{p.name}</div>
+                      <div className="text-white/20 text-[10px] mt-0.5">
+                        {p.desc}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </Section>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* COLLECTORS */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-white">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section>
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#999] mb-4"
+            >
+              Collector Modules
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-[#111] mb-4 max-w-3xl"
+            >
+              Four specialized collectors.{" "}
+              <span className="text-[#C0C0C0]">
+                Each reads everything. Transmits almost nothing.
+              </span>
+            </motion.h2>
+          </Section>
+
+          <div className="mt-16 space-y-0">
+            {COLLECTORS.map((col) => (
+              <Section key={col.id}>
+                <motion.div
+                  variants={fadeUp}
+                  className="border-t border-[#E5E5E5] py-10 md:py-14"
+                >
+                  <div className="grid lg:grid-cols-[240px_1fr] gap-8 lg:gap-16">
+                    {/* Left: Name */}
+                    <div>
+                      <span className="text-[11px] font-mono text-[#CCC] tracking-wider">
+                        {col.number}
+                      </span>
+                      <h3 className="text-[clamp(1.25rem,2vw,1.5rem)] font-medium text-[#111] mt-2 tracking-[-0.02em]">
+                        {col.name}
+                      </h3>
+                      <p className="text-[12px] text-[#999] mt-2 leading-relaxed">
+                        {col.sources}
+                      </p>
+                      <p className="text-[11px] font-mono text-[#CCC] mt-3">
+                        {col.protocols}
+                      </p>
+                    </div>
+
+                    {/* Right: Data + Compression */}
+                    <div>
+                      {/* Data points table */}
+                      <div className="border border-[#E5E5E5] rounded-lg overflow-hidden">
+                        <div className="grid grid-cols-[1fr_120px_100px] gap-px bg-[#E5E5E5]">
+                          <div className="bg-[#FAFAFA] px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-[#999]">
+                            Data Point
+                          </div>
+                          <div className="bg-[#FAFAFA] px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-[#999]">
+                            Regulation
+                          </div>
+                          <div className="bg-[#FAFAFA] px-4 py-2 text-[10px] font-mono uppercase tracking-[0.15em] text-[#999]">
+                            Frequency
+                          </div>
+                          {col.dataPoints.map((dp) => (
+                            <Fragment key={dp.point}>
+                              <div className="bg-white px-4 py-2.5 text-[13px] text-[#333]">
+                                {dp.point}
+                              </div>
+                              <div className="bg-white px-4 py-2.5 text-[12px] font-mono text-[#999]">
+                                {dp.ref}
+                              </div>
+                              <div className="bg-white px-4 py-2.5 text-[12px] font-mono text-[#999]">
+                                {dp.freq}
+                              </div>
+                            </Fragment>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Compression */}
+                      <div className="flex items-center gap-6 mt-5 text-[12px] font-mono">
+                        <span className="text-[#999]">
+                          {col.compression.raw}
+                        </span>
+                        <span className="text-[#DDD]">→</span>
+                        <span className="text-[#111] font-medium">
+                          {col.compression.extracted}
+                        </span>
+                        <span className="text-[#CCC] ml-auto">
+                          {col.compression.ratio}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Section>
+            ))}
+            <div className="border-t border-[#E5E5E5]" />
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* EVIDENCE PACKET */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-[#FAFAFA] border-y border-[#E5E5E5]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            <Section>
+              <motion.p
+                variants={fadeUp}
+                className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#999] mb-4"
+              >
+                Cryptographic Integrity
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.03em] text-[#111] mb-6"
+              >
+                Every packet is sealed.{" "}
+                <span className="text-[#C0C0C0]">
+                  Tampering is mathematically impossible.
+                </span>
+              </motion.h2>
+              <motion.div
+                variants={fadeUp}
+                className="space-y-5 text-[14px] text-[#666] leading-relaxed"
+              >
+                <p>
+                  Every evidence packet contains a SHA-256 content hash, an
+                  Ed25519 signature from the agent&apos;s private key, and a
+                  reference to the previous packet&apos;s hash — creating an
+                  unbroken, tamper-evident chain.
+                </p>
+                <p>
+                  Modify any packet — the chain breaks. Delete any packet — the
+                  gap is detected. Insert a fake — the signature fails. The
+                  regulator can verify the entire history is authentic,
+                  unmodified, and complete.
+                </p>
+              </motion.div>
+
+              {/* Hash chain visual */}
+              <motion.div
+                variants={fadeUp}
+                className="mt-10 flex items-center gap-2 overflow-hidden"
+              >
+                {[147830, 147831, 147832, 147833].map((n, i) => (
+                  <div key={n} className="flex items-center gap-2">
+                    <div className="px-3 py-2 rounded border border-[#E5E5E5] bg-white text-[11px] font-mono">
+                      <div className="text-[#999]">#{n}</div>
+                      <div className="text-[#111] mt-0.5">
+                        hash: {["a1b2", "c3d4", "e5f6", "g7h8"][i]}
+                      </div>
+                    </div>
+                    {i < 3 && (
+                      <span className="text-[#DDD] text-[10px] font-mono flex-shrink-0">
+                        ←
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </motion.div>
+            </Section>
+
+            {/* Code block */}
+            <Section>
+              <motion.div
+                variants={fadeUp}
+                className="rounded-xl border border-[#E5E5E5] overflow-hidden"
+              >
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-[#F5F5F5] border-b border-[#E5E5E5]">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#DDD]" />
+                    <div className="w-2 h-2 rounded-full bg-[#DDD]" />
+                    <div className="w-2 h-2 rounded-full bg-[#DDD]" />
+                  </div>
+                  <span className="text-[#BBB] ml-2 text-[11px] font-mono">
+                    evidence_packet.json
+                  </span>
+                </div>
+                <pre className="p-5 text-[12px] font-mono leading-relaxed text-[#555] bg-white overflow-x-auto">
+                  <code>{EVIDENCE_PACKET}</code>
+                </pre>
+              </motion.div>
+            </Section>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* TRUST HIERARCHY */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-white">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section>
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#999] mb-4"
+            >
+              Trust Score
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-[#111] mb-4 max-w-3xl"
+            >
+              Not all evidence is equal.
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="text-[14px] text-[#666] leading-relaxed max-w-2xl mb-16"
+            >
+              A Verified Score of 61% built from Level 5–6 evidence is vastly
+              more meaningful than a Declared Score of 82% built from Level 0
+              self-assessment. Sentinel creates Level 5 and 6 evidence — the
+              highest achievable trust.
+            </motion.p>
+          </Section>
+
+          <div className="space-y-0">
+            {TRUST_LEVELS.map((t) => (
+              <Section key={t.level}>
+                <motion.div
+                  variants={fadeUp}
+                  className={`grid grid-cols-[50px_80px_200px_1fr] md:grid-cols-[60px_80px_240px_1fr] gap-4 md:gap-8 items-baseline py-4 border-t border-[#E5E5E5] ${
+                    t.level >= 5
+                      ? "bg-[#FAFAFA] -mx-4 px-4 md:-mx-6 md:px-6 rounded"
+                      : ""
+                  }`}
+                >
+                  <span className="text-[24px] font-mono font-medium text-[#111] tracking-tight">
+                    {t.level}
+                  </span>
+                  <span className="text-[14px] font-mono text-[#999]">
+                    {t.score}
+                  </span>
+                  <span className="text-[14px] font-medium text-[#111]">
+                    {t.label}
+                  </span>
+                  <span className="text-[13px] text-[#999] hidden md:block">
+                    {t.desc}
+                  </span>
+                </motion.div>
+              </Section>
+            ))}
+            <div className="border-t border-[#E5E5E5]" />
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* DEPLOYMENT */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-[#0A0A0A]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section>
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-white/25 mb-4"
+            >
+              Deployment
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-white mb-16 max-w-2xl"
+            >
+              One command.{" "}
+              <span className="text-white/25">512 MB. Zero inbound ports.</span>
+            </motion.h2>
+          </Section>
+
+          <Section>
+            <motion.div
+              variants={fadeUp}
+              className="rounded-xl border border-white/[0.08] overflow-hidden font-mono text-[13px]"
+            >
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
+                <span className="text-white/15 text-[11px]">terminal</span>
+              </div>
+              <div className="p-6 text-white/50 leading-loose">
+                <span className="text-white/20">$</span>{" "}
+                <span className="text-white/70">docker run</span>{" "}
+                <span className="text-white/30">-d \</span>
+                <br />
+                <span className="text-white/30">{"  "}--name</span>{" "}
+                <span className="text-white/50">caelex-sentinel</span>{" "}
+                <span className="text-white/30">\</span>
+                <br />
+                <span className="text-white/30">{"  "}--restart</span>{" "}
+                <span className="text-white/50">unless-stopped</span>{" "}
+                <span className="text-white/30">\</span>
+                <br />
+                <span className="text-white/30">{"  "}--memory</span>{" "}
+                <span className="text-white/50">512m</span>{" "}
+                <span className="text-white/30">--cpus 0.5 \</span>
+                <br />
+                <span className="text-white/30">{"  "}-e</span>{" "}
+                <span className="text-white/50">
+                  SENTINEL_TOKEN=snt_xxxxxxxxxxxx
+                </span>{" "}
+                <span className="text-white/30">\</span>
+                <br />
+                <span className="text-white/30">{"  "}-e</span>{" "}
+                <span className="text-white/50">
+                  COLLECTORS=orbit,cyber,ground,documents
+                </span>{" "}
+                <span className="text-white/30">\</span>
+                <br />
+                <span className="text-white/30">{"  "}</span>
+                <span className="text-white/50">
+                  registry.caelex.eu/sentinel:1.4.2
+                </span>
+              </div>
+            </motion.div>
+          </Section>
+
+          {/* Requirements */}
+          <Section className="mt-12">
+            <motion.div
+              variants={fadeUp}
+              className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-xl overflow-hidden bg-white/[0.06]"
+            >
+              {[
+                { label: "CPU", value: "0.5 cores" },
+                { label: "RAM", value: "512 MB" },
+                { label: "Disk", value: "1 GB + 10 GB buffer" },
+                { label: "Network", value: "Outbound 443 only" },
+              ].map((r) => (
+                <div key={r.label} className="bg-[#0A0A0A] px-5 py-4">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/20">
+                    {r.label}
+                  </div>
+                  <div className="text-[14px] text-white/60 mt-1 font-mono">
+                    {r.value}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </Section>
+
+          {/* Security principles */}
+          <Section className="mt-16 grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Read-only access",
+                desc: "Never writes to source systems. Never modifies operational data. Read-only database connections and API calls only.",
+              },
+              {
+                title: "No inbound ports",
+                desc: "Zero attack surface from the internet. No SSH, no reverse shells, no tunnels. Outbound HTTPS only, certificate-pinned.",
+              },
+              {
+                title: "Rootless container",
+                desc: "Runs as unprivileged user. Immutable filesystem. Container isolation prevents lateral movement. Build from source if you want.",
+              },
+            ].map((s) => (
+              <motion.div key={s.title} variants={fadeUp}>
+                <h3 className="text-[15px] font-medium text-white/70 mb-2">
+                  {s.title}
+                </h3>
+                <p className="text-[13px] text-white/30 leading-relaxed">
+                  {s.desc}
+                </p>
+              </motion.div>
+            ))}
+          </Section>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* CTA */}
+      {/* ============================================================== */}
+      <section className="py-28 md:py-40 bg-white border-t border-[#E5E5E5]">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <Section className="max-w-3xl">
+            <motion.h2
+              variants={fadeUp}
+              className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.03em] text-[#111] mb-6"
+            >
+              Deploy autonomous compliance infrastructure.
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="text-[14px] text-[#666] leading-relaxed mb-10"
+            >
+              Start with a free compliance assessment. Then deploy Sentinel to
+              automate evidence collection across the EU Space Act, NIS2, and 10
+              national space laws.
+            </motion.p>
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-wrap items-center gap-4"
+            >
               <Link
                 href="/demo"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-[#0A0F1E] text-subtitle font-medium hover:bg-white/90 transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#111] text-white text-[15px] font-medium hover:bg-[#333] transition-colors"
               >
                 Request Demo
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/assessment"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-white/20 text-white/70 text-subtitle font-medium hover:border-white/40 hover:text-white transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-[#DDD] text-[#666] text-[15px] font-medium hover:border-[#111] hover:text-[#111] transition-all"
               >
-                Start Assessment
+                Start Free Assessment
               </Link>
-            </div>
-          </motion.div>
-
-          {/* Stats bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px rounded-xl overflow-hidden border border-white/[0.08]"
-          >
-            {[
-              { value: "119", label: "EU Space Act Articles" },
-              { value: "10", label: "Jurisdictions" },
-              { value: "< 200ms", label: "Ingestion Latency" },
-              { value: "24/7", label: "Autonomous Operation" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-white/[0.04] backdrop-blur-sm px-6 py-5"
-              >
-                <div className="text-display-sm font-medium text-white tracking-tight">
-                  {stat.value}
-                </div>
-                <div className="text-caption text-white/35 mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* THE PROBLEM */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <motion.p
-                  variants={fadeUp}
-                  className="text-body font-medium uppercase tracking-wider text-emerald-600 mb-4"
-                >
-                  The Problem
-                </motion.p>
-                <motion.h2
-                  variants={fadeUp}
-                  className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-[#111827] mb-6"
-                >
-                  Regulatory compliance in space is manual, fragmented, and
-                  reactive.
-                </motion.h2>
-                <motion.p
-                  variants={fadeUp}
-                  className="text-body-lg text-[#4B5563] leading-relaxed mb-8"
-                >
-                  Operators spend hundreds of hours per year compiling
-                  compliance evidence from spreadsheets, emails, and
-                  disconnected systems. By the time auditors arrive,
-                  documentation is already outdated. Every regulatory change
-                  requires re-examination of every process.
-                </motion.p>
-                <motion.div variants={fadeUp} className="space-y-4">
-                  {[
-                    {
-                      icon: AlertTriangle,
-                      text: "EU Space Act introduces 119 articles across 9 compliance modules",
-                      color: "text-amber-500",
-                    },
-                    {
-                      icon: Clock,
-                      text: "NIS2 requires 24h incident notification — impossible with manual processes",
-                      color: "text-red-500",
-                    },
-                    {
-                      icon: GitBranch,
-                      text: "10 national jurisdictions, each with overlapping and conflicting requirements",
-                      color: "text-orange-500",
-                    },
-                  ].map((item) => (
-                    <div key={item.text} className="flex items-start gap-3">
-                      <item.icon
-                        size={18}
-                        className={`flex-shrink-0 mt-0.5 ${item.color}`}
-                      />
-                      <span className="text-body-lg text-[#4B5563]">
-                        {item.text}
-                      </span>
-                    </div>
-                  ))}
-                </motion.div>
-              </div>
-
-              {/* Visual: Before/After comparison */}
-              <motion.div variants={fadeUp} className="space-y-4">
-                {/* Before */}
-                <div className="p-6 rounded-2xl bg-[#FEF2F2] border border-red-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-red-400" />
-                    <span className="text-caption font-medium uppercase tracking-wider text-red-400">
-                      Without Caelex
-                    </span>
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      "Manual evidence collection from 15+ systems",
-                      "Quarterly compliance reviews, always behind",
-                      "6-12 months to prepare for audit",
-                      "No real-time visibility into compliance posture",
-                      "Regulatory changes discovered weeks late",
-                    ].map((text) => (
-                      <div
-                        key={text}
-                        className="flex items-center gap-3 text-body text-red-800/70"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-red-300 flex-shrink-0" />
-                        {text}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* After */}
-                <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-caption font-medium uppercase tracking-wider text-emerald-600">
-                      With Caelex Agent
-                    </span>
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      "Continuous, automated evidence from every system",
-                      "Real-time compliance scoring, always current",
-                      "Audit-ready in minutes, not months",
-                      "Live dashboard across all 9 compliance modules",
-                      "Regulatory changes mapped automatically",
-                    ].map((text) => (
-                      <div
-                        key={text}
-                        className="flex items-center gap-3 text-body text-emerald-800/70"
-                      >
-                        <CheckCircle2
-                          size={14}
-                          className="text-emerald-500 flex-shrink-0"
-                        />
-                        {text}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* HOW IT WORKS — Pipeline */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-[#F7F8FA]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <motion.p
-              variants={fadeUp}
-              className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3"
-            >
-              How It Works
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-[#111827] mb-4 max-w-2xl"
-            >
-              From deployment to audit-ready evidence in four steps.
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-[#4B5563] leading-relaxed mb-16 max-w-2xl"
-            >
-              The Caelex agent operates autonomously inside your infrastructure
-              perimeter. No data leaves your network until it has been
-              processed, validated, and cryptographically signed.
-            </motion.p>
-          </AnimatedSection>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PIPELINE_STEPS.map((step, i) => (
-              <AnimatedSection key={step.step}>
-                <motion.div
-                  variants={fadeUp}
-                  className="relative h-full p-6 rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 group"
-                >
-                  {/* Step number */}
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-[40px] font-medium tracking-[-0.04em] text-[#E5E7EB] group-hover:text-emerald-200 transition-colors duration-300">
-                      {step.step}
-                    </span>
-                    <step.icon
-                      size={20}
-                      className="text-[#9CA3AF] group-hover:text-emerald-500 transition-colors duration-300"
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <h3 className="text-heading font-medium text-[#111827] mb-1">
-                    {step.title}
-                  </h3>
-                  <p className="text-caption font-medium uppercase tracking-wider text-emerald-600 mb-4">
-                    {step.subtitle}
-                  </p>
-                  <p className="text-body text-[#4B5563] leading-relaxed mb-4">
-                    {step.description}
-                  </p>
-
-                  {/* Detail tag */}
-                  <div className="mt-auto pt-4 border-t border-[#F1F3F5]">
-                    <span className="text-caption text-[#9CA3AF] font-mono">
-                      {step.detail}
-                    </span>
-                  </div>
-
-                  {/* Connector line (not on last) */}
-                  {i < PIPELINE_STEPS.length - 1 && (
-                    <div className="hidden lg:block absolute top-1/2 -right-3 w-6 h-px bg-[#E5E7EB]" />
-                  )}
-                </motion.div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* CAPABILITIES — Feature grid */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <motion.p
-              variants={fadeUp}
-              className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3"
-            >
-              Capabilities
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-[#111827] mb-4 max-w-3xl"
-            >
-              Built for the complexity of space regulatory compliance.
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-[#4B5563] leading-relaxed mb-16 max-w-2xl"
-            >
-              Every capability is purpose-built for space operations — not
-              adapted from generic compliance tooling.
-            </motion.p>
-          </AnimatedSection>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CAPABILITIES.map((cap) => (
-              <AnimatedSection key={cap.title}>
-                <motion.div
-                  variants={fadeUp}
-                  className="h-full p-6 rounded-2xl bg-[#F7F8FA] border border-[#E5E7EB] hover:bg-white hover:border-[#D1D5DB] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 group"
-                >
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="p-2.5 rounded-xl bg-white border border-[#E5E7EB] group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors duration-300">
-                      <cap.icon
-                        size={20}
-                        className="text-[#4B5563] group-hover:text-emerald-600 transition-colors duration-300"
-                      />
-                    </div>
-                    <div className="text-right">
-                      <div className="text-heading-lg font-medium text-[#111827] tracking-tight font-mono">
-                        {cap.metric}
-                      </div>
-                      <div className="text-micro uppercase tracking-wider text-[#9CA3AF]">
-                        {cap.metricLabel}
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-title font-medium text-[#111827] mb-2">
-                    {cap.title}
-                  </h3>
-                  <p className="text-body text-[#4B5563] leading-relaxed">
-                    {cap.description}
-                  </p>
-                </motion.div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* ARCHITECTURE DIAGRAM — Dark section */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-[#0A0F1E] dark-section">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <motion.p
-              variants={fadeUp}
-              className="text-body font-medium uppercase tracking-wider text-emerald-400/60 mb-3"
-            >
-              Architecture
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-white mb-4 max-w-3xl"
-            >
-              Your data never leaves your perimeter until it&apos;s compliance
-              evidence.
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-white/45 leading-relaxed mb-16 max-w-2xl"
-            >
-              The agent runs entirely inside your infrastructure. Raw
-              operational data is processed locally. Only structured, signed
-              compliance evidence is transmitted to the Caelex platform.
-            </motion.p>
-          </AnimatedSection>
-
-          {/* Architecture visualization */}
-          <AnimatedSection>
-            <motion.div
-              variants={fadeUp}
-              className="rounded-2xl border border-white/[0.08] overflow-hidden"
-            >
-              {/* Header bar */}
-              <div className="flex items-center gap-2 px-5 py-3 bg-white/[0.03] border-b border-white/[0.06]">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                </div>
-                <span className="text-caption text-white/25 font-mono ml-3">
-                  system-architecture.svg
-                </span>
-              </div>
-
-              <div className="p-8 md:p-12">
-                <div className="grid md:grid-cols-3 gap-6">
-                  {/* Your Infrastructure */}
-                  <div className="md:col-span-2 p-6 rounded-xl border border-white/[0.08] bg-white/[0.02]">
-                    <div className="flex items-center gap-2 mb-6">
-                      <Lock size={14} className="text-amber-400/60" />
-                      <span className="text-caption font-medium uppercase tracking-wider text-amber-400/60">
-                        Your Infrastructure Perimeter
-                      </span>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                      {/* Data Sources */}
-                      <div className="space-y-3">
-                        <span className="text-micro uppercase tracking-wider text-white/25">
-                          Data Sources
-                        </span>
-                        {[
-                          { label: "Telemetry Streams", proto: "CCSDS / gRPC" },
-                          {
-                            label: "Ground Station Logs",
-                            proto: "Syslog / SNMP",
-                          },
-                          { label: "Access Control", proto: "LDAP / SAML" },
-                          { label: "Config Management", proto: "REST API" },
-                          { label: "Incident Records", proto: "Webhook" },
-                        ].map((src) => (
-                          <div
-                            key={src.label}
-                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]"
-                          >
-                            <span className="text-caption text-white/60">
-                              {src.label}
-                            </span>
-                            <span className="text-micro text-white/20 font-mono">
-                              {src.proto}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Agent */}
-                      <div className="flex flex-col">
-                        <span className="text-micro uppercase tracking-wider text-white/25 mb-3">
-                          Caelex Agent
-                        </span>
-                        <div className="flex-1 p-5 rounded-xl border-2 border-emerald-500/30 bg-emerald-500/[0.05]">
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-caption font-medium text-emerald-400">
-                              Active
-                            </span>
-                          </div>
-                          <div className="space-y-2.5">
-                            {[
-                              "Data Ingestion",
-                              "Normalization",
-                              "Regulatory Mapping",
-                              "Evidence Synthesis",
-                              "Crypto Signing",
-                            ].map((step) => (
-                              <div
-                                key={step}
-                                className="flex items-center gap-2"
-                              >
-                                <CheckCircle2
-                                  size={12}
-                                  className="text-emerald-500/60"
-                                />
-                                <span className="text-caption text-white/50">
-                                  {step}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Arrow out */}
-                    <div className="flex items-center justify-center gap-2 pt-4 border-t border-white/[0.06]">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-emerald-500/30" />
-                      <span className="text-micro text-emerald-400/50 font-mono px-3">
-                        signed evidence → TLS 1.3
-                      </span>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-emerald-500/30" />
-                    </div>
-                  </div>
-
-                  {/* Caelex Platform */}
-                  <div className="p-6 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.03]">
-                    <div className="flex items-center gap-2 mb-6">
-                      <Shield size={14} className="text-emerald-400" />
-                      <span className="text-caption font-medium uppercase tracking-wider text-emerald-400">
-                        Caelex Platform
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {[
-                        {
-                          label: "Compliance Dashboard",
-                          desc: "Real-time scoring across 9 modules",
-                        },
-                        {
-                          label: "Evidence Vault",
-                          desc: "Immutable, timestamped records",
-                        },
-                        {
-                          label: "Regulatory Engine",
-                          desc: "119 articles, 10 jurisdictions",
-                        },
-                        {
-                          label: "Audit Reports",
-                          desc: "NCA-ready documentation",
-                        },
-                        {
-                          label: "Gap Analysis",
-                          desc: "Prioritized remediation plans",
-                        },
-                        {
-                          label: "Alert System",
-                          desc: "Compliance drift detection",
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.label}
-                          className="px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06]"
-                        >
-                          <div className="text-caption font-medium text-white/70">
-                            {item.label}
-                          </div>
-                          <div className="text-micro text-white/30">
-                            {item.desc}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </motion.div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* USE CASES */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-[#F7F8FA]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <motion.p
-              variants={fadeUp}
-              className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3"
-            >
-              Use Cases
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-[#111827] mb-4 max-w-3xl"
-            >
-              Purpose-built for every type of space operator.
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              className="text-body-lg text-[#4B5563] leading-relaxed mb-16 max-w-2xl"
-            >
-              Whether you operate ground stations, satellite constellations, or
-              space situational awareness services — the Caelex agent adapts to
-              your specific regulatory obligations.
-            </motion.p>
-          </AnimatedSection>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {USE_CASES.map((uc) => (
-              <AnimatedSection key={uc.title}>
-                <motion.div
-                  variants={fadeUp}
-                  className="h-full p-8 rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all duration-300 group"
-                >
-                  <div className="p-3 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] w-fit mb-6 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors duration-300">
-                    <uc.icon
-                      size={24}
-                      className="text-[#4B5563] group-hover:text-emerald-600 transition-colors duration-300"
-                    />
-                  </div>
-
-                  <h3 className="text-heading font-medium text-[#111827] mb-2">
-                    {uc.title}
-                  </h3>
-                  <p className="text-caption font-medium text-emerald-600 mb-4 font-mono">
-                    {uc.regulation}
-                  </p>
-                  <p className="text-body text-[#4B5563] leading-relaxed mb-6">
-                    {uc.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {uc.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2.5 py-1 rounded-full bg-[#F1F3F5] text-micro text-[#4B5563]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* GROUND STATION IMAGE — Full bleed */}
-      {/* ================================================================ */}
-      <section className="relative h-[50vh] md:h-[60vh] overflow-hidden">
-        <Image
-          src="/images/blog/ground-station.png"
-          alt="Ground station satellite dish — critical infrastructure under NIS2"
-          fill
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1E] via-[#0A0F1E]/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
-          <div className="max-w-[1400px] mx-auto">
-            <p className="text-caption font-medium uppercase tracking-wider text-white/40 mb-2">
-              NIS2 · Critical Infrastructure
-            </p>
-            <p className="text-heading md:text-display-sm font-medium text-white max-w-xl">
-              Ground stations are the frontline of space compliance. The Caelex
-              agent ensures they stay that way.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* CTA — Final conversion section */}
-      {/* ================================================================ */}
-      <section className="py-24 md:py-32 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <AnimatedSection>
-            <div className="max-w-3xl mx-auto text-center">
-              <motion.p
-                variants={fadeUp}
-                className="text-body font-medium uppercase tracking-wider text-emerald-600 mb-4"
-              >
-                Get Started
-              </motion.p>
-              <motion.h2
-                variants={fadeUp}
-                className="text-[clamp(1.75rem,4vw,3rem)] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6"
-              >
-                Deploy autonomous compliance infrastructure in days, not months.
-              </motion.h2>
-              <motion.p
-                variants={fadeUp}
-                className="text-body-lg text-[#4B5563] leading-relaxed mb-10"
-              >
-                Start with a free compliance assessment to identify your
-                regulatory obligations across the EU Space Act, NIS2 Directive,
-                and national space laws. Then deploy the Caelex agent to
-                automate evidence collection and reporting.
-              </motion.p>
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-wrap items-center justify-center gap-4"
-              >
-                <Link
-                  href="/demo"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#111827] text-white text-subtitle font-medium hover:bg-[#374151] transition-colors"
-                >
-                  Request Demo
-                  <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/assessment"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-[#D1D5DB] text-[#4B5563] text-subtitle font-medium hover:border-[#111827] hover:text-[#111827] transition-all"
-                >
-                  Start Free Assessment
-                </Link>
-              </motion.div>
-            </div>
-          </AnimatedSection>
+          </Section>
         </div>
       </section>
     </div>
