@@ -63,9 +63,9 @@ export default function BlogShowcase() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // Card = 80% of viewport, but at least viewport - 120px on mobile
+  // Card = ~40% of viewport on desktop (2.5 visible), ~85% on mobile
   const cardWidth =
-    viewportW > 0 ? Math.max(viewportW * 0.8, viewportW - 120) : 0;
+    viewportW > 0 ? (viewportW > 768 ? viewportW * 0.38 : viewportW * 0.85) : 0;
 
   // Content-grid left inset: matches max-w-[1400px] mx-auto px-12
   const inset =
@@ -191,7 +191,7 @@ export default function BlogShowcase() {
             <div
               key={entry.slug}
               className="flex-shrink-0"
-              style={{ width: cardWidth || "80vw" }}
+              style={{ width: cardWidth || "38vw" }}
             >
               <Link
                 href={`/blog/${entry.slug}`}
@@ -206,13 +206,13 @@ export default function BlogShowcase() {
                 }}
               >
                 {/* Image */}
-                <div className="relative w-full h-[50vh] md:h-[60vh] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-6 md:mb-8">
+                <div className="relative w-full h-[55vw] md:h-[24vw] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-5 md:mb-6">
                   <Image
                     src={entry.image}
                     alt={entry.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                    sizes="80vw"
+                    sizes="(min-width: 768px) 38vw, 85vw"
                     priority={i === 0}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-500" />
@@ -224,15 +224,15 @@ export default function BlogShowcase() {
                     <span className="inline-block text-caption font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
                       {entry.category}
                     </span>
-                    <h3 className="text-display-sm md:text-display font-medium text-[#111827] leading-snug mb-3 group-hover:text-[#374151] transition-colors duration-300">
+                    <h3 className="text-title md:text-display-sm font-medium text-[#111827] leading-snug mb-2 group-hover:text-[#374151] transition-colors duration-300">
                       {entry.title}
                     </h3>
-                    <p className="text-body-lg md:text-subtitle text-[#4B5563] leading-relaxed max-w-2xl">
+                    <p className="text-body md:text-body-lg text-[#4B5563] leading-relaxed">
                       {entry.description}
                     </p>
                   </div>
                   <ArrowUpRight
-                    size={28}
+                    size={22}
                     className="flex-shrink-0 mt-2 text-[#9CA3AF] group-hover:text-[#111827] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     aria-hidden="true"
                   />
