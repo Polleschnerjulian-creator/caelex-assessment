@@ -22,25 +22,25 @@ const ENTRIES: BlogEntry[] = [
     category: "Product",
     title: "Caelex Agentic System",
     description:
-      "Autonomous regulatory intelligence — powered by AI agents that monitor, interpret, and act on space compliance in real time.",
+      "Deploy an autonomous agent into your infrastructure that continuously monitors operational data, validates it against regulatory requirements, and sends evidence-based compliance reports back to Caelex — fully automated.",
     image: "/images/blog/agentic-system.png",
   },
   {
-    id: "intelligence",
-    slug: "regulatory-intelligence",
-    category: "Platform",
-    title: "Regulatory Intelligence Engine",
+    id: "ground-stations",
+    slug: "ground-stations-critical-infrastructure",
+    category: "NIS2 · Critical Infrastructure",
+    title: "Ground Stations as Critical Infrastructure",
     description:
-      "How Caelex maps 10+ jurisdictions and 119 articles into a single compliance graph — updated continuously.",
-    image: "/images/blog/agentic-system.png",
+      "Under NIS2 and the EU Space Act, ground stations are classified as critical infrastructure. Our agent monitors uptime, access logs, and security posture — generating audit-ready evidence without manual intervention.",
+    image: "/images/blog/ground-station.png",
   },
   {
     id: "automation",
-    slug: "compliance-automation",
+    slug: "evidence-based-compliance",
     category: "Technology",
-    title: "Compliance Automation",
+    title: "Evidence-Based Compliance",
     description:
-      "From gap analysis to audit-ready documentation in minutes. The future of space compliance is automated.",
+      "The Caelex agent collects telemetry, configuration drifts, and incident data from your systems in real time — transforming raw operational data into structured compliance evidence mapped to 119 EU Space Act articles.",
     image: "/images/blog/agentic-system.png",
   },
 ];
