@@ -1,4 +1,5 @@
 import Hero from "@/components/landing/Hero";
+import BlogShowcase from "@/components/landing/BlogShowcase";
 import WhatWeCover from "@/components/landing/WhatWeCover";
 import HowItWorks from "@/components/landing/HowItWorks";
 import AstraSection from "@/components/landing/AstraSection";
@@ -12,6 +13,7 @@ export default function Home() {
       <SoftwareApplicationJsonLd />
       <Hero />
       <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">
+        <BlogShowcase />
         <WhatWeCover />
         <HowItWorks />
         <AstraSection />
