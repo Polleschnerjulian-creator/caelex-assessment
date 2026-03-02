@@ -191,8 +191,7 @@ body {
   color-scheme: light;
 }
 
-/* Override the global dark heading/text rules inside .landing-light,
-   but NOT inside .hero-dark (the video hero needs white text). */
+/* Override the global dark heading/text rules inside .landing-light */
 .dark .landing-light h1,
 .dark .landing-light h2,
 .dark .landing-light h3,
@@ -202,21 +201,8 @@ body {
   color: #111827;
 }
 
-.dark .landing-light .hero-dark h1,
-.dark .landing-light .hero-dark h2,
-.dark .landing-light .hero-dark h3,
-.dark .landing-light .hero-dark h4,
-.dark .landing-light .hero-dark h5,
-.dark .landing-light .hero-dark h6 {
-  color: inherit;
-}
-
 .dark .landing-light p {
   color: #4b5563;
-}
-
-.dark .landing-light .hero-dark p {
-  color: inherit;
 }
 
 .dark .landing-light input,

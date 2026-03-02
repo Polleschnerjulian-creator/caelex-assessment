@@ -18,7 +18,7 @@ const MODULES = [
 export default function Hero() {
   return (
     <section
-      className="hero-dark relative min-h-screen bg-black overflow-hidden"
+      className="relative min-h-screen bg-black overflow-hidden"
       aria-label="Hero"
     >
       {/* Background Video */}
