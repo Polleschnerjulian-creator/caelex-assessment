@@ -41,9 +41,9 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      {/* Gradient overlay — fade to page bg at bottom */}
+      {/* Dark vignette at bottom — keeps text readable */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-[#F7F8FA] via-transparent to-transparent pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"
         aria-hidden="true"
       />
 
@@ -54,10 +54,15 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <div>
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
+              <h1
+                className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white"
+                style={{ textShadow: "0 2px 24px rgba(0,0,0,0.6)" }}
+              >
                 The World&apos;s Space
                 <br />
-                Compliance Platform.
+                Regulatory Intelligence
+                <br />
+                Platform.
               </h1>
             </div>
 

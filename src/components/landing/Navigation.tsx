@@ -42,21 +42,24 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
     };
   }, [mobileOpen]);
 
+  // On light theme: start dark-text=false (white text over hero), switch when scrolled
+  const showDarkText = isLight && (scrolled || mobileOpen);
+
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 ${isLight ? "" : "dark-section"}`}
+        className={`fixed top-0 left-0 right-0 z-50 ${showDarkText ? "" : "dark-section"}`}
         aria-label="Main navigation"
       >
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
-            {/* Glass Bar / Light Bar */}
+            {/* Glass Bar — transparent at top, solid when scrolled */}
             <div
               className={`flex items-center justify-between w-full rounded-xl px-5 py-2.5 transition-all duration-700 ${
                 isLight
                   ? scrolled || mobileOpen
                     ? "bg-white/80 backdrop-blur-xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-                    : "bg-white/60 backdrop-blur-lg border border-[#E5E7EB]/60 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                    : "bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]"
                   : scrolled || mobileOpen
                     ? "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
                     : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -70,7 +73,7 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               >
                 <Logo
                   size={28}
-                  className={isLight ? "text-[#111827]" : "text-white"}
+                  className={`transition-colors duration-700 ${showDarkText ? "text-[#111827]" : "text-white"}`}
                 />
               </Link>
 
@@ -82,8 +85,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                     <Link
                       key={label}
                       href={`/${label.toLowerCase()}`}
-                      className={`hidden md:block text-body transition-colors duration-300 ${
-                        isLight
+                      className={`hidden md:block text-body transition-colors duration-700 ${
+                        showDarkText
                           ? "text-[#4B5563] hover:text-[#111827]"
                           : "text-white/45 hover:text-white"
                       }`}
@@ -97,8 +100,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 <div className="hidden md:flex items-center gap-4">
                   <Link
                     href="/login"
-                    className={`text-body transition-colors duration-300 ${
-                      isLight
+                    className={`text-body transition-colors duration-700 ${
+                      showDarkText
                         ? "text-[#4B5563] hover:text-[#111827]"
                         : "text-white/45 hover:text-white"
                     }`}
@@ -107,14 +110,14 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                   </Link>
                   <Button
                     href="/demo"
-                    variant={isLight ? "landing-outline" : "white-outline"}
+                    variant={showDarkText ? "landing-outline" : "white-outline"}
                     size="sm"
                   >
                     Request Demo
                   </Button>
                   <Button
                     href="/assessment"
-                    variant={isLight ? "landing-primary" : "white"}
+                    variant={showDarkText ? "landing-primary" : "white"}
                     size="sm"
                   >
                     Start Assessment
@@ -124,8 +127,8 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 {/* Mobile Menu Button */}
                 <button
                   onClick={() => setMobileOpen(!mobileOpen)}
-                  className={`md:hidden p-2 transition-colors ${
-                    isLight
+                  className={`md:hidden p-2 transition-colors duration-700 ${
+                    showDarkText
                       ? "text-[#4B5563] hover:text-[#111827]"
                       : "text-white/70 hover:text-white"
                   }`}
