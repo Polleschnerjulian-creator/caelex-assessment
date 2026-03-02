@@ -4,9 +4,9 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
 const STATEMENT =
-  "Our software turns the world's most complex space regulations into real-time, AI-driven compliance – so that every satellite operator knows exactly what it takes to launch, operate, and deorbit, in any jurisdiction, at any time.";
+  "Our software operationalizes global space regulation at machine speed – powering real-time, AI-driven compliance for every entity in the orbital economy.";
 
-const CHAR_DELAY = 0.018; // seconds per character
+const CHAR_DELAY = 0.006; // seconds per character (3x faster)
 
 export default function MissionStatement() {
   const ref = useRef(null);
@@ -21,7 +21,7 @@ export default function MissionStatement() {
     <section className="bg-white py-28 md:py-40">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <div ref={ref} className="max-w-5xl">
-          <p className="text-[clamp(1.5rem,3.8vw,3.25rem)] font-medium leading-[1.25] tracking-[-0.025em]">
+          <p className="text-[clamp(2rem,5vw,4.25rem)] font-medium leading-[1.2] tracking-[-0.03em]">
             {words.map((word, wordIdx) => {
               const chars = word.split("");
               const wordElement = (
