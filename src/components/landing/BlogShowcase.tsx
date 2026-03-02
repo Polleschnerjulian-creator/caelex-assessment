@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useSpring, PanInfo } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -46,32 +46,54 @@ const ENTRIES: BlogEntry[] = [
 ];
 
 const AUTO_PLAY_MS = 8000;
+// Card takes 80% of viewport on desktop, gap between cards
+const CARD_WIDTH_PERCENT = 80;
+const GAP_PX = 24;
 
 export default function BlogShowcase() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [containerWidth, setContainerWidth] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  const goTo = useCallback(
-    (index: number) => {
-      setDirection(index > activeIndex ? 1 : -1);
-      setActiveIndex(index);
-    },
-    [activeIndex],
-  );
+  // Measure container
+  useEffect(() => {
+    const measure = () => {
+      if (trackRef.current?.parentElement) {
+        setContainerWidth(trackRef.current.parentElement.offsetWidth);
+      }
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
+  const cardWidth = containerWidth * (CARD_WIDTH_PERCENT / 100);
+
+  // Spring-animated x offset
+  const rawX = useMotionValue(0);
+  const x = useSpring(rawX, { stiffness: 300, damping: 40, mass: 0.8 });
+
+  // Update position when activeIndex or cardWidth changes
+  useEffect(() => {
+    const offset = -(activeIndex * (cardWidth + GAP_PX));
+    rawX.set(offset);
+  }, [activeIndex, cardWidth, rawX]);
+
+  const goTo = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
 
   const next = useCallback(() => {
-    setDirection(1);
     setActiveIndex((prev) => (prev + 1) % ENTRIES.length);
   }, []);
 
   const prev = useCallback(() => {
-    setDirection(-1);
     setActiveIndex((prev) => (prev - 1 + ENTRIES.length) % ENTRIES.length);
   }, []);
 
-  // Auto-advance every 8 seconds
+  // Auto-advance
   useEffect(() => {
     if (paused) return;
     timerRef.current = setTimeout(next, AUTO_PLAY_MS);
@@ -80,33 +102,31 @@ export default function BlogShowcase() {
     };
   }, [activeIndex, paused, next]);
 
-  const entry = ENTRIES[activeIndex];
-
-  // Slide variants — card slides in from left/right
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? "40%" : "-40%",
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
+  // Swipe / drag handling
+  const handleDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const threshold = cardWidth * 0.15;
+      if (info.offset.x < -threshold && activeIndex < ENTRIES.length - 1) {
+        setActiveIndex((prev) => prev + 1);
+      } else if (info.offset.x > threshold && activeIndex > 0) {
+        setActiveIndex((prev) => prev - 1);
+      } else {
+        // Snap back
+        rawX.set(-(activeIndex * (cardWidth + GAP_PX)));
+      }
     },
-    exit: (dir: number) => ({
-      x: dir > 0 ? "-40%" : "40%",
-      opacity: 0,
-    }),
-  };
+    [activeIndex, cardWidth, rawX],
+  );
 
   return (
     <section
-      className="relative bg-white py-24 md:py-32 overflow-hidden"
+      className="relative bg-white py-24 md:py-32"
       aria-label="Featured"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      {/* Header — constrained width */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-        {/* Header row: title + nav tabs */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 md:mb-14">
           <div>
             <p className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
@@ -118,7 +138,7 @@ export default function BlogShowcase() {
           </div>
 
           {/* Title pills + arrows */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 overflow-x-auto scrollbar-hide">
             {ENTRIES.map((e, i) => (
               <button
                 key={e.id}
@@ -133,7 +153,7 @@ export default function BlogShowcase() {
               </button>
             ))}
 
-            <div className="flex items-center gap-1 ml-2">
+            <div className="flex items-center gap-1 ml-2 flex-shrink-0">
               <button
                 onClick={prev}
                 className="p-2 rounded-full bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827] transition-colors"
@@ -151,58 +171,85 @@ export default function BlogShowcase() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Carousel viewport */}
-        <div className="relative w-full">
-          <AnimatePresence initial={false} custom={direction} mode="popLayout">
-            <motion.div
-              key={entry.slug}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <Link href={`/blog/${entry.slug}`} className="group block">
-                {/* Large Image */}
-                <div className="relative w-full h-[50vh] md:h-[60vh] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-6 md:mb-8">
-                  <Image
-                    src={entry.image}
-                    alt={entry.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                    sizes="(max-width: 768px) 100vw, 1400px"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-500" />
-                </div>
-
-                {/* Text */}
-                <div className="flex items-start justify-between gap-6 max-w-3xl">
-                  <div>
-                    <span className="inline-block text-caption font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
-                      {entry.category}
-                    </span>
-                    <h3 className="text-display-sm md:text-display font-medium text-[#111827] leading-snug mb-3 group-hover:text-[#374151] transition-colors duration-300">
-                      {entry.title}
-                    </h3>
-                    <p className="text-body-lg md:text-subtitle text-[#4B5563] leading-relaxed">
-                      {entry.description}
-                    </p>
+      {/* Full-width carousel viewport — overflows right to show peek */}
+      <div className="relative overflow-hidden">
+        <div className="pl-6 md:pl-[max(1.5rem,calc((100vw-1400px)/2+3rem))]">
+          <motion.div
+            ref={trackRef}
+            className="flex cursor-grab active:cursor-grabbing"
+            style={{ x, gap: GAP_PX }}
+            drag="x"
+            dragConstraints={{
+              left: -((ENTRIES.length - 1) * (cardWidth + GAP_PX)),
+              right: 0,
+            }}
+            dragElastic={0.1}
+            onDragEnd={handleDragEnd}
+          >
+            {ENTRIES.map((entry, i) => (
+              <div
+                key={entry.slug}
+                className="flex-shrink-0"
+                style={{ width: cardWidth || "80vw" }}
+              >
+                <Link
+                  href={`/blog/${entry.slug}`}
+                  className="group block"
+                  draggable={false}
+                  onClick={(e) => {
+                    // Prevent navigation on drag
+                    if (
+                      Math.abs(
+                        rawX.get() + activeIndex * (cardWidth + GAP_PX),
+                      ) > 5
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  {/* Image */}
+                  <div className="relative w-full h-[50vh] md:h-[60vh] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-6 md:mb-8">
+                    <Image
+                      src={entry.image}
+                      alt={entry.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                      sizes="80vw"
+                      priority={i === 0}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-500" />
                   </div>
-                  <ArrowUpRight
-                    size={28}
-                    className="flex-shrink-0 mt-2 text-[#9CA3AF] group-hover:text-[#111827] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    aria-hidden="true"
-                  />
-                </div>
-              </Link>
-            </motion.div>
-          </AnimatePresence>
-        </div>
 
-        {/* Progress dots + timer bar */}
+                  {/* Text */}
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="min-w-0">
+                      <span className="inline-block text-caption font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
+                        {entry.category}
+                      </span>
+                      <h3 className="text-display-sm md:text-display font-medium text-[#111827] leading-snug mb-3 group-hover:text-[#374151] transition-colors duration-300">
+                        {entry.title}
+                      </h3>
+                      <p className="text-body-lg md:text-subtitle text-[#4B5563] leading-relaxed max-w-2xl">
+                        {entry.description}
+                      </p>
+                    </div>
+                    <ArrowUpRight
+                      size={28}
+                      className="flex-shrink-0 mt-2 text-[#9CA3AF] group-hover:text-[#111827] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Progress bars — constrained width */}
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <div className="flex items-center gap-3 mt-8 md:mt-12">
           {ENTRIES.map((e, i) => (
             <button
