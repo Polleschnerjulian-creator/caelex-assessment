@@ -79,7 +79,7 @@ export default function Hero() {
               </div>
 
               {/* Summary */}
-              <p className="text-body text-white/60 leading-[1.7] max-w-[400px]">
+              <p className="text-body text-white/85 leading-[1.7] max-w-[400px]">
                 12 modules. 10+ jurisdictions. Every regulation that governs
                 space — in one place.
               </p>
@@ -95,7 +95,7 @@ export default function Hero() {
               {MODULES.map((module, i) => (
                 <li
                   key={module}
-                  className="text-body md:text-body-lg text-white/60 whitespace-nowrap font-medium list-none"
+                  className="text-body md:text-body-lg text-white/70 whitespace-nowrap font-medium list-none"
                 >
                   {module}
                   {i < MODULES.length - 1 && (
