@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BlogEntry {
   id: string;
@@ -45,86 +45,127 @@ const ENTRIES: BlogEntry[] = [
   },
 ];
 
+const AUTO_PLAY_MS = 8000;
+
 export default function BlogShowcase() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Track which card is most visible via IntersectionObserver
+  const goTo = useCallback(
+    (index: number) => {
+      setDirection(index > activeIndex ? 1 : -1);
+      setActiveIndex(index);
+    },
+    [activeIndex],
+  );
+
+  const next = useCallback(() => {
+    setDirection(1);
+    setActiveIndex((prev) => (prev + 1) % ENTRIES.length);
+  }, []);
+
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setActiveIndex((prev) => (prev - 1 + ENTRIES.length) % ENTRIES.length);
+  }, []);
+
+  // Auto-advance every 8 seconds
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    cardRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
-            setActiveIndex(i);
-          }
-        },
-        { threshold: 0.4 },
-      );
-      observer.observe(el);
-      observers.push(observer);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, []);
+    if (paused) return;
+    timerRef.current = setTimeout(next, AUTO_PLAY_MS);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [activeIndex, paused, next]);
 
-  const scrollToCard = useCallback((index: number) => {
-    const el = cardRefs.current[index];
-    if (el) {
-      const navHeight = 80 + 64; // page nav + tab bar height
-      const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  }, []);
+  const entry = ENTRIES[activeIndex];
+
+  // Slide variants — card slides in from left/right
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? "40%" : "-40%",
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? "-40%" : "40%",
+      opacity: 0,
+    }),
+  };
 
   return (
     <section
-      ref={sectionRef}
-      className="relative bg-white"
+      className="relative bg-white py-24 md:py-32 overflow-hidden"
       aria-label="Featured"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      {/* Sticky Title Tabs */}
-      <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md border-b border-[#E5E7EB]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide">
-            <span className="text-caption font-medium uppercase tracking-wider text-[#9CA3AF] mr-3 flex-shrink-0">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+        {/* Header row: title + nav tabs */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 md:mb-14">
+          <div>
+            <p className="text-body font-medium uppercase tracking-wider text-[#9CA3AF] mb-3">
               Featured
-            </span>
-            {ENTRIES.map((entry, i) => (
+            </p>
+            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-medium tracking-[-0.02em] text-[#111827]">
+              What we&apos;re building
+            </h2>
+          </div>
+
+          {/* Title pills + arrows */}
+          <div className="flex items-center gap-3">
+            {ENTRIES.map((e, i) => (
               <button
-                key={entry.id}
-                onClick={() => scrollToCard(i)}
+                key={e.id}
+                onClick={() => goTo(i)}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-body font-medium transition-all duration-300 ${
                   activeIndex === i
                     ? "bg-[#111827] text-white"
                     : "bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827]"
                 }`}
               >
-                {entry.title}
+                {e.title}
               </button>
             ))}
+
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                onClick={prev}
+                className="p-2 rounded-full bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827] transition-colors"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={next}
+                className="p-2 rounded-full bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827] transition-colors"
+                aria-label="Next"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Large Cards — stacked vertically, ~65vh each */}
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 md:py-20">
-        <div className="flex flex-col gap-16 md:gap-24">
-          {ENTRIES.map((entry, i) => (
+        {/* Carousel viewport */}
+        <div className="relative w-full">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={entry.slug}
-              ref={(el) => {
-                cardRefs.current[i] = el;
-              }}
-              initial={false}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              id={`featured-${entry.id}`}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
             >
               <Link href={`/blog/${entry.slug}`} className="group block">
-                {/* Large Image — ~60vh on desktop */}
+                {/* Large Image */}
                 <div className="relative w-full h-[50vh] md:h-[60vh] rounded-2xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] mb-6 md:mb-8">
                   <Image
                     src={entry.image}
@@ -132,9 +173,8 @@ export default function BlogShowcase() {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                     sizes="(max-width: 768px) 100vw, 1400px"
-                    priority={i === 0}
+                    priority
                   />
-                  {/* Subtle overlay on hover */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-500" />
                 </div>
 
@@ -159,6 +199,33 @@ export default function BlogShowcase() {
                 </div>
               </Link>
             </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Progress dots + timer bar */}
+        <div className="flex items-center gap-3 mt-8 md:mt-12">
+          {ENTRIES.map((e, i) => (
+            <button
+              key={e.id}
+              onClick={() => goTo(i)}
+              className="relative h-1 flex-1 rounded-full bg-[#E5E7EB] overflow-hidden"
+              aria-label={`Go to ${e.title}`}
+            >
+              {activeIndex === i ? (
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-[#111827] rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{
+                    duration: paused ? 99999 : AUTO_PLAY_MS / 1000,
+                    ease: "linear",
+                  }}
+                  key={`progress-${activeIndex}`}
+                />
+              ) : i < activeIndex ? (
+                <div className="absolute inset-0 bg-[#111827] rounded-full" />
+              ) : null}
+            </button>
           ))}
         </div>
       </div>
