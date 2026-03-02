@@ -54,10 +54,7 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <div>
-              <h1
-                className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white"
-                style={{ textShadow: "0 2px 24px rgba(0,0,0,0.6)" }}
-              >
+              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
                 The World&apos;s Space
                 <br />
                 Regulatory Intelligence
