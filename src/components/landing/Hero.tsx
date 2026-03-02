@@ -54,12 +54,15 @@ export default function Hero() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-end mb-10">
             {/* Left: Headline */}
             <div>
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-medium tracking-[-0.03em] leading-[1.05] text-white">
-                The World&apos;s Space
-                <br />
-                Regulatory Intelligence
-                <br />
-                Platform.
+              <h1 className="font-medium tracking-[-0.03em] leading-[1.05]">
+                <span className="text-[clamp(1.5rem,3.5vw,2.5rem)] text-white/60 block mb-1">
+                  The World&apos;s Space
+                </span>
+                <span className="text-[clamp(2.5rem,6vw,5rem)] text-white block">
+                  Regulatory Intelligence
+                  <br />
+                  Platform.
+                </span>
               </h1>
             </div>
 
