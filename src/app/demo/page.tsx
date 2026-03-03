@@ -6,61 +6,16 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle,
+  ArrowLeft,
+  Loader2,
   Shield,
-  Globe,
-  Zap,
-  Clock,
-  Users,
-  FileCheck,
-  Play,
   Calendar,
+  Clock,
+  FileCheck,
+  Globe,
+  Scale,
+  Satellite,
 } from "lucide-react";
-import { CaelexIcon } from "@/components/ui/Logo";
-
-const benefits = [
-  {
-    icon: Zap,
-    title: "5-Minute Assessment",
-    description: "Get your complete regulatory profile in minutes, not weeks",
-  },
-  {
-    icon: Globe,
-    title: "10 Jurisdictions",
-    description: "Compare licensing requirements across European space laws",
-  },
-  {
-    icon: Shield,
-    title: "3 Frameworks",
-    description: "EU Space Act, NIS2 Directive, and National Space Laws",
-  },
-  {
-    icon: FileCheck,
-    title: "119 Articles Mapped",
-    description: "Every EU Space Act requirement tracked and explained",
-  },
-];
-
-const stats = [
-  { value: "2030", label: "Compliance Deadline" },
-  { value: "119", label: "Articles Covered" },
-  { value: "10", label: "Jurisdictions" },
-  { value: "7", label: "Operator Types" },
-];
-
-const testimonials = [
-  {
-    quote:
-      "Finally, a platform that understands the complexity of space regulatory compliance.",
-    author: "Head of Regulatory Affairs",
-    company: "European Satellite Operator",
-  },
-  {
-    quote:
-      "Cut our compliance research time by 80%. The jurisdiction comparison is invaluable.",
-    author: "Legal Counsel",
-    company: "Launch Service Provider",
-  },
-];
 
 export default function DemoPage() {
   const [email, setEmail] = useState("");
@@ -68,7 +23,6 @@ export default function DemoPage() {
   const [company, setCompany] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,462 +55,313 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#E5E7EB]/30 rounded-full blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#E5E7EB]/30 rounded-full blur-[100px]" />
-        </div>
+    <div className="landing-light min-h-screen bg-white text-[#111827]">
+      {/* Navigation back */}
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#111827] transition-colors text-body"
+        >
+          <ArrowLeft size={14} />
+          Back
+        </Link>
+      </div>
 
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 relative">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      {/* Hero — Form + Value Prop */}
+      <section className="pt-16 pb-24 md:pt-24 md:pb-32">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
             {/* Left: Content */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-[42px] md:text-[56px] font-medium leading-[1.1] tracking-[-0.02em] text-[#111827] mb-6">
-                See Caelex
+              <span className="inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF] mb-6">
+                Book a Demo
+              </span>
+
+              <h1
+                className="font-bold leading-[1.05] tracking-[-0.03em] mb-6"
+                style={{ fontSize: "clamp(32px, 5vw, 56px)" }}
+              >
+                <span className="text-[#111827]">See the platform</span>
                 <br />
-                <span className="text-[#111827]">in Action</span>
+                <span className="text-[#9CA3AF]">before you commit.</span>
               </h1>
 
-              <p className="text-title text-[#4B5563] leading-relaxed mb-8 max-w-lg">
-                Get a personalized walkthrough of how Caelex helps satellite
-                operators, launch providers, and space service companies
-                navigate EU Space Act, NIS2, and national space law compliance.
+              <p
+                className="text-[#4B5563] leading-relaxed max-w-lg mb-12"
+                style={{ fontSize: "clamp(15px, 1.8vw, 17px)" }}
+              >
+                15 minutes. Tailored to your operator type, jurisdiction, and
+                mission profile. We show you exactly how Caelex maps to your
+                compliance obligations.
               </p>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-4 gap-4 mb-8">
-                {stats.map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-display-sm font-semibold text-[#111827]">
-                      {stat.value}
+              {/* What you'll see */}
+              <div className="space-y-5 mb-12">
+                {[
+                  {
+                    icon: FileCheck,
+                    title: "Your compliance profile",
+                    description:
+                      "Live walkthrough of the assessment and dashboard for your operator type",
+                  },
+                  {
+                    icon: Globe,
+                    title: "Jurisdiction comparison",
+                    description:
+                      "Side-by-side analysis of licensing requirements across 10+ European space laws",
+                  },
+                  {
+                    icon: Scale,
+                    title: "Regulatory mapping",
+                    description:
+                      "How 119 EU Space Act articles and NIS2 requirements map to your operations",
+                  },
+                  {
+                    icon: Satellite,
+                    title: "Fleet-level tracking",
+                    description:
+                      "Per-satellite compliance state, deadline tracking, and audit trail",
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+                    className="flex gap-4"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <item.icon size={16} className="text-[#111827]" />
                     </div>
-                    <div className="text-caption text-[#4B5563] uppercase tracking-wider">
-                      {stat.label}
+                    <div>
+                      <h3 className="text-[14px] font-semibold text-[#111827] mb-0.5">
+                        {item.title}
+                      </h3>
+                      <p className="text-[13px] text-[#6B7280] leading-relaxed">
+                        {item.description}
+                      </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
-              {/* Trust Indicators */}
-              <div className="flex items-center gap-6 text-body text-[#4B5563]">
-                <div className="flex items-center gap-2">
-                  <CheckCircle size={14} className="text-[#111827]" />
-                  <span>No credit card required</span>
+              {/* Trust signals */}
+              <div className="flex items-center gap-5 text-[12px] text-[#9CA3AF]">
+                <div className="flex items-center gap-1.5">
+                  <Clock size={12} />
+                  <span>15 min</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-[#111827]" />
-                  <span>15 min demo</span>
+                <div className="flex items-center gap-1.5">
+                  <Shield size={12} />
+                  <span>No commitment</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={12} />
+                  <span>Respond within 24h</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Right: Form Card */}
+            {/* Right: Form */}
             <motion.div
-              initial={false}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="lg:sticky lg:top-32"
             >
-              <div className="relative">
-                {/* Liquid Glass Card */}
-                <div className="relative bg-white border border-[#E5E7EB] rounded-3xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                  {/* Subtle shadow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#E5E7EB]/20 via-[#D1D5DB]/20 to-[#E5E7EB]/20 rounded-3xl blur-xl opacity-50" />
-
-                  <div className="relative">
-                    {submitted ? (
-                      <motion.div
-                        initial={false}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-8"
-                      >
-                        <div className="w-16 h-16 rounded-full bg-[#F1F3F5] flex items-center justify-center mx-auto mb-6">
-                          <CheckCircle size={32} className="text-[#111827]" />
-                        </div>
-                        <h3 className="text-heading-lg font-medium text-[#111827] mb-3">
-                          You're on the list!
-                        </h3>
-                        <p className="text-subtitle text-[#4B5563] mb-6">
-                          We'll reach out within 24 hours to schedule your
-                          personalized demo.
-                        </p>
-                        <Link
-                          href="/assessment"
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
-                        >
-                          Try Free Assessment
-                          <ArrowRight size={16} />
-                        </Link>
-                      </motion.div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-10 h-10 rounded-xl bg-[#111827] flex items-center justify-center">
-                            <Calendar size={20} className="text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-heading font-medium text-[#111827]">
-                              Book Your Demo
-                            </h3>
-                            <p className="text-body text-[#4B5563]">
-                              Free • 15 minutes • No commitment
-                            </p>
-                          </div>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                          <div>
-                            <input
-                              type="text"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              placeholder="Your name"
-                              required
-                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
-                            />
-                          </div>
-                          <div>
-                            <input
-                              type="email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              placeholder="Work email"
-                              required
-                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
-                            />
-                          </div>
-                          <div>
-                            <input
-                              type="text"
-                              value={company}
-                              onChange={(e) => setCompany(e.target.value)}
-                              placeholder="Company name"
-                              required
-                              className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-body-lg text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
-                            />
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={submitting}
-                            className="w-full bg-[#111827] text-white text-body-lg font-medium px-6 py-4 rounded-xl hover:bg-[#374151] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
-                          >
-                            {submitting ? (
-                              <span>Submitting...</span>
-                            ) : (
-                              <>
-                                Get Your Demo
-                                <ArrowRight size={16} />
-                              </>
-                            )}
-                          </button>
-                        </form>
-
-                        {error && (
-                          <p className="text-small text-red-400 text-center mt-3">
-                            {error}
-                          </p>
-                        )}
-
-                        <p className="text-caption text-[#9CA3AF] text-center mt-4">
-                          By submitting, you agree to our{" "}
-                          <Link
-                            href="/legal/privacy"
-                            className="underline hover:text-[#4B5563]"
-                          >
-                            Privacy Policy
-                          </Link>
-                        </p>
-                      </>
-                    )}
+              <div
+                className="rounded-2xl bg-white border border-[#E5E7EB] p-8 md:p-10"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+              >
+                {submitted ? (
+                  <div className="text-center py-6">
+                    <div className="w-14 h-14 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center mx-auto mb-5">
+                      <CheckCircle size={28} className="text-[#111827]" />
+                    </div>
+                    <h3
+                      className="font-bold text-[#111827] mb-2"
+                      style={{ fontSize: "clamp(18px, 2.5vw, 24px)" }}
+                    >
+                      You&apos;re on the list.
+                    </h3>
+                    <p className="text-[14px] text-[#4B5563] mb-8 max-w-sm mx-auto">
+                      We&apos;ll reach out within 24 hours to schedule your
+                      personalized walkthrough.
+                    </p>
+                    <Link
+                      href="/assessment"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#111827] text-white text-[14px] font-medium hover:bg-[#374151] transition-all"
+                    >
+                      Try Free Assessment
+                      <ArrowRight size={14} />
+                    </Link>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="mb-8">
+                      <h2 className="text-[20px] font-bold text-[#111827] mb-1">
+                        Request a demo
+                      </h2>
+                      <p className="text-[13px] text-[#6B7280]">
+                        Free &middot; 15 minutes &middot; No credit card
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="demo-name"
+                          className="block text-[11px] font-semibold text-[#4B5563] uppercase tracking-[0.1em] mb-2"
+                        >
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          id="demo-name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Your name"
+                          required
+                          autoComplete="name"
+                          className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="demo-email"
+                          className="block text-[11px] font-semibold text-[#4B5563] uppercase tracking-[0.1em] mb-2"
+                        >
+                          Work email
+                        </label>
+                        <input
+                          type="email"
+                          id="demo-email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@company.com"
+                          required
+                          autoComplete="email"
+                          className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="demo-company"
+                          className="block text-[11px] font-semibold text-[#4B5563] uppercase tracking-[0.1em] mb-2"
+                        >
+                          Company
+                        </label>
+                        <input
+                          type="text"
+                          id="demo-company"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          placeholder="Company name"
+                          required
+                          autoComplete="organization"
+                          className="w-full bg-[#F7F8FA] border border-[#E5E7EB] rounded-xl px-4 py-3.5 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] outline-none focus:border-[#111827] transition-colors"
+                        />
+                      </div>
+
+                      {error && (
+                        <p
+                          className="text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5"
+                          role="alert"
+                        >
+                          {error}
+                        </p>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full flex items-center justify-center gap-2 bg-[#111827] text-white text-[14px] font-medium px-6 py-4 rounded-xl hover:bg-[#374151] transition-all duration-300 disabled:opacity-50 mt-2"
+                      >
+                        {submitting ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            Request Demo
+                            <ArrowRight size={14} />
+                          </>
+                        )}
+                      </button>
+                    </form>
+
+                    <p className="text-[11px] text-[#9CA3AF] text-center mt-5">
+                      By submitting, you agree to our{" "}
+                      <Link
+                        href="/legal/privacy"
+                        className="underline hover:text-[#4B5563] transition-colors"
+                      >
+                        Privacy Policy
+                      </Link>
+                    </p>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Platform Preview Section */}
-      <section className="py-20 relative overflow-hidden">
+      {/* Numbers strip */}
+      <section className="py-16 bg-[#F7F8FA] border-t border-[#E5E7EB]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-display font-medium text-[#111827] mb-4">
-              What You'll See in the Demo
-            </h2>
-            <p className="text-title text-[#4B5563] max-w-2xl mx-auto">
-              A complete walkthrough of the platform tailored to your specific
-              needs
-            </p>
-          </motion.div>
-
-          {/* Dashboard Preview */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative"
-          >
-            {/* Subtle shadow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#D1D5DB]/30 via-[#E5E7EB]/30 to-[#D1D5DB]/30 rounded-3xl blur-xl" />
-
-            {/* Preview Container */}
-            <div className="relative bg-white border border-[#E5E7EB] rounded-3xl p-2 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              {/* Browser Chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E5E7EB]">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/60" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { value: "119", label: "EU Space Act Articles" },
+              { value: "10+", label: "Jurisdictions" },
+              { value: "51", label: "NIS2 Requirements" },
+              { value: "7", label: "Operator Types" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div
+                  className="font-bold text-[#111827] tracking-[-0.02em]"
+                  style={{ fontSize: "clamp(28px, 4vw, 40px)" }}
+                >
+                  {stat.value}
                 </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1.5 rounded-lg bg-[#F1F3F5] text-small text-[#4B5563]">
-                    app.caelex.eu/dashboard
-                  </div>
+                <div className="font-mono text-[11px] text-[#9CA3AF] uppercase tracking-[0.1em] mt-1">
+                  {stat.label}
                 </div>
               </div>
-
-              {/* Dashboard Mockup */}
-              <div className="p-6 bg-gradient-to-br from-[#0a0f1e] to-[#0f172a]">
-                <div className="grid grid-cols-12 gap-4">
-                  {/* Sidebar */}
-                  <div className="col-span-2 space-y-2">
-                    <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.08]">
-                      <CaelexIcon size={20} className="text-white" />
-                      <span className="text-body font-medium text-white">
-                        caelex
-                      </span>
-                    </div>
-                    {[
-                      "Overview",
-                      "Authorization",
-                      "Registration",
-                      "Cybersecurity",
-                      "Debris",
-                      "Insurance",
-                    ].map((item, i) => (
-                      <div
-                        key={item}
-                        className={`p-2.5 rounded-lg text-small ${
-                          i === 0
-                            ? "bg-white/[0.08] text-white"
-                            : "text-white/45"
-                        }`}
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Main Content */}
-                  <div className="col-span-10 space-y-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-heading font-medium text-white">
-                          Compliance Dashboard
-                        </div>
-                        <div className="text-small text-white/45">
-                          EU Space Act • NIS2 • National Laws
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-caption">
-                          78% Compliant
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stat Cards */}
-                    <div className="grid grid-cols-4 gap-3">
-                      {[
-                        {
-                          label: "Articles",
-                          value: "84/119",
-                          color: "emerald",
-                        },
-                        {
-                          label: "NIS2 Status",
-                          value: "Essential",
-                          color: "emerald",
-                        },
-                        {
-                          label: "Jurisdiction",
-                          value: "France",
-                          color: "amber",
-                        },
-                        { label: "Deadline", value: "2030", color: "emerald" },
-                      ].map((stat) => (
-                        <div
-                          key={stat.label}
-                          className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06]"
-                        >
-                          <div className="text-caption text-white/45 mb-1">
-                            {stat.label}
-                          </div>
-                          <div
-                            className={`text-heading font-medium text-${stat.color}-400`}
-                          >
-                            {stat.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Progress Bars */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { module: "Authorization", progress: 65 },
-                        { module: "Cybersecurity", progress: 82 },
-                        { module: "Debris Mitigation", progress: 45 },
-                        { module: "Insurance", progress: 90 },
-                      ].map((item) => (
-                        <div
-                          key={item.module}
-                          className="p-4 rounded-xl bg-white/[0.04] border border-white/[0.06]"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-small text-white/45">
-                              {item.module}
-                            </span>
-                            <span className="text-small text-white/45">
-                              {item.progress}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-white/[0.1] overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
-                              style={{ width: `${item.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Play Button Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-3xl">
-                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center border border-white/30">
-                  <Play size={32} className="text-white ml-1" />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="grid md:grid-cols-4 gap-6">
-            {benefits.map((benefit, i) => (
-              <motion.div
-                key={benefit.title}
-                initial={false}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="group"
-              >
-                <div className="h-full p-6 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F1F3F5] hover:border-[#D1D5DB] transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                  <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <benefit.icon size={24} className="text-[#111827]" />
-                  </div>
-                  <h3 className="text-title font-medium text-[#111827] mb-2">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-body text-[#4B5563] leading-relaxed">
-                    {benefit.description}
-                  </p>
-                </div>
-              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 border-t border-[#E5E7EB]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <div className="grid md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, i) => (
-              <motion.div
-                key={i}
-                initial={false}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-xl bg-white border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-              >
-                <p className="text-title text-[#4B5563] leading-relaxed mb-6 italic">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </p>
-                <div>
-                  <div className="text-body-lg font-medium text-[#111827]">
-                    {testimonial.author}
-                  </div>
-                  <div className="text-body text-[#4B5563]">
-                    {testimonial.company}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-20 border-t border-[#E5E7EB]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center"
+      {/* CTA strip */}
+      <section className="py-24 md:py-32 bg-white border-t border-[#E5E7EB]">
+        <div className="max-w-[720px] mx-auto px-6 md:px-12 text-center">
+          <h2
+            className="font-bold leading-[1.1] tracking-[-0.03em] mb-4"
+            style={{ fontSize: "clamp(24px, 4vw, 40px)" }}
           >
-            <h2 className="text-display font-medium text-[#111827] mb-4">
-              Ready to simplify your compliance?
-            </h2>
-            <p className="text-title text-[#4B5563] mb-8 max-w-xl mx-auto">
-              Join leading space companies who trust Caelex for their regulatory
-              compliance.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <Link
-                href="/assessment"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
-              >
-                Start Free Assessment
-                <ArrowRight size={16} />
-              </Link>
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-[#D1D5DB] text-[#4B5563] text-body-lg font-medium hover:border-[#111827] transition-all"
-              >
-                <Users size={16} />
-                Book Demo
-              </button>
-            </div>
-          </motion.div>
+            <span className="text-[#111827]">Rather explore on your own?</span>
+          </h2>
+          <p className="text-[15px] text-[#4B5563] leading-relaxed mb-8 max-w-md mx-auto">
+            The free assessment takes 5 minutes and gives you a full compliance
+            profile — no account required.
+          </p>
+          <Link
+            href="/assessment"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#111827] text-white text-[14px] font-medium hover:bg-[#374151] transition-all"
+          >
+            Start Free Assessment
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
-
-      {/* Footer spacer */}
-      <div className="h-20" />
     </div>
   );
 }
