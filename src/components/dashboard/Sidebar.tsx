@@ -39,6 +39,7 @@ import {
   Users,
   ShieldAlert,
   Calendar,
+  Satellite,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -609,6 +610,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 onClick={handleNavClick}
               >
                 ASTRA
+              </NavItem>
+              <NavItem
+                href="/dashboard/sentinel"
+                icon={<Satellite size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={t("sidebar.new")}
+              >
+                Sentinel
               </NavItem>
             </div>
           </div>

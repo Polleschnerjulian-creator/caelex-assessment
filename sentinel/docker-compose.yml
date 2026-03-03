@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  sentinel:
+    build: .
+    container_name: caelex-sentinel
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: "0.5"
+    environment:
+      - SENTINEL_TOKEN=${SENTINEL_TOKEN:-}
+      - OPERATOR_ID=${OPERATOR_ID:-demo-operator}
+      - OPERATOR_NAME=${OPERATOR_NAME:-Demo Satellite Operator GmbH}
+      - CAELEX_API_URL=${CAELEX_API_URL:-https://caelex.eu}
+      - MODE=${MODE:-simulator}
+      - SENTINEL_DATA_DIR=/data
+    volumes:
+      - ./config:/config:ro
+      - sentinel-data:/data
+    ports:
+      - "8443:8443"
+    networks:
+      - sentinel-net
+
+volumes:
+  sentinel-data:
+
+networks:
+  sentinel-net:
+    driver: bridge

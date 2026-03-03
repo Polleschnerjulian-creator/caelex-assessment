@@ -1,0 +1,40 @@
+# Caelex Sentinel Configuration
+# Copy to config.yaml and adjust values
+
+sentinel:
+  operator_id: "demo-operator"
+  operator_name: "Demo Satellite Operator GmbH"
+  satellites:
+    - norad_id: "58421"
+      name: "CAELEX-SAT-1"
+      orbit_type: "SSO"
+      initial_altitude_km: 550
+      initial_inclination_deg: 97.6
+
+collectors:
+  orbit_debris:
+    enabled: true
+    schedule: "*/15 * * * *"    # Every 15 minutes
+  cybersecurity:
+    enabled: true
+    schedule: "0 * * * *"       # Every hour
+  ground_station:
+    enabled: true
+    schedule: "0 */6 * * *"     # Every 6 hours
+  document_watch:
+    enabled: true
+    schedule: "0 0 * * *"       # Daily at midnight
+
+transport:
+  caelex_api_url: "https://caelex.eu"
+  sentinel_token: ""            # Set via SENTINEL_TOKEN env var
+  retry_max_attempts: 10
+  retry_max_delay_ms: 3600000   # 1 hour
+  buffer_max_days: 30
+
+dashboard:
+  enabled: true
+  port: 8443
+
+# "simulator" for demo/testing, "production" for real data sources
+mode: simulator

@@ -2522,6 +2522,9 @@ model Organization {
   environmentalAssessments     EnvironmentalAssessment[]
   nis2Assessments              NIS2Assessment[]
 
+  // Sentinel: autonomous compliance evidence agents
+  sentinelAgents               SentinelAgent[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -5871,4 +5874,100 @@ model EvidenceRequirementMapping {
   @@index([requirementId, organizationId])
   @@index([evidenceId])
   @@index([organizationId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SENTINEL — Autonomous Compliance Evidence Collection
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model SentinelAgent {
+  id                String   @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name              String
+  sentinelId        String   @unique
+  publicKey         String   @db.Text
+  token             String   @unique // Hashed bearer token for auth
+  status            String   @default("PENDING") // PENDING, ACTIVE, REVOKED
+  lastSeen          DateTime?
+  lastPacketAt      DateTime?
+  chainPosition     Int      @default(0)
+  lastChainHash     String?
+  version           String?
+  configHash        String?
+  enabledCollectors String[] // ["orbit_debris", "cybersecurity", ...]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  packets           SentinelPacket[]
+  crossChecks       CrossVerification[]
+
+  @@index([organizationId])
+  @@index([sentinelId])
+  @@index([status])
+}
+
+model SentinelPacket {
+  id               String   @id @default(cuid())
+  packetId         String   @unique
+  agentId          String
+  agent            SentinelAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  satelliteNorad   String?
+
+  // Data
+  dataPoint        String
+  values           Json
+  sourceSystem     String
+  collectionMethod String
+  collectedAt      DateTime
+  complianceNotes  String[]
+
+  // Regulation mapping
+  regulationMapping Json
+
+  // Integrity
+  contentHash      String
+  previousHash     String
+  chainPosition    Int
+  signature        String   @db.Text
+  signatureValid   Boolean  @default(false)
+  chainValid       Boolean  @default(false)
+
+  // Trust
+  crossVerified    Boolean  @default(false)
+  trustScore       Float?
+
+  // Processing
+  processedAt      DateTime @default(now())
+
+  crossChecks      CrossVerification[]
+
+  @@index([agentId])
+  @@index([satelliteNorad])
+  @@index([dataPoint])
+  @@index([collectedAt])
+  @@index([chainPosition])
+}
+
+model CrossVerification {
+  id              String   @id @default(cuid())
+  packetId        String
+  packet          SentinelPacket @relation(fields: [packetId], references: [id], onDelete: Cascade)
+  agentId         String
+  agent           SentinelAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  dataPoint       String
+  agentValue      Float
+  publicValue     Float
+  publicSource    String // "celestrak", "space_track", "esa_discos"
+  delta           Float
+
+  result          String // "VERIFIED", "PLAUSIBLE", "ANOMALY"
+  confidence      Float
+
+  verifiedAt      DateTime @default(now())
+  publicDataEpoch DateTime?
+
+  @@index([packetId])
+  @@index([agentId])
 }
