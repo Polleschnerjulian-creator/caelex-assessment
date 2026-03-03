@@ -302,7 +302,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                   rel="noopener noreferrer"
                   className={`w-11 h-11 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center transition-all ${
                     isLight
-                      ? "bg-white border-[#E5E7EB] text-[#9CA3AF] hover:text-[#111827] hover:border-[#D1D5DB]"
+                      ? "bg-white border-[#E5E7EB] text-[#6B7280] hover:text-[#111827] hover:border-[#D1D5DB]"
                       : "bg-white/[0.06] border-white/10 text-white/45 hover:text-white hover:bg-white/10 hover:border-white/20"
                   }`}
                   aria-label={`Follow Caelex on ${label}`}
@@ -339,7 +339,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
           ].map(({ title, links, ariaLabel, hasCookieSettings }) => (
             <nav key={title} aria-label={ariaLabel}>
               <h3
-                className={`text-caption uppercase tracking-wider mb-4 ${isLight ? "text-[#9CA3AF]" : "text-white/45"}`}
+                className={`text-caption uppercase tracking-wider mb-4 ${isLight ? "text-[#6B7280]" : "text-white/45"}`}
               >
                 {title}
               </h3>
@@ -389,7 +389,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
             {/* Copyright */}
             <div className="flex items-center gap-4">
               <span
-                className={`text-small ${isLight ? "text-[#9CA3AF]" : "text-white/25"}`}
+                className={`text-small ${isLight ? "text-[#6B7280]" : "text-white/25"}`}
               >
                 © {new Date().getFullYear()} Caelex. All rights reserved.
               </span>
@@ -419,7 +419,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                   rel="noopener noreferrer"
                   className={`text-small sm:text-caption transition-colors ${
                     isLight
-                      ? "text-[#9CA3AF] hover:text-[#4B5563]"
+                      ? "text-[#6B7280] hover:text-[#111827]"
                       : "text-white/25 hover:text-white/45"
                   }`}
                 >
