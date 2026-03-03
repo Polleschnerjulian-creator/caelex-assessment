@@ -38,12 +38,12 @@ function Section({
 
 export default function ProblemSection() {
   return (
-    <section className="py-24 md:py-36 bg-[#030712]">
+    <section className="py-24 md:py-36 bg-[#F7F8FA]">
       <div className="max-w-[720px] mx-auto px-6 md:px-12">
         <Section>
           <motion.p
             variants={fadeUp}
-            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#4B5563] mb-4"
+            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#9CA3AF] mb-4"
           >
             The Problem
           </motion.p>
@@ -52,14 +52,14 @@ export default function ProblemSection() {
             variants={fadeUp}
             className="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] mb-10"
           >
-            <span className="text-[#F9FAFB]">Compliance is a mirror.</span>
+            <span className="text-[#111827]">Compliance is a mirror.</span>
             <br />
-            <span className="text-[#4B5563]">You only see today.</span>
+            <span className="text-[#9CA3AF]">You only see today.</span>
           </motion.h2>
 
           <motion.div
             variants={fadeUp}
-            className="space-y-6 text-[15px] text-[#9CA3AF] leading-[1.75]"
+            className="space-y-6 text-[15px] text-[#4B5563] leading-[1.75]"
           >
             <p>
               Your satellite is 94% compliant. Three gaps, two warnings. A
@@ -76,7 +76,7 @@ export default function ProblemSection() {
             </p>
 
             <p
-              className="text-[#F9FAFB] font-semibold"
+              className="text-[#111827] font-semibold"
               style={{ fontSize: "clamp(17px, 2vw, 20px)" }}
             >
               Ephemeris eliminates surprises.

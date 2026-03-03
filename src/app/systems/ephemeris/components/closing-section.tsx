@@ -19,18 +19,7 @@ export default function ClosingSection() {
   const inView = useInView(ref, { once: true, margin: "-60px" });
 
   return (
-    <section className="relative py-32 md:py-48 bg-[#030712] border-t border-[#1F2937] overflow-hidden">
-      {/* Radial emerald glow */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{
-          width: "600px",
-          height: "600px",
-          background:
-            "radial-gradient(ellipse at center, rgba(16,185,129,0.05) 0%, transparent 70%)",
-        }}
-      />
-
+    <section className="relative py-32 md:py-48 bg-white border-t border-[#E5E7EB] overflow-hidden">
       <div className="relative z-10 max-w-[720px] mx-auto px-6 md:px-12 text-center">
         <motion.div
           ref={ref}
@@ -43,7 +32,7 @@ export default function ClosingSection() {
             className="font-bold leading-[1.1] tracking-[-0.03em]"
             style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
           >
-            <span className="text-[#F9FAFB]">Compliance was a mirror.</span>
+            <span className="text-[#111827]">Compliance was a mirror.</span>
           </motion.p>
 
           <motion.p
@@ -51,14 +40,14 @@ export default function ClosingSection() {
             className="font-bold leading-[1.1] tracking-[-0.03em] mt-2"
             style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)" }}
           >
-            <span className="text-[#10B981]">
+            <span className="text-[#9CA3AF]">
               Ephemeris makes it a telescope.
             </span>
           </motion.p>
 
           <motion.p
             variants={fadeUp}
-            className="font-mono text-[12px] text-[#4B5563] tracking-[0.05em] mt-10"
+            className="font-mono text-[12px] text-[#9CA3AF] tracking-[0.05em] mt-10"
           >
             Predict compliance risk, from today to end-of-life.
           </motion.p>

@@ -38,7 +38,7 @@ function Section({
 
 export default function ParadigmShift() {
   return (
-    <section className="py-24 md:py-36 bg-[#030712] border-t border-[#1F2937]">
+    <section className="py-24 md:py-36 bg-white border-t border-[#E5E7EB]">
       <div className="max-w-[720px] mx-auto px-6 md:px-12">
         <Section className="text-center">
           {/* Before → After */}
@@ -48,23 +48,23 @@ export default function ParadigmShift() {
           >
             {/* Before */}
             <div className="text-center sm:text-right flex-1">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#4B5563] mb-2">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#9CA3AF] mb-2">
                 Before
               </p>
               <p
-                className="font-bold tracking-[-0.02em] text-[#4B5563]"
+                className="font-bold tracking-[-0.02em] text-[#9CA3AF]"
                 style={{ fontSize: "clamp(24px, 4vw, 40px)" }}
               >
                 &ldquo;82% compliant&rdquo;
               </p>
-              <p className="text-[13px] text-[#374151] mt-2">
+              <p className="text-[13px] text-[#9CA3AF] mt-2">
                 A number. Today. Static.
               </p>
             </div>
 
             {/* Arrow */}
             <div
-              className="font-mono text-[#065F46] flex-shrink-0"
+              className="font-mono text-[#111827] flex-shrink-0"
               style={{ fontSize: "clamp(24px, 4vw, 36px)" }}
             >
               →
@@ -72,16 +72,16 @@ export default function ParadigmShift() {
 
             {/* After */}
             <div className="text-center sm:text-left flex-1">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#10B981] mb-2">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#111827] mb-2">
                 After
               </p>
               <p
-                className="font-bold tracking-[-0.02em] text-[#10B981]"
+                className="font-bold tracking-[-0.02em] text-[#111827]"
                 style={{ fontSize: "clamp(24px, 4vw, 40px)" }}
               >
                 &ldquo;847 days to first breach&rdquo;
               </p>
-              <p className="text-[13px] text-[#6EE7B7] mt-2">
+              <p className="text-[13px] text-[#4B5563] mt-2">
                 A trajectory. Forward. Actionable.
               </p>
             </div>
@@ -90,7 +90,7 @@ export default function ParadigmShift() {
           {/* Body */}
           <motion.p
             variants={fadeUp}
-            className="text-[15px] text-[#9CA3AF] leading-[1.75] max-w-[640px] mx-auto"
+            className="text-[15px] text-[#4B5563] leading-[1.75] max-w-[640px] mx-auto"
           >
             Ephemeris replaces the mirror with a telescope. It doesn&apos;t look
             at the current state — it computes the future state. For every

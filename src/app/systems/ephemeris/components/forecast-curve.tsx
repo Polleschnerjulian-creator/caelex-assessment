@@ -191,7 +191,7 @@ export default function ForecastCurve() {
         </defs>
 
         {/* ── Background ── */}
-        <rect width={VB_W} height={VB_H} fill="#030712" rx="8" />
+        <rect width={VB_W} height={VB_H} fill="#F7F8FA" rx="8" />
 
         {/* ── Grid lines ── */}
         {gridLines.map((pct) => (
@@ -201,7 +201,7 @@ export default function ForecastCurve() {
               y1={pctToY(pct)}
               x2={VB_W - PAD.right}
               y2={pctToY(pct)}
-              stroke="#1F2937"
+              stroke="#E5E7EB"
               strokeWidth="0.5"
             />
             <text
@@ -225,7 +225,7 @@ export default function ForecastCurve() {
               y1={PAD.top}
               x2={dayToX(m.day)}
               y2={PAD.top + CHART_H}
-              stroke="#1F2937"
+              stroke="#E5E7EB"
               strokeWidth="0.5"
               strokeDasharray={m.day === 0 ? "0" : "2,4"}
             />
@@ -327,7 +327,7 @@ export default function ForecastCurve() {
               width="144"
               height="18"
               rx="3"
-              fill="#0A0F1A"
+              fill="#FFFFFF"
               stroke="#EF4444"
               strokeWidth="0.5"
               opacity="0.9"

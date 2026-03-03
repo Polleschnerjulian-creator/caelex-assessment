@@ -86,19 +86,19 @@ const STAKEHOLDERS = [
 
 export default function MoatSection() {
   return (
-    <section className="py-24 md:py-36 bg-[#030712] border-t border-[#1F2937]">
+    <section className="py-24 md:py-36 bg-[#F7F8FA] border-t border-[#E5E7EB]">
       <div className="max-w-[720px] mx-auto px-6 md:px-12">
         <Section>
           <motion.p
             variants={fadeUp}
-            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#4B5563] mb-4"
+            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#9CA3AF] mb-4"
           >
             The Moat
           </motion.p>
 
           <motion.h2
             variants={fadeUp}
-            className="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#F9FAFB] mb-2"
+            className="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#111827] mb-2"
           >
             Four things. Simultaneously.
           </motion.h2>
@@ -117,18 +117,18 @@ export default function MoatSection() {
             <Section key={item.number}>
               <motion.div variants={fadeUp} className="flex gap-6">
                 {/* Number */}
-                <span className="font-mono text-[14px] font-semibold text-[#065F46] flex-shrink-0 pt-0.5">
+                <span className="font-mono text-[14px] font-semibold text-[#9CA3AF] flex-shrink-0 pt-0.5">
                   {item.number}
                 </span>
 
                 <div>
                   {/* Title */}
-                  <h3 className="text-[16px] font-bold text-[#F9FAFB] mb-2">
+                  <h3 className="text-[16px] font-bold text-[#111827] mb-2">
                     {item.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-[14px] text-[#9CA3AF] leading-relaxed mb-3">
+                  <p className="text-[14px] text-[#4B5563] leading-relaxed mb-3">
                     {item.description}
                   </p>
 
@@ -136,8 +136,8 @@ export default function MoatSection() {
                   <span
                     className="inline-block font-mono text-[10px] font-semibold tracking-[0.05em] px-2.5 py-1 rounded-full"
                     style={{
-                      color: "#065F46",
-                      background: "rgba(16,185,129,0.08)",
+                      color: "#4B5563",
+                      background: "#F1F3F5",
                     }}
                   >
                     {item.source}
@@ -159,14 +159,14 @@ export default function MoatSection() {
                 key={s.role}
                 className="rounded-lg p-5"
                 style={{
-                  background: "#0A0F1A",
-                  border: "1px solid #1F2937",
+                  background: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
                 }}
               >
-                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-[#10B981] mb-3">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF] mb-3">
                   {s.role}
                 </p>
-                <p className="text-[13px] text-[#D1D5DB] italic leading-relaxed">
+                <p className="text-[13px] text-[#4B5563] italic leading-relaxed">
                   &ldquo;{s.quote}&rdquo;
                 </p>
               </div>

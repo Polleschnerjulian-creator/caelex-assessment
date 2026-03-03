@@ -74,19 +74,19 @@ const IMPACT = [
 
 export default function JurisdictionSection() {
   return (
-    <section className="py-24 md:py-36 bg-[#030712] border-t border-[#1F2937]">
+    <section className="py-24 md:py-36 bg-white border-t border-[#E5E7EB]">
       <div className="max-w-[720px] mx-auto px-6 md:px-12">
         <Section>
           <motion.p
             variants={fadeUp}
-            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#4B5563] mb-4"
+            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#9CA3AF] mb-4"
           >
             Jurisdiction Simulation
           </motion.p>
 
           <motion.h2
             variants={fadeUp}
-            className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-[1.15] tracking-[-0.03em] text-[#F9FAFB] mb-6"
+            className="text-[clamp(1.5rem,3.5vw,2.5rem)] font-bold leading-[1.15] tracking-[-0.03em] text-[#111827] mb-6"
           >
             &ldquo;What changes if I launch from
             <br />
@@ -95,7 +95,7 @@ export default function JurisdictionSection() {
 
           <motion.p
             variants={fadeUp}
-            className="text-[15px] text-[#9CA3AF] leading-[1.75] mb-12"
+            className="text-[15px] text-[#4B5563] leading-[1.75] mb-12"
           >
             Today, this question costs &euro;20,000–50,000 in legal fees and 4–6
             weeks of analysis. Per jurisdiction. Ephemeris answers it in seconds
@@ -108,21 +108,21 @@ export default function JurisdictionSection() {
         <Section>
           <motion.div
             variants={fadeUp}
-            className="overflow-x-auto rounded-xl border border-[#1F2937]"
+            className="overflow-x-auto rounded-xl border border-[#E5E7EB]"
           >
             <table className="w-full text-left font-mono text-[11px]">
               <thead>
-                <tr className="border-b border-[#1F2937]">
-                  <th className="px-4 py-3 text-[#6B7280] font-semibold uppercase tracking-[0.1em]">
+                <tr className="border-b border-[#E5E7EB]">
+                  <th className="px-4 py-3 text-[#9CA3AF] font-semibold uppercase tracking-[0.1em]">
                     Requirement
                   </th>
-                  <th className="px-4 py-3 text-[#10B981] font-semibold uppercase tracking-[0.1em]">
+                  <th className="px-4 py-3 text-[#111827] font-semibold uppercase tracking-[0.1em]">
                     DE
                   </th>
-                  <th className="px-4 py-3 text-[#10B981] font-semibold uppercase tracking-[0.1em]">
+                  <th className="px-4 py-3 text-[#111827] font-semibold uppercase tracking-[0.1em]">
                     NO
                   </th>
-                  <th className="px-4 py-3 text-[#10B981] font-semibold uppercase tracking-[0.1em]">
+                  <th className="px-4 py-3 text-[#111827] font-semibold uppercase tracking-[0.1em]">
                     GB
                   </th>
                 </tr>
@@ -131,9 +131,9 @@ export default function JurisdictionSection() {
                 {ROWS.map((row) => (
                   <tr
                     key={row.req}
-                    className="border-b border-[#1F2937] last:border-b-0"
+                    className="border-b border-[#E5E7EB] last:border-b-0"
                   >
-                    <td className="px-4 py-3 text-[#9CA3AF]">{row.req}</td>
+                    <td className="px-4 py-3 text-[#4B5563]">{row.req}</td>
                     <td className="px-4 py-3 text-[#6B7280]">{row.de}</td>
                     <td className="px-4 py-3 text-[#6B7280]">{row.no}</td>
                     <td className="px-4 py-3 text-[#6B7280]">{row.gb}</td>
@@ -155,14 +155,14 @@ export default function JurisdictionSection() {
                 key={item.label}
                 className="rounded-lg p-4"
                 style={{
-                  background: "#0A0F1A",
-                  border: "1px solid #1F2937",
+                  background: "#F7F8FA",
+                  border: "1px solid #E5E7EB",
                 }}
               >
-                <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#4B5563] mb-2">
+                <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#9CA3AF] mb-2">
                   {item.label}
                 </p>
-                <p className="text-[16px] font-bold text-[#F9FAFB] mb-1">
+                <p className="text-[16px] font-bold text-[#111827] mb-1">
                   {item.primary}
                 </p>
                 <p className="text-[12px] text-[#6B7280]">{item.secondary}</p>

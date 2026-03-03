@@ -81,26 +81,26 @@ const MODELS = [
 
 export default function PredictionModels() {
   return (
-    <section className="py-24 md:py-36 bg-[#030712] border-t border-[#1F2937]">
+    <section className="py-24 md:py-36 bg-[#F7F8FA] border-t border-[#E5E7EB]">
       <div className="max-w-[960px] mx-auto px-6 md:px-12">
         <Section>
           <motion.p
             variants={fadeUp}
-            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#4B5563] mb-4"
+            className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#9CA3AF] mb-4"
           >
             Five Prediction Models
           </motion.p>
 
           <motion.h2
             variants={fadeUp}
-            className="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#F9FAFB] mb-4"
+            className="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#111827] mb-4"
           >
             Physics. Statistics. Regulation.
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
-            className="text-[15px] text-[#6B7280] leading-relaxed max-w-2xl mb-14"
+            className="text-[15px] text-[#4B5563] leading-relaxed max-w-2xl mb-14"
           >
             No machine learning. No black boxes. Deterministic models grounded
             in orbital mechanics, classical statistics, and codified regulatory
@@ -116,32 +116,32 @@ export default function PredictionModels() {
                 variants={fadeUp}
                 className="group rounded-xl p-6 h-full transition-all duration-300"
                 style={{
-                  background: "#0A0F1A",
-                  border: "1px solid #1F2937",
+                  background: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget;
-                  el.style.background = "#111827";
-                  el.style.borderColor = "rgba(16,185,129,0.4)";
+                  el.style.background = "#F7F8FA";
+                  el.style.borderColor = "#D1D5DB";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget;
-                  el.style.background = "#0A0F1A";
-                  el.style.borderColor = "#1F2937";
+                  el.style.background = "#FFFFFF";
+                  el.style.borderColor = "#E5E7EB";
                 }}
               >
                 {/* Number + Icon */}
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="font-mono text-[12px] text-[#065F46] tracking-wider">
+                  <span className="font-mono text-[12px] text-[#9CA3AF] tracking-wider">
                     {model.number}
                   </span>
-                  <span className="text-[18px] text-[#10B981] opacity-60">
+                  <span className="text-[18px] text-[#9CA3AF] opacity-60">
                     {model.icon}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-[16px] font-bold text-[#F9FAFB] mb-3">
+                <h3 className="text-[16px] font-bold text-[#111827] mb-3">
                   {model.title}
                 </h3>
 
@@ -154,8 +154,8 @@ export default function PredictionModels() {
                 <span
                   className="inline-block font-mono text-[10px] font-semibold tracking-[0.05em] px-2.5 py-1 rounded-full"
                   style={{
-                    color: "#10B981",
-                    background: "rgba(16,185,129,0.08)",
+                    color: "#4B5563",
+                    background: "#F1F3F5",
                   }}
                 >
                   {model.tag}

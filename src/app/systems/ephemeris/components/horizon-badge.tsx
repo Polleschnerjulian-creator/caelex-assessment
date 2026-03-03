@@ -8,9 +8,9 @@ interface HorizonBadgeProps {
 }
 
 function getColor(days: number) {
-  if (days < 90) return { text: "#EF4444", glow: "rgba(239,68,68,0.15)" };
-  if (days < 365) return { text: "#F59E0B", glow: "rgba(245,158,11,0.15)" };
-  return { text: "#10B981", glow: "rgba(16,185,129,0.12)" };
+  if (days < 90) return { text: "#EF4444", glow: "rgba(239,68,68,0.08)" };
+  if (days < 365) return { text: "#F59E0B", glow: "rgba(245,158,11,0.08)" };
+  return { text: "#111827", glow: "#F1F3F5" };
 }
 
 export default function HorizonBadge({
@@ -26,7 +26,7 @@ export default function HorizonBadge({
         background: color.glow,
         borderRadius: "12px",
         padding: "16px 28px",
-        border: `1px solid ${color.text}20`,
+        border: `1px solid #E5E7EB`,
       }}
     >
       <AnimatedCounter

@@ -7,18 +7,7 @@ import HorizonBadge from "./horizon-badge";
 
 export default function EphemerisHero() {
   return (
-    <section className="relative min-h-[90vh] flex flex-col justify-center bg-[#030712] overflow-hidden">
-      {/* Radial emerald glow */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{
-          width: "800px",
-          height: "800px",
-          background:
-            "radial-gradient(ellipse at center, rgba(16,185,129,0.06) 0%, transparent 70%)",
-        }}
-      />
-
+    <section className="relative min-h-[90vh] flex flex-col justify-center bg-white overflow-hidden">
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 w-full">
         <motion.div
           initial={{ opacity: 0 }}
@@ -27,7 +16,7 @@ export default function EphemerisHero() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-[#4B5563] hover:text-[#9CA3AF] transition-colors text-body mb-16"
+            className="inline-flex items-center gap-2 text-[#9CA3AF] hover:text-[#111827] transition-colors text-body mb-16"
           >
             <ArrowLeft size={14} />
             Back
@@ -43,9 +32,9 @@ export default function EphemerisHero() {
             <span
               className="inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full"
               style={{
-                color: "#10B981",
-                border: "1px solid rgba(16,185,129,0.3)",
-                background: "rgba(16,185,129,0.06)",
+                color: "#111827",
+                border: "1px solid #E5E7EB",
+                background: "#F1F3F5",
               }}
             >
               Ephemeris /0.4
@@ -60,9 +49,9 @@ export default function EphemerisHero() {
             className="font-bold leading-[1.0] tracking-[-0.03em] mb-8"
             style={{ fontSize: "clamp(40px, 7vw, 80px)" }}
           >
-            <span className="text-[#F9FAFB]">See the future</span>
+            <span className="text-[#111827]">See the future</span>
             <br />
-            <span className="text-[#10B981]">before it satisfies.</span>
+            <span className="text-[#9CA3AF]">before it satisfies.</span>
           </motion.h1>
 
           {/* Subline */}
@@ -70,7 +59,7 @@ export default function EphemerisHero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="text-[#9CA3AF] leading-relaxed max-w-2xl mb-16"
+            className="text-[#4B5563] leading-relaxed max-w-2xl mb-16"
             style={{ fontSize: "clamp(15px, 1.8vw, 18px)" }}
           >
             Predictive compliance intelligence for every satellite in your

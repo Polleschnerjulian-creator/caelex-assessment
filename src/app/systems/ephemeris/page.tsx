@@ -54,7 +54,7 @@ function Section({
 
 export default function EphemerisPage() {
   return (
-    <div className="min-h-screen bg-[#030712]">
+    <div className="min-h-screen bg-white">
       {/* SECTION 1: Hero */}
       <EphemerisHero />
 
@@ -65,12 +65,12 @@ export default function EphemerisPage() {
       <ParadigmShift />
 
       {/* SECTION 4: Forecast Curve */}
-      <section className="py-24 md:py-36 bg-[#030712] border-t border-[#1F2937]">
+      <section className="py-24 md:py-36 bg-white border-t border-[#E5E7EB]">
         <div className="max-w-[720px] mx-auto px-6 md:px-12">
           <Section>
             <motion.p
               variants={fadeUp}
-              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#4B5563] mb-2"
+              className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#9CA3AF] mb-2"
             >
               Compliance Forecast Curve
             </motion.p>
@@ -87,7 +87,7 @@ export default function EphemerisPage() {
           <Section className="mt-6">
             <motion.p
               variants={fadeUp}
-              className="text-[13px] text-[#4B5563] italic leading-relaxed"
+              className="text-[13px] text-[#6B7280] italic leading-relaxed"
             >
               Where the curve crosses the threshold: Predicted Non-Compliance
               Date. Updated with every new Sentinel data point.
