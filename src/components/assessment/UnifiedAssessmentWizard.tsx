@@ -424,28 +424,28 @@ export default function UnifiedAssessmentWizard() {
           : `${Math.round(savedAgo / 1440)} days ago`;
 
     return (
-      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-7 h-7 text-emerald-400" />
+          <div className="w-14 h-14 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center mx-auto mb-6">
+            <Building2 className="w-7 h-7 text-[#111827]" />
           </div>
-          <h2 className="text-heading font-medium text-white mb-3">
+          <h2 className="text-heading font-medium text-[#111827] mb-3">
             Unfinished Assessment
           </h2>
-          <p className="text-body text-white/45 mb-8">
+          <p className="text-body text-[#4B5563] mb-8">
             You have an unfinished assessment from {savedLabel}. Resume where
             you left off?
           </p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={handleResume}
-              className="px-6 py-3 rounded-full bg-emerald-500 text-white text-body-lg font-medium hover:bg-emerald-400 transition-all"
+              className="px-6 py-3 rounded-full bg-[#111827] text-white text-body-lg font-medium hover:bg-[#374151] transition-all"
             >
               Resume
             </button>
             <button
               onClick={handleStartFresh}
-              className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all"
+              className="px-6 py-3 rounded-full bg-white border border-[#D1D5DB] text-body text-[#4B5563] hover:border-[#111827] hover:text-[#111827] transition-all"
             >
               Start Fresh
             </button>
@@ -459,19 +459,19 @@ export default function UnifiedAssessmentWizard() {
   if (isCalculating) {
     return (
       <div
-        className="landing-page min-h-screen bg-black text-white flex items-center justify-center"
+        className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center"
         role="status"
         aria-live="polite"
       >
         <div className="text-center">
           <div
-            className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6"
+            className="w-12 h-12 border-2 border-[#E5E7EB] border-t-emerald-600 rounded-full animate-spin mx-auto mb-6"
             aria-hidden="true"
           />
-          <p className="text-subtitle text-white/70 mb-2">
+          <p className="text-subtitle text-[#111827] mb-2">
             Generating your compliance profile...
           </p>
-          <p className="text-body text-white/45">
+          <p className="text-body text-[#4B5563]">
             Analyzing EU Space Act, NIS2, and National Space Laws
           </p>
         </div>
@@ -482,14 +482,14 @@ export default function UnifiedAssessmentWizard() {
   // Error state
   if (calculationError) {
     return (
-      <div className="landing-page min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <p className="text-red-400 text-body-lg mb-6" role="alert">
+          <p className="text-red-600 text-body-lg mb-6" role="alert">
             {calculationError}
           </p>
           <button
             onClick={handleRestart}
-            className="px-6 py-3 rounded-full bg-white/[0.06] border border-white/[0.10] text-body text-white/70 hover:bg-white/[0.10] hover:text-white transition-all duration-300"
+            className="px-6 py-3 rounded-full bg-white border border-[#D1D5DB] text-body text-[#4B5563] hover:border-[#111827] hover:text-[#111827] transition-all duration-300"
           >
             Start Over
           </button>
@@ -506,7 +506,7 @@ export default function UnifiedAssessmentWizard() {
 
     if (!showResults) {
       return (
-        <div className="landing-page min-h-screen bg-black text-white">
+        <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
           <AssessmentResultsGate
             result={complianceResult}
             onAuthenticated={() => setIsAuthenticated(true)}
@@ -516,7 +516,7 @@ export default function UnifiedAssessmentWizard() {
     }
 
     return (
-      <div className="landing-page min-h-screen bg-black text-white">
+      <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827]">
         <UnifiedResultsDashboard
           result={complianceResult}
           onRestart={handleRestart}
@@ -527,7 +527,7 @@ export default function UnifiedAssessmentWizard() {
 
   // Wizard view
   return (
-    <div className="landing-page min-h-screen bg-black text-white py-8 px-6">
+    <div className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] py-8 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -539,7 +539,7 @@ export default function UnifiedAssessmentWizard() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 onClick={handleBack}
-                className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2 text-body text-[#4B5563] hover:text-[#111827] transition-colors"
               >
                 <ArrowLeft size={14} aria-hidden="true" />
                 <span>Back</span>
@@ -553,7 +553,7 @@ export default function UnifiedAssessmentWizard() {
               >
                 <Link
                   href="/assessment"
-                  className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+                  className="flex items-center gap-2 text-body text-[#4B5563] hover:text-[#111827] transition-colors"
                 >
                   <ArrowLeft size={14} aria-hidden="true" />
                   <span>All assessments</span>
@@ -562,7 +562,7 @@ export default function UnifiedAssessmentWizard() {
             )}
           </AnimatePresence>
 
-          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <span className="text-caption font-medium text-[#4B5563] uppercase tracking-[0.2em]">
             Unified Compliance Assessment
           </span>
         </div>
@@ -570,17 +570,17 @@ export default function UnifiedAssessmentWizard() {
         {/* Phase indicator */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-small font-medium text-white/45">
+            <span className="text-small font-medium text-[#4B5563]">
               Phase {progress.phase} of 8: {progress.phaseName}
             </span>
-            <span className="text-small text-white/45">
+            <span className="text-small text-[#4B5563]">
               Question {state.currentStep} of {totalSteps}
             </span>
           </div>
 
           {/* Overall progress bar */}
           <div
-            className="h-1 bg-white/[0.06] rounded-full overflow-hidden"
+            className="h-1 bg-[#E9ECEF] rounded-full overflow-hidden"
             role="progressbar"
             aria-valuenow={state.currentStep}
             aria-valuemin={0}
@@ -588,7 +588,7 @@ export default function UnifiedAssessmentWizard() {
             aria-label={`Assessment progress: Step ${state.currentStep} of ${totalSteps}`}
           >
             <motion.div
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+              className="h-full bg-emerald-500 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress.overallProgress}%` }}
               transition={{ duration: 0.4, ease: "easeOut" }}
@@ -604,8 +604,8 @@ export default function UnifiedAssessmentWizard() {
                   index + 1 < progress.phase
                     ? "bg-emerald-500"
                     : index + 1 === progress.phase
-                      ? "bg-emerald-400 animate-pulse"
-                      : "bg-white/[0.15]"
+                      ? "bg-emerald-500 animate-pulse"
+                      : "bg-[#D1D5DB]"
                 }`}
                 title={name}
               />
@@ -616,7 +616,7 @@ export default function UnifiedAssessmentWizard() {
         {/* Legal disclaimer on first step */}
         {state.currentStep === 1 && (
           <div className="mb-6">
-            <DisclaimerBanner variant="banner" />
+            <DisclaimerBanner variant="banner" theme="light" />
           </div>
         )}
 
@@ -637,11 +637,11 @@ export default function UnifiedAssessmentWizard() {
             >
               {/* Question header */}
               <div className="mb-8 text-center max-w-2xl mx-auto">
-                <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em] block mb-4">
+                <span className="text-caption font-medium text-emerald-600 uppercase tracking-[0.2em] block mb-4">
                   {currentQuestion.phaseName}
                 </span>
 
-                <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium tracking-[-0.02em] text-white mb-3">
+                <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] font-medium tracking-[-0.02em] text-[#111827] mb-3">
                   {currentQuestion.title}
                   {currentQuestion.helpText && (
                     <InfoTooltip text={currentQuestion.helpText} />
@@ -649,7 +649,7 @@ export default function UnifiedAssessmentWizard() {
                 </h2>
 
                 {currentQuestion.subtitle && (
-                  <p className="text-body-lg text-white/45 leading-relaxed">
+                  <p className="text-body-lg text-[#4B5563] leading-relaxed">
                     {currentQuestion.subtitle}
                   </p>
                 )}
@@ -673,16 +673,15 @@ export default function UnifiedAssessmentWizard() {
                     aria-required={
                       currentQuestion.required ? "true" : undefined
                     }
-                    className="w-full px-5 py-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    className="w-full px-5 py-4 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-emerald-500 transition-colors"
                     style={{
-                      boxShadow:
-                        "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                     }}
                   />
                   <div className="mt-6 flex justify-center">
                     <button
                       onClick={handleTextContinue}
-                      className="flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all"
+                      className="flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium bg-[#111827] text-white hover:bg-[#374151] transition-all"
                     >
                       {currentQuestion.required && !textInput
                         ? "Skip"
@@ -725,15 +724,14 @@ export default function UnifiedAssessmentWizard() {
                           }
                         }}
                         whileTap={{ scale: 0.98 }}
-                        className="p-4 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
+                        className="p-4 rounded-xl text-left transition-all duration-300 group bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                         style={{
-                          boxShadow:
-                            "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                         }}
                       >
                         <div className="flex items-start gap-3">
                           {(flag || IconComponent) && (
-                            <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 rounded-lg bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
                               {flag ? (
                                 <span className="text-xl" aria-hidden="true">
                                   {flag}
@@ -742,17 +740,17 @@ export default function UnifiedAssessmentWizard() {
                                 <IconComponent
                                   size={18}
                                   aria-hidden="true"
-                                  className="text-white/70 group-hover:text-emerald-400 transition-colors"
+                                  className="text-[#4B5563] group-hover:text-emerald-600 transition-colors"
                                 />
                               ) : null}
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-body-lg font-medium text-white group-hover:text-emerald-400 transition-colors">
+                            <h3 className="text-body-lg font-medium text-[#111827] group-hover:text-emerald-600 transition-colors">
                               {option.label}
                             </h3>
                             {option.description && (
-                              <p className="text-small text-white/45 mt-0.5 leading-relaxed">
+                              <p className="text-small text-[#4B5563] mt-0.5 leading-relaxed">
                                 {option.description}
                               </p>
                             )}
@@ -760,7 +758,7 @@ export default function UnifiedAssessmentWizard() {
                           <ArrowRight
                             size={16}
                             aria-hidden="true"
-                            className="text-white/20 group-hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5"
+                            className="text-[#D1D5DB] group-hover:text-emerald-600 transition-colors flex-shrink-0 mt-0.5"
                           />
                         </div>
                       </motion.button>
@@ -795,28 +793,27 @@ export default function UnifiedAssessmentWizard() {
                             }
                           }}
                           whileTap={{ scale: 0.98 }}
-                          className="p-5 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
+                          className="p-5 rounded-xl text-left transition-all duration-300 group bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                           style={{
-                            boxShadow:
-                              "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                           }}
                         >
                           <div className="flex items-center gap-4">
                             {IconComponent && (
-                              <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                              <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
                                 <IconComponent
                                   size={22}
                                   aria-hidden="true"
-                                  className="text-white/70 group-hover:text-emerald-400 transition-colors"
+                                  className="text-[#4B5563] group-hover:text-emerald-600 transition-colors"
                                 />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-subtitle font-medium text-white group-hover:text-emerald-400 transition-colors">
+                              <h3 className="text-subtitle font-medium text-[#111827] group-hover:text-emerald-600 transition-colors">
                                 {option.label}
                               </h3>
                               {option.description && (
-                                <p className="text-body text-white/45 mt-1 leading-relaxed">
+                                <p className="text-body text-[#4B5563] mt-1 leading-relaxed">
                                   {option.description}
                                 </p>
                               )}
@@ -834,14 +831,13 @@ export default function UnifiedAssessmentWizard() {
                   {/* Selection count */}
                   <div className="flex justify-center mb-6">
                     <div
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E5E7EB]"
                       aria-live="polite"
                       style={{
-                        boxShadow:
-                          "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                       }}
                     >
-                      <span className="text-small text-emerald-400/70">
+                      <span className="text-small text-emerald-600">
                         {multiSelect.length} /{" "}
                         {currentQuestion.maxSelections || 10} selected
                       </span>
@@ -888,19 +884,19 @@ export default function UnifiedAssessmentWizard() {
                           }}
                           whileTap={!isDisabled ? { scale: 0.98 } : undefined}
                           className={`
-                            p-4 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px]
+                            p-4 rounded-xl text-left transition-all duration-300 group
                             ${
                               isSelected
-                                ? "bg-emerald-500/[0.12] border border-emerald-500/30"
+                                ? "bg-emerald-50 border border-emerald-200"
                                 : isDisabled
-                                  ? "bg-white/[0.02] border border-white/[0.04] opacity-40 cursor-not-allowed"
-                                  : "bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15] cursor-pointer"
+                                  ? "bg-[#F7F8FA] border border-[#E9ECEF] opacity-50 cursor-not-allowed"
+                                  : "bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] cursor-pointer"
                             }
                           `}
                           style={{
                             boxShadow: isSelected
-                              ? "inset 0 1px 0 rgba(16,185,129,0.1), 0 4px 24px rgba(0,0,0,0.2)"
-                              : "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                              ? "0 1px 3px rgba(16,185,129,0.08)"
+                              : "0 1px 3px rgba(0,0,0,0.04)",
                           }}
                         >
                           <div className="flex items-start gap-3">
@@ -908,8 +904,8 @@ export default function UnifiedAssessmentWizard() {
                               <div
                                 className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                   isSelected
-                                    ? "bg-emerald-500/20"
-                                    : "bg-white/[0.06]"
+                                    ? "bg-emerald-100"
+                                    : "bg-[#F1F3F5] border border-[#E5E7EB]"
                                 }`}
                               >
                                 {flag ? (
@@ -922,8 +918,8 @@ export default function UnifiedAssessmentWizard() {
                                     aria-hidden="true"
                                     className={
                                       isSelected
-                                        ? "text-emerald-400"
-                                        : "text-white/70"
+                                        ? "text-emerald-600"
+                                        : "text-[#4B5563]"
                                     }
                                   />
                                 ) : null}
@@ -932,13 +928,15 @@ export default function UnifiedAssessmentWizard() {
                             <div className="flex-1 min-w-0">
                               <h3
                                 className={`text-body-lg font-medium ${
-                                  isSelected ? "text-emerald-400" : "text-white"
+                                  isSelected
+                                    ? "text-emerald-700"
+                                    : "text-[#111827]"
                                 }`}
                               >
                                 {option.label}
                               </h3>
                               {option.description && (
-                                <p className="text-small text-white/45 mt-0.5 leading-relaxed">
+                                <p className="text-small text-[#4B5563] mt-0.5 leading-relaxed">
                                   {option.description}
                                 </p>
                               )}
@@ -947,7 +945,7 @@ export default function UnifiedAssessmentWizard() {
                               className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all ${
                                 isSelected
                                   ? "bg-emerald-500"
-                                  : "border border-white/[0.25]"
+                                  : "border border-[#D1D5DB] bg-white"
                               }`}
                             >
                               {isSelected && (
@@ -991,8 +989,8 @@ export default function UnifiedAssessmentWizard() {
                         ${
                           multiSelect.length >=
                           (currentQuestion.minSelections || 1)
-                            ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
-                            : "bg-white/10 text-white/45 cursor-not-allowed"
+                            ? "bg-[#111827] text-white hover:bg-[#374151] cursor-pointer"
+                            : "bg-[#F1F3F5] text-[#9CA3AF] border border-[#E5E7EB] cursor-not-allowed"
                         }
                       `}
                     >

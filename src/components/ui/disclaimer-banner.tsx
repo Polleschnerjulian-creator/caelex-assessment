@@ -10,6 +10,7 @@ interface DisclaimerBannerProps {
   assessmentType?: AssessmentType;
   variant: "inline" | "footer" | "banner";
   showTermsLink?: boolean;
+  theme?: "dark" | "light";
 }
 
 const FOOTER_TEXTS: Record<AssessmentType, string> = {
@@ -47,14 +48,25 @@ export default function DisclaimerBanner({
   assessmentType = "general",
   variant,
   showTermsLink = false,
+  theme = "dark",
 }: DisclaimerBannerProps) {
   if (variant === "banner") {
     return (
-      <div className="text-micro text-white/30 text-center py-2.5 border-b border-white/[0.04]">
+      <div
+        className={`text-micro text-center py-2.5 border-b ${
+          theme === "light"
+            ? "text-[#9CA3AF] border-[#E5E7EB]"
+            : "text-white/30 border-white/[0.04]"
+        }`}
+      >
         For informational purposes only — not legal advice. See{" "}
         <Link
           href="/legal/terms"
-          className="underline hover:text-white/70 transition-colors"
+          className={`underline transition-colors ${
+            theme === "light"
+              ? "text-[#6B7280] hover:text-[#111827]"
+              : "hover:text-white/70"
+          }`}
         >
           full terms
         </Link>
