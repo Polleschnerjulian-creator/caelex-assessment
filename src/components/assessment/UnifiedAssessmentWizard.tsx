@@ -99,6 +99,7 @@ export default function UnifiedAssessmentWizard() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [calculationError, setCalculationError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [savingToDashboard, setSavingToDashboard] = useState(false);
 
   // For text input questions
   const [textInput, setTextInput] = useState("");
@@ -109,6 +110,7 @@ export default function UnifiedAssessmentWizard() {
   );
 
   const startedAtRef = useRef<number>(Date.now());
+  const savedViaOAuthRef = useRef(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [savedTimestamp, setSavedTimestamp] = useState<number | null>(null);
 
@@ -116,8 +118,25 @@ export default function UnifiedAssessmentWizard() {
   const STORAGE_VERSION = 2;
   const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-  // Resume detection on mount
+  // Resume detection on mount + Google OAuth return handling
   useEffect(() => {
+    // Handle Google OAuth return with completed assessment
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("complete") === "true") {
+      const resultStr =
+        localStorage.getItem("caelex-pending-unified-assessment") ||
+        localStorage.getItem("caelex-unified-assessment");
+      if (resultStr) {
+        try {
+          setComplianceResult(JSON.parse(resultStr));
+          setState((prev) => ({ ...prev, isComplete: true }));
+          return; // Skip resume modal
+        } catch {
+          // Fall through to normal flow
+        }
+      }
+    }
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
@@ -139,6 +158,48 @@ export default function UnifiedAssessmentWizard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-save assessment to dashboard after Google OAuth return
+  useEffect(() => {
+    if (!complianceResult) return;
+    if (authStatus !== "authenticated" || !session?.user) return;
+    if (savedViaOAuthRef.current) return;
+
+    let needsSave: string | null = null;
+    try {
+      needsSave = localStorage.getItem("caelex-save-assessment-after-auth");
+    } catch {
+      return;
+    }
+    if (!needsSave) return;
+
+    savedViaOAuthRef.current = true;
+    setSavingToDashboard(true);
+
+    fetch("/api/unified/save-to-dashboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      body: JSON.stringify({ result: complianceResult }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          try {
+            localStorage.removeItem("caelex-save-assessment-after-auth");
+            localStorage.removeItem("caelex-pending-unified-assessment");
+          } catch {
+            // ignore
+          }
+        }
+      })
+      .catch(() => {
+        // Still show results even if save fails
+      })
+      .finally(() => {
+        setIsAuthenticated(true);
+        setSavingToDashboard(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complianceResult, authStatus, session]);
 
   const handleResume = useCallback(() => {
     try {
@@ -473,6 +534,30 @@ export default function UnifiedAssessmentWizard() {
           </p>
           <p className="text-body text-[#4B5563]">
             Analyzing EU Space Act, NIS2, and National Space Laws
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Saving to dashboard after OAuth
+  if (savingToDashboard) {
+    return (
+      <div
+        className="landing-light min-h-screen bg-[#F7F8FA] text-[#111827] flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="text-center">
+          <div
+            className="w-12 h-12 border-2 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-6"
+            aria-hidden="true"
+          />
+          <p className="text-subtitle text-[#111827] mb-2">
+            Setting up your dashboard...
+          </p>
+          <p className="text-body text-[#4B5563]">
+            Saving your compliance profile
           </p>
         </div>
       </div>
