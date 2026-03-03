@@ -55,6 +55,16 @@ const ENTRIES: BlogEntry[] = [
       "119 articles. 7 operator classifications. 10 jurisdictions. One deterministic engine. Caelex Comply maps your spacecraft operation to every applicable regulation — filtering by operator type, regime eligibility, and constellation tier — then computes a multi-jurisdiction favorability matrix in under 200ms.",
     image: "/images/blog/agentic-system.png",
   },
+  {
+    id: "verity",
+    slug: "verity",
+    href: "/verity/verify",
+    category: "Cryptographic Attestation · Zero-Knowledge",
+    title: "Verity",
+    description:
+      "Ed25519-signed compliance attestations with SHA-256 commitments and blinding factors. Prove you meet Art. 70 fuel thresholds or NIS2 patch windows — without revealing a single byte of operational data. Offline-verifiable certificates. Tamper-evident hash chains anchored to Sentinel telemetry.",
+    image: "/images/blog/agentic-system.png",
+  },
 ];
 
 const AUTO_PLAY_MS = 8000;
