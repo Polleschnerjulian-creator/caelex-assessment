@@ -203,7 +203,7 @@ export default function AssessmentResultsGate({
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-[#E5E7EB] border-t-emerald-600 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin" />
       </div>
     );
   }
@@ -213,7 +213,7 @@ export default function AssessmentResultsGate({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-2 border-[#E5E7EB] border-t-emerald-600 rounded-full animate-spin mx-auto mb-6" />
+          <div className="w-12 h-12 border-2 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-6" />
           <p className="text-subtitle text-[#111827] mb-2">
             Setting up your dashboard...
           </p>
@@ -234,12 +234,12 @@ export default function AssessmentResultsGate({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F1F3F5] border border-[#D1D5DB] mb-6">
             <CheckCircle
-              className="w-4 h-4 text-emerald-700"
+              className="w-4 h-4 text-[#111827]"
               aria-hidden="true"
             />
-            <span className="text-body text-emerald-700 font-medium">
+            <span className="text-body text-[#111827] font-medium">
               Assessment Complete
             </span>
           </div>
@@ -284,8 +284,8 @@ export default function AssessmentResultsGate({
               {/* Blurred preview content */}
               <div className="blur-sm pointer-events-none">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-emerald-700" />
+                  <div className="w-12 h-12 rounded-xl bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-[#111827]" />
                   </div>
                   <div>
                     <h3 className="text-title font-medium text-[#111827]">
@@ -324,8 +324,8 @@ export default function AssessmentResultsGate({
                         key={i}
                         className="flex items-center gap-3 p-3 rounded-lg bg-[#F7F8FA]"
                       >
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <span className="text-micro text-emerald-700">
+                        <div className="w-6 h-6 rounded-full bg-[#E5E7EB] flex items-center justify-center">
+                          <span className="text-micro text-[#111827]">
                             {i + 1}
                           </span>
                         </div>
@@ -342,7 +342,7 @@ export default function AssessmentResultsGate({
             <div className="mt-6 p-5 rounded-xl bg-white border border-[#E5E7EB]">
               <h4 className="text-body font-medium text-[#111827] mb-4 flex items-center gap-2">
                 <Sparkles
-                  className="w-4 h-4 text-emerald-600"
+                  className="w-4 h-4 text-[#111827]"
                   aria-hidden="true"
                 />
                 Free Tier Includes
@@ -360,7 +360,7 @@ export default function AssessmentResultsGate({
                     className="flex items-center gap-2.5 text-body text-[#4B5563]"
                   >
                     <CheckCircle
-                      className="w-4 h-4 text-emerald-500"
+                      className="w-4 h-4 text-[#111827]"
                       aria-hidden="true"
                     />
                     {feature}
@@ -430,7 +430,7 @@ export default function AssessmentResultsGate({
                           id="gate-name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-emerald-500 focus:outline-none transition-colors"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-[#111827] focus:outline-none transition-colors"
                           placeholder="John Doe"
                           required
                           aria-required="true"
@@ -456,7 +456,7 @@ export default function AssessmentResultsGate({
                           id="gate-organization"
                           value={organization}
                           onChange={(e) => setOrganization(e.target.value)}
-                          className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-emerald-500 focus:outline-none transition-colors"
+                          className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-[#111827] focus:outline-none transition-colors"
                           placeholder="Company name (optional)"
                           autoComplete="organization"
                         />
@@ -482,7 +482,7 @@ export default function AssessmentResultsGate({
                       id="gate-email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-emerald-500 focus:outline-none transition-colors"
+                      className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-[#111827] focus:outline-none transition-colors"
                       placeholder="you@company.com"
                       required
                       aria-required="true"
@@ -508,7 +508,7 @@ export default function AssessmentResultsGate({
                       id="gate-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-emerald-500 focus:outline-none transition-colors"
+                      className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-11 pr-4 py-3 text-body-lg text-[#111827] placeholder-[#9CA3AF] focus:border-[#111827] focus:outline-none transition-colors"
                       placeholder={
                         authMode === "signup"
                           ? "Min. 12 characters"

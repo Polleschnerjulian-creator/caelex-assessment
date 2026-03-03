@@ -465,7 +465,7 @@ export default function UnifiedAssessmentWizard() {
       >
         <div className="text-center">
           <div
-            className="w-12 h-12 border-2 border-[#E5E7EB] border-t-emerald-600 rounded-full animate-spin mx-auto mb-6"
+            className="w-12 h-12 border-2 border-[#E5E7EB] border-t-[#111827] rounded-full animate-spin mx-auto mb-6"
             aria-hidden="true"
           />
           <p className="text-subtitle text-[#111827] mb-2">
@@ -588,7 +588,7 @@ export default function UnifiedAssessmentWizard() {
             aria-label={`Assessment progress: Step ${state.currentStep} of ${totalSteps}`}
           >
             <motion.div
-              className="h-full bg-emerald-500 rounded-full"
+              className="h-full bg-[#111827] rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress.overallProgress}%` }}
               transition={{ duration: 0.4, ease: "easeOut" }}
@@ -602,9 +602,9 @@ export default function UnifiedAssessmentWizard() {
                 key={name}
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index + 1 < progress.phase
-                    ? "bg-emerald-500"
+                    ? "bg-[#111827]"
                     : index + 1 === progress.phase
-                      ? "bg-emerald-500 animate-pulse"
+                      ? "bg-[#111827] animate-pulse"
                       : "bg-[#D1D5DB]"
                 }`}
                 title={name}
@@ -637,7 +637,7 @@ export default function UnifiedAssessmentWizard() {
             >
               {/* Question header */}
               <div className="mb-8 text-center max-w-2xl mx-auto">
-                <span className="text-caption font-medium text-emerald-600 uppercase tracking-[0.2em] block mb-4">
+                <span className="text-caption font-medium text-[#111827] uppercase tracking-[0.2em] block mb-4">
                   {currentQuestion.phaseName}
                 </span>
 
@@ -673,7 +673,7 @@ export default function UnifiedAssessmentWizard() {
                     aria-required={
                       currentQuestion.required ? "true" : undefined
                     }
-                    className="w-full px-5 py-4 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full px-5 py-4 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#111827] transition-colors"
                     style={{
                       boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                     }}
@@ -740,13 +740,13 @@ export default function UnifiedAssessmentWizard() {
                                 <IconComponent
                                   size={18}
                                   aria-hidden="true"
-                                  className="text-[#4B5563] group-hover:text-emerald-600 transition-colors"
+                                  className="text-[#4B5563] group-hover:text-[#111827] transition-colors"
                                 />
                               ) : null}
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-body-lg font-medium text-[#111827] group-hover:text-emerald-600 transition-colors">
+                            <h3 className="text-body-lg font-medium text-[#111827] group-hover:text-[#111827] transition-colors">
                               {option.label}
                             </h3>
                             {option.description && (
@@ -758,7 +758,7 @@ export default function UnifiedAssessmentWizard() {
                           <ArrowRight
                             size={16}
                             aria-hidden="true"
-                            className="text-[#D1D5DB] group-hover:text-emerald-600 transition-colors flex-shrink-0 mt-0.5"
+                            className="text-[#D1D5DB] group-hover:text-[#111827] transition-colors flex-shrink-0 mt-0.5"
                           />
                         </div>
                       </motion.button>
@@ -804,12 +804,12 @@ export default function UnifiedAssessmentWizard() {
                                 <IconComponent
                                   size={22}
                                   aria-hidden="true"
-                                  className="text-[#4B5563] group-hover:text-emerald-600 transition-colors"
+                                  className="text-[#4B5563] group-hover:text-[#111827] transition-colors"
                                 />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-subtitle font-medium text-[#111827] group-hover:text-emerald-600 transition-colors">
+                              <h3 className="text-subtitle font-medium text-[#111827] group-hover:text-[#111827] transition-colors">
                                 {option.label}
                               </h3>
                               {option.description && (
@@ -837,7 +837,7 @@ export default function UnifiedAssessmentWizard() {
                         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                       }}
                     >
-                      <span className="text-small text-emerald-600">
+                      <span className="text-small text-[#111827]">
                         {multiSelect.length} /{" "}
                         {currentQuestion.maxSelections || 10} selected
                       </span>
@@ -887,7 +887,7 @@ export default function UnifiedAssessmentWizard() {
                             p-4 rounded-xl text-left transition-all duration-300 group
                             ${
                               isSelected
-                                ? "bg-emerald-50 border border-emerald-200"
+                                ? "bg-[#F1F3F5] border border-[#111827]"
                                 : isDisabled
                                   ? "bg-[#F7F8FA] border border-[#E9ECEF] opacity-50 cursor-not-allowed"
                                   : "bg-white border border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] cursor-pointer"
@@ -895,7 +895,7 @@ export default function UnifiedAssessmentWizard() {
                           `}
                           style={{
                             boxShadow: isSelected
-                              ? "0 1px 3px rgba(16,185,129,0.08)"
+                              ? "0 1px 3px rgba(0,0,0,0.06)"
                               : "0 1px 3px rgba(0,0,0,0.04)",
                           }}
                         >
@@ -904,7 +904,7 @@ export default function UnifiedAssessmentWizard() {
                               <div
                                 className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                   isSelected
-                                    ? "bg-emerald-100"
+                                    ? "bg-[#E5E7EB]"
                                     : "bg-[#F1F3F5] border border-[#E5E7EB]"
                                 }`}
                               >
@@ -918,7 +918,7 @@ export default function UnifiedAssessmentWizard() {
                                     aria-hidden="true"
                                     className={
                                       isSelected
-                                        ? "text-emerald-600"
+                                        ? "text-[#111827]"
                                         : "text-[#4B5563]"
                                     }
                                   />
@@ -929,7 +929,7 @@ export default function UnifiedAssessmentWizard() {
                               <h3
                                 className={`text-body-lg font-medium ${
                                   isSelected
-                                    ? "text-emerald-700"
+                                    ? "text-[#111827]"
                                     : "text-[#111827]"
                                 }`}
                               >
@@ -944,7 +944,7 @@ export default function UnifiedAssessmentWizard() {
                             <div
                               className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all ${
                                 isSelected
-                                  ? "bg-emerald-500"
+                                  ? "bg-[#111827]"
                                   : "border border-[#D1D5DB] bg-white"
                               }`}
                             >
