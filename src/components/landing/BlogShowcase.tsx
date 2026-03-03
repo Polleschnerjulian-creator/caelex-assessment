@@ -46,12 +46,13 @@ const ENTRIES: BlogEntry[] = [
     image: "/images/blog/ground-station.png",
   },
   {
-    id: "automation",
-    slug: "evidence-based-compliance",
-    category: "Technology",
-    title: "Evidence-Based Compliance",
+    id: "comply-engine",
+    slug: "comply-engine",
+    href: "/assessment",
+    category: "Regulatory Intelligence Engine",
+    title: "The Compliance Engine",
     description:
-      "The Caelex agent collects telemetry, configuration drifts, and incident data from your systems in real time — transforming raw operational data into structured compliance evidence mapped to 119 EU Space Act articles.",
+      "119 articles. 7 operator classifications. 10 jurisdictions. One deterministic engine. Caelex Comply maps your spacecraft operation to every applicable regulation — filtering by operator type, regime eligibility, and constellation tier — then computes a multi-jurisdiction favorability matrix in under 200ms.",
     image: "/images/blog/agentic-system.png",
   },
 ];
