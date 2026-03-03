@@ -226,7 +226,7 @@ const PRODUCTS = [
     tagline: "Predict compliance risk,\nfrom today to end-of-life.",
     description:
       "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
-    href: "#",
+    href: "/systems/ephemeris",
   },
   {
     name: "Genome",

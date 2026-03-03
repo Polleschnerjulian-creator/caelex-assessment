@@ -13,6 +13,7 @@ interface BlogEntry {
   title: string;
   description: string;
   image: string;
+  href?: string;
 }
 
 const ENTRIES: BlogEntry[] = [
@@ -24,6 +25,16 @@ const ENTRIES: BlogEntry[] = [
     description:
       "Deploy an autonomous agent into your infrastructure that continuously monitors operational data, validates it against regulatory requirements, and sends evidence-based compliance reports back to Caelex — fully automated.",
     image: "/images/blog/agentic-system.png",
+  },
+  {
+    id: "ephemeris",
+    slug: "ephemeris",
+    href: "/systems/ephemeris",
+    category: "Predictive Intelligence · Digital Twin",
+    title: "Predictive Compliance Modeling",
+    description:
+      "Caelex Ephemeris models every satellite as a living digital twin and computes the compliance future — for every regulation, every satellite, every day of the next five years. Operators don't ask 'are we compliant?' — they ask 'when will we not be?'",
+    image: "/images/blog/ephemeris.svg",
   },
   {
     id: "ground-stations",
@@ -194,7 +205,7 @@ export default function BlogShowcase() {
               style={{ width: cardWidth || "38vw" }}
             >
               <Link
-                href={`/blog/${entry.slug}`}
+                href={entry.href ?? `/blog/${entry.slug}`}
                 className="group block"
                 draggable={false}
                 onClick={(e) => {
