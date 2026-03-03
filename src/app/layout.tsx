@@ -104,12 +104,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Force dark mode — this is a dark-mode-only platform
-const themeScript = `
-  (function() {
-    document.documentElement.classList.add('dark');
-  })();
-`;
+// Light mode — clean Palantir × Apple aesthetic
 
 export default function RootLayout({
   children,
@@ -117,11 +112,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} dark`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
         <meta
           name="format-detection"
@@ -133,12 +124,11 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <OrganizationJsonLd />
         <WebSiteJsonLd />
       </head>
       <body
-        className={`${inter.className} font-sans antialiased bg-dark-bg text-white`}
+        className={`${inter.className} font-sans antialiased bg-light-bg text-slate-900`}
       >
         <a href="#main-content" className="skip-to-main">
           Skip to main content
