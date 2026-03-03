@@ -72,17 +72,17 @@ model User {
   // Assure Platform: materials created by user
   assureMaterials          AssureMaterial[]
   // Caelex Academy
-  academyEnrollments     AcademyEnrollment[]
-  academyCompletions     AcademyLessonCompletion[]
-  academyBadges          AcademyBadge[]
-  academySimulations     AcademySimulationRun[]
-  instructedClassrooms   AcademyClassroom[] @relation("ClassroomInstructor")
+  academyEnrollments       AcademyEnrollment[]
+  academyCompletions       AcademyLessonCompletion[]
+  academyBadges            AcademyBadge[]
+  academySimulations       AcademySimulationRun[]
+  instructedClassrooms     AcademyClassroom[]        @relation("ClassroomInstructor")
 
   // Re-engagement & Onboarding Email Tracking
-  lastReengagementStage    Int                       @default(0)
-  lastReengagementAt       DateTime?
-  onboardingEmailStage     Int                       @default(0)
-  onboardingEmailAt        DateTime?
+  lastReengagementStage Int       @default(0)
+  lastReengagementAt    DateTime?
+  onboardingEmailStage  Int       @default(0)
+  onboardingEmailAt     DateTime?
 
   // Unified Assessment
   unifiedAssessmentResult      String?   @db.Text // JSON string of full assessment result
@@ -2470,60 +2470,60 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   // Relations
-  members               OrganizationMember[]
-  invitations           OrganizationInvitation[]
-  spacecraft            Spacecraft[]
-  registrations         SpaceObjectRegistration[]
-  ssoConnection         SSOConnection?
-  apiKeys               ApiKey[]
-  webhooks              Webhook[]
-  subscription          Subscription?
-  comments              Comment[] // Collaboration: organization's comments
-  activities            Activity[] // Collaboration: organization's activities
-  complianceEvidence    ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
+  members                OrganizationMember[]
+  invitations            OrganizationInvitation[]
+  spacecraft             Spacecraft[]
+  registrations          SpaceObjectRegistration[]
+  ssoConnection          SSOConnection?
+  apiKeys                ApiKey[]
+  webhooks               Webhook[]
+  subscription           Subscription?
+  comments               Comment[] // Collaboration: organization's comments
+  activities             Activity[] // Collaboration: organization's activities
+  complianceEvidence     ComplianceEvidence[] // Audit Center: org-scoped compliance evidence
   regulatoryRequirements RegulatoryRequirement[] // ACE: org-scoped regulatory requirements
-  astraConversations    AstraConversation[] // ASTRA AI conversations
-  generatedDocuments    GeneratedDocument[] // AI-generated compliance documents
-  healthScore           CustomerHealthScore? // CEO Analytics: customer health
-  submissionPackages    SubmissionPackage[] // NCA Portal: document packages
-  breachReports         BreachReport[] // GDPR Art. 33/34 breach reports
-  widgetConfigs         WidgetConfig[] // Embeddable widget configurations
-  churnInterventions    ChurnIntervention[] // Churn intervention tracking
-  regulatoryUpdateReads RegulatoryUpdateRead[] // Regulatory feed read tracking
-  ncaDocuments          NCADocument[] // Generate 2.0: NCA documents
-  ncaDocPackages        NCADocPackage[] // Generate 2.0: NCA submission packages
+  astraConversations     AstraConversation[] // ASTRA AI conversations
+  generatedDocuments     GeneratedDocument[] // AI-generated compliance documents
+  healthScore            CustomerHealthScore? // CEO Analytics: customer health
+  submissionPackages     SubmissionPackage[] // NCA Portal: document packages
+  breachReports          BreachReport[] // GDPR Art. 33/34 breach reports
+  widgetConfigs          WidgetConfig[] // Embeddable widget configurations
+  churnInterventions     ChurnIntervention[] // Churn intervention tracking
+  regulatoryUpdateReads  RegulatoryUpdateRead[] // Regulatory feed read tracking
+  ncaDocuments           NCADocument[] // Generate 2.0: NCA documents
+  ncaDocPackages         NCADocPackage[] // Generate 2.0: NCA submission packages
   stakeholderEngagements StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms              DataRoom[] // Network: secure data rooms
   attestations           ComplianceAttestation[] // Network: compliance attestations
   operatorProfile        OperatorProfile? // Unified operator profile
 
   // Assure: Regulatory Readiness Intelligence
-  rrsScores              RegulatoryReadinessScore? // Latest RRS
-  rrsSnapshots           RRSSnapshot[] // Historical RRS snapshots
-  assureShareLinks       AssureShareLink[] // Permissioned share links
-  assureDDPackages       AssureDDPackage[] // Due diligence packages
-  rcrRatings             RegulatoryCreditRating[] // RCR rating history
-  rcrAppeals             RCRAppeal[] // Rating appeals
+  rrsScores        RegulatoryReadinessScore? // Latest RRS
+  rrsSnapshots     RRSSnapshot[] // Historical RRS snapshots
+  assureShareLinks AssureShareLink[] // Permissioned share links
+  assureDDPackages AssureDDPackage[] // Due diligence packages
+  rcrRatings       RegulatoryCreditRating[] // RCR rating history
+  rcrAppeals       RCRAppeal[] // Rating appeals
 
   // Assure Platform: Investment Readiness
-  assureCompanyProfile   AssureCompanyProfile?
-  assureRisks            AssureRisk[]
-  assureMaterials        AssureMaterial[]
-  assureDataRooms        AssureDataRoom[]
+  assureCompanyProfile      AssureCompanyProfile?
+  assureRisks               AssureRisk[]
+  assureMaterials           AssureMaterial[]
+  assureDataRooms           AssureDataRoom[]
   investmentReadinessScores InvestmentReadinessScore[]
-  assureMilestones       AssureMilestone[]
+  assureMilestones          AssureMilestone[]
 
   // Multi-tenancy: org-scoped models
-  auditLogs                    AuditLog[]
-  documents                    Document[]
-  debrisAssessments            DebrisAssessment[]
-  cybersecurityAssessments     CybersecurityAssessment[]
-  insuranceAssessments         InsuranceAssessment[]
-  environmentalAssessments     EnvironmentalAssessment[]
-  nis2Assessments              NIS2Assessment[]
+  auditLogs                AuditLog[]
+  documents                Document[]
+  debrisAssessments        DebrisAssessment[]
+  cybersecurityAssessments CybersecurityAssessment[]
+  insuranceAssessments     InsuranceAssessment[]
+  environmentalAssessments EnvironmentalAssessment[]
+  nis2Assessments          NIS2Assessment[]
 
   // Sentinel: autonomous compliance evidence agents
-  sentinelAgents               SentinelAgent[]
+  sentinelAgents SentinelAgent[]
 
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
@@ -3027,9 +3027,9 @@ model WebAuthnCredential {
   // Usage
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
+  // @@index([credentialId]) — removed: redundant with @unique
 
   @@index([userId])
-  // @@index([credentialId]) — removed: redundant with @unique
 }
 
 // ============================================
@@ -3643,8 +3643,8 @@ model ComplianceEvidence {
 
   // ACE: Source and confidence tracking
   sourceType EvidenceSourceType @default(MANUAL)
-  confidence Float?            // 0.0-1.0, how reliable is this evidence
-  metadata   Json?             // Additional structured metadata (scan job ID, source URL, etc.)
+  confidence Float? // 0.0-1.0, how reliable is this evidence
+  metadata   Json? // Additional structured metadata (scan job ID, source URL, etc.)
 
   // Linked documents (from existing Document vault)
   documents ComplianceEvidenceDocument[]
@@ -4195,9 +4195,9 @@ model NewsletterSubscription {
   source         String           @default("footer")
   subscribedAt   DateTime         @default(now())
   unsubscribedAt DateTime?
+  // @@index([email]) — removed: redundant with @unique
 
   @@index([status])
-  // @@index([email]) — removed: redundant with @unique
 }
 
 // ─── Demo Requests ───
@@ -4224,18 +4224,18 @@ model DemoRequest {
   notes       String?    @db.Text
 
   // Assure qualify data (from /assure/book form)
-  companyWebsite     String?
-  operatorType       String?
-  fundingStage       String?
-  isRaising          Boolean?
-  targetRaise        Float?
-  demoTourCompleted  Boolean  @default(false)
+  companyWebsite    String?
+  operatorType      String?
+  fundingStage      String?
+  isRaising         Boolean?
+  targetRaise       Float?
+  demoTourCompleted Boolean  @default(false)
 
   // Booking relation
-  scheduledAt    DateTime?
-  booking        Booking?
+  scheduledAt DateTime?
+  booking     Booking?
 
-  createdAt   DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   @@index([status])
   @@index([email])
@@ -4254,22 +4254,22 @@ enum BookingStatus {
 }
 
 model Booking {
-  id             String        @id @default(cuid())
-  name           String
-  email          String
-  company        String
-  scheduledAt    DateTime
-  timezone       String        @default("Europe/Berlin")
-  status         BookingStatus @default(CONFIRMED)
-  notes          String?       @db.Text
-  cancelledAt    DateTime?
-  completedAt    DateTime?
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  company     String
+  scheduledAt DateTime
+  timezone    String        @default("Europe/Berlin")
+  status      BookingStatus @default(CONFIRMED)
+  notes       String?       @db.Text
+  cancelledAt DateTime?
+  completedAt DateTime?
 
-  demoRequestId  String?       @unique
-  demoRequest    DemoRequest?  @relation(fields: [demoRequestId], references: [id])
+  demoRequestId String?      @unique
+  demoRequest   DemoRequest? @relation(fields: [demoRequestId], references: [id])
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([scheduledAt])
   @@index([status])
@@ -4403,10 +4403,10 @@ model WhatIfScenario {
   scoreDelta     Int
   results        String @db.Text // JSON full result
 
-  computedAt         DateTime?
-  isFavorite         Boolean   @default(false)
-  regulationVersion  String?   // Hash of engine data at compute time
-  isStale            Boolean   @default(false)
+  computedAt        DateTime?
+  isFavorite        Boolean   @default(false)
+  regulationVersion String? // Hash of engine data at compute time
+  isStale           Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4580,17 +4580,17 @@ model StakeholderEngagement {
   website       String?
 
   // Engagement Scope
-  scope       String   @db.Text
-  contractRef String?
+  scope         String    @db.Text
+  contractRef   String?
   retainerStart DateTime?
   retainerEnd   DateTime?
 
   // Access
-  status         EngagementStatus @default(INVITED)
-  accessTokenHash String          @unique
+  status          EngagementStatus @default(INVITED)
+  accessTokenHash String           @unique
   tokenExpiresAt  DateTime
-  lastAccessAt   DateTime?
-  accessCount    Int              @default(0)
+  lastAccessAt    DateTime?
+  accessCount     Int              @default(0)
 
   // Security
   ipAllowlist String[]  @default([])
@@ -4777,15 +4777,15 @@ model OperatorProfile {
   primaryOrbit          String? // CanonicalOrbitType
   orbitAltitudeKm       Float?
   satelliteMassKg       Float?
-  isConstellation       Boolean  @default(false)
+  isConstellation       Boolean   @default(false)
   constellationSize     Int?
   missionDurationMonths Int?
   plannedLaunchDate     DateTime?
 
   // Jurisdiction
-  establishment            String?  // Primary jurisdiction (ISO 3166-1 alpha-2)
-  operatingJurisdictions   String[] @default([])
-  offersEUServices         Boolean  @default(false)
+  establishment          String? // Primary jurisdiction (ISO 3166-1 alpha-2)
+  operatingJurisdictions String[] @default([])
+  offersEUServices       Boolean  @default(false)
 
   // Metadata
   completeness Float    @default(0) // 0-1, how complete the profile is
@@ -4969,7 +4969,7 @@ model RegulatoryCreditRating {
   onWatch       Boolean       @default(false)
   watchReason   String?
 
-  methodologyVersion String @default("1.0.0")
+  methodologyVersion String   @default("1.0.0")
   confidence         Float // 0-1
   validUntil         DateTime
 
@@ -4980,11 +4980,11 @@ model RegulatoryCreditRating {
 
   // Rating action
   actionType      RatingAction
-  actionRationale String? @db.Text
+  actionRationale String?      @db.Text
 
-  computedAt  DateTime @default(now())
+  computedAt  DateTime  @default(now())
   publishedAt DateTime?
-  isPublished Boolean  @default(false)
+  isPublished Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -5125,19 +5125,19 @@ enum AssureMilestoneStatus {
 // ─── Company Intelligence Profile ───
 
 model AssureCompanyProfile {
-  id               String       @id @default(cuid())
-  organizationId   String       @unique
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Core Identity
-  companyName      String
-  legalName        String?
-  foundedDate      DateTime?
-  headquarters     String?
-  legalForm        String?
+  companyName        String
+  legalName          String?
+  foundedDate        DateTime?
+  headquarters       String?
+  legalForm          String?
   registrationNumber String?
-  website          String?
-  linkedIn         String?
+  website            String?
+  linkedIn           String?
 
   // Classification
   operatorType     String[]
@@ -5147,61 +5147,61 @@ model AssureCompanyProfile {
   employeeGrowth6M Float?
 
   // Mission Statement
-  oneLiner         String?
-  missionStatement String?  @db.Text
-  problemStatement String?  @db.Text
+  oneLiner          String?
+  missionStatement  String? @db.Text
+  problemStatement  String? @db.Text
   solutionStatement String? @db.Text
 
-  completionScore  Float    @default(0)
-  onboardingStep   Int      @default(0)   // 0=not started, 1-6=in progress, 7=complete
+  completionScore Float @default(0)
+  onboardingStep  Int   @default(0) // 0=not started, 1-6=in progress, 7=complete
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Sub-profiles
-  techProfile       AssureTechProfile?
-  marketProfile     AssureMarketProfile?
-  teamProfile       AssureTeamProfile?
-  financialProfile  AssureFinancialProfile?
-  regulatoryProfile AssureRegulatoryProfile?
+  techProfile        AssureTechProfile?
+  marketProfile      AssureMarketProfile?
+  teamProfile        AssureTeamProfile?
+  financialProfile   AssureFinancialProfile?
+  regulatoryProfile  AssureRegulatoryProfile?
   competitiveProfile AssureCompetitiveProfile?
-  tractionProfile   AssureTractionProfile?
-  risks             AssureRisk[]
+  tractionProfile    AssureTractionProfile?
+  risks              AssureRisk[]
 
   @@index([stage])
 }
 
 model AssureTechProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   trlLevel         Int?
-  trlJustification String?  @db.Text
+  trlJustification String? @db.Text
   trlEvidence      Json?
 
-  productName      String?
-  productDescription String? @db.Text
-  productStatus    ProductStatus?
-  launchDate       DateTime?
-  keyFeatures      Json?
-  technicalSpecs   Json?
+  productName        String?
+  productDescription String?        @db.Text
+  productStatus      ProductStatus?
+  launchDate         DateTime?
+  keyFeatures        Json?
+  technicalSpecs     Json?
 
-  patents          Json?
-  tradeSecrets     String?  @db.Text
-  ipStrategy       String?  @db.Text
+  patents      Json?
+  tradeSecrets String? @db.Text
+  ipStrategy   String? @db.Text
 
-  milestones       Json?
+  milestones Json?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureMarketProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   tamValue         Float?
   tamSource        String?
@@ -5209,53 +5209,53 @@ model AssureMarketProfile {
   somValue         Float?
   marketGrowthRate Float?
 
-  whyNow           String?  @db.Text
-  marketDrivers    Json?
+  whyNow        String? @db.Text
+  marketDrivers Json?
 
-  targetCustomers  Json?
-  customerCount    Int?
-  pipelineValue    Float?
+  targetCustomers   Json?
+  customerCount     Int?
+  pipelineValue     Float?
   contractedRevenue Float?
 
-  gtmStrategy      String?  @db.Text
-  salesCycle       String?
+  gtmStrategy          String? @db.Text
+  salesCycle           String?
   distributionChannels Json?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureTeamProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  founders         Json?
-  cSuite           Json?
-  keyHires         Json?
+  founders Json?
+  cSuite   Json?
+  keyHires Json?
 
-  boardMembers     Json?
-  advisors         Json?
+  boardMembers Json?
+  advisors     Json?
 
-  teamSize         Int?
-  engineeringRatio Float?
+  teamSize          Int?
+  engineeringRatio  Float?
   averageExperience Float?
-  keyPersonRisk    String?  @db.Text
-  hiringPlan       Json?
+  keyPersonRisk     String? @db.Text
+  hiringPlan        Json?
 
   employeeTurnover Float?
   glassdoorRating  Float?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureFinancialProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   annualRevenue    Float?
   revenueGrowthYoY Float?
@@ -5264,120 +5264,120 @@ model AssureFinancialProfile {
   grossMargin      Float?
   cashPosition     Float?
 
-  revenueModel     String?
-  revenueStreams    Json?
-  unitEconomics    Json?
+  revenueModel   String?
+  revenueStreams Json?
+  unitEconomics  Json?
 
   totalRaised      Float?
   fundingRounds    Json?
   currentValuation Float?
 
-  isRaising        Boolean  @default(false)
-  targetRaise      Float?
-  targetValuation  Float?
-  roundType        String?
-  useOfFunds       Json?
-  targetCloseDate  DateTime?
+  isRaising       Boolean   @default(false)
+  targetRaise     Float?
+  targetValuation Float?
+  roundType       String?
+  useOfFunds      Json?
+  targetCloseDate DateTime?
 
-  revenueProjections Json?
+  revenueProjections    Json?
   profitabilityTimeline String?
-  breakEvenDate    DateTime?
+  breakEvenDate         DateTime?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureRegulatoryProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  complyLinked     Boolean  @default(false)
-  complyOrgId      String?
-  rrsScore         Float?
-  rrsComponents    Json?
+  complyLinked  Boolean @default(false)
+  complyOrgId   String?
+  rrsScore      Float?
+  rrsComponents Json?
 
-  jurisdictions    String[]
-  authorizationStatus String?
-  authorizationDetails String? @db.Text
-  nis2Status       String?
+  jurisdictions         String[]
+  authorizationStatus   String?
+  authorizationDetails  String?  @db.Text
+  nis2Status            String?
   spaceDebrisCompliance String?
-  insuranceStatus  String?
+  insuranceStatus       String?
 
   regulatoryMoatDescription String? @db.Text
-  barrierToEntry   String?  @db.Text
-  timeToReplicate  String?
+  barrierToEntry            String? @db.Text
+  timeToReplicate           String?
 
-  regulatoryRisks  Json?
+  regulatoryRisks Json?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureCompetitiveProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  competitors      Json?
+  competitors          Json?
   competitiveAdvantage String? @db.Text
-  moats            Json?
-  differentiators  Json?
-  marketPosition   String?
+  moats                Json?
+  differentiators      Json?
+  marketPosition       String?
 
-  winRate          Float?
-  keyWins          Json?
-  keyLosses        Json?
+  winRate   Float?
+  keyWins   Json?
+  keyLosses Json?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model AssureTractionProfile {
-  id               String   @id @default(cuid())
-  profileId        String   @unique
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String               @id @default(cuid())
+  profileId String               @unique
+  profile   AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  keyMetrics       Json?
+  keyMetrics         Json?
   milestonesAchieved Json?
-  partnerships     Json?
-  lois             Int?
-  signedContracts  Int?
-  pilotPrograms    Int?
+  partnerships       Json?
+  lois               Int?
+  signedContracts    Int?
+  pilotPrograms      Int?
 
-  awards           Json?
-  mediaFeatures    Json?
-  conferences      Json?
+  awards        Json?
+  mediaFeatures Json?
+  conferences   Json?
 
   upcomingMilestones Json?
 
-  completionScore  Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  completionScore Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // ─── Investment Readiness Score ───
 
 model InvestmentReadinessScore {
-  id                  String       @id @default(cuid())
-  organizationId      String
-  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  overallScore        Float
-  grade               String
-  components          Json
-  topStrengths        Json
-  topWeaknesses       Json
-  improvementPlan     Json
+  overallScore    Float
+  grade           String
+  components      Json
+  topStrengths    Json
+  topWeaknesses   Json
+  improvementPlan Json
 
   profileCompleteness Float
   stage               CompanyStage
   benchmarkPercentile Float?
 
-  computedAt          DateTime @default(now())
+  computedAt DateTime @default(now())
 
   @@index([organizationId, computedAt])
   @@index([grade])
@@ -5386,36 +5386,36 @@ model InvestmentReadinessScore {
 // ─── Risk Intelligence ───
 
 model AssureRisk {
-  id               String       @id @default(cuid())
-  profileId        String
-  profile          AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  organizationId   String
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String               @id @default(cuid())
+  profileId      String
+  profile        AssureCompanyProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  category         RiskCategory
-  title            String
-  description      String   @db.Text
+  category    RiskCategory
+  title       String
+  description String       @db.Text
 
-  probability      RiskProbability
-  impact           RiskImpact
-  riskScore        Float
+  probability       RiskProbability
+  impact            RiskImpact
+  riskScore         Float
   financialExposure Float?
 
-  mitigationStrategy String? @db.Text
-  mitigationStatus MitigationStatus @default(IDENTIFIED)
+  mitigationStrategy String?          @db.Text
+  mitigationStatus   MitigationStatus @default(IDENTIFIED)
   mitigationEvidence Json?
-  residualRisk     Float?
+  residualRisk       Float?
 
-  timeHorizon      String?
-  triggerEvents    Json?
-  earlyWarnings    Json?
+  timeHorizon   String?
+  triggerEvents Json?
+  earlyWarnings Json?
 
-  isPreDefined     Boolean  @default(false)
-  isFromComply     Boolean  @default(false)
+  isPreDefined Boolean @default(false)
+  isFromComply Boolean @default(false)
 
-  sortOrder        Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([profileId, category])
   @@index([organizationId])
@@ -5425,26 +5425,26 @@ model AssureRisk {
 // ─── Investor Materials ───
 
 model AssureMaterial {
-  id               String       @id @default(cuid())
-  organizationId   String
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdById      String
-  createdBy        User         @relation(fields: [createdById], references: [id])
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id])
 
-  type             MaterialType
-  title            String
-  version          Int          @default(1)
+  type    MaterialType
+  title   String
+  version Int          @default(1)
 
   includedSections Json
   customizations   Json?
 
-  pdfUrl           String?
-  pdfGeneratedAt   DateTime?
+  pdfUrl         String?
+  pdfGeneratedAt DateTime?
 
-  profileSnapshot  Json
+  profileSnapshot Json
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId, type])
 }
@@ -5452,51 +5452,51 @@ model AssureMaterial {
 // ─── Virtual Data Room ───
 
 model AssureDataRoom {
-  id               String       @id @default(cuid())
-  organizationId   String
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  name             String       @default("Investor Data Room")
-  description      String?
+  name        String  @default("Investor Data Room")
+  description String?
 
-  folders          Json
-  checklistItems   Json?
-  completionRate   Float        @default(0)
+  folders        Json
+  checklistItems Json?
+  completionRate Float @default(0)
 
-  accessLinks      AssureDataRoomLink[]
-  documents        AssureDataRoomDocument[]
+  accessLinks AssureDataRoomLink[]
+  documents   AssureDataRoomDocument[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
 }
 
 model AssureDataRoomLink {
-  id             String         @id @default(cuid())
-  dataRoomId     String
-  dataRoom       AssureDataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  id         String         @id @default(cuid())
+  dataRoomId String
+  dataRoom   AssureDataRoom @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
 
   recipientName  String
   recipientEmail String
   recipientOrg   String?
 
-  token          String   @unique
-  pin            String?
-  expiresAt      DateTime
-  isActive       Boolean  @default(true)
+  token     String   @unique
+  pin       String?
+  expiresAt DateTime
+  isActive  Boolean  @default(true)
 
-  canDownload    Boolean  @default(false)
-  canPrint       Boolean  @default(false)
-  watermark      Boolean  @default(true)
+  canDownload Boolean @default(false)
+  canPrint    Boolean @default(false)
+  watermark   Boolean @default(true)
 
   accessibleFolders Json?
 
-  views          AssureDataRoomView[]
-  totalViews     Int      @default(0)
-  lastViewedAt   DateTime?
+  views        AssureDataRoomView[]
+  totalViews   Int                  @default(0)
+  lastViewedAt DateTime?
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([token])
   @@index([dataRoomId])
@@ -5511,7 +5511,7 @@ model AssureDataRoomView {
   durationSec Int?
   ipAddress   String?
   userAgent   String?
-  viewedAt    DateTime @default(now())
+  viewedAt    DateTime           @default(now())
 
   @@index([linkId, viewedAt])
 }
@@ -5526,7 +5526,7 @@ model AssureDataRoomDocument {
   fileSize     Int?
   fileUrl      String?
   uploadedById String
-  uploadedAt   DateTime @default(now())
+  uploadedAt   DateTime       @default(now())
 
   @@index([dataRoomId, folder])
 }
@@ -5534,96 +5534,98 @@ model AssureDataRoomDocument {
 // ─── Milestones & Investor Relations ───
 
 model AssureMilestone {
-  id               String       @id @default(cuid())
-  organizationId   String
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  title            String
-  description      String?      @db.Text
-  category         MilestoneCategory
-  targetDate       DateTime
-  completedDate    DateTime?
-  status           AssureMilestoneStatus @default(ON_TRACK)
+  title         String
+  description   String?               @db.Text
+  category      MilestoneCategory
+  targetDate    DateTime
+  completedDate DateTime?
+  status        AssureMilestoneStatus @default(ON_TRACK)
 
-  evidence         Json?
+  evidence Json?
 
-  isInvestorVisible Boolean  @default(true)
-  investorNote     String?  @db.Text
+  isInvestorVisible Boolean @default(true)
+  investorNote      String? @db.Text
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId, status])
   @@index([targetDate])
 }
-
 
 // ═══════════════════════════════════════════════════════════════
 // CAELEX ACADEMY
 // ═══════════════════════════════════════════════════════════════
 
 model AcademyCourse {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  subtitle        String?
-  description     String
-  icon            String
-  category        AcademyCourseCategory
-  level           AcademyLevel
-  estimatedMinutes Int
-  isPublished     Boolean  @default(false)
-  isPremium       Boolean  @default(false)
-  sortOrder       Int      @default(0)
-  modules         AcademyModule[]
-  enrollments     AcademyEnrollment[]
-  prerequisites   AcademyCourse[] @relation("CoursePrerequisites")
-  prerequisiteOf  AcademyCourse[] @relation("CoursePrerequisites")
-  tags            String[]
+  id                       String                @id @default(cuid())
+  slug                     String                @unique
+  title                    String
+  subtitle                 String?
+  description              String
+  icon                     String
+  category                 AcademyCourseCategory
+  level                    AcademyLevel
+  estimatedMinutes         Int
+  isPublished              Boolean               @default(false)
+  isPremium                Boolean               @default(false)
+  sortOrder                Int                   @default(0)
+  modules                  AcademyModule[]
+  enrollments              AcademyEnrollment[]
+  prerequisites            AcademyCourse[]       @relation("CoursePrerequisites")
+  prerequisiteOf           AcademyCourse[]       @relation("CoursePrerequisites")
+  tags                     String[]
   relatedComplianceModules String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+
   @@index([category, level])
   @@index([isPublished, sortOrder])
 }
 
 model AcademyModule {
-  id              String   @id @default(cuid())
-  courseId         String
-  course           AcademyCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  title           String
-  description     String?
-  sortOrder       Int      @default(0)
-  lessons         AcademyLesson[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String          @id @default(cuid())
+  courseId    String
+  course      AcademyCourse   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  sortOrder   Int             @default(0)
+  lessons     AcademyLesson[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
   @@index([courseId, sortOrder])
 }
 
 model AcademyLesson {
-  id              String   @id @default(cuid())
-  moduleId        String
-  module          AcademyModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  slug            String
-  title           String
-  type            AcademyLessonType
-  sortOrder       Int      @default(0)
-  estimatedMinutes Int     @default(10)
-  content         Json?
+  id               String                    @id @default(cuid())
+  moduleId         String
+  module           AcademyModule             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  slug             String
+  title            String
+  type             AcademyLessonType
+  sortOrder        Int                       @default(0)
+  estimatedMinutes Int                       @default(10)
+  content          Json?
   simulationConfig Json?
-  questions       AcademyQuestion[]
-  completions     AcademyLessonCompletion[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  questions        AcademyQuestion[]
+  completions      AcademyLessonCompletion[]
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
   @@unique([moduleId, slug])
   @@index([moduleId, sortOrder])
 }
 
 model AcademyQuestion {
-  id              String   @id @default(cuid())
+  id              String              @id @default(cuid())
   lessonId        String
-  lesson          AcademyLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  sortOrder       Int      @default(0)
+  lesson          AcademyLesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  sortOrder       Int                 @default(0)
   questionText    String
   questionType    AcademyQuestionType
   options         Json
@@ -5631,27 +5633,29 @@ model AcademyQuestion {
   hint            String?
   relatedArticles String[]
   scenarioContext Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
   @@index([lessonId, sortOrder])
 }
 
 model AcademyEnrollment {
-  id              String   @id @default(cuid())
+  id              String                  @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId         String
-  course           AcademyCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          AcademyCourse           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   status          AcademyEnrollmentStatus @default(ACTIVE)
-  enrolledAt      DateTime @default(now())
+  enrolledAt      DateTime                @default(now())
   completedAt     DateTime?
-  progressPercent Float    @default(0)
-  totalTimeSpent  Int      @default(0)
+  progressPercent Float                   @default(0)
+  totalTimeSpent  Int                     @default(0)
   currentLessonId String?
   quizAverage     Float?
   bestSimScore    Float?
   classroomId     String?
-  classroom       AcademyClassroom? @relation(fields: [classroomId], references: [id])
+  classroom       AcademyClassroom?       @relation(fields: [classroomId], references: [id])
+
   @@unique([userId, courseId])
   @@index([userId, status])
   @@index([courseId])
@@ -5659,48 +5663,51 @@ model AcademyEnrollment {
 }
 
 model AcademyLessonCompletion {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId        String
-  lesson          AcademyLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  completedAt     DateTime @default(now())
-  timeSpent       Int      @default(0)
-  score           Float?
-  answers         Json?
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId         String
+  lesson           AcademyLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt      DateTime      @default(now())
+  timeSpent        Int           @default(0)
+  score            Float?
+  answers          Json?
   simulationResult Json?
+
   @@unique([userId, lessonId])
   @@index([userId])
   @@index([lessonId])
 }
 
 model AcademyClassroom {
-  id              String   @id @default(cuid())
+  id              String              @id @default(cuid())
   name            String
   description     String?
-  code            String   @unique
+  code            String              @unique
   instructorId    String
-  instructor      User     @relation("ClassroomInstructor", fields: [instructorId], references: [id])
+  instructor      User                @relation("ClassroomInstructor", fields: [instructorId], references: [id])
   organizationId  String?
-  isActive        Boolean  @default(true)
+  isActive        Boolean             @default(true)
   semester        String?
-  maxStudents     Int      @default(50)
+  maxStudents     Int                 @default(50)
   assignedCourses String[]
   deadlines       Json?
   enrollments     AcademyEnrollment[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
   @@index([instructorId])
   @@index([code])
 }
 
 model AcademyBadge {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badgeType       AcademyBadgeType
-  earnedAt        DateTime @default(now())
-  metadata        Json?
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeType AcademyBadgeType
+  earnedAt  DateTime         @default(now())
+  metadata  Json?
+
   @@unique([userId, badgeType])
   @@index([userId])
 }
@@ -5719,6 +5726,7 @@ model AcademySimulationRun {
   feedback        Json
   timeSpent       Int      @default(0)
   completedAt     DateTime @default(now())
+
   @@index([userId, scenarioId])
   @@index([userId, completedAt])
 }
@@ -5794,40 +5802,40 @@ model RegulatoryRequirement {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Regulation identification
-  regulationType RegulationType                  // NIS2, EU_SPACE_ACT, UK_SPACE_ACT, etc.
-  requirementId  String                          // Unique within regulationType: "nis2-001", "uksa-lic-3"
+  regulationType RegulationType // NIS2, EU_SPACE_ACT, UK_SPACE_ACT, etc.
+  requirementId  String // Unique within regulationType: "nis2-001", "uksa-lic-3"
 
   // Content
-  title          String
-  description    String        @db.Text
-  category       String                          // "cybersecurity", "debris_mitigation", "authorization"
-  subcategory    String?                          // More specific grouping
-  jurisdiction   String?                          // "EU", "UK", "US", "AU", "global"
+  title        String
+  description  String  @db.Text
+  category     String // "cybersecurity", "debris_mitigation", "authorization"
+  subcategory  String? // More specific grouping
+  jurisdiction String? // "EU", "UK", "US", "AU", "global"
 
   // Evidence specification — what ACE hunts for
-  evidenceRequired  Json                          // string[] of required evidence descriptions
-  assessmentFields  Json?                         // AssessmentField[] definitions for structured assessment
-  complianceRule    Json?                         // ComplianceRule definition for auto-assessment
+  evidenceRequired Json // string[] of required evidence descriptions
+  assessmentFields Json? // AssessmentField[] definitions for structured assessment
+  complianceRule   Json? // ComplianceRule definition for auto-assessment
 
   // Applicability
-  mandatory     Boolean        @default(true)
-  applicableTo  Json?                             // { operatorTypes?, sectors?, organizationSizes? }
-  severity      String?                           // "critical", "major", "moderate", "minor"
+  mandatory    Boolean @default(true)
+  applicableTo Json? // { operatorTypes?, sectors?, organizationSizes? }
+  severity     String? // "critical", "major", "moderate", "minor"
 
   // Guidance
-  implementationGuide   String?   @db.Text
+  implementationGuide     String? @db.Text
   implementationTimeWeeks Int?
 
   // Regulatory source
-  sourceArticle   String?                         // "Art. 21(2)(a)", "Section 3(1)", "§4 LuftVG"
-  sourceDocument  String?                         // "Regulation (EU) 2022/2555", "Space Industry Act 2018"
+  sourceArticle  String? // "Art. 21(2)(a)", "Section 3(1)", "§4 LuftVG"
+  sourceDocument String? // "Regulation (EU) 2022/2555", "Space Industry Act 2018"
 
   // Cross-references to other frameworks
-  crossReferences Json?                           // { euSpaceActRef?, iso27001Ref?, enisaControlIds?, etc. }
+  crossReferences Json? // { euSpaceActRef?, iso27001Ref?, enisaControlIds?, etc. }
 
   // Validity
-  validFrom   DateTime?
-  validUntil  DateTime?
+  validFrom  DateTime?
+  validUntil DateTime?
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -5847,7 +5855,7 @@ model RegulatoryRequirement {
 // A single piece of evidence can satisfy multiple requirements (DIRECT, PARTIAL,
 // SUPPORTING), and a single requirement can be covered by multiple pieces of evidence.
 model EvidenceRequirementMapping {
-  id             String       @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
   // Evidence → Requirement link
@@ -5857,10 +5865,10 @@ model EvidenceRequirementMapping {
   requirement   RegulatoryRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
 
   // Coverage details
-  mappingType     EvidenceMappingType   @default(DIRECT)
-  coveragePercent Float                 @default(100)  // 0-100, how much of the requirement this covers
-  autoMapped      Boolean               @default(false) // Was this mapping created by ACE or manually?
-  notes           String?               @db.Text
+  mappingType     EvidenceMappingType @default(DIRECT)
+  coveragePercent Float               @default(100) // 0-100, how much of the requirement this covers
+  autoMapped      Boolean             @default(false) // Was this mapping created by ACE or manually?
+  notes           String?             @db.Text
 
   // Validity (evidence may only satisfy a requirement for a specific period)
   validFrom  DateTime  @default(now())
@@ -5881,26 +5889,26 @@ model EvidenceRequirementMapping {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model SentinelAgent {
-  id                String   @id @default(cuid())
+  id                String       @id @default(cuid())
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   name              String
-  sentinelId        String   @unique
-  publicKey         String   @db.Text
-  token             String   @unique // Hashed bearer token for auth
-  status            String   @default("PENDING") // PENDING, ACTIVE, REVOKED
+  sentinelId        String       @unique
+  publicKey         String       @db.Text
+  token             String       @unique // Hashed bearer token for auth
+  status            String       @default("PENDING") // PENDING, ACTIVE, REVOKED
   lastSeen          DateTime?
   lastPacketAt      DateTime?
-  chainPosition     Int      @default(0)
+  chainPosition     Int          @default(0)
   lastChainHash     String?
   version           String?
   configHash        String?
   enabledCollectors String[] // ["orbit_debris", "cybersecurity", ...]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
-  packets           SentinelPacket[]
-  crossChecks       CrossVerification[]
+  packets     SentinelPacket[]
+  crossChecks CrossVerification[]
 
   @@index([organizationId])
   @@index([sentinelId])
@@ -5908,11 +5916,11 @@ model SentinelAgent {
 }
 
 model SentinelPacket {
-  id               String   @id @default(cuid())
-  packetId         String   @unique
-  agentId          String
-  agent            SentinelAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  satelliteNorad   String?
+  id             String        @id @default(cuid())
+  packetId       String        @unique
+  agentId        String
+  agent          SentinelAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  satelliteNorad String?
 
   // Data
   dataPoint        String
@@ -5926,21 +5934,21 @@ model SentinelPacket {
   regulationMapping Json
 
   // Integrity
-  contentHash      String
-  previousHash     String
-  chainPosition    Int
-  signature        String   @db.Text
-  signatureValid   Boolean  @default(false)
-  chainValid       Boolean  @default(false)
+  contentHash    String
+  previousHash   String
+  chainPosition  Int
+  signature      String  @db.Text
+  signatureValid Boolean @default(false)
+  chainValid     Boolean @default(false)
 
   // Trust
-  crossVerified    Boolean  @default(false)
-  trustScore       Float?
+  crossVerified Boolean @default(false)
+  trustScore    Float?
 
   // Processing
-  processedAt      DateTime @default(now())
+  processedAt DateTime @default(now())
 
-  crossChecks      CrossVerification[]
+  crossChecks CrossVerification[]
 
   @@index([agentId])
   @@index([satelliteNorad])
@@ -5950,24 +5958,135 @@ model SentinelPacket {
 }
 
 model CrossVerification {
-  id              String   @id @default(cuid())
-  packetId        String
-  packet          SentinelPacket @relation(fields: [packetId], references: [id], onDelete: Cascade)
-  agentId         String
-  agent           SentinelAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  id       String         @id @default(cuid())
+  packetId String
+  packet   SentinelPacket @relation(fields: [packetId], references: [id], onDelete: Cascade)
+  agentId  String
+  agent    SentinelAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  dataPoint       String
-  agentValue      Float
-  publicValue     Float
-  publicSource    String // "celestrak", "space_track", "esa_discos"
-  delta           Float
+  dataPoint    String
+  agentValue   Float
+  publicValue  Float
+  publicSource String // "celestrak", "space_track", "esa_discos"
+  delta        Float
 
-  result          String // "VERIFIED", "PLAUSIBLE", "ANOMALY"
-  confidence      Float
+  result     String // "VERIFIED", "PLAUSIBLE", "ANOMALY"
+  confidence Float
 
-  verifiedAt      DateTime @default(now())
+  verifiedAt      DateTime  @default(now())
   publicDataEpoch DateTime?
 
   @@index([packetId])
   @@index([agentId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERITY — Privacy-Preserving Cryptographic Attestation System
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model VerityAttestation {
+  id             String  @id @default(cuid())
+  attestationId  String  @unique
+  operatorId     String
+  satelliteNorad String?
+
+  regulationRef  String
+  dataPoint      String
+  thresholdType  String
+  thresholdValue Float
+  result         Boolean
+  claimStatement String
+
+  // Evidence
+  valueCommitment String
+  evidenceSource  String
+  trustScore      Float
+  trustLevel      String
+  collectedAt     DateTime
+
+  // Sentinel
+  sentinelAnchor    Json?
+  crossVerification Json?
+
+  // Issuer Key
+  issuerKeyId     String
+  issuerPublicKey String
+  signature       String
+
+  // Full signed attestation JSON (for embedding in Certificates)
+  fullAttestation Json
+
+  // Commitment Secret (encrypted, optional)
+  encryptedSecret String?
+
+  issuedAt  DateTime @default(now())
+  expiresAt DateTime
+
+  certificateLinks VerityCertificateClaim[]
+
+  @@index([operatorId])
+  @@index([regulationRef])
+  @@index([issuerKeyId])
+  @@index([collectedAt])
+}
+
+model VerityCertificate {
+  id             String  @id @default(cuid())
+  certificateId  String  @unique
+  operatorId     String
+  satelliteNorad String?
+
+  // Full signed certificate JSON (incl. embedded attestations)
+  certificate Json
+
+  // Metadata
+  version        String   @default("1.0")
+  claimsCount    Int
+  regulationRefs String[]
+  minTrustLevel  String
+  sentinelBacked Int
+  crossVerified  Int
+
+  // Issuer
+  issuerKeyId String
+
+  isPublic Boolean @default(false)
+
+  issuedAt  DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  verificationCount Int       @default(0)
+  lastVerifiedAt    DateTime?
+
+  claims VerityCertificateClaim[]
+
+  @@index([operatorId])
+  @@index([certificateId])
+  @@index([isPublic])
+  @@index([issuerKeyId])
+}
+
+model VerityCertificateClaim {
+  certificateId String
+  attestationId String
+
+  certificate VerityCertificate @relation(fields: [certificateId], references: [id])
+  attestation VerityAttestation @relation(fields: [attestationId], references: [id])
+
+  @@id([certificateId, attestationId])
+}
+
+model VerityIssuerKey {
+  id               String    @id @default(cuid())
+  keyId            String    @unique
+  publicKeyHex     String    @unique
+  encryptedPrivKey String
+  algorithm        String    @default("Ed25519")
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  rotatedAt        DateTime?
+
+  @@index([active])
+  @@index([keyId])
 }
