@@ -65,6 +65,15 @@ const ENTRIES: BlogEntry[] = [
       "Ed25519-signed compliance attestations with SHA-256 commitments and blinding factors. Prove you meet Art. 70 fuel thresholds or NIS2 patch windows — without revealing a single byte of operational data. Offline-verifiable certificates. Tamper-evident hash chains anchored to Sentinel telemetry.",
     image: "/images/blog/agentic-system.png",
   },
+  {
+    id: "ecosystem",
+    slug: "ecosystem",
+    category: "Stakeholder Network · Secure Collaboration",
+    title: "The Compliance Network",
+    description:
+      "One platform. Every stakeholder. Invite regulators, insurers, auditors, legal counsel, and launch providers into encrypted data rooms with watermarking, granular access control, and hash-chained attestation workflows. Every interaction logged. Every sign-off cryptographically verifiable.",
+    image: "/images/blog/ground-station.png",
+  },
 ];
 
 const AUTO_PLAY_MS = 8000;
