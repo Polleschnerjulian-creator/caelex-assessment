@@ -2525,6 +2525,12 @@ model Organization {
   // Sentinel: autonomous compliance evidence agents
   sentinelAgents SentinelAgent[]
 
+  // Ephemeris: predictive compliance intelligence
+  satelliteComplianceStates  SatelliteComplianceState[]
+  satelliteComplianceHistory SatelliteComplianceStateHistory[]
+  ephemerisForecasts         EphemerisForecast[]
+  satelliteAlerts            SatelliteAlert[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -6089,4 +6095,102 @@ model VerityIssuerKey {
 
   @@index([active])
   @@index([keyId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EPHEMERIS — Predictive Compliance Intelligence
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model SatelliteComplianceState {
+  id           String       @id @default(cuid())
+  noradId      String
+  operatorId   String
+  organization Organization @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  overallScore Int // 0-100
+  moduleScores Json // { orbital: {...}, fuel: {...}, ... }
+  dataSources  Json // { sentinel: {...}, verity: {...}, ... }
+
+  // Compliance Horizon
+  horizonDays       Int? // Days until first breach (null = no breach predictable)
+  horizonRegulation String? // Which regulation breaches first
+  horizonConfidence String // HIGH / MEDIUM / LOW
+
+  dataFreshness String // LIVE / RECENT / STALE / NO_DATA
+
+  calculatedAt DateTime @default(now())
+
+  @@unique([noradId, operatorId])
+  @@index([operatorId])
+  @@index([horizonDays])
+}
+
+model SatelliteComplianceStateHistory {
+  id           String       @id @default(cuid())
+  noradId      String
+  operatorId   String
+  organization Organization @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  overallScore      Int
+  moduleScores      Json // Snapshot of module scores for this day
+  horizonDays       Int?
+  horizonRegulation String?
+  dataFreshness     String
+
+  // Inputs hash for reproducibility
+  // SHA-256 over: Sentinel time series hashes + TLE age + F10.7 + constants version
+  inputsHash String?
+
+  calculatedAt DateTime @default(now())
+
+  @@index([noradId, calculatedAt])
+  @@index([operatorId, calculatedAt])
+}
+
+model EphemerisForecast {
+  id           String       @id @default(cuid())
+  noradId      String
+  operatorId   String
+  organization Organization @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  // Forecast data
+  forecastCurves   Json // Array<ForecastCurve>
+  complianceEvents Json // Array<ComplianceEvent>
+  horizonDays      Int?
+
+  // Model inputs (for reproducibility)
+  f107Used     Float
+  modelVersion String @default("1.0")
+
+  calculatedAt DateTime @default(now())
+  expiresAt    DateTime // Forecasts expire after 24h
+
+  @@index([noradId])
+  @@index([calculatedAt])
+}
+
+model SatelliteAlert {
+  id           String       @id @default(cuid())
+  noradId      String
+  operatorId   String
+  organization Organization @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  type          String // FUEL_LOW, THRUSTER_DEGRADED, etc.
+  severity      String // CRITICAL, HIGH, MEDIUM, LOW
+  title         String
+  description   String  @db.Text
+  regulationRef String?
+
+  // Hysteresis: dedupe-key = noradId + type + regulationRef
+  dedupeKey String
+
+  triggeredAt    DateTime  @default(now())
+  resolvedAt     DateTime?
+  acknowledged   Boolean   @default(false)
+  acknowledgedAt DateTime?
+
+  @@index([noradId])
+  @@index([operatorId, severity])
+  @@index([resolvedAt])
+  @@index([dedupeKey])
 }
