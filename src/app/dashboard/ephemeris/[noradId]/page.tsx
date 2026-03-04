@@ -9,6 +9,7 @@ import {
   Fuel,
   Radio,
   Globe,
+  Layers,
 } from "lucide-react";
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
@@ -17,7 +18,7 @@ import ModuleBreakdown from "../components/module-breakdown";
 import ForecastChart from "../components/forecast-chart";
 import AlertList from "../components/alert-list";
 import DataSourcesPanel from "../components/data-sources-panel";
-import JurisdictionSimulator from "../components/jurisdiction-simulator";
+import ScenarioBuilder from "../components/scenario-builder/ScenarioBuilder";
 
 interface SatelliteState {
   noradId: string;
@@ -159,7 +160,7 @@ export default function SatelliteDetailPage({
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: Shield },
     { id: "forecast" as const, label: "Forecast", icon: Clock },
-    { id: "simulate" as const, label: "Simulate", icon: Globe },
+    { id: "simulate" as const, label: "Scenario Builder", icon: Layers },
   ];
 
   if (loading && !state) {
@@ -259,7 +260,7 @@ export default function SatelliteDetailPage({
       )}
 
       {activeTab === "simulate" && (
-        <JurisdictionSimulator
+        <ScenarioBuilder
           noradId={noradId}
           satelliteName={state?.satelliteName ?? noradId}
         />
