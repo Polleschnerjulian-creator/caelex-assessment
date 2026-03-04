@@ -37,26 +37,26 @@ const MODULE_LABELS: Record<string, string> = {
 function statusColor(status: string): string {
   switch (status) {
     case "COMPLIANT":
-      return "text-emerald-400";
+      return "text-[#111827]";
     case "WARNING":
-      return "text-amber-400";
+      return "text-amber-500";
     case "NON_COMPLIANT":
-      return "text-red-400";
+      return "text-red-500";
     default:
-      return "text-white/30";
+      return "text-[#D1D5DB]";
   }
 }
 
 function statusBg(status: string): string {
   switch (status) {
     case "COMPLIANT":
-      return "bg-emerald-500/10";
+      return "bg-[#F1F3F5]";
     case "WARNING":
-      return "bg-amber-500/10";
+      return "bg-amber-50";
     case "NON_COMPLIANT":
-      return "bg-red-500/10";
+      return "bg-red-50";
     default:
-      return "bg-white/[0.03]";
+      return "bg-[#F7F8FA]";
   }
 }
 
@@ -84,7 +84,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
 
   return (
     <div>
-      <h2 className="text-heading font-semibold text-white mb-4">
+      <h2 className="text-heading font-semibold text-[#111827] mb-4">
         Module Breakdown
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -95,7 +95,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Icon className={`w-4 h-4 ${statusColor(mod.status)}`} />
-                  <span className="text-small font-medium text-white/80">
+                  <span className="text-small font-medium text-[#374151]">
                     {MODULE_LABELS[key] ?? key}
                   </span>
                 </div>
@@ -107,16 +107,16 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
               </div>
 
               {/* Score bar */}
-              <div className="h-1.5 rounded-full bg-white/[0.06] mb-3">
+              <div className="h-1.5 rounded-full bg-[#E5E7EB] mb-3">
                 <div
                   className={`h-full rounded-full transition-all ${
                     mod.score >= 70
-                      ? "bg-emerald-500"
+                      ? "bg-[#111827]"
                       : mod.score >= 50
                         ? "bg-amber-500"
                         : mod.score > 0
                           ? "bg-red-500"
-                          : "bg-white/10"
+                          : "bg-[#D1D5DB]"
                   }`}
                   style={{ width: `${mod.score}%` }}
                 />
@@ -129,7 +129,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
                     key={f.id}
                     className="flex items-center justify-between text-caption"
                   >
-                    <span className="text-white/40 truncate mr-2">
+                    <span className="text-[#9CA3AF] truncate mr-2">
                       {f.name}
                     </span>
                     <span className={statusColor(f.status)}>
@@ -141,8 +141,8 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
                 ))}
               </div>
 
-              <div className="mt-2 pt-2 border-t border-white/[0.04]">
-                <span className="text-micro text-white/20 uppercase">
+              <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
+                <span className="text-micro text-[#D1D5DB] uppercase">
                   Source: {mod.dataSource}
                 </span>
               </div>

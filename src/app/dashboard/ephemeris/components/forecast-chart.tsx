@@ -44,13 +44,13 @@ interface ForecastChartProps {
 function severityColor(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "text-red-400";
+      return "text-red-500";
     case "HIGH":
-      return "text-orange-400";
+      return "text-orange-500";
     case "MEDIUM":
-      return "text-amber-400";
+      return "text-amber-500";
     default:
-      return "text-white/40";
+      return "text-[#9CA3AF]";
   }
 }
 
@@ -72,13 +72,13 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
               onClick={() => setSelectedCurve(c.metric)}
               className={`px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                 selectedCurve === c.metric
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-white/[0.04] text-white/50 border border-white/[0.06] hover:text-white/70"
+                  ? "bg-[#111827] text-white border border-[#111827]"
+                  : "bg-[#F7F8FA] text-[#6B7280] border border-[#E5E7EB] hover:text-[#111827]"
               }`}
             >
               {c.regulationName}
               {c.crossingDaysFromNow !== null && (
-                <span className="ml-1.5 text-caption text-amber-400">
+                <span className="ml-1.5 text-caption text-amber-500">
                   {c.crossingDaysFromNow}d
                 </span>
               )}
@@ -92,11 +92,11 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
 
       {/* Compliance Events */}
       <div>
-        <h3 className="text-heading font-semibold text-white mb-3">
+        <h3 className="text-heading font-semibold text-[#111827] mb-3">
           Compliance Events
         </h3>
         {events.length === 0 ? (
-          <p className="text-body text-white/40">
+          <p className="text-body text-[#9CA3AF]">
             No compliance events forecasted.
           </p>
         ) : (
@@ -109,13 +109,13 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
                       className={`w-4 h-4 mt-0.5 ${severityColor(event.severity)}`}
                     />
                     <div>
-                      <p className="text-small font-medium text-white/80">
+                      <p className="text-small font-medium text-[#374151]">
                         {event.regulationName}
                       </p>
-                      <p className="text-caption text-white/40 mt-0.5">
+                      <p className="text-caption text-[#9CA3AF] mt-0.5">
                         {event.description}
                       </p>
-                      <p className="text-caption text-white/30 mt-1">
+                      <p className="text-caption text-[#D1D5DB] mt-1">
                         {event.recommendedAction}
                       </p>
                     </div>
@@ -126,7 +126,7 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
                     >
                       {event.daysFromNow}d
                     </div>
-                    <div className="text-caption text-white/30">
+                    <div className="text-caption text-[#9CA3AF]">
                       {new Date(event.date).toLocaleDateString()}
                     </div>
                   </div>
@@ -140,13 +140,13 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
   );
 }
 
-// ─── Simple SVG Chart ───────────────────────────────────────────────────────
+// --- Simple SVG Chart ---
 
 function CurveChart({ curve }: { curve: ForecastCurveData }) {
   const points = curve.dataPoints;
   if (points.length === 0) {
     return (
-      <div className="text-center py-8 text-white/30 text-small">
+      <div className="text-center py-8 text-[#D1D5DB] text-small">
         No data points available
       </div>
     );
@@ -182,7 +182,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
     .map((p, i) => `${i === 0 ? "M" : "L"}${scaleX(i)},${scaleY(p.worstCase)}`)
     .join(" ");
 
-  // Confidence band (worst→best, closed polygon)
+  // Confidence band (worst->best, closed polygon)
   const bandPath =
     points
       .map((p, i) => `${i === 0 ? "M" : "L"}${scaleX(i)},${scaleY(p.bestCase)}`)
@@ -206,16 +206,16 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
     <GlassCard hover={false} className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <TrendingDown className="w-4 h-4 text-white/40" />
-          <span className="text-small font-medium text-white/80">
+          <TrendingDown className="w-4 h-4 text-[#9CA3AF]" />
+          <span className="text-small font-medium text-[#374151]">
             {curve.regulationName}
           </span>
-          <span className="text-caption text-white/30">({curve.unit})</span>
+          <span className="text-caption text-[#9CA3AF]">({curve.unit})</span>
         </div>
         {curve.crossingDaysFromNow !== null && (
           <div className="flex items-center gap-1.5 text-caption">
-            <Calendar className="w-3 h-3 text-amber-400" />
-            <span className="text-amber-400">
+            <Calendar className="w-3 h-3 text-amber-500" />
+            <span className="text-amber-500">
               Crosses in {curve.crossingDaysFromNow} days
             </span>
           </div>
@@ -228,7 +228,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
         preserveAspectRatio="xMidYMid meet"
       >
         {/* Confidence band */}
-        <path d={bandPath} fill="rgba(16, 185, 129, 0.06)" />
+        <path d={bandPath} fill="rgba(17, 24, 39, 0.04)" />
 
         {/* Threshold line */}
         <line
@@ -258,7 +258,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
             y1={padding.top}
             x2={scaleX(histIdx)}
             y2={height - padding.bottom}
-            stroke="rgba(255,255,255,0.1)"
+            stroke="rgba(0,0,0,0.08)"
             strokeDasharray="4,4"
             strokeWidth={1}
           />
@@ -268,7 +268,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
         <path
           d={bestPath}
           fill="none"
-          stroke="rgba(16, 185, 129, 0.2)"
+          stroke="rgba(17, 24, 39, 0.15)"
           strokeWidth={1}
         />
         <path
@@ -282,7 +282,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
         <path
           d={nominalPath}
           fill="none"
-          stroke="rgba(16, 185, 129, 0.8)"
+          stroke="rgba(17, 24, 39, 0.7)"
           strokeWidth={2}
         />
 
@@ -297,14 +297,14 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
                 y1={y}
                 x2={width - padding.right}
                 y2={y}
-                stroke="rgba(255,255,255,0.04)"
+                stroke="rgba(0,0,0,0.04)"
                 strokeWidth={1}
               />
               <text
                 x={padding.left - 8}
                 y={y + 3}
                 textAnchor="end"
-                fill="rgba(255,255,255,0.25)"
+                fill="rgba(0,0,0,0.3)"
                 fontSize={10}
               >
                 {val.toFixed(0)}

@@ -35,26 +35,26 @@ function severityOrder(severity: string): number {
 function severityColor(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "text-red-400";
+      return "text-red-500";
     case "HIGH":
-      return "text-orange-400";
+      return "text-orange-500";
     case "MEDIUM":
-      return "text-amber-400";
+      return "text-amber-500";
     default:
-      return "text-white/40";
+      return "text-[#9CA3AF]";
   }
 }
 
 function severityBg(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "bg-red-500/10 border-red-500/20";
+      return "bg-red-50 border-red-200";
     case "HIGH":
-      return "bg-orange-500/10 border-orange-500/20";
+      return "bg-orange-50 border-orange-200";
     case "MEDIUM":
-      return "bg-amber-500/10 border-amber-500/20";
+      return "bg-amber-50 border-amber-200";
     default:
-      return "bg-white/[0.03] border-white/[0.06]";
+      return "bg-[#F7F8FA] border-[#E5E7EB]";
   }
 }
 
@@ -73,7 +73,7 @@ export default function AlertList({ fleet }: AlertListProps) {
   if (allAlerts.length === 0) {
     return (
       <GlassCard hover={false} className="p-6">
-        <div className="flex items-center gap-3 text-emerald-400/70">
+        <div className="flex items-center gap-3 text-[#9CA3AF]">
           <CheckCircle className="w-5 h-5" />
           <span className="text-body">No active alerts</span>
         </div>
@@ -83,7 +83,7 @@ export default function AlertList({ fleet }: AlertListProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-heading font-semibold text-white mb-3">
+      <h3 className="text-heading font-semibold text-[#111827] mb-3">
         Active Alerts ({allAlerts.length})
       </h3>
       {allAlerts.map((alert) => (
@@ -102,12 +102,12 @@ export default function AlertList({ fleet }: AlertListProps) {
                 >
                   {alert.severity}
                 </span>
-                <span className="text-caption text-white/30">
+                <span className="text-caption text-[#9CA3AF]">
                   {alert.satelliteName}
                 </span>
               </div>
-              <p className="text-small text-white/70">{alert.title}</p>
-              <p className="text-caption text-white/40 mt-0.5">
+              <p className="text-small text-[#374151]">{alert.title}</p>
+              <p className="text-caption text-[#9CA3AF] mt-0.5">
                 {alert.message}
               </p>
             </div>

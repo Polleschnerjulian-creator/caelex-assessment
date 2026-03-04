@@ -164,7 +164,7 @@ export default function SatelliteDetailPage({
 
   if (loading && !state) {
     return (
-      <div className="flex items-center justify-center h-64 text-white/40">
+      <div className="flex items-center justify-center h-64 text-[#9CA3AF]">
         <RefreshCcw className="w-6 h-6 animate-spin" />
       </div>
     );
@@ -177,23 +177,23 @@ export default function SatelliteDetailPage({
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/ephemeris"
-            className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F1F3F5] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-display-sm font-semibold text-white">
+            <h1 className="text-display-sm font-semibold text-[#111827]">
               {state?.satelliteName ?? noradId}
             </h1>
-            <p className="text-body text-white/45 mt-0.5">
+            <p className="text-body text-[#6B7280] mt-0.5">
               NORAD {noradId} · Score:{" "}
               <span
                 className={
                   (state?.overallScore ?? 0) >= 70
-                    ? "text-emerald-400"
+                    ? "text-[#111827] font-semibold"
                     : (state?.overallScore ?? 0) >= 50
-                      ? "text-amber-400"
-                      : "text-red-400"
+                      ? "text-amber-500 font-semibold"
+                      : "text-red-500 font-semibold"
                 }
               >
                 {state?.overallScore ?? "—"}/100
@@ -205,7 +205,7 @@ export default function SatelliteDetailPage({
           onClick={recalculate}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-small font-medium
-            bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors
+            bg-[#111827] text-white hover:bg-[#374151] transition-colors
             disabled:opacity-50"
         >
           <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -217,7 +217,7 @@ export default function SatelliteDetailPage({
       {state && <ComplianceHorizonDisplay horizon={state.complianceHorizon} />}
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/[0.03] rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-[#F7F8FA] rounded-lg w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -226,8 +226,8 @@ export default function SatelliteDetailPage({
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "bg-white/[0.08] text-white"
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-white text-[#111827] shadow-sm"
+                  : "text-[#9CA3AF] hover:text-[#4B5563]"
               }`}
             >
               <Icon className="w-4 h-4" />

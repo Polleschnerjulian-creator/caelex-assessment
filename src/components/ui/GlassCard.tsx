@@ -20,7 +20,7 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
           relative rounded-xl overflow-hidden border
           bg-white border-slate-200 shadow-sm
           glass-elevated
-          ${highlighted ? "glass-accent border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.1)]" : ""}
+          ${highlighted ? "border-[#111827] shadow-[0_4px_20px_rgba(0,0,0,0.08)]" : ""}
           ${hover && !highlighted ? "glass-interactive hover:bg-slate-50 hover:border-slate-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)]" : ""}
           ${className}
         `}

@@ -22,10 +22,10 @@ export default function ComplianceHorizonDisplay({
     <div
       className={`p-6 rounded-xl border ${
         isUrgent
-          ? "bg-red-500/5 border-red-500/20"
+          ? "bg-red-50 border-red-200"
           : isWarning
-            ? "bg-amber-500/5 border-amber-500/20"
-            : "bg-emerald-500/5 border-emerald-500/20"
+            ? "bg-amber-50 border-amber-200"
+            : "bg-[#F7F8FA] border-[#E5E7EB]"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -34,13 +34,13 @@ export default function ComplianceHorizonDisplay({
             <Clock
               className={`w-5 h-5 ${
                 isUrgent
-                  ? "text-red-400"
+                  ? "text-red-500"
                   : isWarning
-                    ? "text-amber-400"
-                    : "text-emerald-400"
+                    ? "text-amber-500"
+                    : "text-[#111827]"
               }`}
             />
-            <span className="text-small font-medium text-white/60 uppercase tracking-wider">
+            <span className="text-small font-medium text-[#6B7280] uppercase tracking-wider">
               Compliance Horizon
             </span>
           </div>
@@ -48,15 +48,15 @@ export default function ComplianceHorizonDisplay({
             <span
               className={`text-[48px] font-bold leading-none ${
                 isUrgent
-                  ? "text-red-400"
+                  ? "text-red-500"
                   : isWarning
-                    ? "text-amber-400"
-                    : "text-emerald-400"
+                    ? "text-amber-500"
+                    : "text-[#111827]"
               }`}
             >
-              {days !== null ? days.toLocaleString() : "∞"}
+              {days !== null ? days.toLocaleString() : "\u221E"}
             </span>
-            <span className="text-body-lg text-white/40">
+            <span className="text-body-lg text-[#9CA3AF]">
               {days !== null
                 ? "days until first breach"
                 : "No breach forecasted"}
@@ -68,16 +68,16 @@ export default function ComplianceHorizonDisplay({
           <div className="text-right">
             <div className="flex items-center gap-1.5 justify-end mb-1">
               {isUrgent ? (
-                <AlertTriangle className="w-4 h-4 text-red-400" />
+                <AlertTriangle className="w-4 h-4 text-red-500" />
               ) : (
-                <Shield className="w-4 h-4 text-white/30" />
+                <Shield className="w-4 h-4 text-[#D1D5DB]" />
               )}
-              <span className="text-small text-white/50">First breach</span>
+              <span className="text-small text-[#6B7280]">First breach</span>
             </div>
-            <p className="text-body font-mono text-white/70">
+            <p className="text-body font-mono text-[#374151]">
               {horizon.firstBreachRegulation}
             </p>
-            <p className="text-caption text-white/30 mt-0.5">
+            <p className="text-caption text-[#9CA3AF] mt-0.5">
               Confidence: {horizon.confidence}
             </p>
           </div>

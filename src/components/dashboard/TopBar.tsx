@@ -14,7 +14,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const { t } = useLanguage();
 
   return (
-    <header className="h-16 border-b border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface] dark:backdrop-blur-glass px-6 lg:px-8 flex items-center justify-between">
+    <header className="h-16 border-b border-[#E5E7EB] bg-white px-6 lg:px-8 flex items-center justify-between">
       {/* Left */}
       <div className="flex items-center gap-4">
         {/* Mobile hamburger */}
@@ -23,13 +23,13 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           aria-label="Open navigation menu"
           aria-expanded={false}
           aria-controls="sidebar-nav"
-          className="lg:hidden text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white/70 transition-colors"
+          className="lg:hidden text-[#6B7280] hover:text-[#111827] transition-colors"
         >
           <Menu size={20} aria-hidden="true" />
         </button>
 
         {/* Page title */}
-        <h1 className="text-heading font-medium text-slate-900 dark:text-white">
+        <h1 className="text-heading font-medium text-[#111827]">
           {title || t("sidebar.dashboard")}
         </h1>
       </div>
@@ -39,7 +39,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-slate-300 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/70 text-small px-4 py-1.5 rounded-full hover:border-slate-400 dark:hover:border-[--glass-border-hover] hover:text-slate-900 dark:hover:text-white/70 transition-all"
+          className="border border-[#D1D5DB] text-[#4B5563] text-small px-4 py-1.5 rounded-full hover:border-[#9CA3AF] hover:text-[#111827] transition-all"
         >
           {t("topbar.runAssessment")}
         </Link>

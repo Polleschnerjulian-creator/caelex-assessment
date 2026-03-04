@@ -22,27 +22,27 @@ interface SatelliteCardProps {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 70) return "text-emerald-400";
-  if (score >= 50) return "text-amber-400";
-  return "text-red-400";
+  if (score >= 70) return "text-[#111827]";
+  if (score >= 50) return "text-amber-500";
+  return "text-red-500";
 }
 
 function scoreBg(score: number): string {
-  if (score >= 70) return "bg-emerald-500/10";
-  if (score >= 50) return "bg-amber-500/10";
-  return "bg-red-500/10";
+  if (score >= 70) return "bg-[#F1F3F5]";
+  if (score >= 50) return "bg-amber-50";
+  return "bg-red-50";
 }
 
 function freshnessColor(freshness: string): string {
   switch (freshness) {
     case "LIVE":
-      return "text-emerald-400";
+      return "text-[#111827]";
     case "RECENT":
-      return "text-blue-400";
+      return "text-[#4B5563]";
     case "STALE":
-      return "text-amber-400";
+      return "text-amber-500";
     default:
-      return "text-red-400";
+      return "text-red-500";
   }
 }
 
@@ -62,10 +62,10 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-title font-medium text-white">
+          <h3 className="text-title font-medium text-[#111827]">
             {satellite.satelliteName}
           </h3>
-          <p className="text-caption text-white/40">
+          <p className="text-caption text-[#9CA3AF]">
             NORAD {satellite.noradId}
           </p>
         </div>
@@ -78,26 +78,26 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
 
       {/* Compliance Horizon */}
       <div className="flex items-center gap-2 mb-3 text-small">
-        <Clock className="w-3.5 h-3.5 text-white/30" />
+        <Clock className="w-3.5 h-3.5 text-[#D1D5DB]" />
         {complianceHorizon.daysUntilFirstBreach !== null ? (
           <span
             className={
               complianceHorizon.daysUntilFirstBreach < 90
-                ? "text-red-400"
+                ? "text-red-500"
                 : complianceHorizon.daysUntilFirstBreach < 365
-                  ? "text-amber-400"
-                  : "text-white/60"
+                  ? "text-amber-500"
+                  : "text-[#4B5563]"
             }
           >
             {complianceHorizon.daysUntilFirstBreach} days to breach
           </span>
         ) : (
-          <span className="text-emerald-400/70">No breach forecasted</span>
+          <span className="text-[#9CA3AF]">No breach forecasted</span>
         )}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+      <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB]">
         <div className="flex items-center gap-1.5">
           <Radio className={`w-3 h-3 ${freshnessColor(dataFreshness)}`} />
           <span className={`text-caption ${freshnessColor(dataFreshness)}`}>
@@ -105,7 +105,7 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
           </span>
         </div>
         {criticalAlerts > 0 && (
-          <div className="flex items-center gap-1 text-caption text-red-400">
+          <div className="flex items-center gap-1 text-caption text-red-500">
             <AlertTriangle className="w-3 h-3" />
             {criticalAlerts} critical
           </div>

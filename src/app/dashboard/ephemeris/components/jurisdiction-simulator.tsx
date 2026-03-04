@@ -88,26 +88,26 @@ export default function JurisdictionSimulator({
       {/* Controls */}
       <GlassCard hover={false} className="p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Globe className="w-5 h-5 text-emerald-400" />
-          <h3 className="text-title font-medium text-white">
+          <Globe className="w-5 h-5 text-[#111827]" />
+          <h3 className="text-title font-medium text-[#111827]">
             Jurisdiction Simulator
           </h3>
         </div>
-        <p className="text-small text-white/40 mb-4">
+        <p className="text-small text-[#9CA3AF] mb-4">
           Compare compliance requirements across European jurisdictions for{" "}
-          <span className="text-white/60">{satelliteName}</span>.
+          <span className="text-[#4B5563]">{satelliteName}</span>.
         </p>
 
         <div className="flex items-end gap-4 flex-wrap">
           <div>
-            <label className="text-caption text-white/40 block mb-1">
+            <label className="text-caption text-[#9CA3AF] block mb-1">
               Current Jurisdiction
             </label>
             <select
               value={fromCode}
               onChange={(e) => setFromCode(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-small text-white
-                focus:outline-none focus:border-emerald-500/50"
+              className="px-3 py-2 rounded-lg bg-white border border-[#D1D5DB] text-small text-[#111827]
+                focus:outline-none focus:border-[#111827]"
             >
               {JURISDICTIONS.map((j) => (
                 <option key={j.code} value={j.code}>
@@ -117,17 +117,17 @@ export default function JurisdictionSimulator({
             </select>
           </div>
 
-          <ArrowRight className="w-5 h-5 text-white/20 mb-2" />
+          <ArrowRight className="w-5 h-5 text-[#D1D5DB] mb-2" />
 
           <div>
-            <label className="text-caption text-white/40 block mb-1">
+            <label className="text-caption text-[#9CA3AF] block mb-1">
               Target Jurisdiction
             </label>
             <select
               value={toCode ?? ""}
               onChange={(e) => setToCode(e.target.value || null)}
-              className="px-3 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-small text-white
-                focus:outline-none focus:border-emerald-500/50"
+              className="px-3 py-2 rounded-lg bg-white border border-[#D1D5DB] text-small text-[#111827]
+                focus:outline-none focus:border-[#111827]"
             >
               <option value="">Compare All</option>
               {JURISDICTIONS.filter((j) => j.code !== fromCode).map((j) => (
@@ -142,7 +142,7 @@ export default function JurisdictionSimulator({
             onClick={runSimulation}
             disabled={loading}
             className="px-4 py-2 rounded-lg text-small font-medium
-              bg-emerald-500 text-white hover:bg-emerald-600 transition-colors
+              bg-[#111827] text-white hover:bg-[#374151] transition-colors
               disabled:opacity-50"
           >
             {loading ? "Simulating..." : "Run Simulation"}
@@ -153,7 +153,7 @@ export default function JurisdictionSimulator({
       {/* Results */}
       {results && (
         <div className="space-y-3">
-          <h3 className="text-heading font-semibold text-white">
+          <h3 className="text-heading font-semibold text-[#111827]">
             Results ({results.length} jurisdiction
             {results.length !== 1 ? "s" : ""})
           </h3>
@@ -174,28 +174,28 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-title font-medium text-white">
+            <span className="text-title font-medium text-[#111827]">
               {sim.fromJurisdiction} → {sim.toJurisdiction}
             </span>
             {delta > 0 ? (
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <TrendingUp className="w-4 h-4 text-[#111827]" />
             ) : delta < 0 ? (
-              <TrendingDown className="w-4 h-4 text-red-400" />
+              <TrendingDown className="w-4 h-4 text-red-500" />
             ) : (
-              <Minus className="w-4 h-4 text-white/30" />
+              <Minus className="w-4 h-4 text-[#D1D5DB]" />
             )}
           </div>
-          <p className="text-caption text-white/40 mt-0.5">
+          <p className="text-caption text-[#9CA3AF] mt-0.5">
             {sim.regulatoryAuthority.current} → {sim.regulatoryAuthority.new}
           </p>
         </div>
         <div
           className={`text-heading font-bold ${
             delta > 0
-              ? "text-emerald-400"
+              ? "text-[#111827]"
               : delta < 0
-                ? "text-red-400"
-                : "text-white/40"
+                ? "text-red-500"
+                : "text-[#9CA3AF]"
           }`}
         >
           {delta > 0 ? "+" : ""}
@@ -205,41 +205,41 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
 
       <div className="grid grid-cols-2 gap-4 text-small">
         <div>
-          <span className="text-white/40">Score Before</span>
-          <span className="ml-2 text-white/70">
+          <span className="text-[#9CA3AF]">Score Before</span>
+          <span className="ml-2 text-[#374151]">
             {sim.complianceDelta.scoreBefore}
           </span>
         </div>
         <div>
-          <span className="text-white/40">Score After</span>
-          <span className="ml-2 text-white/70">
+          <span className="text-[#9CA3AF]">Score After</span>
+          <span className="ml-2 text-[#374151]">
             {sim.complianceDelta.scoreAfter}
           </span>
         </div>
         <div>
-          <span className="text-white/40">Approval</span>
-          <span className="ml-2 text-white/70">
+          <span className="text-[#9CA3AF]">Approval</span>
+          <span className="ml-2 text-[#374151]">
             {sim.estimatedTimeline.approvalDuration}
           </span>
         </div>
         <div>
-          <span className="text-white/40">Compliance Work</span>
-          <span className="ml-2 text-white/70">
+          <span className="text-[#9CA3AF]">Compliance Work</span>
+          <span className="ml-2 text-[#374151]">
             {sim.estimatedTimeline.additionalComplianceWork}
           </span>
         </div>
       </div>
 
       {sim.requirementsAdded.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/[0.06]">
-          <span className="text-caption text-red-400/70">
+        <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
+          <span className="text-caption text-red-500">
             +{sim.requirementsAdded.length} new requirements:
           </span>
           <div className="flex gap-1.5 flex-wrap mt-1">
             {sim.requirementsAdded.map((r) => (
               <span
                 key={r.regulationRef}
-                className="px-2 py-0.5 rounded text-micro bg-red-500/10 text-red-400"
+                className="px-2 py-0.5 rounded text-micro bg-red-50 text-red-500"
               >
                 {r.name}
               </span>
@@ -250,14 +250,14 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
 
       {sim.requirementsRemoved.length > 0 && (
         <div className="mt-2">
-          <span className="text-caption text-emerald-400/70">
+          <span className="text-caption text-[#4B5563]">
             −{sim.requirementsRemoved.length} removed requirements:
           </span>
           <div className="flex gap-1.5 flex-wrap mt-1">
             {sim.requirementsRemoved.map((r) => (
               <span
                 key={r.regulationRef}
-                className="px-2 py-0.5 rounded text-micro bg-emerald-500/10 text-emerald-400"
+                className="px-2 py-0.5 rounded text-micro bg-[#F1F3F5] text-[#4B5563]"
               >
                 {r.name}
               </span>

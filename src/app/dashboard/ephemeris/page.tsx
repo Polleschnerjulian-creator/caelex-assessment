@@ -72,10 +72,10 @@ export default function EphemerisDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-display-sm font-semibold text-white">
+          <h1 className="text-display-sm font-semibold text-[#111827]">
             Ephemeris
           </h1>
-          <p className="text-body text-white/45 mt-1">
+          <p className="text-body text-[#6B7280] mt-1">
             Predictive Compliance Intelligence
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function EphemerisDashboard() {
           onClick={loadFleet}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-small font-medium
-            bg-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.1] transition-colors
+            bg-[#F1F3F5] text-[#4B5563] hover:text-[#111827] hover:bg-[#E5E7EB] transition-colors
             disabled:opacity-50"
         >
           <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -93,33 +93,33 @@ export default function EphemerisDashboard() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <div className="flex items-center gap-2 text-white/40 text-small mb-1">
+        <div className="p-4 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB]">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-small mb-1">
             <Satellite className="w-4 h-4" />
             Fleet Size
           </div>
-          <div className="text-display-sm font-semibold text-white">
+          <div className="text-display-sm font-semibold text-[#111827]">
             {fleet.length}
           </div>
         </div>
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <div className="flex items-center gap-2 text-white/40 text-small mb-1">
+        <div className="p-4 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB]">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-small mb-1">
             <AlertTriangle className="w-4 h-4" />
             Critical
           </div>
           <div
-            className={`text-display-sm font-semibold ${criticalCount > 0 ? "text-red-400" : "text-emerald-400"}`}
+            className={`text-display-sm font-semibold ${criticalCount > 0 ? "text-red-500" : "text-[#111827]"}`}
           >
             {criticalCount}
           </div>
         </div>
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <div className="flex items-center gap-2 text-white/40 text-small mb-1">
+        <div className="p-4 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB]">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-small mb-1">
             <Activity className="w-4 h-4" />
             Active Alerts
           </div>
           <div
-            className={`text-display-sm font-semibold ${totalAlerts > 0 ? "text-amber-400" : "text-emerald-400"}`}
+            className={`text-display-sm font-semibold ${totalAlerts > 0 ? "text-amber-500" : "text-[#111827]"}`}
           >
             {totalAlerts}
           </div>
@@ -127,7 +127,7 @@ export default function EphemerisDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/[0.03] rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-[#F7F8FA] rounded-lg w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -136,8 +136,8 @@ export default function EphemerisDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "bg-white/[0.08] text-white"
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-white text-[#111827] shadow-sm"
+                  : "text-[#9CA3AF] hover:text-[#4B5563]"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -149,7 +149,7 @@ export default function EphemerisDashboard() {
 
       {/* Error State */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-small">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-small">
           {error}
         </div>
       )}

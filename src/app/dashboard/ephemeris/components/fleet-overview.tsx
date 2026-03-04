@@ -34,7 +34,7 @@ export default function FleetOverview({ fleet, loading }: FleetOverviewProps) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-48 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse"
+            className="h-48 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] animate-pulse"
           />
         ))}
       </div>
@@ -43,7 +43,7 @@ export default function FleetOverview({ fleet, loading }: FleetOverviewProps) {
 
   if (fleet.length === 0) {
     return (
-      <div className="text-center py-16 text-white/40">
+      <div className="text-center py-16 text-[#9CA3AF]">
         <p className="text-body-lg">No satellites registered</p>
         <p className="text-small mt-1">
           Add spacecraft to your organization to see compliance data.
