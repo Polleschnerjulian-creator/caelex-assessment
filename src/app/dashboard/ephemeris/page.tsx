@@ -42,7 +42,12 @@ export default function EphemerisDashboard() {
       const res = await fetch("/api/v1/ephemeris/fleet", {
         headers: csrfHeaders(),
       });
-      if (!res.ok) throw new Error("Failed to load fleet data");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        const detail =
+          errBody.message || errBody.error || res.statusText || "Unknown";
+        throw new Error(`${detail} (${res.status})`);
+      }
       const data = await res.json();
       setFleet(data.data ?? []);
     } catch (err) {
