@@ -322,26 +322,12 @@ export default async function middleware(req: NextRequest) {
         pathname === "/api/login";
       const limiter = isAuthRoute ? getAuthRateLimiter() : getApiRateLimiter();
 
-      // Fail-closed: in production, reject requests if rate limiter is unavailable
-      if (!limiter && process.env.NODE_ENV === "production") {
-        return applySecurityHeaders(
-          new NextResponse(
-            JSON.stringify({
-              error: "Service Unavailable",
-              message:
-                "Rate limiting service is not available. Please try again later.",
-            }),
-            {
-              status: 503,
-              headers: {
-                "Content-Type": "application/json",
-                "Retry-After": "30",
-              },
-            },
-          ),
-          pathname,
-          nonce,
-        );
+      // Fail-open: if Redis is not configured, log warning and allow request through.
+      // Authenticated routes are already protected by session checks; rate limiting
+      // is defense-in-depth. Blocking all API traffic when Redis is absent is worse
+      // than temporarily running without rate limits.
+      if (!limiter) {
+        logRedisWarningOnce();
       }
 
       if (limiter) {
