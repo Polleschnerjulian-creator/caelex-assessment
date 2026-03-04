@@ -40,6 +40,7 @@ import {
   ShieldAlert,
   Calendar,
   Satellite,
+  Activity,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -609,7 +610,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 icon={<Zap size={16} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
-                ASTRA
+                Astra
               </NavItem>
               <NavItem
                 href="/dashboard/sentinel"
@@ -618,6 +619,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                 badge={t("sidebar.new")}
               >
                 Sentinel
+              </NavItem>
+              <NavItem
+                href="/dashboard/ephemeris"
+                icon={<Activity size={16} strokeWidth={1.5} />}
+                onClick={handleNavClick}
+                badge={t("sidebar.new")}
+              >
+                Ephemeris
               </NavItem>
             </div>
           </div>
