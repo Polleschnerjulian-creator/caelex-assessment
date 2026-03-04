@@ -58,7 +58,7 @@ const ENTRIES: BlogEntry[] = [
     pill: "Comply",
     description:
       "119 articles. 7 operator classifications. 10 jurisdictions. One deterministic engine. Caelex Comply maps your spacecraft operation to every applicable regulation — filtering by operator type, regime eligibility, and constellation tier — then computes a multi-jurisdiction favorability matrix in under 200ms.",
-    image: "/images/blog/agentic-system.png",
+    image: "/images/blog/compliance-engine.png",
   },
   {
     id: "verity",

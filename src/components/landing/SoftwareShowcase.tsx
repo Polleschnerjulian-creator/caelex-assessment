@@ -215,7 +215,7 @@ const PRODUCTS = [
     href: "/blog/agentic-system",
   },
   {
-    name: "ASTRA",
+    name: "Astra",
     tagline: "Reason about regulation,\nfrom policy to proof.",
     description:
       "Regulatory AI that reads legislation like a lawyer and structures compliance like an engineer. Multi-hop reasoning across hundreds of regulatory articles and requirements.",

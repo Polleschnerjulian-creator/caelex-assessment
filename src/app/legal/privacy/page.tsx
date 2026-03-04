@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             Datenschutzerklärung
           </h1>
           <p className="text-body text-[#4B5563] mb-8">
-            Stand: Februar 2026 · Caelex, Berlin, Deutschland
+            Stand: März 2026 · Caelex, Berlin, Deutschland
           </p>
 
           <div className="prose prose-sm max-w-none space-y-10">
@@ -1043,10 +1043,165 @@ export default function PrivacyPage() {
               </p>
             </section>
 
-            {/* Section 13 - Changes */}
+            {/* Section 13 - Data Breach Notification */}
             <section>
               <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
-                13. Änderungen dieser Datenschutzerklärung
+                13. Meldung von Datenschutzverletzungen
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Gemäß Art. 33 und Art. 34 DSGVO sind wir verpflichtet,
+                Datenschutzverletzungen zu melden und betroffene Personen zu
+                informieren.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Meldung an die Aufsichtsbehörde (Art. 33 DSGVO)
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Im Falle einer Verletzung des Schutzes personenbezogener Daten
+                melden wir diese unverzüglich und möglichst innerhalb von 72
+                Stunden nach Bekanntwerden an die zuständige Aufsichtsbehörde
+                (Berliner Beauftragte für Datenschutz und Informationsfreiheit),
+                es sei denn, die Verletzung führt voraussichtlich nicht zu einem
+                Risiko für die Rechte und Freiheiten natürlicher Personen.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Benachrichtigung betroffener Personen (Art. 34 DSGVO)
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Wenn eine Datenschutzverletzung voraussichtlich ein hohes Risiko
+                für Ihre Rechte und Freiheiten zur Folge hat, benachrichtigen
+                wir Sie unverzüglich per E-Mail. Die Benachrichtigung enthält:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-body-lg text-[#4B5563]">
+                <li>Art der Verletzung und betroffene Datenkategorien</li>
+                <li>Wahrscheinliche Folgen der Verletzung</li>
+                <li>Ergriffene oder vorgeschlagene Abhilfemaßnahmen</li>
+                <li>
+                  Kontaktdaten unserer Anlaufstelle (
+                  <a
+                    href="mailto:security@caelex.eu"
+                    className="text-[#111827] hover:text-[#111827]"
+                  >
+                    security@caelex.eu
+                  </a>
+                  )
+                </li>
+              </ul>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Dokumentation
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                Wir führen ein Verzeichnis aller Datenschutzverletzungen gemäß
+                Art. 33 Abs. 5 DSGVO, einschließlich der Fakten, Auswirkungen
+                und ergriffenen Abhilfemaßnahmen.
+              </p>
+            </section>
+
+            {/* Section 14 - Deletion Procedure */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                14. Löschung und Recht auf Vergessenwerden
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Sie haben gemäß Art. 17 DSGVO das Recht, die unverzügliche
+                Löschung Ihrer personenbezogenen Daten zu verlangen.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Löschverfahren
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Um die Löschung Ihrer Daten zu beantragen, senden Sie eine
+                E-Mail an{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-[#111827] hover:text-[#111827]"
+                >
+                  privacy@caelex.eu
+                </a>{" "}
+                mit einem Identitätsnachweis. Alternativ können Sie Ihr Konto
+                direkt in den Kontoeinstellungen löschen.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Löschfristen
+              </h3>
+              <ul className="list-disc pl-6 space-y-2 text-body-lg text-[#4B5563]">
+                <li>
+                  <strong className="text-[#4B5563]">Kontodaten:</strong>{" "}
+                  Löschung innerhalb von 30 Tagen nach Antrag
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">
+                    Assessment-Daten und Compliance-Profile:
+                  </strong>{" "}
+                  Löschung innerhalb von 90 Tagen
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">
+                    Auftragsverarbeiter:
+                  </strong>{" "}
+                  Benachrichtigung aller Sub-Auftragsverarbeiter zur Löschung
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">Backups:</strong>{" "}
+                  Bereinigung innerhalb von 90 Tagen
+                </li>
+              </ul>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Ausnahmen
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                Die Löschung kann ausnahmsweise eingeschränkt werden bei
+                gesetzlichen Aufbewahrungspflichten (z.B. steuerrechtliche
+                Aufbewahrung von 6 Jahren gemäß § 257 HGB, 10 Jahren gemäß § 147
+                AO), bei laufenden Rechtsstreitigkeiten oder zur Geltendmachung
+                von Rechtsansprüchen gemäß Art. 17 Abs. 3 DSGVO.
+              </p>
+            </section>
+
+            {/* Section 15 - Sub-Processor Changes */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                15. Einspruchsrecht bei Auftragsverarbeiter-Änderungen
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Gemäß Art. 28 Abs. 2 DSGVO informieren wir Sie mindestens 30
+                Tage im Voraus über geplante Änderungen bei
+                Sub-Auftragsverarbeitern (Hinzufügung oder Ersetzung).
+              </p>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Sie haben das Recht, innerhalb von 30 Tagen nach
+                Benachrichtigung Einspruch gegen die Änderung einzulegen. Der
+                Einspruch ist schriftlich an{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-[#111827] hover:text-[#111827]"
+                >
+                  privacy@caelex.eu
+                </a>{" "}
+                zu richten.
+              </p>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                Sollte der Einspruch berechtigt sein und keine Alternative
+                gefunden werden können, haben Sie das Recht, den Vertrag zum
+                Zeitpunkt der geplanten Änderung ohne Kosten zu kündigen.
+                Aktuelle Liste der Auftragsverarbeiter: siehe Abschnitt 3 dieser
+                Datenschutzerklärung.
+              </p>
+            </section>
+
+            {/* Section 16 - Changes */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                16. Änderungen dieser Datenschutzerklärung
               </h2>
 
               <p className="text-body-lg text-[#4B5563] leading-relaxed">
@@ -1061,7 +1216,7 @@ export default function PrivacyPage() {
 
           <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
             <p className="text-small text-[#9CA3AF]">
-              Stand: Februar 2026 · Version 2.0
+              Stand: März 2026 · Version 2.1
             </p>
             <div className="flex gap-4 mt-4">
               <Link

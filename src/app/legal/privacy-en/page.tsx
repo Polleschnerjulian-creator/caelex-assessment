@@ -41,7 +41,7 @@ export default function PrivacyEnPage() {
             Privacy Policy
           </h1>
           <p className="text-body text-[#4B5563] mb-8">
-            Effective: February 2026 · Caelex, Berlin, Germany
+            Effective: March 2026 · Caelex, Berlin, Germany
           </p>
 
           <div className="prose prose-sm max-w-none space-y-10">
@@ -1028,10 +1028,159 @@ export default function PrivacyEnPage() {
               </p>
             </section>
 
-            {/* Section 13 - Changes */}
+            {/* Section 13 - Data Breach Notification */}
             <section>
               <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
-                13. Changes to This Privacy Policy
+                13. Data Breach Notification
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Pursuant to Art. 33 and Art. 34 GDPR, we are obligated to report
+                data breaches and inform affected individuals.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Notification to Supervisory Authority (Art. 33 GDPR)
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                In the event of a personal data breach, we will notify the
+                competent supervisory authority (Berliner Beauftragte für
+                Datenschutz und Informationsfreiheit) without undue delay and,
+                where feasible, within 72 hours of becoming aware of the breach,
+                unless the breach is unlikely to result in a risk to the rights
+                and freedoms of natural persons.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Notification to Affected Individuals (Art. 34 GDPR)
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Where a data breach is likely to result in a high risk to your
+                rights and freedoms, we will notify you without undue delay via
+                email. The notification will include:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-body-lg text-[#4B5563]">
+                <li>Nature of the breach and affected data categories</li>
+                <li>Likely consequences of the breach</li>
+                <li>Measures taken or proposed to address the breach</li>
+                <li>
+                  Contact details of our point of contact (
+                  <a
+                    href="mailto:security@caelex.eu"
+                    className="text-[#111827] hover:text-[#111827]"
+                  >
+                    security@caelex.eu
+                  </a>
+                  )
+                </li>
+              </ul>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Documentation
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                We maintain a register of all data breaches pursuant to Art.
+                33(5) GDPR, including facts, effects, and remedial measures
+                taken.
+              </p>
+            </section>
+
+            {/* Section 14 - Deletion Procedure */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                14. Deletion and Right to Be Forgotten
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                You have the right to request immediate deletion of your
+                personal data pursuant to Art. 17 GDPR.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Deletion Procedure
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                To request deletion, send an email to{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-[#111827] hover:text-[#111827]"
+                >
+                  privacy@caelex.eu
+                </a>{" "}
+                with proof of identity. Alternatively, you can delete your
+                account directly from your account settings.
+              </p>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Deletion Timelines
+              </h3>
+              <ul className="list-disc pl-6 space-y-2 text-body-lg text-[#4B5563]">
+                <li>
+                  <strong className="text-[#4B5563]">Account data:</strong>{" "}
+                  Deleted within 30 days of request
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">
+                    Assessment data and compliance profiles:
+                  </strong>{" "}
+                  Deleted within 90 days
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">Sub-processors:</strong>{" "}
+                  All sub-processors notified to delete your data
+                </li>
+                <li>
+                  <strong className="text-[#4B5563]">Backups:</strong> Purged
+                  within 90 days
+                </li>
+              </ul>
+
+              <h3 className="text-subtitle font-medium text-[#111827] mt-6 mb-3">
+                Exceptions
+              </h3>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                Deletion may be restricted in cases of statutory retention
+                obligations (e.g., tax records for 6 years under § 257 HGB, 10
+                years under § 147 AO), pending legal proceedings, or for the
+                establishment, exercise, or defense of legal claims pursuant to
+                Art. 17(3) GDPR.
+              </p>
+            </section>
+
+            {/* Section 15 - Sub-Processor Changes */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                15. Right to Object to Sub-Processor Changes
+              </h2>
+
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                Pursuant to Art. 28(2) GDPR, we will inform you at least 30 days
+                in advance of any planned changes to sub-processors (additions
+                or replacements).
+              </p>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed mb-4">
+                You have the right to object to the change within 30 days of
+                notification. Objections must be submitted in writing to{" "}
+                <a
+                  href="mailto:privacy@caelex.eu"
+                  className="text-[#111827] hover:text-[#111827]"
+                >
+                  privacy@caelex.eu
+                </a>
+                .
+              </p>
+              <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                If your objection is justified and no alternative can be found,
+                you have the right to terminate the contract at the time of the
+                planned change without cost. For the current list of
+                sub-processors, see Section 3 of this Privacy Policy.
+              </p>
+            </section>
+
+            {/* Section 16 - Changes */}
+            <section>
+              <h2 className="text-heading-lg font-medium text-[#111827] mb-6">
+                16. Changes to This Privacy Policy
               </h2>
 
               <p className="text-body-lg text-[#4B5563] leading-relaxed">
@@ -1045,7 +1194,7 @@ export default function PrivacyEnPage() {
 
           <div className="mt-12 pt-8 border-t border-[#E5E7EB]">
             <p className="text-small text-[#9CA3AF]">
-              Last updated: February 2026 · Version 2.0
+              Last updated: March 2026 · Version 2.1
             </p>
             <div className="flex gap-4 mt-4">
               <Link
