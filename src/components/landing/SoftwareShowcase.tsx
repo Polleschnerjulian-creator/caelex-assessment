@@ -321,7 +321,7 @@ function ProductRow({
   const BgIcon = BACKGROUND_ICONS[index];
 
   const inner = (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       {/* Background icon (Palantir-style) */}
       <div className="absolute right-8 lg:right-24 top-1/2 -translate-y-1/2 w-[180px] h-[180px] lg:w-[260px] lg:h-[260px] text-[#F1F3F5] pointer-events-none transition-colors duration-500 group-hover:text-[#E5E7EB]">
         <BgIcon />
@@ -336,9 +336,9 @@ function ProductRow({
         </div>
 
         {/* Right column: product name */}
-        <div className="flex items-start justify-end overflow-hidden">
+        <div className="flex items-start justify-end">
           <motion.h3
-            className={`text-[clamp(3.5rem,10vw,8rem)] font-normal leading-[0.88] tracking-[-0.05em] text-right select-none transition-colors duration-500 ${
+            className={`text-[clamp(3rem,9vw,7.5rem)] font-normal leading-[0.9] tracking-[-0.04em] text-right select-none transition-colors duration-500 ${
               isClickable ? "text-[#111827]" : "text-[#E5E7EB]"
             }`}
             whileHover={isClickable ? { x: 8 } : undefined}

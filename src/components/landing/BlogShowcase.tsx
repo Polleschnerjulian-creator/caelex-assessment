@@ -11,6 +11,7 @@ interface BlogEntry {
   slug: string;
   category: string;
   title: string;
+  pill: string;
   description: string;
   image: string;
   href?: string;
@@ -22,6 +23,7 @@ const ENTRIES: BlogEntry[] = [
     slug: "agentic-system",
     category: "Product",
     title: "Caelex Agentic System",
+    pill: "Sentinel",
     description:
       "Deploy an autonomous agent into your infrastructure that continuously monitors operational data, validates it against regulatory requirements, and sends evidence-based compliance reports back to Caelex — fully automated.",
     image: "/images/blog/agentic-system.png",
@@ -32,15 +34,17 @@ const ENTRIES: BlogEntry[] = [
     href: "/systems/ephemeris",
     category: "Predictive Intelligence · Digital Twin",
     title: "Predictive Compliance Modeling",
+    pill: "Ephemeris",
     description:
       "Caelex Ephemeris models every satellite as a living digital twin and computes the compliance future — for every regulation, every satellite, every day of the next five years. Operators don't ask 'are we compliant?' — they ask 'when will we not be?'",
-    image: "/images/blog/ephemeris.svg",
+    image: "/images/blog/ephemeris-prediction.png",
   },
   {
     id: "ground-stations",
     slug: "ground-stations-critical-infrastructure",
     category: "NIS2 · Critical Infrastructure",
     title: "Ground Stations as Critical Infrastructure",
+    pill: "Ground Infra",
     description:
       "Under NIS2 and the EU Space Act, ground stations are classified as critical infrastructure. Our agent monitors uptime, access logs, and security posture — generating audit-ready evidence without manual intervention.",
     image: "/images/blog/ground-station.png",
@@ -51,6 +55,7 @@ const ENTRIES: BlogEntry[] = [
     href: "/assessment",
     category: "Regulatory Intelligence Engine",
     title: "The Compliance Engine",
+    pill: "Comply",
     description:
       "119 articles. 7 operator classifications. 10 jurisdictions. One deterministic engine. Caelex Comply maps your spacecraft operation to every applicable regulation — filtering by operator type, regime eligibility, and constellation tier — then computes a multi-jurisdiction favorability matrix in under 200ms.",
     image: "/images/blog/agentic-system.png",
@@ -60,7 +65,8 @@ const ENTRIES: BlogEntry[] = [
     slug: "verity",
     href: "/verity/verify",
     category: "Cryptographic Attestation · Zero-Knowledge",
-    title: "Verity",
+    title: "Zero-Knowledge Attestation Protocol",
+    pill: "Verity",
     description:
       "Ed25519-signed compliance attestations with SHA-256 commitments and blinding factors. Prove you meet Art. 70 fuel thresholds or NIS2 patch windows — without revealing a single byte of operational data. Offline-verifiable certificates. Tamper-evident hash chains anchored to Sentinel telemetry.",
     image: "/images/blog/agentic-system.png",
@@ -70,6 +76,7 @@ const ENTRIES: BlogEntry[] = [
     slug: "ecosystem",
     category: "Stakeholder Network · Secure Collaboration",
     title: "The Compliance Network",
+    pill: "Network",
     description:
       "One platform. Every stakeholder. Invite regulators, insurers, auditors, legal counsel, and launch providers into encrypted data rooms with watermarking, granular access control, and hash-chained attestation workflows. Every interaction logged. Every sign-off cryptographically verifiable.",
     image: "/images/blog/ground-station.png",
@@ -168,8 +175,8 @@ export default function BlogShowcase() {
             </h2>
           </div>
 
-          {/* Title pills + arrows */}
-          <div className="flex items-center gap-2 md:gap-3 overflow-x-auto scrollbar-hide">
+          {/* Title pills */}
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
             {ENTRIES.map((e, i) => (
               <button
                 key={e.id}
@@ -180,32 +187,15 @@ export default function BlogShowcase() {
                     : "bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827]"
                 }`}
               >
-                {e.title}
+                {e.pill}
               </button>
             ))}
-
-            <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-              <button
-                onClick={prev}
-                className="p-2 rounded-full bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827] transition-colors"
-                aria-label="Previous"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                onClick={next}
-                className="p-2 rounded-full bg-[#F1F3F5] text-[#4B5563] hover:bg-[#E9ECEF] hover:text-[#111827] transition-colors"
-                aria-label="Next"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Full-bleed carousel — track moves, no static padding */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden group/carousel">
         <motion.div
           ref={trackRef}
           className="flex cursor-grab active:cursor-grabbing"
@@ -272,6 +262,26 @@ export default function BlogShowcase() {
             </div>
           ))}
         </motion.div>
+
+        {/* Floating scroll arrows */}
+        {activeIndex > 0 && (
+          <button
+            onClick={prev}
+            className="hidden md:flex absolute left-6 top-[28%] -translate-y-1/2 z-10 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-[#E5E7EB] text-[#111827] shadow-sm opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 hover:bg-white hover:shadow-md"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        )}
+        {activeIndex < ENTRIES.length - 1 && (
+          <button
+            onClick={next}
+            className="hidden md:flex absolute right-6 top-[28%] -translate-y-1/2 z-10 w-12 h-12 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm border border-[#E5E7EB] text-[#111827] shadow-sm opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 hover:bg-white hover:shadow-md"
+            aria-label="Next"
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
       </div>
 
       {/* Progress bars — constrained width */}
