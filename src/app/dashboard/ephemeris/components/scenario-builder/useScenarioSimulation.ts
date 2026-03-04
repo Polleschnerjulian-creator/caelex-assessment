@@ -182,9 +182,10 @@ export function useScenarioSimulation(noradId: string) {
         });
 
         if (!res.ok) {
-          throw new Error(
-            `Simulation step failed (${res.status} ${res.statusText})`,
-          );
+          const errBody = await res.json().catch(() => ({}));
+          const detail =
+            errBody.message || errBody.error || res.statusText || "Unknown";
+          throw new Error(`${detail} (${res.status})`);
         }
 
         const json = await res.json();
