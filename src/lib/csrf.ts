@@ -24,7 +24,7 @@ export const CSRF_HEADER_NAME = "x-csrf-token";
  * Hash a session identifier for CSRF binding.
  * Uses SHA-256 via Web Crypto API (Edge Runtime compatible).
  */
-async function hashSessionId(sessionId: string): Promise<string> {
+export async function hashSessionId(sessionId: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(sessionId);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);

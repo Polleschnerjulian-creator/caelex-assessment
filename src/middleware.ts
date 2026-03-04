@@ -21,6 +21,7 @@ import {
   CSRF_HEADER_NAME,
   generateCsrfToken,
   validateCsrfToken,
+  hashSessionId,
 } from "@/lib/csrf";
 import {
   generateNonce,
@@ -321,6 +322,28 @@ export default async function middleware(req: NextRequest) {
         pathname === "/api/login";
       const limiter = isAuthRoute ? getAuthRateLimiter() : getApiRateLimiter();
 
+      // Fail-closed: in production, reject requests if rate limiter is unavailable
+      if (!limiter && process.env.NODE_ENV === "production") {
+        return applySecurityHeaders(
+          new NextResponse(
+            JSON.stringify({
+              error: "Service Unavailable",
+              message:
+                "Rate limiting service is not available. Please try again later.",
+            }),
+            {
+              status: 503,
+              headers: {
+                "Content-Type": "application/json",
+                "Retry-After": "30",
+              },
+            },
+          ),
+          pathname,
+          nonce,
+        );
+      }
+
       if (limiter) {
         const ip = getSanitizedClientIp(req);
         const result = await limiter.limit(`ip:${ip}`);
@@ -518,14 +541,26 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Set CSRF cookie if not present (readable by JS for double-submit pattern)
+  // Set CSRF cookie if not present OR if session binding is stale
   const response = applySecurityHeaders(NextResponse.next(), pathname, nonce);
-  if (!req.cookies.has(CSRF_COOKIE_NAME)) {
+  const existingCsrf = req.cookies.get(CSRF_COOKIE_NAME)?.value;
+  const sessionIdForCsrf =
+    req.cookies.get("__Secure-authjs.session-token")?.value ||
+    req.cookies.get("authjs.session-token")?.value;
+
+  let needsCsrfRefresh = !existingCsrf;
+
+  // Check if session binding is stale (session rotated since CSRF cookie was set)
+  if (existingCsrf && sessionIdForCsrf && existingCsrf.includes(".")) {
+    const tokenSessionHash = existingCsrf.split(".")[1];
+    const currentHash = await hashSessionId(sessionIdForCsrf);
+    if (tokenSessionHash !== currentHash) {
+      needsCsrfRefresh = true;
+    }
+  }
+
+  if (needsCsrfRefresh) {
     const isProduction = process.env.NODE_ENV === "production";
-    // Bind CSRF token to session if user is authenticated
-    const sessionIdForCsrf =
-      req.cookies.get("__Secure-authjs.session-token")?.value ||
-      req.cookies.get("authjs.session-token")?.value;
     const csrfToken = await generateCsrfToken(sessionIdForCsrf);
     response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
       httpOnly: false, // Must be readable by JS for double-submit pattern
