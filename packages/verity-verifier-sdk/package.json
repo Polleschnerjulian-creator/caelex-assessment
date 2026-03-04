@@ -1,0 +1,30 @@
+{
+  "name": "@caelex/verity-verifier-sdk",
+  "version": "2.0.0-alpha.1",
+  "description": "Verity 2036 — Offline verification SDK for attestations, certificates, and transparency proofs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@caelex/verity-core": "file:../verity-core",
+    "@caelex/verity-transparency": "file:../verity-transparency"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

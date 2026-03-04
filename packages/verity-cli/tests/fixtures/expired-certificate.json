@@ -1,0 +1,50 @@
+{
+  "cert_id": "p7sxhpo5h7yyi6n9qe13hux6",
+  "protocol_version": 2,
+  "tenant_id": "tenant-test-001",
+  "issuer_key_id": "issuer-key-001",
+  "issued_at": "2026-03-04T16:22:57.334Z",
+  "expires_at": "2025-03-04T16:22:57.334Z",
+  "attestations": [
+    {
+      "attestation_id": "qcbmfh1o853ojgwv9t2l74v6",
+      "protocol_version": 2,
+      "tenant_id": "tenant-test-001",
+      "subject": {
+        "asset_type": "satellite",
+        "asset_id": "SAT-2036-ALPHA"
+      },
+      "statement": {
+        "predicate_type": "THRESHOLD",
+        "operator": "ABOVE",
+        "measurement_type": "fuel_margin",
+        "threshold_ref": "ESA-STD-2036/fuel/v3",
+        "valid_from": "2026-03-04T16:22:57.327Z",
+        "valid_until": "2026-06-02T15:22:57.327Z",
+        "sequence_number": 1
+      },
+      "commitment": {
+        "hash": "10693a7f9cb818b1bd1fce9c46afe9d165e0be8ef287025e201dcebb426de721",
+        "scheme": "sha256-blinded-v2",
+        "version": 2
+      },
+      "evidence": {
+        "evidence_ref": "evidence://test/bundle-001",
+        "evidence_hash": "fb8cb4a51b269fada46a2c3bd375b48e4c4225138701788375782c7498b768af",
+        "attester_id": "attester-001",
+        "attester_signature": "a4406749d3ba2e3b8227bd00ac37f94a4d2ad2c833b9674e5260c682c16b9fb11aaa277393a00eaf829d6d9f667d6cb8036bd4754bb7a9010bc38a780db8c901"
+      },
+      "metadata": {
+        "created_at": "2026-03-04T16:22:57.327Z",
+        "nonce": "acb80a69ace36fedb9d456068d0dddd6591d2099d035375380dc482526665c3f"
+      },
+      "signatures": {
+        "operator_signature": "ec83ef13c035537bb62efd3cc23a2cb3bf3d98f8837e4aa4411b962a6068b8f15bdc894d379dae871fc1041f8b2b0f53913e48bdd13fd391197692608f828b02",
+        "operator_key_id": "operator-key-001"
+      }
+    }
+  ],
+  "merkle_root": "56174b72ecbe36851df91c03231106fbdfe2168881ab40dffd69e9a01d7c2fa6",
+  "sequence_number": 3,
+  "certificate_signature": "93c9d02a6f0c7557cf95f6213d1bad1e7e341917a241ef7f3ea95796e874351cd9dfb90dc66f40239df231d6fce9e03d0ca80ec815d667fb379cba57e0f09604"
+}

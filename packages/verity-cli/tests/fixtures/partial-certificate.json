@@ -1,0 +1,124 @@
+{
+  "cert_id": "hpel4bnzdnrtne94w8hzycmp",
+  "protocol_version": 2,
+  "tenant_id": "tenant-test-001",
+  "issuer_key_id": "issuer-key-001",
+  "issued_at": "2026-03-04T16:22:57.333Z",
+  "expires_at": "2027-03-04T16:22:57.333Z",
+  "attestations": [
+    {
+      "attestation_id": "a70pjtl2awcgqai9g6iqvnjn",
+      "protocol_version": 2,
+      "tenant_id": "tenant-test-001",
+      "subject": {
+        "asset_type": "satellite",
+        "asset_id": "SAT-2036-ALPHA"
+      },
+      "statement": {
+        "predicate_type": "THRESHOLD",
+        "operator": "ABOVE",
+        "measurement_type": "fuel_margin",
+        "threshold_ref": "ESA-STD-2036/fuel/v3",
+        "valid_from": "2020-01-01T00:00:00.000Z",
+        "valid_until": "2020-06-01T00:00:00.000Z",
+        "sequence_number": 10
+      },
+      "commitment": {
+        "hash": "02770c937de8d7fcd913396f8c1ccdcbab9f3066807e31f2208a14b05d54216d",
+        "scheme": "sha256-blinded-v2",
+        "version": 2
+      },
+      "evidence": {
+        "evidence_ref": "evidence://test/bundle-001",
+        "evidence_hash": "fb8cb4a51b269fada46a2c3bd375b48e4c4225138701788375782c7498b768af",
+        "attester_id": "attester-001",
+        "attester_signature": "74fbf71cb4b41dd166739cced184b1a97396182e4ca960e7abee69f373afb50e9b29088efbc91cc6c867b60e00de8e606150418b4d7a7cc895d73e04f971f00e"
+      },
+      "metadata": {
+        "created_at": "2026-03-04T16:22:57.331Z",
+        "nonce": "2222bcc16e75f6deb796989bb2fabcc0a3e52b2aaa8ff6ff5ae2f19913f90f8e"
+      },
+      "signatures": {
+        "operator_signature": "e10002d4672077c0179f7d0e3d113c25044e744880176a741f8e0dcdb91476c972a6bd8e8999882433a49900c75c67942ddc18eeff624c1f46f96872bab3b500",
+        "operator_key_id": "operator-key-001"
+      }
+    },
+    {
+      "attestation_id": "y2s49qjohvuot8oujuu82ooh",
+      "protocol_version": 2,
+      "tenant_id": "tenant-test-001",
+      "subject": {
+        "asset_type": "satellite",
+        "asset_id": "SAT-2036-ALPHA"
+      },
+      "statement": {
+        "predicate_type": "THRESHOLD",
+        "operator": "ABOVE",
+        "measurement_type": "orbit_accuracy",
+        "threshold_ref": "ESA-STD-2036/fuel/v3",
+        "valid_from": "2026-03-04T16:22:57.332Z",
+        "valid_until": "2026-06-02T15:22:57.332Z",
+        "sequence_number": 11
+      },
+      "commitment": {
+        "hash": "14c14aa648de8773b2f23a40942cc86db1ad3e5c0750cfe6a1d216fb3bcfc1ab",
+        "scheme": "sha256-blinded-v2",
+        "version": 2
+      },
+      "evidence": {
+        "evidence_ref": "evidence://test/bundle-001",
+        "evidence_hash": "fb8cb4a51b269fada46a2c3bd375b48e4c4225138701788375782c7498b768af",
+        "attester_id": "attester-001",
+        "attester_signature": "8023ab07feebdc99bd6b507dd330021b0b3389e524bf0fe8c11bd9dbdc927b6491aeb7b214d2b7f5ea37c075d3570a01bd4afbfa31d2ef250538fce33dd01e01"
+      },
+      "metadata": {
+        "created_at": "2026-03-04T16:22:57.332Z",
+        "nonce": "526bfe683b051730954550d0f574934b81eae96880a8315300873ee79f52fd99"
+      },
+      "signatures": {
+        "operator_signature": "414d1b3fb058fd7961d54a8877765180b2c8a58c5971b1781882ad330d61e9859c3c28d16f1da6523f9be705b13fcbaf4461a61d92d0127b3f403a0a75ecf304",
+        "operator_key_id": "operator-key-001"
+      }
+    },
+    {
+      "attestation_id": "qhhk900xefbqcx57oskfr68t",
+      "protocol_version": 2,
+      "tenant_id": "tenant-test-001",
+      "subject": {
+        "asset_type": "satellite",
+        "asset_id": "SAT-2036-ALPHA"
+      },
+      "statement": {
+        "predicate_type": "THRESHOLD",
+        "operator": "ABOVE",
+        "measurement_type": "comm_uptime",
+        "threshold_ref": "ESA-STD-2036/fuel/v3",
+        "valid_from": "2026-03-04T16:22:57.332Z",
+        "valid_until": "2026-06-02T15:22:57.332Z",
+        "sequence_number": 12
+      },
+      "commitment": {
+        "hash": "bc861e2b2cc632e884ec06c183d9b17c95b7bb8436a651402e2b7a013d4429bf",
+        "scheme": "sha256-blinded-v2",
+        "version": 2
+      },
+      "evidence": {
+        "evidence_ref": "evidence://test/bundle-001",
+        "evidence_hash": "fb8cb4a51b269fada46a2c3bd375b48e4c4225138701788375782c7498b768af",
+        "attester_id": "attester-001",
+        "attester_signature": "4a9533aaa31ea482a29148c36dbc075d90355090e8fc734afe959a0d347e01df58049a2a514ff4e33a51973e0a3536a4a24627991d8d20bfe59c0e7f2f3b030f"
+      },
+      "metadata": {
+        "created_at": "2026-03-04T16:22:57.332Z",
+        "nonce": "d58ab80cb6574c7607a19e3305c8da459c26f324b4c26fe178f9a723d96aa5bc"
+      },
+      "signatures": {
+        "operator_signature": "f8049b1b5359619dc49334d5020e054f4271b5db7eadaad9e3516632e25329714735ea155734fec913dabee3e714741f317450add8e5844e5c55eabd7cc32005",
+        "operator_key_id": "operator-key-001"
+      }
+    }
+  ],
+  "merkle_root": "61d7cb3a1f1f8a89ce8e011527bd8cbcd90d431e4fd974d57361c41c493f417a",
+  "sequence_number": 2,
+  "certificate_signature": "80826a8d09ff4d2db87ce76ac12aeb5ab17753d877114f0f41f5d599e042441f1631ad7fd538ef8c63596732eb7a6fc71be3f820ab9d1374eb49f4507cb28b01"
+}

@@ -1,0 +1,978 @@
+openapi: "3.1.0"
+info:
+  title: Verity 2036 API
+  version: 2.0.0-alpha.1
+  description: |
+    Cryptographic compliance attestation API for space operators.
+
+    Verity 2036 enables satellite operators, launch providers, and space service
+    companies to prove regulatory compliance properties without revealing sensitive
+    operational telemetry. All attestations are recorded in a tamper-evident
+    transparency log with Merkle checkpoints.
+
+    ## Authentication
+
+    All endpoints (except public verification) require a Bearer API key:
+
+    ```
+    Authorization: Bearer vty2_<40 base62 chars>
+    ```
+
+    API keys are scoped to a tenant and carry fine-grained permissions.
+
+    ## Rate Limits
+
+    All endpoints enforce sliding-window rate limits. Response headers indicate
+    current usage:
+
+    - `X-RateLimit-Limit` — Maximum requests per 60-second window
+    - `X-RateLimit-Remaining` — Requests remaining in the current window
+    - `X-RateLimit-Reset` — UTC epoch seconds when the window resets
+    - `Retry-After` — Seconds until the next request will be accepted (only on 429)
+  contact:
+    name: Caelex Engineering
+  license:
+    name: Proprietary
+    identifier: LicenseRef-scancode-proprietary-license
+
+servers:
+  - url: http://localhost:3100
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Attestations
+    description: Create and verify cryptographic compliance attestations
+  - name: Certificates
+    description: Issue and verify certificates bundling multiple attestations
+  - name: Keys
+    description: Rotate and revoke Ed25519 signing keys
+  - name: Transparency
+    description: Query the append-only transparency log
+
+paths:
+  /v1/attestations/create:
+    post:
+      operationId: createAttestation
+      summary: Create a new attestation
+      description: |
+        Creates a cryptographic compliance attestation with a Pedersen commitment
+        and zero-knowledge proof. The attestation is recorded in the transparency
+        log and assigned a unique nonce for anti-replay protection.
+      tags:
+        - Attestations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAttestationRequest"
+      responses:
+        "201":
+          description: Attestation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAttestationResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/attestations/verify:
+    post:
+      operationId: verifyAttestation
+      summary: Verify an attestation
+      description: |
+        Verifies the cryptographic integrity of an attestation. Supports two modes:
+
+        - **By ID** (authenticated): Supply `attestation_id` to look up and verify
+          a stored attestation. Requires a valid API key.
+        - **By payload** (public): Supply a full `attestation` object for purely
+          computational verification. No API key required.
+      tags:
+        - Attestations
+      security:
+        - BearerAuth: []
+        - {} # Also allows unauthenticated access for public verify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyAttestationRequest"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyAttestationResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/certificates/issue:
+    post:
+      operationId: issueCertificate
+      summary: Issue a new certificate
+      description: |
+        Issues a certificate that bundles one or more attestations with a Merkle
+        root and an issuer signature. Certificates enable offline verification:
+        the full attestation payloads are embedded so a verifier needs only the
+        certificate JSON and the issuer's public key.
+      tags:
+        - Certificates
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssueCertificateRequest"
+      responses:
+        "201":
+          description: Certificate issued successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IssueCertificateResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/certificates/verify:
+    post:
+      operationId: verifyCertificate
+      summary: Verify a certificate
+      description: |
+        Verifies the cryptographic integrity of a certificate and all embedded
+        attestations. Supports two modes:
+
+        - **By ID** (authenticated): Supply `cert_id` to look up and verify
+          a stored certificate. Requires a valid API key.
+        - **By payload** (public): Supply a full `certificate` object for purely
+          computational verification. No API key required.
+      tags:
+        - Certificates
+      security:
+        - BearerAuth: []
+        - {} # Also allows unauthenticated access for public verify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyCertificateRequest"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyCertificateResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/keys/rotate:
+    post:
+      operationId: rotateKey
+      summary: Rotate a signing key
+      description: |
+        Rotates an existing Ed25519 signing key. A new key pair is created and
+        the old key transitions to ROTATED status with an overlap window during
+        which both keys are valid for verification.
+      tags:
+        - Keys
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RotateKeyRequest"
+      responses:
+        "200":
+          description: Key rotated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RotateKeyResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/keys/revoke:
+    post:
+      operationId: revokeKey
+      summary: Revoke a signing key
+      description: |
+        Permanently revokes a signing key. Once revoked, a key MUST NOT be used
+        for new signatures. Existing attestations signed before revocation remain
+        valid. The revocation is recorded in the transparency log.
+      tags:
+        - Keys
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeKeyRequest"
+      responses:
+        "200":
+          description: Key revoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevokeKeyResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/transparency/inclusion/{reference_id}:
+    get:
+      operationId: getInclusionProof
+      summary: Get inclusion proof
+      description: |
+        Returns a Merkle inclusion proof for a given reference ID within the
+        transparency log. The proof demonstrates that the entry is included in
+        a signed Merkle checkpoint, allowing third parties to verify the entry
+        was recorded without trusting the server.
+
+        Returns 404 if the entry does not exist or has not yet been included
+        in a checkpoint.
+      tags:
+        - Transparency
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: reference_id
+          in: path
+          required: true
+          description: The reference ID (e.g. attestation_id or cert_id) to look up
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Inclusion proof returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InclusionProofResponse"
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: "API key in format: vty2_<40 base62 chars>"
+
+  headers:
+    X-Request-Id:
+      description: Unique request identifier for tracing
+      schema:
+        type: string
+        format: uuid
+    X-RateLimit-Limit:
+      description: Maximum requests per 60-second window
+      schema:
+        type: integer
+    X-RateLimit-Remaining:
+      description: Requests remaining in the current window
+      schema:
+        type: integer
+    X-RateLimit-Reset:
+      description: UTC epoch seconds when the window resets
+      schema:
+        type: integer
+    Retry-After:
+      description: Seconds until the next request will be accepted
+      schema:
+        type: integer
+
+  schemas:
+    # ------------------------------------------------------------------
+    # Attestation schemas
+    # ------------------------------------------------------------------
+
+    CreateAttestationRequest:
+      type: object
+      required:
+        - subject
+        - statement
+        - commitment
+        - evidence
+        - operator_key_id
+      properties:
+        subject:
+          type: object
+          required:
+            - asset_type
+            - asset_id
+          properties:
+            asset_type:
+              type: string
+              description: Type of the regulated asset (e.g. SATELLITE, LAUNCH_VEHICLE)
+              minLength: 1
+            asset_id:
+              type: string
+              description: Unique identifier for the asset
+              minLength: 1
+        statement:
+          type: object
+          required:
+            - predicate_type
+            - operator
+            - measurement_type
+            - threshold_ref
+            - valid_from
+            - valid_until
+          properties:
+            predicate_type:
+              type: string
+              description: Type of compliance predicate (e.g. DEBRIS_MITIGATION)
+              minLength: 1
+            operator:
+              type: string
+              description: Comparison operator (e.g. LESS_THAN, GREATER_EQUAL)
+              minLength: 1
+            measurement_type:
+              type: string
+              description: What is being measured (e.g. ORBITAL_LIFETIME_YEARS)
+              minLength: 1
+            threshold_ref:
+              type: string
+              description: Reference threshold value
+              minLength: 1
+            valid_from:
+              type: string
+              format: date-time
+              description: Start of the validity window (ISO 8601)
+            valid_until:
+              type: string
+              format: date-time
+              description: End of the validity window (ISO 8601)
+        commitment:
+          type: object
+          required:
+            - hash
+            - scheme
+            - version
+          properties:
+            hash:
+              type: string
+              pattern: "^[0-9a-f]{64}$"
+              description: Pedersen commitment hash (64 lowercase hex chars)
+            scheme:
+              type: string
+              description: Commitment scheme identifier
+              minLength: 1
+            version:
+              type: integer
+              minimum: 1
+              description: Commitment scheme version
+        evidence:
+          type: object
+          required:
+            - evidence_ref
+            - evidence_hash
+            - attester_id
+            - attester_signature
+          properties:
+            evidence_ref:
+              type: string
+              description: Reference to the evidence source
+              minLength: 1
+            evidence_hash:
+              type: string
+              pattern: "^[0-9a-f]{64}$"
+              description: SHA-256 hash of the evidence (64 lowercase hex chars)
+            attester_id:
+              type: string
+              description: ID of the attester that produced this evidence
+              minLength: 1
+            attester_signature:
+              type: string
+              pattern: "^[0-9a-f]{128}$"
+              description: Ed25519 signature from the attester (128 lowercase hex chars)
+        operator_key_id:
+          type: string
+          description: Key ID of the operator's signing key
+          minLength: 1
+
+    CreateAttestationResponse:
+      type: object
+      properties:
+        attestation_id:
+          type: string
+          description: Unique attestation identifier
+        protocol_version:
+          type: integer
+          description: Protocol version (2)
+        nonce:
+          type: string
+          description: Anti-replay nonce (64 hex chars)
+        transparency_entry:
+          type: object
+          properties:
+            entry_id:
+              type: string
+            sequence_number:
+              type: integer
+            entry_hash:
+              type: string
+        created_at:
+          type: string
+          format: date-time
+
+    VerifyAttestationRequest:
+      oneOf:
+        - type: object
+          required:
+            - attestation_id
+          properties:
+            attestation_id:
+              type: string
+              description: ID of a stored attestation to verify
+              minLength: 1
+        - type: object
+          required:
+            - attestation
+          properties:
+            attestation:
+              type: object
+              description: Full attestation payload for public verification
+              additionalProperties: true
+
+    VerifyAttestationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Whether the attestation is cryptographically valid
+        attestation_id:
+          type: string
+          description: The attestation ID (if looked up by ID)
+        checks:
+          type: object
+          description: Individual verification check results
+          additionalProperties:
+            type: boolean
+        errors:
+          type: array
+          description: List of verification errors (empty if valid)
+          items:
+            type: string
+        warnings:
+          type: array
+          description: List of verification warnings
+          items:
+            type: string
+
+    # ------------------------------------------------------------------
+    # Certificate schemas
+    # ------------------------------------------------------------------
+
+    IssueCertificateRequest:
+      type: object
+      required:
+        - attestation_ids
+        - expires_at
+        - issuer_key_id
+      properties:
+        attestation_ids:
+          type: array
+          description: IDs of attestations to include in the certificate
+          items:
+            type: string
+            minLength: 1
+          minItems: 1
+          maxItems: 100
+        expires_at:
+          type: string
+          format: date-time
+          description: When the certificate expires (ISO 8601)
+        issuer_key_id:
+          type: string
+          description: Key ID of the issuer's signing key
+          minLength: 1
+
+    IssueCertificateResponse:
+      type: object
+      properties:
+        cert_id:
+          type: string
+          description: Unique certificate identifier
+        protocol_version:
+          type: integer
+          description: Protocol version (2)
+        merkle_root:
+          type: string
+          description: Merkle root of the bundled attestations
+        issuer_signature:
+          type: string
+          description: Ed25519 signature from the issuer
+        attestation_count:
+          type: integer
+          description: Number of attestations in the certificate
+        transparency_entry:
+          type: object
+          properties:
+            entry_id:
+              type: string
+            sequence_number:
+              type: integer
+            entry_hash:
+              type: string
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    VerifyCertificateRequest:
+      oneOf:
+        - type: object
+          required:
+            - cert_id
+          properties:
+            cert_id:
+              type: string
+              description: ID of a stored certificate to verify
+              minLength: 1
+        - type: object
+          required:
+            - certificate
+          properties:
+            certificate:
+              type: object
+              description: Full certificate payload for public verification
+              additionalProperties: true
+
+    VerifyCertificateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: Whether the certificate is cryptographically valid
+        cert_id:
+          type: string
+          description: The certificate ID (if looked up by ID)
+        checks:
+          type: object
+          description: Individual verification check results
+          additionalProperties:
+            type: boolean
+        errors:
+          type: array
+          description: List of verification errors (empty if valid)
+          items:
+            type: string
+        warnings:
+          type: array
+          description: List of verification warnings
+          items:
+            type: string
+        attestation_results:
+          type: array
+          description: Per-attestation verification results
+          items:
+            type: object
+            properties:
+              attestation_id:
+                type: string
+              valid:
+                type: boolean
+              errors:
+                type: array
+                items:
+                  type: string
+
+    # ------------------------------------------------------------------
+    # Key management schemas
+    # ------------------------------------------------------------------
+
+    RotateKeyRequest:
+      type: object
+      required:
+        - key_id
+      properties:
+        key_id:
+          type: string
+          description: ID of the key to rotate
+          minLength: 1
+        overlap_hours:
+          type: integer
+          description: Hours during which both old and new keys are valid (default 168 = 7 days)
+          minimum: 1
+          default: 168
+
+    RotateKeyResponse:
+      type: object
+      properties:
+        new_key_id:
+          type: string
+          description: ID of the newly created key
+        public_key:
+          type: string
+          description: Hex-encoded Ed25519 public key of the new key
+        activated_at:
+          type: string
+          format: date-time
+          description: When the new key was activated
+        previous_key_id:
+          type: string
+          description: ID of the rotated (old) key
+        previous_key_expires_at:
+          type: string
+          format: date-time
+          description: When the old key will expire
+
+    RevokeKeyRequest:
+      type: object
+      required:
+        - key_id
+        - reason
+      properties:
+        key_id:
+          type: string
+          description: ID of the key to revoke
+          minLength: 1
+        reason:
+          type: string
+          description: Reason for revocation
+          minLength: 1
+          maxLength: 1000
+
+    RevokeKeyResponse:
+      type: object
+      properties:
+        revocation_id:
+          type: string
+          description: Unique revocation record identifier
+        key_id:
+          type: string
+          description: ID of the revoked key
+        revoked_at:
+          type: string
+          format: date-time
+          description: When the key was revoked
+
+    # ------------------------------------------------------------------
+    # Transparency schemas
+    # ------------------------------------------------------------------
+
+    InclusionProofResponse:
+      type: object
+      properties:
+        entryId:
+          type: string
+          description: Transparency log entry identifier
+        referenceId:
+          type: string
+          description: The reference ID that was looked up
+        entryHash:
+          type: string
+          description: SHA-256 hash of the log entry
+        sequenceNumber:
+          type: integer
+          description: Monotonically increasing sequence number
+        inclusionProof:
+          type: object
+          properties:
+            merklePath:
+              type: array
+              description: Sibling hashes from leaf to root for proof reconstruction
+              items:
+                type: string
+            checkpointId:
+              type: string
+              description: ID of the Merkle checkpoint containing this entry
+            checkpointMerkleRoot:
+              type: string
+              description: Merkle root of the checkpoint
+            checkpointSignature:
+              type: string
+              description: Ed25519 signature of the checkpoint by the platform root key
+
+    # ------------------------------------------------------------------
+    # Error schema
+    # ------------------------------------------------------------------
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              enum:
+                - VALIDATION_ERROR
+                - AUTHENTICATION_REQUIRED
+                - AUTHENTICATION_FAILED
+                - PERMISSION_DENIED
+                - RESOURCE_NOT_FOUND
+                - TENANT_MISMATCH
+                - KEY_EXPIRED
+                - KEY_REVOKED
+                - KEY_ALREADY_ROTATED
+                - KEY_ALREADY_REVOKED
+                - ATTESTATION_REVOKED
+                - ATTESTATION_NOT_FOUND
+                - CERTIFICATE_NOT_FOUND
+                - NONCE_COLLISION
+                - RATE_LIMIT_EXCEEDED
+                - INTERNAL_ERROR
+            message:
+              type: string
+              description: Human-readable error description
+
+  responses:
+    BadRequest:
+      description: Invalid request — validation error in request body or parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: "Must be 64 lowercase hex chars"
+
+    Unauthorized:
+      description: Authentication required or failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: AUTHENTICATION_FAILED
+              message: "Authentication failed"
+
+    Forbidden:
+      description: Insufficient permissions or tenant mismatch
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: PERMISSION_DENIED
+              message: "Authentication failed"
+
+    NotFound:
+      description: Requested resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: RESOURCE_NOT_FOUND
+              message: "Key not found"
+
+    Conflict:
+      description: Resource conflict (e.g. key already rotated, nonce collision)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: KEY_ALREADY_ROTATED
+              message: "Key has already been rotated"
+
+    UnprocessableEntity:
+      description: Request understood but cannot be processed (e.g. expired key)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: KEY_EXPIRED
+              message: "Key has expired"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/Retry-After"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/X-RateLimit-Limit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/X-RateLimit-Remaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/X-RateLimit-Reset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: "Rate limit exceeded"
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: "An internal error occurred."

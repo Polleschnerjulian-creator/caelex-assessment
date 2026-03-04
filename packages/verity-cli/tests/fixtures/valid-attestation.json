@@ -1,0 +1,37 @@
+{
+  "attestation_id": "hsrc5x0hz0jxhhvemuj5lq7z",
+  "protocol_version": 2,
+  "tenant_id": "tenant-test-001",
+  "subject": {
+    "asset_type": "satellite",
+    "asset_id": "SAT-2036-ALPHA"
+  },
+  "statement": {
+    "predicate_type": "THRESHOLD",
+    "operator": "ABOVE",
+    "measurement_type": "fuel_margin",
+    "threshold_ref": "ESA-STD-2036/fuel/v3",
+    "valid_from": "2026-03-04T16:22:57.319Z",
+    "valid_until": "2026-06-02T15:22:57.323Z",
+    "sequence_number": 1
+  },
+  "commitment": {
+    "hash": "997e3478456088e1ab0cdc8bc97a4932f6088497d5f808315314d5ca47ae9147",
+    "scheme": "sha256-blinded-v2",
+    "version": 2
+  },
+  "evidence": {
+    "evidence_ref": "evidence://test/bundle-001",
+    "evidence_hash": "fb8cb4a51b269fada46a2c3bd375b48e4c4225138701788375782c7498b768af",
+    "attester_id": "attester-001",
+    "attester_signature": "44ddd96c961b9e9489be01122b2f192dde137730f32e022b956dbd4f64357e724bc16b75f406f4f4b2d6f7dff440032b908e17130cbf9a98da4ba06db76abc08"
+  },
+  "metadata": {
+    "created_at": "2026-03-04T16:22:57.323Z",
+    "nonce": "ec7e9fb84e10c566ac22b5d9320497891647f2cfa1536888d6aee0c09f747027"
+  },
+  "signatures": {
+    "operator_signature": "9b253a630c73b7f6bf72ae8106762b478309f16ebc8c2376d747f8edad024699838a4ea647cadee34c62fa9cfebe2bfff17463898b9c6a1b28f4534670313604",
+    "operator_key_id": "operator-key-001"
+  }
+}

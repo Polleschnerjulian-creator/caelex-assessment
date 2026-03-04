@@ -1,0 +1,39 @@
+{
+  "name": "@caelex/verity-core",
+  "version": "2.0.0-alpha.1",
+  "description": "Verity 2036 — Cryptographic compliance attestation core",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "demo": "tsx src/demo.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "@paralleldrive/cuid2": "^2.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "fast-check": "^3.23.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,21 @@
+{
+  "entryId": "entry-001",
+  "referenceId": "hsrc5x0hz0jxhhvemuj5lq7z",
+  "entryHash": "5e2d5d1e58e94d7607e0745cd3e612c4a358fc93f37fc5ab1fed8d04bbf7ce77",
+  "sequenceNumber": 1,
+  "inclusionProof": {
+    "merklePath": [
+      {
+        "hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "position": "left"
+      },
+      {
+        "hash": "6bbaaebf69294bed338a0d9d83721376b42f6328549e4e8dd225c5f8a6c18b7a",
+        "position": "right"
+      }
+    ],
+    "checkpointId": "checkpoint-001",
+    "checkpointMerkleRoot": "1aed53977dd6848f42c5f4b14aa2ed70be88499247fd0453b9122e14a277fb63",
+    "checkpointSignature": "862f2ab34635218ceebbf8314566eee095d0a9c6f1817f5f701a0695e2e6dfb1151421819ccce0e85554466dd92f92857afdf7cc8c30045511767b805564c900"
+  }
+}

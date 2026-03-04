@@ -1,0 +1,28 @@
+{
+  "name": "@caelex/verity-cli",
+  "version": "2.0.0-alpha.1",
+  "description": "Verity 2036 — CLI for offline verification of compliance attestations and certificates",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "verity": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@caelex/verity-core": "file:../verity-core",
+    "@caelex/verity-transparency": "file:../verity-transparency",
+    "@caelex/verity-verifier-sdk": "file:../verity-verifier-sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

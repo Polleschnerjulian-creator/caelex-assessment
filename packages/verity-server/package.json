@@ -1,0 +1,38 @@
+{
+  "name": "@caelex/verity-server",
+  "version": "2.0.0-alpha.1",
+  "description": "Verity 2036 — Server layer for cryptographic compliance attestations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@caelex/verity-core": "file:../verity-core",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "pg": "^8.13.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,11 +1,11 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
 # testing
-/coverage
+coverage/
 /playwright-report
 /test-results
 /blob-report
@@ -16,6 +16,7 @@
 
 # production
 /build
+packages/*/dist
 
 # misc
 .DS_Store
