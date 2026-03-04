@@ -74,22 +74,22 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
         transition-all duration-150
         ${
           isActive
-            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-            : "text-slate-800 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+            ? "bg-[#F1F3F5] text-[#111827] font-medium"
+            : "text-[#4B5563] hover:text-[#111827] hover:bg-[#F7F8FA]"
         }
       `}
     >
       {icon && (
         <span
           aria-hidden="true"
-          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-white/45 group-hover:text-slate-700 dark:group-hover:text-white/70"}`}
+          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[#111827]" : "text-[#9CA3AF] group-hover:text-[#4B5563]"}`}
         >
           {icon}
         </span>
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-micro px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70">
+        <span className="text-micro px-1.5 py-0.5 rounded bg-[#F1F3F5] text-[#4B5563]">
           {badge}
         </span>
       )}
@@ -132,10 +132,10 @@ function CompactModuleItem({
         transition-all duration-150
         ${
           locked
-            ? "text-slate-400 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/45 hover:bg-slate-50 dark:hover:bg-white/[0.06] cursor-default"
+            ? "text-[#9CA3AF] hover:text-[#6B7280] hover:bg-[#F7F8FA] cursor-default"
             : isActive
-              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium"
-              : "text-slate-700 dark:text-white/45 hover:text-slate-900 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+              ? "bg-[#F1F3F5] text-[#111827] font-medium"
+              : "text-[#4B5563] hover:text-[#111827] hover:bg-[#F7F8FA]"
         }
       `}
     >
@@ -143,10 +143,10 @@ function CompactModuleItem({
         aria-hidden="true"
         className={`w-3.5 h-3.5 flex-shrink-0 ${
           locked
-            ? "text-slate-300 dark:text-white/20"
+            ? "text-[#D1D5DB]"
             : isActive
-              ? "text-emerald-700 dark:text-emerald-400"
-              : "text-slate-500 dark:text-white/45 group-hover:text-slate-600 dark:group-hover:text-white/70"
+              ? "text-[#111827]"
+              : "text-[#9CA3AF] group-hover:text-[#4B5563]"
         }`}
       >
         {icon}
@@ -155,11 +155,11 @@ function CompactModuleItem({
       {locked && (
         <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
-            <span className="text-[8px] font-medium uppercase tracking-wider text-slate-400 dark:text-white/45">
+            <span className="text-[8px] font-medium uppercase tracking-wider text-[#9CA3AF]">
               {requiredPlan}
             </span>
           )}
-          <Lock size={14} className="text-slate-300 dark:text-white/20" />
+          <Lock size={14} className="text-[#D1D5DB]" />
         </span>
       )}
     </Link>
@@ -199,10 +199,10 @@ function ModuleGroup({
           transition-all duration-150
           ${
             hasActiveItem
-              ? "text-emerald-700 dark:text-emerald-400/90"
-              : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+              ? "text-[#111827]"
+              : "text-[#9CA3AF] hover:text-[#4B5563]"
           }
-          hover:bg-slate-50 dark:hover:bg-white/[0.06]
+          hover:bg-[#F7F8FA]
         `}
       >
         <motion.span
@@ -218,8 +218,8 @@ function ModuleGroup({
           aria-label={`${count} modules`}
           className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
             hasActiveItem
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45"
+              ? "bg-[#111827] text-white"
+              : "bg-[#F1F3F5] text-[#9CA3AF]"
           }`}
         >
           {count}
@@ -380,7 +380,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -391,8 +391,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[260px] lg:h-screen
-          bg-white dark:bg-dark-bg border-r border-slate-200 dark:border-[--glass-border-subtle]
-          dark:backdrop-blur-2xl
+          bg-white border-r border-[#E5E7EB]
           flex flex-col z-50
           transition-transform duration-300 lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -402,16 +401,16 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-slate-600 dark:text-white/45 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+          className="lg:hidden absolute top-4 right-4 p-2 text-[#4B5563] hover:text-[#111827] rounded-lg hover:bg-[#F1F3F5] transition-colors"
         >
           <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="h-16 flex items-center px-6 border-b border-[#E5E7EB]">
           <Link href="/" className="flex items-center gap-2">
-            <Logo size={22} className="text-slate-900 dark:text-white" />
-            <span className="text-micro text-slate-500 dark:text-white/45 tracking-wider">
+            <Logo size={22} className="text-[#111827]" />
+            <span className="text-micro text-[#9CA3AF] tracking-wider">
               v0.1
             </span>
           </Link>
@@ -424,7 +423,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         >
           {/* Overview Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               {t("sidebar.overview")}
             </p>
             <div className="space-y-0.5">
@@ -447,7 +446,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Compliance Modules Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               {t("sidebar.complianceModules")}
             </p>
 
@@ -601,7 +600,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* AI Agent Section */}
           <div className="mb-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
@@ -633,7 +632,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Resources Section */}
           <div>
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               {t("sidebar.resources")}
             </p>
             <div className="space-y-0.5">
@@ -715,7 +714,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Assure Section */}
           <div className="mt-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               Assure
             </p>
             <div className="space-y-0.5">
@@ -739,7 +738,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Network Section */}
           <div className="mt-5">
-            <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+            <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
               {t("sidebar.network") || "Network"}
             </p>
             <div className="space-y-0.5">
@@ -756,7 +755,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           {/* Admin — only for admin role users */}
           {user?.role === "admin" && (
             <div className="mt-5">
-              <p className="px-3 mb-2 text-micro font-semibold text-slate-500 dark:text-white/25 uppercase tracking-[0.15em]">
+              <p className="px-3 mb-2 text-micro font-semibold text-[#9CA3AF] uppercase tracking-[0.15em]">
                 {t("sidebar.admin")}
               </p>
               <div className="space-y-0.5">
@@ -794,7 +793,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-200 dark:border-[--glass-border-subtle] space-y-1">
+        <div className="p-3 border-t border-[#E5E7EB] space-y-1">
           <NavItem
             href="/dashboard/settings"
             icon={<Settings size={16} strokeWidth={1.5} />}
@@ -806,24 +805,20 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             onClick={handleLogout}
             className="
               w-full flex items-center gap-3 px-3 py-2 rounded-lg text-body
-              text-slate-700 dark:text-white/45 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10
+              text-[#4B5563] hover:text-red-600 hover:bg-red-50
               transition-all duration-150
             "
           >
-            <LogOut
-              size={16}
-              className="text-slate-500 dark:text-white/45"
-              aria-hidden="true"
-            />
+            <LogOut size={16} className="text-[#9CA3AF]" aria-hidden="true" />
             <span>{t("sidebar.signOut")}</span>
           </button>
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="p-4 border-t border-[#E5E7EB]">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="w-9 h-9 rounded-full bg-[#F1F3F5] flex items-center justify-center flex-shrink-0 border border-[#E5E7EB]">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
@@ -832,7 +827,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <span className="text-small font-medium text-slate-600 dark:text-white/45">
+                <span className="text-small font-medium text-[#4B5563]">
                   {initials}
                 </span>
               )}
@@ -840,10 +835,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-body font-medium text-slate-900 dark:text-white truncate">
+              <p className="text-body font-medium text-[#111827] truncate">
                 {user?.name || t("common.user")}
               </p>
-              <p className="text-caption text-slate-500 dark:text-white/70 truncate">
+              <p className="text-caption text-[#9CA3AF] truncate">
                 {user?.email || ""}
               </p>
             </div>
