@@ -22,6 +22,13 @@ const SCRYPT_N = 32768; // 2^15
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 
+/** Convert Uint8Array to ArrayBuffer (Web Crypto compatibility) */
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buf = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buf).set(bytes);
+  return buf;
+}
+
 /**
  * Derive an AES-256 encryption key from a passphrase and salt using scrypt.
  *
@@ -63,7 +70,7 @@ export async function encryptPrivateKey(
   // Import key for Web Crypto API
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    derivedKey,
+    toArrayBuffer(derivedKey),
     { name: "AES-GCM" },
     false,
     ["encrypt"],
@@ -71,9 +78,9 @@ export async function encryptPrivateKey(
 
   // Encrypt
   const ciphertextWithTag = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv, tagLength: AUTH_TAG_BITS },
+    { name: "AES-GCM", iv: toArrayBuffer(iv), tagLength: AUTH_TAG_BITS },
     cryptoKey,
-    plaintext,
+    toArrayBuffer(plaintext),
   );
 
   // Web Crypto appends auth tag to ciphertext
@@ -121,7 +128,7 @@ export async function decryptPrivateKey(
 
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    derivedKey,
+    toArrayBuffer(derivedKey),
     { name: "AES-GCM" },
     false,
     ["decrypt"],
@@ -134,9 +141,9 @@ export async function decryptPrivateKey(
 
   try {
     const plaintext = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv, tagLength: AUTH_TAG_BITS },
+      { name: "AES-GCM", iv: toArrayBuffer(iv), tagLength: AUTH_TAG_BITS },
       cryptoKey,
-      ciphertextWithTag,
+      toArrayBuffer(ciphertextWithTag),
     );
     return new Uint8Array(plaintext);
   } catch {
