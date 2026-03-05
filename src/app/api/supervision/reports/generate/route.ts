@@ -13,6 +13,7 @@ import {
   getAvailableReportTypes,
   type GenerateReportOptions,
 } from "@/lib/services/report-generation-service";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Request Validation
@@ -99,7 +100,7 @@ export async function GET() {
       reportTypes,
     });
   } catch (error) {
-    console.error("Failed to list report types:", error);
+    logger.error("Failed to list report types", error);
     return NextResponse.json(
       { error: "Failed to list report types" },
       { status: 500 },
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Report generation failed:", error);
+    logger.error("Report generation failed", error);
     return NextResponse.json(
       { error: "Report generation failed" },
       { status: 500 },

@@ -7,6 +7,7 @@ import {
   getWorkflowSummary,
 } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/authorization/[workflowId]/submit
@@ -102,7 +103,7 @@ export async function POST(
       message: `Application submitted to ${workflow.primaryNCAName}. You will be notified of any updates.`,
     });
   } catch (error) {
-    console.error("Error submitting workflow:", error);
+    logger.error("Error submitting workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -157,7 +158,7 @@ export async function GET(
       pathway: workflow.pathway,
     });
   } catch (error) {
-    console.error("Error checking submission readiness:", error);
+    logger.error("Error checking submission readiness", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -968,7 +968,8 @@ describe("API Auth Middleware", () => {
 
         expect(response.status).toBe(500);
         const body = await response.json();
-        expect(body.error.message).toBe("Database connection lost");
+        // Source returns generic message to clients to prevent information leakage
+        expect(body.error.message).toBe("Internal server error");
 
         expect(logApiRequest).toHaveBeenCalledWith(
           "key-123",

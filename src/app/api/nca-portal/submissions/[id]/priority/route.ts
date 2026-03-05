@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { updatePriority } from "@/lib/services/nca-portal-service";
 import { getSafeErrorMessage } from "@/lib/validations";
 import type { SubmissionPriority } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 const VALID_PRIORITIES: SubmissionPriority[] = [
   "URGENT",
@@ -51,7 +52,7 @@ export async function PATCH(
         { status: 404 },
       );
     }
-    console.error("Failed to update priority:", error);
+    logger.error("Failed to update priority", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to update priority") },
       { status: 500 },

@@ -9,6 +9,7 @@ import { verifyMfaSetup } from "@/lib/mfa.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 const verifySchema = z.object({
   code: z.string().length(6).regex(/^\d+$/, "Code must be 6 digits"),
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
         "MFA enabled successfully. Save your backup codes in a secure location.",
     });
   } catch (error) {
-    console.error("Error verifying MFA:", error);
+    logger.error("Error verifying MFA", error);
     return NextResponse.json(
       { error: "Failed to verify MFA" },
       { status: 500 },

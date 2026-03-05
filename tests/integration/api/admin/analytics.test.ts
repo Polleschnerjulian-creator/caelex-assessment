@@ -95,6 +95,35 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// ─── Mock DAL ───
+const mockRequireRole = vi.fn();
+vi.mock("@/lib/dal", () => ({
+  requireRole: (...args: unknown[]) => mockRequireRole(...args),
+  getAuthenticatedUser: vi.fn(),
+  UnauthorizedError: class UnauthorizedError extends Error {
+    constructor(message = "UNAUTHORIZED") {
+      super(message);
+      this.name = "UnauthorizedError";
+    }
+  },
+  ForbiddenError: class ForbiddenError extends Error {
+    constructor(message = "FORBIDDEN") {
+      super(message);
+      this.name = "ForbiddenError";
+    }
+  },
+}));
+
+// ─── Mock Logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
@@ -157,6 +186,13 @@ function makeRequest(
 describe("Admin Analytics API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // By default, requireRole succeeds (for admin tests)
+    mockRequireRole.mockResolvedValue({
+      id: "admin-user-id",
+      email: "admin@caelex.eu",
+      name: "Admin User",
+      role: "admin",
+    });
   });
 
   // =========================================================================
@@ -174,15 +210,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/overview");
       const response = await getOverview(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with overview metrics for admin", async () => {
@@ -267,15 +306,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/revenue");
       const response = await getRevenue(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with revenue metrics for admin", async () => {
@@ -393,15 +435,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/product");
       const response = await getProduct(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with product metrics for admin", async () => {
@@ -505,15 +550,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/customers");
       const response = await getCustomers(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with customer metrics for admin", async () => {
@@ -540,23 +588,32 @@ describe("Admin Analytics API", () => {
         },
       ];
 
-      // All organizations
-      vi.mocked(prisma.organization.findMany)
-        .mockResolvedValueOnce(mockOrgs as any)
-        // Top organizations
-        .mockResolvedValueOnce([
-          {
-            id: "org-1",
-            name: "SpaceCorp",
-            plan: "PROFESSIONAL",
-            createdAt: new Date("2025-06-01"),
-            subscription: { plan: "PROFESSIONAL", status: "ACTIVE" },
-            _count: { members: 5, spacecraft: 3 },
-          },
-        ] as any);
+      // The route calls prisma.organization.count() 9 times in Promise.all:
+      // 1) totalOrganizations, 2) paidCustomers, 3) trialCustomers,
+      // 4) freeCustomers, 5) enterpriseCount, 6) professionalCount,
+      // 7) starterCount, 8) freeCount, 9) newOrganizations
+      vi.mocked(prisma.organization.count)
+        .mockResolvedValueOnce(2) // totalOrganizations
+        .mockResolvedValueOnce(1) // paidCustomers (active sub, not FREE)
+        .mockResolvedValueOnce(0) // trialCustomers
+        .mockResolvedValueOnce(1) // freeCustomers (FREE plan, no subscription)
+        .mockResolvedValueOnce(0) // enterpriseCount
+        .mockResolvedValueOnce(1) // professionalCount
+        .mockResolvedValueOnce(0) // starterCount
+        .mockResolvedValueOnce(1) // freeCount
+        .mockResolvedValueOnce(1); // newOrganizations
 
-      // New organizations count
-      vi.mocked(prisma.organization.count).mockResolvedValueOnce(1);
+      // Top organizations (only findMany call in the route now)
+      vi.mocked(prisma.organization.findMany).mockResolvedValueOnce([
+        {
+          id: "org-1",
+          name: "SpaceCorp",
+          plan: "PROFESSIONAL",
+          createdAt: new Date("2025-06-01"),
+          subscription: { plan: "PROFESSIONAL", status: "ACTIVE" },
+          _count: { members: 5, spacecraft: 3 },
+        },
+      ] as any);
 
       // Users by org
       vi.mocked(prisma.organizationMember.groupBy).mockResolvedValueOnce([
@@ -612,7 +669,7 @@ describe("Admin Analytics API", () => {
 
     it("should return 500 on database error", async () => {
       vi.mocked(auth).mockResolvedValue(adminSession as any);
-      vi.mocked(prisma.organization.findMany).mockRejectedValueOnce(
+      vi.mocked(prisma.organization.count).mockRejectedValueOnce(
         new Error("Database connection failed"),
       );
 
@@ -640,15 +697,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/acquisition");
       const response = await getAcquisition(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with acquisition metrics for admin", async () => {
@@ -762,15 +822,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/infrastructure");
       const response = await getInfrastructure(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with infrastructure metrics for admin", async () => {
@@ -899,15 +962,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/export?type=events");
       const response = await getExport(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 400 for invalid export type", async () => {
@@ -1073,15 +1139,18 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/financial-entry");
       const response = await getFinancialEntry(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 200 with paginated financial entries", async () => {
@@ -1222,8 +1291,11 @@ describe("Admin Analytics API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 401 when user is not admin", async () => {
+    it("should return 403 when user is not admin", async () => {
       vi.mocked(auth).mockResolvedValue(memberSession as any);
+      const forbiddenError = new Error("FORBIDDEN");
+      forbiddenError.name = "ForbiddenError";
+      mockRequireRole.mockRejectedValue(forbiddenError);
 
       const request = makeRequest("/api/admin/analytics/financial-entry", {
         method: "POST",
@@ -1232,8 +1304,8 @@ describe("Admin Analytics API", () => {
       const response = await postFinancialEntry(request);
       const data = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Admin access required");
     });
 
     it("should return 400 for invalid payload", async () => {

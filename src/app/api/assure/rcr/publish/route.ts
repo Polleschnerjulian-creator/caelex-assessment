@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { publishRating } from "@/lib/rcr-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
       publishedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("RCR publish API error:", error);
+    logger.error("RCR publish API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

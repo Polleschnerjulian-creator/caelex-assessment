@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getRiskMatrix } from "@/lib/services/compliance-twin-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -13,7 +14,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Digital Twin risk error:", error);
+    logger.error("Digital Twin risk error", error);
     return NextResponse.json(
       { error: "Failed to load risk matrix" },
       { status: 500 },

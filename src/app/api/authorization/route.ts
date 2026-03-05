@@ -9,6 +9,7 @@ import {
 } from "@/lib/audit";
 import { determineNCA } from "@/data/ncas";
 import { getRequiredDocuments } from "@/data/authorization-documents";
+import { logger } from "@/lib/logger";
 
 // GET /api/authorization - Get user's authorization workflow(s)
 export async function GET() {
@@ -44,7 +45,7 @@ export async function GET() {
 
     return NextResponse.json({ workflows, user });
   } catch (error) {
-    console.error("Error fetching authorization workflows:", error);
+    logger.error("Error fetching authorization workflows", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -190,7 +191,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error creating authorization workflow:", error);
+    logger.error("Error creating authorization workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

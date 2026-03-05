@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getPortalDashboard } from "@/lib/services/nca-portal-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json(dashboard);
   } catch (error) {
-    console.error("Failed to fetch portal dashboard:", error);
+    logger.error("Failed to fetch portal dashboard", error);
     return NextResponse.json(
       { error: "Failed to fetch dashboard data" },
       { status: 500 },

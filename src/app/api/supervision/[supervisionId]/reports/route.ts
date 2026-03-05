@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{
@@ -157,7 +158,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       stats,
     });
   } catch (error) {
-    console.error("Failed to list reports:", error);
+    logger.error("Failed to list reports", error);
     return NextResponse.json(
       { error: "Failed to list reports" },
       { status: 500 },

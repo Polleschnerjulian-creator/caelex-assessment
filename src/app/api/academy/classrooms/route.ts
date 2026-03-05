@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 /**
  * Generate a unique join code in the format "XXXX-YYYY".
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("[Academy Classrooms GET]", error);
+    logger.error("[Academy Classrooms GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch classrooms" },
       { status: 500 },
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("[Academy Classrooms POST]", error);
+    logger.error("[Academy Classrooms POST]", error);
     return NextResponse.json(
       { error: "Failed to create classroom" },
       { status: 500 },

@@ -13,6 +13,7 @@ import {
   type SpaceSegmentComplexity,
   type DataSensitivityLevel,
 } from "@/data/cybersecurity-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/cybersecurity - Get all assessments for user
 export async function GET() {
@@ -41,7 +42,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching cybersecurity assessments:", error);
+    logger.error("Error fetching cybersecurity assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -244,7 +245,7 @@ export async function POST(request: Request) {
       applicableRequirements: applicableRequirements.map((r) => r.id),
     });
   } catch (error) {
-    console.error("Error creating cybersecurity assessment:", error);
+    logger.error("Error creating cybersecurity assessment", error);
     return NextResponse.json(
       {
         error: "Internal server error",

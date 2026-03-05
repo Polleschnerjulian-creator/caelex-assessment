@@ -6,6 +6,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 function escapeHtml(str: string): string {
   return str
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Send email via Resend
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
-      console.error("RESEND_API_KEY not configured");
+      logger.error("RESEND_API_KEY not configured");
       return NextResponse.json(
         { error: "Service temporarily unavailable" },
         { status: 503 },
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Contact form error:", error);
+    logger.error("Contact form error", error);
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 },

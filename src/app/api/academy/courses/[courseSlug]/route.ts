@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ courseSlug: string }>;
@@ -150,7 +151,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       enrollment,
     });
   } catch (error) {
-    console.error("[Academy Course Detail GET]", error);
+    logger.error("[Academy Course Detail GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch course" },
       { status: 500 },

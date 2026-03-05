@@ -5,6 +5,7 @@ import {
   validateToken,
   logStakeholderAccess,
 } from "@/lib/services/stakeholder-engagement";
+import { logger } from "@/lib/logger";
 import {
   getDataRoomsForStakeholder,
   logDataRoomAccess,
@@ -117,7 +118,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Stakeholder upload error:", error);
+    logger.error("Stakeholder upload error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

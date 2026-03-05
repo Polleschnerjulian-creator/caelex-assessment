@@ -192,11 +192,7 @@ interface CreateAttestationResult {
  */
 export async function createAttestation(
   tenantId: string,
-  input: CreateAttestationInput & {
-    actual_value: number;
-    commitment_domain: string;
-    commitment_context: Record<string, unknown>;
-  },
+  input: CreateAttestationInput,
 ): Promise<CreateAttestationResult> {
   const km = getKeyManager();
 

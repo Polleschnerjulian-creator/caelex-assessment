@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
 import { INCIDENT_CLASSIFICATION, type IncidentCategory } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/supervision/incidents/[id]/prepare-report
@@ -232,7 +233,7 @@ export async function POST(
         : "Incident report created",
     });
   } catch (error) {
-    console.error("Error preparing incident report:", error);
+    logger.error("Error preparing incident report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -321,7 +322,7 @@ export async function GET(
       content,
     });
   } catch (error) {
-    console.error("Error getting incident report:", error);
+    logger.error("Error getting incident report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

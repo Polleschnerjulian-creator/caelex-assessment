@@ -15,6 +15,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 import {
   getOrCreateProfile,
   updateProfile,
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ profile });
   } catch (error) {
-    console.error("Error fetching operator profile:", error);
+    logger.error("Error fetching operator profile", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -137,7 +138,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ profile });
   } catch (error) {
-    console.error("Error updating operator profile:", error);
+    logger.error("Error updating operator profile", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

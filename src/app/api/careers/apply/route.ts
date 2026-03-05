@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 function escapeHtml(str: string): string {
   if (!str) return "";
@@ -323,7 +324,7 @@ ${escapeHtml(motivation)}
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Application submission error:", error);
+    logger.error("Application submission error", error);
     return NextResponse.json(
       { error: "Failed to submit application" },
       { status: 500 },

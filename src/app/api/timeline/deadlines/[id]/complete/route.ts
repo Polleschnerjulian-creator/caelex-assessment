@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // POST /api/timeline/deadlines/[id]/complete - Mark deadline as completed
 export async function POST(
@@ -83,7 +84,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, deadline });
   } catch (error) {
-    console.error("Error completing deadline:", error);
+    logger.error("Error completing deadline", error);
     return NextResponse.json(
       { error: "Failed to complete deadline" },
       { status: 500 },

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -83,7 +84,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Assure data room document delete error:", error);
+    logger.error("Assure data room document delete error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

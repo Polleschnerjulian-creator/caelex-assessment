@@ -50,7 +50,7 @@ const getPrisma = async () => {
  * Preserves first/last character of local part and full domain for debuggability
  * while protecting PII. Example: "julian@example.com" -> "j****n@example.com"
  */
-function maskEmail(email: string): string {
+export function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain) return "***";
   const maskedLocal =
@@ -91,7 +91,8 @@ const isProduction = process.env.NODE_ENV === "production";
 
 // ─── No-op stubs when auth is not configured ───
 
-function createNoOpAuth() {
+/** @internal Exported for testing only */
+export function createNoOpAuth() {
   // Returns a middleware-compatible function that passes through
   const noOpMiddleware = (
     handler: (req: Request & { auth?: null }) => Promise<Response>,

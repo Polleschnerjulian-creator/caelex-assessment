@@ -14,6 +14,7 @@ import type {
   ManeuverabilityLevel,
   DeorbitStrategy,
 } from "@/data/debris-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/debris - Get user's debris assessment(s)
 export async function GET() {
@@ -42,7 +43,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching debris assessments:", error);
+    logger.error("Error fetching debris assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -199,7 +200,7 @@ export async function POST(request: Request) {
       applicableRequirements: applicableRequirements.map((r) => r.id),
     });
   } catch (error) {
-    console.error("Error creating debris assessment:", error);
+    logger.error("Error creating debris assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -304,7 +305,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ assessment: updated });
   } catch (error) {
-    console.error("Error updating debris assessment:", error);
+    logger.error("Error updating debris assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

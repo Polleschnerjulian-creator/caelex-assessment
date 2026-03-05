@@ -11,6 +11,7 @@ import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 const disableSchema = z.object({
   password: z.string().min(1, "Password is required"),
@@ -83,7 +84,7 @@ export async function DELETE(request: Request) {
       message: "MFA has been disabled",
     });
   } catch (error) {
-    console.error("Error disabling MFA:", error);
+    logger.error("Error disabling MFA", error);
     return NextResponse.json(
       { error: "Failed to disable MFA" },
       { status: 500 },

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 // GET /api/environmental/[assessmentId] - Get assessment details
 export async function GET(
@@ -42,7 +43,7 @@ export async function GET(
 
     return NextResponse.json({ assessment });
   } catch (error) {
-    console.error("Error fetching environmental assessment:", error);
+    logger.error("Error fetching environmental assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -156,7 +157,7 @@ export async function PATCH(
 
     return NextResponse.json({ assessment: updated });
   } catch (error) {
-    console.error("Error updating environmental assessment:", error);
+    logger.error("Error updating environmental assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -213,7 +214,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting environmental assessment:", error);
+    logger.error("Error deleting environmental assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

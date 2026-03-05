@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/digital-twin/scenarios/compare
@@ -160,7 +161,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Digital Twin compare POST error:", error);
+    logger.error("Digital Twin compare POST error", error);
     return NextResponse.json(
       { error: "Failed to compare scenarios" },
       { status: 500 },

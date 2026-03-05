@@ -5,6 +5,7 @@ import {
   evaluateWorkflowTransitions,
   getWorkflowSummary,
 } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/authorization/[workflowId]/evaluate
@@ -70,7 +71,7 @@ export async function POST(
           : undefined,
     });
   } catch (error) {
-    console.error("Error evaluating workflow:", error);
+    logger.error("Error evaluating workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -131,7 +132,7 @@ export async function GET(
       isTerminal: summary.isTerminal,
     });
   } catch (error) {
-    console.error("Error getting workflow state:", error);
+    logger.error("Error getting workflow state", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

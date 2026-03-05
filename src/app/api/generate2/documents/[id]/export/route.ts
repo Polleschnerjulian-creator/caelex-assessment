@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { ReportSection } from "@/lib/pdf/types";
+import { logger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -84,7 +85,7 @@ export async function POST(
       exportedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Export error:", error);
+    logger.error("Export error", error);
     return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
 }

@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   _request: NextRequest,
@@ -46,7 +47,7 @@ export async function GET(
 
     return NextResponse.json({ package: pkg });
   } catch (error) {
-    console.error("Package status error:", error);
+    logger.error("Package status error", error);
     return NextResponse.json(
       { error: "Failed to fetch package" },
       { status: 500 },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logger } from "@/lib/logger";
 
 // GET /api/documents/dashboard - Get document dashboard stats
 export async function GET() {
@@ -171,7 +172,7 @@ export async function GET() {
       },
     );
   } catch (error) {
-    console.error("Error fetching document dashboard:", error);
+    logger.error("Error fetching document dashboard", error);
     return NextResponse.json(
       { error: "Failed to fetch document dashboard" },
       { status: 500 },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requiredDocuments } from "@/data/document-vault";
+import { logger } from "@/lib/logger";
 
 // GET /api/documents/compliance-check - Check document completeness per module
 export async function GET() {
@@ -150,7 +151,7 @@ export async function GET() {
       totalPresent: overallPresent,
     });
   } catch (error) {
-    console.error("Error checking document compliance:", error);
+    logger.error("Error checking document compliance", error);
     return NextResponse.json(
       { error: "Failed to check document compliance" },
       { status: 500 },

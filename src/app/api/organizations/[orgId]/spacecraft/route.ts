@@ -17,6 +17,7 @@ import {
   ORBIT_TYPES,
 } from "@/lib/services/spacecraft-service";
 import type { SpacecraftStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string }>;
@@ -84,7 +85,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Error fetching spacecraft:", error);
+    logger.error("Error fetching spacecraft", error);
     return NextResponse.json(
       { error: "Failed to fetch spacecraft" },
       { status: 500 },
@@ -216,7 +217,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: "Spacecraft created successfully",
     });
   } catch (error) {
-    console.error("Error creating spacecraft:", error);
+    logger.error("Error creating spacecraft", error);
     const message = getSafeErrorMessage(error, "Failed to create spacecraft");
     return NextResponse.json({ error: message }, { status: 500 });
   }

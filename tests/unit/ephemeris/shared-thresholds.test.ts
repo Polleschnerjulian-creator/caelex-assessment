@@ -35,15 +35,24 @@ describe("Shared Compliance Thresholds", () => {
     }
   });
 
-  it("getWarningValue returns correct values", () => {
+  it("getWarningValue returns correct values for ABOVE type", () => {
     const art70 = COMPLIANCE_THRESHOLDS["eu_space_act_art_70"]!;
 
     // For ABOVE type: warning = threshold + buffer
-    if (art70.type === "ABOVE") {
-      expect(getWarningValue("eu_space_act_art_70")).toBe(
-        art70.threshold + art70.warningBuffer,
-      );
-    }
+    expect(art70.type).toBe("ABOVE");
+    expect(getWarningValue("eu_space_act_art_70")).toBe(
+      art70.threshold + art70.warningBuffer,
+    );
+  });
+
+  it("getWarningValue returns correct values for BELOW type", () => {
+    const art68 = COMPLIANCE_THRESHOLDS["eu_space_act_art_68"]!;
+
+    // For BELOW type: warning = threshold - buffer
+    expect(art68.type).toBe("BELOW");
+    expect(getWarningValue("eu_space_act_art_68")).toBe(
+      art68.threshold - art68.warningBuffer,
+    );
   });
 
   it("Verity regulation thresholds reference shared values", () => {

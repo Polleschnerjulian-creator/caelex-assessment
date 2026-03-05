@@ -15,6 +15,7 @@ import {
   deleteHoneyToken,
 } from "@/lib/honey-tokens.server";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateHoneyTokenSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -64,7 +65,7 @@ export async function GET(
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching honey token:", error);
+    logger.error("Admin: Error fetching honey token", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -121,7 +122,7 @@ export async function PATCH(
         { status: 403 },
       );
     }
-    console.error("Admin: Error updating honey token:", error);
+    logger.error("Admin: Error updating honey token", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -158,7 +159,7 @@ export async function DELETE(
         { status: 403 },
       );
     }
-    console.error("Admin: Error deleting honey token:", error);
+    logger.error("Admin: Error deleting honey token", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

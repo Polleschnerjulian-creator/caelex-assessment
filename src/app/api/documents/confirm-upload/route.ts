@@ -15,6 +15,7 @@ import {
   isR2Configured,
 } from "@/lib/storage/upload-service";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 interface ConfirmUploadRequest {
   fileKey: string;
@@ -238,7 +239,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error confirming upload:", error);
+    logger.error("Error confirming upload", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to confirm upload") },
       { status: 500 },

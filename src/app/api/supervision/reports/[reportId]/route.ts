@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch report:", error);
+    logger.error("Failed to fetch report", error);
     return NextResponse.json(
       { error: "Failed to fetch report" },
       { status: 500 },
@@ -175,7 +176,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to update report:", error);
+    logger.error("Failed to update report", error);
     return NextResponse.json(
       { error: "Failed to update report" },
       { status: 500 },

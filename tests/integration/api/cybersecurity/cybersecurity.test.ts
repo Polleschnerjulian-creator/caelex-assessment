@@ -58,6 +58,25 @@ vi.mock("@/lib/encryption", () => ({
   isEncrypted: vi.fn(() => false),
 }));
 
+// ─── Mock Organization Guard ───
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "user-test-123",
+    organizationId: "ctest123org",
+    role: "OWNER",
+    permissions: ["*"],
+    organization: {
+      id: "ctest123org",
+      name: "Test Org",
+      slug: "test-org",
+      plan: "PROFESSIONAL",
+      isActive: true,
+    },
+  }),
+  verifyOrganizationAccess: vi.fn().mockResolvedValue({ success: true }),
+  withOrganizationGuard: vi.fn(),
+}));
+
 // ─── Imports (after mocks) ───
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -185,7 +204,7 @@ describe("GET /api/cybersecurity", () => {
     expect(data.assessments).toBeDefined();
     expect(data.assessments).toHaveLength(1);
     expect(prisma.cybersecurityAssessment.findMany).toHaveBeenCalledWith({
-      where: { userId: TEST_USER_ID },
+      where: { userId: TEST_USER_ID, organizationId: "ctest123org" },
       include: { requirements: true },
       orderBy: { createdAt: "desc" },
     });
@@ -249,7 +268,7 @@ describe("POST /api/cybersecurity", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when organizationSize is missing", async () => {
@@ -263,7 +282,7 @@ describe("POST /api/cybersecurity", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when spaceSegmentComplexity is missing", async () => {
@@ -277,7 +296,7 @@ describe("POST /api/cybersecurity", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when dataSensitivityLevel is missing", async () => {
@@ -291,7 +310,7 @@ describe("POST /api/cybersecurity", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 200 with assessment on valid input", async () => {
@@ -299,7 +318,7 @@ describe("POST /api/cybersecurity", () => {
     const createdAssessment = { ...mockAssessment, id: "new-assessment-1" };
 
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
-      return (fn as Function)({
+      return (fn as (tx: Record<string, unknown>) => unknown)({
         cybersecurityAssessment: {
           create: vi.fn().mockResolvedValue(createdAssessment),
         },
@@ -333,7 +352,7 @@ describe("POST /api/cybersecurity", () => {
     const createdAssessment = { ...mockAssessment, id: "new-assessment-2" };
 
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
-      return (fn as Function)({
+      return (fn as (tx: Record<string, unknown>) => unknown)({
         cybersecurityAssessment: {
           create: vi.fn().mockResolvedValue(createdAssessment),
         },
@@ -378,7 +397,7 @@ describe("POST /api/cybersecurity", () => {
     };
 
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: unknown) => {
-      return (fn as Function)({
+      return (fn as (tx: Record<string, unknown>) => unknown)({
         cybersecurityAssessment: {
           create: vi.fn().mockResolvedValue(createdAssessment),
         },
@@ -824,7 +843,7 @@ describe("PATCH /api/cybersecurity/requirements", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("assessmentId");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when requirementId is missing", async () => {
@@ -837,7 +856,7 @@ describe("PATCH /api/cybersecurity/requirements", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("requirementId");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {
@@ -1015,7 +1034,7 @@ describe("POST /api/cybersecurity/framework/generate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("assessmentId");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {

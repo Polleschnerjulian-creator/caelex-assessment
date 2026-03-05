@@ -3,6 +3,7 @@ import {
   authenticateSentinelAgent,
   ingestPacket,
 } from "@/lib/services/sentinel-service.server";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
       chain_position: result.chain_position,
     });
   } catch (err) {
-    console.error("[sentinel/ingest]", err);
+    logger.error("[sentinel/ingest]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

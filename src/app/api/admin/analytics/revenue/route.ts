@@ -9,6 +9,7 @@ import {
   eachMonthOfInterval,
   eachDayOfInterval,
 } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/revenue
@@ -257,7 +258,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Revenue] Error:", error);
+    logger.error("[Analytics Revenue] Error", error);
     return NextResponse.json(
       { error: "Failed to fetch revenue analytics" },
       { status: 500 },

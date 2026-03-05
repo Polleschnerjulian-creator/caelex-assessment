@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // Schema for incoming tracking events
 const trackEventSchema = z.object({
@@ -153,7 +154,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, tracked: true });
   } catch (error) {
     // Log error but return success - analytics should never fail loudly
-    console.error("[Analytics Track] Error:", error);
+    logger.error("[Analytics Track] Error", error);
     return NextResponse.json({ ok: true, tracked: false });
   }
 }

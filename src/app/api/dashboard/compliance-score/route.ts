@@ -6,6 +6,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { calculateComplianceScore } from "@/lib/services/compliance-scoring-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -22,7 +23,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error calculating compliance score:", error);
+    logger.error("Error calculating compliance score", error);
     return NextResponse.json(
       { error: "Failed to calculate compliance score" },
       { status: 500 },

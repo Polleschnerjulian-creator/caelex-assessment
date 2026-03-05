@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { computeProfileCompleteness } from "@/lib/assure/profile-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -46,7 +47,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(completeness);
   } catch (error) {
-    console.error("Assure profile completeness API error:", error);
+    logger.error("Assure profile completeness API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -9,6 +9,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -263,7 +264,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       { status: 404 },
     );
   } catch (error) {
-    console.error("Assure public view error:", error);
+    logger.error("Assure public view error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

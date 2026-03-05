@@ -11,6 +11,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyUnsubscribeToken } from "@/lib/signed-token";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
       { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
     );
   } catch (error) {
-    console.error("Newsletter unsubscribe error:", error);
+    logger.error("Newsletter unsubscribe error", error);
     return new NextResponse(
       buildHtmlPage(
         "Error",

@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { generatePasskeyRegistrationOptions } from "@/lib/webauthn.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     });
     return response;
   } catch (error) {
-    console.error("Error generating passkey registration options:", error);
+    logger.error("Error generating passkey registration options", error);
     return NextResponse.json(
       { error: "Failed to generate registration options" },
       { status: 500 },

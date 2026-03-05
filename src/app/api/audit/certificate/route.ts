@@ -15,6 +15,7 @@ import { generateComplianceCertificateData } from "@/lib/services/audit-export-s
 import { ComplianceCertificate } from "@/lib/pdf/reports/compliance-certificate";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating compliance certificate:", error);
+    logger.error("Error generating compliance certificate", error);
     return NextResponse.json(
       { error: "Failed to generate compliance certificate" },
       { status: 500 },
@@ -198,7 +199,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("Error fetching certificate status:", error);
+    logger.error("Error fetching certificate status", error);
     return NextResponse.json(
       { error: "Failed to fetch certificate status" },
       { status: 500 },

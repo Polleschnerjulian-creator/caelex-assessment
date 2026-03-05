@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // Force Node.js runtime (Prisma doesn't support Edge)
 export const runtime = "nodejs";
@@ -37,7 +38,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true, theme });
   } catch (error) {
-    console.error("Failed to update theme:", error);
+    logger.error("Failed to update theme", error);
     return NextResponse.json(
       { error: "Failed to update theme" },
       { status: 500 },
@@ -60,7 +61,7 @@ export async function GET() {
 
     return NextResponse.json({ theme: user?.theme || "system" });
   } catch (error) {
-    console.error("Failed to get theme:", error);
+    logger.error("Failed to get theme", error);
     return NextResponse.json({ error: "Failed to get theme" }, { status: 500 });
   }
 }

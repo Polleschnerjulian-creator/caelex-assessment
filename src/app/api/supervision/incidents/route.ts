@@ -12,6 +12,7 @@ import {
   type IncidentCategory,
   type SeverityFactors,
 } from "@/lib/services/incident-response-service";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents - List incidents
 export async function GET(req: Request) {
@@ -129,7 +130,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ incidents: incidentsWithDeadlines, total });
   } catch (error) {
-    console.error("Error fetching incidents:", error);
+    logger.error("Error fetching incidents", error);
     return NextResponse.json(
       { error: "Failed to fetch incidents" },
       { status: 500 },
@@ -352,7 +353,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error("Error creating incident:", error);
+    logger.error("Error creating incident", error);
     return NextResponse.json(
       { error: "Failed to create incident" },
       { status: 500 },

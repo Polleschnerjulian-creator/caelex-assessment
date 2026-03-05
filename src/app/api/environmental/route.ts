@@ -9,6 +9,7 @@ import {
   type MissionProfile,
   type LaunchVehicleId,
 } from "@/data/environmental-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/environmental - List user's environmental assessments
 export async function GET() {
@@ -44,7 +45,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching environmental assessments:", error);
+    logger.error("Error fetching environmental assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ assessment }, { status: 201 });
   } catch (error) {
-    console.error("Error creating environmental assessment:", error);
+    logger.error("Error creating environmental assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

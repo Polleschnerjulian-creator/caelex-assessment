@@ -9,6 +9,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -106,7 +107,7 @@ export async function GET() {
       },
     );
   } catch (error) {
-    console.error("Error fetching verification data:", error);
+    logger.error("Error fetching verification data", error);
     return NextResponse.json(
       { error: "Failed to fetch verification data" },
       { status: 500 },

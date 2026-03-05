@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/security-audit-service";
 import { SecurityAuditEventType, RiskLevel } from "@prisma/client";
 import { verifyOrganizationAccess } from "@/lib/middleware/organization-guard";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -156,7 +157,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching security logs:", error);
+    logger.error("Error fetching security logs", error);
     return NextResponse.json(
       { error: "Failed to fetch security logs" },
       { status: 500 },

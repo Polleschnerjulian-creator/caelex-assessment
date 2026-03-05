@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -72,7 +73,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(material);
   } catch (error) {
-    console.error("Assure material detail error:", error);
+    logger.error("Assure material detail error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -143,7 +144,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Assure material delete error:", error);
+    logger.error("Assure material delete error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -13,6 +13,7 @@ import {
   getR2BucketName,
   isR2Configured,
 } from "@/lib/storage/r2-client";
+import { logger } from "@/lib/logger";
 
 // ─── Magic Number Validation ───
 // Validates file content matches declared MIME type by checking file signatures
@@ -128,7 +129,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ documents, total });
   } catch (error) {
-    console.error("Error fetching documents:", error);
+    logger.error("Error fetching documents", error);
     return NextResponse.json(
       { error: "Failed to fetch documents" },
       { status: 500 },
@@ -411,7 +412,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-    console.error("Error uploading document:", error);
+    logger.error("Error uploading document", error);
     return NextResponse.json(
       { error: "Failed to upload document" },
       { status: 500 },

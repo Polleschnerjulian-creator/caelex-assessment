@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // GET /api/timeline - Get dashboard overview
 export async function GET() {
@@ -155,7 +156,7 @@ export async function GET() {
         .slice(0, 5),
     });
   } catch (error) {
-    console.error("Error fetching timeline dashboard:", error);
+    logger.error("Error fetching timeline dashboard", error);
     return NextResponse.json(
       { error: "Failed to fetch timeline dashboard" },
       { status: 500 },

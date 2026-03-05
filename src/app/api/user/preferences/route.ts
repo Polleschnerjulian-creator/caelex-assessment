@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const preferencesSchema = z.object({
   language: z.enum(["en", "de", "fr", "es"]),
@@ -36,7 +37,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error updating preferences:", error);
+    logger.error("Error updating preferences", error);
     return NextResponse.json(
       { error: "Failed to update preferences" },
       { status: 500 },

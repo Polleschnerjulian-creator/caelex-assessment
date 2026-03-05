@@ -8,6 +8,7 @@ import {
   getDataRoomsForStakeholder,
   logDataRoomAccess,
 } from "@/lib/services/data-room";
+import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms/[id] — Get a specific data room for this stakeholder
 export async function GET(
@@ -64,7 +65,7 @@ export async function GET(
 
     return NextResponse.json({ dataRoom });
   } catch (error) {
-    console.error("Stakeholder data room detail error:", error);
+    logger.error("Stakeholder data room detail error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

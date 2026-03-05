@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { setupMfa } from "@/lib/mfa.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
       message: "Scan the QR code with your authenticator app",
     });
   } catch (error) {
-    console.error("Error setting up MFA:", error);
+    logger.error("Error setting up MFA", error);
     return NextResponse.json({ error: "Failed to setup MFA" }, { status: 500 });
   }
 }

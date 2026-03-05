@@ -10,6 +10,7 @@ import {
   getAttestationsForStakeholder,
 } from "@/lib/services/attestation";
 import type { AttestationType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/attestations — List attestations for this engagement
 export async function GET(request: NextRequest) {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ attestations });
   } catch (error) {
-    console.error("Stakeholder attestations list error:", error);
+    logger.error("Stakeholder attestations list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ attestation }, { status: 201 });
   } catch (error) {
-    console.error("Stakeholder attestation create error:", error);
+    logger.error("Stakeholder attestation create error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

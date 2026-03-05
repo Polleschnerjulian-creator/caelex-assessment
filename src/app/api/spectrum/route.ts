@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 import {
   type SpectrumProfile,
   type ServiceType,
@@ -81,7 +82,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching Spectrum assessments:", error);
+    logger.error("Error fetching Spectrum assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -347,7 +348,7 @@ export async function POST(request: Request) {
       riskLevel,
     });
   } catch (error) {
-    console.error("Error creating Spectrum assessment:", error);
+    logger.error("Error creating Spectrum assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

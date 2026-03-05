@@ -14,6 +14,7 @@ import {
   type GuidelineSource,
   type GuidelineCategory,
 } from "@/data/copuos-iadc-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/copuos/requirements - Get all COPUOS/IADC/ISO requirements
 export async function GET(request: Request) {
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
       summary,
     });
   } catch (error) {
-    console.error("Error fetching COPUOS requirements:", error);
+    logger.error("Error fetching COPUOS requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getAttestation, verifyAttestation } from "@/lib/services/attestation";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch attestation:", error);
+    logger.error("Failed to fetch attestation", error);
     return NextResponse.json(
       { error: "Failed to fetch attestation" },
       { status: 500 },

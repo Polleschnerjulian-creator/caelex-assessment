@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getTrendData } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to get trend data:", error);
+    logger.error("Failed to get trend data", error);
     return NextResponse.json(
       { error: "Failed to get trend data" },
       { status: 500 },

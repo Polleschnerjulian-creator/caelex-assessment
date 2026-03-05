@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -190,7 +191,7 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Failed to get evidence dashboard data:", error);
+    logger.error("Failed to get evidence dashboard data", error);
     return NextResponse.json(
       { error: "Failed to get evidence dashboard data" },
       { status: 500 },

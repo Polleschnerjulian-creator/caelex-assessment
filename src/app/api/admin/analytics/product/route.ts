@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { subDays, subMonths, format, eachDayOfInterval } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/product
@@ -307,7 +308,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Product] Error:", error);
+    logger.error("[Analytics Product] Error", error);
     return NextResponse.json(
       { error: "Failed to fetch product analytics" },
       { status: 500 },

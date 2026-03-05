@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ classroomId: string }>;
@@ -185,7 +186,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       classroomId,
     });
   } catch (error) {
-    console.error("[Academy Classroom Students GET]", error);
+    logger.error("[Academy Classroom Students GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch students" },
       { status: 500 },

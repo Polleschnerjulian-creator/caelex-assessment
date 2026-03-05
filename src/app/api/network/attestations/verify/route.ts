@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyByHash } from "@/lib/services/attestation";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
         : undefined,
     });
   } catch (error) {
-    console.error("Failed to verify attestation:", error);
+    logger.error("Failed to verify attestation", error);
     return NextResponse.json(
       { error: "Failed to verify attestation" },
       { status: 500 },

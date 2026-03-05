@@ -5,9 +5,25 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
-// Mock Prisma
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
+// Mock logger
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
+// Mock validations (partial - keep real schemas)
+vi.mock("@/lib/validations", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/validations")>();
+  return { ...actual };
+});
+
+// Mock Prisma - with $transaction support
+vi.mock("@/lib/prisma", () => {
+  const mock = {
     supervisionConfig: {
       findUnique: vi.fn(),
     },
@@ -22,8 +38,10 @@ vi.mock("@/lib/prisma", () => ({
     auditLog: {
       create: vi.fn(),
     },
-  },
-}));
+    $transaction: vi.fn(),
+  };
+  return { prisma: mock };
+});
 
 // Mock Encryption
 vi.mock("@/lib/encryption", () => ({
@@ -143,6 +161,10 @@ describe("Supervision Incidents API", () => {
     vi.mocked(calculateNCADeadline).mockReturnValue(mockNcaDeadline);
     vi.mocked(generateIncidentNumber).mockResolvedValue("INC-2026-001");
     vi.mocked(calculateSeverity).mockReturnValue("high" as any);
+    // $transaction mock: call the callback with the prisma mock as tx
+    (prisma as any).$transaction.mockImplementation(async (cb: any) => {
+      return cb(prisma);
+    });
   });
 
   // ─── GET /api/supervision/incidents ───
@@ -297,7 +319,8 @@ describe("Supervision Incidents API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain("Missing required fields");
+      expect(data.error).toBe("Invalid input");
+      expect(data.details).toBeDefined();
     });
 
     it("should return 400 for invalid category", async () => {
@@ -314,7 +337,7 @@ describe("Supervision Incidents API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain("Invalid category");
+      expect(data.error).toContain("Invalid category. Must be one of:");
     });
 
     it("should create incident with valid data", async () => {

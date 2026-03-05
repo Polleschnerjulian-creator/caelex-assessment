@@ -17,6 +17,7 @@ import {
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import type { OrganizationRole } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string }>;
@@ -61,7 +62,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       })),
     });
   } catch (error) {
-    console.error("Error fetching invitations:", error);
+    logger.error("Error fetching invitations", error);
     return NextResponse.json(
       { error: "Failed to fetch invitations" },
       { status: 500 },
@@ -184,7 +185,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: "Invitation created successfully",
     });
   } catch (error) {
-    console.error("Error creating invitation:", error);
+    logger.error("Error creating invitation", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to create invitation") },
       { status: 500 },

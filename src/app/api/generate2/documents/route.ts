@@ -17,6 +17,7 @@ import {
 import { initGeneration } from "@/lib/generate";
 import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 import type { NCADocumentType } from "@/lib/generate/types";
+import { logger } from "@/lib/logger";
 
 export const maxDuration = 60;
 
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Generate2 init error:", error);
+    logger.error("Generate2 init error", error);
     return NextResponse.json(
       {
         error: "Initialization failed",
@@ -128,7 +129,7 @@ export async function GET() {
 
     return NextResponse.json({ documents });
   } catch (error) {
-    console.error("Generate2 list error:", error);
+    logger.error("Generate2 list error", error);
     return NextResponse.json(
       { error: "Failed to fetch documents" },
       { status: 500 },

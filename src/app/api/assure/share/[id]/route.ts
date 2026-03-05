@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -151,7 +152,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       updatedAt: updatedLink.updatedAt,
     });
   } catch (error) {
-    console.error("Share link update error:", error);
+    logger.error("Share link update error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -232,7 +233,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Share link delete error:", error);
+    logger.error("Share link delete error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

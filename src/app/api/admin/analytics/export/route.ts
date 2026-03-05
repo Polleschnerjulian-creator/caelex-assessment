@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { subDays, subMonths, format } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/export?type=overview|revenue|customers|product&format=csv
@@ -187,7 +188,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Export] Error:", error);
+    logger.error("[Analytics Export] Error", error);
     return NextResponse.json(
       { error: "Failed to export analytics data" },
       { status: 500 },

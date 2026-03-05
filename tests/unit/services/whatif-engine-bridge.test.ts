@@ -167,6 +167,15 @@ vi.mock("@/lib/services/compliance-scoring-service", () => ({
   ),
 }));
 
+// Mock the dynamic import of whatif-simulation-service
+const mockSimulateScenario = vi.fn();
+const mockSimulateChain = vi.fn();
+
+vi.mock("@/lib/services/whatif-simulation-service", () => ({
+  simulateScenario: (...args: unknown[]) => mockSimulateScenario(...args),
+  simulateChain: (...args: unknown[]) => mockSimulateChain(...args),
+}));
+
 // Dynamic import after mocks
 let getUserComplianceProfile: (
   userId: string,
@@ -191,6 +200,10 @@ let compareCompliance: (
 >;
 let computeRegulationVersionHash: () => string;
 let markStaleScenarios: (userId: string) => Promise<number>;
+let recomputeScenario: (
+  userId: string,
+  scenarioId: string,
+) => Promise<{ success: boolean; error?: string }>;
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -201,6 +214,7 @@ beforeEach(async () => {
   compareCompliance = mod.compareCompliance;
   computeRegulationVersionHash = mod.computeRegulationVersionHash;
   markStaleScenarios = mod.markStaleScenarios;
+  recomputeScenario = mod.recomputeScenario;
 });
 
 // Import prisma for mock access
@@ -644,6 +658,255 @@ describe("whatif-engine-bridge", () => {
         },
         data: { isStale: true },
       });
+    });
+  });
+
+  describe("recomputeScenario", () => {
+    it("returns error when scenario not found", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue(null);
+
+      const result = await recomputeScenario("user-1", "scenario-missing");
+
+      expect(result).toEqual({ success: false, error: "Scenario not found" });
+    });
+
+    it("recomputes a standard (non-chain) scenario", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue({
+        id: "scenario-1",
+        userId: "user-1",
+        name: "Add FR jurisdiction",
+        scenarioType: "add_jurisdiction",
+        parameters: JSON.stringify({ jurisdiction: "FR" }),
+      } as never);
+
+      mockSimulateScenario.mockResolvedValue({
+        baselineScore: 70,
+        projectedScore: 85,
+        scoreDelta: 15,
+        details: "some details",
+      });
+
+      vi.mocked(prisma.whatIfScenario.update).mockResolvedValue({} as never);
+
+      const result = await recomputeScenario("user-1", "scenario-1");
+
+      expect(result).toEqual({ success: true });
+      expect(mockSimulateScenario).toHaveBeenCalledWith("user-1", {
+        scenarioType: "add_jurisdiction",
+        name: "Add FR jurisdiction",
+        parameters: { jurisdiction: "FR" },
+      });
+      expect(prisma.whatIfScenario.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "scenario-1" },
+          data: expect.objectContaining({
+            baselineScore: 70,
+            projectedScore: 85,
+            scoreDelta: 15,
+            isStale: false,
+          }),
+        }),
+      );
+    });
+
+    it("recomputes a chain scenario using simulateChain", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue({
+        id: "scenario-chain",
+        userId: "user-1",
+        name: "Chain scenario",
+        scenarioType: "chain",
+        parameters: JSON.stringify({ steps: [{ type: "add_jurisdiction" }] }),
+      } as never);
+
+      mockSimulateChain.mockResolvedValue({
+        finalScore: 92,
+        totalScoreDelta: 17,
+        chainSteps: [],
+      });
+
+      vi.mocked(prisma.whatIfScenario.update).mockResolvedValue({} as never);
+
+      const result = await recomputeScenario("user-1", "scenario-chain");
+
+      expect(result).toEqual({ success: true });
+      expect(mockSimulateChain).toHaveBeenCalledWith("user-1", {
+        name: "Chain scenario",
+        parameters: { steps: [{ type: "add_jurisdiction" }] },
+      });
+      expect(mockSimulateScenario).not.toHaveBeenCalled();
+    });
+
+    it("extracts baselineScore/projectedScore/scoreDelta from standard result", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue({
+        id: "scenario-std",
+        userId: "user-1",
+        name: "Standard",
+        scenarioType: "add_jurisdiction",
+        parameters: JSON.stringify({}),
+      } as never);
+
+      mockSimulateScenario.mockResolvedValue({
+        baselineScore: 50,
+        projectedScore: 65,
+        scoreDelta: 15,
+      });
+
+      vi.mocked(prisma.whatIfScenario.update).mockResolvedValue({} as never);
+
+      await recomputeScenario("user-1", "scenario-std");
+
+      const updateCall = vi.mocked(prisma.whatIfScenario.update).mock
+        .calls[0][0];
+      expect(updateCall.data.baselineScore).toBe(50);
+      expect(updateCall.data.projectedScore).toBe(65);
+      expect(updateCall.data.scoreDelta).toBe(15);
+    });
+
+    it("extracts finalScore/totalScoreDelta from ChainResult", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue({
+        id: "scenario-chain-2",
+        userId: "user-1",
+        name: "Chain 2",
+        scenarioType: "chain",
+        parameters: JSON.stringify({}),
+      } as never);
+
+      mockSimulateChain.mockResolvedValue({
+        finalScore: 88,
+        totalScoreDelta: 13,
+      });
+
+      vi.mocked(prisma.whatIfScenario.update).mockResolvedValue({} as never);
+
+      await recomputeScenario("user-1", "scenario-chain-2");
+
+      const updateCall = vi.mocked(prisma.whatIfScenario.update).mock
+        .calls[0][0];
+      expect(updateCall.data.baselineScore).toBe(0);
+      expect(updateCall.data.projectedScore).toBe(88);
+      expect(updateCall.data.scoreDelta).toBe(13);
+    });
+
+    it("defaults score fields to 0 when result has neither standard nor chain fields", async () => {
+      vi.mocked(prisma.whatIfScenario.findFirst).mockResolvedValue({
+        id: "scenario-empty",
+        userId: "user-1",
+        name: "Empty",
+        scenarioType: "add_jurisdiction",
+        parameters: JSON.stringify({}),
+      } as never);
+
+      mockSimulateScenario.mockResolvedValue({
+        someOtherField: "value",
+      });
+
+      vi.mocked(prisma.whatIfScenario.update).mockResolvedValue({} as never);
+
+      await recomputeScenario("user-1", "scenario-empty");
+
+      const updateCall = vi.mocked(prisma.whatIfScenario.update).mock
+        .calls[0][0];
+      expect(updateCall.data.baselineScore).toBe(0);
+      expect(updateCall.data.projectedScore).toBe(0);
+      expect(updateCall.data.scoreDelta).toBe(0);
+    });
+  });
+
+  describe("scoreToGrade (tested via compareCompliance)", () => {
+    it("assigns grade A for score >= 90", async () => {
+      const { buildUnifiedResult } =
+        await import("@/lib/unified-engine-merger.server");
+      vi.mocked(buildUnifiedResult).mockImplementation(
+        () =>
+          ({
+            confidenceScore: 95,
+            frameworks: [],
+          }) as never,
+      );
+
+      const comparison = await compareCompliance(
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+      );
+
+      expect(comparison.baseline.grade).toBe("A");
+      expect(comparison.projected.grade).toBe("A");
+    });
+
+    it("assigns grade B for score 80-89", async () => {
+      const { buildUnifiedResult } =
+        await import("@/lib/unified-engine-merger.server");
+      vi.mocked(buildUnifiedResult).mockImplementation(
+        () =>
+          ({
+            confidenceScore: 85,
+            frameworks: [],
+          }) as never,
+      );
+
+      const comparison = await compareCompliance(
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+      );
+
+      expect(comparison.baseline.grade).toBe("B");
+    });
+
+    it("assigns grade C for score 70-79", async () => {
+      const { buildUnifiedResult } =
+        await import("@/lib/unified-engine-merger.server");
+      vi.mocked(buildUnifiedResult).mockImplementation(
+        () =>
+          ({
+            confidenceScore: 75,
+            frameworks: [],
+          }) as never,
+      );
+
+      const comparison = await compareCompliance(
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+      );
+
+      expect(comparison.baseline.grade).toBe("C");
+    });
+
+    it("assigns grade D for score 60-69", async () => {
+      const { buildUnifiedResult } =
+        await import("@/lib/unified-engine-merger.server");
+      vi.mocked(buildUnifiedResult).mockImplementation(
+        () =>
+          ({
+            confidenceScore: 65,
+            frameworks: [],
+          }) as never,
+      );
+
+      const comparison = await compareCompliance(
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+      );
+
+      expect(comparison.baseline.grade).toBe("D");
+    });
+
+    it("assigns grade F for score < 60", async () => {
+      const { buildUnifiedResult } =
+        await import("@/lib/unified-engine-merger.server");
+      vi.mocked(buildUnifiedResult).mockImplementation(
+        () =>
+          ({
+            confidenceScore: 45,
+            frameworks: [],
+          }) as never,
+      );
+
+      const comparison = await compareCompliance(
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+        { activityTypes: ["SCO"], defenseInvolvement: "none" },
+      );
+
+      expect(comparison.baseline.grade).toBe("F");
     });
   });
 });

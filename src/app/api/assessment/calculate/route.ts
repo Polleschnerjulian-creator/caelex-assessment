@@ -23,6 +23,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import type { AssessmentAnswers } from "@/lib/types";
+import { logger } from "@/lib/logger";
 
 const answersSchema = z.object({
   activityType: z
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    console.error("Assessment calculation error:", error);
+    logger.error("Assessment calculation error", error);
     return NextResponse.json(
       { error: "Failed to calculate compliance assessment" },
       { status: 500 },

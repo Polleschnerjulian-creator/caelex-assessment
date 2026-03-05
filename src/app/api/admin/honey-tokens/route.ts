@@ -17,6 +17,7 @@ import {
 } from "@/lib/honey-tokens.server";
 import { z } from "zod";
 import { HoneyTokenType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 const createHoneyTokenSchema = z.object({
   tokenType: z.nativeEnum(HoneyTokenType),
@@ -59,7 +60,7 @@ export async function GET() {
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching honey tokens:", error);
+    logger.error("Admin: Error fetching honey tokens", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error creating honey token:", error);
+    logger.error("Admin: Error creating honey token", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

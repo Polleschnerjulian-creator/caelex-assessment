@@ -18,6 +18,7 @@ import {
   type RequirementStatus,
   type RequirementCategory,
 } from "@/data/cybersecurity-requirements";
+import { logger } from "@/lib/logger";
 
 interface CybersecurityFramework {
   organizationProfile: {
@@ -431,7 +432,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ framework });
   } catch (error) {
-    console.error("Error generating cybersecurity framework:", error);
+    logger.error("Error generating cybersecurity framework", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

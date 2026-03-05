@@ -15,6 +15,7 @@ import type {
   ReportSection,
   ReportSectionContent,
 } from "@/lib/pdf/types";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -148,7 +149,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(reportConfig);
   } catch (error) {
-    console.error("DD package export API error:", error);
+    logger.error("DD package export API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

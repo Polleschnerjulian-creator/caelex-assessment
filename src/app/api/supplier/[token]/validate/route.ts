@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/supplier/[token]/validate
@@ -114,7 +115,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Token validation error:", error);
+    logger.error("Token validation error", error);
     return NextResponse.json(
       {
         valid: false,

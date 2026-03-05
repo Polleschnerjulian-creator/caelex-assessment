@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSessionById, revokeSession } from "@/lib/services/session-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -52,7 +53,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching session:", error);
+    logger.error("Error fetching session", error);
     return NextResponse.json(
       { error: "Failed to fetch session" },
       { status: 500 },
@@ -93,7 +94,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error revoking session:", error);
+    logger.error("Error revoking session", error);
     return NextResponse.json(
       { error: "Failed to revoke session" },
       { status: 500 },

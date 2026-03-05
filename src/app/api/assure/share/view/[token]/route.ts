@@ -13,6 +13,7 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { encrypt } from "@/lib/encryption";
 import { computeRRS } from "@/lib/rrs-engine.server";
 import { getRRSHistory } from "@/lib/rrs-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -123,7 +124,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Shared view error:", error);
+    logger.error("Shared view error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

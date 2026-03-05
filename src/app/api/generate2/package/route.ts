@@ -16,6 +16,7 @@ import {
 import { collectGenerate2Data } from "@/lib/generate/data-collector";
 import { computeAllReadiness } from "@/lib/generate/readiness";
 import { ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       language,
     });
   } catch (error) {
-    console.error("Package creation error:", error);
+    logger.error("Package creation error", error);
     return NextResponse.json(
       {
         error: "Package creation failed",

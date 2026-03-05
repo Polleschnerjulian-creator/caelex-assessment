@@ -27,6 +27,7 @@ import {
   getR2BucketName,
   isR2Configured,
 } from "@/lib/storage/r2-client";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -220,7 +221,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   } catch (error) {
-    console.error("Audit export error:", error);
+    logger.error("Audit export error", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to generate audit package"),

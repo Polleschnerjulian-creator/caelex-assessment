@@ -15,6 +15,7 @@ import {
   createApiKey,
   API_SCOPES,
 } from "@/lib/services/api-key-service";
+import { logger } from "@/lib/logger";
 
 const CreateApiKeyBodySchema = CreateApiKeySchema.extend({
   organizationId: CuidSchema,
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
       ),
     });
   } catch (error) {
-    console.error("Error fetching API keys:", error);
+    logger.error("Error fetching API keys", error);
     return NextResponse.json(
       { error: "Failed to fetch API keys" },
       { status: 500 },
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
         "This is the only time you will see the full API key. Store it securely.",
     });
   } catch (error) {
-    console.error("Error creating API key:", error);
+    logger.error("Error creating API key", error);
     return NextResponse.json(
       { error: "Failed to create API key" },
       { status: 500 },

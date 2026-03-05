@@ -241,7 +241,7 @@ describe("Authorization Workflow API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("operatorType is required");
+      expect(data.error).toBe("Invalid input");
     });
 
     it("should return 400 when establishmentCountry is missing for EU operator", async () => {

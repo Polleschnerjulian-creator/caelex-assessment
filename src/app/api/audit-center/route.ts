@@ -4,6 +4,7 @@ import {
   getAuditCenterOverview,
   getOrganizationId,
 } from "@/lib/services/audit-center-service.server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -25,7 +26,7 @@ export async function GET() {
 
     return NextResponse.json(overview);
   } catch (error) {
-    console.error("Audit center overview error:", error);
+    logger.error("Audit center overview error", error);
     return NextResponse.json(
       { error: "Failed to load audit center overview" },
       { status: 500 },

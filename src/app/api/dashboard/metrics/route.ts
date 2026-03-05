@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDashboardMetrics } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -25,7 +26,7 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Failed to get dashboard metrics:", error);
+    logger.error("Failed to get dashboard metrics", error);
     return NextResponse.json(
       { error: "Failed to get dashboard metrics" },
       { status: 500 },

@@ -21,6 +21,7 @@ import {
   getRequiredLicenseTypes,
   determineOverallRisk,
 } from "@/data/itar-ear-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/export-control - Get user's Export Control assessments
 export async function GET() {
@@ -42,7 +43,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching Export Control assessments:", error);
+    logger.error("Error fetching Export Control assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -283,7 +284,7 @@ export async function POST(request: Request) {
         "and fines up to $1,000,000 per violation. Always consult qualified export control counsel.",
     });
   } catch (error) {
-    console.error("Error creating Export Control assessment:", error);
+    logger.error("Error creating Export Control assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

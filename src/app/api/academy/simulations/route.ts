@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // Simulation scenarios — in production these would come from a data file
 const SIMULATION_SCENARIOS = [
@@ -183,7 +184,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ scenarios });
   } catch (error) {
-    console.error("[Academy Simulations GET]", error);
+    logger.error("[Academy Simulations GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch simulations" },
       { status: 500 },
@@ -241,7 +242,7 @@ export async function POST(request: Request) {
         "Simulation started. Submit results to /api/academy/simulations/run",
     });
   } catch (error) {
-    console.error("[Academy Simulations POST]", error);
+    logger.error("[Academy Simulations POST]", error);
     return NextResponse.json(
       { error: "Failed to start simulation" },
       { status: 500 },

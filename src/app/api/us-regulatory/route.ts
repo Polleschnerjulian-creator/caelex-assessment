@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 import {
   getApplicableRequirements,
   type UsOperatorProfile,
@@ -36,7 +37,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching US Regulatory assessments:", error);
+    logger.error("Error fetching US Regulatory assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -257,7 +258,7 @@ export async function POST(request: Request) {
       requiredLicenses,
     });
   } catch (error) {
-    console.error("Error creating US Regulatory assessment:", error);
+    logger.error("Error creating US Regulatory assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

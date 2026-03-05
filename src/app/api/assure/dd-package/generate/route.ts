@@ -13,6 +13,7 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { computeAndSaveRRS } from "@/lib/rrs-engine.server";
 import type { RRSResult, RRSRecommendation } from "@/lib/rrs-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -235,7 +236,7 @@ export async function POST(request: Request) {
       generatedAt: ddPackage.generatedAt,
     });
   } catch (error) {
-    console.error("DD package generation error:", error);
+    logger.error("DD package generation error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

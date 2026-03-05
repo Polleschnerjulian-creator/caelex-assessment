@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyChain } from "@/lib/services/sentinel-service.server";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/v1/sentinel/chain/verify?agent_id=xxx
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[sentinel/chain/verify]", err);
+    logger.error("[sentinel/chain/verify]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { RedactedUnifiedResult } from "@/lib/unified-assessment-types";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
       plan: "FREE",
     });
   } catch (error) {
-    console.error("Error saving unified assessment:", error);
+    logger.error("Error saving unified assessment", error);
     return NextResponse.json(
       { error: "Failed to save assessment" },
       { status: 500 },

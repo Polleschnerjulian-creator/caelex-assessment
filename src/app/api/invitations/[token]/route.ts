@@ -11,6 +11,7 @@ import {
   getInvitation,
   acceptInvitation,
 } from "@/lib/services/organization-service";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ token: string }>;
@@ -66,7 +67,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         : null,
     });
   } catch (error) {
-    console.error("Error validating invitation:", error);
+    logger.error("Error validating invitation", error);
     return NextResponse.json(
       { error: "Failed to validate invitation", valid: false },
       { status: 500 },
@@ -133,7 +134,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: `Successfully joined ${invitation.organization.name}`,
     });
   } catch (error) {
-    console.error("Error accepting invitation:", error);
+    logger.error("Error accepting invitation", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to accept invitation") },
       { status: 500 },

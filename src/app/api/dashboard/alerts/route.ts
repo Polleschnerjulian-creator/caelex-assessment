@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { parsePaginationLimit } from "@/lib/validations";
 import { getDashboardAlerts } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
       groupedBySeverity: groupedAlerts,
     });
   } catch (error) {
-    console.error("Failed to get dashboard alerts:", error);
+    logger.error("Failed to get dashboard alerts", error);
     return NextResponse.json(
       { error: "Failed to get dashboard alerts" },
       { status: 500 },

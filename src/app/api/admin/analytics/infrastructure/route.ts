@@ -9,6 +9,7 @@ import {
   eachHourOfInterval,
   eachDayOfInterval,
 } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/infrastructure
@@ -345,7 +346,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Infrastructure] Error:", error);
+    logger.error("[Analytics Infrastructure] Error", error);
     return NextResponse.json(
       { error: "Failed to fetch infrastructure analytics" },
       { status: 500 },

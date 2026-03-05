@@ -13,6 +13,7 @@ import type {
   OrbitRegime,
   MissionType,
 } from "@/data/copuos-iadc-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/copuos - Get user's COPUOS assessments
 export async function GET() {
@@ -34,7 +35,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching COPUOS assessments:", error);
+    logger.error("Error fetching COPUOS assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -217,7 +218,7 @@ export async function POST(request: Request) {
       applicableGuidelinesCount: applicableGuidelines.length,
     });
   } catch (error) {
-    console.error("Error creating COPUOS assessment:", error);
+    logger.error("Error creating COPUOS assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

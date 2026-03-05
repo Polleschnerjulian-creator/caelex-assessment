@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { exportForUNOOSA } from "@/lib/services/registration-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error exporting registrations:", error);
+    logger.error("Error exporting registrations", error);
     return NextResponse.json(
       { error: "Failed to export registrations" },
       { status: 500 },

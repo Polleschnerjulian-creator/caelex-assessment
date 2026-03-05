@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { subDays, subMonths, format } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/overview
@@ -225,7 +226,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Overview] Error:", error);
+    logger.error("[Analytics Overview] Error", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics overview" },
       { status: 500 },

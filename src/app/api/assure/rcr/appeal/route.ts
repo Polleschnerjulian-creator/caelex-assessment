@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
       createdAt: appeal.createdAt,
     });
   } catch (error) {
-    console.error("RCR appeal submit API error:", error);
+    logger.error("RCR appeal submit API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -191,7 +192,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(appeals);
   } catch (error) {
-    console.error("RCR appeal list API error:", error);
+    logger.error("RCR appeal list API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

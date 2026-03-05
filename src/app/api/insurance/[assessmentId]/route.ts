@@ -15,6 +15,7 @@ import {
   type OrbitRegime,
   type PolicyStatus,
 } from "@/data/insurance-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/insurance/[assessmentId] - Get assessment details
 export async function GET(
@@ -95,7 +96,7 @@ export async function GET(
       complianceScore,
     });
   } catch (error) {
-    console.error("Error fetching insurance assessment:", error);
+    logger.error("Error fetching insurance assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -336,7 +337,7 @@ export async function PATCH(
 
     return NextResponse.json({ assessment: updated });
   } catch (error) {
-    console.error("Error updating insurance assessment:", error);
+    logger.error("Error updating insurance assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -393,7 +394,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting insurance assessment:", error);
+    logger.error("Error deleting insurance assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

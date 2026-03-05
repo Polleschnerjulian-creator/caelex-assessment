@@ -12,6 +12,7 @@ import { logSecurityEvent } from "@/lib/services/security-audit-service";
 import { createSignedToken, verifySignedToken } from "@/lib/signed-token";
 import { headers } from "next/headers";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 // ─── SAML Signature Verification ───
 
@@ -78,7 +79,7 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       ) {
         if (signedAssertion !== null) {
           // Multiple Assertions contain signatures — reject as suspicious
-          console.error("SAML: Multiple signed Assertions found — rejecting");
+          logger.error("SAML: Multiple signed Assertions found — rejecting");
           return false;
         }
         signedAssertion = assertion;
@@ -90,7 +91,7 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
     if (!signedAssertion) {
       // Response-level signatures are also valid but we extract claims from
       // the Assertion inside. For now, require Assertion-level signatures.
-      console.error("SAML: No Assertion with embedded Signature found");
+      logger.error("SAML: No Assertion with embedded Signature found");
       return false;
     }
 
@@ -126,7 +127,7 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       if (!referenceUri.startsWith("#")) return false;
       const referencedId = referenceUri.substring(1);
       if (referencedId !== signedAssertionId) {
-        console.error(
+        logger.error(
           "SAML: Reference URI does not match the signed Assertion ID",
         );
         return false;
@@ -152,7 +153,7 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
       .digest("base64");
 
     if (computedDigest !== expectedDigest) {
-      console.error(
+      logger.error(
         "SAML DigestValue mismatch: assertion content has been tampered with",
       );
       return false;
@@ -178,7 +179,7 @@ function verifySAMLSignature(xml: string, pemCertificate: string): boolean {
 
     return verifier.verify(certPem, signatureValue, "base64");
   } catch (err) {
-    console.error("SAML signature verification error:", err);
+    logger.error("SAML signature verification error", err);
     return false;
   }
 }
@@ -354,7 +355,7 @@ export async function POST(request: NextRequest) {
         `${baseUrl}/api/auth/callback/sso?token=${ssoToken}&returnUrl=${encodeURIComponent(returnUrl)}`,
       );
     } catch (parseError) {
-      console.error("Error parsing SAML response:", parseError);
+      logger.error("Error parsing SAML response", parseError);
 
       await logSecurityEvent({
         event: "SSO_LOGIN",
@@ -367,7 +368,7 @@ export async function POST(request: NextRequest) {
       return redirectWithError("Failed to process SAML response");
     }
   } catch (error) {
-    console.error("Error in SAML ACS:", error);
+    logger.error("Error in SAML ACS", error);
     return redirectWithError("Internal server error");
   }
 }

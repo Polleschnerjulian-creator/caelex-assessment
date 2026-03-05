@@ -19,6 +19,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent } from "@/lib/audit";
 import { parseSectionsFromMarkdown } from "@/lib/generate/parse-sections";
+import { logger } from "@/lib/logger";
 
 const GENERATION_MODEL = process.env.GENERATION_MODEL || "claude-sonnet-4-6";
 
@@ -219,12 +220,12 @@ export async function POST(
         phase: "complete",
       },
     }).catch((err) =>
-      console.error("[generate2/complete] Audit log failed:", err),
+      logger.error("[generate2/complete] Audit log failed", err),
     );
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[generate2/complete] Finalize error:", error);
+    logger.error("[generate2/complete] Finalize error", error);
     return NextResponse.json({ error: "Finalization failed" }, { status: 500 });
   }
 }

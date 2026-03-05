@@ -7,6 +7,7 @@ import {
   getRequestContext,
   generateAuditDescription,
 } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 // GET /api/authorization/[workflowId] - Get a specific workflow
 export async function GET(
@@ -43,7 +44,7 @@ export async function GET(
 
     return NextResponse.json(workflow);
   } catch (error) {
-    console.error("Error fetching workflow:", error);
+    logger.error("Error fetching workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -198,7 +199,7 @@ export async function PUT(
 
     return NextResponse.json(updatedWorkflow);
   } catch (error) {
-    console.error("Error updating workflow:", error);
+    logger.error("Error updating workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -242,7 +243,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting workflow:", error);
+    logger.error("Error deleting workflow", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ArticleStatusEnum } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 const BulkUpdateSchema = z.object({
   updates: z
@@ -60,7 +61,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ updated: results.length });
   } catch (error) {
-    console.error("Error bulk updating article statuses:", error);
+    logger.error("Error bulk updating article statuses", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

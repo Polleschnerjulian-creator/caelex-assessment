@@ -11,6 +11,7 @@ import { validateExternalUrl } from "@/lib/url-validation";
 import { headers } from "next/headers";
 import { SSOProvider } from "@prisma/client";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // Handle error from IdP
     if (error) {
-      console.error("OIDC error from IdP:", error);
+      logger.error("OIDC error from IdP", error);
       return redirectWithError(errorDescription || error);
     }
 
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      console.error("Token exchange failed:", tokenResponse.status);
+      logger.error("Token exchange failed", tokenResponse.status);
 
       await logSecurityEvent({
         event: "SSO_LOGIN",
@@ -160,7 +161,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userInfoResponse.ok) {
-      console.error("User info fetch failed");
+      logger.error("User info fetch failed");
 
       await logSecurityEvent({
         event: "SSO_LOGIN",
@@ -248,7 +249,7 @@ export async function GET(request: NextRequest) {
       `${baseUrl}/api/auth/callback/sso?token=${ssoToken}&returnUrl=${encodeURIComponent(returnUrl)}`,
     );
   } catch (error) {
-    console.error("Error in OIDC callback:", error);
+    logger.error("Error in OIDC callback", error);
     return redirectWithError("Internal server error");
   }
 }

@@ -30,6 +30,7 @@ import {
   analyzeLicenseExceptions,
   type RequirementAssessment,
 } from "@/lib/export-control-engine.server";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -404,7 +405,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(report);
   } catch (error) {
-    console.error("Error generating Export Control report:", error);
+    logger.error("Error generating Export Control report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

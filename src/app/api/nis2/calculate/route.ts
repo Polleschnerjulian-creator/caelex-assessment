@@ -22,6 +22,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import { logger } from "@/lib/logger";
 
 // Valid values for input validation
 // Caelex is space-only — only "space" sector is accepted
@@ -222,7 +223,7 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    console.error("NIS2 assessment calculation error:", error);
+    logger.error("NIS2 assessment calculation error", error);
     return NextResponse.json(
       { error: "Failed to calculate NIS2 compliance assessment" },
       { status: 500 },

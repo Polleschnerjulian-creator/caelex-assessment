@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(ratings);
   } catch (error) {
-    console.error("RCR history API error:", error);
+    logger.error("RCR history API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

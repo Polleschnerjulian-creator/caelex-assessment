@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { subDays, subMonths, format, eachDayOfInterval } from "date-fns";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/admin/analytics/acquisition
@@ -345,7 +346,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Analytics Acquisition] Error:", error);
+    logger.error("[Analytics Acquisition] Error", error);
     return NextResponse.json(
       { error: "Failed to fetch acquisition analytics" },
       { status: 500 },

@@ -12,6 +12,7 @@ import {
 } from "@/lib/services/nca-correspondence-service";
 import { getSafeErrorMessage } from "@/lib/validations";
 import type { CorrespondenceDirection, MessageType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   _request: NextRequest,
@@ -34,7 +35,7 @@ export async function GET(
         { status: 404 },
       );
     }
-    console.error("Failed to fetch correspondence:", error);
+    logger.error("Failed to fetch correspondence", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to fetch correspondence") },
       { status: 500 },
@@ -100,7 +101,7 @@ export async function POST(
         { status: 404 },
       );
     }
-    console.error("Failed to create correspondence:", error);
+    logger.error("Failed to create correspondence", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to create correspondence") },
       { status: 500 },

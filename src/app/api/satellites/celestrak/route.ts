@@ -1,6 +1,7 @@
 import type { CelesTrakGPRecord } from "@/lib/satellites/types";
 import { classifyOrbit, normalizeObjectType } from "@/lib/satellites/types";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "edge";
 
@@ -199,7 +200,7 @@ export async function GET() {
       error,
       "Failed to fetch satellite data",
     );
-    console.error("CelesTrak fetch error:", error);
+    logger.error("CelesTrak fetch error", error);
     return Response.json(
       { error: message, satellites: [], stats: null },
       { status: 502 },

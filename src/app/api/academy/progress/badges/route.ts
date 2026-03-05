@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { AcademyBadgeType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
       ),
     });
   } catch (error) {
-    console.error("[Academy Badges GET]", error);
+    logger.error("[Academy Badges GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch badges" },
       { status: 500 },

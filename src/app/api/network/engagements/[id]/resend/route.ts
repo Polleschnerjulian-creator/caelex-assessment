@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getEngagement } from "@/lib/services/stakeholder-engagement";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to resend engagement invitation:", error);
+    logger.error("Failed to resend engagement invitation", error);
     return NextResponse.json(
       { error: "Failed to resend invitation" },
       { status: 500 },

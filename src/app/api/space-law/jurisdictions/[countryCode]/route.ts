@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import type { SpaceLawCountryCode } from "@/lib/space-law-types";
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   _request: Request,
@@ -70,7 +71,7 @@ export async function GET(
       },
     );
   } catch (error) {
-    console.error("Error fetching jurisdiction:", error);
+    logger.error("Error fetching jurisdiction", error);
     return NextResponse.json(
       { error: "Failed to fetch jurisdiction details" },
       { status: 500 },

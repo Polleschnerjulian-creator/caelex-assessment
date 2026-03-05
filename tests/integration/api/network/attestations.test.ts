@@ -1,6 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// ─── Mock logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+// ─── Mock validations ───
+vi.mock("@/lib/validations", () => ({
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
+}));
+
 // ─── Mock auth ───
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -64,7 +80,7 @@ const mockMember = {
 const validAttestationData = {
   organizationId: ORG_ID,
   engagementId: "eng-1",
-  type: "COMPLIANCE_SELF_ASSESSMENT",
+  type: "COMPLIANCE_SIGN_OFF",
   title: "Annual Compliance Attestation",
   statement:
     "We hereby attest that our operations comply with EU Space Act requirements.",
@@ -147,7 +163,7 @@ describe("GET /api/network/attestations", () => {
       attestations: [
         {
           id: "att-1",
-          type: "COMPLIANCE_SELF_ASSESSMENT",
+          type: "COMPLIANCE_SIGN_OFF",
           title: "Annual Compliance",
           signerName: "Jane Doe",
           signatureHash: "abc123def456",
@@ -182,14 +198,14 @@ describe("GET /api/network/attestations", () => {
     });
 
     const request = new NextRequest(
-      `http://localhost/api/network/attestations?organizationId=${ORG_ID}&type=COMPLIANCE_SELF_ASSESSMENT&engagementId=eng-1&isRevoked=false`,
+      `http://localhost/api/network/attestations?organizationId=${ORG_ID}&type=COMPLIANCE_SIGN_OFF&engagementId=eng-1&isRevoked=false`,
     );
     await GET(request);
 
     expect(mockGetAttestations).toHaveBeenCalledWith(
       ORG_ID,
       {
-        type: "COMPLIANCE_SELF_ASSESSMENT",
+        type: "COMPLIANCE_SIGN_OFF",
         engagementId: "eng-1",
         isRevoked: false,
       },
@@ -250,7 +266,7 @@ describe("POST /api/network/attestations", () => {
         body: JSON.stringify({
           organizationId: ORG_ID,
           engagementId: "eng-1",
-          type: "COMPLIANCE_SELF_ASSESSMENT",
+          type: "COMPLIANCE_SIGN_OFF",
           // Missing: title, statement, scope, signerName, signerTitle, signerEmail, signerOrg
         }),
       },
@@ -259,7 +275,8 @@ describe("POST /api/network/attestations", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when user lacks network:attest permission", async () => {
@@ -286,7 +303,7 @@ describe("POST /api/network/attestations", () => {
 
     const mockAttestation = {
       id: "att-new",
-      type: "COMPLIANCE_SELF_ASSESSMENT",
+      type: "COMPLIANCE_SIGN_OFF",
       title: "Annual Compliance Attestation",
       signatureHash: "deadbeef1234567890abcdef",
       isRevoked: false,
@@ -353,7 +370,8 @@ describe("POST /api/network/attestations/verify", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("signatureHash is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid hash format (not hex SHA-256)", async () => {
@@ -369,7 +387,8 @@ describe("POST /api/network/attestations/verify", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Invalid hash format");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return valid: true for a verified attestation", async () => {
@@ -380,7 +399,7 @@ describe("POST /api/network/attestations/verify", () => {
       chainValid: true,
       attestation: {
         id: "att-1",
-        type: "COMPLIANCE_SELF_ASSESSMENT",
+        type: "COMPLIANCE_SIGN_OFF",
         title: "Test Attestation",
         statement: "We attest compliance",
         scope: "Full",
@@ -420,7 +439,7 @@ describe("POST /api/network/attestations/verify", () => {
       error: "Attestation has been revoked",
       attestation: {
         id: "att-revoked",
-        type: "COMPLIANCE_SELF_ASSESSMENT",
+        type: "COMPLIANCE_SIGN_OFF",
         title: "Revoked Attestation",
         signerName: "Jane Doe",
         signerOrg: "Space Corp",
@@ -523,7 +542,8 @@ describe("POST /api/network/attestations/[id]/revoke", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("reason is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when user lacks network:manage permission", async () => {

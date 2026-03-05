@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // POST /api/timeline/deadlines/[id]/extend - Extend deadline
 export async function POST(
@@ -104,7 +105,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, deadline });
   } catch (error) {
-    console.error("Error extending deadline:", error);
+    logger.error("Error extending deadline", error);
     return NextResponse.json(
       { error: "Failed to extend deadline" },
       { status: 500 },

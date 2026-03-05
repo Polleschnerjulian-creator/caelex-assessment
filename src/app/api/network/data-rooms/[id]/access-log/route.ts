@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getDataRoom, getDataRoomAccessLogs } from "@/lib/services/data-room";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Failed to fetch data room access logs:", error);
+    logger.error("Failed to fetch data room access logs", error);
     return NextResponse.json(
       { error: "Failed to fetch access logs" },
       { status: 500 },

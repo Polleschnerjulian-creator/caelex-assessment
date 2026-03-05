@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/stakeholder-engagement";
 import { parsePaginationLimit } from "@/lib/validations";
 import type { StakeholderType, EngagementStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // ─── GET: List Engagements ───
 
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Failed to fetch engagements:", error);
+    logger.error("Failed to fetch engagements", error);
     return NextResponse.json(
       { error: "Failed to fetch engagements" },
       { status: 500 },
@@ -181,7 +182,7 @@ export async function POST(request: NextRequest) {
       accessToken: result.accessToken,
     });
   } catch (error) {
-    console.error("Failed to create engagement:", error);
+    logger.error("Failed to create engagement", error);
     return NextResponse.json(
       { error: "Failed to create engagement" },
       { status: 500 },

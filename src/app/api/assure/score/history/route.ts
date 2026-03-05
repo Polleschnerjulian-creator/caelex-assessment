@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -63,7 +64,7 @@ export async function GET(request: Request) {
       total: scores.length,
     });
   } catch (error) {
-    console.error("Assure IRS history error:", error);
+    logger.error("Assure IRS history error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

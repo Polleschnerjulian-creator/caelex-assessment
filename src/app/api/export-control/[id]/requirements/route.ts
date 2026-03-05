@@ -21,6 +21,7 @@ import {
   calculateComplianceScore,
   type RequirementAssessment,
 } from "@/lib/export-control-engine.server";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -123,7 +124,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       stats,
     });
   } catch (error) {
-    console.error("Error fetching requirement statuses:", error);
+    logger.error("Error fetching requirement statuses", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -336,7 +337,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       highGaps,
     });
   } catch (error) {
-    console.error("Error updating requirement statuses:", error);
+    logger.error("Error updating requirement statuses", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

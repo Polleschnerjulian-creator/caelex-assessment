@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { regenerateBackupCodes, validateMfaCode } from "@/lib/mfa.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const regenerateSchema = z.object({
   code: z.string().length(6).regex(/^\d+$/, "Code must be 6 digits"),
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       message: "New backup codes generated. Previous codes are now invalid.",
     });
   } catch (error) {
-    console.error("Error regenerating backup codes:", error);
+    logger.error("Error regenerating backup codes", error);
     return NextResponse.json(
       { error: "Failed to regenerate backup codes" },
       { status: 500 },

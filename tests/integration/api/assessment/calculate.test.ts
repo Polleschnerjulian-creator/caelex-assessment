@@ -62,6 +62,18 @@ const mockComplianceResult = {
 describe("POST /api/assessment/calculate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Re-setup ratelimit mock after clearAllMocks
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      success: true,
+      remaining: 9,
+      reset: Date.now() + 60000,
+      limit: 10,
+    });
+    vi.mocked(createRateLimitResponse).mockReturnValue(
+      new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+        status: 429,
+      }) as any,
+    );
     mockLoadSpaceActDataFromDisk.mockReturnValue({ articles: [] });
     mockCalculateCompliance.mockReturnValue(mockComplianceResult);
     mockRedactArticlesForClient.mockReturnValue(mockComplianceResult);
@@ -127,7 +139,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid activityType");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for invalid entitySize", async () => {
@@ -139,7 +151,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid entitySize");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for invalid primaryOrbit", async () => {
@@ -151,7 +163,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid primaryOrbit");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for invalid establishment", async () => {
@@ -163,7 +175,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid establishment");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for negative constellationSize", async () => {
@@ -175,7 +187,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid constellationSize");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for non-boolean isDefenseOnly", async () => {
@@ -187,7 +199,7 @@ describe("POST /api/assessment/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Invalid isDefenseOnly");
+    expect(data.error).toBe("Invalid input");
   });
 
   // ─── Anti-Bot: Timing Validation ───

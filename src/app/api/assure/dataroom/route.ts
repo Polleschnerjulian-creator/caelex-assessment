@@ -11,6 +11,7 @@ import {
   dataRoomFolders,
   type DataRoomFolder,
 } from "@/data/assure/dataroom-structure";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -128,7 +129,7 @@ export async function GET(request: Request) {
       updatedAt: dataRoom.updatedAt,
     });
   } catch (error) {
-    console.error("Assure data room error:", error);
+    logger.error("Assure data room error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

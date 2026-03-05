@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { parsePaginationLimit } from "@/lib/validations";
 import { getAuditLogs } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 // GET /api/audit - Get audit logs for the current user
 export async function GET(request: Request) {
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching audit logs:", error);
+    logger.error("Error fetching audit logs", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

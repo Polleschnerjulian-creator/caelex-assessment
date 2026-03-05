@@ -11,6 +11,7 @@ import {
   generatePresignedDownloadUrl,
   isR2Configured,
 } from "@/lib/storage/upload-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -83,7 +84,7 @@ export async function GET(
       mimeType: document.mimeType,
     });
   } catch (error) {
-    console.error("Error generating download URL:", error);
+    logger.error("Error generating download URL", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to generate download URL") },
       { status: 500 },

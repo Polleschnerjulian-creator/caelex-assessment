@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/v1/sentinel/packets
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[sentinel/packets]", err);
+    logger.error("[sentinel/packets]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

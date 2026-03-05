@@ -6,6 +6,7 @@ import {
   getPrioritizedActions,
   estimateCompletionTime,
 } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/authorization/[workflowId]/completeness
@@ -135,7 +136,7 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error calculating completeness:", error);
+    logger.error("Error calculating completeness", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

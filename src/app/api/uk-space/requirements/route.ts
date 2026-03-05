@@ -16,6 +16,7 @@ import {
   type UkRequirementCategory,
   type UkLicenseType,
 } from "@/data/uk-space-industry-act";
+import { logger } from "@/lib/logger";
 
 // GET /api/uk-space/requirements - Get UK Space requirements with optional filters
 export async function GET(request: Request) {
@@ -70,7 +71,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching UK Space requirements:", error);
+    logger.error("Error fetching UK Space requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

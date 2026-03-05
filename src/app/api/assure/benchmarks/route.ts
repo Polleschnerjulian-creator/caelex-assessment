@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { getBenchmarksForCompany } from "@/lib/assure/benchmark-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(benchmarks);
   } catch (error) {
-    console.error("Assure benchmarks error:", error);
+    logger.error("Assure benchmarks error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

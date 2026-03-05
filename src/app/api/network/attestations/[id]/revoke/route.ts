@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { revokeAttestation } from "@/lib/services/attestation";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, attestation });
   } catch (error) {
-    console.error("Failed to revoke attestation:", error);
+    logger.error("Failed to revoke attestation", error);
     return NextResponse.json(
       { error: "Failed to revoke attestation" },
       { status: 500 },

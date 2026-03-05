@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { NCA_DOC_TYPE_MAP, ALL_NCA_DOC_TYPES } from "@/lib/generate/types";
 import type { NCADocumentType } from "@/lib/generate/types";
+import { logger } from "@/lib/logger";
 
 // Map document types to their relevant article ranges
 const ARTICLE_RANGES: Record<
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
       ranges,
     });
   } catch (error) {
-    console.error("Articles API error:", error);
+    logger.error("Articles API error", error);
     return NextResponse.json(
       { error: "Failed to fetch articles" },
       { status: 500 },

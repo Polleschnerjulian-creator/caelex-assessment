@@ -12,6 +12,7 @@ import {
   getSafeErrorMessage,
   formatZodErrors,
 } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // Validation schema
 const MarkReadSchema = z
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       message: `Marked ${count} notification(s) as read`,
     });
   } catch (error) {
-    console.error("Error marking notifications as read:", error);
+    logger.error("Error marking notifications as read", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(

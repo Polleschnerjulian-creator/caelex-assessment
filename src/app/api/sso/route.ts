@@ -17,6 +17,7 @@ import {
 import { SSOProvider, OrganizationRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // ─── Zod Schema for SSO Configuration ───
 
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error("Error fetching SSO configuration:", error);
+    logger.error("Error fetching SSO configuration", error);
     return NextResponse.json(
       { error: "Failed to fetch SSO configuration" },
       { status: 500 },
@@ -208,7 +209,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error configuring SSO:", error);
+    logger.error("Error configuring SSO", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to configure SSO"),
@@ -251,7 +252,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error disabling SSO:", error);
+    logger.error("Error disabling SSO", error);
     return NextResponse.json(
       { error: "Failed to disable SSO" },
       { status: 500 },

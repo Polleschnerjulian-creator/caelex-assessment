@@ -22,15 +22,23 @@ vi.mock("@/lib/services/subscription-service", () => ({
     mockCreateCheckoutSession(...args),
 }));
 
-// ─── Mock validations ───
-vi.mock("@/lib/validations", () => ({
-  CuidSchema: {
-    _parse: vi.fn(),
-    _def: { typeName: "ZodString" },
-    safeParse: vi.fn(),
+// ─── Mock validations (partial - keep real schemas) ───
+vi.mock("@/lib/validations", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/validations")>();
+  return {
+    ...actual,
+    getSafeErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
+  };
+});
+
+// ─── Mock logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
   },
-  getSafeErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
-  formatZodErrors: vi.fn((err: unknown) => err),
 }));
 
 import { auth } from "@/lib/auth";

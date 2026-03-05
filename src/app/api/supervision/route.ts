@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nationalAuthorities } from "@/data/national-authorities";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision - Get supervision config and overview
 export async function GET() {
@@ -90,7 +91,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching supervision config:", error);
+    logger.error("Error fetching supervision config", error);
     return NextResponse.json(
       { error: "Failed to fetch supervision configuration" },
       { status: 500 },
@@ -206,7 +207,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, config });
   } catch (error) {
-    console.error("Error saving supervision config:", error);
+    logger.error("Error saving supervision config", error);
     return NextResponse.json(
       { error: "Failed to save supervision configuration" },
       { status: 500 },

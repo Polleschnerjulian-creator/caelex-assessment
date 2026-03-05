@@ -16,6 +16,7 @@ import {
   getSubmissionMethodLabel,
 } from "@/lib/services/nca-submission-service";
 import type { NCAAuthority, SubmissionMethod } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to submit to NCA:", error);
+    logger.error("Failed to submit to NCA", error);
     return NextResponse.json(
       { error: "Failed to submit report to NCA" },
       { status: 500 },

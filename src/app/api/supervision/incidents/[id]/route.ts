@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision/incidents/[id] - Get incident details
 export async function GET(
@@ -66,7 +67,7 @@ export async function GET(
 
     return NextResponse.json({ incident: decryptedIncident });
   } catch (error) {
-    console.error("Error fetching incident:", error);
+    logger.error("Error fetching incident", error);
     return NextResponse.json(
       { error: "Failed to fetch incident" },
       { status: 500 },
@@ -236,7 +237,7 @@ export async function PATCH(
       incident: decryptedUpdatedIncident,
     });
   } catch (error) {
-    console.error("Error updating incident:", error);
+    logger.error("Error updating incident", error);
     return NextResponse.json(
       { error: "Failed to update incident" },
       { status: 500 },
@@ -301,7 +302,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting incident:", error);
+    logger.error("Error deleting incident", error);
     return NextResponse.json(
       { error: "Failed to delete incident" },
       { status: 500 },

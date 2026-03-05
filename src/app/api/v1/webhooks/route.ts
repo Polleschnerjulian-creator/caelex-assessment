@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 import { CreateWebhookSchema } from "@/lib/validations";
 import {
   getOrganizationWebhooks,
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
       ),
     });
   } catch (error) {
-    console.error("Error fetching webhooks:", error);
+    logger.error("Error fetching webhooks", error);
     return NextResponse.json(
       { error: "Failed to fetch webhooks" },
       { status: 500 },
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
         "Store this secret securely. You will need it to verify webhook signatures.",
     });
   } catch (error) {
-    console.error("Error creating webhook:", error);
+    logger.error("Error creating webhook", error);
     return NextResponse.json(
       { error: "Failed to create webhook" },
       { status: 500 },

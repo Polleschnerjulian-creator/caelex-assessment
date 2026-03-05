@@ -10,6 +10,7 @@ import {
   type LaunchVehicleId,
   type PropellantType,
 } from "@/data/environmental-requirements";
+import { logger } from "@/lib/logger";
 
 // POST /api/environmental/calculate - Calculate environmental footprint
 export async function POST(request: Request) {
@@ -168,7 +169,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error calculating environmental footprint:", error);
+    logger.error("Error calculating environmental footprint", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

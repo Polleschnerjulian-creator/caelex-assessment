@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   _request: NextRequest,
@@ -36,7 +37,7 @@ export async function GET(
 
     return NextResponse.json({ document: doc });
   } catch (error) {
-    console.error("Generate2 get error:", error);
+    logger.error("Generate2 get error", error);
     return NextResponse.json(
       { error: "Failed to fetch document" },
       { status: 500 },
@@ -81,7 +82,7 @@ export async function PATCH(
 
     return NextResponse.json({ document: updated });
   } catch (error) {
-    console.error("Generate2 patch error:", error);
+    logger.error("Generate2 patch error", error);
     return NextResponse.json(
       { error: "Failed to update document" },
       { status: 500 },
@@ -117,7 +118,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Generate2 delete error:", error);
+    logger.error("Generate2 delete error", error);
     return NextResponse.json(
       { error: "Failed to delete document" },
       { status: 500 },

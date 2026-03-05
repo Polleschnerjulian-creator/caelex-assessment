@@ -15,6 +15,17 @@
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
+ * Mask an email address for safe logging.
+ * "julian@caelex.eu" → "j****n@caelex.eu"
+ */
+export function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "[invalid-email]";
+  if (local.length <= 2) return `${local[0]}***@${domain}`;
+  return `${local[0]}${"*".repeat(Math.min(local.length - 2, 4))}${local[local.length - 1]}@${domain}`;
+}
+
+/**
  * Sanitize an error for production logging.
  * Removes stack traces and sensitive information.
  */

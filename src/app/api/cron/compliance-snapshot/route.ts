@@ -3,6 +3,7 @@ import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { startOfDay } from "date-fns";
 import { calculateComplianceScore } from "@/lib/services/compliance-scoring-service";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
           await generateSnapshot(user.id, snapshotDate);
           processed++;
         } catch (err) {
-          console.error(`Snapshot error for user ${user.id}:`, err);
+          logger.error(`Snapshot error for user ${user.id}`, err);
           errors++;
         }
       }
@@ -78,7 +79,7 @@ export async function GET(request: Request) {
       total: totalUsers,
     });
   } catch (error) {
-    console.error("Compliance snapshot cron error:", error);
+    logger.error("Compliance snapshot cron error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

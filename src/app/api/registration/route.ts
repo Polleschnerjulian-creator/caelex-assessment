@@ -15,6 +15,7 @@ import {
   listRegistrations,
   type CreateRegistrationInput,
 } from "@/lib/services/registration-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error listing registrations:", error);
+    logger.error("Error listing registrations", error);
     return NextResponse.json(
       { error: "Failed to list registrations" },
       { status: 500 },
@@ -197,7 +198,7 @@ export async function POST(request: NextRequest) {
       registration,
     });
   } catch (error) {
-    console.error("Error creating registration:", error);
+    logger.error("Error creating registration", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to create registration") },
       { status: 500 },

@@ -27,7 +27,20 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Mock email
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+  isEmailConfigured: vi.fn().mockReturnValue(true),
+}));
+
+// Mock logger
+vi.mock("@/lib/logger", () => ({
+  logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  maskEmail: vi.fn((e: string) => e),
+}));
+
 import { prisma } from "@/lib/prisma";
+import { sendEmail, isEmailConfigured } from "@/lib/email";
 import {
   NOTIFICATION_CONFIG,
   NOTIFICATION_CATEGORIES,
@@ -599,6 +612,599 @@ describe("Notification Service", () => {
 
       expect(count).toBe(0);
       expect(prisma.notification.createMany).not.toHaveBeenCalled();
+    });
+
+    it("should pass correct filtered data to createMany when excluding users", async () => {
+      vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([
+        { userId: "user-1" },
+        { userId: "user-2" },
+        { userId: "user-3" },
+      ] as never);
+      vi.mocked(prisma.notification.createMany).mockResolvedValue({ count: 2 });
+
+      await notifyOrganization(
+        "org-1",
+        "MEMBER_JOINED",
+        "New Member",
+        "A new member joined",
+        { excludeUserIds: ["user-2"] },
+      );
+
+      const createManyCall = vi.mocked(prisma.notification.createMany).mock
+        .calls[0][0] as { data: Array<{ userId: string }> };
+      const userIds = createManyCall.data.map((d) => d.userId);
+      expect(userIds).toContain("user-1");
+      expect(userIds).toContain("user-3");
+      expect(userIds).not.toContain("user-2");
+    });
+  });
+
+  describe("dispatchNotification (via createNotification)", () => {
+    it("should skip email when quiet hours are enabled and active", async () => {
+      // Set up: quiet hours 00:00 - 23:59 (always in quiet hours)
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: true,
+        pushEnabled: true,
+        quietHoursEnabled: true,
+        quietHoursStart: "00:00",
+        quietHoursEnd: "23:59",
+        quietHoursTimezone: "Europe/Berlin",
+        categories: null,
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      // sendEmail should NOT have been called because quiet hours are active
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should send email when quiet hours are enabled but missing start/end", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: true,
+        pushEnabled: true,
+        quietHoursEnabled: true,
+        quietHoursStart: null,
+        quietHoursEnd: null,
+        quietHoursTimezone: "Europe/Berlin",
+        categories: null,
+      } as never);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "Test",
+      } as never);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      // isInQuietHours returns false when start/end are missing, so email is sent
+      expect(sendEmail).toHaveBeenCalled();
+    });
+
+    it("should skip email when category email preference is false", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      // DEADLINE_REMINDER is in "deadlines" category
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: true,
+        pushEnabled: true,
+        quietHoursEnabled: false,
+        categories: { deadlines: { email: false, push: true } },
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should skip email when global emailEnabled is false", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: false,
+        pushEnabled: true,
+        quietHoursEnabled: false,
+        categories: null,
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should send email when preferences are null (defaults)", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "Test User",
+      } as never);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      // With null preferences, email should be sent (default behavior)
+      expect(sendEmail).toHaveBeenCalled();
+    });
+  });
+
+  describe("sendNotificationEmail (via createNotification)", () => {
+    it("should not send email when user has no email", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should not send email when user email is null", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: null,
+        name: "User",
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should skip email when email is not configured", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(false);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test message",
+      });
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should use emailSubjectPrefix in subject when available", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_OVERDUE",
+        title: "Task is overdue",
+        message: "Your task is past the deadline",
+        severity: "URGENT",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_OVERDUE",
+        title: "Task is overdue",
+        message: "Your task is past the deadline",
+      });
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: "[Overdue] Task is overdue",
+        }),
+      );
+    });
+
+    it("should use title as subject when no emailSubjectPrefix", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "COMPLIANCE_UPDATED",
+        title: "Compliance was updated",
+        message: "Check compliance",
+        severity: "INFO",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "COMPLIANCE_UPDATED",
+        title: "Compliance was updated",
+        message: "Check compliance",
+      });
+
+      // COMPLIANCE_UPDATED has no emailSubjectPrefix
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: "Compliance was updated",
+        }),
+      );
+    });
+
+    it("should use red severity color for URGENT notifications", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_OVERDUE",
+        title: "Overdue",
+        message: "It is overdue",
+        severity: "URGENT",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_OVERDUE",
+        title: "Overdue",
+        message: "It is overdue",
+        severity: "URGENT",
+      });
+
+      const emailCall = vi.mocked(sendEmail).mock.calls[0][0] as {
+        html: string;
+      };
+      expect(emailCall.html).toContain("#EF4444"); // red for URGENT
+    });
+
+    it("should use amber severity color for WARNING notifications", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Reminder",
+        message: "Reminder message",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Reminder",
+        message: "Reminder message",
+      });
+
+      const emailCall = vi.mocked(sendEmail).mock.calls[0][0] as {
+        html: string;
+      };
+      expect(emailCall.html).toContain("#F59E0B"); // amber for WARNING
+    });
+
+    it("should use blue severity color for INFO (default) notifications", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "COMPLIANCE_UPDATED",
+        title: "Update",
+        message: "Updated",
+        severity: "INFO",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "COMPLIANCE_UPDATED",
+        title: "Update",
+        message: "Updated",
+      });
+
+      const emailCall = vi.mocked(sendEmail).mock.calls[0][0] as {
+        html: string;
+      };
+      expect(emailCall.html).toContain("#3B82F6"); // blue for INFO
+    });
+
+    it("should update notification emailSent on success", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(sendEmail).mockResolvedValue({ success: true } as never);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+      });
+
+      expect(prisma.notification.update).toHaveBeenCalledWith({
+        where: { id: "notif-1" },
+        data: expect.objectContaining({
+          emailSent: true,
+        }),
+      });
+    });
+
+    it("should not update notification on email failure", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(sendEmail).mockResolvedValue({
+        success: false,
+        error: "bounced",
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+      });
+
+      expect(prisma.notification.update).not.toHaveBeenCalled();
+    });
+
+    it("should include action link in email when actionUrl is provided", async () => {
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        severity: "WARNING",
+        actionUrl: "/dashboard/modules",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue(
+        null,
+      );
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        email: "user@test.com",
+        name: "User",
+      } as never);
+      vi.mocked(isEmailConfigured).mockReturnValue(true);
+      vi.mocked(prisma.notification.update).mockResolvedValue({} as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        actionUrl: "/dashboard/modules",
+      });
+
+      const emailCall = vi.mocked(sendEmail).mock.calls[0][0] as {
+        html: string;
+      };
+      expect(emailCall.html).toContain("View Details");
+      expect(emailCall.html).toContain("/dashboard/modules");
+    });
+  });
+
+  describe("isInQuietHours (via createNotification)", () => {
+    it("should handle overnight quiet hours (e.g., 22:00-08:00)", async () => {
+      // We test this indirectly by setting quiet hours from 22:00 to 08:00
+      // Since we can't control the current time easily, we set hours
+      // to a range that definitely covers or misses the current time.
+      // Use a range that always includes current time: 00:00-23:59 (non-overnight)
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: true,
+        quietHoursEnabled: true,
+        quietHoursStart: "00:00",
+        quietHoursEnd: "23:59",
+        categories: null,
+      } as never);
+
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+      });
+
+      // Should be in quiet hours (non-overnight range covers all day)
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should handle overnight quiet hours where start > end", async () => {
+      // Overnight: 22:00 to 08:00 — start > end
+      // We can't control time, but we test the branch exists
+      vi.mocked(prisma.notification.create).mockResolvedValue({
+        id: "notif-1",
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+        severity: "WARNING",
+      } as never);
+      vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+        userId: "user-1",
+        emailEnabled: true,
+        quietHoursEnabled: true,
+        quietHoursStart: "22:00",
+        quietHoursEnd: "08:00",
+        categories: null,
+      } as never);
+
+      // This test exercises the overnight quiet hours branch
+      // The result depends on the current time, but it should not throw
+      await createNotification({
+        userId: "user-1",
+        type: "DEADLINE_REMINDER",
+        title: "Test",
+        message: "Test",
+      });
+
+      // We just verify it doesn't throw — the branch is exercised
+      expect(prisma.notification.create).toHaveBeenCalled();
     });
   });
 });

@@ -13,6 +13,7 @@ import {
   type OrbitRegime,
   type PolicyStatus,
 } from "@/data/insurance-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/insurance/policies - Get policies for an assessment
 export async function GET(request: Request) {
@@ -64,7 +65,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching insurance policies:", error);
+    logger.error("Error fetching insurance policies", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -253,7 +254,7 @@ export async function PATCH(request: Request) {
       complianceScore,
     });
   } catch (error) {
-    console.error("Error updating insurance policy:", error);
+    logger.error("Error updating insurance policy", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -41,6 +41,19 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
+// Mock rate limiting (used by export, certificate, and report routes)
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
+  getIdentifier: vi.fn().mockReturnValue("ip:127.0.0.1"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
 // Mock PDF rendering (certificate and report routes use it)
 vi.mock("@react-pdf/renderer", () => ({
   renderToBuffer: vi.fn(),

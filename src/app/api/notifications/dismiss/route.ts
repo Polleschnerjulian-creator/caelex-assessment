@@ -15,6 +15,7 @@ import {
   getSafeErrorMessage,
   formatZodErrors,
 } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // Validation schema
 const DismissSchema = z
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
       message: "Notification dismissed",
     });
   } catch (error) {
-    console.error("Error dismissing notification:", error);
+    logger.error("Error dismissing notification", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to dismiss notification") },
       { status: 500 },

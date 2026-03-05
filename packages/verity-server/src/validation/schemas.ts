@@ -4,9 +4,6 @@ import { z } from "zod";
 const hex64 = z
   .string()
   .regex(/^[0-9a-f]{64}$/, "Must be 64 lowercase hex chars");
-const hex128 = z
-  .string()
-  .regex(/^[0-9a-f]{128}$/, "Must be 128 lowercase hex chars");
 const isoTimestamp = z.string().datetime({ offset: true });
 const cuid2Id = z.string().min(1);
 
@@ -23,18 +20,15 @@ export const createAttestationSchema = z.object({
     valid_from: isoTimestamp,
     valid_until: isoTimestamp,
   }),
-  commitment: z.object({
-    hash: hex64,
-    scheme: z.string().min(1),
-    version: z.number().int().positive(),
-  }),
   evidence: z.object({
     evidence_ref: z.string().min(1),
     evidence_hash: hex64,
     attester_id: cuid2Id,
-    attester_signature: hex128,
   }),
   operator_key_id: cuid2Id,
+  actual_value: z.number(),
+  commitment_domain: z.string().min(1),
+  commitment_context: z.record(z.unknown()).default({}),
 });
 
 export const verifyAttestationSchema = z.union([

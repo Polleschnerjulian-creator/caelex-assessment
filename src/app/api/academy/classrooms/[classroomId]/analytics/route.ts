@@ -12,6 +12,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ classroomId: string }>;
@@ -273,7 +274,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       timePerLesson,
     });
   } catch (error) {
-    console.error("[Academy Classroom Analytics GET]", error);
+    logger.error("[Academy Classroom Analytics GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 },

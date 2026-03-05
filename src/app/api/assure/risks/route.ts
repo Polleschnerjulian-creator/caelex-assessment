@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { riskSchema } from "@/lib/assure/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -76,7 +77,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ risks });
   } catch (error) {
-    console.error("Assure risks list error:", error);
+    logger.error("Assure risks list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -194,7 +195,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(risk, { status: 201 });
   } catch (error) {
-    console.error("Assure risk create error:", error);
+    logger.error("Assure risk create error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

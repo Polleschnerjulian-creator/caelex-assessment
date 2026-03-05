@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -133,7 +134,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ courses: formattedCourses });
   } catch (error) {
-    console.error("[Academy Courses GET]", error);
+    logger.error("[Academy Courses GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch courses" },
       { status: 500 },

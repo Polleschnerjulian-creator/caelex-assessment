@@ -72,7 +72,7 @@ export async function GET(req: Request) {
       processedAt: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error("Cron job failed:", error);
+    logger.error("Cron job failed", error);
 
     return NextResponse.json(
       {

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const VALID_ROLES = ["user", "admin", "auditor"];
 
@@ -86,7 +87,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching user:", error);
+    logger.error("Admin: Error fetching user", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -198,7 +199,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error updating user:", error);
+    logger.error("Admin: Error updating user", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -392,7 +392,7 @@ export async function GET(req: Request) {
       processedAt: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error("NCA deadline cron job failed:", error);
+    logger.error("NCA deadline cron job failed", error);
     return NextResponse.json(
       {
         success: false,

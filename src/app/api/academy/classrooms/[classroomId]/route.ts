@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ classroomId: string }>;
@@ -127,7 +128,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       myProgress: studentEnrollments,
     });
   } catch (error) {
-    console.error("[Academy Classroom Detail GET]", error);
+    logger.error("[Academy Classroom Detail GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch classroom" },
       { status: 500 },
@@ -250,7 +251,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("[Academy Classroom Detail PATCH]", error);
+    logger.error("[Academy Classroom Detail PATCH]", error);
     return NextResponse.json(
       { error: "Failed to update classroom" },
       { status: 500 },

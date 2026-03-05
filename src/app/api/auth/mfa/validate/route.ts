@@ -24,6 +24,7 @@ import {
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { isTotpCodeUsed, markTotpCodeUsed } from "@/lib/mfa.server";
+import { logger } from "@/lib/logger";
 
 const validateSchema = z.object({
   code: z.string().min(6).max(10), // 6 for TOTP, 8 for backup code
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
     try {
       session = await auth();
     } catch (authErr) {
-      console.error("[MFA] auth() threw:", authErr);
+      logger.error("[MFA] auth() threw", authErr);
       return NextResponse.json(
         { error: "Session error. Please log in again." },
         { status: 401 },
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
         where: { userId },
       });
     } catch (dbErr) {
-      console.error("[MFA] DB lookup failed:", dbErr);
+      logger.error("[MFA] DB lookup failed", dbErr);
       return NextResponse.json(
         { error: "Database error. Please try again." },
         { status: 500 },
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
           }
         }
       } catch (jwtErr) {
-        console.error("[MFA] JWT heal failed:", jwtErr);
+        logger.error("[MFA] JWT heal failed", jwtErr);
       }
 
       return healResponse;
@@ -180,7 +181,7 @@ export async function POST(request: Request) {
           }
         }
       } catch (backupErr) {
-        console.error("[MFA] Backup code verification failed:", backupErr);
+        logger.error("[MFA] Backup code verification failed", backupErr);
         return NextResponse.json(
           { error: "Backup code verification failed." },
           { status: 500 },
@@ -194,12 +195,12 @@ export async function POST(request: Request) {
       try {
         totpSecret = await decrypt(mfaConfig.encryptedSecret);
       } catch (decryptErr) {
-        console.error("[MFA] Decryption failed:", decryptErr);
+        logger.error("[MFA] Decryption failed", decryptErr);
         const errMsg =
           decryptErr instanceof Error ? decryptErr.message : String(decryptErr);
         // Check for common causes
         if (errMsg.includes("ENCRYPTION_KEY")) {
-          console.error(
+          logger.error(
             "[MFA] ENCRYPTION_KEY or ENCRYPTION_SALT not set in environment",
           );
         }
@@ -213,7 +214,7 @@ export async function POST(request: Request) {
       }
 
       if (!totpSecret) {
-        console.error("[MFA] Decrypted secret is empty");
+        logger.error("[MFA] Decrypted secret is empty");
         return NextResponse.json(
           { error: "MFA configuration is corrupted." },
           { status: 500 },
@@ -233,7 +234,7 @@ export async function POST(request: Request) {
         const delta = totp.validate({ token: code, window: 1 });
         isValid = delta !== null;
       } catch (totpErr) {
-        console.error("[MFA] TOTP verification threw:", totpErr);
+        logger.error("[MFA] TOTP verification threw", totpErr);
         return NextResponse.json(
           { error: "TOTP verification failed. MFA may need to be re-setup." },
           { status: 500 },
@@ -260,7 +261,7 @@ export async function POST(request: Request) {
         metadata: { isBackupCode },
         ipAddress,
         userAgent,
-      }).catch((e) => console.error("[MFA] Audit log failed:", e));
+      }).catch((e) => logger.error("[MFA] Audit log failed", e));
 
       recordLoginEvent(
         userId,
@@ -268,7 +269,7 @@ export async function POST(request: Request) {
         ipAddress ?? null,
         userAgent ?? null,
         "PASSWORD",
-      ).catch((e) => console.error("[MFA] Login event log failed:", e));
+      ).catch((e) => logger.error("[MFA] Login event log failed", e));
 
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
@@ -283,7 +284,7 @@ export async function POST(request: Request) {
         metadata: { codeUsed: true },
         ipAddress,
         userAgent,
-      }).catch((e) => console.error("[MFA] Audit log failed:", e));
+      }).catch((e) => logger.error("[MFA] Audit log failed", e));
 
       recordLoginEvent(
         userId,
@@ -291,7 +292,7 @@ export async function POST(request: Request) {
         ipAddress ?? null,
         userAgent ?? null,
         "PASSWORD",
-      ).catch((e) => console.error("[MFA] Login event log failed:", e));
+      ).catch((e) => logger.error("[MFA] Login event log failed", e));
     }
 
     logAuditEvent({
@@ -302,7 +303,7 @@ export async function POST(request: Request) {
       metadata: { isBackupCode },
       ipAddress,
       userAgent,
-    }).catch((e) => console.error("[MFA] Audit log failed:", e));
+    }).catch((e) => logger.error("[MFA] Audit log failed", e));
 
     recordLoginEvent(
       userId,
@@ -310,10 +311,10 @@ export async function POST(request: Request) {
       ipAddress ?? null,
       userAgent ?? null,
       "PASSWORD",
-    ).catch((e) => console.error("[MFA] Login event log failed:", e));
+    ).catch((e) => logger.error("[MFA] Login event log failed", e));
 
     clearFailedAttempts(userId).catch((e) =>
-      console.error("[MFA] Clear attempts failed:", e),
+      logger.error("[MFA] Clear attempts failed", e),
     );
 
     // ── Step 8: Update JWT server-side ──
@@ -353,14 +354,14 @@ export async function POST(request: Request) {
         }
       }
     } catch (jwtError) {
-      console.error("[MFA] JWT update failed:", jwtError);
+      logger.error("[MFA] JWT update failed", jwtError);
       // Non-fatal: the success response already tells the client MFA passed.
       // The next page load will trigger a session refresh.
     }
 
     return response;
   } catch (error) {
-    console.error("[MFA] Unhandled error:", error);
+    logger.error("[MFA] Unhandled error", error);
     return NextResponse.json(
       { error: "MFA validation failed" },
       { status: 500 },

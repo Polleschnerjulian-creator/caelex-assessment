@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { submitToURSO } from "@/lib/services/registration-service";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
@@ -80,7 +81,7 @@ export async function POST(
       ncaReference: result.ncaReference,
     });
   } catch (error) {
-    console.error("Error submitting registration:", error);
+    logger.error("Error submitting registration", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to submit registration") },
       { status: 500 },

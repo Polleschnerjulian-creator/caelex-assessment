@@ -6,6 +6,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getMfaStatus } from "@/lib/mfa.server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json(status);
   } catch (error) {
-    console.error("Error getting MFA status:", error);
+    logger.error("Error getting MFA status", error);
     return NextResponse.json(
       { error: "Failed to get MFA status" },
       { status: 500 },

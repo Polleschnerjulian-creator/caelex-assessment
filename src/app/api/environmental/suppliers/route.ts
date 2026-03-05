@@ -9,6 +9,7 @@ import {
   type LaunchVehicleId,
   type PropellantType,
 } from "@/data/environmental-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/environmental/suppliers - Get supplier requests for an assessment
 export async function GET(request: Request) {
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ suppliers: assessment.supplierRequests });
   } catch (error) {
-    console.error("Error fetching supplier requests:", error);
+    logger.error("Error fetching supplier requests", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -212,7 +213,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ supplier }, { status: 201 });
     }
   } catch (error) {
-    console.error("Error creating supplier request:", error);
+    logger.error("Error creating supplier request", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -313,7 +314,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ supplier: updated });
   } catch (error) {
-    console.error("Error updating supplier request:", error);
+    logger.error("Error updating supplier request", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -363,7 +364,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting supplier request:", error);
+    logger.error("Error deleting supplier request", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendBatchOutreach } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/environmental/suppliers/batch-outreach
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       results: result.results,
     });
   } catch (error) {
-    console.error("Batch outreach error:", error);
+    logger.error("Batch outreach error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

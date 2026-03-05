@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { articles, OperatorType } from "@/data/articles";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const ImportAssessmentSchema = z.object({
   operatorType: z.string().min(1, "operatorType is required").max(50),
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
       notApplicable,
     });
   } catch (error) {
-    console.error("Error importing assessment:", error);
+    logger.error("Error importing assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -9,6 +9,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { parsePaginationLimit } from "@/lib/validations";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 import {
   createScheduledReport,
   getScheduledReports,
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
-    console.error("Failed to fetch scheduled reports:", error);
+    logger.error("Failed to fetch scheduled reports", error);
     return NextResponse.json(
       { error: "Failed to fetch scheduled reports" },
       { status: 500 },
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to create scheduled report:", error);
+    logger.error("Failed to create scheduled report", error);
     return NextResponse.json(
       { error: "Failed to create scheduled report" },
       { status: 500 },

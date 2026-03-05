@@ -51,6 +51,24 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "user-123",
+    organizationId: "ctest123org",
+    role: "OWNER",
+    permissions: ["*"],
+    organization: {
+      id: "ctest123org",
+      name: "Test Org",
+      slug: "test-org",
+      plan: "PROFESSIONAL",
+      isActive: true,
+    },
+  }),
+  verifyOrganizationAccess: vi.fn().mockResolvedValue({ success: true }),
+  withOrganizationGuard: vi.fn(),
+}));
+
 vi.mock("@/data/insurance-requirements", () => ({
   calculateTPLRequirement: vi.fn().mockReturnValue({
     amount: 60_000_000,
@@ -294,7 +312,7 @@ describe("GET /api/insurance", () => {
     expect(data.assessments).toBeDefined();
     expect(data.assessments).toHaveLength(1);
     expect(prisma.insuranceAssessment.findMany).toHaveBeenCalledWith({
-      where: { userId: "user-123" },
+      where: { userId: "user-123", organizationId: "ctest123org" },
       include: { policies: true },
       orderBy: { updatedAt: "desc" },
     });
@@ -372,7 +390,7 @@ describe("POST /api/insurance", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("primaryJurisdiction is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when operatorType is missing", async () => {
@@ -388,7 +406,7 @@ describe("POST /api/insurance", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("operatorType is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when companySize is missing", async () => {
@@ -404,7 +422,7 @@ describe("POST /api/insurance", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("companySize is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when orbitRegime is missing", async () => {
@@ -420,7 +438,7 @@ describe("POST /api/insurance", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("orbitRegime is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 201 and create assessment with valid payload", async () => {
@@ -956,7 +974,7 @@ describe("PATCH /api/insurance/policies", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId and insuranceType are required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when insuranceType is missing", async () => {
@@ -971,7 +989,7 @@ describe("PATCH /api/insurance/policies", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId and insuranceType are required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment ownership check fails", async () => {
@@ -1129,7 +1147,7 @@ describe("POST /api/insurance/report/generate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {

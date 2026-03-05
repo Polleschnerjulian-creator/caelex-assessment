@@ -11,6 +11,7 @@ import { createPortalSession } from "@/lib/services/subscription-service";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { CuidSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 const PortalSessionBodySchema = z.object({
   organizationId: CuidSchema,
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error creating portal session:", error);
+    logger.error("Error creating portal session", error);
     return NextResponse.json(
       { error: "Failed to create portal session" },
       { status: 500 },

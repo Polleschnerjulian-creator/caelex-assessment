@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateSAMLMetadataXML } from "@/lib/services/sso-service";
 import { headers } from "next/headers";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error generating SAML metadata:", error);
+    logger.error("Error generating SAML metadata", error);
     return NextResponse.json(
       { error: "Failed to generate SAML metadata" },
       { status: 500 },

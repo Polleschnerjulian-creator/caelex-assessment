@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // GET — Get generated document by ID
 export async function GET(
@@ -37,7 +38,7 @@ export async function GET(
 
     return NextResponse.json(doc);
   } catch (error) {
-    console.error("Get generated document error:", error);
+    logger.error("Get generated document error", error);
     return NextResponse.json(
       { error: "Failed to fetch document" },
       { status: 500 },
@@ -92,7 +93,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Update generated document error:", error);
+    logger.error("Update generated document error", error);
     return NextResponse.json(
       { error: "Failed to update document" },
       { status: 500 },
@@ -128,7 +129,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Delete generated document error:", error);
+    logger.error("Delete generated document error", error);
     return NextResponse.json(
       { error: "Failed to delete document" },
       { status: 500 },

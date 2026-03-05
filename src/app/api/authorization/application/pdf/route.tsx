@@ -8,6 +8,7 @@ import {
   AuthorizationApplicationPDF,
   type AuthorizationApplicationData,
 } from "@/lib/pdf/reports/authorization-application";
+import { logger } from "@/lib/logger";
 
 // POST /api/authorization/application/pdf - Generate Authorization Application PDF
 export async function POST(request: Request) {
@@ -300,7 +301,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating authorization application PDF:", error);
+    logger.error("Error generating authorization application PDF", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

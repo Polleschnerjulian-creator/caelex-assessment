@@ -21,6 +21,7 @@ import {
   getCrossRegulationSummary,
 } from "@/lib/services/cross-regulation-service";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import { logger } from "@/lib/logger";
 
 // GET /api/nis2/crosswalk?assessmentId=xxx
 export async function GET(request: NextRequest) {
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest) {
       summary,
     });
   } catch (error) {
-    console.error("Error fetching NIS2 crosswalk:", error);
+    logger.error("Error fetching NIS2 crosswalk", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

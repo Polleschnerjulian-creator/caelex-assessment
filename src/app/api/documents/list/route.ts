@@ -12,6 +12,7 @@ import type {
   DocumentGenerationType,
   DocumentGenerationStatus,
 } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   try {
@@ -67,7 +68,7 @@ export async function GET(req: Request) {
       offset,
     });
   } catch (error) {
-    console.error("List generated documents error:", error);
+    logger.error("List generated documents error", error);
     return NextResponse.json(
       { error: "Failed to list documents" },
       { status: 500 },

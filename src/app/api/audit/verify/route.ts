@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { verifyChain } from "@/lib/audit-hash.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Hash chain verification error:", error);
+    logger.error("Hash chain verification error", error);
     return NextResponse.json(
       { error: "Failed to verify hash chain" },
       { status: 500 },

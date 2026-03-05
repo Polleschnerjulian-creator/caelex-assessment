@@ -27,6 +27,32 @@ vi.mock("@/lib/ratelimit", () => ({
   ),
 }));
 
+// ─── Mock Logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+// ─── Mock Space Law Types (country codes used by calculate & jurisdictions routes) ───
+vi.mock("@/lib/space-law-types", () => ({
+  SPACE_LAW_COUNTRY_CODES: [
+    "FR",
+    "UK",
+    "BE",
+    "NL",
+    "LU",
+    "AT",
+    "DK",
+    "DE",
+    "IT",
+    "NO",
+  ],
+}));
+
+// ─── Mock Cache Server (used by jurisdictions route) ───
+vi.mock("@/lib/cache.server", () => ({
+  withCache: vi.fn((_key: string, fn: () => unknown) => fn()),
+}));
+
 // ─── Mock Space Law Engine (no factory references to module-scoped vars) ───
 vi.mock("@/lib/space-law-engine.server", () => ({
   calculateSpaceLawCompliance: vi.fn(),
@@ -601,7 +627,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("expected an object");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when selectedJurisdictions is missing", async () => {
@@ -619,7 +646,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("selectedJurisdictions");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when selectedJurisdictions is empty", async () => {
@@ -638,7 +666,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("1 to 3 jurisdictions");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when selectedJurisdictions exceeds 3", async () => {
@@ -657,7 +686,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("1 to 3 jurisdictions");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid jurisdiction code", async () => {
@@ -676,7 +706,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid jurisdiction code: XX");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid activityType", async () => {
@@ -695,7 +726,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid activityType");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid entityNationality", async () => {
@@ -714,7 +746,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid entityNationality");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid entitySize", async () => {
@@ -733,7 +766,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid entitySize");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid primaryOrbit", async () => {
@@ -752,7 +786,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid primaryOrbit");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for negative constellationSize", async () => {
@@ -771,7 +806,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid constellationSize");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for non-numeric constellationSize", async () => {
@@ -790,7 +826,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid constellationSize");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid licensingStatus", async () => {
@@ -809,7 +846,8 @@ describe("POST /api/space-law/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid licensingStatus");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   // ─── 429 Rate Limit & Anti-Bot Cases ───

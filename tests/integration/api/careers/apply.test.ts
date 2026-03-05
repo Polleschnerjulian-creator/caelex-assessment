@@ -1,14 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+
+// ─── Mock Rate Limiting ───
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi
+    .fn()
+    .mockResolvedValue({
+      success: true,
+      remaining: 99,
+      reset: Date.now() + 60000,
+      limit: 100,
+    }),
+  getIdentifier: vi.fn().mockReturnValue("ip:127.0.0.1"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
+// ─── Mock Logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
 
 // ─── Mock Resend ───
 const mockSend = vi.fn();
 vi.mock("resend", () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: {
+  Resend: class {
+    emails = {
       send: (...args: unknown[]) => mockSend(...args),
-    },
-  })),
+    };
+  },
 }));
 
 import { POST } from "@/app/api/careers/apply/route";
@@ -24,10 +44,13 @@ function createFormData(fields: Record<string, string | File>): FormData {
 }
 
 function makeRequest(formData: FormData): NextRequest {
-  return new NextRequest("http://localhost/api/careers/apply", {
+  const req = new NextRequest("http://localhost/api/careers/apply", {
     method: "POST",
-    body: formData,
   });
+  // Override formData() to avoid jsdom/Node hanging on FormData body parsing
+  (req as unknown as { formData: () => Promise<FormData> }).formData = () =>
+    Promise.resolve(formData);
+  return req;
 }
 
 const validFields = {
@@ -113,6 +136,11 @@ describe("POST /api/careers/apply", () => {
     const file = new File([pdfContent], "resume.pdf", {
       type: "application/pdf",
     });
+    // Ensure arrayBuffer works in jsdom
+    if (!file.arrayBuffer) {
+      (file as unknown as Record<string, unknown>).arrayBuffer = () =>
+        Promise.resolve(pdfContent.buffer);
+    }
 
     const formData = createFormData(validFields);
     formData.set("resume", file);
@@ -194,9 +222,15 @@ describe("POST /api/careers/apply", () => {
   // ─── File Upload: Accept DOCX ───
 
   it("should accept valid DOCX resume", async () => {
-    const file = new File([new Uint8Array(100)], "resume.docx", {
+    const docxContent = new Uint8Array(100);
+    const file = new File([docxContent], "resume.docx", {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     });
+    // Ensure arrayBuffer works in jsdom
+    if (!file.arrayBuffer) {
+      (file as unknown as Record<string, unknown>).arrayBuffer = () =>
+        Promise.resolve(docxContent.buffer);
+    }
 
     const formData = createFormData(validFields);
     formData.set("resume", file);

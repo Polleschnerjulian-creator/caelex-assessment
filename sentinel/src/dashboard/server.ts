@@ -17,9 +17,37 @@ interface DashboardDeps {
 /**
  * Lightweight local dashboard — Express server on port 8443.
  * Serves a status API + minimal HTML dashboard.
+ *
+ * Authenticated via SENTINEL_TOKEN Bearer token when configured.
  */
 export function startDashboard(port: number, deps: DashboardDeps): void {
   const app = express();
+
+  // --- Auth Middleware ---
+  const dashboardToken = process.env.SENTINEL_TOKEN;
+
+  app.use((req, res, next) => {
+    // Health check endpoint is always accessible (for Docker HEALTHCHECK)
+    if (req.path === "/api/status" && req.method === "GET" && !dashboardToken) {
+      return next();
+    }
+
+    // If SENTINEL_TOKEN is set, require Bearer token auth
+    if (dashboardToken) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+      const token = authHeader.slice(7);
+      if (token !== dashboardToken) {
+        res.status(403).json({ error: "Invalid token" });
+        return;
+      }
+    }
+
+    next();
+  });
 
   // --- API Endpoints ---
 

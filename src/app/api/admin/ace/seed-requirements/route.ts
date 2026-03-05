@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { NIS2_REQUIREMENTS } from "@/data/nis2-requirements";
 import { Prisma, RegulationType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // ─── NIS2 Category → Regulation-Agnostic Category Mapping ───
 
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
       results,
     });
   } catch (error) {
-    console.error("[ACE Seed] Error:", error);
+    logger.error("[ACE Seed] Error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

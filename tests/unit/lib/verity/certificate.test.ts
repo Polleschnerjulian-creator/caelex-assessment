@@ -102,6 +102,152 @@ describe("issueCertificate", () => {
       }),
     ).toThrow("at least one attestation");
   });
+
+  it("handles attestation without sentinel_anchor (sentinel_anchored=false, empty evidence dates)", () => {
+    // Create an attestation without sentinel_anchor
+    const params: GenerateAttestationParams = {
+      regulation_ref: "art_70",
+      regulation_name: "Test Regulation art_70",
+      threshold_type: "ABOVE",
+      threshold_value: 15,
+      actual_value: 57,
+      data_point: "remaining_fuel_pct",
+      claim_statement: "Claim for art_70",
+      subject: {
+        operator_id: "op_123",
+        satellite_norad_id: "58421",
+        satellite_name: "TEST-SAT-1",
+      },
+      evidence_source: "manual",
+      trust_score: 0.6, // LOW trust
+      collected_at: "2026-03-15T14:32:07.000Z",
+      sentinel_anchor: null, // No sentinel anchor
+      cross_verification: null,
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+    };
+    const att = generateAttestation(params);
+
+    const cert = issueCertificate({
+      attestations: [att],
+      operator_id: "op_123",
+      operator_name: "Test Corp",
+      satellite_norad_id: "58421",
+      satellite_name: "TEST-SAT-1",
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+      is_public: false,
+    });
+
+    expect(cert.claims[0]!.sentinel_anchored).toBe(false);
+    expect(cert.evidence_summary.sentinel_backed).toBe(0);
+    // With no sentinel_anchor, collected_dates is empty, so evidence_period falls back to issued_dates
+    expect(cert.evidence_summary.evidence_period.from).toBeDefined();
+    expect(cert.evidence_summary.evidence_period.to).toBeDefined();
+  });
+
+  it("handles attestation with cross_verification (cross_verified=true)", () => {
+    const params: GenerateAttestationParams = {
+      regulation_ref: "art_72",
+      regulation_name: "Test Regulation art_72",
+      threshold_type: "ABOVE",
+      threshold_value: 25,
+      actual_value: 30,
+      data_point: "remaining_fuel_pct",
+      claim_statement: "Claim for art_72",
+      subject: {
+        operator_id: "op_123",
+        satellite_norad_id: "58421",
+        satellite_name: "TEST-SAT-1",
+      },
+      evidence_source: "sentinel",
+      trust_score: 0.95,
+      collected_at: "2026-03-15T14:32:07.000Z",
+      sentinel_anchor: {
+        sentinel_id: "sent_abc",
+        chain_position: 42,
+        chain_hash: "abc123",
+        collected_at: "2026-03-15T14:32:07.000Z",
+      },
+      cross_verification: {
+        public_source: "CelesTrak",
+        verification_result: "VERIFIED",
+        verified_at: "2026-03-15T15:00:00.000Z",
+      },
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+    };
+    const att = generateAttestation(params);
+
+    const cert = issueCertificate({
+      attestations: [att],
+      operator_id: "op_123",
+      operator_name: "Test Corp",
+      satellite_norad_id: "58421",
+      satellite_name: "TEST-SAT-1",
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+      is_public: true,
+    });
+
+    expect(cert.claims[0]!.cross_verified).toBe(true);
+    expect(cert.evidence_summary.cross_verified).toBe(1);
+  });
+
+  it("computes min_trust_level correctly with mixed trust levels", () => {
+    // HIGH trust attestation
+    const attHigh = makeAttestation("art_70", "remaining_fuel_pct", 57, 15);
+
+    // LOW trust attestation (trust_score < 0.7)
+    const paramsLow: GenerateAttestationParams = {
+      regulation_ref: "art_72",
+      regulation_name: "Test Regulation art_72",
+      threshold_type: "ABOVE",
+      threshold_value: 25,
+      actual_value: 30,
+      data_point: "remaining_fuel_pct",
+      claim_statement: "Claim for art_72",
+      subject: {
+        operator_id: "op_123",
+        satellite_norad_id: "58421",
+        satellite_name: "TEST-SAT-1",
+      },
+      evidence_source: "manual",
+      trust_score: 0.55, // LOW trust
+      collected_at: "2026-03-15T14:32:07.000Z",
+      sentinel_anchor: null,
+      cross_verification: null,
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+    };
+    const attLow = generateAttestation(paramsLow);
+
+    const cert = issueCertificate({
+      attestations: [attHigh, attLow],
+      operator_id: "op_123",
+      operator_name: "Test Corp",
+      satellite_norad_id: "58421",
+      satellite_name: "TEST-SAT-1",
+      issuer_key_id: "verity-2026-03-01",
+      issuer_private_key_der: privKeyDer,
+      issuer_public_key_hex: pubKeyHex,
+      expires_in_days: 90,
+      is_public: true,
+    });
+
+    // min_trust_level should be LOW (the minimum of HIGH and LOW)
+    expect(cert.evidence_summary.min_trust_level).toBe("LOW");
+  });
 });
 
 describe("verifyCertificate", () => {

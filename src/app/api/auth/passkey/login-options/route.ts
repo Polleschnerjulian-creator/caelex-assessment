@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { generatePasskeyAuthenticationOptions } from "@/lib/webauthn.server";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const optionsSchema = z.object({
   email: z.string().email().optional(),
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     });
     return response;
   } catch (error) {
-    console.error("Error generating passkey login options:", error);
+    logger.error("Error generating passkey login options", error);
     return NextResponse.json(
       { error: "Failed to generate login options" },
       { status: 500 },

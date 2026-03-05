@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 
 import {
   NIS2_QUESTIONS,
@@ -7,6 +7,7 @@ import {
   getDefaultNIS2Answers,
 } from "@/lib/nis2-questions";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import type { Question } from "@/lib/questions";
 
 // ─── Test Helpers ───
 
@@ -218,5 +219,154 @@ describe("getDefaultNIS2Answers", () => {
 
     expect(defaults1).not.toBe(defaults2);
     expect(defaults1).toEqual(defaults2);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Conditional question logic (showWhen branches)
+// ═══════════════════════════════════════════════════════════════
+
+describe("Conditional question handling (showWhen)", () => {
+  // Store original length to restore after tests
+  let originalLength: number;
+
+  // Helper: Add a conditional question temporarily
+  function addConditionalQuestion(): Question {
+    originalLength = NIS2_QUESTIONS.length;
+    const conditionalQ: Question = {
+      id: "conditionalTest",
+      step: 100, // High step number to avoid conflicts
+      title: "Conditional question for testing",
+      showWhen: {
+        questionId: "isEUEstablished",
+        value: true,
+      },
+      options: [
+        {
+          id: "opt1",
+          label: "Option 1",
+          description: "Test option",
+          value: "a",
+        },
+        {
+          id: "opt2",
+          label: "Option 2",
+          description: "Test option",
+          value: "b",
+        },
+      ],
+    };
+    NIS2_QUESTIONS.push(conditionalQ);
+    return conditionalQ;
+  }
+
+  afterEach(() => {
+    // Restore the array to its original state
+    if (originalLength !== undefined) {
+      NIS2_QUESTIONS.length = originalLength;
+    }
+  });
+
+  describe("getCurrentNIS2Question with showWhen", () => {
+    it("should return the question when showWhen condition is met", () => {
+      addConditionalQuestion();
+      const answers = makeAnswers({ isEUEstablished: true });
+      const question = getCurrentNIS2Question(answers, 100);
+
+      expect(question).toBeDefined();
+      expect(question!.id).toBe("conditionalTest");
+    });
+
+    it("should skip question when showWhen condition is not met", () => {
+      addConditionalQuestion();
+      const answers = makeAnswers({ isEUEstablished: false });
+      const question = getCurrentNIS2Question(answers, 100);
+
+      // Should skip step 100 and move to step 101 which doesn't exist -> null
+      expect(question).toBeNull();
+    });
+
+    it("should skip question when showWhen answer is null (not answered yet)", () => {
+      addConditionalQuestion();
+      const answers = makeAnswers({ isEUEstablished: null });
+      const question = getCurrentNIS2Question(answers, 100);
+
+      // null !== true, so the question should be skipped
+      expect(question).toBeNull();
+    });
+  });
+
+  describe("getTotalNIS2Questions with showWhen", () => {
+    it("should count conditional question when condition is met", () => {
+      addConditionalQuestion();
+      const answers = makeAnswers({ isEUEstablished: true });
+      const total = getTotalNIS2Questions(answers);
+
+      // Original 7 questions + 1 conditional = 8
+      expect(total).toBe(8);
+    });
+
+    it("should not count conditional question when condition is not met", () => {
+      addConditionalQuestion();
+      const answers = makeAnswers({ isEUEstablished: false });
+      const total = getTotalNIS2Questions(answers);
+
+      // Only the original 7 questions
+      expect(total).toBe(7);
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// getAnswerValue null coalescing (internal helper exercised via public API)
+// ═══════════════════════════════════════════════════════════════
+
+describe("getAnswerValue null coalescing via getCurrentNIS2Question", () => {
+  it("handles answers with explicit values", () => {
+    const answers = makeAnswers({
+      spaceSubSector: "ground_infrastructure",
+      isEUEstablished: true,
+      entitySize: "large",
+    });
+
+    // Step 1 should return normally (no showWhen on step 1)
+    const q1 = getCurrentNIS2Question(answers, 1);
+    expect(q1).toBeDefined();
+    expect(q1!.id).toBe("spaceSubSector");
+  });
+
+  it("handles answers where all values are null (default answers)", () => {
+    const answers = makeAnswers();
+
+    // Every answer is null, but no questions have showWhen,
+    // so all questions should still be returned
+    for (let step = 1; step <= 7; step++) {
+      const q = getCurrentNIS2Question(answers, step);
+      expect(q).toBeDefined();
+    }
+  });
+
+  it("handles undefined properties in answers via null coalescing", () => {
+    // Create answers with missing properties to exercise ?? null path
+    const partialAnswers = {
+      sector: "space" as const,
+      spaceSubSector: null,
+      operatesGroundInfra: null,
+      operatesSatComms: null,
+      manufacturesSpacecraft: null,
+      providesLaunchServices: null,
+      providesEOData: null,
+      entitySize: null,
+      employeeCount: null,
+      annualRevenue: null,
+      memberStateCount: null,
+      isEUEstablished: null,
+      hasISO27001: null,
+      hasExistingCSIRT: null,
+      hasRiskManagement: null,
+    } as NIS2AssessmentAnswers;
+
+    const total = getTotalNIS2Questions(partialAnswers);
+    expect(total).toBe(7);
   });
 });

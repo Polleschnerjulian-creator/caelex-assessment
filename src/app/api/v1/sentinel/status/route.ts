@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateSentinelAgent } from "@/lib/services/sentinel-service.server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[sentinel/status]", err);
+    logger.error("[sentinel/status]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

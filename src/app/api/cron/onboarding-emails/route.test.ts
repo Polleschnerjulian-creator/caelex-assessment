@@ -1,0 +1,84 @@
+/**
+ * Onboarding Emails Cron Tests
+ */
+
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const mockProcessOnboarding = vi.fn();
+vi.mock("@/lib/services/onboarding-email-service", () => ({
+  processOnboardingEmails: (...args: unknown[]) =>
+    mockProcessOnboarding(...args),
+}));
+
+vi.mock("@/lib/validations", () => ({
+  getSafeErrorMessage: vi.fn((_: unknown, fb: string) => fb),
+}));
+
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
+import { GET, POST } from "./route";
+
+function makeRequest(auth?: string): Request {
+  const h: Record<string, string> = {};
+  if (auth) h.authorization = auth;
+  return new Request("https://app.caelex.com/api/cron/onboarding-emails", {
+    headers: h,
+  });
+}
+
+describe("GET /api/cron/onboarding-emails", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockProcessOnboarding.mockReset();
+    process.env.CRON_SECRET = "test-secret";
+  });
+
+  it("returns 503 when CRON_SECRET not configured", async () => {
+    delete process.env.CRON_SECRET;
+    expect((await GET(makeRequest("Bearer test-secret"))).status).toBe(503);
+  });
+
+  it("returns 401 without auth", async () => {
+    expect((await GET(makeRequest())).status).toBe(401);
+  });
+
+  it("returns 401 with wrong secret", async () => {
+    expect((await GET(makeRequest("Bearer wrong"))).status).toBe(401);
+  });
+
+  it("returns onboarding processing results", async () => {
+    mockProcessOnboarding.mockResolvedValue({
+      processed: 12,
+      sent: 8,
+      skipped: 4,
+      errors: [],
+    });
+    const res = await GET(makeRequest("Bearer test-secret"));
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.processed).toBe(12);
+    expect(body.sent).toBe(8);
+    expect(body.skipped).toBe(4);
+  });
+
+  it("POST delegates to GET", async () => {
+    mockProcessOnboarding.mockResolvedValue({
+      processed: 0,
+      sent: 0,
+      skipped: 0,
+      errors: [],
+    });
+    expect((await POST(makeRequest("Bearer test-secret"))).status).toBe(200);
+  });
+
+  it("returns 500 on error without leaking details", async () => {
+    mockProcessOnboarding.mockRejectedValue(
+      new Error("Resend API key invalid"),
+    );
+    const res = await GET(makeRequest("Bearer test-secret"));
+    expect(res.status).toBe(500);
+    expect(JSON.stringify(await res.json())).not.toContain("Resend");
+  });
+});

@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { runScenario } from "@/lib/assure/risk-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -64,7 +65,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Assure scenario run error:", error);
+    logger.error("Assure scenario run error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

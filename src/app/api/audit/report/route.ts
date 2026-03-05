@@ -14,6 +14,7 @@ import { logAuditEvent } from "@/lib/audit";
 import { generateAuditReportData } from "@/lib/services/audit-export-service";
 import { AuditReport } from "@/lib/pdf/reports/audit-report";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating audit report:", error);
+    logger.error("Error generating audit report", error);
     return NextResponse.json(
       { error: "Failed to generate audit report" },
       { status: 500 },

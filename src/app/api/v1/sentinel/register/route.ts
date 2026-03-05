@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { registerSentinelAgent } from "@/lib/services/sentinel-service.server";
+import { logger } from "@/lib/logger";
 
 const RegisterSchema = z.object({
   sentinel_id: z.string().min(1),
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       { status: result.status },
     );
   } catch (err) {
-    console.error("[sentinel/register]", err);
+    logger.error("[sentinel/register]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -16,6 +16,7 @@ import {
   hasPermission,
   getDefaultPermissionsForRole,
 } from "@/lib/services/organization-service";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string; userId: string }>;
@@ -114,7 +115,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       message: "Member role updated successfully",
     });
   } catch (error) {
-    console.error("Error updating member role:", error);
+    logger.error("Error updating member role", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to update member role") },
       { status: 500 },
@@ -169,7 +170,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       message: "Member removed successfully",
     });
   } catch (error) {
-    console.error("Error removing member:", error);
+    logger.error("Error removing member", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to remove member") },
       { status: 500 },

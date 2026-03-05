@@ -16,6 +16,7 @@ import {
   deleteRegistration,
   validateRegistrationData,
 } from "@/lib/services/registration-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -67,7 +68,7 @@ export async function GET(
       validation,
     });
   } catch (error) {
-    console.error("Error fetching registration:", error);
+    logger.error("Error fetching registration", error);
     return NextResponse.json(
       { error: "Failed to fetch registration" },
       { status: 500 },
@@ -159,7 +160,7 @@ export async function PATCH(
       registration,
     });
   } catch (error) {
-    console.error("Error updating registration:", error);
+    logger.error("Error updating registration", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to update registration") },
       { status: 500 },
@@ -215,7 +216,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting registration:", error);
+    logger.error("Error deleting registration", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to delete registration") },
       { status: 500 },

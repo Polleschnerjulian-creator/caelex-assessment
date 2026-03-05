@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -191,7 +192,7 @@ export async function POST(request: Request) {
       createdAt: material.createdAt,
     });
   } catch (error) {
-    console.error("Assure investor update generation error:", error);
+    logger.error("Assure investor update generation error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

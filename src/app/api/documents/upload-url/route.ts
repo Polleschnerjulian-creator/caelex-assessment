@@ -14,6 +14,7 @@ import {
   type DocumentCategory,
 } from "@/lib/storage/upload-service";
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from "@/lib/storage/r2-client";
+import { logger } from "@/lib/logger";
 
 interface UploadUrlRequest {
   filename: string;
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
       expiresAt: result.expiresAt.toISOString(),
     });
   } catch (error) {
-    console.error("Error generating upload URL:", error);
+    logger.error("Error generating upload URL", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to generate upload URL") },
       { status: 500 },

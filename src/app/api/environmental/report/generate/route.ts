@@ -16,6 +16,7 @@ import {
   type PropellantType,
   type EFDGrade,
 } from "@/data/environmental-requirements";
+import { logger } from "@/lib/logger";
 
 interface EnvironmentalReport {
   missionProfile: {
@@ -388,7 +389,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ report });
   } catch (error) {
-    console.error("Error generating environmental report:", error);
+    logger.error("Error generating environmental report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

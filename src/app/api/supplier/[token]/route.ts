@@ -7,6 +7,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const SupplierSubmissionSchema = z.object({
   componentType: z.string().max(200).optional(),
@@ -100,7 +101,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching supplier config:", error);
+    logger.error("Error fetching supplier config", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -231,7 +232,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Error submitting supplier data:", error);
+    logger.error("Error submitting supplier data", error);
     return NextResponse.json(
       { error: "Failed to submit data" },
       { status: 500 },

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getOrganizationId } from "@/lib/services/audit-center-service.server";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 // GET: List evidence for the organization
 export async function GET(request: Request) {
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ evidence });
   } catch (error) {
-    console.error("List evidence error:", error);
+    logger.error("List evidence error", error);
     return NextResponse.json(
       { error: "Failed to list evidence" },
       { status: 500 },
@@ -167,7 +168,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ evidence: created }, { status: 201 });
   } catch (error) {
-    console.error("Create evidence error:", error);
+    logger.error("Create evidence error", error);
     return NextResponse.json(
       { error: "Failed to create evidence" },
       { status: 500 },

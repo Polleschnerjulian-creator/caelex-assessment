@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ lessonId: string }>;
@@ -88,7 +89,7 @@ async function checkBadgeEligibility(
 
     return awarded;
   } catch (error) {
-    console.error("[Badge Check Error]", error);
+    logger.error("[Badge Check Error]", error);
     return [];
   }
 }
@@ -318,7 +319,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       awardedBadges,
     });
   } catch (error) {
-    console.error("[Academy Lesson Complete POST]", error);
+    logger.error("[Academy Lesson Complete POST]", error);
     return NextResponse.json(
       { error: "Failed to complete lesson" },
       { status: 500 },

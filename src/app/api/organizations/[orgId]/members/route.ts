@@ -15,6 +15,7 @@ import {
   hasPermission,
   getDefaultPermissionsForRole,
 } from "@/lib/services/organization-service";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string }>;
@@ -75,7 +76,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       })),
     });
   } catch (error) {
-    console.error("Error fetching members:", error);
+    logger.error("Error fetching members", error);
     return NextResponse.json(
       { error: "Failed to fetch members" },
       { status: 500 },
@@ -147,7 +148,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: "Member added successfully",
     });
   } catch (error) {
-    console.error("Error adding member:", error);
+    logger.error("Error adding member", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to add member") },
       { status: 500 },

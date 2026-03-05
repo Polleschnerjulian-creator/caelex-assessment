@@ -21,6 +21,7 @@ import {
   competitiveProfileSchema,
   tractionProfileSchema,
 } from "@/lib/assure/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -189,7 +190,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       completionScore: completeness.overallScore,
     });
   } catch (error) {
-    console.error("Assure profile section update error:", error);
+    logger.error("Assure profile section update error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

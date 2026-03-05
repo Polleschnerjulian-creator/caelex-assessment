@@ -13,6 +13,7 @@ import {
   type UsRequirementCategory,
   type UsLicenseType,
 } from "@/data/us-space-regulations";
+import { logger } from "@/lib/logger";
 
 // GET /api/us-regulatory/requirements - Get US Space requirements with filters
 export async function GET(request: Request) {
@@ -145,7 +146,7 @@ export async function GET(request: Request) {
       stats,
     });
   } catch (error) {
-    console.error("Error fetching US requirements:", error);
+    logger.error("Error fetching US requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

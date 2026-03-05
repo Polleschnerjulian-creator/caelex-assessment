@@ -17,6 +17,7 @@ import {
 } from "@/lib/engine.server";
 import { calculateNIS2Compliance } from "@/lib/nis2-engine.server";
 import { calculateSpaceLawCompliance } from "@/lib/space-law-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
       calculatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("[Academy Sandbox Calculate POST]", error);
+    logger.error("[Academy Sandbox Calculate POST]", error);
     return NextResponse.json(
       { error: "Failed to calculate compliance" },
       { status: 500 },

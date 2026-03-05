@@ -6,6 +6,36 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock Organization Guard
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "test-user-id",
+    organizationId: "ctest123org",
+    role: "OWNER",
+    permissions: ["*"],
+    organization: {
+      id: "ctest123org",
+      name: "Test Org",
+      slug: "test-org",
+      plan: "PROFESSIONAL",
+      isActive: true,
+    },
+  }),
+  verifyOrganizationAccess: vi.fn().mockResolvedValue({ success: true }),
+  withOrganizationGuard: vi.fn(),
+}));
+
+// Mock Logger
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    security: vi.fn(),
+  },
+}));
+
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -267,7 +297,7 @@ describe("Documents API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain("Missing required fields");
+      expect(data.error).toBe("Invalid input");
     });
 
     it("should create a document without file", async () => {
@@ -521,7 +551,11 @@ describe("Documents API", () => {
       });
 
       expect(prisma.document.update).toHaveBeenCalledWith({
-        where: { id: "doc-1" },
+        where: {
+          id: "doc-1",
+          userId: "test-user-id",
+          organizationId: "ctest123org",
+        },
         data: expect.objectContaining({
           status: "APPROVED",
           approvedBy: "test-user-id",

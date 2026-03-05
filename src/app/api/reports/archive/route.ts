@@ -11,6 +11,7 @@ import {
   getReportTypeLabel,
 } from "@/lib/services/report-scheduler-service";
 import type { ScheduledReportType } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // ─── GET: List Archived Reports ───
 
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
-    console.error("Failed to fetch report archives:", error);
+    logger.error("Failed to fetch report archives", error);
     return NextResponse.json(
       { error: "Failed to fetch report archives" },
       { status: 500 },

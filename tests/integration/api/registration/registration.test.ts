@@ -280,7 +280,7 @@ describe("POST /api/registration", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 403 when user is not an org member", async () => {
@@ -498,7 +498,7 @@ describe("PATCH /api/registration/[id]", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Organization ID is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 403 when user is not an org member", async () => {
@@ -728,7 +728,7 @@ describe("POST /api/registration/[id]/submit", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Organization ID is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 403 when user lacks sufficient role", async () => {
@@ -966,7 +966,7 @@ describe("POST /api/registration/generate-cospar", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Launch year is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 400 for invalid launch year (too low)", async () => {
@@ -979,7 +979,7 @@ describe("POST /api/registration/generate-cospar", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid launch year");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 400 for invalid launch year (too high)", async () => {
@@ -992,7 +992,7 @@ describe("POST /api/registration/generate-cospar", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid launch year");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns 400 for non-numeric launch year", async () => {
@@ -1005,7 +1005,7 @@ describe("POST /api/registration/generate-cospar", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid launch year");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("returns COSPAR suggestion on success", async () => {

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 import {
   getScheduledReport,
   updateScheduledReport,
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch scheduled report:", error);
+    logger.error("Failed to fetch scheduled report", error);
     return NextResponse.json(
       { error: "Failed to fetch scheduled report" },
       { status: 500 },
@@ -171,7 +172,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to update scheduled report:", error);
+    logger.error("Failed to update scheduled report", error);
     return NextResponse.json(
       { error: "Failed to update scheduled report" },
       { status: 500 },
@@ -215,7 +216,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete scheduled report:", error);
+    logger.error("Failed to delete scheduled report", error);
     return NextResponse.json(
       { error: "Failed to delete scheduled report" },
       { status: 500 },

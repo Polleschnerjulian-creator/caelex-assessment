@@ -246,7 +246,7 @@ describe("Timeline Deadlines API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain("Missing required fields");
+      expect(data.error).toBe("Invalid input");
     });
 
     it("should create deadline with valid data", async () => {

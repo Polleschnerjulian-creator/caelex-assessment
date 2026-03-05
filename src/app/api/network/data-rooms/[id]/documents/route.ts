@@ -16,6 +16,7 @@ import {
   removeDocument,
   getDataRoom,
 } from "@/lib/services/data-room";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ documents });
   } catch (error) {
-    console.error("Failed to fetch data room documents:", error);
+    logger.error("Failed to fetch data room documents", error);
     return NextResponse.json(
       { error: "Failed to fetch documents" },
       { status: 500 },
@@ -162,7 +163,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-    console.error("Failed to add document to data room:", error);
+    logger.error("Failed to add document to data room", error);
     return NextResponse.json(
       { error: "Failed to add document" },
       { status: 500 },
@@ -231,7 +232,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to remove document from data room:", error);
+    logger.error("Failed to remove document from data room", error);
     return NextResponse.json(
       { error: "Failed to remove document" },
       { status: 500 },

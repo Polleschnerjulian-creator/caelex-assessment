@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { computeAndSaveRRS } from "@/lib/rrs-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes — may process many orgs
@@ -126,8 +127,8 @@ export async function GET(request: Request) {
                   });
                   notificationsCreated++;
                 } catch (notifError) {
-                  console.error(
-                    `Failed to create notification for user ${member.userId}:`,
+                  logger.error(
+                    `Failed to create notification for user ${member.userId}`,
                     notifError,
                   );
                 }
@@ -135,7 +136,7 @@ export async function GET(request: Request) {
             }
           }
         } catch (orgError) {
-          console.error(`RRS computation error for org ${org.id}:`, orgError);
+          logger.error(`RRS computation error for org ${org.id}`, orgError);
           errors++;
         }
       }
@@ -152,7 +153,7 @@ export async function GET(request: Request) {
       notificationsCreated,
     });
   } catch (error) {
-    console.error("RRS cron job error:", error);
+    logger.error("RRS cron job error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

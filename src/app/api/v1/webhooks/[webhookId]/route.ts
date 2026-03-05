@@ -18,6 +18,7 @@ import {
   testWebhook,
   getWebhookStats,
 } from "@/lib/services/webhook-service";
+import { logger } from "@/lib/logger";
 
 const PatchWebhookBodySchema = UpdateWebhookSchema.extend({
   organizationId: CuidSchema,
@@ -90,7 +91,7 @@ export async function GET(
       ...(stats && { stats }),
     });
   } catch (error) {
-    console.error("Error fetching webhook:", error);
+    logger.error("Error fetching webhook", error);
     return NextResponse.json(
       { error: "Failed to fetch webhook" },
       { status: 500 },
@@ -193,7 +194,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("Error updating webhook:", error);
+    logger.error("Error updating webhook", error);
     return NextResponse.json(
       { error: "Failed to update webhook" },
       { status: 500 },
@@ -246,7 +247,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting webhook:", error);
+    logger.error("Error deleting webhook", error);
     return NextResponse.json(
       { error: "Failed to delete webhook" },
       { status: 500 },

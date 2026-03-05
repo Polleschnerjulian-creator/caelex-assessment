@@ -8,6 +8,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import {
   type SpectrumProfile,
@@ -191,7 +192,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       recommendations,
     });
   } catch (error) {
-    console.error("Error fetching Spectrum assessment:", error);
+    logger.error("Error fetching Spectrum assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -587,7 +588,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       riskLevel,
     });
   } catch (error) {
-    console.error("Error updating Spectrum assessment:", error);
+    logger.error("Error updating Spectrum assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -640,7 +641,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting Spectrum assessment:", error);
+    logger.error("Error deleting Spectrum assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -986,7 +986,7 @@ describe("Login Security Service", () => {
   // ─── generateUnlockToken ─────────────────────────────────────────
 
   describe("generateUnlockToken", () => {
-    it("should generate a hex token and store it", async () => {
+    it("should generate a hex token and store its SHA-256 hash", async () => {
       vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
       const token = await generateUnlockToken("user-1");
@@ -994,10 +994,17 @@ describe("Login Security Service", () => {
       // Token should be a 64-char hex string (32 bytes)
       expect(token).toMatch(/^[0-9a-f]{64}$/);
 
+      // Source hashes the token with SHA-256 before storing
+      const crypto = await import("crypto");
+      const expectedHash = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: "user-1" },
         data: {
-          unlockToken: token,
+          unlockToken: expectedHash,
           unlockTokenExpires: expect.any(Date),
         },
       });

@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ runId: string }>;
@@ -65,7 +66,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       completedAt: run.completedAt,
     });
   } catch (error) {
-    console.error("[Academy Simulation Run GET]", error);
+    logger.error("[Academy Simulation Run GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch simulation run" },
       { status: 500 },

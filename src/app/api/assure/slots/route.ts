@@ -15,6 +15,7 @@ import {
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 import {
   startOfWeek,
   endOfWeek,
@@ -125,7 +126,7 @@ export async function GET(request: NextRequest) {
       slots,
     });
   } catch (error) {
-    console.error("Failed to fetch slots:", error);
+    logger.error("Failed to fetch slots", error);
     return NextResponse.json(
       { error: "Failed to fetch available slots" },
       { status: 500 },

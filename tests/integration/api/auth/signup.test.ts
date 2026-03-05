@@ -45,6 +45,19 @@ vi.mock("@/lib/analytics", () => ({
   serverAnalytics: { track: vi.fn() },
 }));
 
+// Mock rate limiting (signup route uses checkRateLimit)
+vi.mock("@/lib/ratelimit", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({
+    success: true,
+    remaining: 99,
+    reset: Date.now() + 60000,
+    limit: 100,
+  }),
+  getIdentifier: vi.fn().mockReturnValue("ip:127.0.0.1"),
+  createRateLimitResponse: vi.fn(),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { trackSignup } from "@/lib/logsnag";
 import bcrypt from "bcryptjs";
@@ -96,7 +109,7 @@ describe("POST /api/auth/signup", () => {
         subscription: { create: vi.fn().mockResolvedValue({}) },
         userConsent: { createMany: vi.fn().mockResolvedValue({ count: 2 }) },
       };
-      return (fn as Function)(txMock);
+      return (fn as (tx: typeof txMock) => unknown)(txMock);
     });
     vi.mocked(trackSignup).mockResolvedValue(undefined);
   });

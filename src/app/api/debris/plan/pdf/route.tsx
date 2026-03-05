@@ -12,6 +12,7 @@ import {
   debrisRequirements,
   orbitTypeConfig,
 } from "@/data/debris-requirements";
+import { logger } from "@/lib/logger";
 
 // POST /api/debris/plan/pdf - Generate Debris Mitigation Plan PDF
 export async function POST(request: Request) {
@@ -267,7 +268,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating debris plan PDF:", error);
+    logger.error("Error generating debris plan PDF", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -16,6 +16,7 @@ import {
 } from "@/lib/services/organization-service";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string; id: string }>;
@@ -53,7 +54,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       message: "Invitation cancelled successfully",
     });
   } catch (error) {
-    console.error("Error cancelling invitation:", error);
+    logger.error("Error cancelling invitation", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to cancel invitation") },
       { status: 500 },
@@ -136,7 +137,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: "Invitation resent successfully",
     });
   } catch (error) {
-    console.error("Error resending invitation:", error);
+    logger.error("Error resending invitation", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to resend invitation") },
       { status: 500 },

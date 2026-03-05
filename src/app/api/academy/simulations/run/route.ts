@@ -18,6 +18,7 @@ import {
   loadSpaceActDataFromDisk,
 } from "@/lib/engine.server";
 import { calculateNIS2Compliance } from "@/lib/nis2-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -443,7 +444,7 @@ export async function POST(request: Request) {
       badgeAwarded: score >= 90 ? "SIMULATION_MASTER" : null,
     });
   } catch (error) {
-    console.error("[Academy Simulation Run POST]", error);
+    logger.error("[Academy Simulation Run POST]", error);
     return NextResponse.json(
       { error: "Failed to execute simulation" },
       { status: 500 },

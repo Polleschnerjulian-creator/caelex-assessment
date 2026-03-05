@@ -11,7 +11,7 @@ import type {
   NotificationSeverity,
   Prisma,
 } from "@prisma/client";
-import { logger } from "@/lib/logger";
+import { logger, maskEmail } from "@/lib/logger";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 
 // ─── Types ───
@@ -696,10 +696,13 @@ async function sendNotificationEmail(
         emailSentAt: new Date(),
       },
     });
-    logger.info(`[Notification Email] Sent to ${user.email}: ${subject}`);
+    logger.info(
+      `[Notification Email] Sent to ${maskEmail(user.email)}: ${subject}`,
+    );
   } else {
     logger.error(
-      `[Notification Email] Failed to send to ${user.email}: ${result.error}`,
+      `[Notification Email] Failed to send to ${maskEmail(user.email)}`,
+      result.error,
     );
   }
 }

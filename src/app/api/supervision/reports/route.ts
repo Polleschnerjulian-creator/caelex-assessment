@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import { logger } from "@/lib/logger";
 
 // GET /api/supervision/reports - List reports
 export async function GET(req: Request) {
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ reports: decryptedReports, total });
   } catch (error) {
-    console.error("Error fetching reports:", error);
+    logger.error("Error fetching reports", error);
     return NextResponse.json(
       { error: "Failed to fetch reports" },
       { status: 500 },
@@ -128,7 +129,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error("Error creating report:", error);
+    logger.error("Error creating report", error);
     return NextResponse.json(
       { error: "Failed to create report" },
       { status: 500 },

@@ -912,4 +912,295 @@ describe("COPUOS Engine", () => {
       expect(getSatelliteCategory(10000)).toBe("mega");
     });
   });
+
+  describe("performAssessment", () => {
+    it("should return a complete assessment result", () => {
+      const profile: CopuosMissionProfile = {
+        orbitRegime: "LEO",
+        missionType: "commercial",
+        satelliteCategory: "medium",
+        satelliteMassKg: 500,
+        hasManeuverability: true,
+        hasPropulsion: true,
+        plannedLifetimeYears: 5,
+        isConstellation: false,
+      };
+
+      const mockApplicable = [
+        {
+          id: "copuos-lts-b1",
+          source: "COPUOS",
+          referenceNumber: "B.1",
+          title: "Provide updated contact information",
+          description: "States should provide updated contact information.",
+          category: "safety_operations",
+          bindingLevel: "mandatory",
+          severity: "critical",
+          applicability: { orbitRegimes: ["LEO"] },
+          complianceQuestion: "Is contact information registered?",
+          evidenceRequired: ["Contact registry submission"],
+          implementationGuidance: ["Register contacts"],
+          euSpaceActCrossRef: ["Art. 51"],
+        },
+        {
+          id: "copuos-lts-b2",
+          source: "COPUOS",
+          referenceNumber: "B.2",
+          title: "Improve accuracy of orbital data",
+          description: "States should improve orbital data accuracy.",
+          category: "safety_operations",
+          bindingLevel: "mandatory",
+          severity: "critical",
+          applicability: { orbitRegimes: ["LEO"] },
+          complianceQuestion: "Do you provide accurate orbital data?",
+          evidenceRequired: ["Ephemeris data"],
+          implementationGuidance: ["Share ephemeris data"],
+          euSpaceActCrossRef: ["Art. 63", "Art. 64"],
+        },
+      ];
+
+      vi.mocked(getApplicableGuidelines).mockReturnValue(mockApplicable as any);
+
+      const assessments = [
+        {
+          guidelineId: "copuos-lts-b1",
+          status: "compliant" as ComplianceStatus,
+        },
+        {
+          guidelineId: "copuos-lts-b2",
+          status: "non_compliant" as ComplianceStatus,
+        },
+      ];
+
+      const result = performAssessment(profile, assessments);
+
+      expect(result.profile).toBe(profile);
+      expect(result.applicableGuidelines).toEqual(mockApplicable);
+      expect(result.assessments).toEqual(assessments);
+      expect(result.score).toBeDefined();
+      expect(result.score.overall).toBeDefined();
+      expect(result.riskLevel).toBeDefined();
+      expect(["low", "medium", "high", "critical"]).toContain(result.riskLevel);
+      expect(Array.isArray(result.gapAnalysis)).toBe(true);
+      expect(Array.isArray(result.euSpaceActOverlaps)).toBe(true);
+      expect(Array.isArray(result.recommendations)).toBe(true);
+    });
+
+    it("should identify gaps for non-compliant guidelines", () => {
+      const profile: CopuosMissionProfile = {
+        orbitRegime: "LEO",
+        missionType: "commercial",
+        satelliteCategory: "smallsat",
+        satelliteMassKg: 50,
+        hasManeuverability: false,
+        hasPropulsion: false,
+        plannedLifetimeYears: 5,
+        isConstellation: false,
+      };
+
+      const mockApplicable = [
+        {
+          id: "copuos-lts-b1",
+          source: "COPUOS",
+          referenceNumber: "B.1",
+          title: "Contact Info",
+          category: "safety_operations",
+          bindingLevel: "mandatory",
+          severity: "critical",
+          applicability: { orbitRegimes: ["LEO"] },
+          implementationGuidance: ["Register contacts"],
+          euSpaceActCrossRef: ["Art. 51"],
+        },
+      ];
+
+      vi.mocked(getApplicableGuidelines).mockReturnValue(mockApplicable as any);
+
+      const assessments = [
+        {
+          guidelineId: "copuos-lts-b1",
+          status: "non_compliant" as ComplianceStatus,
+        },
+      ];
+
+      const result = performAssessment(profile, assessments);
+
+      expect(result.gapAnalysis.length).toBe(1);
+      expect(result.gapAnalysis[0].guidelineId).toBe("copuos-lts-b1");
+      expect(result.gapAnalysis[0].status).toBe("non_compliant");
+      expect(result.riskLevel).toBe("critical");
+    });
+
+    it("should find EU Space Act cross-references from applicable guidelines", () => {
+      const profile: CopuosMissionProfile = {
+        orbitRegime: "GEO",
+        missionType: "commercial",
+        satelliteCategory: "large",
+        satelliteMassKg: 3000,
+        hasManeuverability: true,
+        hasPropulsion: true,
+        plannedLifetimeYears: 15,
+        isConstellation: false,
+      };
+
+      const mockApplicable = [
+        {
+          id: "copuos-lts-b2",
+          source: "COPUOS",
+          referenceNumber: "B.2",
+          title: "Orbital data",
+          category: "safety_operations",
+          bindingLevel: "mandatory",
+          severity: "critical",
+          applicability: { orbitRegimes: ["GEO"] },
+          implementationGuidance: ["Share data"],
+          euSpaceActCrossRef: ["Art. 63", "Art. 64"],
+        },
+      ];
+
+      vi.mocked(getApplicableGuidelines).mockReturnValue(mockApplicable as any);
+
+      const result = performAssessment(profile, [
+        {
+          guidelineId: "copuos-lts-b2",
+          status: "compliant" as ComplianceStatus,
+        },
+      ]);
+
+      expect(result.euSpaceActOverlaps).toContain("Art. 63");
+      expect(result.euSpaceActOverlaps).toContain("Art. 64");
+    });
+  });
+
+  describe("getCrossReferenceForArticle", () => {
+    it("should return COPUOS guidelines matching the article reference", () => {
+      const result = getCrossReferenceForArticle("Art. 51");
+
+      expect(result.euSpaceActArticle).toBe("Art. 51");
+      expect(result.copuosGuidelines.length).toBeGreaterThanOrEqual(1);
+      expect(
+        result.copuosGuidelines.some((g) => g.id === "copuos-lts-b1"),
+      ).toBe(true);
+    });
+
+    it("should return IADC guidelines matching the article reference", () => {
+      const result = getCrossReferenceForArticle("Art. 66");
+
+      expect(result.iadcGuidelines.length).toBeGreaterThanOrEqual(1);
+      expect(result.iadcGuidelines.some((g) => g.id === "iadc-5.2.2")).toBe(
+        true,
+      );
+    });
+
+    it("should return ISO guidelines matching the article reference", () => {
+      const result = getCrossReferenceForArticle("Art. 67");
+
+      expect(result.isoRequirements.length).toBeGreaterThanOrEqual(1);
+      expect(result.isoRequirements.some((g) => g.id === "iso-24113-6.1")).toBe(
+        true,
+      );
+    });
+
+    it("should return empty arrays when no guidelines match the article", () => {
+      const result = getCrossReferenceForArticle("Art. 999");
+
+      expect(result.euSpaceActArticle).toBe("Art. 999");
+      expect(result.copuosGuidelines).toHaveLength(0);
+      expect(result.iadcGuidelines).toHaveLength(0);
+      expect(result.isoRequirements).toHaveLength(0);
+    });
+
+    it("should find guidelines with partial article match", () => {
+      // Art. 63 is in copuos-lts-b2's euSpaceActCrossRef
+      const result = getCrossReferenceForArticle("Art. 63");
+
+      expect(
+        result.copuosGuidelines.some((g) => g.id === "copuos-lts-b2"),
+      ).toBe(true);
+    });
+  });
+
+  describe("getDebrisRelatedGuidelines", () => {
+    it("should return guidelines with debris-related categories", () => {
+      const result = getDebrisRelatedGuidelines();
+
+      // From mock data: iso-24113-6.1 is "space_debris", iadc-5.3.2-leo and iadc-5.3.2-geo are "disposal"
+      expect(result.length).toBeGreaterThan(0);
+      for (const guideline of result) {
+        expect(["space_debris", "disposal", "design_passivation"]).toContain(
+          guideline.category,
+        );
+      }
+    });
+
+    it("should include disposal guidelines", () => {
+      const result = getDebrisRelatedGuidelines();
+
+      const disposalGuidelines = result.filter(
+        (g) => g.category === "disposal",
+      );
+      expect(disposalGuidelines.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("should include space_debris guidelines", () => {
+      const result = getDebrisRelatedGuidelines();
+
+      const debrisGuidelines = result.filter(
+        (g) => g.category === "space_debris",
+      );
+      expect(debrisGuidelines.length).toBeGreaterThanOrEqual(1);
+      expect(debrisGuidelines.some((g) => g.id === "iso-24113-6.1")).toBe(true);
+    });
+
+    it("should not include unrelated categories like safety_operations", () => {
+      const result = getDebrisRelatedGuidelines();
+
+      const safetyGuidelines = result.filter(
+        (g) => g.category === "safety_operations",
+      );
+      expect(safetyGuidelines).toHaveLength(0);
+    });
+  });
+
+  describe("mapToEuSpaceActDebrisModule", () => {
+    it("should return a mapping for all debris-related articles", () => {
+      const mapping = mapToEuSpaceActDebrisModule();
+
+      expect(mapping).toBeDefined();
+      // Should include the debris articles
+      expect("Art. 63" in mapping).toBe(true);
+      expect("Art. 64" in mapping).toBe(true);
+      expect("Art. 65" in mapping).toBe(true);
+      expect("Art. 66" in mapping).toBe(true);
+      expect("Art. 67" in mapping).toBe(true);
+      expect("Art. 72" in mapping).toBe(true);
+      expect("Art. 73" in mapping).toBe(true);
+    });
+
+    it("should map Art. 67 to ISO debris guidelines", () => {
+      const mapping = mapToEuSpaceActDebrisModule();
+
+      const art67Guidelines = mapping["Art. 67"];
+      expect(Array.isArray(art67Guidelines)).toBe(true);
+      // iso-24113-6.1 has euSpaceActCrossRef: ["Art. 67"]
+      expect(art67Guidelines.some((g) => g.id === "iso-24113-6.1")).toBe(true);
+    });
+
+    it("should map Art. 72 to disposal guidelines", () => {
+      const mapping = mapToEuSpaceActDebrisModule();
+
+      const art72Guidelines = mapping["Art. 72"];
+      expect(Array.isArray(art72Guidelines)).toBe(true);
+      // iadc-5.3.2-leo and iadc-5.3.2-geo both have Art. 72
+      expect(art72Guidelines.some((g) => g.id === "iadc-5.3.2-leo")).toBe(true);
+      expect(art72Guidelines.some((g) => g.id === "iadc-5.3.2-geo")).toBe(true);
+    });
+
+    it("should return empty arrays for articles with no matching guidelines", () => {
+      const mapping = mapToEuSpaceActDebrisModule();
+
+      // Art. 65 has no guidelines in our mock data
+      expect(Array.isArray(mapping["Art. 65"])).toBe(true);
+      expect(mapping["Art. 65"]).toHaveLength(0);
+    });
+  });
 });

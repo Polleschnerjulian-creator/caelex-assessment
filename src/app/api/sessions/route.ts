@@ -11,6 +11,7 @@ import {
   getUserSessionStats,
   getSessionByToken,
 } from "@/lib/services/session-service";
+import { logger } from "@/lib/logger";
 
 /**
  * Resolve the current UserSession ID by reading the session token
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
       ...(stats && { stats }),
     });
   } catch (error) {
-    console.error("Error fetching sessions:", error);
+    logger.error("Error fetching sessions", error);
     return NextResponse.json(
       { error: "Failed to fetch sessions" },
       { status: 500 },

@@ -11,6 +11,7 @@ import {
   type UkActivityType,
 } from "@/data/uk-space-industry-act";
 import { determineRequiredLicenses } from "@/lib/uk-space-engine.server";
+import { logger } from "@/lib/logger";
 
 // GET /api/uk-space - Get user's UK Space assessments
 export async function GET() {
@@ -32,7 +33,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching UK Space assessments:", error);
+    logger.error("Error fetching UK Space assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -209,7 +210,7 @@ export async function POST(request: Request) {
       requiredLicenses,
     });
   } catch (error) {
-    console.error("Error creating UK Space assessment:", error);
+    logger.error("Error creating UK Space assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

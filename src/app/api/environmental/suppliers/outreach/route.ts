@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendSupplierOutreach, createSupplierRequest } from "@/lib/services";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/environmental/suppliers/outreach
@@ -162,7 +163,7 @@ export async function POST(request: Request) {
       emailSent: result.emailSent,
     });
   } catch (error) {
-    console.error("Outreach error:", error);
+    logger.error("Outreach error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -249,7 +250,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("Get outreach status error:", error);
+    logger.error("Get outreach status error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

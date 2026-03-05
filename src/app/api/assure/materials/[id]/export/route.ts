@@ -13,6 +13,7 @@ import type {
   ReportSectionContent,
   ReportType,
 } from "@/lib/pdf/types";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -112,7 +113,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(reportConfig);
   } catch (error) {
-    console.error("Assure material export error:", error);
+    logger.error("Assure material export error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

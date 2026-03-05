@@ -12,6 +12,7 @@ import {
   NOTIFICATION_CATEGORIES,
 } from "@/lib/services/notification-service";
 import { NotificationSettingsSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -40,7 +41,7 @@ export async function GET() {
       categories: NOTIFICATION_CATEGORIES,
     });
   } catch (error) {
-    console.error("Error fetching notification settings:", error);
+    logger.error("Error fetching notification settings", error);
     return NextResponse.json(
       { error: "Failed to fetch notification settings" },
       { status: 500 },
@@ -93,7 +94,7 @@ export async function PUT(request: Request) {
       message: "Notification settings updated",
     });
   } catch (error) {
-    console.error("Error updating notification settings:", error);
+    logger.error("Error updating notification settings", error);
     return NextResponse.json(
       { error: "Failed to update notification settings" },
       { status: 500 },

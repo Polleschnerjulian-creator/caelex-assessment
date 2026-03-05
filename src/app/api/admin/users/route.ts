@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { parsePaginationLimit } from "@/lib/validations";
 import type { Prisma } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -87,7 +88,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching users:", error);
+    logger.error("Admin: Error fetching users", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

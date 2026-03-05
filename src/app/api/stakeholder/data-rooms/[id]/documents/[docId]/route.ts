@@ -8,6 +8,7 @@ import {
   getDataRoomsForStakeholder,
   logDataRoomAccess,
 } from "@/lib/services/data-room";
+import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms/[id]/documents/[docId] — Access/download a document
 export async function GET(
@@ -105,7 +106,7 @@ export async function GET(
       action,
     });
   } catch (error) {
-    console.error("Stakeholder document access error:", error);
+    logger.error("Stakeholder document access error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

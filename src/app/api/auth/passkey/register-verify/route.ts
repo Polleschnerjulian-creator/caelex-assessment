@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { verifyPasskeyRegistration } from "@/lib/webauthn.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const verifySchema = z.object({
   response: z.object({
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
     res.cookies.delete("__webauthn_challenge");
     return res;
   } catch (error) {
-    console.error("Error verifying passkey registration:", error);
+    logger.error("Error verifying passkey registration", error);
     return NextResponse.json(
       { error: "Failed to verify registration" },
       { status: 500 },

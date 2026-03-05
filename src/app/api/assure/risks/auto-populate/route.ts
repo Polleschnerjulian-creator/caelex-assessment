@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { autoPopulateRisks } from "@/lib/assure/risk-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
       total: result.total,
     });
   } catch (error) {
-    console.error("Assure risk auto-populate error:", error);
+    logger.error("Assure risk auto-populate error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

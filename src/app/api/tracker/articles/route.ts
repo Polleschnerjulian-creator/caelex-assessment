@@ -7,6 +7,7 @@ import {
   generateAuditDescription,
 } from "@/lib/audit";
 import { UpdateArticleStatusSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching article statuses:", error);
+    logger.error("Error fetching article statuses", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -120,7 +121,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error updating article status:", error);
+    logger.error("Error updating article status", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

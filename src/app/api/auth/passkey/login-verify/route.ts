@@ -15,6 +15,7 @@ import {
 import { createSignedToken } from "@/lib/signed-token";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const verifySchema = z.object({
   response: z.object({
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
     res.cookies.delete("__webauthn_challenge");
     return res;
   } catch (error) {
-    console.error("Error verifying passkey login:", error);
+    logger.error("Error verifying passkey login", error);
     return NextResponse.json(
       { error: "Failed to verify authentication" },
       { status: 500 },

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { exportAuditLogs } from "@/lib/audit";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 // GET /api/audit/export - Export audit logs for compliance reporting
 export async function GET(request: Request) {
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
       logs: data,
     });
   } catch (error) {
-    console.error("Error exporting audit logs:", error);
+    logger.error("Error exporting audit logs", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

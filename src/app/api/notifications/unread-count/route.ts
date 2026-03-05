@@ -6,6 +6,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getUnreadCount } from "@/lib/services/notification-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({ count });
   } catch (error) {
-    console.error("Error fetching unread count:", error);
+    logger.error("Error fetching unread count", error);
     return NextResponse.json(
       { error: "Failed to fetch unread count" },
       { status: 500 },

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 import {
   calculateComplianceScore,
   determineRiskLevel,
@@ -168,7 +169,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       deorbitCompliance,
     });
   } catch (error) {
-    console.error("Error fetching US Regulatory assessment:", error);
+    logger.error("Error fetching US Regulatory assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -505,7 +506,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       agencyStatuses,
     });
   } catch (error) {
-    console.error("Error updating US Regulatory assessment:", error);
+    logger.error("Error updating US Regulatory assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -554,7 +555,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting US Regulatory assessment:", error);
+    logger.error("Error deleting US Regulatory assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

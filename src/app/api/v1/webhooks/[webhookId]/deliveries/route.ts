@@ -13,6 +13,7 @@ import {
   getWebhookDeliveries,
   retryDelivery,
 } from "@/lib/services/webhook-service";
+import { logger } from "@/lib/logger";
 
 const RetryDeliverySchema = z.object({
   organizationId: CuidSchema,
@@ -84,7 +85,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching webhook deliveries:", error);
+    logger.error("Error fetching webhook deliveries", error);
     return NextResponse.json(
       { error: "Failed to fetch webhook deliveries" },
       { status: 500 },
@@ -143,7 +144,7 @@ export async function POST(
     await retryDelivery(deliveryId);
     return NextResponse.json({ success: true, message: "Retry initiated" });
   } catch (error) {
-    console.error("Error processing delivery action:", error);
+    logger.error("Error processing delivery action", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to process action") },
       { status: 500 },

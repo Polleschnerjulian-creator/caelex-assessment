@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { addSSODomain, removeSSODomain } from "@/lib/services/sso-service";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
       domains: connection.domains,
     });
   } catch (error) {
-    console.error("Error adding SSO domain:", error);
+    logger.error("Error adding SSO domain", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to add domain"),
@@ -124,7 +125,7 @@ export async function DELETE(request: NextRequest) {
       domains: connection.domains,
     });
   } catch (error) {
-    console.error("Error removing SSO domain:", error);
+    logger.error("Error removing SSO domain", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to remove domain"),

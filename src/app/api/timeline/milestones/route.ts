@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // POST /api/timeline/milestones - Create milestone
 export async function POST(req: Request) {
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, milestone });
   } catch (error) {
-    console.error("Error creating milestone:", error);
+    logger.error("Error creating milestone", error);
     return NextResponse.json(
       { error: "Failed to create milestone" },
       { status: 500 },
@@ -150,7 +151,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: true, milestone });
   } catch (error) {
-    console.error("Error updating milestone:", error);
+    logger.error("Error updating milestone", error);
     return NextResponse.json(
       { error: "Failed to update milestone" },
       { status: 500 },
@@ -197,7 +198,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting milestone:", error);
+    logger.error("Error deleting milestone", error);
     return NextResponse.json(
       { error: "Failed to delete milestone" },
       { status: 500 },

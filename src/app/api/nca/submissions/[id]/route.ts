@@ -20,6 +20,7 @@ import {
   NCA_AUTHORITY_INFO,
 } from "@/lib/services/nca-submission-service";
 import type { NCASubmissionStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 // NCA submission status transition rules
 const ALLOWED_NCA_TRANSITIONS: Record<string, string[]> = {
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch submission:", error);
+    logger.error("Failed to fetch submission", error);
     return NextResponse.json(
       { error: "Failed to fetch submission" },
       { status: 500 },
@@ -240,7 +241,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to update submission:", error);
+    logger.error("Failed to update submission", error);
     return NextResponse.json(
       { error: "Failed to update submission" },
       { status: 500 },

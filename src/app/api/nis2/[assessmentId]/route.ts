@@ -23,6 +23,7 @@ import {
   generateRecommendations,
 } from "@/lib/nis2-auto-assessment.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
+import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
 
 // GET /api/nis2/[assessmentId] - Get assessment details with requirement metadata
@@ -139,7 +140,7 @@ export async function GET(
         requirementMeta,
       );
     } catch (recError) {
-      console.error("Error generating recommendations:", recError);
+      logger.error("Error generating recommendations", recError);
     }
 
     const decryptedAssessment = {
@@ -153,7 +154,7 @@ export async function GET(
       recommendations,
     });
   } catch (error) {
-    console.error("Error fetching NIS2 assessment:", error);
+    logger.error("Error fetching NIS2 assessment", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Internal server error") },
       { status: 500 },
@@ -477,7 +478,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("Error updating NIS2 assessment:", error);
+    logger.error("Error updating NIS2 assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -537,7 +538,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting NIS2 assessment:", error);
+    logger.error("Error deleting NIS2 assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

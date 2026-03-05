@@ -26,6 +26,7 @@ import {
   generateGapAnalysis,
   type RequirementAssessment,
 } from "@/lib/export-control-engine.server";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -133,7 +134,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         "This assessment is for compliance tracking purposes only and does not constitute legal advice.",
     });
   } catch (error) {
-    console.error("Error fetching Export Control assessment:", error);
+    logger.error("Error fetching Export Control assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -452,7 +453,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       penaltyExposure,
     });
   } catch (error) {
-    console.error("Error updating Export Control assessment:", error);
+    logger.error("Error updating Export Control assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -504,7 +505,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting Export Control assessment:", error);
+    logger.error("Error deleting Export Control assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

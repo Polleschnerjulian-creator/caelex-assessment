@@ -1242,12 +1242,13 @@ describe("Webhook Service", () => {
       expect(result).toBe(false);
     });
 
-    it("should throw when signature length does not match expected", () => {
+    it("should return false when signature length does not match expected", () => {
       const payload = '{"event":"test","data":{}}';
       const secret = "whsec_testsecret";
-      const shortSignature = "abcd"; // Too short for timingSafeEqual
+      const shortSignature = "abcd"; // Different length than SHA-256 hex digest
 
-      expect(() => verifySignature(payload, shortSignature, secret)).toThrow();
+      // Source guards against length mismatch and returns false instead of throwing
+      expect(verifySignature(payload, shortSignature, secret)).toBe(false);
     });
 
     it("should use timing-safe comparison to prevent timing attacks", () => {

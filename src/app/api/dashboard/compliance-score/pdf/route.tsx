@@ -8,6 +8,7 @@ import {
   ComplianceSummaryPDF,
   type ComplianceSummaryData,
 } from "@/lib/pdf/reports/compliance-summary";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -64,7 +65,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error generating compliance PDF:", error);
+    logger.error("Error generating compliance PDF", error);
     return NextResponse.json(
       { error: "Failed to generate PDF" },
       { status: 500 },

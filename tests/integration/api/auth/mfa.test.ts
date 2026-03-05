@@ -30,6 +30,8 @@ vi.mock("@/lib/mfa.server", () => ({
   regenerateBackupCodes: vi.fn(),
   getMfaStatus: vi.fn(),
   disableMfa: vi.fn(),
+  isTotpCodeUsed: vi.fn().mockResolvedValue(false),
+  markTotpCodeUsed: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/encryption", () => ({
@@ -64,6 +66,37 @@ vi.mock("@/lib/ratelimit", () => ({
   createRateLimitResponse: vi.fn(),
 }));
 
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
+vi.mock("otpauth", () => {
+  // Shared mock validate function accessible via _mockValidate
+  const _mockValidate = vi.fn().mockReturnValue(0);
+  class MockTOTP {
+    validate = _mockValidate;
+  }
+  const mockSecret = {
+    fromBase32: vi.fn().mockReturnValue("mock-secret"),
+  };
+  return {
+    default: { TOTP: MockTOTP, Secret: mockSecret },
+    TOTP: MockTOTP,
+    Secret: mockSecret,
+    _mockValidate,
+  };
+});
+
+vi.mock("next-auth/jwt", () => ({
+  getToken: vi.fn().mockResolvedValue(null),
+  encode: vi.fn().mockResolvedValue("mock-jwt"),
+}));
+
 // ─── Imports ──────────────────────────────────────────────────────────────────
 
 import { auth } from "@/lib/auth";
@@ -76,13 +109,16 @@ import {
   regenerateBackupCodes,
   getMfaStatus,
   disableMfa,
+  isTotpCodeUsed,
 } from "@/lib/mfa.server";
+import * as OTPAuth from "otpauth";
 import bcrypt from "bcryptjs";
 import { logAuditEvent } from "@/lib/audit";
 import {
   recordLoginEvent,
   clearFailedAttempts,
 } from "@/lib/login-security.server";
+import { decrypt } from "@/lib/encryption";
 
 import { POST as setupRoute } from "@/app/api/auth/mfa/setup/route";
 import { POST as verifyRoute } from "@/app/api/auth/mfa/verify/route";
@@ -656,9 +692,19 @@ describe("MFA API Endpoints", () => {
 
   // ═══════════════════════════════════════════════════════════════════════════
   // POST /api/auth/mfa/validate
+  // Note: This route inlines MFA validation logic instead of calling
+  // validateMfaCode. It directly uses prisma.mfaConfig, decrypt, OTPAuth, etc.
   // ═══════════════════════════════════════════════════════════════════════════
 
   describe("POST /api/auth/mfa/validate", () => {
+    // Helper to set up mfaConfig mock for TOTP validation
+    const mockMfaConfig = {
+      userId: "user-123",
+      enabled: true,
+      encryptedSecret: "encrypted-secret-value",
+      backupCodes: null,
+    };
+
     it("should return 401 when no session and no userId provided", async () => {
       vi.mocked(auth).mockResolvedValue(null as never);
 
@@ -669,7 +715,7 @@ describe("MFA API Endpoints", () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
+      expect(data.error).toContain("Session expired");
     });
 
     it("should return 400 when code is missing", async () => {
@@ -712,7 +758,13 @@ describe("MFA API Endpoints", () => {
 
     it("should return 200 on valid TOTP code", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      // Mock OTPAuth.TOTP validate to return 0 (valid)
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(0);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
@@ -727,7 +779,13 @@ describe("MFA API Endpoints", () => {
 
     it("should return 400 on invalid TOTP code", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(false);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      // Mock OTPAuth.TOTP validate to return null (invalid)
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(null);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "000000",
@@ -750,13 +808,18 @@ describe("MFA API Endpoints", () => {
       const data = await response.json();
 
       expect(response.status).toBe(401);
-      expect(data.error).toBe("Unauthorized");
-      expect(validateMfaCode).not.toHaveBeenCalled();
+      // Route ignores body userId; returns 401 since no session
+      expect(data.error).toContain("Session expired");
     });
 
     it("should use session userId even when userId is provided in body", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(0);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
@@ -764,12 +827,19 @@ describe("MFA API Endpoints", () => {
       });
       await validateRoute(request);
 
-      expect(validateMfaCode).toHaveBeenCalledWith("user-123", "123456");
+      // The route uses session.user.id, not body userId
+      expect(prisma.mfaConfig.findUnique).toHaveBeenCalledWith({
+        where: { userId: "user-123" },
+      });
     });
 
     it("should validate backup code when isBackupCode is true", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(verifyAndConsumeBackupCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue({
+        ...mockMfaConfig,
+        backupCodes: JSON.stringify(["$2a$12$hashedcode1"]),
+      } as any);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "ABCD1234",
@@ -780,16 +850,15 @@ describe("MFA API Endpoints", () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(verifyAndConsumeBackupCode).toHaveBeenCalledWith(
-        "user-123",
-        "ABCD1234",
-      );
-      expect(validateMfaCode).not.toHaveBeenCalled();
     });
 
     it("should return 400 on invalid backup code", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(verifyAndConsumeBackupCode).mockResolvedValue(false);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue({
+        ...mockMfaConfig,
+        backupCodes: JSON.stringify(["$2a$12$hashedcode1"]),
+      } as any);
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "INVALID1",
@@ -804,13 +873,20 @@ describe("MFA API Endpoints", () => {
 
     it("should log MFA_BACKUP_CODE_USED audit event on successful backup code", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(verifyAndConsumeBackupCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue({
+        ...mockMfaConfig,
+        backupCodes: JSON.stringify(["$2a$12$hashedcode1"]),
+      } as any);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "ABCD1234",
         isBackupCode: true,
       });
       await validateRoute(request);
+
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
 
       expect(logAuditEvent).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -822,12 +898,20 @@ describe("MFA API Endpoints", () => {
 
     it("should log MFA_CHALLENGE_FAILED audit event on failure", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(false);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(null);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "000000",
       });
       await validateRoute(request);
+
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
 
       expect(logAuditEvent).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -839,12 +923,20 @@ describe("MFA API Endpoints", () => {
 
     it("should log MFA_CHALLENGE_SUCCESS audit event on success", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(0);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
       });
       await validateRoute(request);
+
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
 
       expect(logAuditEvent).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -856,67 +948,103 @@ describe("MFA API Endpoints", () => {
 
     it("should record login event on successful TOTP validation", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(0);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
       });
       await validateRoute(request);
 
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
+
       expect(recordLoginEvent).toHaveBeenCalledWith(
         "user-123",
         "MFA_SUCCESS",
-        "127.0.0.1",
-        "test-agent",
+        expect.any(String),
+        expect.any(String),
         "PASSWORD",
       );
     });
 
     it("should record login event on failed validation", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(false);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(null);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "000000",
       });
       await validateRoute(request);
 
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
+
       expect(recordLoginEvent).toHaveBeenCalledWith(
         "user-123",
         "MFA_FAILED",
-        "127.0.0.1",
-        "test-agent",
+        expect.any(String),
+        expect.any(String),
         "PASSWORD",
       );
     });
 
     it("should clear failed attempts on successful MFA", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(0);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
       });
       await validateRoute(request);
 
+      // Wait for non-blocking calls
+      await new Promise((r) => setTimeout(r, 10));
+
       expect(clearFailedAttempts).toHaveBeenCalledWith("user-123");
     });
 
     it("should NOT clear failed attempts on failed MFA", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockResolvedValue(false);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockResolvedValue("JBSWY3DPEHPK3PXP");
+      const otpMod = await import("otpauth");
+      (otpMod as any)._mockValidate.mockReturnValue(null);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "000000",
       });
       await validateRoute(request);
 
+      // Wait for non-blocking calls
+      await new Promise((r) => setTimeout(r, 10));
+
       expect(clearFailedAttempts).not.toHaveBeenCalled();
     });
 
     it("should record BACKUP_CODE_USED login event on successful backup code", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(verifyAndConsumeBackupCode).mockResolvedValue(true);
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue({
+        ...mockMfaConfig,
+        backupCodes: JSON.stringify(["$2a$12$hashedcode1"]),
+      } as any);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "ABCD1234",
@@ -924,18 +1052,24 @@ describe("MFA API Endpoints", () => {
       });
       await validateRoute(request);
 
+      // Wait for non-blocking audit calls
+      await new Promise((r) => setTimeout(r, 10));
+
       expect(recordLoginEvent).toHaveBeenCalledWith(
         "user-123",
         "BACKUP_CODE_USED",
-        "127.0.0.1",
-        "test-agent",
+        expect.any(String),
+        expect.any(String),
         "PASSWORD",
       );
     });
 
-    it("should return 500 when validateMfaCode throws", async () => {
+    it("should return 500 when decrypt throws", async () => {
       vi.mocked(auth).mockResolvedValue(mockSession as never);
-      vi.mocked(validateMfaCode).mockRejectedValue(new Error("DB error"));
+      vi.mocked(prisma.mfaConfig.findUnique).mockResolvedValue(
+        mockMfaConfig as any,
+      );
+      vi.mocked(decrypt).mockRejectedValue(new Error("Decryption failed"));
 
       const request = makePostRequest("/api/auth/mfa/validate", {
         code: "123456",
@@ -944,7 +1078,7 @@ describe("MFA API Endpoints", () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe("Failed to validate code");
+      expect(data.error).toContain("MFA secret decryption failed");
     });
   });
 

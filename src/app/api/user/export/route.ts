@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 // GET /api/user/export - GDPR Art. 20 data portability export
 export async function GET() {
@@ -332,7 +333,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error exporting user data:", error);
+    logger.error("Error exporting user data", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

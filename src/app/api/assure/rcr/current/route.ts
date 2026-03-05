@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -85,7 +86,7 @@ export async function GET(request: Request) {
       isPublished: rating.isPublished,
     });
   } catch (error) {
-    console.error("RCR current rating API error:", error);
+    logger.error("RCR current rating API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

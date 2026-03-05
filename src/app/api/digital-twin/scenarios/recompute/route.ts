@@ -4,6 +4,7 @@ import {
   markStaleScenarios,
   recomputeScenario,
 } from "@/lib/services/whatif-engine-bridge";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/digital-twin/scenarios/recompute
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Digital Twin recompute POST error:", error);
+    logger.error("Digital Twin recompute POST error", error);
     return NextResponse.json(
       { error: "Failed to recompute scenario" },
       { status: 500 },

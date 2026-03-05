@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { subDays, startOfDay, endOfDay, subMonths } from "date-fns";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -417,7 +418,7 @@ export async function GET(request: Request) {
       results,
     });
   } catch (error) {
-    console.error("[Analytics Aggregation] Error:", error);
+    logger.error("[Analytics Aggregation] Error", error);
     return NextResponse.json({ error: "Aggregation failed" }, { status: 500 });
   }
 }

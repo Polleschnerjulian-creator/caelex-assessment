@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
+import { logger, maskEmail } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 import {
   CSRF_COOKIE_NAME,
@@ -137,7 +137,7 @@ export async function DELETE(req: Request) {
     // Log the deletion for audit purposes (before deleting)
     logger.info("[account-deletion] User initiated account deletion", {
       userId,
-      email: user.email,
+      email: maskEmail(user.email || ""),
       isOAuthOnly,
       timestamp: new Date().toISOString(),
     });

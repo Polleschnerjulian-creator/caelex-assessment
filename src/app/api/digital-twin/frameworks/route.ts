@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getFrameworkComparison } from "@/lib/services/compliance-twin-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -13,7 +14,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Digital Twin frameworks error:", error);
+    logger.error("Digital Twin frameworks error", error);
     return NextResponse.json(
       { error: "Failed to load framework comparison" },
       { status: 500 },

@@ -11,6 +11,7 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -137,7 +138,7 @@ export async function POST(request: Request) {
       createdAt: shareLink.createdAt,
     });
   } catch (error) {
-    console.error("Share link creation error:", error);
+    logger.error("Share link creation error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -217,7 +218,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("Share link list error:", error);
+    logger.error("Share link list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

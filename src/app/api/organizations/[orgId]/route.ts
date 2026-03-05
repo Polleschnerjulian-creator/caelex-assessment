@@ -18,6 +18,7 @@ import {
   getDefaultPermissionsForRole,
 } from "@/lib/services/organization-service";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string }>;
@@ -92,7 +93,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       userRole,
     });
   } catch (error) {
-    console.error("Error fetching organization:", error);
+    logger.error("Error fetching organization", error);
     return NextResponse.json(
       { error: "Failed to fetch organization" },
       { status: 500 },
@@ -173,7 +174,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       message: "Organization updated successfully",
     });
   } catch (error) {
-    console.error("Error updating organization:", error);
+    logger.error("Error updating organization", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to update organization") },
       { status: 500 },
@@ -212,7 +213,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       message: "Organization deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting organization:", error);
+    logger.error("Error deleting organization", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to delete organization") },
       { status: 500 },

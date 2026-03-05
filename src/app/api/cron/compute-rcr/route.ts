@@ -16,6 +16,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { computeAndSaveRCR } from "@/lib/rcr-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes — may process many orgs
@@ -174,15 +175,15 @@ export async function GET(request: Request) {
                 });
                 notificationsCreated++;
               } catch (notifError) {
-                console.error(
-                  `Failed to create RCR notification for user ${member.userId}:`,
+                logger.error(
+                  `Failed to create RCR notification for user ${member.userId}`,
                   notifError,
                 );
               }
             }
           }
         } catch (orgError) {
-          console.error(`RCR computation error for org ${org.id}:`, orgError);
+          logger.error(`RCR computation error for org ${org.id}`, orgError);
           errors++;
         }
       }
@@ -195,7 +196,7 @@ export async function GET(request: Request) {
       try {
         benchmarksComputed = await computeBenchmarks();
       } catch (benchError) {
-        console.error("RCR benchmark computation error:", benchError);
+        logger.error("RCR benchmark computation error", benchError);
       }
     }
 
@@ -211,7 +212,7 @@ export async function GET(request: Request) {
       isQuarterStart: isFirstDayOfQuarter(),
     });
   } catch (error) {
-    console.error("RCR cron job error:", error);
+    logger.error("RCR cron job error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

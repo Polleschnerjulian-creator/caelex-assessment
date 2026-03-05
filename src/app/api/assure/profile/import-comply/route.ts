@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
       regulatoryProfileId: regulatoryProfile.id,
     });
   } catch (error) {
-    console.error("Assure import comply error:", error);
+    logger.error("Assure import comply error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

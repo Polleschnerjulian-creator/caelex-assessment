@@ -164,9 +164,20 @@ export async function PATCH(
   } catch (error) {
     logger.error("Failed to update breach report", error);
 
-    // Surface business logic errors (e.g., "Authority already notified")
-    if (error instanceof Error && error.message.includes("already")) {
-      return NextResponse.json({ error: error.message }, { status: 409 });
+    // Surface specific business logic errors without exposing raw error.message
+    if (error instanceof Error) {
+      if (error.message.includes("already notified")) {
+        return NextResponse.json(
+          { error: "Authority has already been notified for this breach" },
+          { status: 409 },
+        );
+      }
+      if (error.message.includes("already resolved")) {
+        return NextResponse.json(
+          { error: "This breach report has already been resolved" },
+          { status: 409 },
+        );
+      }
     }
 
     return NextResponse.json(

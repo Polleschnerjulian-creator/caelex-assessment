@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { createDataRoom, getDataRooms } from "@/lib/services/data-room";
+import { logger } from "@/lib/logger";
 import { parsePaginationLimit } from "@/lib/validations";
 
 // ─── GET: List Data Rooms ───
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Failed to fetch data rooms:", error);
+    logger.error("Failed to fetch data rooms", error);
     return NextResponse.json(
       { error: "Failed to fetch data rooms" },
       { status: 500 },
@@ -151,7 +152,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, dataRoom });
   } catch (error) {
-    console.error("Failed to create data room:", error);
+    logger.error("Failed to create data room", error);
     return NextResponse.json(
       { error: "Failed to create data room" },
       { status: 500 },

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -66,7 +67,7 @@ export async function GET() {
       permissions: membership.permissions,
     });
   } catch (error) {
-    console.error("Error fetching organization:", error);
+    logger.error("Error fetching organization", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

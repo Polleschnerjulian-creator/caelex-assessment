@@ -13,6 +13,7 @@ import {
   type SpaceSegmentComplexity,
   type DataSensitivityLevel,
 } from "@/data/cybersecurity-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/cybersecurity/[assessmentId] - Get assessment details
 export async function GET(
@@ -67,7 +68,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching cybersecurity assessment:", error);
+    logger.error("Error fetching cybersecurity assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -329,7 +330,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("Error updating cybersecurity assessment:", error);
+    logger.error("Error updating cybersecurity assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -386,7 +387,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting cybersecurity assessment:", error);
+    logger.error("Error deleting cybersecurity assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

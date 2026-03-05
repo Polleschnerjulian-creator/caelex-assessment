@@ -11,6 +11,7 @@ import {
   getComplianceOverview,
   calculateComplianceScore,
 } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -43,7 +44,7 @@ export async function GET() {
       topRecommendations: detailedScore.recommendations.slice(0, 5),
     });
   } catch (error) {
-    console.error("Failed to get dashboard overview:", error);
+    logger.error("Failed to get dashboard overview", error);
     return NextResponse.json(
       { error: "Failed to get dashboard overview" },
       { status: 500 },

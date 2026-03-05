@@ -8,6 +8,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withApiAuth, apiSuccess, apiError, ApiContext } from "@/lib/api-auth";
+import { logger } from "@/lib/logger";
 
 async function handler(request: NextRequest, context: ApiContext) {
   try {
@@ -90,7 +91,7 @@ async function handler(request: NextRequest, context: ApiContext) {
       },
     );
   } catch (error) {
-    console.error("Error fetching spacecraft:", error);
+    logger.error("Error fetching spacecraft", error);
     return apiError("Failed to fetch spacecraft", 500);
   }
 }

@@ -36,6 +36,24 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "user-123",
+    organizationId: "ctest123org",
+    role: "OWNER",
+    permissions: ["*"],
+    organization: {
+      id: "ctest123org",
+      name: "Test Org",
+      slug: "test-org",
+      plan: "PROFESSIONAL",
+      isActive: true,
+    },
+  }),
+  verifyOrganizationAccess: vi.fn().mockResolvedValue({ success: true }),
+  withOrganizationGuard: vi.fn(),
+}));
+
 vi.mock("@/lib/audit", () => ({
   logAuditEvent: vi.fn(),
   getRequestContext: vi.fn(() => ({
@@ -336,7 +354,7 @@ describe("GET /api/environmental", () => {
     expect(data.assessments).toHaveLength(1);
     expect(prisma.environmentalAssessment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: "user-123" },
+        where: { userId: "user-123", organizationId: "ctest123org" },
       }),
     );
   });
@@ -398,7 +416,7 @@ describe("POST /api/environmental", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 when spacecraftMassKg is missing", async () => {
@@ -413,7 +431,7 @@ describe("POST /api/environmental", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should create assessment with valid data and return 201", async () => {
@@ -749,7 +767,7 @@ describe("POST /api/environmental/calculate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {
@@ -855,7 +873,7 @@ describe("POST /api/environmental/report/generate", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {
@@ -1065,7 +1083,7 @@ describe("POST /api/environmental/suppliers", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("assessmentId is required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when assessment not found", async () => {
@@ -1470,7 +1488,7 @@ describe("POST /api/environmental/suppliers/import", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("requestId required");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 404 when supplier request not found", async () => {

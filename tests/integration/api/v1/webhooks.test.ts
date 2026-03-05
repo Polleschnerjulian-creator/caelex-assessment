@@ -57,9 +57,23 @@ vi.mock("@/lib/services/webhook-service", () => ({
   getWebhookStats: vi.fn(),
 }));
 
-// ─── Mock validations ───
-vi.mock("@/lib/validations", () => ({
-  getSafeErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
+// ─── Mock validations (partial - keep real schemas) ───
+vi.mock("@/lib/validations", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/validations")>();
+  return {
+    ...actual,
+    getSafeErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
+  };
+});
+
+// ─── Mock logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
 }));
 
 import { auth } from "@/lib/auth";
@@ -72,7 +86,7 @@ const mockSession = {
   expires: new Date(Date.now() + 86400000).toISOString(),
 };
 
-const ORG_ID = "org-abc";
+const ORG_ID = "ctest123org456789012345";
 
 function makeGetRequest(url: string): Request {
   return new Request(url, { method: "GET" });
@@ -219,10 +233,6 @@ describe("POST /api/v1/webhooks", () => {
 
   it("returns 400 when name is missing", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      id: "member-1",
-      role: "OWNER",
-    } as any);
 
     const req = makePostRequest("http://localhost/api/v1/webhooks", {
       organizationId: ORG_ID,
@@ -233,15 +243,12 @@ describe("POST /api/v1/webhooks", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Name is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("returns 400 when URL is missing", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      id: "member-1",
-      role: "OWNER",
-    } as any);
 
     const req = makePostRequest("http://localhost/api/v1/webhooks", {
       organizationId: ORG_ID,
@@ -252,15 +259,12 @@ describe("POST /api/v1/webhooks", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("URL is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("returns 400 for invalid URL format", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      id: "member-1",
-      role: "OWNER",
-    } as any);
 
     const req = makePostRequest("http://localhost/api/v1/webhooks", {
       organizationId: ORG_ID,
@@ -272,15 +276,12 @@ describe("POST /api/v1/webhooks", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid URL format");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("returns 400 when events array is empty", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      id: "member-1",
-      role: "OWNER",
-    } as any);
 
     const req = makePostRequest("http://localhost/api/v1/webhooks", {
       organizationId: ORG_ID,
@@ -292,7 +293,8 @@ describe("POST /api/v1/webhooks", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("At least one event is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("returns 400 for invalid event names", async () => {
@@ -645,18 +647,14 @@ describe("POST /api/v1/webhooks/[webhookId]/deliveries (retry)", () => {
 
   it("returns 400 for invalid action", async () => {
     vi.mocked(auth).mockResolvedValue(mockSession as any);
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      id: "member-1",
-      role: "OWNER",
-    } as any);
-    mockGetWebhookById.mockResolvedValue({
-      id: "wh-1",
-      organizationId: ORG_ID,
-    });
 
     const req = makePostRequest(
       "http://localhost/api/v1/webhooks/wh-1/deliveries",
-      { organizationId: ORG_ID, action: "invalid" },
+      {
+        organizationId: ORG_ID,
+        deliveryId: "cdelivery12345678901234",
+        action: "invalid",
+      },
     );
     const res = await POST(req as any, {
       params: Promise.resolve({ webhookId: "wh-1" }),
@@ -664,7 +662,8 @@ describe("POST /api/v1/webhooks/[webhookId]/deliveries (retry)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe("Invalid action");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("retries delivery successfully", async () => {
@@ -681,7 +680,11 @@ describe("POST /api/v1/webhooks/[webhookId]/deliveries (retry)", () => {
 
     const req = makePostRequest(
       "http://localhost/api/v1/webhooks/wh-1/deliveries",
-      { organizationId: ORG_ID, deliveryId: "del-1", action: "retry" },
+      {
+        organizationId: ORG_ID,
+        deliveryId: "cdelivery12345678901234",
+        action: "retry",
+      },
     );
     const res = await POST(req as any, {
       params: Promise.resolve({ webhookId: "wh-1" }),

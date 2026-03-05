@@ -4,6 +4,7 @@ import type { DeadlineCategory, Priority, ModuleType } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // GET /api/timeline/deadlines - List deadlines with filters
 export async function GET(req: Request) {
@@ -86,7 +87,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ deadlines, total });
   } catch (error) {
-    console.error("Error fetching deadlines:", error);
+    logger.error("Error fetching deadlines", error);
     return NextResponse.json(
       { error: "Failed to fetch deadlines" },
       { status: 500 },
@@ -197,7 +198,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, deadline });
   } catch (error) {
-    console.error("Error creating deadline:", error);
+    logger.error("Error creating deadline", error);
     return NextResponse.json(
       { error: "Failed to create deadline" },
       { status: 500 },

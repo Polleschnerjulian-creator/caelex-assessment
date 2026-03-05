@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateToken } from "@/lib/services/stakeholder-engagement";
+import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/profile — Return stakeholder engagement details
 export async function GET(request: NextRequest) {
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
       organization: engagement.organization,
     });
   } catch (error) {
-    console.error("Stakeholder profile error:", error);
+    logger.error("Stakeholder profile error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -8,6 +8,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withApiAuth, apiSuccess, apiError, ApiContext } from "@/lib/api-auth";
+import { logger } from "@/lib/logger";
 
 async function handler(request: NextRequest, context: ApiContext) {
   try {
@@ -87,7 +88,7 @@ async function handler(request: NextRequest, context: ApiContext) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error fetching compliance overview:", error);
+    logger.error("Error fetching compliance overview", error);
     return apiError("Failed to fetch compliance overview", 500);
   }
 }

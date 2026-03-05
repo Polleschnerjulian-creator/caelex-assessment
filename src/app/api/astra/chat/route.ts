@@ -19,6 +19,7 @@ import type {
   AstraChatResponse,
   AstraContext,
 } from "@/lib/astra/types";
+import { logger } from "@/lib/logger";
 
 // Rate limit tier for ASTRA (10 requests per hour for standard users)
 const ASTRA_RATE_LIMIT_TIER = "assessment" as const;
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(chatResponse);
   } catch (error) {
-    console.error("ASTRA Chat API Error:", error);
+    logger.error("ASTRA Chat API Error", error);
 
     // Log error (best effort, may not have userId in all error cases)
     try {
@@ -334,7 +335,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("ASTRA Chat GET Error:", error);
+    logger.error("ASTRA Chat GET Error", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -382,7 +383,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("ASTRA Chat DELETE Error:", error);
+    logger.error("ASTRA Chat DELETE Error", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

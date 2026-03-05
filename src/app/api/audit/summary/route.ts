@@ -9,6 +9,7 @@ import {
   getAuditSummary,
   getAuditFilterOptions,
 } from "@/lib/services/audit-export-service";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
       filterOptions,
     });
   } catch (error) {
-    console.error("Error fetching audit summary:", error);
+    logger.error("Error fetching audit summary", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

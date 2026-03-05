@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { computeAndSaveIRS } from "@/lib/assure/irs-engine.server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Assure IRS compute error:", error);
+    logger.error("Assure IRS compute error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

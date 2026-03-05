@@ -18,6 +18,7 @@ import {
 } from "@/lib/webauthn.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -30,7 +31,7 @@ export async function GET() {
 
     return NextResponse.json({ passkeys });
   } catch (error) {
-    console.error("Error getting passkeys:", error);
+    logger.error("Error getting passkeys", error);
     return NextResponse.json(
       { error: "Failed to get passkeys" },
       { status: 500 },
@@ -83,7 +84,7 @@ export async function DELETE(request: Request) {
       message: "Passkey removed successfully",
     });
   } catch (error) {
-    console.error("Error deleting passkey:", error);
+    logger.error("Error deleting passkey", error);
     return NextResponse.json(
       { error: "Failed to delete passkey" },
       { status: 500 },
@@ -125,7 +126,7 @@ export async function PATCH(request: Request) {
       message: "Passkey renamed successfully",
     });
   } catch (error) {
-    console.error("Error renaming passkey:", error);
+    logger.error("Error renaming passkey", error);
     return NextResponse.json(
       { error: "Failed to rename passkey" },
       { status: 500 },

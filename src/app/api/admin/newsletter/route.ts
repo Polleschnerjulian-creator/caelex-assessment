@@ -12,6 +12,7 @@ import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching newsletter subscribers:", error);
+    logger.error("Admin: Error fetching newsletter subscribers", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { FleetResponse } from "@/lib/satellites/types";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   const session = await auth();
@@ -47,7 +48,7 @@ export async function GET() {
       noradIds,
     } satisfies FleetResponse);
   } catch (error) {
-    console.error("Fleet fetch error:", error);
+    logger.error("Fleet fetch error", error);
     return NextResponse.json(
       { error: "Failed to fetch fleet data" },
       { status: 500 },

@@ -12,6 +12,7 @@ import {
   getSessionByToken,
   getUserSessions,
 } from "@/lib/services/session-service";
+import { logger } from "@/lib/logger";
 
 /**
  * Resolve the current UserSession ID so we can optionally exclude it
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       currentSessionPreserved: exceptCurrent && !!currentSessionId,
     });
   } catch (error) {
-    console.error("Error revoking all sessions:", error);
+    logger.error("Error revoking all sessions", error);
     return NextResponse.json(
       { error: "Failed to revoke sessions" },
       { status: 500 },

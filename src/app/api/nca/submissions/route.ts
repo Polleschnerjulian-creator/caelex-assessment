@@ -19,6 +19,7 @@ import {
   getSubmissionStatusColor,
 } from "@/lib/services/nca-submission-service";
 import type { NCAAuthority, NCASubmissionStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
       ...(stats && { stats }),
     });
   } catch (error) {
-    console.error("Failed to fetch NCA submissions:", error);
+    logger.error("Failed to fetch NCA submissions", error);
     return NextResponse.json(
       { error: "Failed to fetch submissions" },
       { status: 500 },

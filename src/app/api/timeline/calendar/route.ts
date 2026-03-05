@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // GET /api/timeline/calendar - Get calendar events for a month
 export async function GET(req: Request) {
@@ -136,7 +137,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching calendar:", error);
+    logger.error("Error fetching calendar", error);
     return NextResponse.json(
       { error: "Failed to fetch calendar" },
       { status: 500 },

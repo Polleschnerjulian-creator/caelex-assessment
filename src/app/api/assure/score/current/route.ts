@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -63,7 +64,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Assure current IRS error:", error);
+    logger.error("Assure current IRS error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

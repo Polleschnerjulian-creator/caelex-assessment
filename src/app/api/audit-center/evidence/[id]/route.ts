@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getOrganizationId } from "@/lib/services/audit-center-service.server";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 // GET: Fetch single evidence with documents
 export async function GET(
@@ -56,7 +57,7 @@ export async function GET(
 
     return NextResponse.json({ evidence });
   } catch (error) {
-    console.error("Get evidence error:", error);
+    logger.error("Get evidence error", error);
     return NextResponse.json(
       { error: "Failed to fetch evidence" },
       { status: 500 },
@@ -227,7 +228,7 @@ export async function PATCH(
 
     return NextResponse.json({ evidence });
   } catch (error) {
-    console.error("Update evidence error:", error);
+    logger.error("Update evidence error", error);
     return NextResponse.json(
       { error: "Failed to update evidence" },
       { status: 500 },
@@ -282,7 +283,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Delete evidence error:", error);
+    logger.error("Delete evidence error", error);
     return NextResponse.json(
       { error: "Failed to delete evidence" },
       { status: 500 },

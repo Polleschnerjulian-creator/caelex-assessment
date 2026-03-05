@@ -19,6 +19,7 @@ import {
   STATUS_CONFIG,
 } from "@/lib/services/spacecraft-service";
 import type { SpacecraftStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ orgId: string; spacecraftId: string }>;
@@ -64,7 +65,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       availableTransitions,
     });
   } catch (error) {
-    console.error("Error fetching spacecraft:", error);
+    logger.error("Error fetching spacecraft", error);
     return NextResponse.json(
       { error: "Failed to fetch spacecraft" },
       { status: 500 },
@@ -213,7 +214,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       message: "Spacecraft updated successfully",
     });
   } catch (error) {
-    console.error("Error updating spacecraft:", error);
+    logger.error("Error updating spacecraft", error);
     const message = getSafeErrorMessage(error, "Failed to update spacecraft");
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -246,7 +247,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       message: "Spacecraft deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting spacecraft:", error);
+    logger.error("Error deleting spacecraft", error);
     const message = getSafeErrorMessage(error, "Failed to delete spacecraft");
     return NextResponse.json({ error: message }, { status: 500 });
   }

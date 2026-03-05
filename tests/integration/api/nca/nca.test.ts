@@ -52,6 +52,13 @@ vi.mock("@/lib/validations", () => ({
       return [];
     }
   }),
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -68,6 +75,10 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/audit", () => ({
   logAuditEvent: vi.fn(),
+}));
+
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
 
 // ─── Imports ─────────────────────────────────────────────────────────────────
@@ -428,7 +439,8 @@ describe("POST /api/nca/submit", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Report ID is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when ncaAuthority is missing", async () => {
@@ -447,7 +459,8 @@ describe("POST /api/nca/submit", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Valid NCA authority is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when ncaAuthority is invalid", async () => {
@@ -486,7 +499,8 @@ describe("POST /api/nca/submit", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Submission method is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 404 when report is not found", async () => {

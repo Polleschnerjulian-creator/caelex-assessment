@@ -19,6 +19,7 @@ import {
   type MissionType,
   type ComplianceStatus,
 } from "@/data/copuos-iadc-requirements";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -259,7 +260,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(reportData);
   } catch (error) {
-    console.error("Error generating COPUOS report:", error);
+    logger.error("Error generating COPUOS report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

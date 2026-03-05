@@ -5,6 +5,22 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+// Mock logger
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
+// Mock validations
+vi.mock("@/lib/validations", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/validations")>();
+  return { ...actual };
+});
+
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -102,7 +118,7 @@ describe("Tracker Articles API", () => {
           id: "status-1",
           userId: "test-user-id",
           articleId: "art-6",
-          status: "completed",
+          status: "compliant",
           notes: "Done",
           createdAt: new Date("2025-01-01"),
           updatedAt: new Date("2025-01-10"),
@@ -137,7 +153,7 @@ describe("Tracker Articles API", () => {
       expect(response.status).toBe(200);
       expect(Object.keys(data)).toHaveLength(3);
 
-      expect(data["art-6"].status).toBe("completed");
+      expect(data["art-6"].status).toBe("compliant");
       expect(data["art-6"].notes).toBe("Done");
 
       expect(data["art-14"].status).toBe("in_progress");
@@ -149,6 +165,7 @@ describe("Tracker Articles API", () => {
       // Verify query was scoped to the authenticated user
       expect(prisma.articleStatus.findMany).toHaveBeenCalledWith({
         where: { userId: "test-user-id" },
+        select: { articleId: true, status: true, notes: true, updatedAt: true },
       });
     });
   });
@@ -188,7 +205,8 @@ describe("Tracker Articles API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Missing articleId or status");
+      expect(data.error).toBe("Invalid input");
+      expect(data.details).toBeDefined();
     });
 
     it("should return 400 when status is missing", async () => {
@@ -204,7 +222,8 @@ describe("Tracker Articles API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Missing articleId or status");
+      expect(data.error).toBe("Invalid input");
+      expect(data.details).toBeDefined();
     });
 
     it("should create new article status (upsert create path)", async () => {
@@ -280,7 +299,7 @@ describe("Tracker Articles API", () => {
 
       const updatedRecord = {
         ...previousRecord,
-        status: "completed",
+        status: "compliant",
         notes: "All done",
         updatedAt: new Date(),
       };
@@ -293,7 +312,7 @@ describe("Tracker Articles API", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           articleId: "art-6",
-          status: "completed",
+          status: "compliant",
           notes: "All done",
         }),
       });
@@ -302,7 +321,7 @@ describe("Tracker Articles API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.status).toBe("completed");
+      expect(data.status).toBe("compliant");
 
       expect(prisma.articleStatus.upsert).toHaveBeenCalledWith({
         where: {
@@ -312,13 +331,13 @@ describe("Tracker Articles API", () => {
           },
         },
         update: {
-          status: "completed",
+          status: "compliant",
           notes: "All done",
         },
         create: {
           userId: "test-user-id",
           articleId: "art-6",
-          status: "completed",
+          status: "compliant",
           notes: "All done",
         },
       });
@@ -342,7 +361,7 @@ describe("Tracker Articles API", () => {
 
       vi.mocked(prisma.articleStatus.upsert).mockResolvedValue({
         ...previousRecord,
-        status: "completed",
+        status: "compliant",
         updatedAt: new Date(),
       } as any);
 
@@ -351,7 +370,7 @@ describe("Tracker Articles API", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           articleId: "art-6",
-          status: "completed",
+          status: "compliant",
           notes: "Done",
         }),
       });
@@ -365,7 +384,7 @@ describe("Tracker Articles API", () => {
           entityType: "article",
           entityId: "art-6",
           previousValue: { status: "in_progress", notes: "Working on it" },
-          newValue: { status: "completed", notes: "Done" },
+          newValue: { status: "compliant", notes: "Done" },
         }),
       );
     });
@@ -401,7 +420,7 @@ describe("Tracker Articles API", () => {
           entityType: "article",
           entityId: "art-20",
           previousValue: null,
-          newValue: { status: "in_progress", notes: undefined },
+          newValue: { status: "in_progress", notes: null },
         }),
       );
     });
@@ -496,7 +515,7 @@ describe("Tracker Articles API", () => {
         id: "status-no-notes",
         userId: "test-user-id",
         articleId: "art-8",
-        status: "completed",
+        status: "compliant",
         notes: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -512,14 +531,14 @@ describe("Tracker Articles API", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             articleId: "art-8",
-            status: "completed",
+            status: "compliant",
           }),
         },
       );
 
       await PUT(requestWithoutNotes);
 
-      // notes ?? undefined means when notes is undefined, update gets undefined (skipped by Prisma)
+      // notes is omitted → schema transforms to null → route uses `notes ?? undefined` = undefined for update
       expect(prisma.articleStatus.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           update: expect.objectContaining({
@@ -540,7 +559,7 @@ describe("Tracker Articles API", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           articleId: "art-6",
-          status: "completed",
+          status: "compliant",
         }),
       });
 

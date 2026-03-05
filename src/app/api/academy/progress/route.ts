@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -161,7 +162,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("[Academy Progress GET]", error);
+    logger.error("[Academy Progress GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch progress" },
       { status: 500 },

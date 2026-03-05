@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
 import { withCache } from "@/lib/cache.server";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -44,7 +45,7 @@ export async function GET() {
       },
     );
   } catch (error) {
-    console.error("Error fetching jurisdictions:", error);
+    logger.error("Error fetching jurisdictions", error);
     return NextResponse.json(
       { error: "Failed to fetch jurisdictions" },
       { status: 500 },

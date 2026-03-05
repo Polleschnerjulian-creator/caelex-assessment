@@ -18,6 +18,7 @@ import {
   type UsComplianceStatus,
   usEuComparisons,
 } from "@/data/us-space-regulations";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -300,7 +301,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(report);
   } catch (error) {
-    console.error("Error generating US Regulatory report:", error);
+    logger.error("Error generating US Regulatory report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentOrganization } from "@/lib/middleware/organization-guard";
+import { logger } from "@/lib/logger";
 
 // GET /api/documents/[id] - Get document details
 export async function GET(
@@ -68,7 +69,7 @@ export async function GET(
 
     return NextResponse.json({ document });
   } catch (error) {
-    console.error("Error fetching document:", error);
+    logger.error("Error fetching document", error);
     return NextResponse.json(
       { error: "Failed to fetch document" },
       { status: 500 },
@@ -269,7 +270,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-    console.error("Error updating document:", error);
+    logger.error("Error updating document", error);
     return NextResponse.json(
       { error: "Failed to update document" },
       { status: 500 },
@@ -341,7 +342,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting document:", error);
+    logger.error("Error deleting document", error);
     return NextResponse.json(
       { error: "Failed to delete document" },
       { status: 500 },

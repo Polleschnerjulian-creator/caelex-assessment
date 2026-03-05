@@ -61,6 +61,25 @@ vi.mock("@/lib/encryption", () => ({
   isEncrypted: vi.fn(() => false),
 }));
 
+// ─── Mock Organization Guard ───
+vi.mock("@/lib/middleware/organization-guard", () => ({
+  getCurrentOrganization: vi.fn().mockResolvedValue({
+    userId: "user-test-nis2-123",
+    organizationId: "ctest123org",
+    role: "OWNER",
+    permissions: ["*"],
+    organization: {
+      id: "ctest123org",
+      name: "Test Org",
+      slug: "test-org",
+      plan: "PROFESSIONAL",
+      isActive: true,
+    },
+  }),
+  verifyOrganizationAccess: vi.fn().mockResolvedValue({ success: true }),
+  withOrganizationGuard: vi.fn(),
+}));
+
 // ─── Mock NIS2 Auto-Assessment ───
 vi.mock("@/lib/nis2-auto-assessment.server", () => ({
   generateAutoAssessments: vi.fn(() => []),
@@ -328,7 +347,7 @@ describe("GET /api/nis2", () => {
     expect(data.assessments).toBeDefined();
     expect(data.assessments).toHaveLength(1);
     expect(prisma.nIS2Assessment.findMany).toHaveBeenCalledWith({
-      where: { userId: TEST_USER_ID },
+      where: { userId: TEST_USER_ID, organizationId: "ctest123org" },
       include: { requirements: true },
       orderBy: { createdAt: "desc" },
     });
@@ -417,7 +436,7 @@ describe("POST /api/nis2", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 200 with assessment on valid input", async () => {
@@ -759,7 +778,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid sector");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for invalid entitySize value", async () => {
@@ -778,7 +797,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("Invalid entitySize");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 400 for invalid boolean fields", async () => {
@@ -798,7 +817,7 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("isEUEstablished");
+    expect(data.error).toBe("Invalid input");
   });
 
   it("should return 429 for bot-like fast completion", async () => {
@@ -900,6 +919,6 @@ describe("POST /api/nis2/calculate", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toContain("memberStateCount");
+    expect(data.error).toBe("Invalid input");
   });
 });

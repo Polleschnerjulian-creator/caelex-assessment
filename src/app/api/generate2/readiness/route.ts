@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { collectGenerate2Data } from "@/lib/generate/data-collector";
 import { computeAllReadiness } from "@/lib/generate/readiness";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -42,7 +43,7 @@ export async function GET() {
 
     return NextResponse.json({ readiness });
   } catch (error) {
-    console.error("Readiness check error:", error);
+    logger.error("Readiness check error", error);
     return NextResponse.json(
       { error: "Failed to compute readiness" },
       { status: 500 },

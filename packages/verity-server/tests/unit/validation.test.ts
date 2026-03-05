@@ -26,8 +26,6 @@ import {
 
 /** 64-char lowercase hex string (32 bytes). */
 const VALID_HEX_64 = "a".repeat(64);
-/** 128-char lowercase hex string (64 bytes). */
-const VALID_HEX_128 = "b".repeat(128);
 /** Valid ISO-8601 timestamp with offset. */
 const VALID_TS = "2036-06-15T12:00:00.000Z";
 
@@ -49,22 +47,25 @@ describe("createAttestationSchema", () => {
       valid_from: VALID_TS,
       valid_until: "2036-12-31T23:59:59.000Z",
     },
-    commitment: {
-      hash: VALID_HEX_64,
-      scheme: "pedersen-v2",
-      version: 1,
-    },
     evidence: {
       evidence_ref: "evidence/bundle/123",
       evidence_hash: VALID_HEX_64,
       attester_id: "attester123",
-      attester_signature: VALID_HEX_128,
     },
     operator_key_id: "key123",
+    actual_value: 42.5,
+    commitment_domain: "fuel_margin",
+    commitment_context: { sensor_id: "FP-001" },
   };
 
   it("accepts a fully valid input", () => {
     const result = createAttestationSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts when commitment_context is omitted (defaults to {})", () => {
+    const { commitment_context: _, ...rest } = validInput;
+    const result = createAttestationSchema.safeParse(rest);
     expect(result.success).toBe(true);
   });
 
@@ -89,51 +90,6 @@ describe("createAttestationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects when commitment.hash is not 64 hex chars", () => {
-    const input = {
-      ...validInput,
-      commitment: { ...validInput.commitment, hash: "not-hex" },
-    };
-    const result = createAttestationSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects when commitment.hash is uppercase hex", () => {
-    const input = {
-      ...validInput,
-      commitment: { ...validInput.commitment, hash: "A".repeat(64) },
-    };
-    const result = createAttestationSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects when commitment.hash is wrong length (32 hex chars)", () => {
-    const input = {
-      ...validInput,
-      commitment: { ...validInput.commitment, hash: "a".repeat(32) },
-    };
-    const result = createAttestationSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects when commitment.version is not a positive integer", () => {
-    const input = {
-      ...validInput,
-      commitment: { ...validInput.commitment, version: 0 },
-    };
-    const result = createAttestationSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects when commitment.version is a float", () => {
-    const input = {
-      ...validInput,
-      commitment: { ...validInput.commitment, version: 1.5 },
-    };
-    const result = createAttestationSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
   it("rejects when evidence.evidence_hash is invalid hex", () => {
     const input = {
       ...validInput,
@@ -143,11 +99,20 @@ describe("createAttestationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects when evidence.attester_signature is not 128 hex chars", () => {
-    const input = {
-      ...validInput,
-      evidence: { ...validInput.evidence, attester_signature: "b".repeat(64) },
-    };
+  it("rejects when actual_value is missing", () => {
+    const { actual_value: _, ...rest } = validInput;
+    const result = createAttestationSchema.safeParse(rest);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects when commitment_domain is missing", () => {
+    const { commitment_domain: _, ...rest } = validInput;
+    const result = createAttestationSchema.safeParse(rest);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects when commitment_domain is empty", () => {
+    const input = { ...validInput, commitment_domain: "" };
     const result = createAttestationSchema.safeParse(input);
     expect(result.success).toBe(false);
   });

@@ -1,0 +1,227 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { PrismaClient } from "@prisma/client";
+
+vi.mock("../utils/redaction", () => ({ safeLog: vi.fn() }));
+
+import { resolveEvidence } from "./evidence-resolver";
+
+function createMockPrisma() {
+  return {
+    organizationMember: {
+      findFirst: vi.fn(),
+    },
+    sentinelAgent: {
+      findFirst: vi.fn(),
+    },
+    sentinelPacket: {
+      findFirst: vi.fn(),
+    },
+  } as unknown as PrismaClient & {
+    organizationMember: { findFirst: ReturnType<typeof vi.fn> };
+    sentinelAgent: { findFirst: ReturnType<typeof vi.fn> };
+    sentinelPacket: { findFirst: ReturnType<typeof vi.fn> };
+  };
+}
+
+describe("evidence-resolver", () => {
+  let mockPrisma: ReturnType<typeof createMockPrisma>;
+
+  beforeEach(() => {
+    mockPrisma = createMockPrisma();
+  });
+
+  it("returns null when no org membership found", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue(null);
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns null when no active sentinel agent", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue(null);
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns null when no packet found", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue({
+      id: "agent_1",
+      sentinelId: "sentinel_1",
+    });
+    mockPrisma.sentinelPacket.findFirst.mockResolvedValue(null);
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns evidence with trust 0.98 when cross-verified", async () => {
+    const collectedAt = new Date("2026-02-01T12:00:00Z");
+    const verifiedAt = new Date("2026-02-01T12:05:00Z");
+
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue({
+      id: "agent_1",
+      sentinelId: "sentinel_1",
+    });
+    mockPrisma.sentinelPacket.findFirst.mockResolvedValue({
+      values: { remaining_fuel_pct: 95.5 },
+      collectedAt,
+      chainPosition: 42,
+      contentHash: "hash_abc",
+      crossChecks: [
+        {
+          publicSource: "ESA",
+          result: "VERIFIED",
+          verifiedAt,
+          dataPoint: "remaining_fuel_pct",
+        },
+      ],
+    });
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.actual_value).toBe(95.5);
+    expect(result!.trust_score).toBe(0.98);
+    expect(result!.source).toBe("sentinel");
+    expect(result!.data_point).toBe("remaining_fuel_pct");
+    expect(result!.sentinel_anchor).toEqual({
+      sentinel_id: "sentinel_1",
+      chain_position: 42,
+      chain_hash: "hash_abc",
+      collected_at: collectedAt.toISOString(),
+    });
+    expect(result!.cross_verification).toEqual({
+      public_source: "ESA",
+      verification_result: "VERIFIED",
+      verified_at: verifiedAt.toISOString(),
+    });
+  });
+
+  it("returns evidence with trust 0.92 when no cross-verification", async () => {
+    const collectedAt = new Date("2026-02-01T12:00:00Z");
+
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue({
+      id: "agent_1",
+      sentinelId: "sentinel_1",
+    });
+    mockPrisma.sentinelPacket.findFirst.mockResolvedValue({
+      values: { remaining_fuel_pct: 80 },
+      collectedAt,
+      chainPosition: 10,
+      contentHash: "hash_xyz",
+      crossChecks: [],
+    });
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.actual_value).toBe(80);
+    expect(result!.trust_score).toBe(0.92);
+    expect(result!.cross_verification).toBeNull();
+  });
+
+  it("returns null when packet value is not a number", async () => {
+    const collectedAt = new Date("2026-02-01T12:00:00Z");
+
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue({
+      id: "agent_1",
+      sentinelId: "sentinel_1",
+    });
+    mockPrisma.sentinelPacket.findFirst.mockResolvedValue({
+      values: { remaining_fuel_pct: "not_a_number" },
+      collectedAt,
+      chainPosition: 10,
+      contentHash: "hash_xyz",
+      crossChecks: [],
+    });
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("handles errors gracefully (returns null)", async () => {
+    mockPrisma.organizationMember.findFirst.mockRejectedValue(
+      new Error("DB connection failed"),
+    );
+
+    const result = await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "12345",
+      "remaining_fuel_pct",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("includes satellite_norad filter when provided", async () => {
+    mockPrisma.organizationMember.findFirst.mockResolvedValue({
+      organizationId: "org_1",
+    });
+    mockPrisma.sentinelAgent.findFirst.mockResolvedValue({
+      id: "agent_1",
+      sentinelId: "sentinel_1",
+    });
+    mockPrisma.sentinelPacket.findFirst.mockResolvedValue(null);
+
+    await resolveEvidence(
+      mockPrisma as unknown as PrismaClient,
+      "op_1",
+      "SAT-99999",
+      "remaining_fuel_pct",
+    );
+
+    expect(mockPrisma.sentinelPacket.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          satelliteNorad: "SAT-99999",
+        }),
+      }),
+    );
+  });
+});

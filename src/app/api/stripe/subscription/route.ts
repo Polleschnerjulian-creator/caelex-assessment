@@ -17,6 +17,7 @@ import { PRICING_TIERS } from "@/lib/stripe/pricing";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { CuidSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 const SubscriptionActionSchema = z.object({
   organizationId: CuidSchema,
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error getting subscription:", error);
+    logger.error("Error getting subscription", error);
     return NextResponse.json(
       { error: "Failed to get subscription" },
       { status: 500 },
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error("Error managing subscription:", error);
+    logger.error("Error managing subscription", error);
     return NextResponse.json(
       { error: "Failed to manage subscription" },
       { status: 500 },

@@ -11,6 +11,9 @@ vi.mock("@/lib/prisma", () => ({
     organizationMember: {
       findMany: vi.fn(),
     },
+    organization: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -60,6 +63,35 @@ vi.mock("@/lib/validations", () => ({
   getSafeErrorMessage: vi.fn((error: unknown, fallback: string) =>
     error instanceof Error ? error.message : fallback,
   ),
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
+}));
+
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+vi.mock("@/lib/encryption", () => ({
+  smartDecrypt: vi.fn((value: string) => Promise.resolve(value)),
+  encrypt: vi.fn((value: string) => Promise.resolve(value)),
+  decrypt: vi.fn((value: string) => Promise.resolve(value)),
+}));
+
+vi.mock("@/lib/audit", () => ({
+  logAuditEvent: vi.fn().mockResolvedValue(undefined),
+  getRequestContext: vi
+    .fn()
+    .mockReturnValue({ ipAddress: "127.0.0.1", userAgent: "test" }),
+}));
+
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+  isEmailConfigured: vi.fn().mockReturnValue(false),
 }));
 
 // ─── Imports ───
@@ -256,7 +288,8 @@ describe("POST /api/organizations", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Organization name");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when name is too short", async () => {
@@ -266,7 +299,8 @@ describe("POST /api/organizations", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Organization name");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid slug format", async () => {
@@ -278,7 +312,8 @@ describe("POST /api/organizations", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Slug");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when provided slug is already taken", async () => {
@@ -858,7 +893,8 @@ describe("POST /api/organizations/[orgId]/members", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("User ID is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid role", async () => {
@@ -874,7 +910,8 @@ describe("POST /api/organizations/[orgId]/members", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Invalid role");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when non-owner tries to add an OWNER", async () => {
@@ -1011,7 +1048,8 @@ describe("PATCH /api/organizations/[orgId]/members/[userId]", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Role is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for invalid role value", async () => {
@@ -1027,7 +1065,8 @@ describe("PATCH /api/organizations/[orgId]/members/[userId]", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Invalid role");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when non-owner promotes to OWNER", async () => {
@@ -1739,7 +1778,7 @@ describe("POST /api/organizations/[orgId]/spacecraft", () => {
 
   const validSpacecraft = {
     name: "Sentinel-1A",
-    missionType: "observation",
+    missionType: "earth_observation",
     orbitType: "LEO",
   };
 
@@ -1788,7 +1827,8 @@ describe("POST /api/organizations/[orgId]/spacecraft", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("name");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when missionType is missing", async () => {
@@ -1805,7 +1845,8 @@ describe("POST /api/organizations/[orgId]/spacecraft", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Mission type");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when orbitType is missing", async () => {
@@ -1816,13 +1857,14 @@ describe("POST /api/organizations/[orgId]/spacecraft", () => {
     });
 
     const response = await createSpacecraftRoute(
-      makeRequest({ name: "Sat-1", missionType: "observation" }),
+      makeRequest({ name: "Sat-1", missionType: "earth_observation" }),
       makeParams({ orgId: mockOrgId }),
     );
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Orbit type");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should create spacecraft on success", async () => {
@@ -1834,7 +1876,7 @@ describe("POST /api/organizations/[orgId]/spacecraft", () => {
     vi.mocked(createSpacecraft).mockResolvedValue({
       id: mockSpacecraftId,
       name: "Sentinel-1A",
-      missionType: "observation",
+      missionType: "earth_observation",
       orbitType: "LEO",
       status: "PRE_LAUNCH",
     } as never);
@@ -2062,11 +2104,11 @@ describe("PATCH /api/organizations/[orgId]/spacecraft/[spacecraftId]", () => {
     vi.mocked(updateSpacecraft).mockResolvedValue({
       id: mockSpacecraftId,
       name: "Updated Sat",
-      missionType: "observation",
+      missionType: "earth_observation",
     } as never);
 
     const response = await updateSpacecraftRoute(
-      makeRequest({ name: "Updated Sat", missionType: "observation" }),
+      makeRequest({ name: "Updated Sat", missionType: "earth_observation" }),
       makeParams({ orgId: mockOrgId, spacecraftId: mockSpacecraftId }),
     );
     const data = await response.json();

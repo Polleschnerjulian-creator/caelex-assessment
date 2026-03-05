@@ -8,6 +8,7 @@ import {
   INCIDENT_CLASSIFICATION,
   type IncidentCategory,
 } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 /**
  * GET /api/supervision/incidents/[id]/deadline
@@ -126,7 +127,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error getting incident deadline:", error);
+    logger.error("Error getting incident deadline", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -217,7 +218,7 @@ export async function PATCH(
       summary,
     });
   } catch (error) {
-    console.error("Error recording NCA notification:", error);
+    logger.error("Error recording NCA notification", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

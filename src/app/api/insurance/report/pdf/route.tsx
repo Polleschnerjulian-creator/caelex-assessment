@@ -8,6 +8,7 @@ import {
   InsuranceComplianceReportPDF,
   type InsuranceComplianceReportData,
 } from "@/lib/pdf/reports/insurance-compliance-report";
+import { logger } from "@/lib/logger";
 
 // POST /api/insurance/report/pdf - Generate Insurance Compliance Report PDF
 export async function POST(request: Request) {
@@ -232,7 +233,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating insurance report PDF:", error);
+    logger.error("Error generating insurance report PDF", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

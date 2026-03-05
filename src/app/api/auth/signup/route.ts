@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { RegisterSchema, formatZodErrors } from "@/lib/validations";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -56,13 +57,18 @@ export async function POST(request: Request) {
 
     // Create User + Organization + Membership + Subscription in a single transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create user
+      // 1. Create user (select only needed fields — avoid password hash in memory)
       const user = await tx.user.create({
         data: {
           name,
           email,
           password: hashed,
           organization: orgName,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
         },
       });
 
@@ -164,7 +170,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Signup error:", error);
+    logger.error("Signup error", error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 },

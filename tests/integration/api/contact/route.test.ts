@@ -3,23 +3,36 @@ import { NextRequest } from "next/server";
 
 // ─── Mock rate limiter ───
 vi.mock("@/lib/ratelimit", () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ success: true, remaining: 4 }),
+  checkRateLimit: vi
+    .fn()
+    .mockResolvedValue({
+      success: true,
+      remaining: 4,
+      reset: Date.now() + 60000,
+      limit: 5,
+    }),
   getIdentifier: vi.fn().mockReturnValue("127.0.0.1"),
   createRateLimitResponse: vi.fn().mockReturnValue(
     new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
       status: 429,
     }),
   ),
+  createRateLimitHeaders: vi.fn().mockReturnValue(new Headers()),
+}));
+
+// ─── Mock Logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
 
 // ─── Mock Resend ───
 const mockSend = vi.fn();
 vi.mock("resend", () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: {
+  Resend: class {
+    emails = {
       send: (...args: unknown[]) => mockSend(...args),
-    },
-  })),
+    };
+  },
 }));
 
 import { POST } from "@/app/api/contact/route";
@@ -49,6 +62,13 @@ describe("POST /api/contact", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset rate limit mock to default success state after each test
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      success: true,
+      remaining: 4,
+      reset: Date.now() + 60000,
+      limit: 5,
+    } as never);
     process.env = {
       ...originalEnv,
       RESEND_API_KEY: "re_test_key_123",
@@ -115,7 +135,8 @@ describe("POST /api/contact", () => {
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
-    expect(responseData.error).toBe("Missing required fields");
+    expect(responseData.error).toBe("Invalid input");
+    expect(responseData.details).toBeDefined();
   });
 
   it("should return 400 when email is missing", async () => {
@@ -125,7 +146,8 @@ describe("POST /api/contact", () => {
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
-    expect(responseData.error).toBe("Missing required fields");
+    expect(responseData.error).toBe("Invalid input");
+    expect(responseData.details).toBeDefined();
   });
 
   it("should return 400 when message is missing", async () => {
@@ -135,7 +157,8 @@ describe("POST /api/contact", () => {
     const responseData = await response.json();
 
     expect(response.status).toBe(400);
-    expect(responseData.error).toBe("Missing required fields");
+    expect(responseData.error).toBe("Invalid input");
+    expect(responseData.details).toBeDefined();
   });
 
   // ─── Email Validation ───
@@ -149,7 +172,8 @@ describe("POST /api/contact", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid email format");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 for email without domain", async () => {
@@ -161,7 +185,8 @@ describe("POST /api/contact", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid email format");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   // ─── Input Length Validation ───
@@ -175,7 +200,8 @@ describe("POST /api/contact", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Input too long");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when message exceeds 5000 characters", async () => {
@@ -187,7 +213,8 @@ describe("POST /api/contact", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Input too long");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when company exceeds 200 characters", async () => {
@@ -199,7 +226,8 @@ describe("POST /api/contact", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Input too long");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   // ─── Honeypot ───

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/environmental/suppliers/import
@@ -226,7 +227,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Import supplier data error:", error);
+    logger.error("Import supplier data error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

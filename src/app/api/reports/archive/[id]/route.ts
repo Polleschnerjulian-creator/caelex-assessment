@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { logAuditEvent } from "@/lib/audit";
+import { logger } from "@/lib/logger";
 import {
   getReportArchive,
   deleteReportArchive,
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch report archive:", error);
+    logger.error("Failed to fetch report archive", error);
     return NextResponse.json(
       { error: "Failed to fetch report archive" },
       { status: 500 },
@@ -125,7 +126,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete report archive:", error);
+    logger.error("Failed to delete report archive", error);
     return NextResponse.json(
       { error: "Failed to delete report archive" },
       { status: 500 },

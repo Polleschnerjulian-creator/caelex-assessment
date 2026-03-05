@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
       details: results.details,
     });
   } catch (error) {
-    logger.error("Cron job failed:", error);
+    logger.error("Cron job failed", error);
     return NextResponse.json(
       { error: "Failed to process scheduled reports" },
       { status: 500 },
@@ -332,7 +332,7 @@ async function generateReportContent(
     const buffer = formatReport(data, reportType, format);
     return { success: true, buffer };
   } catch (error) {
-    logger.error(`Failed to generate ${reportType} report:`, error);
+    logger.error(`Failed to generate ${reportType} report`, error);
     return {
       success: false,
       error: getSafeErrorMessage(error, "Report generation failed"),

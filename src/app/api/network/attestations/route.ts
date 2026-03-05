@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { createAttestation, getAttestations } from "@/lib/services/attestation";
+import { logger } from "@/lib/logger";
 import { parsePaginationLimit } from "@/lib/validations";
 import type { AttestationType } from "@prisma/client";
 
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Failed to fetch attestations:", error);
+    logger.error("Failed to fetch attestations", error);
     return NextResponse.json(
       { error: "Failed to fetch attestations" },
       { status: 500 },
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, attestation });
   } catch (error) {
-    console.error("Failed to create attestation:", error);
+    logger.error("Failed to create attestation", error);
     return NextResponse.json(
       { error: "Failed to create attestation" },
       { status: 500 },

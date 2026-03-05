@@ -48,10 +48,7 @@ export async function handleAttestations(
       );
     }
 
-    const result = await createAttestation(
-      tenant.tenant_id,
-      parsed.data as Parameters<typeof createAttestation>[1],
-    );
+    const result = await createAttestation(tenant.tenant_id, parsed.data);
 
     logger.info("attestations.create", {
       request_id: requestId,

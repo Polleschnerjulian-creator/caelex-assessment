@@ -11,6 +11,7 @@ import { requireRole } from "@/lib/dal";
 import { NextResponse } from "next/server";
 import { parsePaginationLimit } from "@/lib/validations";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("Error fetching admin audit logs:", error);
+    logger.error("Error fetching admin audit logs", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

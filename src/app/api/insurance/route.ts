@@ -16,6 +16,7 @@ import {
   type OrbitRegime,
   type InsuranceType,
 } from "@/data/insurance-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/insurance - List all insurance assessments for user
 export async function GET() {
@@ -44,7 +45,7 @@ export async function GET() {
 
     return NextResponse.json({ assessments });
   } catch (error) {
-    console.error("Error fetching insurance assessments:", error);
+    logger.error("Error fetching insurance assessments", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -219,7 +220,7 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Error creating insurance assessment:", error);
+    logger.error("Error creating insurance assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

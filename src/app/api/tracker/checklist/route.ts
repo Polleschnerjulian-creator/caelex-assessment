@@ -7,6 +7,7 @@ import {
   generateAuditDescription,
 } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const UpdateChecklistStatusSchema = z.object({
   checklistId: z.string().min(1).max(100),
@@ -40,7 +41,7 @@ export async function GET() {
 
     return NextResponse.json(statusMap);
   } catch (error) {
-    console.error("Error fetching checklist statuses:", error);
+    logger.error("Error fetching checklist statuses", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -119,7 +120,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error updating checklist status:", error);
+    logger.error("Error updating checklist status", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

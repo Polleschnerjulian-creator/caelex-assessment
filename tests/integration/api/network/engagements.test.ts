@@ -1,6 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// ─── Mock logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+// ─── Mock validations ───
+vi.mock("@/lib/validations", () => ({
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
+}));
+
 // ─── Mock auth ───
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -52,7 +68,7 @@ const mockMember = {
 
 const validEngagementData = {
   organizationId: ORG_ID,
-  type: "REGULATOR",
+  type: "NCA",
   companyName: "ESA",
   contactName: "John Doe",
   contactEmail: "john@esa.int",
@@ -132,7 +148,7 @@ describe("GET /api/network/engagements", () => {
       engagements: [
         {
           id: "eng-1",
-          type: "REGULATOR",
+          type: "NCA",
           companyName: "ESA",
           status: "ACTIVE",
         },
@@ -165,13 +181,13 @@ describe("GET /api/network/engagements", () => {
     });
 
     const request = new NextRequest(
-      `http://localhost/api/network/engagements?organizationId=${ORG_ID}&type=REGULATOR&status=ACTIVE&search=ESA`,
+      `http://localhost/api/network/engagements?organizationId=${ORG_ID}&type=NCA&status=ACTIVE&search=ESA`,
     );
     await GET(request);
 
     expect(mockGetEngagements).toHaveBeenCalledWith(
       ORG_ID,
-      { type: "REGULATOR", status: "ACTIVE", search: "ESA" },
+      { type: "NCA", status: "ACTIVE", search: "ESA" },
       { page: 1, limit: 50 },
     );
   });
@@ -235,7 +251,8 @@ describe("POST /api/network/engagements", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("organizationId is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when required fields are missing", async () => {
@@ -248,7 +265,7 @@ describe("POST /api/network/engagements", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           organizationId: ORG_ID,
-          type: "REGULATOR",
+          type: "NCA",
           // Missing: companyName, contactName, contactEmail, scope
         }),
       },
@@ -257,7 +274,8 @@ describe("POST /api/network/engagements", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when user lacks network:write permission", async () => {
@@ -286,7 +304,7 @@ describe("POST /api/network/engagements", () => {
     const mockResult = {
       engagement: {
         id: "eng-new",
-        type: "REGULATOR",
+        type: "NCA",
         companyName: "ESA",
         contactName: "John Doe",
         contactEmail: "john@esa.int",

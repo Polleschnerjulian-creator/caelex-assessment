@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { hasPermission, getPermissionsForRole } from "@/lib/permissions";
 import { getActivities } from "@/lib/services/activity-service";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 const NETWORK_ENTITY_TYPES = [
   "stakeholder_engagement",
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.error("Failed to fetch network activity:", error);
+    logger.error("Failed to fetch network activity", error);
     return NextResponse.json(
       { error: "Failed to fetch network activity" },
       { status: 500 },

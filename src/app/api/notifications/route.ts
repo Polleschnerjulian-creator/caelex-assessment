@@ -12,6 +12,7 @@ import {
   NOTIFICATION_CATEGORIES,
 } from "@/lib/services/notification-service";
 import type { NotificationType, NotificationSeverity } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
       categories: NOTIFICATION_CATEGORIES,
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    logger.error("Error fetching notifications", error);
     return NextResponse.json(
       { error: "Failed to fetch notifications" },
       { status: 500 },

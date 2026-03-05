@@ -17,7 +17,7 @@ import {
   createRateLimitResponse,
 } from "@/lib/ratelimit";
 import { getSafeErrorMessage } from "@/lib/validations";
-import { logger } from "@/lib/logger";
+import { logger, maskEmail } from "@/lib/logger";
 
 function escapeHtml(str: string): string {
   return str
@@ -73,7 +73,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info("Demo request created", { id: demoRequest.id, email });
+    logger.info("Demo request created", {
+      id: demoRequest.id,
+      email: maskEmail(email),
+    });
 
     // Send confirmation email to requester
     await sendEmail({

@@ -1689,4 +1689,120 @@ describe("Space Law Engine", () => {
       expect(resultLaunch.jurisdictions[0].totalRequirements).toBe(0);
     });
   });
+
+  // ═══════════════════════════════════════════
+  // Branch coverage: UK delegation edge cases
+  // ═══════════════════════════════════════════
+
+  describe("UK delegation branch coverage", () => {
+    it("should handle UK with null activityType (maps to default orbital_operations)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: null,
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should handle UK with launch_site activity type (spaceport_operator)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "launch_site",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should handle UK with earth_observation activity type", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "earth_observation",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should handle UK with satellite_communications activity type", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "satellite_communications",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should handle UK with space_resources activity type", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "space_resources",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should handle UK with in_orbit_services activity type", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "in_orbit_services",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+      expect(uk.isApplicable).toBe(true);
+    });
+
+    it("should include small entity note for UK with entitySize small", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "spacecraft_operation",
+        entitySize: "small",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.favorabilityFactors).toContain(
+        "Note: UK SIA 2018 does not provide reduced thresholds for small operators",
+      );
+    });
+
+    it("should handle UK with primaryOrbit beyond (non-orbital)", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "spacecraft_operation",
+        primaryOrbit: "beyond",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+    });
+
+    it("should handle UK with eu_other entityNationality", async () => {
+      const answers = createAnswers({
+        selectedJurisdictions: ["UK"],
+        activityType: "spacecraft_operation",
+        entityNationality: "eu_other",
+      });
+      const result = await calculateSpaceLawCompliance(answers);
+
+      const uk = result.jurisdictions[0];
+      expect(uk.countryCode).toBe("UK");
+    });
+  });
 });

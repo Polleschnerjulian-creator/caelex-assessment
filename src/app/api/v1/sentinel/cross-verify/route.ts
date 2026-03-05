@@ -5,6 +5,7 @@ import {
   crossVerifyPacket,
   crossVerifyAgent,
 } from "@/lib/services/cross-verification.server";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/v1/sentinel/cross-verify
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   } catch (err) {
-    console.error("[sentinel/cross-verify]", err);
+    logger.error("[sentinel/cross-verify]", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

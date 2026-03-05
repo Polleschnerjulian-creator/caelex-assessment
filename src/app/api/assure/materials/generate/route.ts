@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { materialGenerateSchema } from "@/lib/assure/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
       createdAt: material.createdAt,
     });
   } catch (error) {
-    console.error("Assure material generation error:", error);
+    logger.error("Assure material generation error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -1,6 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// ─── Mock logger ───
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+// ─── Mock validations ───
+vi.mock("@/lib/validations", () => ({
+  parsePaginationLimit: vi.fn(
+    (raw: string | null, defaultLimit = 50, maxLimit = 100) => {
+      const parsed = parseInt(raw || String(defaultLimit), 10);
+      if (isNaN(parsed) || parsed < 1) return defaultLimit;
+      return Math.min(parsed, maxLimit);
+    },
+  ),
+}));
+
 // ─── Mock auth ───
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -222,7 +238,8 @@ describe("POST /api/network/data-rooms", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("organizationId is required");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 400 when required fields are missing", async () => {
@@ -240,7 +257,8 @@ describe("POST /api/network/data-rooms", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Missing required fields");
+    expect(data.error).toBe("Invalid input");
+    expect(data.details).toBeDefined();
   });
 
   it("should return 403 when user lacks network:write permission", async () => {
@@ -284,7 +302,7 @@ describe("POST /api/network/data-rooms", () => {
         engagementId: "eng-1",
         name: "Test Room",
         description: "A test data room",
-        accessLevel: "RESTRICTED",
+        accessLevel: "VIEW_ONLY",
       }),
     });
     const response = await POST(request);

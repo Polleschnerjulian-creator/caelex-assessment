@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { milestoneSchema } from "@/lib/assure/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ milestones });
   } catch (error) {
-    console.error("Assure milestones list error:", error);
+    logger.error("Assure milestones list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -133,7 +134,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(milestone, { status: 201 });
   } catch (error) {
-    console.error("Assure milestone create error:", error);
+    logger.error("Assure milestone create error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

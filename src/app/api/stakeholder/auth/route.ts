@@ -5,6 +5,7 @@ import {
   validateToken,
   logStakeholderAccess,
 } from "@/lib/services/stakeholder-engagement";
+import { logger } from "@/lib/logger";
 
 // POST /api/stakeholder/auth — Validate token and return engagement + org info
 export async function POST(request: NextRequest) {
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       organization: engagement.organization,
     });
   } catch (error) {
-    console.error("Stakeholder auth error:", error);
+    logger.error("Stakeholder auth error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

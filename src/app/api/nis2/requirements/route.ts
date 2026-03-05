@@ -14,6 +14,7 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import { logger } from "@/lib/logger";
 
 const VALID_STATUSES = [
   "not_assessed",
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ requirements: decryptedRequirements });
   } catch (error) {
-    console.error("Error fetching NIS2 requirements:", error);
+    logger.error("Error fetching NIS2 requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -253,7 +254,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ requirement: decryptedUpdated });
   } catch (error) {
-    console.error("Error updating NIS2 requirement:", error);
+    logger.error("Error updating NIS2 requirement", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

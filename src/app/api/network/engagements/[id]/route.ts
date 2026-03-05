@@ -15,6 +15,7 @@ import {
   updateEngagement,
   revokeEngagement,
 } from "@/lib/services/stakeholder-engagement";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ engagement });
   } catch (error) {
-    console.error("Failed to fetch engagement:", error);
+    logger.error("Failed to fetch engagement", error);
     return NextResponse.json(
       { error: "Failed to fetch engagement" },
       { status: 500 },
@@ -171,7 +172,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, engagement });
   } catch (error) {
-    console.error("Failed to update engagement:", error);
+    logger.error("Failed to update engagement", error);
     return NextResponse.json(
       { error: "Failed to update engagement" },
       { status: 500 },
@@ -228,7 +229,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, engagement });
   } catch (error) {
-    console.error("Failed to revoke engagement:", error);
+    logger.error("Failed to revoke engagement", error);
     return NextResponse.json(
       { error: "Failed to revoke engagement" },
       { status: 500 },

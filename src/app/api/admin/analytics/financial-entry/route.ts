@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 const financialEntrySchema = z.object({
   type: z.enum(["revenue", "expense", "investment", "refund"]),
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Financial Entry] GET Error:", error);
+    logger.error("[Financial Entry] GET Error", error);
     return NextResponse.json(
       { error: "Failed to fetch entries" },
       { status: 500 },
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
         { status: 403 },
       );
     }
-    console.error("[Financial Entry] POST Error:", error);
+    logger.error("[Financial Entry] POST Error", error);
     return NextResponse.json(
       { error: "Failed to create entry" },
       { status: 500 },

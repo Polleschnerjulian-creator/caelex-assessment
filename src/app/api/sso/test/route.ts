@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { testSSOConnection } from "@/lib/services/sso-service";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error testing SSO:", error);
+    logger.error("Error testing SSO", error);
     return NextResponse.json(
       { error: "Failed to test SSO configuration" },
       { status: 500 },

@@ -7,6 +7,7 @@ import {
   type ScenarioInput,
 } from "@/lib/services/whatif-simulation-service";
 import { computeRegulationVersionHash } from "@/lib/services/whatif-engine-bridge";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("Digital Twin scenarios GET error:", error);
+    logger.error("Digital Twin scenarios GET error", error);
     return NextResponse.json(
       { error: "Failed to load scenarios" },
       { status: 500 },
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Digital Twin scenarios POST error:", error);
+    logger.error("Digital Twin scenarios POST error", error);
     return NextResponse.json(
       { error: "Failed to run simulation" },
       { status: 500 },

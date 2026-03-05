@@ -9,6 +9,7 @@ import {
   calculateDeorbitDeadline,
   type UsOperatorProfile,
 } from "@/data/us-space-regulations";
+import { logger } from "@/lib/logger";
 
 // GET /api/us-regulatory/deorbit-calculator - Calculate FCC 5-year rule compliance
 export async function GET(request: Request) {
@@ -168,7 +169,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error calculating deorbit requirements:", error);
+    logger.error("Error calculating deorbit requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -367,7 +368,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error calculating deorbit requirements:", error);
+    logger.error("Error calculating deorbit requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -11,6 +11,7 @@ import {
   findEuSpaceActCrossReferences,
   determineRequiredLicenses,
 } from "@/lib/uk-space-engine.server";
+import { logger } from "@/lib/logger";
 import {
   getApplicableRequirements,
   type UkSpaceProfile,
@@ -127,7 +128,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       euSpaceActOverlaps,
     });
   } catch (error) {
-    console.error("Error fetching UK Space assessment:", error);
+    logger.error("Error fetching UK Space assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -362,7 +363,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       gapAnalysis,
     });
   } catch (error) {
-    console.error("Error updating UK Space assessment:", error);
+    logger.error("Error updating UK Space assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -411,7 +412,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting UK Space assessment:", error);
+    logger.error("Error deleting UK Space assessment", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSection, markGenerationFailed } from "@/lib/generate";
+import { logger } from "@/lib/logger";
 
 export const maxDuration = 300;
 
@@ -93,7 +94,7 @@ export async function POST(
     const safeMessage = "Section generation failed";
     const status = (error as { status?: number }).status;
 
-    console.error(
+    logger.error(
       `[section/route] Section generation error (doc=${documentId}):`,
       {
         message: error instanceof Error ? error.message : safeMessage,
@@ -107,7 +108,7 @@ export async function POST(
       status !== 429 && status !== 529 && status !== 503;
     if (documentId && isPermanentFailure) {
       markGenerationFailed(documentId, safeMessage).catch((e) =>
-        console.error("[section/route] Failed to mark doc as FAILED:", e),
+        logger.error("[section/route] Failed to mark doc as FAILED", e),
       );
     }
 

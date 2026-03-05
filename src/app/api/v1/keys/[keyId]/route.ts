@@ -17,6 +17,7 @@ import {
   regenerateApiKey,
   getApiKeyUsageStats,
 } from "@/lib/services/api-key-service";
+import { logger } from "@/lib/logger";
 
 const PatchApiKeySchema = z.object({
   organizationId: CuidSchema,
@@ -84,7 +85,7 @@ export async function GET(
       ...(stats && { stats }),
     });
   } catch (error) {
-    console.error("Error fetching API key:", error);
+    logger.error("Error fetching API key", error);
     return NextResponse.json(
       { error: "Failed to fetch API key" },
       { status: 500 },
@@ -175,7 +176,7 @@ export async function PATCH(
 
     return NextResponse.json({ key });
   } catch (error) {
-    console.error("Error updating API key:", error);
+    logger.error("Error updating API key", error);
     return NextResponse.json(
       { error: "Failed to update API key" },
       { status: 500 },
@@ -234,7 +235,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error revoking API key:", error);
+    logger.error("Error revoking API key", error);
     return NextResponse.json(
       { error: "Failed to revoke API key" },
       { status: 500 },

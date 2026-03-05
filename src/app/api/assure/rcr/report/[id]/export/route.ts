@@ -19,6 +19,7 @@ import type {
   ReportSection,
   ReportSectionContent,
 } from "@/lib/pdf/types";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -122,7 +123,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(reportConfig);
   } catch (error) {
-    console.error("RCR report export API error:", error);
+    logger.error("RCR report export API error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

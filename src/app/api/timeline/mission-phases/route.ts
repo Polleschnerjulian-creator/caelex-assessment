@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { PhaseStatus } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // GET /api/timeline/mission-phases - List mission phases
 export async function GET(req: Request) {
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
       byMission: Object.values(missionMap),
     });
   } catch (error) {
-    console.error("Error fetching mission phases:", error);
+    logger.error("Error fetching mission phases", error);
     return NextResponse.json(
       { error: "Failed to fetch mission phases" },
       { status: 500 },
@@ -162,7 +163,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, phase });
   } catch (error) {
-    console.error("Error creating mission phase:", error);
+    logger.error("Error creating mission phase", error);
     return NextResponse.json(
       { error: "Failed to create mission phase" },
       { status: 500 },
@@ -219,7 +220,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ success: true, phase });
   } catch (error) {
-    console.error("Error updating mission phase:", error);
+    logger.error("Error updating mission phase", error);
     return NextResponse.json(
       { error: "Failed to update mission phase" },
       { status: 500 },
@@ -255,7 +256,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting mission phase:", error);
+    logger.error("Error deleting mission phase", error);
     return NextResponse.json(
       { error: "Failed to delete mission phase" },
       { status: 500 },

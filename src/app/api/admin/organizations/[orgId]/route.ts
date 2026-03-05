@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import type { OrganizationPlan } from "@prisma/client";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const VALID_PLANS: OrganizationPlan[] = [
   "FREE",
@@ -108,7 +109,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error fetching organization:", error);
+    logger.error("Admin: Error fetching organization", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -244,7 +245,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error updating organization:", error);
+    logger.error("Admin: Error updating organization", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

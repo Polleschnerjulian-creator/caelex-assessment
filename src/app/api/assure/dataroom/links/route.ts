@@ -12,6 +12,7 @@ import { logAuditEvent } from "@/lib/audit";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -101,7 +102,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
-    console.error("Assure data room links list error:", error);
+    logger.error("Assure data room links list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -215,7 +216,7 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Assure data room link create error:", error);
+    logger.error("Assure data room link create error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

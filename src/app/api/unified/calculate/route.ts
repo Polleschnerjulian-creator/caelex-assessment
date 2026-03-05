@@ -16,6 +16,7 @@ import {
   buildUnifiedResult,
 } from "@/lib/unified-engine-merger.server";
 import { auth } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 // Minimum time (ms) to complete assessment (anti-bot)
 const MIN_ASSESSMENT_TIME = 5000; // 5 seconds
@@ -162,7 +163,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ result });
   } catch (error) {
-    console.error("Unified assessment calculation error:", error);
+    logger.error("Unified assessment calculation error", error);
     return NextResponse.json(
       { error: "Failed to calculate compliance profile" },
       { status: 500 },

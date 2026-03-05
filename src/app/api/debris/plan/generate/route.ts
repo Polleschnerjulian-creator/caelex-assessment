@@ -7,6 +7,7 @@ import {
   debrisRequirements,
   orbitTypeConfig,
 } from "@/data/debris-requirements";
+import { logger } from "@/lib/logger";
 
 interface DebrisMitigationPlan {
   missionOverview: {
@@ -278,7 +279,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ plan });
   } catch (error) {
-    console.error("Error generating debris plan:", error);
+    logger.error("Error generating debris plan", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

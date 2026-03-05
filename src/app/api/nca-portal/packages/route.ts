@@ -11,6 +11,7 @@ import {
   getPackages,
 } from "@/lib/services/nca-portal-service";
 import type { NCAAuthority } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -23,7 +24,7 @@ export async function GET() {
 
     return NextResponse.json({ packages });
   } catch (error) {
-    console.error("Failed to fetch packages:", error);
+    logger.error("Failed to fetch packages", error);
     return NextResponse.json(
       { error: "Failed to fetch packages" },
       { status: 500 },
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    console.error("Failed to assemble package:", error);
+    logger.error("Failed to assemble package", error);
     return NextResponse.json(
       { error: "Failed to assemble package" },
       { status: 500 },

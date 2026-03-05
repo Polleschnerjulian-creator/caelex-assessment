@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getAnalytics } from "@/lib/services/nca-portal-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json(analytics);
   } catch (error) {
-    console.error("Failed to fetch analytics:", error);
+    logger.error("Failed to fetch analytics", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 },

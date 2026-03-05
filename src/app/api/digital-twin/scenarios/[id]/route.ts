@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   request: Request,
@@ -34,7 +35,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Digital Twin scenario GET error:", error);
+    logger.error("Digital Twin scenario GET error", error);
     return NextResponse.json(
       { error: "Failed to load scenario" },
       { status: 500 },
@@ -69,7 +70,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Digital Twin scenario DELETE error:", error);
+    logger.error("Digital Twin scenario DELETE error", error);
     return NextResponse.json(
       { error: "Failed to delete scenario" },
       { status: 500 },
@@ -131,7 +132,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("Digital Twin scenario PATCH error:", error);
+    logger.error("Digital Twin scenario PATCH error", error);
     return NextResponse.json(
       { error: "Failed to update scenario" },
       { status: 500 },

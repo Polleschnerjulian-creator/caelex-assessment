@@ -16,6 +16,7 @@ import {
   getSubmissionStatusLabel,
   getSubmissionStatusColor,
 } from "@/lib/services/nca-submission-service";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       originalSubmissionId: id,
     });
   } catch (error) {
-    console.error("Failed to resend submission:", error);
+    logger.error("Failed to resend submission", error);
     return NextResponse.json(
       { error: "Failed to resend submission" },
       { status: 500 },

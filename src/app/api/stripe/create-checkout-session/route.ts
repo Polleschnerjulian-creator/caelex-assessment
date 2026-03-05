@@ -15,6 +15,7 @@ import {
   getSafeErrorMessage,
   formatZodErrors,
 } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // Validation schema
 const CheckoutSessionSchema = z.object({
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    logger.error("Error creating checkout session", error);
     return NextResponse.json(
       {
         error: getSafeErrorMessage(error, "Failed to create checkout session"),

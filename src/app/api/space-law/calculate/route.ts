@@ -19,6 +19,7 @@ import {
 } from "@/lib/ratelimit";
 import { SPACE_LAW_COUNTRY_CODES } from "@/lib/space-law-types";
 import type { SpaceLawAssessmentAnswers } from "@/lib/space-law-types";
+import { logger } from "@/lib/logger";
 
 const spaceLawAnswersSchema = z.object({
   selectedJurisdictions: z
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    console.error("Space law assessment calculation error:", error);
+    logger.error("Space law assessment calculation error", error);
     return NextResponse.json(
       { error: "Failed to calculate space law compliance assessment" },
       { status: 500 },

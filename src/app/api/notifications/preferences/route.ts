@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // Validation schema for notification preferences
 const NotificationPreferencesSchema = z.object({
@@ -75,7 +76,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching notification preferences:", error);
+    logger.error("Error fetching notification preferences", error);
     return NextResponse.json(
       { error: "Failed to fetch preferences" },
       { status: 500 },
@@ -165,7 +166,7 @@ export async function PATCH(req: Request) {
       preferences: config,
     });
   } catch (error) {
-    console.error("Error updating notification preferences:", error);
+    logger.error("Error updating notification preferences", error);
     return NextResponse.json(
       { error: "Failed to update preferences" },
       { status: 500 },

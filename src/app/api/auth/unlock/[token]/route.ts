@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { verifyUnlockToken } from "@/lib/login-security.server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const unlockTokenSchema = z.object({
   token: z.string().min(1, "Token is required").max(512, "Token is too long"),
@@ -59,7 +60,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       message: "Account unlocked successfully. You can now log in.",
     });
   } catch (error) {
-    console.error("Error unlocking account:", error);
+    logger.error("Error unlocking account", error);
     return NextResponse.json(
       { error: "Failed to unlock account" },
       { status: 500 },

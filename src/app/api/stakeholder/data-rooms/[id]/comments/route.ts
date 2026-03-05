@@ -11,6 +11,7 @@ import {
 } from "@/lib/services/data-room";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationLimit } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 // GET /api/stakeholder/data-rooms/[id]/comments — List comments for a data room
 export async function GET(
@@ -110,7 +111,7 @@ export async function GET(
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.error("Stakeholder comments list error:", error);
+    logger.error("Stakeholder comments list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -226,7 +227,7 @@ export async function POST(
 
     return NextResponse.json({ comment }, { status: 201 });
   } catch (error) {
-    console.error("Stakeholder comment create error:", error);
+    logger.error("Stakeholder comment create error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

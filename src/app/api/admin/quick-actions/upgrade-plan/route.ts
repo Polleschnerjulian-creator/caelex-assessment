@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { logAuditEvent, getRequestContext } from "@/lib/audit";
 import type { OrganizationPlan } from "@prisma/client";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const upgradePlanSchema = z.object({
   email: z.string().email(),
@@ -162,7 +163,7 @@ export async function POST(request: Request) {
         { status: 403 },
       );
     }
-    console.error("Admin: Error upgrading plan:", error);
+    logger.error("Admin: Error upgrading plan", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

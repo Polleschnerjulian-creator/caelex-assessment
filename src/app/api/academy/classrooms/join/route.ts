@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -189,7 +190,7 @@ export async function POST(request: Request) {
       alreadyJoined: false,
     });
   } catch (error) {
-    console.error("[Academy Classroom Join POST]", error);
+    logger.error("[Academy Classroom Join POST]", error);
     return NextResponse.json(
       { error: "Failed to join classroom" },
       { status: 500 },

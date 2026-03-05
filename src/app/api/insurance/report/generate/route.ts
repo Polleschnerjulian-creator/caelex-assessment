@@ -19,6 +19,7 @@ import {
   type InsuranceType,
   type PolicyStatus,
 } from "@/data/insurance-requirements";
+import { logger } from "@/lib/logger";
 
 interface InsuranceReport {
   organizationProfile: {
@@ -420,7 +421,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ report });
   } catch (error) {
-    console.error("Error generating insurance report:", error);
+    logger.error("Error generating insurance report", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

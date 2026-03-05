@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(document, { status: 201 });
   } catch (error) {
-    console.error("Assure data room document add error:", error);
+    logger.error("Assure data room document add error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

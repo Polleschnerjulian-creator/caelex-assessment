@@ -15,6 +15,7 @@ import {
   type DataSensitivityLevel,
   type RequirementStatus,
 } from "@/data/cybersecurity-requirements";
+import { logger } from "@/lib/logger";
 
 // GET /api/cybersecurity/requirements - Get requirements for an assessment
 export async function GET(request: Request) {
@@ -129,7 +130,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching cybersecurity requirements:", error);
+    logger.error("Error fetching cybersecurity requirements", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -323,7 +324,7 @@ export async function PATCH(request: Request) {
       maturityScore,
     });
   } catch (error) {
-    console.error("Error updating cybersecurity requirement:", error);
+    logger.error("Error updating cybersecurity requirement", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

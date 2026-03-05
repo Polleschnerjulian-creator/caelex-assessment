@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,13 +80,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Newsletter subscribe error:", error);
+    logger.error("Newsletter subscribe error", error);
     return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Rate limiting to prevent mass unsubscription attacks
+    const ip = getIdentifier(request);
+    const rl = await checkRateLimit("public_api", ip);
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
 
@@ -113,7 +121,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Newsletter unsubscribe error:", error);
+    logger.error("Newsletter unsubscribe error", error);
     return NextResponse.json(
       { error: "Failed to unsubscribe" },
       { status: 500 },

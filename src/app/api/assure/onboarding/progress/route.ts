@@ -21,6 +21,7 @@ import {
   validateCsrfToken,
 } from "@/lib/csrf";
 import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
       preFill,
     });
   } catch (error) {
-    console.error("Assure onboarding progress GET error:", error);
+    logger.error("Assure onboarding progress GET error", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Internal server error") },
       { status: 500 },
@@ -180,7 +181,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ success: true, step });
   } catch (error) {
-    console.error("Assure onboarding progress PATCH error:", error);
+    logger.error("Assure onboarding progress PATCH error", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Internal server error") },
       { status: 500 },

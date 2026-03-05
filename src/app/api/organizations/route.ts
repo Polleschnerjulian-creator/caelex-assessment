@@ -14,6 +14,7 @@ import {
   generateUniqueSlug,
   isSlugAvailable,
 } from "@/lib/services/organization-service";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("Error fetching organizations:", error);
+    logger.error("Error fetching organizations", error);
     return NextResponse.json(
       { error: "Failed to fetch organizations" },
       { status: 500 },
@@ -121,7 +122,7 @@ export async function POST(request: Request) {
       message: "Organization created successfully",
     });
   } catch (error) {
-    console.error("Error creating organization:", error);
+    logger.error("Error creating organization", error);
     return NextResponse.json(
       { error: getSafeErrorMessage(error, "Failed to create organization") },
       { status: 500 },

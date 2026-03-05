@@ -11,6 +11,7 @@ import {
   scenarioTemplates,
   type ScenarioTemplate,
 } from "@/data/assure/dataroom-structure";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ scenarios });
   } catch (error) {
-    console.error("Assure risk scenarios list error:", error);
+    logger.error("Assure risk scenarios list error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

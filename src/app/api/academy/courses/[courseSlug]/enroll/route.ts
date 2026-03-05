@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ courseSlug: string }>;
@@ -145,7 +146,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       alreadyEnrolled: false,
     });
   } catch (error) {
-    console.error("[Academy Enroll POST]", error);
+    logger.error("[Academy Enroll POST]", error);
     return NextResponse.json(
       { error: "Failed to enroll in course" },
       { status: 500 },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // GET /api/timeline/deadlines/[id] - Get deadline details
 export async function GET(
@@ -36,7 +37,7 @@ export async function GET(
 
     return NextResponse.json({ deadline });
   } catch (error) {
-    console.error("Error fetching deadline:", error);
+    logger.error("Error fetching deadline", error);
     return NextResponse.json(
       { error: "Failed to fetch deadline" },
       { status: 500 },
@@ -150,7 +151,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, deadline });
   } catch (error) {
-    console.error("Error updating deadline:", error);
+    logger.error("Error updating deadline", error);
     return NextResponse.json(
       { error: "Failed to update deadline" },
       { status: 500 },
@@ -199,7 +200,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting deadline:", error);
+    logger.error("Error deleting deadline", error);
     return NextResponse.json(
       { error: "Failed to delete deadline" },
       { status: 500 },

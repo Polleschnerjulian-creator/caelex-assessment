@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    logger.error(`Error handling webhook event ${event.type}:`, error);
+    logger.error(`Error handling webhook event ${event.type}`, error);
     // Return 200 to acknowledge receipt (prevent retries for non-critical errors)
     return NextResponse.json({ received: true, error: "Handler error" });
   }

@@ -787,7 +787,6 @@ describe("Cron Jobs", () => {
 
         expect(response.status).toBe(500);
         expect(data.error).toBe("Aggregation failed");
-        expect(data.details).toContain("Connection refused");
       });
 
       it("should handle $queryRaw failure gracefully", async () => {

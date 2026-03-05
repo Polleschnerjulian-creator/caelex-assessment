@@ -15,6 +15,7 @@ import {
   updateDataRoom,
   closeDataRoom,
 } from "@/lib/services/data-room";
+import { logger } from "@/lib/logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ dataRoom });
   } catch (error) {
-    console.error("Failed to fetch data room:", error);
+    logger.error("Failed to fetch data room", error);
     return NextResponse.json(
       { error: "Failed to fetch data room" },
       { status: 500 },
@@ -157,7 +158,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, dataRoom });
   } catch (error) {
-    console.error("Failed to update data room:", error);
+    logger.error("Failed to update data room", error);
     return NextResponse.json(
       { error: "Failed to update data room" },
       { status: 500 },
@@ -210,7 +211,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true, dataRoom });
   } catch (error) {
-    console.error("Failed to close data room:", error);
+    logger.error("Failed to close data room", error);
     return NextResponse.json(
       { error: "Failed to close data room" },
       { status: 500 },

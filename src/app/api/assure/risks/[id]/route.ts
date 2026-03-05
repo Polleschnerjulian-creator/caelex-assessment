@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logAuditEvent } from "@/lib/audit";
 import { riskSchema } from "@/lib/assure/validations";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -130,7 +131,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     return NextResponse.json(updatedRisk);
   } catch (error) {
-    console.error("Assure risk update error:", error);
+    logger.error("Assure risk update error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -191,7 +192,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Assure risk delete error:", error);
+    logger.error("Assure risk delete error", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

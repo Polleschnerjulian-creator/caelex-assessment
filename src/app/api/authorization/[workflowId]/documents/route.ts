@@ -8,6 +8,7 @@ import {
   generateAuditDescription,
 } from "@/lib/audit";
 import { evaluateWorkflowTransitions } from "@/lib/services";
+import { logger } from "@/lib/logger";
 
 // Authorization document status transition rules
 const ALLOWED_DOC_TRANSITIONS: Record<string, string[]> = {
@@ -188,7 +189,7 @@ export async function PUT(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error updating document:", error);
+    logger.error("Error updating document", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -262,7 +263,7 @@ export async function POST(
 
     return NextResponse.json(document);
   } catch (error) {
-    console.error("Error creating document:", error);
+    logger.error("Error creating document", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
