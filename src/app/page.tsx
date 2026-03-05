@@ -2,7 +2,6 @@ import Hero from "@/components/landing/Hero";
 import BlogShowcase from "@/components/landing/BlogShowcase";
 import MissionStatement from "@/components/landing/MissionStatement";
 import SoftwareShowcase from "@/components/landing/SoftwareShowcase";
-import WhatWeCover from "@/components/landing/WhatWeCover";
 import { SoftwareApplicationJsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
@@ -14,7 +13,6 @@ export default function Home() {
         <BlogShowcase />
         <MissionStatement />
         <SoftwareShowcase />
-        <WhatWeCover />
       </main>
     </>
   );

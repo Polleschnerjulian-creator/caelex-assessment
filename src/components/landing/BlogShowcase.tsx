@@ -63,13 +63,13 @@ const ENTRIES: BlogEntry[] = [
   {
     id: "verity",
     slug: "verity",
-    href: "/verity/verify",
+    href: "/verity",
     category: "Cryptographic Attestation · Zero-Knowledge",
     title: "Zero-Knowledge Attestation Protocol",
     pill: "Verity",
     description:
       "Ed25519-signed compliance attestations with SHA-256 commitments and blinding factors. Prove you meet Art. 70 fuel thresholds or NIS2 patch windows — without revealing a single byte of operational data. Offline-verifiable certificates. Tamper-evident hash chains anchored to Sentinel telemetry.",
-    image: "/images/blog/agentic-system.png",
+    image: "/images/verity-hero.png",
   },
   {
     id: "ecosystem",
