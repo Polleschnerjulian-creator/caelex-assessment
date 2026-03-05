@@ -13,6 +13,7 @@ const EXCLUDED_ROUTES = [
   "/assessment",
   "/supplier",
   "/academy",
+  "/verity",
 ];
 
 export default function PublicLayout({
