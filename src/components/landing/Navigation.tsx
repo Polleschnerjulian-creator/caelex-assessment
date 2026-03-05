@@ -85,21 +85,19 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
               {/* Right Side Navigation */}
               <div className="flex items-center gap-6">
                 {/* Links */}
-                {["Platform", "Resources", "Modules", "Pricing"].map(
-                  (label) => (
-                    <Link
-                      key={label}
-                      href={`/${label.toLowerCase()}`}
-                      className={`hidden md:block text-body transition-colors duration-700 ${
-                        showDarkText
-                          ? "text-[#4B5563] hover:text-[#111827]"
-                          : "text-white/45 hover:text-white"
-                      }`}
-                    >
-                      {label}
-                    </Link>
-                  ),
-                )}
+                {["Platform", "Resources", "Modules"].map((label) => (
+                  <Link
+                    key={label}
+                    href={`/${label.toLowerCase()}`}
+                    className={`hidden md:block text-body transition-colors duration-700 ${
+                      showDarkText
+                        ? "text-[#4B5563] hover:text-[#111827]"
+                        : "text-white/45 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
 
                 {/* Auth + CTAs */}
                 <div className="hidden md:flex items-center gap-4">
@@ -219,27 +217,22 @@ export default function Navigation({ theme = "dark" }: NavigationProps) {
                 <div
                   className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
                 />
-                {[
-                  "Platform",
-                  "Resources",
-                  "Modules",
-                  "About",
-                  "Pricing",
-                  "Contact",
-                ].map((label) => (
-                  <Link
-                    key={label}
-                    href={`/${label.toLowerCase()}`}
-                    onClick={() => setMobileOpen(false)}
-                    className={`px-4 py-3 rounded-lg text-body-lg transition-colors ${
-                      isLight
-                        ? "text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F5]"
-                        : "text-white/70 hover:text-white hover:bg-white/[0.04]"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                ))}
+                {["Platform", "Resources", "Modules", "About", "Contact"].map(
+                  (label) => (
+                    <Link
+                      key={label}
+                      href={`/${label.toLowerCase()}`}
+                      onClick={() => setMobileOpen(false)}
+                      className={`px-4 py-3 rounded-lg text-body-lg transition-colors ${
+                        isLight
+                          ? "text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F5]"
+                          : "text-white/70 hover:text-white hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  ),
+                )}
                 <div
                   className={`h-px my-3 ${isLight ? "bg-[#E5E7EB]" : "bg-white/[0.06]"}`}
                 />
