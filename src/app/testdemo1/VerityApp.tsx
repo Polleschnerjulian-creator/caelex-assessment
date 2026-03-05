@@ -445,7 +445,9 @@ export default function VerityApp() {
         color: "#b0b8c4",
         fontFamily: "monospace",
         fontSize: 12,
-        minHeight: "100vh",
+        height: "100vh",
+        maxHeight: "100vh",
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         position: "relative",
@@ -457,6 +459,7 @@ export default function VerityApp() {
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes scanMove{0%{top:-1px}100%{top:100%}}
         @keyframes gridPulse{0%,100%{opacity:0.012}50%{opacity:0.025}}
+        html,body{height:100%;overflow:hidden}
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:3px}
         ::-webkit-scrollbar-track{background:transparent}
@@ -716,6 +719,7 @@ export default function VerityApp() {
           display: "flex",
           flex: 1,
           overflow: "hidden",
+          minHeight: 0,
           zIndex: 1,
         }}
       >
@@ -727,6 +731,7 @@ export default function VerityApp() {
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
+            minHeight: 0,
             background: "#080c14",
           }}
         >
@@ -1043,6 +1048,8 @@ export default function VerityApp() {
             gridTemplateRows: "1fr 1fr",
             gap: 1,
             background: "#141a24",
+            overflow: "hidden",
+            minHeight: 0,
           }}
         >
           {[0, 1, 2, 3].map((i) => (
@@ -1054,6 +1061,7 @@ export default function VerityApp() {
                 background: "#060910",
                 overflow: "hidden",
                 position: "relative",
+                minHeight: 0,
               }}
             >
               {/* Glow border when active */}
