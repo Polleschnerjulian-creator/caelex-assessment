@@ -77,7 +77,7 @@ export default function SignupPage() {
         setError("Account created but could not sign in");
         setLoading(false);
       } else {
-        router.push("/dashboard");
+        router.push("/onboarding");
       }
     } catch {
       setError("Something went wrong");
@@ -86,11 +86,11 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    signIn("google", { callbackUrl: "/onboarding" });
   };
 
   const handleAppleSignIn = () => {
-    signIn("apple", { callbackUrl: "/dashboard" });
+    signIn("apple", { callbackUrl: "/onboarding" });
   };
 
   return (

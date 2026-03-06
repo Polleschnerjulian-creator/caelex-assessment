@@ -2,6 +2,7 @@ import Hero from "@/components/landing/Hero";
 import BlogShowcase from "@/components/landing/BlogShowcase";
 import MissionStatement from "@/components/landing/MissionStatement";
 import SoftwareShowcase from "@/components/landing/SoftwareShowcase";
+import CtaBanner from "@/components/landing/CtaBanner";
 import { SoftwareApplicationJsonLd } from "@/components/seo/JsonLd";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
         <BlogShowcase />
         <MissionStatement />
         <SoftwareShowcase />
+        <CtaBanner />
       </main>
     </>
   );

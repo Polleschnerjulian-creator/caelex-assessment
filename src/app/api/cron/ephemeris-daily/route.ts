@@ -190,14 +190,22 @@ async function persistState(
 
   const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
 
+  const moduleScores = JSON.parse(JSON.stringify(state.modules));
+  const dataSources = JSON.parse(JSON.stringify(state.dataSources));
+
   await stateModel.upsert({
     where: {
       noradId_operatorId: { noradId, operatorId: orgId },
     },
     update: {
       stateJson,
+      satelliteName,
       overallScore: state.overallScore,
+      moduleScores,
+      dataSources,
       horizonDays: state.complianceHorizon.daysUntilFirstBreach,
+      horizonRegulation: state.complianceHorizon.firstBreachRegulation,
+      horizonConfidence: state.complianceHorizon.confidence,
       dataFreshness: state.dataFreshness,
       calculatedAt: new Date(),
     },
@@ -207,7 +215,11 @@ async function persistState(
       operatorId: orgId,
       stateJson,
       overallScore: state.overallScore,
+      moduleScores,
+      dataSources,
       horizonDays: state.complianceHorizon.daysUntilFirstBreach,
+      horizonRegulation: state.complianceHorizon.firstBreachRegulation,
+      horizonConfidence: state.complianceHorizon.confidence,
       dataFreshness: state.dataFreshness,
     },
   });
@@ -229,15 +241,76 @@ async function appendHistory(
 
   const stateJson = JSON.parse(JSON.stringify(toPublicState(state)));
 
+  // Serialize active alerts
+  const alerts =
+    state.activeAlerts.length > 0
+      ? JSON.parse(JSON.stringify(state.activeAlerts))
+      : null;
+
+  // Derive forecast percentiles from compliance horizon confidence
+  const horizonDays = state.complianceHorizon.daysUntilFirstBreach;
+  const { forecastP10, forecastP50, forecastP90 } = deriveForecastPercentiles(
+    horizonDays,
+    state.complianceHorizon.confidence,
+  );
+
+  const moduleScores = JSON.parse(JSON.stringify(state.modules));
+
   await historyModel.create({
     data: {
       noradId,
       operatorId: orgId,
       stateJson,
+      alerts,
       overallScore: state.overallScore,
-      horizonDays: state.complianceHorizon.daysUntilFirstBreach,
+      moduleScores,
+      horizonDays,
+      horizonRegulation: state.complianceHorizon.firstBreachRegulation,
+      dataFreshness: state.dataFreshness,
+      forecastP10,
+      forecastP50,
+      forecastP90,
     },
   });
+}
+
+/**
+ * Derive P10/P50/P90 forecast percentiles from compliance horizon.
+ * Uses confidence-based multipliers:
+ *   HIGH   → ±10% band around nominal
+ *   MEDIUM → ±30% band
+ *   LOW    → ±50% band
+ */
+function deriveForecastPercentiles(
+  horizonDays: number | null,
+  confidence: string,
+): {
+  forecastP10: number | null;
+  forecastP50: number | null;
+  forecastP90: number | null;
+} {
+  if (horizonDays === null) {
+    return { forecastP10: null, forecastP50: null, forecastP90: null };
+  }
+
+  let spread: number;
+  switch (confidence) {
+    case "HIGH":
+      spread = 0.1;
+      break;
+    case "MEDIUM":
+      spread = 0.3;
+      break;
+    default:
+      spread = 0.5;
+      break;
+  }
+
+  return {
+    forecastP10: Math.round(horizonDays * (1 - spread)),
+    forecastP50: horizonDays,
+    forecastP90: Math.round(horizonDays * (1 + spread)),
+  };
 }
 
 // ─── Alert Hysteresis ───────────────────────────────────────────────────────

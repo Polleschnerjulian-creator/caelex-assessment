@@ -7,6 +7,7 @@ import {
   compareAllJurisdictions,
 } from "@/lib/ephemeris/simulation/jurisdiction-simulator";
 import { getJurisdictionCodes } from "@/lib/ephemeris/simulation/jurisdiction-data";
+import { calculateSatelliteComplianceState } from "@/lib/ephemeris/core/satellite-compliance-state";
 
 /**
  * POST /api/v1/ephemeris/simulate
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
         noradId: norad_id,
         organizationId: membership.organizationId,
       },
-      select: { name: true },
+      select: { name: true, launchDate: true },
     });
     if (!spacecraft) {
       return NextResponse.json(
@@ -62,8 +63,15 @@ export async function POST(request: NextRequest) {
 
     const satellite = { noradId: norad_id, name: spacecraft.name };
 
-    // Get current score (use a rough estimate; in production, load cached state)
-    const currentScore = 75; // TODO: Load from cached SatelliteComplianceState
+    // Calculate real compliance score from live state
+    const complianceState = await calculateSatelliteComplianceState({
+      prisma,
+      orgId: membership.organizationId,
+      noradId: norad_id,
+      satelliteName: spacecraft.name,
+      launchDate: spacecraft.launchDate,
+    });
+    const currentScore = complianceState.overallScore;
 
     if (to_jurisdiction) {
       // Single jurisdiction comparison

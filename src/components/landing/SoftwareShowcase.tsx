@@ -20,25 +20,11 @@ const PRODUCTS = [
     href: "/blog/agentic-system",
   },
   {
-    name: "Astra",
-    tagline: "Reason about regulation,\nfrom policy to proof.",
-    description:
-      "Regulatory AI that reads legislation like a lawyer and structures compliance like an engineer. Multi-hop reasoning across hundreds of regulatory articles and requirements.",
-    href: "/dashboard/astra",
-  },
-  {
     name: "Ephemeris",
     tagline: "Predict compliance risk,\nfrom today to end-of-life.",
     description:
       "Forward-looking risk engine. Models regulatory change propagation, deadline cascades, and compliance decay trajectories across your entire mission lifecycle.",
     href: "/systems/ephemeris",
-  },
-  {
-    name: "Genome",
-    tagline: "Map every regulation to every other,\nacross every jurisdiction.",
-    description:
-      "The regulatory knowledge graph. Cross-references between national space laws, EU directives, IADC guidelines, ITU Radio Regulations, and international treaties — with gap and conflict detection.",
-    href: "#",
   },
   {
     name: "Verity",

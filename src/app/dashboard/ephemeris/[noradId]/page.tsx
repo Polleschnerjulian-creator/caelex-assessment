@@ -1,24 +1,92 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import {
-  ArrowLeft,
-  RefreshCcw,
-  Clock,
-  Shield,
-  Fuel,
-  Radio,
-  Globe,
-  Layers,
-} from "lucide-react";
+import { useState, useEffect, useCallback, use, useMemo } from "react";
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
-import ComplianceHorizonDisplay from "../components/compliance-horizon-display";
-import ModuleBreakdown from "../components/module-breakdown";
-import ForecastChart from "../components/forecast-chart";
-import AlertList from "../components/alert-list";
-import DataSourcesPanel from "../components/data-sources-panel";
+import AlertsSidebar from "../components/alerts-sidebar";
+import {
+  Line,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  ResponsiveContainer,
+  ComposedChart,
+} from "recharts";
 import ScenarioBuilder from "../components/scenario-builder/ScenarioBuilder";
+
+// ─── Color System (shared with Fleet Command) ───────────────────────────────
+
+const C = {
+  bg: "#0d1117",
+  elevated: "#161b22",
+  sunken: "#0a0e16",
+  border: "#21262d",
+  borderActive: "#30363d",
+  textPrimary: "#e6edf3",
+  textSecondary: "#c9d1d9",
+  textTertiary: "#8b949e",
+  textMuted: "#484f58",
+  nominal: "#3fb950",
+  watch: "#d29922",
+  warning: "#f0883e",
+  critical: "#f85149",
+  accent: "#58a6ff",
+  brand: "#a78bfa",
+};
+
+function scoreColor(score: number): string {
+  if (score >= 85) return C.nominal;
+  if (score >= 70) return C.watch;
+  if (score >= 50) return C.warning;
+  return C.critical;
+}
+
+function scoreRisk(score: number): string {
+  if (score >= 85) return "NOMINAL";
+  if (score >= 70) return "WATCH";
+  if (score >= 50) return "WARNING";
+  return "CRITICAL";
+}
+
+function riskColor(category: string): string {
+  switch (category) {
+    case "NOMINAL":
+    case "COMPLIANT":
+      return C.nominal;
+    case "WATCH":
+    case "WARNING":
+      return C.watch;
+    case "NON_COMPLIANT":
+    case "CRITICAL":
+      return C.critical;
+    default:
+      return C.textTertiary;
+  }
+}
+
+function severityColor(sev: string): string {
+  switch (sev) {
+    case "CRITICAL":
+      return C.critical;
+    case "HIGH":
+      return C.warning;
+    case "MEDIUM":
+      return C.watch;
+    default:
+      return C.textTertiary;
+  }
+}
+
+function trendArrow(delta: number): string {
+  if (delta > 0.5) return "↑";
+  if (delta < -0.5) return "↓";
+  return "→";
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SatelliteState {
   noradId: string;
@@ -63,37 +131,73 @@ interface SatelliteState {
   calculatedAt: string;
 }
 
+interface ForecastPoint {
+  date: string;
+  nominal: number;
+  bestCase: number;
+  worstCase: number;
+  isHistorical: boolean;
+}
+
+interface ForecastCurve {
+  regulationRef: string;
+  regulationName: string;
+  metric: string;
+  unit: string;
+  thresholdValue: number;
+  dataPoints: ForecastPoint[];
+  crossingDate: string | null;
+  crossingDaysFromNow: number | null;
+  confidence: string;
+}
+
+interface ComplianceEvent {
+  id: string;
+  date: string;
+  daysFromNow: number;
+  regulationRef: string;
+  regulationName: string;
+  eventType: string;
+  severity: string;
+  description: string;
+  recommendedAction: string;
+}
+
 interface ForecastData {
-  forecastCurves: Array<{
-    regulationRef: string;
-    regulationName: string;
-    metric: string;
-    unit: string;
-    thresholdValue: number;
-    dataPoints: Array<{
-      date: string;
-      nominal: number;
-      bestCase: number;
-      worstCase: number;
-      isHistorical: boolean;
-    }>;
-    crossingDate: string | null;
-    crossingDaysFromNow: number | null;
-    confidence: string;
-  }>;
-  complianceEvents: Array<{
-    id: string;
-    date: string;
-    daysFromNow: number;
-    regulationRef: string;
-    regulationName: string;
-    eventType: string;
-    severity: string;
-    description: string;
-    recommendedAction: string;
-  }>;
+  forecastCurves: ForecastCurve[];
+  complianceEvents: ComplianceEvent[];
   horizonDays: number | null;
 }
+
+interface HistoryPoint {
+  date: string;
+  score: number;
+}
+
+// ─── Module Labels ────────────────────────────────────────────────────────────
+
+const MODULE_LABELS: Record<string, string> = {
+  fuel: "Fuel & Passivation",
+  orbital: "Orbital Lifetime",
+  subsystems: "Subsystems",
+  cyber: "Cybersecurity",
+  ground: "Ground Segment",
+  documentation: "Documentation",
+  insurance: "Insurance",
+  registration: "Registration",
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  sentinel: "Sentinel Telemetry",
+  celestrak: "CelesTrak TLE",
+  verity: "Verity Attestations",
+  assessment: "Compliance Assessments",
+  solarFlux: "NOAA Solar Flux",
+};
+
+type TabId = "forecast" | "modules" | "scenarios" | "cascade" | "datasources";
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SatelliteDetailPage({
   params,
@@ -103,41 +207,55 @@ export default function SatelliteDetailPage({
   const { noradId } = use(params);
   const [state, setState] = useState<SatelliteState | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
+  const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "forecast" | "simulate"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<TabId>("forecast");
 
-  useEffect(() => {
-    loadData();
-  }, [noradId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [stateRes, forecastRes] = await Promise.all([
+      const [stateRes, forecastRes, historyRes] = await Promise.all([
         fetch(`/api/v1/ephemeris/state?norad_id=${noradId}`, {
           headers: csrfHeaders(),
         }),
         fetch(`/api/v1/ephemeris/forecast?norad_id=${noradId}`, {
           headers: csrfHeaders(),
         }),
+        fetch(
+          `/api/v1/ephemeris/history?norad_id=${noradId}&lookback_days=30`,
+          { headers: csrfHeaders() },
+        ),
       ]);
 
       if (stateRes.ok) {
-        const stateData = await stateRes.json();
-        setState(stateData.data);
+        const d = await stateRes.json();
+        setState(d.data);
       }
       if (forecastRes.ok) {
-        const forecastData = await forecastRes.json();
-        setForecast(forecastData.data);
+        const d = await forecastRes.json();
+        setForecast(d.data);
+      }
+      if (historyRes.ok) {
+        const d = await historyRes.json();
+        if (Array.isArray(d.data)) {
+          setHistory(
+            d.data.map((h: { calculatedAt: string; overallScore: number }) => ({
+              date: h.calculatedAt,
+              score: h.overallScore,
+            })),
+          );
+        }
       }
     } catch {
-      // Silently fail
+      // Silent
     } finally {
       setLoading(false);
     }
-  };
+  }, [noradId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const recalculate = async () => {
     setLoading(true);
@@ -147,124 +265,1738 @@ export default function SatelliteDetailPage({
         headers: { ...csrfHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ norad_id: noradId }),
       });
-      if (res.ok) {
-        await loadData();
-      }
+      if (res.ok) await loadData();
     } catch {
-      // Silently fail
+      // Silent
     } finally {
       setLoading(false);
     }
   };
 
-  const tabs = [
-    { id: "overview" as const, label: "Overview", icon: Shield },
-    { id: "forecast" as const, label: "Forecast", icon: Clock },
-    { id: "simulate" as const, label: "Scenario Builder", icon: Layers },
+  // Derived data
+  const alertCount = state?.activeAlerts.length ?? 0;
+  const horizonDays = state?.complianceHorizon.daysUntilFirstBreach ?? null;
+
+  const trend7d = useMemo(() => {
+    if (history.length < 2) return null;
+    const current = history[history.length - 1]!.score;
+    const weekAgo =
+      history.length >= 8
+        ? history[history.length - 8]!.score
+        : history[0]!.score;
+    return Math.round((current - weekAgo) * 10) / 10;
+  }, [history]);
+
+  const tabs: { id: TabId; label: string }[] = [
+    { id: "forecast", label: "FORECAST" },
+    { id: "modules", label: "MODULES" },
+    { id: "scenarios", label: "SCENARIOS" },
+    { id: "cascade", label: "CASCADE" },
+    { id: "datasources", label: "DATA SOURCES" },
   ];
 
   if (loading && !state) {
     return (
-      <div className="flex items-center justify-center h-64 text-[#9CA3AF]">
-        <RefreshCcw className="w-6 h-6 animate-spin" />
+      <div
+        style={{
+          background: C.bg,
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: C.textTertiary,
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 13,
+        }}
+      >
+        LOADING SATELLITE DATA...
+      </div>
+    );
+  }
+
+  // Collect alerts for sidebar
+  const sidebarAlerts = (state?.activeAlerts ?? []).map((a) => ({
+    ...a,
+    noradId,
+    satelliteName: state?.satelliteName,
+  }));
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div
+        style={{
+          flex: 1,
+          background: C.bg,
+          minHeight: "100vh",
+          color: C.textPrimary,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        {/* ── Top Bar ───────────────────────────────────────────────────────── */}
+        <div
+          style={{
+            background: C.sunken,
+            borderBottom: `1px solid ${C.border}`,
+            padding: "10px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <Link
+              href="/dashboard/ephemeris"
+              style={{
+                color: C.textTertiary,
+                textDecoration: "none",
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                padding: "4px 8px",
+                borderRadius: 4,
+                border: `1px solid ${C.border}`,
+              }}
+            >
+              ← FLEET
+            </Link>
+            <div>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: C.textPrimary,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {state?.satelliteName ?? noradId}
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.textTertiary,
+                  marginLeft: 12,
+                }}
+              >
+                NORAD {noradId}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: C.textMuted,
+              }}
+            >
+              CALCULATED{" "}
+              {state?.calculatedAt
+                ? new Date(state.calculatedAt).toLocaleString()
+                : "—"}
+            </span>
+            <button
+              onClick={recalculate}
+              disabled={loading}
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                padding: "4px 12px",
+                borderRadius: 4,
+                border: `1px solid ${C.border}`,
+                background: C.elevated,
+                color: loading ? C.textMuted : C.textSecondary,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading ? "CALCULATING..." : "RECALCULATE"}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Metrics Strip ─────────────────────────────────────────────────── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            borderBottom: `1px solid ${C.border}`,
+          }}
+        >
+          {/* Score */}
+          <MetricCell
+            label="SCORE"
+            value={
+              state && state.overallScore !== null
+                ? `${state.overallScore}`
+                : "—"
+            }
+            valueColor={
+              state && state.overallScore !== null
+                ? scoreColor(state.overallScore)
+                : C.textMuted
+            }
+            sub={
+              state && state.overallScore !== null
+                ? scoreRisk(state.overallScore)
+                : ""
+            }
+          />
+          {/* Horizon */}
+          <MetricCell
+            label="HORIZON"
+            value={horizonDays !== null ? `${horizonDays}d` : "∞"}
+            valueColor={
+              horizonDays !== null
+                ? horizonDays < 90
+                  ? C.critical
+                  : horizonDays < 365
+                    ? C.warning
+                    : C.nominal
+                : C.textMuted
+            }
+            sub={state?.complianceHorizon.firstBreachRegulation ?? "No breach"}
+          />
+          {/* 7d Trend */}
+          <MetricCell
+            label="7D TREND"
+            value={
+              trend7d !== null
+                ? `${trendArrow(trend7d)} ${trend7d > 0 ? "+" : ""}${trend7d}`
+                : "—"
+            }
+            valueColor={
+              trend7d !== null
+                ? trend7d > 0.5
+                  ? C.nominal
+                  : trend7d < -0.5
+                    ? C.critical
+                    : C.textSecondary
+                : C.textMuted
+            }
+            sub="pts"
+          />
+          {/* Alerts */}
+          <MetricCell
+            label="ALERTS"
+            value={`${alertCount}`}
+            valueColor={alertCount > 0 ? C.critical : C.nominal}
+            sub="active"
+          />
+          {/* Modules */}
+          <MetricCell
+            label="MODULES"
+            value={`${state ? Object.keys(state.modules).length : 0}`}
+            valueColor={C.textSecondary}
+            sub="tracked"
+          />
+        </div>
+
+        {/* ── Tab Bar ───────────────────────────────────────────────────────── */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: `1px solid ${C.border}`,
+            background: C.sunken,
+          }}
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.05em",
+                padding: "10px 20px",
+                border: "none",
+                borderBottom:
+                  activeTab === tab.id
+                    ? `2px solid ${C.accent}`
+                    : "2px solid transparent",
+                background: "transparent",
+                color: activeTab === tab.id ? C.textPrimary : C.textTertiary,
+                cursor: "pointer",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Tab Content ───────────────────────────────────────────────────── */}
+        <div style={{ padding: 24 }}>
+          {activeTab === "forecast" && (
+            <ForecastTab
+              forecast={forecast}
+              events={forecast?.complianceEvents ?? []}
+            />
+          )}
+          {activeTab === "modules" && state && (
+            <ModulesTab modules={state.modules} />
+          )}
+          {activeTab === "scenarios" && (
+            <div
+              style={{
+                background: C.elevated,
+                borderRadius: 6,
+                padding: 20,
+                border: `1px solid ${C.border}`,
+              }}
+            >
+              <ScenarioBuilder
+                noradId={noradId}
+                satelliteName={state?.satelliteName ?? noradId}
+              />
+            </div>
+          )}
+          {activeTab === "cascade" && <CascadeTab noradId={noradId} />}
+          {activeTab === "datasources" && state && (
+            <DataSourcesTab
+              dataSources={state.dataSources}
+              dataFreshness={state.dataFreshness}
+            />
+          )}
+        </div>
+      </div>
+      <AlertsSidebar alerts={sidebarAlerts} noradId={noradId} />
+    </div>
+  );
+}
+
+// ─── Metric Cell ──────────────────────────────────────────────────────────────
+
+function MetricCell({
+  label,
+  value,
+  valueColor,
+  sub,
+}: {
+  label: string;
+  value: string;
+  valueColor: string;
+  sub: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: "14px 20px",
+        borderRight: `1px solid ${C.border}`,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 10,
+          color: C.textMuted,
+          letterSpacing: "0.08em",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 22,
+          fontWeight: 600,
+          color: valueColor,
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 10,
+            color: C.textMuted,
+            marginTop: 2,
+          }}
+        >
+          {sub}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Forecast Tab ─────────────────────────────────────────────────────────────
+
+function ForecastTab({
+  forecast,
+  events,
+}: {
+  forecast: ForecastData | null;
+  events: ComplianceEvent[];
+}) {
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(
+    forecast?.forecastCurves[0]?.metric ?? null,
+  );
+
+  const curve = forecast?.forecastCurves.find(
+    (c) => c.metric === selectedMetric,
+  );
+
+  // Transform data points for Recharts
+  const chartData = useMemo(() => {
+    if (!curve) return [];
+    return curve.dataPoints.map((pt) => ({
+      date: new Date(pt.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      fullDate: pt.date,
+      nominal: Math.round(pt.nominal * 100) / 100,
+      bestCase: Math.round(pt.bestCase * 100) / 100,
+      worstCase: Math.round(pt.worstCase * 100) / 100,
+      isHistorical: pt.isHistorical,
+      // Band for area fill (P10 to P90)
+      band: [
+        Math.round(pt.worstCase * 100) / 100,
+        Math.round(pt.bestCase * 100) / 100,
+      ] as [number, number],
+    }));
+  }, [curve]);
+
+  if (!forecast || forecast.forecastCurves.length === 0) {
+    return (
+      <div
+        style={{
+          padding: 40,
+          textAlign: "center",
+          color: C.textMuted,
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 12,
+        }}
+      >
+        NO FORECAST DATA AVAILABLE
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard/ephemeris"
-            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F1F3F5] transition-colors"
+    <div>
+      {/* Curve Selector */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginBottom: 20,
+          flexWrap: "wrap",
+        }}
+      >
+        {forecast.forecastCurves.map((c) => (
+          <button
+            key={c.metric}
+            onClick={() => setSelectedMetric(c.metric)}
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              padding: "6px 14px",
+              borderRadius: 4,
+              border: `1px solid ${selectedMetric === c.metric ? C.accent : C.border}`,
+              background:
+                selectedMetric === c.metric ? C.elevated : "transparent",
+              color: selectedMetric === c.metric ? C.accent : C.textTertiary,
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
           >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-display-sm font-semibold text-[#111827]">
-              {state?.satelliteName ?? noradId}
-            </h1>
-            <p className="text-body text-[#6B7280] mt-0.5">
-              NORAD {noradId} · Score:{" "}
-              <span
-                className={
-                  (state?.overallScore ?? 0) >= 70
-                    ? "text-[#111827] font-semibold"
-                    : (state?.overallScore ?? 0) >= 50
-                      ? "text-amber-500 font-semibold"
-                      : "text-red-500 font-semibold"
-                }
-              >
-                {state?.overallScore ?? "—"}/100
+            {c.regulationName}
+            {c.crossingDaysFromNow !== null && (
+              <span style={{ color: C.warning, marginLeft: 8 }}>
+                {c.crossingDaysFromNow}d
               </span>
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={recalculate}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-small font-medium
-            bg-[#111827] text-white hover:bg-[#374151] transition-colors
-            disabled:opacity-50"
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      {curve && (
+        <div
+          style={{
+            background: C.elevated,
+            border: `1px solid ${C.border}`,
+            borderRadius: 6,
+            padding: "16px 16px 8px 8px",
+            marginBottom: 20,
+          }}
         >
-          <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          Recalculate
-        </button>
-      </div>
-
-      {/* Compliance Horizon */}
-      {state && <ComplianceHorizonDisplay horizon={state.complianceHorizon} />}
-
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-[#F7F8FA] rounded-lg w-fit">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-white text-[#111827] shadow-sm"
-                  : "text-[#9CA3AF] hover:text-[#4B5563]"
-              }`}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "0 8px 12px",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                color: C.textSecondary,
+              }}
             >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === "overview" && state && (
-        <div className="space-y-6">
-          <ModuleBreakdown modules={state.modules} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AlertList fleet={[state]} />
-            <DataSourcesPanel
-              dataSources={state.dataSources}
-              dataFreshness={state.dataFreshness}
-            />
+              {curve.regulationName}{" "}
+              <span style={{ color: C.textMuted }}>({curve.unit})</span>
+            </span>
+            {curve.crossingDaysFromNow !== null && (
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.warning,
+                }}
+              >
+                BREACH IN {curve.crossingDaysFromNow}d
+              </span>
+            )}
           </div>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData}>
+              <CartesianGrid
+                stroke={C.border}
+                strokeDasharray="3 3"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{
+                  fill: C.textMuted,
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+                axisLine={{ stroke: C.border }}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{
+                  fill: C.textMuted,
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+                axisLine={{ stroke: C.border }}
+                tickLine={false}
+                width={50}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: C.sunken,
+                  border: `1px solid ${C.borderActive}`,
+                  borderRadius: 4,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.textPrimary,
+                }}
+                labelStyle={{ color: C.textTertiary }}
+              />
+
+              {/* Confidence band (P10-P90 area) */}
+              <Area
+                dataKey="band"
+                fill={C.accent}
+                fillOpacity={0.08}
+                stroke="none"
+              />
+
+              {/* Threshold line */}
+              <ReferenceLine
+                y={curve.thresholdValue}
+                stroke={C.critical}
+                strokeDasharray="6 4"
+                strokeOpacity={0.6}
+                label={{
+                  value: `Threshold ${curve.thresholdValue}${curve.unit}`,
+                  fill: C.critical,
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  position: "right",
+                }}
+              />
+
+              {/* Worst case (P10) */}
+              <Line
+                type="monotone"
+                dataKey="worstCase"
+                stroke={C.critical}
+                strokeWidth={1}
+                strokeOpacity={0.3}
+                dot={false}
+                name="P10 (Worst)"
+              />
+
+              {/* Best case (P90) */}
+              <Line
+                type="monotone"
+                dataKey="bestCase"
+                stroke={C.nominal}
+                strokeWidth={1}
+                strokeOpacity={0.3}
+                dot={false}
+                name="P90 (Best)"
+              />
+
+              {/* Nominal (P50) */}
+              <Line
+                type="monotone"
+                dataKey="nominal"
+                stroke={C.accent}
+                strokeWidth={2}
+                dot={false}
+                name="Nominal (P50)"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       )}
 
-      {activeTab === "forecast" && forecast && (
-        <ForecastChart
-          curves={forecast.forecastCurves}
-          events={forecast.complianceEvents}
-        />
+      {/* Compliance Events Table */}
+      {events.length > 0 && (
+        <div
+          style={{
+            background: C.elevated,
+            border: `1px solid ${C.border}`,
+            borderRadius: 6,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              padding: "12px 16px",
+              borderBottom: `1px solid ${C.border}`,
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: C.textTertiary,
+              letterSpacing: "0.05em",
+            }}
+          >
+            COMPLIANCE EVENTS ({events.length})
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr
+                style={{
+                  borderBottom: `1px solid ${C.border}`,
+                  background: C.sunken,
+                }}
+              >
+                {["DAYS", "SEVERITY", "REGULATION", "EVENT", "ACTION"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        fontWeight: 500,
+                        color: C.textMuted,
+                        letterSpacing: "0.08em",
+                        padding: "8px 12px",
+                        textAlign: "left",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {events.map((ev) => (
+                <tr
+                  key={ev.id}
+                  style={{
+                    borderBottom: `1px solid ${C.border}`,
+                    transition: "background 0.1s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = C.sunken)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  <td
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: severityColor(ev.severity),
+                      padding: "10px 12px",
+                    }}
+                  >
+                    {ev.daysFromNow}d
+                  </td>
+                  <td style={{ padding: "10px 12px" }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: severityColor(ev.severity),
+                        marginRight: 8,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color: C.textSecondary,
+                      }}
+                    >
+                      {ev.severity}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      color: C.accent,
+                      padding: "10px 12px",
+                    }}
+                  >
+                    {ev.regulationName}
+                  </td>
+                  <td
+                    style={{
+                      fontSize: 12,
+                      color: C.textSecondary,
+                      padding: "10px 12px",
+                      maxWidth: 300,
+                    }}
+                  >
+                    {ev.description}
+                  </td>
+                  <td
+                    style={{
+                      fontSize: 11,
+                      color: C.textTertiary,
+                      padding: "10px 12px",
+                      maxWidth: 200,
+                    }}
+                  >
+                    {ev.recommendedAction}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+    </div>
+  );
+}
 
-      {activeTab === "simulate" && (
-        <ScenarioBuilder
-          noradId={noradId}
-          satelliteName={state?.satelliteName ?? noradId}
-        />
+// ─── Modules Tab ──────────────────────────────────────────────────────────────
+
+function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
+  const sorted = useMemo(
+    () => Object.entries(modules).sort(([, a], [, b]) => a.score - b.score),
+    [modules],
+  );
+
+  return (
+    <div>
+      {/* Module Bars */}
+      <div
+        style={{
+          background: C.elevated,
+          border: `1px solid ${C.border}`,
+          borderRadius: 6,
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: `1px solid ${C.border}`,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: C.textTertiary,
+            letterSpacing: "0.05em",
+          }}
+        >
+          MODULE SCORES (sorted by risk)
+        </div>
+        <div style={{ padding: 16 }}>
+          {sorted.map(([key, mod]) => (
+            <div
+              key={key}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "160px 1fr 60px 80px",
+                alignItems: "center",
+                gap: 12,
+                padding: "8px 0",
+                borderBottom: `1px solid ${C.border}`,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 12,
+                  color: C.textSecondary,
+                }}
+              >
+                {MODULE_LABELS[key] ?? key}
+              </span>
+
+              {/* Bar */}
+              <div
+                style={{
+                  height: 8,
+                  background: C.sunken,
+                  borderRadius: 4,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${mod.score}%`,
+                    background: scoreColor(mod.score),
+                    borderRadius: 4,
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: scoreColor(mod.score),
+                  textAlign: "right",
+                }}
+              >
+                {mod.score}
+              </span>
+
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: riskColor(mod.status),
+                  textAlign: "right",
+                }}
+              >
+                {mod.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Factor Details */}
+      <div
+        style={{
+          background: C.elevated,
+          border: `1px solid ${C.border}`,
+          borderRadius: 6,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: `1px solid ${C.border}`,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: C.textTertiary,
+            letterSpacing: "0.05em",
+          }}
+        >
+          FACTOR DETAILS
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr
+              style={{
+                borderBottom: `1px solid ${C.border}`,
+                background: C.sunken,
+              }}
+            >
+              {[
+                "MODULE",
+                "FACTOR",
+                "REGULATION",
+                "STATUS",
+                "DAYS TO THRESHOLD",
+              ].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: C.textMuted,
+                    letterSpacing: "0.08em",
+                    padding: "8px 12px",
+                    textAlign: "left",
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.flatMap(([modKey, mod]) =>
+              mod.factors.map((f) => (
+                <tr
+                  key={f.id}
+                  style={{
+                    borderBottom: `1px solid ${C.border}`,
+                    transition: "background 0.1s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = C.sunken)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  <td
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      color: C.textTertiary,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    {MODULE_LABELS[modKey] ?? modKey}
+                  </td>
+                  <td
+                    style={{
+                      fontSize: 12,
+                      color: C.textSecondary,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    {f.name}
+                  </td>
+                  <td
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      color: C.accent,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    {f.regulationRef}
+                  </td>
+                  <td style={{ padding: "8px 12px" }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: riskColor(f.status),
+                        marginRight: 6,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color: riskColor(f.status),
+                      }}
+                    >
+                      {f.status}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color:
+                        f.daysToThreshold !== null
+                          ? f.daysToThreshold < 90
+                            ? C.critical
+                            : f.daysToThreshold < 365
+                              ? C.warning
+                              : C.textSecondary
+                          : C.textMuted,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    {f.daysToThreshold !== null ? `${f.daysToThreshold}d` : "—"}
+                  </td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Cascade Placeholder ──────────────────────────────────────────────────────
+
+interface CascadeNode {
+  id: string;
+  framework: string;
+  article: string;
+  title: string;
+  affectedModules: string[];
+}
+
+interface CascadeResult {
+  trigger: string;
+  changeType: string;
+  affectedNodes: string[];
+  affectedSatellites: Array<{
+    noradId: string;
+    name: string;
+    currentScore: number | null;
+    projectedScore: number | null;
+    scoreDelta: number;
+    affectedModules: string[];
+    severity: string;
+  }>;
+  totalImpact: number;
+  propagationPath: Array<{
+    from: string;
+    to: string;
+    impact: number;
+  }>;
+}
+
+function CascadeTab({ noradId: _noradId }: { noradId: string }) {
+  const [nodes, setNodes] = useState<CascadeNode[]>([]);
+  const [selectedNode, setSelectedNode] = useState<string>("");
+  const [changeType, setChangeType] = useState<string>("threshold_change");
+  const [result, setResult] = useState<CascadeResult | null>(null);
+  const [simulating, setSimulating] = useState(false);
+  const [loadingNodes, setLoadingNodes] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/ephemeris/cascade", { headers: csrfHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.data?.nodes) {
+          setNodes(data.data.nodes);
+          if (data.data.nodes.length > 0) {
+            setSelectedNode(data.data.nodes[0].id);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingNodes(false));
+  }, []);
+
+  const simulate = async () => {
+    if (!selectedNode) return;
+    setSimulating(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/v1/ephemeris/cascade", {
+        method: "POST",
+        headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          regulatoryNodeId: selectedNode,
+          changeType,
+          includeConflicts: true,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setResult(data.data);
+      }
+    } catch {
+      // Silent
+    } finally {
+      setSimulating(false);
+    }
+  };
+
+  const selectedNodeData = nodes.find((n) => n.id === selectedNode);
+
+  // Group nodes by framework for the dropdown
+  const frameworks = [...new Set(nodes.map((n) => n.framework))].sort();
+
+  return (
+    <div>
+      {/* Controls */}
+      <div
+        style={{
+          background: C.elevated,
+          border: `1px solid ${C.border}`,
+          borderRadius: 6,
+          padding: 16,
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: C.textTertiary,
+            letterSpacing: "0.05em",
+            marginBottom: 12,
+          }}
+        >
+          CASCADE SIMULATION
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 200px auto",
+            gap: 12,
+            alignItems: "end",
+          }}
+        >
+          {/* Regulation selector */}
+          <div>
+            <label
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: C.textMuted,
+                display: "block",
+                marginBottom: 4,
+              }}
+            >
+              REGULATION
+            </label>
+            <select
+              value={selectedNode}
+              onChange={(e) => setSelectedNode(e.target.value)}
+              disabled={loadingNodes}
+              style={{
+                width: "100%",
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                padding: "8px 12px",
+                borderRadius: 4,
+                border: `1px solid ${C.border}`,
+                background: C.sunken,
+                color: C.textPrimary,
+                appearance: "none",
+              }}
+            >
+              {loadingNodes ? (
+                <option>Loading...</option>
+              ) : (
+                frameworks.map((fw) => (
+                  <optgroup key={fw} label={fw}>
+                    {nodes
+                      .filter((n) => n.framework === fw)
+                      .map((n) => (
+                        <option key={n.id} value={n.id}>
+                          {n.article} — {n.title}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))
+              )}
+            </select>
+          </div>
+
+          {/* Change type */}
+          <div>
+            <label
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: C.textMuted,
+                display: "block",
+                marginBottom: 4,
+              }}
+            >
+              CHANGE TYPE
+            </label>
+            <select
+              value={changeType}
+              onChange={(e) => setChangeType(e.target.value)}
+              style={{
+                width: "100%",
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+                padding: "8px 12px",
+                borderRadius: 4,
+                border: `1px solid ${C.border}`,
+                background: C.sunken,
+                color: C.textPrimary,
+                appearance: "none",
+              }}
+            >
+              <option value="threshold_change">Threshold Change</option>
+              <option value="new_requirement">New Requirement</option>
+              <option value="deadline_change">Deadline Change</option>
+              <option value="repeal">Repeal</option>
+            </select>
+          </div>
+
+          {/* Simulate button */}
+          <button
+            onClick={simulate}
+            disabled={simulating || !selectedNode}
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              padding: "8px 20px",
+              borderRadius: 4,
+              border: `1px solid ${C.accent}`,
+              background: simulating ? C.elevated : "transparent",
+              color: simulating ? C.textMuted : C.accent,
+              cursor: simulating ? "not-allowed" : "pointer",
+            }}
+          >
+            {simulating ? "SIMULATING..." : "SIMULATE"}
+          </button>
+        </div>
+
+        {/* Selected node info */}
+        {selectedNodeData && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "8px 12px",
+              background: C.sunken,
+              borderRadius: 4,
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: C.textTertiary,
+            }}
+          >
+            {selectedNodeData.framework} · {selectedNodeData.article} · Modules:{" "}
+            {selectedNodeData.affectedModules.join(", ") || "—"}
+          </div>
+        )}
+      </div>
+
+      {/* Results */}
+      {result && (
+        <div>
+          {/* Impact Summary */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 12,
+              marginBottom: 20,
+            }}
+          >
+            <div
+              style={{
+                background: C.elevated,
+                border: `1px solid ${C.border}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: C.textMuted,
+                  letterSpacing: "0.08em",
+                  marginBottom: 4,
+                }}
+              >
+                TOTAL IMPACT
+              </div>
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color:
+                    result.totalImpact < -5
+                      ? C.critical
+                      : result.totalImpact < 0
+                        ? C.warning
+                        : C.nominal,
+                }}
+              >
+                {result.totalImpact > 0 ? "+" : ""}
+                {result.totalImpact}
+              </div>
+            </div>
+            <div
+              style={{
+                background: C.elevated,
+                border: `1px solid ${C.border}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: C.textMuted,
+                  letterSpacing: "0.08em",
+                  marginBottom: 4,
+                }}
+              >
+                AFFECTED NODES
+              </div>
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: C.textSecondary,
+                }}
+              >
+                {result.affectedNodes.length}
+              </div>
+            </div>
+            <div
+              style={{
+                background: C.elevated,
+                border: `1px solid ${C.border}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: C.textMuted,
+                  letterSpacing: "0.08em",
+                  marginBottom: 4,
+                }}
+              >
+                SATELLITES AFFECTED
+              </div>
+              <div
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: C.textSecondary,
+                }}
+              >
+                {result.affectedSatellites.length}
+              </div>
+            </div>
+          </div>
+
+          {/* Propagation Path */}
+          {result.propagationPath.length > 0 && (
+            <div
+              style={{
+                background: C.elevated,
+                border: `1px solid ${C.border}`,
+                borderRadius: 6,
+                overflow: "hidden",
+                marginBottom: 20,
+              }}
+            >
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderBottom: `1px solid ${C.border}`,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.textTertiary,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                PROPAGATION PATH
+              </div>
+              <div style={{ padding: 12 }}>
+                {result.propagationPath.map((step, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "6px 0",
+                      borderBottom:
+                        i < result.propagationPath.length - 1
+                          ? `1px solid ${C.border}`
+                          : "none",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color: C.accent,
+                        minWidth: 160,
+                      }}
+                    >
+                      {step.from}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color: C.textMuted,
+                      }}
+                    >
+                      →
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color: C.textSecondary,
+                        minWidth: 160,
+                      }}
+                    >
+                      {step.to}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 11,
+                        color:
+                          step.impact < -3
+                            ? C.critical
+                            : step.impact < 0
+                              ? C.warning
+                              : C.nominal,
+                        marginLeft: "auto",
+                      }}
+                    >
+                      {step.impact > 0 ? "+" : ""}
+                      {step.impact}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Satellite Impacts Table */}
+          {result.affectedSatellites.length > 0 && (
+            <div
+              style={{
+                background: C.elevated,
+                border: `1px solid ${C.border}`,
+                borderRadius: 6,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderBottom: `1px solid ${C.border}`,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.textTertiary,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                SATELLITE IMPACTS
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr
+                    style={{
+                      borderBottom: `1px solid ${C.border}`,
+                      background: C.sunken,
+                    }}
+                  >
+                    {[
+                      "SATELLITE",
+                      "CURRENT",
+                      "PROJECTED",
+                      "DELTA",
+                      "SEVERITY",
+                      "MODULES",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 10,
+                          fontWeight: 500,
+                          color: C.textMuted,
+                          letterSpacing: "0.08em",
+                          padding: "8px 12px",
+                          textAlign: "left",
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.affectedSatellites.map((sat) => (
+                    <tr
+                      key={sat.noradId}
+                      style={{
+                        borderBottom: `1px solid ${C.border}`,
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = C.sunken)
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
+                    >
+                      <td
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 12,
+                          color: C.textSecondary,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {sat.name}
+                      </td>
+                      <td
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 12,
+                          color: C.textTertiary,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {sat.currentScore ?? "—"}
+                      </td>
+                      <td
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color:
+                            sat.projectedScore !== null
+                              ? scoreColor(sat.projectedScore)
+                              : C.textMuted,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {sat.projectedScore ?? "—"}
+                      </td>
+                      <td
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color:
+                            sat.scoreDelta < -5
+                              ? C.critical
+                              : sat.scoreDelta < 0
+                                ? C.warning
+                                : C.nominal,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {sat.scoreDelta > 0 ? "+" : ""}
+                        {sat.scoreDelta}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            background: severityColor(sat.severity),
+                            marginRight: 6,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: "'IBM Plex Mono', monospace",
+                            fontSize: 11,
+                            color: severityColor(sat.severity),
+                          }}
+                        >
+                          {sat.severity}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 10,
+                          color: C.textTertiary,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {sat.affectedModules.join(", ")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       )}
+    </div>
+  );
+}
+
+// ─── Data Sources Tab ─────────────────────────────────────────────────────────
+
+function DataSourcesTab({
+  dataSources,
+  dataFreshness,
+}: {
+  dataSources: SatelliteState["dataSources"];
+  dataFreshness: string;
+}) {
+  const freshnessInfo = (() => {
+    switch (dataFreshness) {
+      case "LIVE":
+        return { label: "LIVE (<1h)", color: C.nominal };
+      case "RECENT":
+        return { label: "RECENT (<24h)", color: C.watch };
+      case "STALE":
+        return { label: "STALE (>24h)", color: C.warning };
+      default:
+        return { label: "NO DATA", color: C.critical };
+    }
+  })();
+
+  return (
+    <div
+      style={{
+        background: C.elevated,
+        border: `1px solid ${C.border}`,
+        borderRadius: 6,
+        overflow: "hidden",
+      }}
+    >
+      {/* Header with freshness */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "12px 16px",
+          borderBottom: `1px solid ${C.border}`,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: C.textTertiary,
+            letterSpacing: "0.05em",
+          }}
+        >
+          DATA SOURCES
+        </span>
+        <span
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: freshnessInfo.color,
+          }}
+        >
+          ● {freshnessInfo.label}
+        </span>
+      </div>
+
+      {/* Sources table */}
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr
+            style={{
+              borderBottom: `1px solid ${C.border}`,
+              background: C.sunken,
+            }}
+          >
+            {["STATUS", "SOURCE", "LAST UPDATE", "CONNECTION"].map((h) => (
+              <th
+                key={h}
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: C.textMuted,
+                  letterSpacing: "0.08em",
+                  padding: "8px 12px",
+                  textAlign: "left",
+                }}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(dataSources).map(([key, src]) => (
+            <tr
+              key={key}
+              style={{
+                borderBottom: `1px solid ${C.border}`,
+                transition: "background 0.1s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = C.sunken)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              <td style={{ padding: "10px 12px" }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: src.connected
+                      ? src.status === "error"
+                        ? C.warning
+                        : C.nominal
+                      : C.critical,
+                  }}
+                />
+              </td>
+              <td
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 12,
+                  color: C.textSecondary,
+                  padding: "10px 12px",
+                }}
+              >
+                {SOURCE_LABELS[key] ?? key}
+              </td>
+              <td
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.textTertiary,
+                  padding: "10px 12px",
+                }}
+              >
+                {src.lastUpdate
+                  ? new Date(src.lastUpdate).toLocaleString()
+                  : "Never"}
+              </td>
+              <td
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: src.connected ? C.nominal : C.critical,
+                  padding: "10px 12px",
+                }}
+              >
+                {src.connected ? "CONNECTED" : "DISCONNECTED"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -1,35 +1,126 @@
 import "server-only";
 import { safeLog } from "@/lib/verity/utils/redaction";
-import type { RegulatoryChangeImpact } from "../core/types";
+import type { PrismaClient } from "@prisma/client";
+import type { RegulatoryChangeImpact, AlertSeverity } from "../core/types";
 
 /**
  * EUR-Lex Regulatory Change Adapter
  *
- * Phase 1: Returns empty results (no EUR-Lex integration yet).
- * Phase 2: Will fetch EUR-Lex RSS feed for space-related regulatory changes
- *          and assess impact on satellite compliance.
- *
- * Future endpoint: https://eur-lex.europa.eu/content/rss/rss.html
+ * Reads recent RegulatoryUpdate records from the database (populated by
+ * the regulatory-feed cron at 7 AM UTC) and transforms them into
+ * RegulatoryChangeImpact objects for the Ephemeris compliance engine.
  */
+
+const SEVERITY_MAP: Record<string, AlertSeverity> = {
+  CRITICAL: "CRITICAL",
+  HIGH: "HIGH",
+  MEDIUM: "MEDIUM",
+  LOW: "LOW",
+};
 
 /**
  * Get recent regulatory changes affecting space operations.
- * Phase 1: Returns empty array. Structure ready for Phase 2 implementation.
+ * Reads from the RegulatoryUpdate table (last 30 days).
  */
-export async function getRegulatoryChanges(): Promise<
-  RegulatoryChangeImpact[]
-> {
-  safeLog("EUR-Lex adapter called (Phase 1 — returning empty)");
-  // Phase 2: Implement EUR-Lex RSS feed parsing
-  return [];
+export async function getRegulatoryChanges(
+  db: PrismaClient,
+): Promise<RegulatoryChangeImpact[]> {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const updates = await db.regulatoryUpdate.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      orderBy: { publishedAt: "desc" },
+    });
+
+    if (updates.length === 0) {
+      safeLog("EUR-Lex adapter: no recent regulatory updates");
+      return [];
+    }
+
+    safeLog("EUR-Lex adapter: found regulatory updates", {
+      count: updates.length,
+    });
+
+    return updates.map((update) => toRegulatoryChangeImpact(update));
+  } catch (error) {
+    safeLog("EUR-Lex adapter: DB read failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
+  }
 }
 
 /**
  * Check if there are pending regulatory changes that affect a specific satellite.
- * Phase 1: Always returns false.
  */
 export async function hasPendingRegulatoryChanges(
+  db: PrismaClient,
   _noradId: string,
 ): Promise<boolean> {
-  return false;
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const count = await db.regulatoryUpdate.count({
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        severity: { in: ["CRITICAL", "HIGH"] },
+      },
+    });
+
+    return count > 0;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function toRegulatoryChangeImpact(update: {
+  id: string;
+  celexNumber: string;
+  title: string;
+  sourceUrl: string;
+  publishedAt: Date;
+  severity: string;
+  affectedModules: string[];
+}): RegulatoryChangeImpact {
+  return {
+    event: {
+      id: update.id,
+      title: update.title,
+      eurLexUrl: update.sourceUrl,
+      publishedAt: update.publishedAt.toISOString(),
+      severity: SEVERITY_MAP[update.severity] ?? "LOW",
+    },
+    affectedSatellites: [], // Populated downstream by the compliance engine
+    totalAffected: 0,
+    worstCaseImpact: getWorstCaseDescription(
+      update.severity,
+      update.affectedModules,
+    ),
+  };
+}
+
+function getWorstCaseDescription(
+  severity: string,
+  affectedModules: string[],
+): string {
+  const modules =
+    affectedModules.length > 0
+      ? affectedModules.join(", ")
+      : "general compliance";
+
+  switch (severity) {
+    case "CRITICAL":
+      return `Critical regulatory change affecting ${modules} — immediate compliance review required`;
+    case "HIGH":
+      return `High-priority regulatory change affecting ${modules} — compliance reassessment recommended`;
+    case "MEDIUM":
+      return `New regulatory requirements for ${modules} — review within 30 days`;
+    default:
+      return `Minor regulatory update for ${modules} — informational`;
+  }
 }

@@ -81,6 +81,7 @@ model User {
   // Re-engagement & Onboarding Email Tracking
   lastReengagementStage Int       @default(0)
   lastReengagementAt    DateTime?
+  onboardingCompleted   Boolean   @default(false)
   onboardingEmailStage  Int       @default(0)
   onboardingEmailAt     DateTime?
 
@@ -2671,6 +2672,7 @@ model Spacecraft {
 
   // Relations
   registrations SpaceObjectRegistration[]
+  orbitalData   OrbitalData[]
 
   @@index([organizationId])
   @@index([cosparId])
@@ -6118,6 +6120,9 @@ model SatelliteComplianceState {
 
   dataFreshness String // LIVE / RECENT / STALE / NO_DATA
 
+  stateJson     Json? // Full public state snapshot
+  satelliteName String?
+
   calculatedAt DateTime @default(now())
 
   @@unique([noradId, operatorId])
@@ -6136,6 +6141,14 @@ model SatelliteComplianceStateHistory {
   horizonDays       Int?
   horizonRegulation String?
   dataFreshness     String
+
+  stateJson  Json? // Full public state snapshot
+  alerts     Json? // Serialized activeAlerts array
+
+  // Forecast percentiles (derived from compliance horizon confidence)
+  forecastP10 Float?
+  forecastP50 Float?
+  forecastP90 Float?
 
   // Inputs hash for reproducibility
   // SHA-256 over: Sentinel time series hashes + TLE age + F10.7 + constants version
@@ -6193,4 +6206,32 @@ model SatelliteAlert {
   @@index([operatorId, severity])
   @@index([resolvedAt])
   @@index([dedupeKey])
+}
+
+model OrbitalData {
+  id           String     @id @default(cuid())
+  spacecraftId String
+  noradId      String
+  altitude     Float
+  inclination  Float
+  eccentricity Float
+  period       Float
+  epoch        DateTime
+  rawGp        Json? // CelesTrak GP/JSON record
+  createdAt    DateTime   @default(now())
+  spacecraft   Spacecraft @relation(fields: [spacecraftId], references: [id], onDelete: Cascade)
+
+  @@index([spacecraftId, createdAt])
+  @@index([noradId, epoch])
+}
+
+model SolarFluxRecord {
+  id         String   @id @default(cuid())
+  f107       Float
+  observedAt DateTime
+  source     String   @default("NOAA_SWPC")
+  createdAt  DateTime @default(now())
+
+  @@unique([observedAt, source])
+  @@index([observedAt])
 }

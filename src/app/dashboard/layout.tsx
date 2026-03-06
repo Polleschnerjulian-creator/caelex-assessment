@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
 import { OrganizationProvider } from "@/components/providers/OrganizationProvider";
 import ErrorBoundary from "@/components/dashboard/ErrorBoundary";
-import OnboardingOverlay from "@/components/dashboard/OnboardingOverlay";
 import { AstraProvider } from "@/components/astra/AstraProvider";
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking";
 import {
@@ -45,11 +44,29 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
 };
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useLanguage();
   useAnalyticsTracking();
+
+  // Redirect new users to onboarding
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    fetch("/api/onboarding/status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.onboardingCompleted === false) {
+          router.replace("/onboarding");
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [status, router]);
 
   // Derive page title from route
   let pageTitle: string | undefined;
@@ -111,9 +128,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
-
-      {/* Onboarding overlay for new users */}
-      <OnboardingOverlay />
     </div>
   );
 }

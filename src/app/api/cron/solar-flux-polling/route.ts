@@ -1,0 +1,108 @@
+import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
+import { prisma } from "@/lib/prisma";
+import { getSafeErrorMessage } from "@/lib/validations";
+import { logger } from "@/lib/logger";
+import { getCurrentF107 } from "@/lib/ephemeris/data/solar-flux-adapter";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+function isValidCronSecret(header: string, secret: string): boolean {
+  try {
+    const headerBuffer = Buffer.from(header);
+    const expectedBuffer = Buffer.from(`Bearer ${secret}`);
+    if (headerBuffer.length !== expectedBuffer.length) return false;
+    return timingSafeEqual(headerBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Cron endpoint for NOAA F10.7 solar flux polling.
+ * Schedule: Daily at 4:00 AM UTC (earliest in chain, before CelesTrak and Ephemeris)
+ *
+ * Fetches the latest F10.7 solar flux index from NOAA SWPC and persists
+ * to SolarFluxRecord for historical tracking and DB fallback.
+ */
+export async function GET(req: Request) {
+  const startTime = Date.now();
+
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret) {
+    logger.error("CRON_SECRET not configured");
+    return NextResponse.json(
+      { error: "Service unavailable: cron authentication not configured" },
+      { status: 503 },
+    );
+  }
+
+  if (!isValidCronSecret(authHeader || "", cronSecret)) {
+    logger.warn("Unauthorized solar-flux-polling cron request");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    logger.info("[Solar Flux] Starting F10.7 polling...");
+
+    const f107 = await getCurrentF107();
+
+    // Use start of current month as observedAt (NOAA reports monthly values)
+    const now = new Date();
+    const observedAt = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+
+    // Upsert to dedup by observedAt + source
+    await prisma.solarFluxRecord.upsert({
+      where: {
+        observedAt_source: {
+          observedAt,
+          source: "NOAA_SWPC",
+        },
+      },
+      update: {
+        f107,
+      },
+      create: {
+        f107,
+        observedAt,
+        source: "NOAA_SWPC",
+      },
+    });
+
+    const duration = Date.now() - startTime;
+
+    logger.info("[Solar Flux] Polling complete", {
+      f107,
+      observedAt: observedAt.toISOString(),
+      duration: `${duration}ms`,
+    });
+
+    return NextResponse.json({
+      success: true,
+      f107,
+      observedAt: observedAt.toISOString(),
+      duration: `${duration}ms`,
+      processedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error("[Solar Flux] Cron job failed", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Processing failed",
+        message: getSafeErrorMessage(error, "Solar flux polling failed"),
+        processedAt: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function POST(req: Request) {
+  return GET(req);
+}

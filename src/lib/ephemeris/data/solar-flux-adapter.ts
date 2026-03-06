@@ -1,6 +1,7 @@
 import "server-only";
 import { safeLog } from "@/lib/verity/utils/redaction";
 import { F107_REFERENCE } from "../core/constants";
+import type { PrismaClient } from "@prisma/client";
 
 /**
  * NOAA F10.7 Solar Flux Adapter
@@ -95,4 +96,32 @@ export async function getCurrentF107(): Promise<number> {
 function getCachedOrDefault(): number {
   if (solarFluxCache) return solarFluxCache.f107;
   return F107_REFERENCE; // Fallback: 150 SFU (average solar conditions)
+}
+
+/**
+ * Get the latest F10.7 value from the database.
+ * Used as a fallback when NOAA is unreachable and the in-memory cache is cold
+ * (e.g., after a serverless cold start).
+ *
+ * Returns the reference value (150 SFU) if no DB records exist.
+ */
+export async function getLatestF107FromDB(db: PrismaClient): Promise<number> {
+  try {
+    const latest = await db.solarFluxRecord.findFirst({
+      orderBy: { observedAt: "desc" },
+      select: { f107: true },
+    });
+
+    if (latest) {
+      // Also warm the in-memory cache
+      solarFluxCache = { f107: latest.f107, fetchedAt: Date.now() };
+      return latest.f107;
+    }
+  } catch (error) {
+    safeLog("DB F10.7 fallback failed", {
+      error: error instanceof Error ? error.message : "unknown",
+    });
+  }
+
+  return F107_REFERENCE;
 }

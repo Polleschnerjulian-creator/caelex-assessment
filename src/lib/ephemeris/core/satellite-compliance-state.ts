@@ -120,7 +120,7 @@ export async function calculateSatelliteComplianceState(
     getSentinelTimeSeries(prisma, orgId, noradId, "mfa_adoption_pct"),
     getAssessmentData(prisma, orgId),
     getVerityAttestations(prisma, orgId, noradId),
-    getRegulatoryChanges(),
+    getRegulatoryChanges(prisma),
     getSentinelStatus(prisma, orgId, noradId),
     getCelesTrakStatus(noradId),
     getVerityStatus(prisma, orgId, noradId),
