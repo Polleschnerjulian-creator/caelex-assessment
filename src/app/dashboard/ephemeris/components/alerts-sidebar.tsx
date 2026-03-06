@@ -2,27 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { useEphemerisTheme, type EphemerisColors } from "../theme";
 
-// ─── Color System ─────────────────────────────────────────────────────────────
+// ─── Color Helpers ───────────────────────────────────────────────────────────
 
-const C = {
-  bg: "#0d1117",
-  elevated: "#161b22",
-  sunken: "#0a0e16",
-  border: "#21262d",
-  borderActive: "#30363d",
-  textPrimary: "#e6edf3",
-  textSecondary: "#c9d1d9",
-  textTertiary: "#8b949e",
-  textMuted: "#484f58",
-  nominal: "#3fb950",
-  watch: "#d29922",
-  warning: "#f0883e",
-  critical: "#f85149",
-  accent: "#58a6ff",
-};
-
-function severityColor(severity: string): string {
+function severityColor(severity: string, C: EphemerisColors): string {
   switch (severity) {
     case "CRITICAL":
       return C.critical;
@@ -86,6 +70,7 @@ export default function AlertsSidebar({
   alerts: propAlerts,
   noradId,
 }: AlertsSidebarProps) {
+  const C = useEphemerisTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState<"alerts" | "anomalies">(
     "alerts",
@@ -343,7 +328,7 @@ export default function AlertsSidebar({
                   style={{
                     padding: "10px 12px",
                     borderBottom: `1px solid ${C.border}`,
-                    borderLeft: `3px solid ${severityColor(alert.severity)}`,
+                    borderLeft: `3px solid ${severityColor(alert.severity, C)}`,
                     marginBottom: 4,
                     borderRadius: 2,
                     background: C.elevated,
@@ -361,7 +346,7 @@ export default function AlertsSidebar({
                       style={{
                         fontFamily: "'IBM Plex Mono', monospace",
                         fontSize: 10,
-                        color: severityColor(alert.severity),
+                        color: severityColor(alert.severity, C),
                         fontWeight: 600,
                       }}
                     >
@@ -425,7 +410,7 @@ export default function AlertsSidebar({
                   style={{
                     padding: "10px 12px",
                     borderBottom: `1px solid ${C.border}`,
-                    borderLeft: `3px solid ${severityColor(anomaly.severity)}`,
+                    borderLeft: `3px solid ${severityColor(anomaly.severity, C)}`,
                     marginBottom: 4,
                     borderRadius: 2,
                     background: C.elevated,
@@ -443,7 +428,7 @@ export default function AlertsSidebar({
                       style={{
                         fontFamily: "'IBM Plex Mono', monospace",
                         fontSize: 10,
-                        color: severityColor(anomaly.severity),
+                        color: severityColor(anomaly.severity, C),
                         fontWeight: 600,
                       }}
                     >

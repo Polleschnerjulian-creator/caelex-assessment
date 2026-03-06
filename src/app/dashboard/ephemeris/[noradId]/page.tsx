@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use, useMemo } from "react";
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "../components/alerts-sidebar";
+import { useEphemerisTheme, type EphemerisColors } from "../theme";
 import {
   Line,
   Area,
@@ -17,27 +18,9 @@ import {
 } from "recharts";
 import ScenarioBuilder from "../components/scenario-builder/ScenarioBuilder";
 
-// ─── Color System (shared with Fleet Command) ───────────────────────────────
+// ─── Color Helpers (theme-aware — see ../theme.ts) ──────────────────────────
 
-const C = {
-  bg: "#0d1117",
-  elevated: "#161b22",
-  sunken: "#0a0e16",
-  border: "#21262d",
-  borderActive: "#30363d",
-  textPrimary: "#e6edf3",
-  textSecondary: "#c9d1d9",
-  textTertiary: "#8b949e",
-  textMuted: "#484f58",
-  nominal: "#3fb950",
-  watch: "#d29922",
-  warning: "#f0883e",
-  critical: "#f85149",
-  accent: "#58a6ff",
-  brand: "#a78bfa",
-};
-
-function scoreColor(score: number): string {
+function scoreColor(score: number, C: EphemerisColors): string {
   if (score >= 85) return C.nominal;
   if (score >= 70) return C.watch;
   if (score >= 50) return C.warning;
@@ -51,7 +34,7 @@ function scoreRisk(score: number): string {
   return "CRITICAL";
 }
 
-function riskColor(category: string): string {
+function riskColor(category: string, C: EphemerisColors): string {
   switch (category) {
     case "NOMINAL":
     case "COMPLIANT":
@@ -67,7 +50,7 @@ function riskColor(category: string): string {
   }
 }
 
-function severityColor(sev: string): string {
+function severityColor(sev: string, C: EphemerisColors): string {
   switch (sev) {
     case "CRITICAL":
       return C.critical;
@@ -205,6 +188,7 @@ export default function SatelliteDetailPage({
   params: Promise<{ noradId: string }>;
 }) {
   const { noradId } = use(params);
+  const C = useEphemerisTheme();
   const [state, setState] = useState<SatelliteState | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
@@ -433,7 +417,7 @@ export default function SatelliteDetailPage({
             }
             valueColor={
               state && state.overallScore !== null
-                ? scoreColor(state.overallScore)
+                ? scoreColor(state.overallScore, C)
                 : C.textMuted
             }
             sub={
@@ -441,6 +425,7 @@ export default function SatelliteDetailPage({
                 ? scoreRisk(state.overallScore)
                 : ""
             }
+            C={C}
           />
           {/* Horizon */}
           <MetricCell
@@ -456,6 +441,7 @@ export default function SatelliteDetailPage({
                 : C.textMuted
             }
             sub={state?.complianceHorizon.firstBreachRegulation ?? "No breach"}
+            C={C}
           />
           {/* 7d Trend */}
           <MetricCell
@@ -475,6 +461,7 @@ export default function SatelliteDetailPage({
                 : C.textMuted
             }
             sub="pts"
+            C={C}
           />
           {/* Alerts */}
           <MetricCell
@@ -482,6 +469,7 @@ export default function SatelliteDetailPage({
             value={`${alertCount}`}
             valueColor={alertCount > 0 ? C.critical : C.nominal}
             sub="active"
+            C={C}
           />
           {/* Modules */}
           <MetricCell
@@ -489,6 +477,7 @@ export default function SatelliteDetailPage({
             value={`${state ? Object.keys(state.modules).length : 0}`}
             valueColor={C.textSecondary}
             sub="tracked"
+            C={C}
           />
         </div>
 
@@ -532,10 +521,11 @@ export default function SatelliteDetailPage({
             <ForecastTab
               forecast={forecast}
               events={forecast?.complianceEvents ?? []}
+              C={C}
             />
           )}
           {activeTab === "modules" && state && (
-            <ModulesTab modules={state.modules} />
+            <ModulesTab modules={state.modules} C={C} />
           )}
           {activeTab === "scenarios" && (
             <div
@@ -552,11 +542,12 @@ export default function SatelliteDetailPage({
               />
             </div>
           )}
-          {activeTab === "cascade" && <CascadeTab noradId={noradId} />}
+          {activeTab === "cascade" && <CascadeTab noradId={noradId} C={C} />}
           {activeTab === "datasources" && state && (
             <DataSourcesTab
               dataSources={state.dataSources}
               dataFreshness={state.dataFreshness}
+              C={C}
             />
           )}
         </div>
@@ -573,11 +564,13 @@ function MetricCell({
   value,
   valueColor,
   sub,
+  C,
 }: {
   label: string;
   value: string;
   valueColor: string;
   sub: string;
+  C: EphemerisColors;
 }) {
   return (
     <div
@@ -629,9 +622,11 @@ function MetricCell({
 function ForecastTab({
   forecast,
   events,
+  C,
 }: {
   forecast: ForecastData | null;
   events: ComplianceEvent[];
+  C: EphemerisColors;
 }) {
   const [selectedMetric, setSelectedMetric] = useState<string | null>(
     forecast?.forecastCurves[0]?.metric ?? null,
@@ -927,7 +922,7 @@ function ForecastTab({
                       fontFamily: "'IBM Plex Mono', monospace",
                       fontSize: 13,
                       fontWeight: 600,
-                      color: severityColor(ev.severity),
+                      color: severityColor(ev.severity, C),
                       padding: "10px 12px",
                     }}
                   >
@@ -940,7 +935,7 @@ function ForecastTab({
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        background: severityColor(ev.severity),
+                        background: severityColor(ev.severity, C),
                         marginRight: 8,
                       }}
                     />
@@ -996,7 +991,13 @@ function ForecastTab({
 
 // ─── Modules Tab ──────────────────────────────────────────────────────────────
 
-function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
+function ModulesTab({
+  modules,
+  C,
+}: {
+  modules: SatelliteState["modules"];
+  C: EphemerisColors;
+}) {
   const sorted = useMemo(
     () => Object.entries(modules).sort(([, a], [, b]) => a.score - b.score),
     [modules],
@@ -1062,7 +1063,7 @@ function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
                   style={{
                     height: "100%",
                     width: `${mod.score}%`,
-                    background: scoreColor(mod.score),
+                    background: scoreColor(mod.score, C),
                     borderRadius: 4,
                     transition: "width 0.3s ease",
                   }}
@@ -1074,7 +1075,7 @@ function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: scoreColor(mod.score),
+                  color: scoreColor(mod.score, C),
                   textAlign: "right",
                 }}
               >
@@ -1085,7 +1086,7 @@ function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 10,
-                  color: riskColor(mod.status),
+                  color: riskColor(mod.status, C),
                   textAlign: "right",
                 }}
               >
@@ -1201,7 +1202,7 @@ function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        background: riskColor(f.status),
+                        background: riskColor(f.status, C),
                         marginRight: 6,
                       }}
                     />
@@ -1209,7 +1210,7 @@ function ModulesTab({ modules }: { modules: SatelliteState["modules"] }) {
                       style={{
                         fontFamily: "'IBM Plex Mono', monospace",
                         fontSize: 11,
-                        color: riskColor(f.status),
+                        color: riskColor(f.status, C),
                       }}
                     >
                       {f.status}
@@ -1274,7 +1275,13 @@ interface CascadeResult {
   }>;
 }
 
-function CascadeTab({ noradId: _noradId }: { noradId: string }) {
+function CascadeTab({
+  noradId: _noradId,
+  C,
+}: {
+  noradId: string;
+  C: EphemerisColors;
+}) {
   const [nodes, setNodes] = useState<CascadeNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<string>("");
   const [changeType, setChangeType] = useState<string>("threshold_change");
@@ -1775,7 +1782,7 @@ function CascadeTab({ noradId: _noradId }: { noradId: string }) {
                           fontWeight: 600,
                           color:
                             sat.projectedScore !== null
-                              ? scoreColor(sat.projectedScore)
+                              ? scoreColor(sat.projectedScore, C)
                               : C.textMuted,
                           padding: "10px 12px",
                         }}
@@ -1806,7 +1813,7 @@ function CascadeTab({ noradId: _noradId }: { noradId: string }) {
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            background: severityColor(sat.severity),
+                            background: severityColor(sat.severity, C),
                             marginRight: 6,
                           }}
                         />
@@ -1814,7 +1821,7 @@ function CascadeTab({ noradId: _noradId }: { noradId: string }) {
                           style={{
                             fontFamily: "'IBM Plex Mono', monospace",
                             fontSize: 11,
-                            color: severityColor(sat.severity),
+                            color: severityColor(sat.severity, C),
                           }}
                         >
                           {sat.severity}
@@ -1847,9 +1854,11 @@ function CascadeTab({ noradId: _noradId }: { noradId: string }) {
 function DataSourcesTab({
   dataSources,
   dataFreshness,
+  C,
 }: {
   dataSources: SatelliteState["dataSources"];
   dataFreshness: string;
+  C: EphemerisColors;
 }) {
   const freshnessInfo = (() => {
     switch (dataFreshness) {

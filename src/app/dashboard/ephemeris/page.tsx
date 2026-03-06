@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { csrfHeaders } from "@/lib/csrf-client";
 import AlertsSidebar from "./components/alerts-sidebar";
+import { useEphemerisTheme } from "./theme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -80,46 +81,30 @@ interface BenchmarkData {
   } | null;
 }
 
-// ─── Color Helpers ────────────────────────────────────────────────────────────
+// ─── Color Helpers (theme-aware — see ./theme.ts) ────────────────────────────
 
-const COLORS = {
-  bg: "#0d1117",
-  elevated: "#161b22",
-  sunken: "#0a0e16",
-  border: "#21262d",
-  borderActive: "#30363d",
-  textPrimary: "#e6edf3",
-  textSecondary: "#c9d1d9",
-  textTertiary: "#8b949e",
-  textMuted: "#484f58",
-  nominal: "#3fb950",
-  watch: "#d29922",
-  warning: "#f0883e",
-  critical: "#f85149",
-  accent: "#58a6ff",
-  brand: "#a78bfa",
-};
+import type { EphemerisColors } from "./theme";
 
-function riskColor(category: string): string {
+function riskColor(category: string, C: EphemerisColors): string {
   switch (category) {
     case "NOMINAL":
-      return COLORS.nominal;
+      return C.nominal;
     case "WATCH":
-      return COLORS.watch;
+      return C.watch;
     case "WARNING":
-      return COLORS.warning;
+      return C.warning;
     case "CRITICAL":
-      return COLORS.critical;
+      return C.critical;
     default:
-      return COLORS.textTertiary;
+      return C.textTertiary;
   }
 }
 
-function scoreColor(score: number): string {
-  if (score >= 85) return COLORS.nominal;
-  if (score >= 70) return COLORS.watch;
-  if (score >= 50) return COLORS.warning;
-  return COLORS.critical;
+function scoreColor(score: number, C: EphemerisColors): string {
+  if (score >= 85) return C.nominal;
+  if (score >= 70) return C.watch;
+  if (score >= 50) return C.warning;
+  return C.critical;
 }
 
 function scoreRisk(score: number): string {
@@ -135,22 +120,22 @@ function trendArrow(delta: number): string {
   return "→";
 }
 
-function trendColor(delta: number): string {
-  if (delta > 0.5) return COLORS.nominal;
-  if (delta < -0.5) return COLORS.critical;
-  return COLORS.textTertiary;
+function trendColor(delta: number, C: EphemerisColors): string {
+  if (delta > 0.5) return C.nominal;
+  if (delta < -0.5) return C.critical;
+  return C.textTertiary;
 }
 
-function severityColor(severity: string): string {
+function severityColor(severity: string, C: EphemerisColors): string {
   switch (severity) {
     case "CRITICAL":
-      return COLORS.critical;
+      return C.critical;
     case "HIGH":
-      return COLORS.warning;
+      return C.warning;
     case "MEDIUM":
-      return COLORS.watch;
+      return C.watch;
     default:
-      return COLORS.textTertiary;
+      return C.textTertiary;
   }
 }
 
@@ -162,6 +147,7 @@ type SortDir = "asc" | "desc";
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function EphemerisDashboard() {
+  const COLORS = useEphemerisTheme();
   const [fleet, setFleet] = useState<FleetState[]>([]);
   const [intel, setIntel] = useState<FleetIntelligence | null>(null);
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
@@ -432,7 +418,7 @@ export default function EphemerisDashboard() {
                 style={{
                   fontSize: 28,
                   fontWeight: 700,
-                  color: scoreColor(intel?.fleetScore ?? 0),
+                  color: scoreColor(intel?.fleetScore ?? 0, COLORS),
                   ...mono,
                 }}
               >
@@ -442,7 +428,7 @@ export default function EphemerisDashboard() {
                 <span
                   style={{
                     fontSize: 12,
-                    color: trendColor(fleetDelta),
+                    color: trendColor(fleetDelta, COLORS),
                     ...mono,
                   }}
                 >
@@ -838,7 +824,7 @@ export default function EphemerisDashboard() {
                               style={{
                                 ...cellStyle,
                                 textAlign: "right",
-                                color: scoreColor(sat.overallScore),
+                                color: scoreColor(sat.overallScore, COLORS),
                                 fontWeight: 600,
                               }}
                             >
@@ -869,7 +855,10 @@ export default function EphemerisDashboard() {
                             </td>
                             <td style={{ ...cellStyle, textAlign: "center" }}>
                               <span
-                                style={{ color: riskColor(risk), fontSize: 11 }}
+                                style={{
+                                  color: riskColor(risk, COLORS),
+                                  fontSize: 11,
+                                }}
                               >
                                 ● {risk.slice(0, 4)}
                               </span>
@@ -882,7 +871,7 @@ export default function EphemerisDashboard() {
                                   </span>
                                   <span
                                     style={{
-                                      color: scoreColor(wm.score),
+                                      color: scoreColor(wm.score, COLORS),
                                       marginLeft: 6,
                                     }}
                                   >
@@ -1047,7 +1036,7 @@ export default function EphemerisDashboard() {
                           <td style={{ ...cellStyle }}>
                             <span
                               style={{
-                                color: severityColor(alert.severity),
+                                color: severityColor(alert.severity, COLORS),
                                 fontSize: 11,
                                 fontWeight: 600,
                               }}
@@ -1161,7 +1150,7 @@ export default function EphemerisDashboard() {
                             style={{
                               width: `${pct}%`,
                               height: "100%",
-                              background: riskColor(cat),
+                              background: riskColor(cat, COLORS),
                               borderRadius: 2,
                               transition: "width 0.3s",
                             }}
@@ -1242,7 +1231,7 @@ export default function EphemerisDashboard() {
                     <span
                       style={{
                         fontSize: 12,
-                        color: scoreColor(link.score),
+                        color: scoreColor(link.score, COLORS),
                         fontWeight: 600,
                         ...mono,
                       }}
@@ -1311,7 +1300,7 @@ export default function EphemerisDashboard() {
                         style={{
                           fontSize: 20,
                           fontWeight: 700,
-                          color: trendColor(intel.trend.longTermDelta),
+                          color: trendColor(intel.trend.longTermDelta, COLORS),
                           ...mono,
                         }}
                       >
@@ -1349,7 +1338,10 @@ export default function EphemerisDashboard() {
                           style={{
                             fontSize: 16,
                             fontWeight: 600,
-                            color: trendColor(intel.trend.shortTermDelta),
+                            color: trendColor(
+                              intel.trend.shortTermDelta,
+                              COLORS,
+                            ),
                             ...mono,
                           }}
                         >
@@ -1371,7 +1363,10 @@ export default function EphemerisDashboard() {
                           style={{
                             fontSize: 16,
                             fontWeight: 600,
-                            color: trendColor(intel.trend.longTermDelta),
+                            color: trendColor(
+                              intel.trend.longTermDelta,
+                              COLORS,
+                            ),
                             ...mono,
                           }}
                         >
@@ -1515,6 +1510,7 @@ export default function EphemerisDashboard() {
                           fontWeight: 600,
                           color: trendColor(
                             benchmark.operatorRanking.vsAverage,
+                            COLORS,
                           ),
                           ...mono,
                         }}

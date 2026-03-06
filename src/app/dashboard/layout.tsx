@@ -89,9 +89,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const isEphemerisPage = pathname.startsWith("/dashboard/ephemeris");
+
   const isFullscreenPage =
     pathname === "/dashboard/generate" ||
-    pathname === "/dashboard/mission-control";
+    pathname === "/dashboard/mission-control" ||
+    isEphemerisPage;
 
   return (
     <div className="min-h-screen bg-white">
@@ -113,7 +116,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <div className="flex flex-col min-h-screen">
-          <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
+          {!isEphemerisPage && (
+            <TopBar
+              title={pageTitle}
+              onMenuClick={() => setSidebarOpen(true)}
+            />
+          )}
           <main
             id="main-content"
             className={`flex-1 ${isFullscreenPage ? "" : "p-6 lg:p-10"}`}
