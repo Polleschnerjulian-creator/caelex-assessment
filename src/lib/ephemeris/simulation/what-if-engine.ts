@@ -5,8 +5,8 @@ import type {
   WhatIfResult,
   SatelliteComplianceStateInternal,
 } from "../core/types";
-import { calculateSatelliteComplianceState } from "../core/satellite-compliance-state";
 import { simulateJurisdictionChange } from "./jurisdiction-simulator";
+import { SCENARIO_HANDLERS } from "./handlers";
 
 /**
  * What-If Engine
@@ -42,8 +42,14 @@ export async function runWhatIfScenario(
       return runThrusterFailure(baselineState, scenario);
     case "EOL_EXTENSION":
       return runEolExtension(baselineState, scenario);
-    default:
+    default: {
+      // Route through modular handler registry for all 49+ new scenario types
+      const handler = SCENARIO_HANDLERS[scenario.type];
+      if (handler) {
+        return handler(baselineState, scenario);
+      }
       return buildNoImpactResult(scenario, baselineState);
+    }
   }
 }
 

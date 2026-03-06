@@ -759,7 +759,7 @@ describe("what-if-engine", () => {
         },
       });
       const scenario: WhatIfScenario = {
-        type: "REGULATORY_CHANGE" as any,
+        type: "UNKNOWN_SCENARIO_TYPE" as any,
         parameters: {},
       };
 

@@ -13,7 +13,7 @@ import { csrfHeaders } from "@/lib/csrf-client";
 // Types
 // ---------------------------------------------------------------------------
 
-interface StepResult {
+export interface StepResult {
   blockInstanceId: string;
   scenarioType: string;
   baselineHorizon: number;
@@ -28,6 +28,28 @@ interface StepResult {
   }>;
   fuelImpact: { before: number; after: number; delta: number } | null;
   recommendation: string;
+  // Enhanced fields from API
+  severityLevel?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  moduleImpacts?: Array<{
+    moduleKey: string;
+    statusBefore: string;
+    statusAfter: string;
+    scoreDelta: number;
+  }>;
+  costEstimate?: {
+    fuelKg?: number;
+    financialUsd?: number;
+    description?: string;
+  };
+  confidenceBand?: {
+    optimistic: number;
+    pessimistic: number;
+  };
+  timelineProjection?: Array<{
+    monthOffset: number;
+    baselineScore: number;
+    projectedScore: number;
+  }>;
 }
 
 export interface SimulationResults {
@@ -42,6 +64,9 @@ export interface SimulationResults {
     crossingDateAfter: string | null;
   }>;
   finalRecommendation: string;
+  // Aggregate fields
+  overallSeverity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  totalCostEstimate: { fuelKg: number; financialUsd: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +77,25 @@ export interface SimulationResults {
 function getScenarioType(definitionId: string): string {
   const def = BLOCK_DEFINITIONS.find((d) => d.id === definitionId);
   return def?.scenarioType ?? "CUSTOM";
+}
+
+/** Determine the highest severity from a list of levels. */
+function maxSeverity(
+  levels: Array<"LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | undefined>,
+): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
+  const order: Array<"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"> = [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "CRITICAL",
+  ];
+  let maxIdx = 0;
+  for (const level of levels) {
+    if (!level) continue;
+    const idx = order.indexOf(level);
+    if (idx > maxIdx) maxIdx = idx;
+  }
+  return order[maxIdx];
 }
 
 /** Aggregate an array of StepResults into a SimulationResults summary. */
@@ -85,12 +129,26 @@ function aggregateResults(steps: StepResult[]): SimulationResults {
     .filter(Boolean)
     .join(" ");
 
+  // Aggregate severity
+  const overallSeverity = maxSeverity(steps.map((s) => s.severityLevel));
+
+  // Aggregate cost estimates
+  const totalCostEstimate = {
+    fuelKg: steps.reduce((sum, s) => sum + (s.costEstimate?.fuelKg ?? 0), 0),
+    financialUsd: steps.reduce(
+      (sum, s) => sum + (s.costEstimate?.financialUsd ?? 0),
+      0,
+    ),
+  };
+
   return {
     stepResults: steps,
     totalHorizonDelta,
     totalFuelDelta,
     allAffectedRegulations: Array.from(regMap.values()),
     finalRecommendation,
+    overallSeverity,
+    totalCostEstimate,
   };
 }
 
@@ -200,6 +258,12 @@ export function useScenarioSimulation(noradId: string) {
           affectedRegulations: d.affectedRegulations,
           fuelImpact: d.fuelImpact ?? null,
           recommendation: d.recommendation,
+          // Enhanced fields
+          severityLevel: d.severityLevel,
+          moduleImpacts: d.moduleImpacts,
+          costEstimate: d.costEstimate,
+          confidenceBand: d.confidenceBand,
+          timelineProjection: d.timelineProjection,
         });
       }
 

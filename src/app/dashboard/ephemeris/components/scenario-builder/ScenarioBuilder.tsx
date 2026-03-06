@@ -17,34 +17,124 @@ import {
 } from "@dnd-kit/core";
 import {
   ArrowUpCircle,
-  Flame,
+  ArrowDownCircle,
+  RotateCcw,
+  Target,
+  Crosshair,
+  ArrowDown,
+  Grid3x3,
+  Wind,
   AlertTriangle,
-  Clock,
+  Cog,
+  Sun,
+  Battery,
+  Radio,
+  Eye,
+  Thermometer,
+  Package,
+  ShieldOff,
+  Droplets,
+  Zap,
+  CloudLightning,
+  Flame,
+  Sparkles,
+  Cloud,
+  WifiOff,
+  Satellite,
+  Shield,
+  Database,
   Globe,
-  Wrench,
+  Users,
+  FileText,
+  Search,
+  FileCheck,
+  Trash2,
+  AlertOctagon,
+  Waves,
+  ScrollText,
+  Scale,
+  Bell,
+  Clock,
+  CalendarX,
+  Maximize2,
+  Code,
+  UserMinus,
+  TrendingUp,
+  Truck,
+  Ban,
+  Scissors,
+  UserX,
+  Orbit,
+  Wifi,
+  DollarSign,
 } from "lucide-react";
 
-import {
-  BLOCK_DEFINITIONS,
-  createBlockInstance,
-  type BlockDefinition,
-} from "./block-definitions";
+import { createBlockInstance, type BlockDefinition } from "./block-definitions";
 import { useScenarioSimulation } from "./useScenarioSimulation";
+import { useEphemerisTheme } from "../../theme";
 import BlockPalette from "./BlockPalette";
 import ScenarioPipeline from "./ScenarioPipeline";
 import ResultsPanel from "./ResultsPanel";
 
 // ---------------------------------------------------------------------------
-// Icon Mapping (for DragOverlay card)
+// Icon Mapping (complete set for all 55 blocks)
 // ---------------------------------------------------------------------------
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+export const ICON_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
   ArrowUpCircle,
-  Flame,
+  ArrowDownCircle,
+  RotateCcw,
+  Target,
+  Crosshair,
+  ArrowDown,
+  Grid3x3,
+  Wind,
   AlertTriangle,
-  Clock,
+  Cog,
+  Sun,
+  Battery,
+  Radio,
+  Eye,
+  Thermometer,
+  Package,
+  ShieldOff,
+  Droplets,
+  Zap,
+  CloudLightning,
+  Flame,
+  Sparkles,
+  Cloud,
+  WifiOff,
+  Satellite,
+  Shield,
+  Database,
   Globe,
-  Wrench,
+  Users,
+  FileText,
+  Search,
+  FileCheck,
+  Trash2,
+  AlertOctagon,
+  Waves,
+  ScrollText,
+  Scale,
+  Bell,
+  Clock,
+  CalendarX,
+  Maximize2,
+  Code,
+  UserMinus,
+  TrendingUp,
+  Truck,
+  Ban,
+  Scissors,
+  UserX,
+  Orbit,
+  Wifi,
+  DollarSign,
 };
 
 // ---------------------------------------------------------------------------
@@ -61,16 +151,24 @@ interface ScenarioBuilderProps {
 // ---------------------------------------------------------------------------
 
 function OverlayCard({ definition }: { definition: BlockDefinition }) {
+  const C = useEphemerisTheme();
   const IconComponent = ICON_MAP[definition.icon];
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-[#E5E7EB] bg-white p-3 shadow-xl w-[220px]">
+    <div
+      className="flex items-center gap-2.5 rounded-lg p-3 w-[220px]"
+      style={{
+        background: C.elevated,
+        border: `1px solid ${C.border}`,
+        boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
+      }}
+    >
       {IconComponent && (
         <IconComponent
           className={`h-4 w-4 flex-shrink-0 ${definition.color}`}
         />
       )}
-      <span className="text-small font-medium text-[#111827]">
+      <span className="text-small font-medium" style={{ color: C.textPrimary }}>
         {definition.name}
       </span>
     </div>

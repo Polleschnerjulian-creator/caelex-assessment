@@ -431,13 +431,71 @@ export interface JurisdictionSimulation {
 // ─── What-If Types ───────────────────────────────────────────────────────────
 
 export type WhatIfScenarioType =
+  // Orbital Mechanics
   | "ORBIT_RAISE"
+  | "ORBIT_LOWER"
+  | "ORBIT_PLANE_CHANGE"
+  | "ORBITAL_SLOT_CHANGE"
+  | "COLLISION_AVOIDANCE"
+  | "DEORBIT_EXECUTE"
+  | "CONSTELLATION_RESIZE"
+  | "ATMOSPHERIC_DRAG_INCREASE"
+  // Hardware Failures
   | "THRUSTER_FAILURE"
-  | "FUEL_BURN"
-  | "REGULATORY_CHANGE"
+  | "REACTION_WHEEL_FAILURE"
+  | "SOLAR_PANEL_DEGRADATION"
+  | "BATTERY_DEGRADATION"
+  | "ANTENNA_DEGRADATION"
+  | "ATTITUDE_CONTROL_ANOMALY"
+  | "THERMAL_CONTROL_FAILURE"
+  | "SENSOR_DEGRADATION"
+  | "PAYLOAD_FAILURE"
+  | "PASSIVATION_FAILURE"
+  | "PROPELLANT_LEAK"
+  | "POWER_BUS_ANOMALY"
+  // Space Environment
+  | "SOLAR_STORM"
+  | "CORONAL_MASS_EJECTION"
+  | "SOLAR_PARTICLE_EVENT"
+  | "DEBRIS_CLOUD_EVENT"
+  | "MICROMETEOROID_IMPACT"
+  | "ELECTROSTATIC_DISCHARGE"
+  // Communication & Data
+  | "COMM_FAILURE"
+  | "GROUND_STATION_LOSS"
+  | "FREQUENCY_INTERFERENCE"
+  | "CYBER_INCIDENT"
+  | "DATA_BREACH"
+  // Regulatory & Legal
   | "JURISDICTION_CHANGE"
-  | "CONSTELLATION_CHANGE"
-  | "EOL_EXTENSION";
+  | "OPERATOR_TYPE_CHANGE"
+  | "REGULATORY_CHANGE"
+  | "INSURANCE_LAPSE"
+  | "NCA_AUDIT_TRIGGER"
+  | "LICENSING_CONDITION_CHANGE"
+  | "DEBRIS_REMEDIATION_ORDER"
+  | "MANDATORY_MANEUVER_ORDER"
+  | "SPECTRUM_REALLOCATION"
+  | "TREATY_CHANGE"
+  | "LIABILITY_CLAIM"
+  | "NIS2_NOTIFICATION_TRIGGER"
+  // Operational
+  | "EOL_EXTENSION"
+  | "LAUNCH_DELAY"
+  | "MISSION_SCOPE_CHANGE"
+  | "SOFTWARE_ANOMALY"
+  | "SERVICE_INTERRUPTION"
+  | "OPERATIONS_TEAM_CHANGE"
+  | "FREQUENCY_BAND_MIGRATION"
+  // Financial & Business
+  | "INSURANCE_PREMIUM_INCREASE"
+  | "SUPPLY_CHAIN_DISRUPTION"
+  | "SANCTIONS_EXPORT_CONTROL"
+  | "BUDGET_CUT"
+  | "PARTNER_DEFAULT"
+  // Legacy
+  | "FUEL_BURN"
+  | "CONSTELLATION_CHANGE";
 
 export interface WhatIfScenario {
   type: WhatIfScenarioType;
@@ -458,6 +516,28 @@ export interface WhatIfResult {
   }>;
   fuelImpact: { before: number; after: number; delta: number } | null;
   recommendation: string;
+  // Enhanced result fields
+  severityLevel?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  moduleImpacts?: Array<{
+    moduleKey: string;
+    statusBefore: string;
+    statusAfter: string;
+    scoreDelta: number;
+  }>;
+  costEstimate?: {
+    fuelKg?: number;
+    financialUsd?: number;
+    description?: string;
+  };
+  confidenceBand?: {
+    optimistic: number;
+    pessimistic: number;
+  };
+  timelineProjection?: Array<{
+    monthOffset: number;
+    baselineScore: number;
+    projectedScore: number;
+  }>;
 }
 
 // ─── Conversion Functions (Data Leakage Prevention) ──────────────────────────
