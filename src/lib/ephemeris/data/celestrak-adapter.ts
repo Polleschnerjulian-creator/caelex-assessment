@@ -60,7 +60,7 @@ async function fetchGP(noradId: string): Promise<CelesTrakGPRecord | null> {
   try {
     const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${encodeURIComponent(noradId)}&FORMAT=json`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);

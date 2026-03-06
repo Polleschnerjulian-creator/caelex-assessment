@@ -164,13 +164,10 @@ export default function EphemerisDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [fleetRes, intelRes] = await Promise.all([
-        fetch("/api/v1/ephemeris/fleet", { headers: csrfHeaders() }),
-        fetch(
-          "/api/v1/ephemeris/fleet/intelligence?include_benchmark=true&lookback_days=90",
-          { headers: csrfHeaders() },
-        ),
-      ]);
+      // Load fleet data first (fast — reads from DB cache)
+      const fleetRes = await fetch("/api/v1/ephemeris/fleet", {
+        headers: csrfHeaders(),
+      });
 
       if (fleetRes.ok) {
         const data = await fleetRes.json();
@@ -182,16 +179,23 @@ export default function EphemerisDashboard() {
         );
       }
 
+      setLastCalc(new Date().toISOString());
+      // Show fleet immediately, then load intelligence in background
+      setLoading(false);
+
+      // Load intelligence + benchmark (slower, non-blocking)
+      const intelRes = await fetch(
+        "/api/v1/ephemeris/fleet/intelligence?include_benchmark=true&lookback_days=90",
+        { headers: csrfHeaders() },
+      );
+
       if (intelRes.ok) {
         const data = await intelRes.json();
         setIntel(data.data ?? null);
         setBenchmark(data.benchmark ?? null);
       }
-
-      setLastCalc(new Date().toISOString());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
       setLoading(false);
     }
   }, []);

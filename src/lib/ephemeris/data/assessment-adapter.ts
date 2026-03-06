@@ -33,16 +33,19 @@ export async function getAssessmentData(
 
 /**
  * Get assessment completion status for data sources panel.
+ * Accepts an optional pre-loaded bundle to avoid redundant DB queries when
+ * getAssessmentData() was already called in the same request.
  */
 export async function getAssessmentStatus(
   prisma: PrismaClient,
   orgId: string,
+  preloadedBundle?: AssessmentDataBundle,
 ): Promise<{
   completedModules: number;
   totalModules: number;
   lastUpdated: string | null;
 }> {
-  const bundle = await getAssessmentData(prisma, orgId);
+  const bundle = preloadedBundle ?? (await getAssessmentData(prisma, orgId));
   const modules = [
     bundle.debris,
     bundle.cyber,

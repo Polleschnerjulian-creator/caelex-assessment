@@ -108,7 +108,6 @@ export async function calculateSatelliteComplianceState(
     sentinelStatus,
     celestrakStatus,
     verityStatus,
-    assessmentStatus,
   ] = await Promise.all([
     getOrbitalElements(noradId),
     getCurrentF107(),
@@ -124,8 +123,14 @@ export async function calculateSatelliteComplianceState(
     getSentinelStatus(prisma, orgId, noradId),
     getCelesTrakStatus(noradId),
     getVerityStatus(prisma, orgId, noradId),
-    getAssessmentStatus(prisma, orgId),
   ]);
+
+  // Compute assessment status from pre-loaded data (avoids redundant DB queries)
+  const assessmentStatus = await getAssessmentStatus(
+    prisma,
+    orgId,
+    assessmentData,
+  );
 
   // ─── Step 2: Run prediction models ─────────────────────────────────
   const missionAgeDays = launchDate

@@ -198,10 +198,19 @@ export default function SatelliteDetailPage({
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [stateRes, forecastRes, historyRes] = await Promise.all([
-        fetch(`/api/v1/ephemeris/state?norad_id=${noradId}`, {
-          headers: csrfHeaders(),
-        }),
+      // Load state first (fast — reads from DB cache), show immediately
+      const stateRes = await fetch(
+        `/api/v1/ephemeris/state?norad_id=${noradId}`,
+        { headers: csrfHeaders() },
+      );
+      if (stateRes.ok) {
+        const d = await stateRes.json();
+        setState(d.data);
+      }
+      setLoading(false);
+
+      // Then load forecast + history in parallel (non-blocking)
+      const [forecastRes, historyRes] = await Promise.all([
         fetch(`/api/v1/ephemeris/forecast?norad_id=${noradId}`, {
           headers: csrfHeaders(),
         }),
@@ -211,10 +220,6 @@ export default function SatelliteDetailPage({
         ),
       ]);
 
-      if (stateRes.ok) {
-        const d = await stateRes.json();
-        setState(d.data);
-      }
       if (forecastRes.ok) {
         const d = await forecastRes.json();
         setForecast(d.data);
@@ -232,7 +237,6 @@ export default function SatelliteDetailPage({
       }
     } catch {
       // Silent
-    } finally {
       setLoading(false);
     }
   }, [noradId]);

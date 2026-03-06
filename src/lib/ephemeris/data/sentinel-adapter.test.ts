@@ -20,6 +20,7 @@ import {
   getSentinelTimeSeries,
   getLatestSentinelValue,
   getSentinelStatus,
+  clearAgentIdCache,
 } from "./sentinel-adapter";
 
 // ── Prisma mock helper ──────────────────────────────────────────────────────
@@ -41,6 +42,7 @@ describe("sentinel-adapter", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    clearAgentIdCache();
     prisma = makePrisma();
   });
 

@@ -65,11 +65,16 @@ function makeRequest(authHeader?: string): Request {
 /** Minimal state object satisfying the shape used by the route */
 function makeState(overrides: Record<string, any> = {}) {
   return {
+    noradId: "25544",
+    satelliteName: "ISS",
+    operatorId: "org-1",
     overallScore: 85,
     dataFreshness: "LIVE" as const,
     complianceHorizon: {
       daysUntilFirstBreach: null as number | null,
       firstBreachRegulation: null as string | null,
+      firstBreachType: null as string | null,
+      confidence: "HIGH" as string,
     },
     modules: {} as Record<
       string,
@@ -79,6 +84,9 @@ function makeState(overrides: Record<string, any> = {}) {
         factors: Array<{ regulationRef?: string | null }>;
       }
     >,
+    dataSources: {},
+    activeAlerts: [] as Array<unknown>,
+    calculatedAt: new Date().toISOString(),
     ...overrides,
   };
 }

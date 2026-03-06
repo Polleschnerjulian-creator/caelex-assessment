@@ -48,7 +48,7 @@ export async function getCurrentF107(): Promise<number> {
     const url =
       "https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json";
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);

@@ -5,6 +5,38 @@ import type { SentinelTimeSeries, TimeSeriesPoint } from "../core/types";
 import { METRIC_RANGES } from "../core/constants";
 
 /**
+ * Request-scoped cache for Sentinel agent IDs.
+ * Avoids repeating the same findMany query 6-8 times per satellite calculation.
+ * Cache key: orgId → agentIds array. Cleared automatically after 30 seconds.
+ */
+const agentIdCache = new Map<string, { ids: string[]; fetchedAt: number }>();
+const AGENT_CACHE_TTL = 30_000; // 30 seconds (request-scoped, short TTL)
+
+/** Clear the agent ID cache (used in tests). */
+export function clearAgentIdCache(): void {
+  agentIdCache.clear();
+}
+
+async function getAgentIds(
+  prisma: PrismaClient,
+  orgId: string,
+): Promise<string[]> {
+  const cached = agentIdCache.get(orgId);
+  if (cached && Date.now() - cached.fetchedAt < AGENT_CACHE_TTL) {
+    return cached.ids;
+  }
+
+  const agents = await prisma.sentinelAgent.findMany({
+    where: { organizationId: orgId, status: "ACTIVE" },
+    select: { id: true },
+  });
+
+  const ids = agents.map((a) => a.id);
+  agentIdCache.set(orgId, { ids, fetchedAt: Date.now() });
+  return ids;
+}
+
+/**
  * Transform SentinelPackets into time series for fuel, subsystems, cyber metrics.
  *
  * Queries the latest N days of SentinelPacket data for a given satellite + metric,
@@ -23,17 +55,12 @@ export async function getSentinelTimeSeries(
   cutoff.setDate(cutoff.getDate() - days);
 
   try {
-    // Find active Sentinel agents for this org
-    const agents = await prisma.sentinelAgent.findMany({
-      where: { organizationId: orgId, status: "ACTIVE" },
-      select: { id: true },
-    });
+    // Find active Sentinel agents for this org (cached within request)
+    const agentIds = await getAgentIds(prisma, orgId);
 
-    if (agents.length === 0) {
+    if (agentIds.length === 0) {
       return { metric: dataPoint, noradId, points: [] };
     }
-
-    const agentIds = agents.map((a) => a.id);
 
     // Fetch packets for this satellite + dataPoint
     const packets = await prisma.sentinelPacket.findMany({
@@ -111,16 +138,13 @@ export async function getLatestSentinelValue(
   dataPoint: string,
 ): Promise<{ value: number; collectedAt: Date; trustScore: number } | null> {
   try {
-    const agents = await prisma.sentinelAgent.findMany({
-      where: { organizationId: orgId, status: "ACTIVE" },
-      select: { id: true },
-    });
+    const agentIds = await getAgentIds(prisma, orgId);
 
-    if (agents.length === 0) return null;
+    if (agentIds.length === 0) return null;
 
     const packet = await prisma.sentinelPacket.findFirst({
       where: {
-        agentId: { in: agents.map((a) => a.id) },
+        agentId: { in: agentIds },
         satelliteNorad: noradId,
         dataPoint,
       },
@@ -162,16 +186,12 @@ export async function getSentinelStatus(
   packetsLast24h: number;
 }> {
   try {
-    const agents = await prisma.sentinelAgent.findMany({
-      where: { organizationId: orgId, status: "ACTIVE" },
-      select: { id: true },
-    });
+    const agentIds = await getAgentIds(prisma, orgId);
 
-    if (agents.length === 0) {
+    if (agentIds.length === 0) {
       return { connected: false, lastPacket: null, packetsLast24h: 0 };
     }
 
-    const agentIds = agents.map((a) => a.id);
     const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const [lastPacket, recentCount] = await Promise.all([

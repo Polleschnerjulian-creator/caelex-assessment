@@ -8,6 +8,11 @@ import { toPublicState } from "@/lib/ephemeris/core/types";
 /**
  * GET /api/v1/ephemeris/state?norad_id=25544
  * Returns the current compliance state for a satellite.
+ *
+ * Performance: Returns cached DB state if fresh (< 2 hours).
+ * Falls back to live calculation if cache is stale or missing.
+ * Use ?refresh=true to force live recalculation.
+ *
  * Auth: Session-based
  */
 export async function GET(request: NextRequest) {
@@ -33,12 +38,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const forceRefresh = request.nextUrl.searchParams.get("refresh") === "true";
+    const orgId = membership.organizationId;
+
     // Verify satellite belongs to org
     const spacecraft = await prisma.spacecraft.findFirst({
-      where: {
-        noradId,
-        organizationId: membership.organizationId,
-      },
+      where: { noradId, organizationId: orgId },
       select: { name: true, launchDate: true },
     });
     if (!spacecraft) {
@@ -48,9 +53,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // ── Try cached state first (fast path) ─────────────────────────────
+    if (!forceRefresh) {
+      const cached = await readCachedState(orgId, noradId);
+      if (cached) {
+        return NextResponse.json({ data: cached, cached: true });
+      }
+    }
+
+    // ── Live calculation (slow path) ───────────────────────────────────
     const internalState = await calculateSatelliteComplianceState({
       prisma,
-      orgId: membership.organizationId,
+      orgId,
       noradId,
       satelliteName: spacecraft.name,
       launchDate: spacecraft.launchDate,
@@ -65,5 +79,42 @@ export async function GET(request: NextRequest) {
       { error: "Failed to calculate compliance state" },
       { status: 500 },
     );
+  }
+}
+
+/**
+ * Read cached state from SatelliteComplianceState if fresh (< 2 hours).
+ */
+async function readCachedState(
+  orgId: string,
+  noradId: string,
+): Promise<Record<string, unknown> | null> {
+  try {
+    const db = prisma as unknown as Record<string, unknown>;
+    const stateModel = db["satelliteComplianceState"] as
+      | {
+          findUnique: (args: Record<string, unknown>) => Promise<{
+            stateJson: unknown;
+            calculatedAt: Date;
+          } | null>;
+        }
+      | undefined;
+
+    if (!stateModel) return null;
+
+    const state = await stateModel.findUnique({
+      where: { noradId_operatorId: { noradId, operatorId: orgId } },
+      select: { stateJson: true, calculatedAt: true },
+    });
+
+    if (!state?.stateJson) return null;
+
+    // Only use if less than 2 hours old
+    const ageMs = Date.now() - state.calculatedAt.getTime();
+    if (ageMs > 2 * 60 * 60 * 1000) return null;
+
+    return state.stateJson as Record<string, unknown>;
+  } catch {
+    return null;
   }
 }
