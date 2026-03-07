@@ -47,7 +47,16 @@ const ROUTE_TITLE_MAP: Record<string, string> = {
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [layoutMounted, setLayoutMounted] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Read sidebar state to avoid flash
+    const stored = localStorage.getItem("caelex-sidebar-collapsed");
+    if (stored === "true") setSidebarCollapsed(true);
+    setLayoutMounted(true);
+  }, []);
   const router = useRouter();
   const { t } = useLanguage();
   useAnalyticsTracking();
@@ -97,45 +106,52 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     pathname === "/dashboard/mission-control" ||
     isEphemerisPage;
 
+  const contentMargin = sidebarCollapsed ? 96 : 284; // sidebar width + 24px gap
+
   return (
     <div className="caelex-v2 min-h-screen bg-[var(--bg-base)]">
-      <div className="lg:grid lg:grid-cols-[240px_1fr]">
-        {/* Sidebar */}
-        <Sidebar
-          user={
-            session?.user as {
-              name?: string | null;
-              email?: string | null;
-              image?: string | null;
-              role?: string;
-              organization?: string;
-            }
+      {/* Sidebar */}
+      <Sidebar
+        user={
+          session?.user as {
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+            role?: string;
+            organization?: string;
           }
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
+        }
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onCollapsedChange={setSidebarCollapsed}
+      />
 
-        {/* Main content */}
-        <div className="flex flex-col min-h-screen">
-          {!isEphemerisPage && (
-            <TopBar
-              title={pageTitle}
-              onMenuClick={() => setSidebarOpen(true)}
-            />
-          )}
-          <main
-            id="main-content"
-            className={`flex-1 ${isFullscreenPage ? "" : "p-6 lg:p-10"}`}
-          >
-            {isFullscreenPage ? (
+      {/* Main content */}
+      <style>{`
+        @media (min-width: 1024px) {
+          .sidebar-content-area {
+            margin-left: ${contentMargin}px;
+            ${layoutMounted ? "transition: margin-left 300ms ease-out;" : ""}
+            will-change: margin-left;
+          }
+        }
+      `}</style>
+      <div className="sidebar-content-area flex flex-col min-h-screen">
+        {!isEphemerisPage && (
+          <TopBar title={pageTitle} onMenuClick={() => setSidebarOpen(true)} />
+        )}
+        <main
+          id="main-content"
+          className={`flex-1 ${isFullscreenPage ? "" : "p-6 lg:p-10"}`}
+        >
+          {isFullscreenPage ? (
+            <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
+          ) : (
+            <div className="max-w-[1360px] mx-auto">
               <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
-            ) : (
-              <div className="max-w-[1360px] mx-auto">
-                <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
-              </div>
-            )}
-          </main>
-        </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

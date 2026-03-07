@@ -821,6 +821,32 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --separator-strong: rgba(255, 255, 255, 0.06);
   --topbar-bg: rgba(17, 17, 24, 0.8);
 
+  /* ─── Sidebar Glass Panel (dark mode) ─── */
+  --sidebar-glass-bg: rgba(15, 15, 25, 0.75);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.06);
+  --sidebar-glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  --sidebar-toggle-bg: rgba(30, 30, 45, 0.9);
+  --sidebar-toggle-border: rgba(255, 255, 255, 0.08);
+  --sidebar-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --sidebar-tooltip-color: #1a1a2e;
+  --sidebar-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --sidebar-nav-color: #8a8aa0;
+  --sidebar-nav-icon-color: #5a5a70;
+  --sidebar-nav-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-nav-hover-color: #c8c8d8;
+  --sidebar-nav-active-bg: rgba(74, 98, 232, 0.12);
+  --sidebar-nav-active-color: #7186fa;
+  --sidebar-nav-active-icon: #5a72f5;
+  --sidebar-section-color: #5a5a70;
+  --sidebar-count-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-count-color: #5a5a70;
+  --sidebar-badge-bg: rgba(74, 98, 232, 0.1);
+  --sidebar-badge-color: #7186fa;
+  --sidebar-divider: rgba(255, 255, 255, 0.04);
+  --sidebar-user-ring: rgba(255, 255, 255, 0.1);
+
   /* ─── Animation Tokens ─── */
   --duration-fast: 120ms;
   --duration-normal: 200ms;
@@ -1194,12 +1220,31 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --surface-sunken: #f2f3f6;
   --surface-overlay: #ffffff;
 
-  /* ─── Sidebar Dark Layer (stays dark as contrast anchor) ─── */
-  --sidebar-icon-bg: #1a1b1f;
-  --sidebar-icon-hover: rgba(255, 255, 255, 0.08);
-  --sidebar-icon-active: rgba(255, 255, 255, 0.12);
-  --sidebar-panel-bg: #ffffff;
-  --sidebar-panel-border: rgba(0, 0, 0, 0.06);
+  /* ─── Sidebar Glass Panel (light mode) ─── */
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.55);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.6);
+  --sidebar-glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+  --sidebar-toggle-bg: rgba(255, 255, 255, 0.85);
+  --sidebar-toggle-border: rgba(0, 0, 0, 0.06);
+  --sidebar-tooltip-bg: #1a1a2e;
+  --sidebar-tooltip-color: #ffffff;
+  --sidebar-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --sidebar-nav-color: #4a4a5e;
+  --sidebar-nav-icon-color: #8e8ea0;
+  --sidebar-nav-hover-bg: rgba(0, 0, 0, 0.035);
+  --sidebar-nav-hover-color: #1a1a2e;
+  --sidebar-nav-active-bg: rgba(74, 98, 232, 0.07);
+  --sidebar-nav-active-color: #3b50c7;
+  --sidebar-nav-active-icon: #4a62e8;
+  --sidebar-section-color: #9a9ab0;
+  --sidebar-count-bg: rgba(0, 0, 0, 0.045);
+  --sidebar-count-color: #8e8ea0;
+  --sidebar-badge-bg: rgba(74, 98, 232, 0.08);
+  --sidebar-badge-color: #4a62e8;
+  --sidebar-divider: rgba(0, 0, 0, 0.05);
+  --sidebar-user-ring: rgba(255, 255, 255, 0.7);
 
   /* ─── Glass Surfaces (Frosted Glass) ─── */
   --glass-bg: rgba(255, 255, 255, 0.65);
