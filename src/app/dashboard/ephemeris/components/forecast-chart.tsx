@@ -73,7 +73,7 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
               className={`px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                 selectedCurve === c.metric
                   ? "bg-[var(--accent-primary)] text-white border border-[var(--accent-primary)]"
-                  : "bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] border border-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
+                  : "bg-[var(--fill-subtle)] text-[var(--text-secondary)] border border-[var(--separator-strong)] hover:text-[var(--text-primary)]"
               }`}
             >
               {c.regulationName}

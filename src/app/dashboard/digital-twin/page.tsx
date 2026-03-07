@@ -238,7 +238,7 @@ function ScoreGauge({
           cy={center}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--fill-medium)"
           strokeWidth="8"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * 0.25}
@@ -488,25 +488,22 @@ function OverviewTab({ state }: { state: TwinState }) {
                   <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.04)"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" />
               <XAxis
                 dataKey="date"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="var(--text-tertiary)"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(v) => v.slice(5)}
               />
               <YAxis
                 domain={[0, 100]}
-                stroke="rgba(255,255,255,0.3)"
+                stroke="var(--text-tertiary)"
                 tick={{ fontSize: 11 }}
               />
               <Tooltip
                 contentStyle={{
                   background: "#0F172A",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid var(--fill-strong)",
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
@@ -707,14 +704,14 @@ function FrameworksTab() {
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={data.radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                <PolarGrid stroke="var(--fill-strong)" />
                 <PolarAngleAxis
                   dataKey="framework"
-                  tick={{ fontSize: 11, fill: "rgba(255,255,255,0.6)" }}
+                  tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
                 />
                 <PolarRadiusAxis
                   domain={[0, 100]}
-                  tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }}
+                  tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
                 />
                 <Radar
                   name="Score"
@@ -847,21 +844,18 @@ function RiskTab() {
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.04)"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" />
               <XAxis
                 type="number"
                 dataKey="readiness"
                 domain={[0, 100]}
                 name="Readiness"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="var(--text-tertiary)"
                 tick={{ fontSize: 11 }}
                 label={{
                   value: "Readiness →",
                   position: "bottom",
-                  fill: "rgba(255,255,255,0.4)",
+                  fill: "var(--text-tertiary)",
                   fontSize: 11,
                 }}
               />
@@ -870,13 +864,13 @@ function RiskTab() {
                 dataKey="criticality"
                 domain={[0, 100]}
                 name="Criticality"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="var(--text-tertiary)"
                 tick={{ fontSize: 11 }}
                 label={{
                   value: "Criticality →",
                   angle: -90,
                   position: "insideLeft",
-                  fill: "rgba(255,255,255,0.4)",
+                  fill: "var(--text-tertiary)",
                   fontSize: 11,
                 }}
               />
@@ -888,7 +882,7 @@ function RiskTab() {
               <Tooltip
                 contentStyle={{
                   background: "#0F172A",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid var(--fill-strong)",
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}

@@ -37,7 +37,7 @@ function getDotColor(category: string): string {
     legal: "bg-red-400",
     strategic: "bg-pink-400",
   };
-  return colors[category.toLowerCase()] || "bg-white/60";
+  return colors[category.toLowerCase()] || "bg-[var(--text-tertiary)]";
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -82,7 +82,9 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
         {categories.map((cat) => (
           <div key={cat} className="flex items-center gap-1.5">
             <div className={`w-2.5 h-2.5 rounded-full ${getDotColor(cat)}`} />
-            <span className="text-micro text-white/50 capitalize">{cat}</span>
+            <span className="text-micro text-[var(--text-tertiary)] capitalize">
+              {cat}
+            </span>
           </div>
         ))}
       </div>
@@ -100,7 +102,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
             x={10}
             y={svgHeight / 2 - 10}
             textAnchor="middle"
-            className="fill-white/30"
+            className="fill-[var(--text-tertiary)]"
             style={{ fontSize: 10, fontWeight: 500 }}
             transform={`rotate(-90, 10, ${svgHeight / 2 - 10})`}
           >
@@ -112,7 +114,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
             x={padding + (cellSize * gridSize) / 2}
             y={svgHeight - 2}
             textAnchor="middle"
-            className="fill-white/30"
+            className="fill-[var(--text-tertiary)]"
             style={{ fontSize: 10, fontWeight: 500 }}
           >
             Impact
@@ -138,7 +140,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
                   width={cellSize}
                   height={cellSize}
                   fill={fill}
-                  stroke="rgba(255,255,255,0.06)"
+                  stroke="var(--fill-medium)"
                   strokeWidth={1}
                   rx={4}
                 />
@@ -153,7 +155,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
               x={padding - 8}
               y={i * cellSize + cellSize / 2 + 4}
               textAnchor="end"
-              className="fill-white/40"
+              className="fill-[var(--text-tertiary)]"
               style={{ fontSize: 11 }}
             >
               {gridSize - i}
@@ -167,7 +169,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
               x={padding + i * cellSize + cellSize / 2}
               y={gridSize * cellSize + 16}
               textAnchor="middle"
-              className="fill-white/40"
+              className="fill-[var(--text-tertiary)]"
               style={{ fontSize: 11 }}
             >
               {i + 1}
@@ -195,7 +197,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
                 technology: "#22D3EE",
                 legal: "#F87171",
                 strategic: "#F472B6",
-              }[risk.category.toLowerCase()] || "rgba(255,255,255,0.6)";
+              }[risk.category.toLowerCase()] || "var(--text-tertiary)";
 
             return (
               <motion.circle
@@ -205,7 +207,7 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
                 r={8}
                 fill={dotColorHex}
                 fillOpacity={0.9}
-                stroke="rgba(255,255,255,0.3)"
+                stroke="var(--fill-heavy)"
                 strokeWidth={1}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -240,16 +242,16 @@ export default function RiskHeatMap({ risks }: RiskHeatMapProps) {
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-navy-800 border border-white/10 rounded-lg shadow-xl px-3 py-2 max-w-[200px]">
-              <p className="text-small font-medium text-white truncate">
+            <div className="bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-lg shadow-xl px-3 py-2 max-w-[200px]">
+              <p className="text-small font-medium text-[var(--text-primary)] truncate">
                 {hoveredRisk.title}
               </p>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-micro text-white/40">
+                <span className="text-micro text-[var(--text-tertiary)]">
                   P:{hoveredRisk.probability} I:{hoveredRisk.impact}
                 </span>
                 <span
-                  className={`text-micro capitalize ${CATEGORY_COLORS[hoveredRisk.category.toLowerCase()] || "text-white/40"}`}
+                  className={`text-micro capitalize ${CATEGORY_COLORS[hoveredRisk.category.toLowerCase()] || "text-[var(--text-tertiary)]"}`}
                 >
                   {hoveredRisk.category}
                 </span>

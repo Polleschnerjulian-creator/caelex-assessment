@@ -172,7 +172,7 @@ export function TrendChart({
               y1="25"
               x2="100"
               y2="25"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--fill-medium)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -181,7 +181,7 @@ export function TrendChart({
               y1="50"
               x2="100"
               y2="50"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--fill-medium)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -190,7 +190,7 @@ export function TrendChart({
               y1="75"
               x2="100"
               y2="75"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--fill-medium)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -307,7 +307,7 @@ export function MiniTrendChart({
   }, [data]);
 
   if (data.length < 2) {
-    return <div className="w-20 h-6 bg-[rgba(255,255,255,0.06)] rounded" />;
+    return <div className="w-20 h-6 bg-[var(--fill-medium)] rounded" />;
   }
 
   const strokeColor = chartData.trend >= 0 ? "#3DD68C" : "#E85454";

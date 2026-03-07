@@ -64,15 +64,15 @@ export default function RegulatoryRadarChart({
 
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-          <PolarGrid stroke="rgba(255,255,255,0.1)" />
+          <PolarGrid stroke="var(--fill-heavy)" />
           <PolarAngleAxis
             dataKey="category"
-            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 10 }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
           />
           <PolarRadiusAxis
             angle={90}
             domain={[0, 100]}
-            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9 }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 9 }}
             tickFormatter={(value) => `${value}%`}
             axisLine={false}
           />
@@ -81,7 +81,7 @@ export default function RegulatoryRadarChart({
           <Radar
             name="Target"
             dataKey="fullMark"
-            stroke="rgba(255,255,255,0.2)"
+            stroke="var(--fill-heavy)"
             fill="transparent"
             strokeDasharray="4 4"
           />

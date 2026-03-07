@@ -76,7 +76,7 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
         ${
           isActive
             ? "bg-[linear-gradient(90deg,rgba(74,98,232,0.12)_0%,rgba(74,98,232,0.04)_100%)] text-[var(--text-primary)] font-medium shadow-[inset_2px_0_0_var(--accent-500)]"
-            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]"
+            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--fill-subtle)]"
         }
       `}
     >
@@ -90,7 +90,7 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-[11px] tracking-[0.04em] font-medium px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[rgba(74,98,232,0.12)] text-[var(--accent-300)]">
+        <span className="text-[11px] tracking-[0.04em] font-medium px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--accent-primary-soft)] text-[var(--accent-500)]">
           {badge}
         </span>
       )}
@@ -133,10 +133,10 @@ function CompactModuleItem({
         transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
         ${
           locked
-            ? "text-[var(--text-disabled)] hover:text-[var(--text-tertiary)] hover:bg-[rgba(255,255,255,0.02)] cursor-default"
+            ? "text-[var(--text-disabled)] hover:text-[var(--text-tertiary)] hover:bg-[var(--fill-subtle)] cursor-default"
             : isActive
               ? "bg-[linear-gradient(90deg,rgba(74,98,232,0.12)_0%,rgba(74,98,232,0.04)_100%)] text-[var(--text-primary)] font-medium shadow-[inset_2px_0_0_var(--accent-500)]"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--fill-subtle)]"
         }
       `}
     >
@@ -203,7 +203,7 @@ function ModuleGroup({
               ? "text-[var(--text-secondary)]"
               : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
           }
-          hover:bg-[rgba(255,255,255,0.02)]
+          hover:bg-[var(--fill-subtle)]
         `}
       >
         <motion.span
@@ -219,8 +219,8 @@ function ModuleGroup({
           aria-label={`${count} modules`}
           className={`text-[10px] min-w-[18px] text-center px-1 py-0.5 rounded-[var(--radius-xs)] font-medium ${
             hasActiveItem
-              ? "bg-[rgba(74,98,232,0.15)] text-[var(--accent-300)]"
-              : "bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)]"
+              ? "bg-[var(--accent-primary-soft)] text-[var(--accent-500)]"
+              : "bg-[var(--fill-light)] text-[var(--text-tertiary)]"
           }`}
         >
           {count}
@@ -397,23 +397,23 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           transition-transform duration-[var(--duration-medium)] ease-[var(--ease-smooth)]
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
-          shadow-[4px_0_16px_rgba(0,0,0,0.3)]
+          shadow-[4px_0_16px_rgba(0,0,0,0.08)]
         `}
         style={{
-          borderRight: "1px solid rgba(255, 255, 255, 0.04)",
+          borderRight: "1px solid var(--separator)",
         }}
       >
         {/* Mobile close button */}
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-[var(--duration-fast)]"
+          className="lg:hidden absolute top-4 right-4 p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] hover:bg-[var(--fill-medium)] transition-colors duration-[var(--duration-fast)]"
         >
           <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header */}
-        <div className="h-14 flex items-center px-5 border-b border-[rgba(255,255,255,0.04)]">
+        <div className="h-14 flex items-center px-5 border-b border-[var(--separator)]">
           <Link href="/" className="flex items-center gap-2.5 group">
             <Logo size={22} className="text-[var(--text-primary)]" />
             <span className="text-[11px] tracking-[0.04em] font-medium text-[var(--text-disabled)] group-hover:text-[var(--text-tertiary)] transition-colors duration-[var(--duration-fast)]">
@@ -805,7 +805,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer — Settings & Logout */}
-        <div className="px-3 py-2 border-t border-[rgba(255,255,255,0.04)] space-y-0.5">
+        <div className="px-3 py-2 border-t border-[var(--separator)] space-y-0.5">
           <NavItem
             href="/dashboard/settings"
             icon={<Settings size={18} strokeWidth={1.5} />}
@@ -817,7 +817,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
             onClick={handleLogout}
             className="
               w-full flex items-center gap-2.5 h-9 px-3 mx-2 rounded-[var(--radius-sm)] text-[14px]
-              text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[rgba(232,84,84,0.08)]
+              text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[var(--accent-danger-soft)]
               transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
             "
           >
@@ -831,10 +831,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* User Info */}
-        <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.04)]">
+        <div className="px-5 py-4 border-t border-[var(--separator)]">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0 ring-2 ring-[rgba(255,255,255,0.08)]">
+            <div className="w-8 h-8 rounded-full bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0 ring-2 ring-[var(--fill-strong)]">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img

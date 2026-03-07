@@ -34,7 +34,7 @@ export default function FleetOverview({ fleet, loading }: FleetOverviewProps) {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-48 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] animate-v2-skeleton"
+            className="h-48 rounded-xl bg-[var(--fill-subtle)] border border-[var(--separator-strong)] animate-v2-skeleton"
           />
         ))}
       </div>

@@ -28,7 +28,7 @@ function scoreColor(score: number): string {
 }
 
 function scoreBg(score: number): string {
-  if (score >= 70) return "bg-[rgba(255,255,255,0.04)]";
+  if (score >= 70) return "bg-[var(--fill-light)]";
   if (score >= 50) return "bg-[var(--accent-warning-soft)]";
   return "bg-[var(--accent-danger-soft)]";
 }
@@ -99,7 +99,7 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-[rgba(255,255,255,0.06)]">
+      <div className="flex items-center justify-between pt-3 border-t border-[var(--separator-strong)]">
         <div className="flex items-center gap-1.5">
           <Radio className={`w-3 h-3 ${freshnessColor(dataFreshness)}`} />
           <span className={`text-caption ${freshnessColor(dataFreshness)}`}>

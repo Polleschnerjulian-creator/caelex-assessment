@@ -25,7 +25,7 @@ export default function ComplianceHorizonDisplay({
           ? "bg-[var(--accent-danger-soft)] border-[var(--accent-danger)]"
           : isWarning
             ? "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]"
-            : "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.06)]"
+            : "bg-[var(--fill-subtle)] border-[var(--separator-strong)]"
       }`}
     >
       <div className="flex items-center justify-between">

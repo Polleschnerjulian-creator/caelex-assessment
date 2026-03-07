@@ -78,7 +78,7 @@ function ProgressRing({
         fill="none"
         stroke="currentColor"
         strokeWidth={strokeWidth}
-        className="text-[rgba(255,255,255,0.06)]"
+        className="text-[var(--fill-medium)]"
       />
       {/* Progress ring */}
       <motion.circle
@@ -219,7 +219,7 @@ export default function DualScoreWidget({
       </div>
 
       {/* Bottom Stats Line */}
-      <div className="mt-5 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between flex-wrap gap-2">
+      <div className="mt-5 pt-4 border-t border-[var(--separator)] flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)]">
           <BarChart3 className="w-3 h-3" />
           <span>

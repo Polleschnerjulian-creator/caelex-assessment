@@ -99,7 +99,7 @@ export default function OrbitalLoader({
             cy={center}
             r={config.orbitRadius}
             fill="none"
-            stroke="rgba(255,255,255,0.06)"
+            stroke="var(--fill-medium)"
             strokeWidth={config.trailWidth}
           />
 
@@ -108,13 +108,13 @@ export default function OrbitalLoader({
             cx={center}
             cy={center}
             r={config.planetRadius}
-            className="fill-white/20"
+            className="fill-[var(--fill-heavy)]"
           />
           <circle
             cx={center}
             cy={center}
             r={config.planetRadius * 0.6}
-            className="fill-white/10"
+            className="fill-[var(--fill-strong)]"
           />
 
           {/* Orbiting dot with emerald glow */}
@@ -173,7 +173,7 @@ export default function OrbitalLoader({
       {/* Loading message */}
       {message && (
         <motion.p
-          className={`${MESSAGE_SIZES[size]} text-white/40`}
+          className={`${MESSAGE_SIZES[size]} text-[var(--text-tertiary)]`}
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

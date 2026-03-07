@@ -82,21 +82,21 @@ export default function ModuleProgressChart({
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
-            axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+            axisLine={{ stroke: "var(--fill-heavy)" }}
             tickLine={false}
           />
           <YAxis
             type="category"
             dataKey="shortName"
             width={80}
-            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
           />
           <Tooltip
             content={<CustomTooltip />}
-            cursor={{ fill: "rgba(255,255,255,0.05)" }}
+            cursor={{ fill: "var(--fill-light)" }}
           />
           <Bar
             dataKey="progress"
@@ -105,7 +105,7 @@ export default function ModuleProgressChart({
             animationDuration={800}
             label={{
               position: "right",
-              fill: "rgba(255,255,255,0.7)",
+              fill: "var(--text-tertiary)",
               fontSize: 11,
               formatter: (value) => `${value}%`,
             }}

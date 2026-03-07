@@ -65,7 +65,7 @@ const statusBarColors: Record<string, string> = {
   compliant: "bg-[var(--accent-success-soft)]0",
   partial: "bg-[var(--accent-warning)]",
   non_compliant: "bg-[var(--accent-danger)]",
-  not_started: "bg-[rgba(255,255,255,0.06)]",
+  not_started: "bg-[var(--fill-medium)]",
 };
 
 const priorityColors: Record<string, string> = {
@@ -74,7 +74,7 @@ const priorityColors: Record<string, string> = {
   high: "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)] border-amber-500/30",
   medium:
     "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border-[var(--accent-success)/30]",
-  low: "bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] border-[var(--border-default)]",
+  low: "bg-[var(--fill-medium)] text-[var(--text-secondary)] border-[var(--border-default)]",
 };
 
 export default function ComplianceScoreCard() {
@@ -195,7 +195,7 @@ export default function ComplianceScoreCard() {
               <span className="text-caption text-[var(--text-secondary)] w-24 truncate">
                 {t(moduleKeyMap[key] || `modules.${key}`)}
               </span>
-              <div className="flex-1 h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-[var(--fill-medium)] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${statusBarColors[mod.status]}`}
                   style={{ width: `${mod.score}%` }}

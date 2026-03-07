@@ -54,7 +54,7 @@ function severityBg(severity: string): string {
     case "MEDIUM":
       return "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]";
     default:
-      return "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.06)]";
+      return "bg-[var(--fill-subtle)] border-[var(--separator-strong)]";
   }
 }
 

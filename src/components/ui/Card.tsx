@@ -16,18 +16,14 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const cardVariants = {
   default:
-    "bg-[var(--bg-surface-2)] border border-[rgba(255,255,255,0.06)] shadow-[var(--shadow-sm)] relative overflow-hidden",
+    "bg-[var(--bg-surface-2)] border border-[var(--fill-medium)] shadow-[var(--shadow-sm)] relative overflow-hidden",
   glass: `
     bg-[var(--glass-bg)] backdrop-blur-[20px] backdrop-saturate-[1.2]
     border border-[var(--glass-border)]
     shadow-[var(--shadow-md)] relative overflow-hidden
   `,
   elevated: `
-    bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
-    backdrop-blur-[24px] backdrop-saturate-[1.3]
-    border border-[rgba(255,255,255,0.08)]
-    shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
-    relative overflow-hidden
+    glass-elevated relative overflow-hidden
   `,
   interactive: `
     bg-[var(--glass-bg)] backdrop-blur-[20px]
@@ -39,17 +35,13 @@ const cardVariants = {
     cursor-pointer relative overflow-hidden
   `,
   metric: `
-    bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
-    backdrop-blur-[24px] backdrop-saturate-[1.3]
-    border border-[rgba(255,255,255,0.08)]
-    border-t-2
-    shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
+    glass-elevated border-t-2
     hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)]
     transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]
     relative overflow-hidden
   `,
   outlined:
-    "bg-transparent border border-[rgba(255,255,255,0.06)] relative overflow-hidden",
+    "bg-transparent border border-[var(--fill-medium)] relative overflow-hidden",
 };
 
 const paddings = {
@@ -156,7 +148,7 @@ interface CardFooterProps {
 export function CardFooter({ children, className = "" }: CardFooterProps) {
   return (
     <div
-      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[rgba(255,255,255,0.04)] ${className}`}
+      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[var(--separator)] ${className}`}
     >
       {children}
     </div>

@@ -123,20 +123,17 @@ export default function ComplianceTimelineChart({
               <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.05)"
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--fill-light)" />
           <XAxis
             dataKey="month"
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
-            axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+            axisLine={{ stroke: "var(--fill-heavy)" }}
             tickLine={false}
           />
           <YAxis
             domain={[0, 100]}
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
-            axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+            tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
+            axisLine={{ stroke: "var(--fill-heavy)" }}
             tickLine={false}
             tickFormatter={(value) => `${value}%`}
           />

@@ -106,7 +106,7 @@ export default function JurisdictionSimulator({
             <select
               value={fromCode}
               onChange={(e) => setFromCode(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[rgba(255,255,255,0.08)] text-small text-[var(--text-primary)]
+              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[var(--fill-strong)] text-small text-[var(--text-primary)]
                 focus:outline-none focus:border-[var(--accent-primary)]"
             >
               {JURISDICTIONS.map((j) => (
@@ -126,7 +126,7 @@ export default function JurisdictionSimulator({
             <select
               value={toCode ?? ""}
               onChange={(e) => setToCode(e.target.value || null)}
-              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[rgba(255,255,255,0.08)] text-small text-[var(--text-primary)]
+              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[var(--fill-strong)] text-small text-[var(--text-primary)]
                 focus:outline-none focus:border-[var(--accent-primary)]"
             >
               <option value="">Compare All</option>
@@ -231,7 +231,7 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
       </div>
 
       {sim.requirementsAdded.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+        <div className="mt-3 pt-3 border-t border-[var(--separator-strong)]">
           <span className="text-caption text-[var(--accent-danger)]">
             +{sim.requirementsAdded.length} new requirements:
           </span>
@@ -257,7 +257,7 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
             {sim.requirementsRemoved.map((r) => (
               <span
                 key={r.regulationRef}
-                className="px-2 py-0.5 rounded text-micro bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]"
+                className="px-2 py-0.5 rounded text-micro bg-[var(--fill-light)] text-[var(--text-secondary)]"
               >
                 {r.name}
               </span>

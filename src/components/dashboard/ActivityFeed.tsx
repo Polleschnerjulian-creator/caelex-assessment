@@ -229,7 +229,7 @@ export default function ActivityFeed({
               <select
                 value={entityFilter}
                 onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-[var(--accent-500)] transition-colors"
+                className="bg-[var(--fill-inset)] border border-[var(--separator-strong)] text-[var(--text-secondary)] rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-[var(--accent-500)] transition-colors"
               >
                 <option value="all">All Activity</option>
                 <option value="article">Articles</option>
@@ -309,7 +309,7 @@ export default function ActivityFeed({
                   }`}
                 >
                   <div
-                    className={`p-1.5 rounded-lg bg-[rgba(255,255,255,0.04)] ${iconColor}`}
+                    className={`p-1.5 rounded-lg bg-[var(--fill-light)] ${iconColor}`}
                   >
                     <Icon size={compact ? 12 : 14} />
                   </div>

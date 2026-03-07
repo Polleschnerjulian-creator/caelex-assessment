@@ -115,7 +115,7 @@ export default function BenchmarkRadarChart({
               key={`ring-${i}`}
               points={points}
               fill="none"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--fill-medium)"
               strokeWidth={1}
             />
           );
@@ -137,7 +137,7 @@ export default function BenchmarkRadarChart({
               y1={cy}
               x2={x}
               y2={y}
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--fill-medium)"
               strokeWidth={1}
             />
           );
@@ -203,7 +203,7 @@ export default function BenchmarkRadarChart({
               y={y}
               textAnchor="middle"
               dominantBaseline="central"
-              className="fill-white/50"
+              className="fill-[var(--text-tertiary)]"
               style={{ fontSize: 11, fontWeight: 500 }}
             >
               {label}
@@ -216,11 +216,15 @@ export default function BenchmarkRadarChart({
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 bg-emerald-500 rounded" />
-          <span className="text-micro text-white/50">Your Company</span>
+          <span className="text-micro text-[var(--text-tertiary)]">
+            Your Company
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 border-t border-dashed border-slate-400" />
-          <span className="text-micro text-white/50">Peer Median</span>
+          <span className="text-micro text-[var(--text-tertiary)]">
+            Peer Median
+          </span>
         </div>
       </div>
     </div>

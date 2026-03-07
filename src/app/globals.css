@@ -810,6 +810,17 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --space-16: 64px;
   --space-20: 80px;
 
+  /* ─── Theme-aware Fill & Separator (dark mode values) ─── */
+  --fill-subtle: rgba(255, 255, 255, 0.03);
+  --fill-light: rgba(255, 255, 255, 0.04);
+  --fill-medium: rgba(255, 255, 255, 0.06);
+  --fill-strong: rgba(255, 255, 255, 0.08);
+  --fill-heavy: rgba(255, 255, 255, 0.12);
+  --fill-inset: rgba(0, 0, 0, 0.2);
+  --separator: rgba(255, 255, 255, 0.04);
+  --separator-strong: rgba(255, 255, 255, 0.06);
+  --topbar-bg: rgba(17, 17, 24, 0.8);
+
   /* ─── Animation Tokens ─── */
   --duration-fast: 120ms;
   --duration-normal: 200ms;
@@ -1159,4 +1170,272 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 }
 .caelex-v2 .animate-dark-pulse {
   animation: darkPulse 1.8s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CAELEX V2 — LIGHT MODE (NEUMORPHIC) THEME OVERRIDE
+   Selector: .light is added to <html> by ThemeProvider.
+   All token names are identical — only values change.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.light .caelex-v2 {
+  color-scheme: light;
+
+  /* ─── Background Surfaces ─── */
+  --bg-base: #ecedf1;
+  --bg-surface-1: #f2f3f6;
+  --bg-surface-2: #ffffff;
+  --bg-surface-3: #f7f7fa;
+  --bg-surface-4: #ffffff;
+
+  /* Backward-compatible surface aliases */
+  --surface-base: #ecedf1;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2f3f6;
+  --surface-overlay: #ffffff;
+
+  /* ─── Sidebar Dark Layer (stays dark as contrast anchor) ─── */
+  --sidebar-icon-bg: #1a1b1f;
+  --sidebar-icon-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-icon-active: rgba(255, 255, 255, 0.12);
+  --sidebar-panel-bg: #ffffff;
+  --sidebar-panel-border: rgba(0, 0, 0, 0.06);
+
+  /* ─── Glass Surfaces (Frosted Glass) ─── */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.8);
+  --glass-bg-active: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.1);
+  --glass-border-active: rgba(0, 0, 0, 0.14);
+
+  /* ─── Text ─── */
+  --text-primary: #111118;
+  --text-secondary: #5c5c72;
+  --text-tertiary: #8e8ea0;
+  --text-disabled: #b8b8c8;
+  --text-accent: #4a62e8;
+  --text-inverse: #e8e8ed;
+
+  /* ─── Borders ─── */
+  --border-default: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-focus: #5a72f5;
+
+  /* ─── Brand Accent (Caelex Blue — adjusted for light) ─── */
+  --accent-50: #eef1ff;
+  --accent-100: #d8deff;
+  --accent-200: #b3bfff;
+  --accent-300: #8a9eff;
+  --accent-400: #6880f5;
+  --accent-500: #4a62e8;
+  --accent-600: #3b4fbf;
+  --accent-700: #2d3d96;
+  --accent-800: #1f2b6e;
+  --accent-900: #121a45;
+
+  /* Backward-compatible accent aliases */
+  --accent-primary: #4a62e8;
+  --accent-primary-hover: #6880f5;
+  --accent-primary-soft: rgba(74, 98, 232, 0.07);
+
+  /* ─── Status Colors (slightly darker/earthier for light bg contrast) ─── */
+  --accent-success: #1a9e5c;
+  --accent-success-soft: rgba(26, 158, 92, 0.07);
+  --status-success: #1a9e5c;
+  --status-success-bg: rgba(26, 158, 92, 0.07);
+  --status-success-border: rgba(26, 158, 92, 0.15);
+
+  --accent-warning: #d4850a;
+  --accent-warning-soft: rgba(212, 133, 10, 0.07);
+  --status-warning: #d4850a;
+  --status-warning-bg: rgba(212, 133, 10, 0.07);
+  --status-warning-border: rgba(212, 133, 10, 0.15);
+
+  --accent-danger: #d13438;
+  --accent-danger-soft: rgba(209, 52, 56, 0.07);
+  --status-danger: #d13438;
+  --status-danger-bg: rgba(209, 52, 56, 0.07);
+  --status-danger-border: rgba(209, 52, 56, 0.15);
+
+  --accent-info: #2b7fd4;
+  --accent-info-soft: rgba(43, 127, 212, 0.07);
+  --status-info: #2b7fd4;
+  --status-info-bg: rgba(43, 127, 212, 0.07);
+  --status-info-border: rgba(43, 127, 212, 0.15);
+
+  /* ─── Module-specific Colors (adjusted for light readability) ─── */
+  --module-eu-space-act: #4a62e8;
+  --module-cybersecurity: #7c5ac7;
+  --module-nis2: #2b7fd4;
+  --module-debris: #d4850a;
+  --module-insurance: #1a9e5c;
+  --module-environmental: #0e9382;
+
+  /* ─── Theme-aware Fill & Separator (light mode values) ─── */
+  --fill-subtle: rgba(0, 0, 0, 0.02);
+  --fill-light: rgba(0, 0, 0, 0.03);
+  --fill-medium: rgba(0, 0, 0, 0.05);
+  --fill-strong: rgba(0, 0, 0, 0.06);
+  --fill-heavy: rgba(0, 0, 0, 0.1);
+  --fill-inset: var(--bg-base);
+  --separator: rgba(0, 0, 0, 0.06);
+  --separator-strong: rgba(0, 0, 0, 0.08);
+  --topbar-bg: rgba(255, 255, 255, 0.75);
+
+  /* ─── Shadow System — Neumorphic Light Mode ─── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0, 0, 0, 0.03);
+  --shadow-md:
+    0 4px 8px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-lg:
+    0 8px 16px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-xl:
+    0 16px 32px rgba(0, 0, 0, 0.08), 0 32px 64px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+
+  /* Neumorphic Raised — the "floating card" effect */
+  --shadow-neu-raised:
+    6px 6px 16px rgba(0, 0, 0, 0.06), -4px -4px 12px rgba(255, 255, 255, 0.8);
+  --shadow-neu-raised-hover:
+    8px 8px 20px rgba(0, 0, 0, 0.08), -6px -6px 16px rgba(255, 255, 255, 0.9);
+
+  /* Neumorphic Inset — for inputs, progress containers */
+  --shadow-inset:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.06),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+
+  /* Accent Glow — subtler than dark mode */
+  --shadow-glow-accent:
+    0 0 16px rgba(74, 98, 232, 0.1), 0 0 32px rgba(74, 98, 232, 0.05);
+  --shadow-glow-success:
+    0 0 16px rgba(26, 158, 92, 0.1), 0 0 32px rgba(26, 158, 92, 0.05);
+
+  /* Backward-compatible shadow aliases */
+  --v2-shadow-sm: var(--shadow-xs);
+  --v2-shadow-md: var(--shadow-sm);
+  --v2-shadow-lg: var(--shadow-md);
+  --v2-shadow-soft: var(--shadow-xs);
+}
+
+/* ─── Light Mode: Glass & Neumorphic Component Classes ─── */
+
+.light .caelex-v2 .glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.light .caelex-v2 .glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.light .caelex-v2 .glass-elevated {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-neu-raised);
+}
+
+.light .caelex-v2 .glass-inset {
+  background: var(--bg-base);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset);
+}
+
+/* Neumorphic Card — primary card style in light mode */
+.light .caelex-v2 .neu-card {
+  background: var(--bg-surface-2);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-neu-raised);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.light .caelex-v2 .neu-card:hover {
+  box-shadow: var(--shadow-neu-raised-hover);
+  transform: translateY(-2px);
+}
+
+/* Frosted Glass Card — for overlays, header */
+.light .caelex-v2 .glass-card-light {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Inset Element — inputs, search, progress containers */
+.light .caelex-v2 .neu-inset {
+  background: var(--bg-base);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset);
+}
+
+/* ─── Light Mode: Scrollbar ─── */
+
+.light .caelex-v2 ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.light .caelex-v2 ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.light .caelex-v2 ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.light .caelex-v2 ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ─── Light Mode: Skeleton / Loading ─── */
+
+@keyframes lightShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.light .caelex-v2 .animate-v2-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 25%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: lightShimmer 1.5s infinite ease-in-out;
+}
+
+.light .caelex-v2 .animate-dark-pulse {
+  animation: lightShimmer 1.5s infinite ease-in-out;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 25%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.03) 75%
+  );
+  background-size: 200% 100%;
 }

@@ -55,7 +55,7 @@ export function ComplianceScoreCard({
       case "non_compliant":
         return "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)/30]";
       default:
-        return "bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)] border-[rgba(255,255,255,0.06)]";
+        return "bg-[var(--fill-light)] text-[var(--text-tertiary)] border-[var(--separator-strong)]";
     }
   };
 
@@ -111,7 +111,7 @@ export function ComplianceScoreCard({
               fill="none"
               stroke="currentColor"
               strokeWidth="12"
-              className="text-[rgba(255,255,255,0.06)]"
+              className="text-[var(--fill-medium)]"
             />
             {/* Progress circle */}
             <motion.circle

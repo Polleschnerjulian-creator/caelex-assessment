@@ -48,9 +48,9 @@ export default class AcademyErrorBoundary extends React.Component<
       <div className="min-h-[400px] flex items-center justify-center p-6">
         <div
           className="
-            bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-xl
+            bg-[var(--fill-medium)] backdrop-blur-xl border border-[var(--border-default)] rounded-xl
             p-8 max-w-md w-full text-center
-            shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]
+            shadow-[var(--shadow-lg)]
           "
         >
           {/* Icons */}
@@ -58,17 +58,17 @@ export default class AcademyErrorBoundary extends React.Component<
             <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center">
               <AlertTriangle className="w-7 h-7 text-red-400" />
             </div>
-            <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
-              <Rocket className="w-7 h-7 text-white/30" />
+            <div className="w-14 h-14 bg-[var(--fill-light)] border border-[var(--border-default)] rounded-2xl flex items-center justify-center">
+              <Rocket className="w-7 h-7 text-[var(--text-tertiary)]" />
             </div>
           </div>
 
           {/* Heading */}
-          <h2 className="text-heading font-semibold text-white mb-2">
+          <h2 className="text-heading font-semibold text-[var(--text-primary)] mb-2">
             Houston, we have a problem
           </h2>
 
-          <p className="text-body-lg text-white/45 mb-6">
+          <p className="text-body-lg text-[var(--text-tertiary)] mb-6">
             Something went wrong in the Academy module. Our team has been
             notified and is working on a fix.
           </p>
@@ -79,12 +79,12 @@ export default class AcademyErrorBoundary extends React.Component<
               <p className="text-micro text-red-400/70 uppercase tracking-wide mb-2">
                 Error Details (Development)
               </p>
-              <div className="bg-black/30 border border-white/5 rounded-lg p-3 overflow-auto max-h-40">
+              <div className="bg-black/30 border border-[var(--border-subtle)] rounded-lg p-3 overflow-auto max-h-40">
                 <p className="text-small text-red-300 font-mono break-all">
                   {this.state.error.message}
                 </p>
                 {this.state.error.stack && (
-                  <pre className="text-micro text-white/25 font-mono mt-2 whitespace-pre-wrap break-all">
+                  <pre className="text-micro text-[var(--text-tertiary)] font-mono mt-2 whitespace-pre-wrap break-all">
                     {this.state.error.stack}
                   </pre>
                 )}

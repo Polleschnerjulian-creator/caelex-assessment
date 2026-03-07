@@ -6146,8 +6146,8 @@ model SatelliteComplianceStateHistory {
   horizonRegulation String?
   dataFreshness     String
 
-  stateJson  Json? // Full public state snapshot
-  alerts     Json? // Serialized activeAlerts array
+  stateJson Json? // Full public state snapshot
+  alerts    Json? // Serialized activeAlerts array
 
   // Forecast percentiles (derived from compliance horizon confidence)
   forecastP10 Float?
@@ -6241,25 +6241,25 @@ model SolarFluxRecord {
 }
 
 model OptimizationResult {
-  id                  String        @id @default(cuid())
-  organizationId      String
-  organization        Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Input Snapshot
-  inputJson           Json
-  weightProfile       String        // "startup" | "enterprise" | "government" | "balanced" | "custom"
+  inputJson     Json
+  weightProfile String // "startup" | "enterprise" | "government" | "balanced" | "custom"
 
   // Re-Flagging Context
   spacecraftId        String?
-  spacecraft          Spacecraft?   @relation(fields: [spacecraftId], references: [id])
+  spacecraft          Spacecraft? @relation(fields: [spacecraftId], references: [id])
   currentJurisdiction String?
 
   // Results
-  resultJson          Json
-  topJurisdiction     String
-  topScore            Float
+  resultJson      Json
+  topJurisdiction String
+  topScore        Float
 
-  createdAt           DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   @@index([organizationId, createdAt])
 }

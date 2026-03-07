@@ -50,16 +50,16 @@ const variants: Record<ButtonVariant, string> = {
     focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]
   `,
   secondary: `
-    bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] border border-[rgba(255,255,255,0.08)]
-    hover:bg-[rgba(255,255,255,0.07)] hover:border-[rgba(255,255,255,0.12)]
-    active:bg-[rgba(255,255,255,0.03)]
+    bg-[var(--fill-light)] text-[var(--text-primary)] border border-[var(--fill-strong)]
+    hover:bg-[var(--fill-medium)] hover:border-[var(--fill-heavy)]
+    active:bg-[var(--fill-subtle)]
     disabled:opacity-50
     focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]
   `,
   ghost: `
     text-[var(--text-secondary)]
-    hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)]
-    active:bg-[rgba(255,255,255,0.02)]
+    hover:text-[var(--text-primary)] hover:bg-[var(--fill-light)]
+    active:bg-[var(--fill-subtle)]
     focus-visible:ring-2 focus-visible:ring-[var(--border-focus)]
   `,
   danger: `

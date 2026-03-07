@@ -90,10 +90,10 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div
           className={`
             relative rounded-xl overflow-hidden h-full cursor-pointer group
-            bg-white/[0.06] backdrop-blur-xl border border-white/10
-            shadow-[0_8px_32px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]
-            hover:bg-white/10 hover:border-white/20
-            hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]
+            bg-[var(--fill-medium)] backdrop-blur-xl border border-[var(--border-default)]
+            shadow-[var(--shadow-lg)]
+            hover:bg-[var(--fill-strong)] hover:border-[var(--glass-border-hover)]
+            hover:shadow-[var(--shadow-lg)]
             transition-all duration-500
             p-5 flex flex-col
           `}
@@ -119,11 +119,11 @@ export default function CourseCard({ course }: CourseCardProps) {
           </p>
 
           {/* Title + Subtitle */}
-          <h3 className="text-title font-medium text-white mb-1.5 group-hover:text-emerald-400 transition-colors">
+          <h3 className="text-title font-medium text-[var(--text-primary)] mb-1.5 group-hover:text-emerald-400 transition-colors">
             {course.title}
           </h3>
           {course.subtitle && (
-            <p className="text-body text-white/45 mb-4 line-clamp-2">
+            <p className="text-body text-[var(--text-tertiary)] mb-4 line-clamp-2">
               {course.subtitle}
             </p>
           )}
@@ -132,12 +132,14 @@ export default function CourseCard({ course }: CourseCardProps) {
           {isEnrolled && course.enrollment && (
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-micro text-white/45">Progress</span>
+                <span className="text-micro text-[var(--text-tertiary)]">
+                  Progress
+                </span>
                 <span className="text-micro text-emerald-400 tabular-nums">
                   {Math.round(course.enrollment.progressPercent)}%
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-[var(--fill-strong)] overflow-hidden">
                 <div
                   className="h-full rounded-full bg-emerald-500 transition-all duration-500"
                   style={{
@@ -149,16 +151,16 @@ export default function CourseCard({ course }: CourseCardProps) {
           )}
 
           {/* Footer Meta */}
-          <div className="flex items-center gap-4 pt-3 border-t border-white/5 mt-auto">
-            <div className="flex items-center gap-1.5 text-small text-white/40">
+          <div className="flex items-center gap-4 pt-3 border-t border-[var(--border-subtle)] mt-auto">
+            <div className="flex items-center gap-1.5 text-small text-[var(--text-tertiary)]">
               <Clock className="w-3.5 h-3.5" />
               {formatDuration(course.estimatedMinutes)}
             </div>
-            <div className="flex items-center gap-1.5 text-small text-white/40">
+            <div className="flex items-center gap-1.5 text-small text-[var(--text-tertiary)]">
               <Users className="w-3.5 h-3.5" />
               {course.enrollmentCount.toLocaleString()}
             </div>
-            <div className="flex items-center gap-1.5 text-small text-white/40">
+            <div className="flex items-center gap-1.5 text-small text-[var(--text-tertiary)]">
               <BookOpen className="w-3.5 h-3.5" />
               {course.moduleCount} modules
             </div>

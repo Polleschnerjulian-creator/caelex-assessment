@@ -15,11 +15,11 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
 
   return (
     <header
-      className="h-14 border-b border-[rgba(255,255,255,0.04)] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30"
+      className="h-14 border-b border-[var(--separator)] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30"
       style={{
-        backgroundColor: "rgba(17, 17, 24, 0.8)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        backgroundColor: "var(--topbar-bg)",
+        backdropFilter: "blur(16px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(16px) saturate(1.4)",
       }}
     >
       {/* Left */}
@@ -30,7 +30,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           aria-label="Open navigation menu"
           aria-expanded={false}
           aria-controls="sidebar-nav"
-          className="lg:hidden w-9 h-9 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] rounded-[var(--radius-sm)] transition-all duration-[var(--duration-fast)]"
+          className="lg:hidden w-9 h-9 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--fill-light)] rounded-[var(--radius-sm)] transition-all duration-[var(--duration-fast)]"
         >
           <Menu size={20} aria-hidden="true" />
         </button>

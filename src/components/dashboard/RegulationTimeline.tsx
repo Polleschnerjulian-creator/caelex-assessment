@@ -35,9 +35,9 @@ const statusColors: Record<
     label: "Transition",
   },
   superseded: {
-    bg: "bg-[rgba(255,255,255,0.04)]",
+    bg: "bg-[var(--fill-light)]",
     border: "border-[var(--border-default)]/30",
-    dot: "bg-[rgba(255,255,255,0.06)]",
+    dot: "bg-[var(--fill-medium)]",
     text: "text-[var(--text-tertiary)]",
     label: "Superseded",
   },
@@ -163,12 +163,12 @@ export default function RegulationTimeline() {
           </div>
 
           {/* Timeline bar */}
-          <div className="relative h-2 bg-[rgba(255,255,255,0.06)] rounded-full mb-4">
+          <div className="relative h-2 bg-[var(--fill-medium)] rounded-full mb-4">
             {/* Year tick marks */}
             {yearMarkers.map((m) => (
               <div
                 key={m.year}
-                className="absolute top-0 w-px h-2 bg-[rgba(255,255,255,0.08)]"
+                className="absolute top-0 w-px h-2 bg-[var(--fill-strong)]"
                 style={{ left: `${m.percent}%` }}
               />
             ))}
@@ -359,7 +359,7 @@ export default function RegulationTimeline() {
                         {phase.applicableTo.map((scope) => (
                           <span
                             key={scope}
-                            className="text-micro bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
+                            className="text-micro bg-[var(--fill-medium)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
                           >
                             {scope.replace(/_/g, " ")}
                           </span>

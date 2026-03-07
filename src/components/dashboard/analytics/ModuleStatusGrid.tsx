@@ -133,7 +133,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
     if (score >= 80) return "bg-[var(--accent-success)]";
     if (score >= 60) return "bg-yellow-500";
     if (score > 0) return "bg-[var(--accent-danger)]";
-    return "bg-[rgba(255,255,255,0.06)]";
+    return "bg-[var(--fill-medium)]";
   };
 
   return (
@@ -165,7 +165,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
               {module.score}%
             </span>
           </div>
-          <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[var(--fill-medium)] rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor(module.score)} transition-all duration-500`}
               style={{ width: `${module.score}%` }}

@@ -296,12 +296,8 @@ function KPICard({
       }}
       className="
         relative overflow-hidden rounded-[var(--radius-lg)] p-6
-        bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
-        backdrop-blur-[24px] backdrop-saturate-[1.3]
-        border border-[rgba(255,255,255,0.08)]
-        shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
+        glass-elevated
         hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)]
-        hover:border-[rgba(255,255,255,0.10)]
         transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]
         group
       "
@@ -482,7 +478,7 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-[var(--radius-md)] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] group"
+      className="flex flex-col items-center gap-2 p-3 rounded-[var(--radius-md)] bg-[var(--fill-subtle)] hover:bg-[var(--fill-light)] border border-[var(--separator)] hover:border-[var(--fill-strong)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] group"
     >
       <Icon className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--accent-400)] transition-colors duration-[var(--duration-fast)]" />
       <span className="text-[10px] font-medium tracking-[0.02em] text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors duration-[var(--duration-fast)]">
@@ -521,7 +517,7 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-[rgba(255,255,255,0.03)] last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-[var(--separator)] last:border-0">
       <div
         className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
@@ -1055,7 +1051,7 @@ function DashboardContent() {
               duration: 0.4,
               ease: [0.22, 0.61, 0.36, 1],
             }}
-            className="bg-[var(--bg-surface-2)] border border-dashed border-[rgba(255,255,255,0.06)] rounded-[var(--radius-lg)] p-8 text-center mb-10"
+            className="bg-[var(--bg-surface-2)] border border-dashed border-[var(--fill-medium)] rounded-[var(--radius-lg)] p-8 text-center mb-10"
           >
             <h2 className="text-[16px] font-semibold text-[var(--text-primary)] mb-2">
               {t("dashboard.importResults")}
@@ -1079,8 +1075,8 @@ function DashboardContent() {
               <button
                 onClick={() => setShowImportModal(true)}
                 className="
-                  border border-[rgba(255,255,255,0.08)] text-[var(--text-secondary)] font-medium text-[14px] px-6 py-2.5
-                  rounded-[var(--radius-sm)] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.12)]
+                  border border-[var(--fill-strong)] text-[var(--text-secondary)] font-medium text-[14px] px-6 py-2.5
+                  rounded-[var(--radius-sm)] hover:bg-[var(--fill-light)] hover:border-[var(--fill-heavy)]
                   transition-all duration-[var(--duration-fast)]
                 "
               >
@@ -1138,7 +1134,7 @@ function DashboardContent() {
             }
           />
           {recentActivity.length > 0 ? (
-            <div className="divide-y divide-[rgba(255,255,255,0.03)]">
+            <div className="divide-y divide-[var(--separator)]">
               {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -1184,7 +1180,7 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[rgba(255,255,255,0.04)]">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[var(--separator)]">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
@@ -1255,7 +1251,7 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[var(--bg-surface-4)] border border-[rgba(255,255,255,0.08)] rounded-[var(--radius-2xl)] p-8 max-w-[400px] w-full shadow-[var(--shadow-xl)]"
+                className="bg-[var(--bg-surface-4)] border border-[var(--fill-strong)] rounded-[var(--radius-2xl)] p-8 max-w-[400px] w-full shadow-[var(--shadow-xl)]"
               >
                 <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
                   {t("dashboard.selectOperatorType")}

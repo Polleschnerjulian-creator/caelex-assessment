@@ -126,9 +126,9 @@ const regulationColors: Record<
 };
 
 const defaultRegColor = {
-  bg: "bg-[rgba(255,255,255,0.04)]",
+  bg: "bg-[var(--fill-light)]",
   text: "text-[var(--text-tertiary)]",
-  border: "border-[rgba(255,255,255,0.06)]",
+  border: "border-[var(--separator-strong)]",
   label: "",
 };
 
@@ -378,9 +378,9 @@ function AuditCenterContent() {
           disabled={refreshing}
           className="
             flex items-center gap-2 px-4 py-2 text-[14px]
-            text-[var(--text-secondary)] border border-[rgba(255,255,255,0.08)]
+            text-[var(--text-secondary)] border border-[var(--fill-strong)]
             rounded-[var(--radius-sm)]
-            hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.12)] hover:text-[var(--text-primary)]
+            hover:bg-[var(--fill-light)] hover:border-[var(--fill-heavy)] hover:text-[var(--text-primary)]
             transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
             disabled:opacity-50
           "
@@ -428,7 +428,7 @@ function AuditCenterContent() {
             {overview.complianceScore}%
           </p>
           <div
-            className="h-1 bg-[rgba(255,255,255,0.06)] rounded-full mt-4 overflow-hidden"
+            className="h-1 bg-[var(--fill-medium)] rounded-full mt-4 overflow-hidden"
             style={{ boxShadow: "var(--shadow-inset)" }}
           >
             <motion.div
@@ -469,7 +469,7 @@ function AuditCenterContent() {
             {overview.evidenceCoverage.percentage}%
           </p>
           <div
-            className="h-1 bg-[rgba(255,255,255,0.06)] rounded-full mt-4 overflow-hidden"
+            className="h-1 bg-[var(--fill-medium)] rounded-full mt-4 overflow-hidden"
             style={{ boxShadow: "var(--shadow-inset)" }}
           >
             <motion.div
@@ -566,7 +566,7 @@ function AuditCenterContent() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.3 }}
-        className="flex items-center gap-2 flex-wrap p-1 bg-[rgba(255,255,255,0.02)] rounded-[var(--radius-md)] border border-[rgba(255,255,255,0.04)]"
+        className="flex items-center gap-2 flex-wrap p-1 bg-[var(--fill-subtle)] rounded-[var(--radius-md)] border border-[var(--separator)]"
       >
         <div className="flex items-center gap-1.5 text-[11px] tracking-[0.04em] font-medium text-[var(--text-tertiary)] px-2">
           <Filter size={12} />
@@ -577,7 +577,7 @@ function AuditCenterContent() {
           className={`px-3.5 py-1.5 rounded-[var(--radius-sm)] text-[13px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
             regulationFilter === "all"
               ? "bg-[rgba(74,98,232,0.1)] text-[var(--accent-300)] font-medium shadow-[0_0_0_1px_rgba(74,98,232,0.2)]"
-              : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
+              : "text-[var(--text-secondary)] hover:bg-[var(--fill-light)] hover:text-[var(--text-primary)]"
           }`}
         >
           All
@@ -594,8 +594,8 @@ function AuditCenterContent() {
               onClick={() => setRegulationFilter(m.regulationType)}
               className={`px-3.5 py-1.5 rounded-[var(--radius-sm)] text-[13px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
                 isActive
-                  ? `${rc.bg} ${rc.text} font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.08)]`
-                  : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
+                  ? `${rc.bg} ${rc.text} font-medium shadow-[0_0_0_1px_var(--fill-strong)]`
+                  : "text-[var(--text-secondary)] hover:bg-[var(--fill-light)] hover:text-[var(--text-primary)]"
               }`}
             >
               {rc.label}
@@ -630,14 +630,14 @@ function AuditCenterContent() {
                 rounded-[var(--radius-md)] overflow-hidden transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
                 ${
                   isExpanded
-                    ? "bg-[rgba(255,255,255,0.02)] shadow-[var(--shadow-sm)]"
-                    : "border-b border-[rgba(255,255,255,0.03)]"
+                    ? "bg-[var(--fill-subtle)] shadow-[var(--shadow-sm)]"
+                    : "border-b border-[var(--fill-subtle)]"
                 }
               `}
             >
               <button
                 onClick={() => toggleModuleExpand(mod.module)}
-                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[rgba(255,255,255,0.02)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] text-left group/row rounded-[var(--radius-md)] hover:translate-x-0.5"
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[var(--fill-subtle)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] text-left group/row rounded-[var(--radius-md)] hover:translate-x-0.5"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <span
@@ -727,7 +727,7 @@ function AuditCenterContent() {
 
                       {/* Progress bar */}
                       <div
-                        className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden flex"
+                        className="h-1.5 bg-[var(--fill-medium)] rounded-full overflow-hidden flex"
                         style={{ boxShadow: "var(--shadow-inset)" }}
                       >
                         {mod.totalRequirements > 0 && (
@@ -796,7 +796,7 @@ function AuditCenterContent() {
             Action Items ({filteredActions.length})
           </h2>
 
-          <div className="glass-card rounded-[var(--radius-lg)] divide-y divide-[rgba(255,255,255,0.03)] overflow-hidden">
+          <div className="glass-card rounded-[var(--radius-lg)] divide-y divide-[var(--fill-subtle)] overflow-hidden">
             {filteredActions.slice(0, 20).map((item, idx) => {
               const rc = regulationColors[item.regulationType] || {
                 ...defaultRegColor,
@@ -805,7 +805,7 @@ function AuditCenterContent() {
               return (
                 <div
                   key={`${item.regulationType}-${item.requirementId}-${idx}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-[rgba(255,255,255,0.02)] transition-all duration-[var(--duration-fast)]"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-[var(--fill-subtle)] transition-all duration-[var(--duration-fast)]"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span
@@ -820,7 +820,7 @@ function AuditCenterContent() {
                       className={`text-[11px] font-medium tracking-[0.04em] px-2 py-0.5 rounded-[var(--radius-xs)] flex-shrink-0 ${
                         item.status === "non_compliant"
                           ? "text-[var(--status-danger)] bg-[var(--status-danger-bg)]"
-                          : "text-[var(--text-tertiary)] bg-[rgba(255,255,255,0.04)]"
+                          : "text-[var(--text-tertiary)] bg-[var(--fill-light)]"
                       }`}
                     >
                       {item.status.replace(/_/g, " ")}
@@ -834,7 +834,7 @@ function AuditCenterContent() {
                     )}
                     <Link
                       href={item.modulePath}
-                      className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--accent-400)] rounded-[var(--radius-xs)] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-[var(--duration-fast)]"
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--accent-400)] rounded-[var(--radius-xs)] hover:bg-[var(--fill-light)] transition-all duration-[var(--duration-fast)]"
                     >
                       <ExternalLink size={13} />
                     </Link>
@@ -909,7 +909,7 @@ function AuditCenterContent() {
               className="
                 flex items-center gap-3 px-4 py-3
                 glass-inset rounded-[var(--radius-md)]
-                hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)]
+                hover:bg-[var(--fill-light)] hover:border-[var(--fill-strong)]
                 transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
                 text-left disabled:opacity-50
               "
@@ -935,7 +935,7 @@ function AuditCenterContent() {
         {overview.evidenceCoverage.byStatus.accepted +
           overview.evidenceCoverage.byStatus.submitted >
           0 && (
-          <div className="mt-5 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center gap-3 flex-wrap">
+          <div className="mt-5 pt-4 border-t border-[var(--separator)] flex items-center gap-3 flex-wrap">
             <span className="text-[12px] text-[var(--text-tertiary)]">
               Evidence:
             </span>
@@ -950,7 +950,7 @@ function AuditCenterContent() {
               </span>
             )}
             {overview.evidenceCoverage.byStatus.draft > 0 && (
-              <span className="text-[11px] font-medium bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)] border border-[rgba(255,255,255,0.06)] rounded-[var(--radius-xs)] px-2 py-0.5">
+              <span className="text-[11px] font-medium bg-[var(--fill-light)] text-[var(--text-tertiary)] border border-[var(--separator-strong)] rounded-[var(--radius-xs)] px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.draft} draft
               </span>
             )}

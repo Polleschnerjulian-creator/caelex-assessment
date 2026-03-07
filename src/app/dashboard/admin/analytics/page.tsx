@@ -603,21 +603,21 @@ function ExecutiveSummaryTab({ timeRange }: { timeRange: TimeRange }) {
                 <ComposedChart data={trends.dau}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--separator-strong)"
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
                       background: "#111111",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid var(--fill-strong)",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
@@ -810,22 +810,22 @@ function RevenueTab({ timeRange }: { timeRange: TimeRange }) {
                 <ComposedChart data={trends.mrr}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--separator-strong)"
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                     tickFormatter={(v) => `€${v}`}
                   />
                   <Tooltip
                     contentStyle={{
                       background: "#111111",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid var(--fill-strong)",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
@@ -1035,24 +1035,24 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
                 <BarChart data={usage.modules} layout="vertical">
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--separator-strong)"
                   />
                   <XAxis
                     type="number"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <YAxis
                     type="category"
                     dataKey="module"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                     width={100}
                   />
                   <Tooltip
                     contentStyle={{
                       background: "#111111",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid var(--fill-strong)",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
@@ -1086,21 +1086,21 @@ function ProductTab({ timeRange }: { timeRange: TimeRange }) {
                 <AreaChart data={trends.pageViews}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--separator-strong)"
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
                       background: "#111111",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid var(--fill-strong)",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
@@ -1490,21 +1490,21 @@ function AcquisitionTab({ timeRange }: { timeRange: TimeRange }) {
                 <AreaChart data={trends.traffic}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--separator-strong)"
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                    tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                     axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
                       background: "#111111",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid var(--fill-strong)",
                       borderRadius: "8px",
                       fontSize: "12px",
                     }}
@@ -1662,22 +1662,22 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
               <ComposedChart data={trends.api}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.06)"
+                  stroke="var(--separator-strong)"
                 />
                 <XAxis
                   dataKey="time"
-                  tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                   axisLine={false}
                 />
                 <YAxis
                   yAxisId="left"
-                  tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                   axisLine={false}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+                  tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
                   axisLine={false}
                 />
                 <Tooltip

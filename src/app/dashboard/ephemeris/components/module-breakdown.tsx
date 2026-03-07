@@ -50,13 +50,13 @@ function statusColor(status: string): string {
 function statusBg(status: string): string {
   switch (status) {
     case "COMPLIANT":
-      return "bg-[rgba(255,255,255,0.04)]";
+      return "bg-[var(--fill-light)]";
     case "WARNING":
       return "bg-[var(--accent-warning-soft)]";
     case "NON_COMPLIANT":
       return "bg-[var(--accent-danger-soft)]";
     default:
-      return "bg-[rgba(255,255,255,0.03)]";
+      return "bg-[var(--fill-subtle)]";
   }
 }
 
@@ -107,7 +107,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
               </div>
 
               {/* Score bar */}
-              <div className="h-1.5 rounded-full bg-[rgba(255,255,255,0.06)] mb-3">
+              <div className="h-1.5 rounded-full bg-[var(--fill-medium)] mb-3">
                 <div
                   className={`h-full rounded-full transition-all ${
                     mod.score >= 70
@@ -116,7 +116,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
                         ? "bg-[var(--accent-warning)]"
                         : mod.score > 0
                           ? "bg-[var(--accent-danger)]"
-                          : "bg-[rgba(255,255,255,0.08)]"
+                          : "bg-[var(--fill-strong)]"
                   }`}
                   style={{ width: `${mod.score}%` }}
                 />
@@ -141,7 +141,7 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
                 ))}
               </div>
 
-              <div className="mt-2 pt-2 border-t border-[rgba(255,255,255,0.06)]">
+              <div className="mt-2 pt-2 border-t border-[var(--separator-strong)]">
                 <span className="text-micro text-[var(--text-tertiary)] uppercase">
                   Source: {mod.dataSource}
                 </span>

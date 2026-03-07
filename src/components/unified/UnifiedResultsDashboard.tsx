@@ -109,8 +109,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <div
             className="p-6 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div className="flex flex-wrap items-start justify-between gap-6">
@@ -165,8 +164,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <div
             className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <FileText className="w-5 h-5 text-white/45 mb-3" />
@@ -182,7 +180,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <div
             className={`p-5 rounded-xl backdrop-blur-[10px] border ${riskColors.bg} ${riskColors.border}`}
             style={{
-              boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <AlertTriangle className={`w-5 h-5 ${riskColors.text} mb-3`} />
@@ -200,8 +198,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <div
             className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <Clock className="w-5 h-5 text-white/45 mb-3" />
@@ -218,8 +215,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
           <div
             className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
             style={{
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <Target className="w-5 h-5 text-white/45 mb-3" />
@@ -249,8 +245,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             <div
               className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-lg)",
               }}
             >
               {/* Header */}
@@ -544,8 +539,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             <div
               className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-lg)",
               }}
             >
               {/* Header */}
@@ -754,8 +748,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             <div
               className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] overflow-hidden"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-lg)",
               }}
             >
               {/* Header */}
@@ -894,8 +887,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
               <div
                 className="p-5 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08]"
                 style={{
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                  boxShadow: "var(--shadow-lg)",
                 }}
               >
                 <h3 className="text-small font-medium text-white/45 uppercase tracking-wider mb-4">
@@ -941,8 +933,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             <div
               className="p-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] flex items-center justify-between"
               style={{
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-lg)",
               }}
             >
               <div className="flex items-center gap-3">
@@ -1010,7 +1001,7 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
             <div
               className="p-6 rounded-xl bg-emerald-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20"
               style={{
-                boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+                boxShadow: "var(--shadow-lg)",
               }}
             >
               <div className="flex items-center gap-2 mb-4">

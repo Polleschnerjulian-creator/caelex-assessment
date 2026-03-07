@@ -74,7 +74,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
       case "low":
         return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)] border-[var(--accent-success)/30]";
       default:
-        return "text-[var(--text-tertiary)] bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)]";
+        return "text-[var(--text-tertiary)] bg-[var(--fill-light)] border-[var(--separator-strong)]";
     }
   };
 
@@ -134,7 +134,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(255,255,255,0.04)]">
+        <div className="text-center p-3 bg-[var(--fill-subtle)] rounded-lg border border-[var(--separator)]">
           <p className="text-2xl font-bold text-[var(--text-primary)]">
             {summary.total}
           </p>
@@ -229,7 +229,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
                 <Link
                   key={incident.id}
                   href={`/dashboard/supervision/incidents/${incident.id}`}
-                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[rgba(255,255,255,0.03)] transition-colors"
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[var(--fill-subtle)] transition-colors"
                 >
                   <div
                     className={`p-1.5 rounded ${getSeverityColor(incident.severity)}`}

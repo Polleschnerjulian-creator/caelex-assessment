@@ -64,7 +64,7 @@ export default function UpgradePrompt({
               <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-5">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-1 rounded-lg text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+                  className="absolute top-4 right-4 p-1 rounded-lg text-white/70 hover:text-white hover:bg-[var(--fill-strong)] transition-colors"
                   aria-label="Close"
                 >
                   <X size={18} />
@@ -92,7 +92,7 @@ export default function UpgradePrompt({
               <div className="px-6 py-5">
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   {/* Current Plan */}
-                  <div className="p-4 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+                  <div className="p-4 rounded-xl bg-[var(--fill-subtle)] border border-[var(--separator-strong)]">
                     <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                       Current Plan
                     </p>
@@ -161,7 +161,7 @@ export default function UpgradePrompt({
                   </button>
                   <button
                     onClick={onClose}
-                    className="px-4 py-3 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+                    className="px-4 py-3 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[var(--fill-light)] transition-colors"
                   >
                     Maybe Later
                   </button>
