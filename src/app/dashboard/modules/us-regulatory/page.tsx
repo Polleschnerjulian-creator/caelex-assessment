@@ -651,7 +651,7 @@ function UsRegulatoryPageContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)]" />
       </div>
     );
   }
@@ -661,16 +661,16 @@ function UsRegulatoryPageContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-medium text-[var(--text-primary)]">
             US Space Regulatory
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-white/70 mt-1">
+          <p className="text-sm sm:text-base text-[var(--text-secondary)] mt-1">
             FCC, FAA/AST & NOAA compliance
           </p>
         </div>
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New Assessment</span>
@@ -679,14 +679,14 @@ function UsRegulatoryPageContent() {
 
       {/* Multi-Agency Tabs */}
       {selectedAssessment && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl overflow-hidden">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-[var(--border-default)]">
             <button
               onClick={() => setActiveAgencyTab("overview")}
               className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                 activeAgencyTab === "overview"
-                  ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-[--glass-bg-elevated]/50"
-                  : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-[--glass-bg-elevated]/30"
+                  ? "text-white border-b-2 border-[var(--accent-primary)] bg-[var(--surface-sunken)]/50"
+                  : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)]/30"
               }`}
             >
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -704,8 +704,8 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveAgencyTab(agency)}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors ${
                     activeAgencyTab === agency
-                      ? "text-white border-b-2 border-emerald-500 bg-slate-100 dark:bg-[--glass-bg-elevated]/50"
-                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-[--glass-bg-elevated]/30"
+                      ? "text-white border-b-2 border-[var(--accent-primary)] bg-[var(--surface-sunken)]/50"
+                      : "text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)]/30"
                   }`}
                 >
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -714,10 +714,10 @@ function UsRegulatoryPageContent() {
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded ${
                         agencyScore >= 80
-                          ? "bg-green-500/20 text-green-400"
+                          ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                           : agencyScore >= 60
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-red-500/20 text-red-400"
+                            ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                            : "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                       }`}
                     >
                       {agencyScore}%
@@ -738,46 +738,46 @@ function UsRegulatoryPageContent() {
                   return (
                     <div
                       key={status.agency}
-                      className="bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg p-3 sm:p-4"
+                      className="bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg p-3 sm:p-4"
                     >
                       <div className="flex items-center gap-2 mb-2 sm:mb-3">
                         <Icon
                           className={`w-4 sm:w-5 h-4 sm:h-5 text-${config.color}-400`}
                         />
-                        <span className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
+                        <span className="text-sm sm:text-base font-medium text-[var(--text-primary)]">
                           {config.label}
                         </span>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-slate-600 dark:text-white/45">
+                          <span className="text-[var(--text-secondary)]">
                             Score
                           </span>
                           <span
                             className={`font-medium ${
                               status.score >= 80
-                                ? "text-green-400"
+                                ? "text-[var(--accent-success)]"
                                 : status.score >= 60
-                                  ? "text-amber-400"
-                                  : "text-red-400"
+                                  ? "text-[var(--accent-warning)]"
+                                  : "text-[var(--accent-danger)]"
                             }`}
                           >
                             {status.score}%
                           </span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 sm:h-2">
+                        <div className="w-full bg-[var(--surface-sunken)] rounded-full h-1.5 sm:h-2">
                           <div
                             className={`h-full rounded-full ${
                               status.score >= 80
-                                ? "bg-green-500"
+                                ? "bg-[var(--accent-success)]"
                                 : status.score >= 60
-                                  ? "bg-amber-500"
-                                  : "bg-red-500"
+                                  ? "bg-[var(--accent-warning)]"
+                                  : "bg-[var(--accent-danger)]"
                             }`}
                             style={{ width: `${status.score}%` }}
                           />
                         </div>
-                        <div className="flex justify-between text-xs text-slate-500 dark:text-white/45 mt-1 sm:mt-2">
+                        <div className="flex justify-between text-xs text-[var(--text-secondary)] mt-1 sm:mt-2">
                           <span>Req: {status.requirements?.length ?? 0}</span>
                           <span>Gaps: {status.gaps?.length ?? 0}</span>
                         </div>
@@ -787,7 +787,7 @@ function UsRegulatoryPageContent() {
                             .map((license) => (
                               <span
                                 key={license}
-                                className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-300 rounded truncate max-w-[120px]"
+                                className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-[var(--surface-sunken)] text-[var(--text-tertiary)] rounded truncate max-w-[120px]"
                               >
                                 {licenseTypeConfig[license]?.label}
                               </span>
@@ -812,24 +812,24 @@ function UsRegulatoryPageContent() {
                       return (
                         <div
                           key={license}
-                          className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg"
+                          className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg"
                         >
-                          <FileCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <FileCheck className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                            <div className="text-sm font-medium text-[var(--text-primary)] truncate">
                               {config.label}
                             </div>
-                            <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                            <div className="text-xs text-[var(--text-secondary)]">
                               {config.cfrPart}
                             </div>
                           </div>
                           <span
                             className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
                               licenseScore >= 80
-                                ? "bg-green-500/20 text-green-400"
+                                ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                                 : licenseScore >= 60
-                                  ? "bg-amber-500/20 text-amber-400"
-                                  : "bg-red-500/20 text-red-400"
+                                  ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                                  : "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                             }`}
                           >
                             {licenseScore}%
@@ -853,12 +853,12 @@ function UsRegulatoryPageContent() {
               <h3 className="text-sm sm:text-base font-medium text-orange-400">
                 FCC 5-Year Deorbit Rule
               </h3>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+              <p className="text-xs sm:text-sm text-[var(--text-tertiary)] mt-1">
                 LEO satellite must deorbit within 5 years post-mission (47 CFR §
                 25.114).
               </p>
               {deorbitResult.recommendations.length > 0 && (
-                <ul className="text-xs sm:text-sm text-slate-600 dark:text-white/45 mt-2 space-y-1">
+                <ul className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2 space-y-1">
                   {deorbitResult.recommendations.slice(0, 2).map((rec, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <AlertTriangle className="w-3 h-3 text-orange-400 mt-0.5 flex-shrink-0" />
@@ -881,7 +881,7 @@ function UsRegulatoryPageContent() {
 
       {/* Wizard Steps */}
       {(selectedAssessment || showNewAssessment) && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-2 sm:p-4 overflow-hidden">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-2 sm:p-4 overflow-hidden">
           <div className="flex items-center justify-between overflow-x-auto scrollbar-hide">
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center flex-shrink-0">
@@ -889,19 +889,19 @@ function UsRegulatoryPageContent() {
                   onClick={() => setActiveStep(index)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors ${
                     activeStep === index
-                      ? "bg-emerald-500/20 text-emerald-400"
+                      ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                       : activeStep > index
-                        ? "text-green-400"
-                        : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                        ? "text-[var(--accent-success)]"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                   }`}
                 >
                   <div
                     className={`w-5 sm:w-6 h-5 sm:h-6 rounded-full flex items-center justify-center text-micro sm:text-xs font-medium flex-shrink-0 ${
                       activeStep === index
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-[var(--accent-primary)] text-white"
                         : activeStep > index
-                          ? "bg-green-500 text-white"
-                          : "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-400"
+                          ? "bg-[var(--accent-success)] text-white"
+                          : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]"
                     }`}
                   >
                     {activeStep > index ? (
@@ -914,13 +914,13 @@ function UsRegulatoryPageContent() {
                     <div className="text-xs sm:text-sm font-medium whitespace-nowrap">
                       {step.label}
                     </div>
-                    <div className="text-micro sm:text-xs text-slate-500 dark:text-white/45 hidden lg:block">
+                    <div className="text-micro sm:text-xs text-[var(--text-secondary)] hidden lg:block">
                       {step.description}
                     </div>
                   </div>
                 </button>
                 {index < STEPS.length - 1 && (
-                  <ChevronRight className="w-4 sm:w-5 h-4 sm:h-5 text-slate-600 mx-0.5 sm:mx-2 flex-shrink-0" />
+                  <ChevronRight className="w-4 sm:w-5 h-4 sm:h-5 text-[var(--text-secondary)] mx-0.5 sm:mx-2 flex-shrink-0" />
                 )}
               </div>
             ))}
@@ -940,8 +940,8 @@ function UsRegulatoryPageContent() {
             className="space-y-4 sm:space-y-6"
           >
             {/* Assessment Name */}
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
-              <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-3 sm:p-4">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                 Assessment Name (optional)
               </label>
               <input
@@ -949,13 +949,13 @@ function UsRegulatoryPageContent() {
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
                 placeholder="e.g., LEO Constellation"
-                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm sm:text-base"
+                className="w-full px-3 py-2.5 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] text-sm sm:text-base"
               />
             </div>
 
             {/* Operator Types */}
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-[var(--text-primary)] mb-3 sm:mb-4">
                 Space operations in the US
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -973,18 +973,18 @@ function UsRegulatoryPageContent() {
                       onClick={() => toggleOperatorType(type)}
                       className={`flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-lg border text-left transition-all ${
                         isSelected
-                          ? "bg-emerald-500/10 border-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/45 hover:border-slate-400 dark:border-white/30"
+                          ? "bg-[var(--accent-primary-soft)] border-[var(--accent-primary)] text-white"
+                          : "bg-[var(--surface-sunken)][0.02] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                       }`}
                     >
                       <Icon
-                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-emerald-400" : "text-slate-600 dark:text-white/45"}`}
+                        className={`w-4 sm:w-5 h-4 sm:h-5 mt-0.5 flex-shrink-0 ${isSelected ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}
                       />
                       <div className="min-w-0">
                         <div className="text-sm sm:text-base font-medium">
                           {config.label}
                         </div>
-                        <div className="text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45 mt-0.5 sm:mt-1 line-clamp-2">
+                        <div className="text-micro sm:text-xs text-[var(--text-secondary)] mt-0.5 sm:mt-1 line-clamp-2">
                           {config.description}
                         </div>
                         <div className="flex flex-wrap gap-1 mt-1.5 sm:mt-2">
@@ -993,10 +993,10 @@ function UsRegulatoryPageContent() {
                               key={agency}
                               className={`text-micro sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${
                                 agency === "FCC"
-                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                                   : agency === "FAA"
                                     ? "bg-orange-500/20 text-orange-400"
-                                    : "bg-green-500/20 text-green-400"
+                                    : "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                               }`}
                             >
                               {agency}
@@ -1011,8 +1011,8 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Activity Types */}
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-[var(--text-primary)] mb-3 sm:mb-4">
                 Select your activities
               </h3>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -1029,8 +1029,8 @@ function UsRegulatoryPageContent() {
                       onClick={() => toggleActivityType(type)}
                       className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors ${
                         isSelected
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/45 hover:border-slate-400 dark:border-white/30"
+                          ? "bg-[var(--accent-primary)] text-white"
+                          : "bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                       }`}
                     >
                       {config.label}
@@ -1041,8 +1041,8 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Orbit Configuration */}
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-[var(--text-primary)] mb-3 sm:mb-4">
                 Orbit Configuration
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
@@ -1059,8 +1059,8 @@ function UsRegulatoryPageContent() {
                       }
                       className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm transition-colors ${
                         form.orbitRegime === orbit
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 text-slate-500 dark:text-white/45 hover:border-slate-400 dark:border-white/30"
+                          ? "bg-[var(--accent-primary)] text-white"
+                          : "bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                       }`}
                     >
                       {orbit === "cislunar"
@@ -1069,7 +1069,7 @@ function UsRegulatoryPageContent() {
                           ? "Deep"
                           : orbit}
                       {orbit === "LEO" && (
-                        <span className="block text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45 mt-0.5 sm:mt-1">
+                        <span className="block text-micro sm:text-xs text-[var(--text-secondary)] mt-0.5 sm:mt-1">
                           5yr rule
                         </span>
                       )}
@@ -1080,13 +1080,13 @@ function UsRegulatoryPageContent() {
             </div>
 
             {/* Mission Details */}
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-3 sm:mb-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-[var(--text-primary)] mb-3 sm:mb-4">
                 Mission Details
               </h3>
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/45 mb-1">
+                  <label className="block text-xs sm:text-sm text-[var(--text-secondary)] mb-1">
                     Satellites
                   </label>
                   <input
@@ -1102,11 +1102,11 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="1"
-                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/45 mb-1">
+                  <label className="block text-xs sm:text-sm text-[var(--text-secondary)] mb-1">
                     Duration (yr)
                   </label>
                   <input
@@ -1121,11 +1121,11 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="5"
-                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-600 dark:text-white/45 mb-1">
+                  <label className="block text-xs sm:text-sm text-[var(--text-secondary)] mb-1">
                     Altitude (km)
                   </label>
                   <input
@@ -1140,13 +1140,13 @@ function UsRegulatoryPageContent() {
                       }))
                     }
                     placeholder="550"
-                    className="w-full px-2 sm:px-3 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-2 sm:px-3 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] text-sm"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3 sm:gap-4 mt-3 sm:mt-4">
-                <label className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-tertiary)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.hasPropulsion}
@@ -1156,11 +1156,11 @@ function UsRegulatoryPageContent() {
                         hasPropulsion: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
+                    className="w-4 h-4 rounded bg-[var(--surface-sunken)][0.02] border-[var(--border-default)]"
                   />
                   Has Propulsion
                 </label>
-                <label className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-tertiary)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.hasManeuverability}
@@ -1170,11 +1170,11 @@ function UsRegulatoryPageContent() {
                         hasManeuverability: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
+                    className="w-4 h-4 rounded bg-[var(--surface-sunken)][0.02] border-[var(--border-default)]"
                   />
                   Maneuverable
                 </label>
-                <label className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-[var(--text-tertiary)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.providesRemoteSensing}
@@ -1184,7 +1184,7 @@ function UsRegulatoryPageContent() {
                         providesRemoteSensing: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 rounded bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/20"
+                    className="w-4 h-4 rounded bg-[var(--surface-sunken)][0.02] border-[var(--border-default)]"
                   />
                   Remote Sensing (NOAA)
                 </label>
@@ -1194,7 +1194,7 @@ function UsRegulatoryPageContent() {
             {/* Create Button */}
             <div className="flex flex-col gap-3">
               {createError && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                   <AlertTriangle size={14} className="flex-shrink-0" />
                   {createError}
                 </div>
@@ -1207,7 +1207,7 @@ function UsRegulatoryPageContent() {
                     form.activityTypes.length === 0 ||
                     creating
                   }
-                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {creating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1241,14 +1241,14 @@ function UsRegulatoryPageContent() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-2 sm:p-3 text-center"
+                  className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-2 sm:p-3 text-center"
                 >
                   <div
                     className={`text-lg sm:text-2xl font-bold text-${stat.color}-400`}
                   >
                     {stat.count}
                   </div>
-                  <div className="text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-micro sm:text-xs text-[var(--text-secondary)]">
                     {stat.label}
                   </div>
                 </div>
@@ -1264,7 +1264,7 @@ function UsRegulatoryPageContent() {
                     e.target.value as UsRequirementCategory | "all",
                   )
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] text-sm"
               >
                 <option value="all">All Categories</option>
                 {Object.entries(categoryConfig).map(([cat, config]) => (
@@ -1278,7 +1278,7 @@ function UsRegulatoryPageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UsComplianceStatus | "all")
                 }
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-300 dark:border-white/20 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="flex-1 sm:flex-none px-3 py-2.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] text-sm"
               >
                 <option value="all">All Statuses</option>
                 {Object.entries(statusConfig).map(([status, config]) => (
@@ -1301,7 +1301,7 @@ function UsRegulatoryPageContent() {
                 return (
                   <div
                     key={req.id}
-                    className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4"
+                    className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -1311,23 +1311,23 @@ function UsRegulatoryPageContent() {
                           >
                             {req.agency}
                           </span>
-                          <span className="text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45 truncate">
+                          <span className="text-micro sm:text-xs text-[var(--text-secondary)] truncate">
                             {req.cfrReference}
                           </span>
                           {req.severity === "critical" && (
-                            <span className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-red-500/20 text-red-400">
+                            <span className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
                               Critical
                             </span>
                           )}
                         </div>
-                        <h4 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
+                        <h4 className="text-sm sm:text-base font-medium text-[var(--text-primary)]">
                           {req.title}
                         </h4>
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-white/70 mt-1 line-clamp-2">
+                        <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">
                           {req.complianceQuestion}
                         </p>
                         {req.penalties && (
-                          <p className="text-micro sm:text-xs text-red-400 mt-1.5 sm:mt-2 line-clamp-1">
+                          <p className="text-micro sm:text-xs text-[var(--accent-danger)] mt-1.5 sm:mt-2 line-clamp-1">
                             {req.penalties.maxFine
                               ? `Up to $${(req.penalties.maxFine / 1000000).toFixed(1)}M fine`
                               : req.penalties.description}
@@ -1354,7 +1354,7 @@ function UsRegulatoryPageContent() {
                               className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
                                 currentStatus === status
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-100 dark:bg-[--glass-bg-elevated]"
+                                  : "text-[var(--text-secondary)] hover:text-[var(--text-tertiary)] hover:bg-[var(--surface-sunken)]"
                               }`}
                               title={config.label}
                             >
@@ -1372,7 +1372,7 @@ function UsRegulatoryPageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg w-full sm:w-auto"
               >
                 <span>Gap Analysis</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1391,27 +1391,27 @@ function UsRegulatoryPageContent() {
             className="space-y-3 sm:space-y-4"
           >
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2.5 sm:p-4">
-                <div className="text-xl sm:text-2xl font-bold text-red-400">
+              <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-lg p-2.5 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold text-[var(--accent-danger)]">
                   {gapAnalysis.filter((g) => g.priority === "high").length}
                 </div>
-                <div className="text-micro sm:text-sm text-slate-600 dark:text-white/45">
+                <div className="text-micro sm:text-sm text-[var(--text-secondary)]">
                   High Priority
                 </div>
               </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 sm:p-4">
-                <div className="text-xl sm:text-2xl font-bold text-amber-400">
+              <div className="bg-[var(--accent-warning-soft)] border border-amber-500/30 rounded-lg p-2.5 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold text-[var(--accent-warning)]">
                   {gapAnalysis.filter((g) => g.priority === "medium").length}
                 </div>
-                <div className="text-micro sm:text-sm text-slate-600 dark:text-white/45">
+                <div className="text-micro sm:text-sm text-[var(--text-secondary)]">
                   Medium
                 </div>
               </div>
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5 sm:p-4">
-                <div className="text-xl sm:text-2xl font-bold text-emerald-400">
+              <div className="bg-[var(--accent-primary-soft)] border border-[var(--accent-success)/30] rounded-lg p-2.5 sm:p-4">
+                <div className="text-xl sm:text-2xl font-bold text-[var(--accent-primary)]">
                   {gapAnalysis.filter((g) => g.priority === "low").length}
                 </div>
-                <div className="text-micro sm:text-sm text-slate-600 dark:text-white/45">
+                <div className="text-micro sm:text-sm text-[var(--text-secondary)]">
                   Low
                 </div>
               </div>
@@ -1421,12 +1421,12 @@ function UsRegulatoryPageContent() {
               {gapAnalysis.slice(0, 20).map((gap, index) => (
                 <div
                   key={gap.requirementId}
-                  className={`bg-white dark:bg-[--glass-bg-surface] border rounded-lg p-3 sm:p-4 ${
+                  className={`bg-[var(--surface-raised)] border rounded-lg p-3 sm:p-4 ${
                     gap.priority === "high"
-                      ? "border-red-500/30"
+                      ? "border-[var(--accent-danger)/30]"
                       : gap.priority === "medium"
                         ? "border-amber-500/30"
-                        : "border-slate-200 dark:border-[--glass-border-subtle]"
+                        : "border-[var(--border-default)]"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -1435,10 +1435,10 @@ function UsRegulatoryPageContent() {
                         <span
                           className={`text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${
                             gap.priority === "high"
-                              ? "bg-red-500/20 text-red-400"
+                              ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                               : gap.priority === "medium"
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-emerald-500/20 text-emerald-400"
+                                ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                                : "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                           }`}
                         >
                           {gap.priority.toUpperCase()}
@@ -1448,20 +1448,20 @@ function UsRegulatoryPageContent() {
                         >
                           {gap.agency}
                         </span>
-                        <span className="text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45 truncate">
+                        <span className="text-micro sm:text-xs text-[var(--text-secondary)] truncate">
                           {gap.cfrReference}
                         </span>
                       </div>
                       <p className="text-sm sm:text-base text-white line-clamp-2">
                         {gap.gap}
                       </p>
-                      <div className="mt-2 p-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg">
-                        <p className="text-xs sm:text-sm text-emerald-400 line-clamp-2">
+                      <div className="mt-2 p-2 bg-[var(--surface-sunken)][0.02] rounded-lg">
+                        <p className="text-xs sm:text-sm text-[var(--accent-primary)] line-clamp-2">
                           {gap.recommendation}
                         </p>
                       </div>
                       {gap.potentialPenalty && (
-                        <p className="text-micro sm:text-xs text-red-400 mt-1.5 sm:mt-2 line-clamp-1">
+                        <p className="text-micro sm:text-xs text-[var(--accent-danger)] mt-1.5 sm:mt-2 line-clamp-1">
                           Penalty: {gap.potentialPenalty}
                         </p>
                       )}
@@ -1470,7 +1470,7 @@ function UsRegulatoryPageContent() {
                           {gap.dependencies.slice(0, 2).map((dep, i) => (
                             <span
                               key={i}
-                              className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 rounded truncate max-w-[140px]"
+                              className="text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 bg-[var(--surface-sunken)] text-[var(--text-secondary)] rounded truncate max-w-[140px]"
                             >
                               {dep}
                             </span>
@@ -1481,10 +1481,10 @@ function UsRegulatoryPageContent() {
                     <span
                       className={`text-micro sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded self-start flex-shrink-0 ${
                         gap.estimatedEffort === "high"
-                          ? "bg-red-500/20 text-red-400"
+                          ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                           : gap.estimatedEffort === "medium"
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-green-500/20 text-green-400"
+                            ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                            : "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                       }`}
                     >
                       {gap.estimatedEffort}
@@ -1497,7 +1497,7 @@ function UsRegulatoryPageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(3)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg w-full sm:w-auto"
               >
                 <span>Report</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1515,8 +1515,8 @@ function UsRegulatoryPageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
           >
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-medium text-slate-900 dark:text-white mb-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-medium text-[var(--text-primary)] mb-4">
                 Compliance Report
               </h2>
 
@@ -1525,23 +1525,23 @@ function UsRegulatoryPageContent() {
                   <div
                     className={`text-2xl sm:text-4xl font-bold ${
                       (score?.overall ?? 0) >= 80
-                        ? "text-green-400"
+                        ? "text-[var(--accent-success)]"
                         : (score?.overall ?? 0) >= 60
-                          ? "text-amber-400"
-                          : "text-red-400"
+                          ? "text-[var(--accent-warning)]"
+                          : "text-[var(--accent-danger)]"
                     }`}
                   >
                     {score?.overall ?? 0}%
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/45">
+                  <div className="text-xs sm:text-sm text-[var(--text-secondary)]">
                     Overall
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl sm:text-4xl font-bold text-emerald-400">
+                  <div className="text-2xl sm:text-4xl font-bold text-[var(--accent-primary)]">
                     {score?.mandatory ?? 0}%
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/45">
+                  <div className="text-xs sm:text-sm text-[var(--text-secondary)]">
                     Mandatory
                   </div>
                 </div>
@@ -1549,19 +1549,19 @@ function UsRegulatoryPageContent() {
                   <div
                     className={`text-2xl sm:text-4xl font-bold ${
                       selectedAssessment.riskLevel === "low"
-                        ? "text-green-400"
+                        ? "text-[var(--accent-success)]"
                         : selectedAssessment.riskLevel === "medium"
-                          ? "text-amber-400"
+                          ? "text-[var(--accent-warning)]"
                           : selectedAssessment.riskLevel === "high"
                             ? "text-orange-400"
-                            : "text-red-400"
+                            : "text-[var(--accent-danger)]"
                     }`}
                   >
                     {(selectedAssessment.riskLevel ?? "N/A")
                       .slice(0, 3)
                       .toUpperCase()}
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-600 dark:text-white/45">
+                  <div className="text-xs sm:text-sm text-[var(--text-secondary)]">
                     Risk
                   </div>
                 </div>
@@ -1575,24 +1575,24 @@ function UsRegulatoryPageContent() {
                   return (
                     <div
                       key={agency}
-                      className="bg-slate-50 dark:bg-white/[0.02] rounded-lg p-3 sm:p-4"
+                      className="bg-[var(--surface-sunken)][0.02] rounded-lg p-3 sm:p-4"
                     >
                       <div className="flex items-center justify-between sm:justify-start sm:gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <config.icon
                             className={`w-4 sm:w-5 h-4 sm:h-5 text-${config.color}-400`}
                           />
-                          <span className="text-sm sm:text-base font-medium text-slate-900 dark:text-white">
+                          <span className="text-sm sm:text-base font-medium text-[var(--text-primary)]">
                             {config.label}
                           </span>
                         </div>
                         <span
                           className={`text-lg sm:text-2xl font-bold sm:hidden ${
                             agencyScore >= 80
-                              ? "text-green-400"
+                              ? "text-[var(--accent-success)]"
                               : agencyScore >= 60
-                                ? "text-amber-400"
-                                : "text-red-400"
+                                ? "text-[var(--accent-warning)]"
+                                : "text-[var(--accent-danger)]"
                           }`}
                         >
                           {agencyScore}%
@@ -1601,22 +1601,22 @@ function UsRegulatoryPageContent() {
                       <div
                         className={`hidden sm:block text-2xl font-bold ${
                           agencyScore >= 80
-                            ? "text-green-400"
+                            ? "text-[var(--accent-success)]"
                             : agencyScore >= 60
-                              ? "text-amber-400"
-                              : "text-red-400"
+                              ? "text-[var(--accent-warning)]"
+                              : "text-[var(--accent-danger)]"
                         }`}
                       >
                         {agencyScore}%
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
+                      <div className="w-full bg-[var(--surface-sunken)] rounded-full h-1.5 sm:h-2 mt-1 sm:mt-2">
                         <div
                           className={`h-full rounded-full ${
                             agencyScore >= 80
-                              ? "bg-green-500"
+                              ? "bg-[var(--accent-success)]"
                               : agencyScore >= 60
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                                ? "bg-[var(--accent-warning)]"
+                                : "bg-[var(--accent-danger)]"
                           }`}
                           style={{ width: `${agencyScore}%` }}
                         />
@@ -1628,7 +1628,7 @@ function UsRegulatoryPageContent() {
 
               {/* Required Licenses Summary */}
               <div className="mb-4 sm:mb-6">
-                <h3 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white mb-2 sm:mb-3">
+                <h3 className="text-sm sm:text-base font-medium text-[var(--text-primary)] mb-2 sm:mb-3">
                   Required Licenses
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -1638,23 +1638,23 @@ function UsRegulatoryPageContent() {
                     return (
                       <div
                         key={license}
-                        className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 dark:bg-white/[0.02] rounded-lg"
+                        className="flex items-center justify-between p-2.5 sm:p-3 bg-[var(--surface-sunken)][0.02] rounded-lg"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white truncate">
+                          <div className="text-xs sm:text-sm font-medium text-[var(--text-primary)] truncate">
                             {config.label}
                           </div>
-                          <div className="text-micro sm:text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                          <div className="text-micro sm:text-xs text-[var(--text-secondary)]">
                             {config.cfrPart}
                           </div>
                         </div>
                         <span
                           className={`text-xs sm:text-sm font-bold ml-2 flex-shrink-0 ${
                             licenseScore >= 80
-                              ? "text-green-400"
+                              ? "text-[var(--accent-success)]"
                               : licenseScore >= 60
-                                ? "text-amber-400"
-                                : "text-red-400"
+                                ? "text-[var(--accent-warning)]"
+                                : "text-[var(--accent-danger)]"
                           }`}
                         >
                           {licenseScore}%
@@ -1670,7 +1670,7 @@ function UsRegulatoryPageContent() {
                 <button
                   onClick={generateReport}
                   disabled={generatingReport}
-                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg transition-colors w-full sm:w-auto"
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:opacity-50 text-white rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {generatingReport ? (
                     <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
@@ -1694,20 +1694,20 @@ function UsRegulatoryPageContent() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3 sm:space-y-4"
             >
-              <h2 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-medium text-[var(--text-primary)]">
                 Your Assessments
               </h2>
               {assessments.map((assessment) => (
                 <button
                   key={assessment.id}
                   onClick={() => selectAssessment(assessment)}
-                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg hover:border-slate-300 dark:border-white/20 transition-colors text-left gap-3"
+                  className="w-full flex items-center justify-between p-3 sm:p-4 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg hover:border-[var(--border-default)] transition-colors text-left gap-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm sm:text-base font-medium text-slate-900 dark:text-white truncate">
+                    <div className="text-sm sm:text-base font-medium text-[var(--text-primary)] truncate">
                       {assessment.assessmentName || "Untitled Assessment"}
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-600 dark:text-white/45 mt-0.5 sm:mt-1 truncate">
+                    <div className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5 sm:mt-1 truncate">
                       {JSON.parse(assessment.agencies).join(", ")}
                     </div>
                   </div>
@@ -1715,15 +1715,15 @@ function UsRegulatoryPageContent() {
                     <div
                       className={`text-base sm:text-lg font-bold ${
                         (assessment.overallComplianceScore ?? 0) >= 80
-                          ? "text-green-400"
+                          ? "text-[var(--accent-success)]"
                           : (assessment.overallComplianceScore ?? 0) >= 60
-                            ? "text-amber-400"
-                            : "text-red-400"
+                            ? "text-[var(--accent-warning)]"
+                            : "text-[var(--accent-danger)]"
                       }`}
                     >
                       {assessment.overallComplianceScore ?? 0}%
                     </div>
-                    <ChevronRight className="w-4 sm:w-5 h-4 sm:h-5 text-slate-400" />
+                    <ChevronRight className="w-4 sm:w-5 h-4 sm:h-5 text-[var(--text-tertiary)]" />
                   </div>
                 </button>
               ))}
@@ -1738,18 +1738,18 @@ function UsRegulatoryPageContent() {
               key="empty"
               initial={false}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 sm:p-8 text-center"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 sm:p-8 text-center"
             >
-              <Globe2 className="w-10 sm:w-12 h-10 sm:h-12 text-slate-500 mx-auto mb-3 sm:mb-4" />
-              <h2 className="text-lg sm:text-xl font-medium text-slate-900 dark:text-white mb-2">
+              <Globe2 className="w-10 sm:w-12 h-10 sm:h-12 text-[var(--text-secondary)] mx-auto mb-3 sm:mb-4" />
+              <h2 className="text-lg sm:text-xl font-medium text-[var(--text-primary)] mb-2">
                 No US Regulatory Assessments
               </h2>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-white/45 mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-4 sm:mb-6">
                 Evaluate FCC, FAA, and NOAA compliance.
               </p>
               <button
                 onClick={() => setShowNewAssessment(true)}
-                className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg"
+                className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg"
               >
                 Create Assessment
               </button>

@@ -420,7 +420,7 @@ function CopuosPageContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)]" />
       </div>
     );
   }
@@ -430,17 +430,17 @@ function CopuosPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-medium text-[var(--text-primary)]">
             COPUOS/IADC Compliance
           </h1>
-          <p className="text-slate-600 dark:text-white/70 mt-1">
+          <p className="text-[var(--text-secondary)] mt-1">
             Assess compliance with international space debris guidelines and
             standards
           </p>
         </div>
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -457,25 +457,25 @@ function CopuosPageContent() {
         ).map(([source, config]) => (
           <div
             key={source}
-            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg bg-${config.color}-500/20`}>
                 <BookOpen className={`w-5 h-5 text-${config.color}-400`} />
               </div>
               <div>
-                <h3 className="font-medium text-slate-900 dark:text-white">
+                <h3 className="font-medium text-[var(--text-primary)]">
                   {config.label}
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-white/45">
+                <p className="text-sm text-[var(--text-secondary)]">
                   {config.description}
                 </p>
               </div>
             </div>
             {score && (
-              <div className="mt-3 pt-3 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+              <div className="mt-3 pt-3 border-t border-[var(--border-default)]">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-white/45">
+                  <span className="text-sm text-[var(--text-secondary)]">
                     Compliance
                   </span>
                   <span
@@ -492,7 +492,7 @@ function CopuosPageContent() {
 
       {/* Progress Steps */}
       {selectedAssessment && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
           <div className="flex items-center justify-between">
             {STEPS.map((step, index) => (
               <button
@@ -500,17 +500,17 @@ function CopuosPageContent() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     activeStep === index
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[var(--accent-primary)] text-white"
                       : activeStep > index
-                        ? "bg-green-500 text-white"
-                        : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400"
+                        ? "bg-[var(--accent-success)] text-white"
+                        : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]"
                   }`}
                 >
                   {activeStep > index ? (
@@ -521,12 +521,12 @@ function CopuosPageContent() {
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{step.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     {step.description}
                   </div>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <ChevronRight className="w-5 h-5 text-slate-600 ml-4" />
+                  <ChevronRight className="w-5 h-5 text-[var(--text-secondary)] ml-4" />
                 )}
               </button>
             ))}
@@ -544,8 +544,8 @@ function CopuosPageContent() {
             exit={{ opacity: 0, y: -20 }}
           >
             {assessments.length > 0 ? (
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
                   Your Assessments
                 </h2>
                 <div className="space-y-3">
@@ -553,19 +553,19 @@ function CopuosPageContent() {
                     <button
                       key={assessment.id}
                       onClick={() => selectAssessment(assessment)}
-                      className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg hover:bg-slate-100 dark:bg-[--glass-bg-elevated] transition-colors"
+                      className="w-full flex items-center justify-between p-4 bg-[var(--surface-sunken)][0.02] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-emerald-500/20">
-                          <Satellite className="w-5 h-5 text-emerald-400" />
+                        <div className="p-2 rounded-lg bg-[var(--accent-success-soft)]">
+                          <Satellite className="w-5 h-5 text-[var(--accent-primary)]" />
                         </div>
                         <div className="text-left">
-                          <div className="font-medium text-slate-900 dark:text-white">
+                          <div className="font-medium text-[var(--text-primary)]">
                             {assessment.missionName ||
                               assessment.assessmentName ||
                               "Untitled"}
                           </div>
-                          <div className="text-sm text-slate-600 dark:text-white/45">
+                          <div className="text-sm text-[var(--text-secondary)]">
                             {
                               orbitRegimeConfig[
                                 assessment.orbitRegime as OrbitRegime
@@ -578,33 +578,33 @@ function CopuosPageContent() {
                       <div className="flex items-center gap-4">
                         {assessment.complianceScore !== null && (
                           <div className="text-right">
-                            <div className="text-lg font-bold text-slate-900 dark:text-white">
+                            <div className="text-lg font-bold text-[var(--text-primary)]">
                               {assessment.complianceScore}%
                             </div>
-                            <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                            <div className="text-xs text-[var(--text-secondary)]">
                               Compliance
                             </div>
                           </div>
                         )}
-                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                        <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)]" />
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
-                <Globe2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12 text-center">
+                <Globe2 className="w-16 h-16 text-[var(--text-secondary)] mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                   No Assessments Yet
                 </h2>
-                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
                   Start your COPUOS/IADC/ISO compliance assessment by defining
                   your mission profile.
                 </p>
                 <button
                   onClick={() => setShowNewAssessment(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Start New Assessment
@@ -620,16 +620,16 @@ function CopuosPageContent() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
               Mission Profile
             </h2>
 
             <div className="grid grid-cols-2 gap-6">
               {/* Mission Name */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Mission Name
                 </label>
                 <input
@@ -637,13 +637,13 @@ function CopuosPageContent() {
                   value={missionName}
                   onChange={(e) => setMissionName(e.target.value)}
                   placeholder="e.g., SatCom-1 Mission"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               {/* Orbit Regime */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Orbit Regime *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -658,8 +658,8 @@ function CopuosPageContent() {
                       onClick={() => setForm({ ...form, orbitRegime: regime })}
                       className={`p-3 rounded-lg border text-left transition-colors ${
                         form.orbitRegime === regime
-                          ? "bg-emerald-500/20 border-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 hover:border-slate-600"
+                          ? "bg-[var(--accent-success-soft)] border-[var(--accent-primary)] text-white"
+                          : "bg-[var(--surface-sunken)][0.02] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                       }`}
                     >
                       <div className="font-medium">{config.label}</div>
@@ -673,7 +673,7 @@ function CopuosPageContent() {
 
               {/* Mission Type */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Mission Type *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -690,8 +690,8 @@ function CopuosPageContent() {
                         onClick={() => setForm({ ...form, missionType: type })}
                         className={`p-3 rounded-lg border flex items-center gap-2 transition-colors ${
                           form.missionType === type
-                            ? "bg-emerald-500/20 border-emerald-500 text-white"
-                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 hover:border-slate-600"
+                            ? "bg-[var(--accent-success-soft)] border-[var(--accent-primary)] text-white"
+                            : "bg-[var(--surface-sunken)][0.02] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -704,7 +704,7 @@ function CopuosPageContent() {
 
               {/* Satellite Mass */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Satellite Mass (kg) *
                 </label>
                 <input
@@ -718,13 +718,13 @@ function CopuosPageContent() {
                   }
                   min={0.1}
                   step={0.1}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               {/* Altitude */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Altitude (km)
                 </label>
                 <input
@@ -737,13 +737,13 @@ function CopuosPageContent() {
                     })
                   }
                   placeholder="e.g., 550"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               {/* Planned Lifetime */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Planned Lifetime (years)
                 </label>
                 <input
@@ -757,13 +757,13 @@ function CopuosPageContent() {
                   }
                   min={1}
                   max={30}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               {/* Capabilities */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Capabilities
                 </label>
                 <div className="flex gap-4">
@@ -774,9 +774,11 @@ function CopuosPageContent() {
                       onChange={(e) =>
                         setForm({ ...form, hasPropulsion: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Has Propulsion</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Has Propulsion
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -788,9 +790,11 @@ function CopuosPageContent() {
                           hasManeuverability: e.target.checked,
                         })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Has Maneuverability</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Has Maneuverability
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -799,9 +803,11 @@ function CopuosPageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isConstellation: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Constellation</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Constellation
+                    </span>
                   </label>
                 </div>
               </div>
@@ -809,7 +815,7 @@ function CopuosPageContent() {
               {/* Constellation Size */}
               {form.isConstellation && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                     Constellation Size
                   </label>
                   <input
@@ -824,7 +830,7 @@ function CopuosPageContent() {
                     }
                     min={2}
                     placeholder="Number of satellites"
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                   />
                 </div>
               )}
@@ -832,23 +838,23 @@ function CopuosPageContent() {
 
             {/* Actions */}
             {createError && (
-              <div className="flex items-center gap-2 px-4 py-3 mt-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+              <div className="flex items-center gap-2 px-4 py-3 mt-6 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                 <AlertTriangle size={14} className="flex-shrink-0" />
                 {createError}
               </div>
             )}
 
-            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-[var(--border-default)]">
               <button
                 onClick={() => setShowNewAssessment(false)}
-                className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={createAssessment}
                 disabled={!form.orbitRegime || !form.missionType || creating}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--text-primary)] disabled:text-[var(--text-secondary)] text-white rounded-lg transition-colors"
               >
                 {creating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -871,37 +877,43 @@ function CopuosPageContent() {
           >
             {/* Summary Cards */}
             <div className="grid grid-cols-5 gap-4">
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--text-primary)]">
                   {stats.total}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-white/45">
+                <div className="text-sm text-[var(--text-secondary)]">
                   Applicable Guidelines
                 </div>
               </div>
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-green-400">
+              <div className="bg-[var(--accent-success)]/10 border border-[var(--accent-success)/30] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-success)]">
                   {stats.compliant}
                 </div>
-                <div className="text-sm text-green-400/70">Compliant</div>
+                <div className="text-sm text-[var(--accent-success)]/70">
+                  Compliant
+                </div>
               </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-amber-400">
+              <div className="bg-[var(--accent-warning-soft)] border border-amber-500/30 rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-warning)]">
                   {stats.partial}
                 </div>
-                <div className="text-sm text-amber-400/70">Partial</div>
+                <div className="text-sm text-[var(--accent-warning)]/70">
+                  Partial
+                </div>
               </div>
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-red-400">
+              <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-danger)]">
                   {stats.nonCompliant}
                 </div>
-                <div className="text-sm text-red-400/70">Non-Compliant</div>
+                <div className="text-sm text-[var(--accent-danger)]/70">
+                  Non-Compliant
+                </div>
               </div>
-              <div className="bg-slate-500/10 border border-slate-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-slate-400">
+              <div className="bg-[var(--surface-sunken)]0/10 border border-[var(--border-default)]/30 rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--text-tertiary)]">
                   {stats.notAssessed}
                 </div>
-                <div className="text-sm text-slate-500 dark:text-white/45">
+                <div className="text-sm text-[var(--text-secondary)]">
                   Not Assessed
                 </div>
               </div>
@@ -910,13 +922,13 @@ function CopuosPageContent() {
             {/* Filters */}
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-400" />
+                <Filter className="w-4 h-4 text-[var(--text-tertiary)]" />
                 <select
                   value={sourceFilter}
                   onChange={(e) =>
                     setSourceFilter(e.target.value as GuidelineSource | "all")
                   }
-                  className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 >
                   <option value="all">All Sources</option>
                   <option value="COPUOS">COPUOS LTS</option>
@@ -929,7 +941,7 @@ function CopuosPageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as ComplianceStatus | "all")
                 }
-                className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
               >
                 <option value="all">All Statuses</option>
                 <option value="compliant">Compliant</option>
@@ -948,7 +960,7 @@ function CopuosPageContent() {
                 return (
                   <div
                     key={guideline.id}
-                    className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+                    className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -958,11 +970,11 @@ function CopuosPageContent() {
                           >
                             {guideline.source}
                           </span>
-                          <span className="text-sm text-slate-600 dark:text-white/45">
+                          <span className="text-sm text-[var(--text-secondary)]">
                             {guideline.referenceNumber}
                           </span>
                           {guideline.bindingLevel === "mandatory" && (
-                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400">
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
                               Mandatory
                             </span>
                           )}
@@ -972,16 +984,16 @@ function CopuosPageContent() {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-medium text-slate-900 dark:text-white mb-1">
+                        <h3 className="font-medium text-[var(--text-primary)] mb-1">
                           {guideline.title}
                         </h3>
-                        <p className="text-sm text-slate-600 dark:text-white/45 mb-3">
+                        <p className="text-sm text-[var(--text-secondary)] mb-3">
                           {guideline.complianceQuestion}
                         </p>
 
                         {guideline.euSpaceActCrossRef &&
                           guideline.euSpaceActCrossRef.length > 0 && (
-                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-white/45">
+                            <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
                               <ExternalLink className="w-3 h-3" />
                               EU Space Act:{" "}
                               {guideline.euSpaceActCrossRef.join(", ")}
@@ -1009,7 +1021,7 @@ function CopuosPageContent() {
                               className={`p-2 rounded-lg transition-colors ${
                                 status === s
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                                  : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                               }`}
                               title={config.label}
                             >
@@ -1028,7 +1040,7 @@ function CopuosPageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
               >
                 Continue to Gap Analysis
                 <ArrowRight className="w-4 h-4" />
@@ -1045,12 +1057,12 @@ function CopuosPageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   Gap Analysis
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/45">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                   <AlertCircle className="w-4 h-4" />
                   {gapAnalysis.length} gaps identified
                 </div>
@@ -1058,11 +1070,11 @@ function CopuosPageContent() {
 
               {gapAnalysis.length === 0 ? (
                 <div className="text-center py-8">
-                  <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                  <p className="text-slate-900 dark:text-white font-medium">
+                  <CheckCircle2 className="w-12 h-12 text-[var(--accent-success)] mx-auto mb-3" />
+                  <p className="text-[var(--text-primary)] font-medium">
                     No gaps identified
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-white/45">
+                  <p className="text-sm text-[var(--text-secondary)]">
                     All assessed guidelines are compliant
                   </p>
                 </div>
@@ -1077,10 +1089,10 @@ function CopuosPageContent() {
                         key={gap.guidelineId}
                         className={`p-4 rounded-lg border ${
                           gap.priority === "high"
-                            ? "bg-red-500/10 border-red-500/30"
+                            ? "bg-[var(--accent-danger)]/10 border-[var(--accent-danger)/30]"
                             : gap.priority === "medium"
-                              ? "bg-amber-500/10 border-amber-500/30"
-                              : "bg-slate-500/10 border-slate-500/30"
+                              ? "bg-[var(--accent-warning-soft)] border-amber-500/30"
+                              : "bg-[var(--surface-sunken)]0/10 border-[var(--border-default)]/30"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-4">
@@ -1089,26 +1101,26 @@ function CopuosPageContent() {
                               <span
                                 className={`px-2 py-0.5 rounded text-xs font-medium ${
                                   gap.priority === "high"
-                                    ? "bg-red-500/20 text-red-400"
+                                    ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                                     : gap.priority === "medium"
-                                      ? "bg-amber-500/20 text-amber-400"
-                                      : "bg-slate-500/20 text-slate-400"
+                                      ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                                      : "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)]"
                                 }`}
                               >
                                 {gap.priority.toUpperCase()} PRIORITY
                               </span>
-                              <span className="text-xs text-slate-500 dark:text-white/45">
+                              <span className="text-xs text-[var(--text-secondary)]">
                                 Effort: {gap.estimatedEffort}
                               </span>
                             </div>
-                            <p className="text-slate-900 dark:text-white font-medium mb-1">
+                            <p className="text-[var(--text-primary)] font-medium mb-1">
                               {gap.gap}
                             </p>
-                            <p className="text-sm text-slate-600 dark:text-white/45">
+                            <p className="text-sm text-[var(--text-secondary)]">
                               {gap.recommendation}
                             </p>
                             {gap.dependencies.length > 0 && (
-                              <div className="mt-2 text-xs text-slate-500 dark:text-white/45">
+                              <div className="mt-2 text-xs text-[var(--text-secondary)]">
                                 Dependencies: {gap.dependencies.join(", ")}
                               </div>
                             )}
@@ -1119,7 +1131,7 @@ function CopuosPageContent() {
                               setStatusFilter("all");
                               setActiveStep(1);
                             }}
-                            className="px-3 py-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-900 dark:text-white text-sm rounded-lg transition-colors"
+                            className="px-3 py-1.5 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] text-[var(--text-primary)] text-sm rounded-lg transition-colors"
                           >
                             Address
                           </button>
@@ -1135,14 +1147,14 @@ function CopuosPageContent() {
             <div className="flex justify-between">
               <button
                 onClick={() => setActiveStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Assessment
               </button>
               <button
                 onClick={() => setActiveStep(3)}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
               >
                 Generate Report
                 <ArrowRight className="w-4 h-4" />
@@ -1159,13 +1171,13 @@ function CopuosPageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
               <div className="text-center py-8">
-                <FileText className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <FileText className="w-16 h-16 text-[var(--accent-primary)] mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                   Compliance Report Ready
                 </h2>
-                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
                   Generate a comprehensive compliance report covering all
                   COPUOS, IADC, and ISO 24113 guidelines.
                 </p>
@@ -1173,18 +1185,18 @@ function CopuosPageContent() {
                 {score && (
                   <div className="flex items-center justify-center gap-8 mb-8">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-slate-900 dark:text-white">
+                      <div className="text-4xl font-bold text-[var(--text-primary)]">
                         {score.overall}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Overall Score
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-amber-400">
+                      <div className="text-4xl font-bold text-[var(--accent-warning)]">
                         {score.mandatory}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Mandatory
                       </div>
                     </div>
@@ -1192,17 +1204,17 @@ function CopuosPageContent() {
                       <div
                         className={`text-4xl font-bold ${
                           selectedAssessment.riskLevel === "low"
-                            ? "text-green-400"
+                            ? "text-[var(--accent-success)]"
                             : selectedAssessment.riskLevel === "medium"
-                              ? "text-amber-400"
+                              ? "text-[var(--accent-warning)]"
                               : selectedAssessment.riskLevel === "high"
                                 ? "text-orange-400"
-                                : "text-red-400"
+                                : "text-[var(--accent-danger)]"
                         }`}
                       >
                         {selectedAssessment.riskLevel?.toUpperCase() || "N/A"}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Risk Level
                       </div>
                     </div>
@@ -1212,7 +1224,7 @@ function CopuosPageContent() {
                 <button
                   onClick={generateReport}
                   disabled={generatingReport}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--text-primary)] text-white rounded-lg transition-colors"
                 >
                   {generatingReport ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -1228,7 +1240,7 @@ function CopuosPageContent() {
             <div className="flex justify-start">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Gap Analysis

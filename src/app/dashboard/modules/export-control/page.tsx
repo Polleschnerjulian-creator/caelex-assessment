@@ -98,30 +98,31 @@ function LegalDisclaimerBanner({
     <motion.div
       initial={false}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      <div className="max-w-2xl w-full bg-red-950/50 border-2 border-red-500 rounded-xl p-6 sm:p-8">
+      <div className="max-w-2xl w-full bg-red-950/50 border-2 border-[var(--accent-danger)] rounded-xl p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-4">
-          <AlertOctagon className="w-8 h-8 text-red-500 flex-shrink-0" />
-          <h2 className="text-xl sm:text-2xl font-medium text-red-400">
+          <AlertOctagon className="w-8 h-8 text-[var(--accent-danger)] flex-shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-medium text-[var(--accent-danger)]">
             IMPORTANT LEGAL DISCLAIMER
           </h2>
         </div>
 
-        <div className="space-y-4 text-sm sm:text-base text-slate-300">
+        <div className="space-y-4 text-sm sm:text-base text-[var(--text-tertiary)]">
           <p>
             This module is for{" "}
-            <strong className="text-slate-900 dark:text-white">
+            <strong className="text-[var(--text-primary)]">
               COMPLIANCE TRACKING AND EDUCATIONAL PURPOSES ONLY
             </strong>
-            . It does <strong className="text-red-400">NOT</strong> constitute
-            legal advice and should{" "}
-            <strong className="text-red-400">NOT</strong> be relied upon for
-            export control compliance decisions.
+            . It does{" "}
+            <strong className="text-[var(--accent-danger)]">NOT</strong>{" "}
+            constitute legal advice and should{" "}
+            <strong className="text-[var(--accent-danger)]">NOT</strong> be
+            relied upon for export control compliance decisions.
           </p>
 
           <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
-            <p className="font-semibold text-red-400 mb-2">
+            <p className="font-semibold text-[var(--accent-danger)] mb-2">
               POTENTIAL PENALTIES FOR VIOLATIONS:
             </p>
             <ul className="list-disc list-inside space-y-1 text-red-300">
@@ -139,15 +140,16 @@ function LegalDisclaimerBanner({
           </div>
 
           <p>
-            <strong className="text-amber-400">ALWAYS</strong> consult with
-            qualified export control counsel and/or the appropriate government
-            agencies (DDTC, BIS) before making any export control decisions.
+            <strong className="text-[var(--accent-warning)]">ALWAYS</strong>{" "}
+            consult with qualified export control counsel and/or the appropriate
+            government agencies (DDTC, BIS) before making any export control
+            decisions.
           </p>
         </div>
 
         <button
           onClick={onAcknowledge}
-          className="mt-6 w-full bg-red-600 hover:bg-red-700 text-slate-900 dark:text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          className="mt-6 w-full bg-red-600 hover:bg-red-700 text-[var(--text-primary)] font-semibold py-3 px-6 rounded-lg transition-colors"
         >
           I Understand and Acknowledge
         </button>
@@ -222,10 +224,10 @@ function WizardStep1({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           Organization Type
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Select all that apply to your organization
         </p>
       </div>
@@ -237,12 +239,12 @@ function WizardStep1({
             onClick={() => toggleType(type.id)}
             className={`p-3 sm:p-4 rounded-lg border text-left transition-all ${
               selected.includes(type.id)
-                ? "bg-emerald-600/20 border-emerald-500 text-white"
-                : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] text-slate-500 dark:text-white/45 hover:border-slate-500"
+                ? "bg-[var(--accent-primary)]/20 border-[var(--accent-primary)] text-white"
+                : "bg-[var(--surface-raised)] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
             }`}
           >
             <div className="font-medium text-sm sm:text-base">{type.label}</div>
-            <div className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <div className="text-xs text-[var(--text-secondary)] mt-1">
               {type.description}
             </div>
           </button>
@@ -262,10 +264,10 @@ function WizardStep2({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           Regulatory Scope
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           What types of items do you handle?
         </p>
       </div>
@@ -275,7 +277,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasITARItems
               ? "bg-red-900/20 border-red-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -287,16 +289,16 @@ function WizardStep2({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
-              <Lock className="w-4 h-4 text-red-500" />
+            <div className="font-medium text-[var(--text-primary)] flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[var(--accent-danger)]" />
               ITAR-Controlled Items
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Defense articles on the U.S. Munitions List (USML), including most
               spacecraft, launch vehicles, and military satellite components
             </p>
             {Boolean(data.hasITARItems) && (
-              <div className="mt-2 text-xs text-red-400 bg-red-900/30 p-2 rounded">
+              <div className="mt-2 text-xs text-[var(--accent-danger)] bg-red-900/30 p-2 rounded">
                 DDTC Registration Required • Max Penalty: $1M + 20 years
               </div>
             )}
@@ -307,7 +309,7 @@ function WizardStep2({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasEARItems
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -319,16 +321,16 @@ function WizardStep2({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
-              <Globe className="w-4 h-4 text-amber-500" />
+            <div className="font-medium text-[var(--text-primary)] flex items-center gap-2">
+              <Globe className="w-4 h-4 text-[var(--accent-warning)]" />
               EAR-Controlled Items
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Commercial items on the Commerce Control List (CCL) or EAR99,
               including commercial satellites and dual-use space technology
             </p>
             {Boolean(data.hasEARItems) && (
-              <div className="mt-2 text-xs text-amber-400 bg-amber-900/30 p-2 rounded">
+              <div className="mt-2 text-xs text-[var(--accent-warning)] bg-amber-900/30 p-2 rounded">
                 BIS License May Be Required • Max Penalty: $300K per violation
               </div>
             )}
@@ -349,10 +351,10 @@ function WizardStep3({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           Risk Factors
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Additional factors that affect compliance requirements
         </p>
       </div>
@@ -362,7 +364,7 @@ function WizardStep3({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasForeignNationals
               ? "bg-amber-900/20 border-amber-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -374,15 +376,15 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="font-medium text-[var(--text-primary)] flex items-center gap-2">
               <Users className="w-4 h-4" />
               Foreign National Employees
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Employs non-U.S. persons who may access controlled technology
             </p>
             {Boolean(data.hasForeignNationals) && (
-              <div className="mt-2 text-xs text-amber-400 bg-amber-900/30 p-2 rounded">
+              <div className="mt-2 text-xs text-[var(--accent-warning)] bg-amber-900/30 p-2 rounded">
                 Deemed Export Rules Apply • Technology Control Plan Required
               </div>
             )}
@@ -392,9 +394,9 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTechnologyTransfer
-              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
-          } ${data.hasTechnologyTransfer && "border-emerald-600"}`}
+              ? "bg-[var(--surface-raised)] border-[var(--border-default)]"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
+          } ${data.hasTechnologyTransfer && "border-[var(--accent-primary)]"}`}
         >
           <input
             type="checkbox"
@@ -405,10 +407,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Technology Transfer Activities
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Shares technical data with foreign persons or entities
             </p>
           </div>
@@ -417,9 +419,9 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasDefenseContracts
-              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
-          } ${data.hasDefenseContracts && "border-emerald-600"}`}
+              ? "bg-[var(--surface-raised)] border-[var(--border-default)]"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
+          } ${data.hasDefenseContracts && "border-[var(--accent-primary)]"}`}
         >
           <input
             type="checkbox"
@@ -430,10 +432,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Defense Contracts
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Works on DoD or other government defense contracts
             </p>
           </div>
@@ -442,9 +444,9 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasManufacturingAbroad
-              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
-          } ${data.hasManufacturingAbroad && "border-emerald-600"}`}
+              ? "bg-[var(--surface-raised)] border-[var(--border-default)]"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
+          } ${data.hasManufacturingAbroad && "border-[var(--accent-primary)]"}`}
         >
           <input
             type="checkbox"
@@ -455,10 +457,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Foreign Manufacturing
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Has manufacturing facilities or co-production outside the U.S.
             </p>
           </div>
@@ -467,9 +469,9 @@ function WizardStep3({
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasJointVentures
-              ? "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
-          } ${data.hasJointVentures && "border-emerald-600"}`}
+              ? "bg-[var(--surface-raised)] border-[var(--border-default)]"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
+          } ${data.hasJointVentures && "border-[var(--accent-primary)]"}`}
         >
           <input
             type="checkbox"
@@ -480,10 +482,10 @@ function WizardStep3({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Joint Ventures with Foreign Partners
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Participates in joint ventures involving foreign persons/entities
             </p>
           </div>
@@ -503,10 +505,10 @@ function WizardStep4({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           Current Compliance Status
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Your existing compliance infrastructure
         </p>
       </div>
@@ -516,7 +518,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.registeredWithDDTC
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -528,10 +530,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Registered with DDTC
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Currently registered with Directorate of Defense Trade Controls
             </p>
           </div>
@@ -541,7 +543,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasTCP
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -551,10 +553,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Technology Control Plan (TCP)
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Has implemented a Technology Control Plan for ITAR data
             </p>
           </div>
@@ -564,7 +566,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasAutomatedScreening
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -576,10 +578,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Automated Restricted Party Screening
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Uses automated screening against SDN, Entity List, DPL
             </p>
           </div>
@@ -589,7 +591,7 @@ function WizardStep4({
           className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
             data.hasECL
               ? "bg-green-900/20 border-green-700"
-              : "bg-white dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-500"
+              : "bg-[var(--surface-raised)] border-[var(--border-default)] hover:border-[var(--border-default)]"
           }`}
         >
           <input
@@ -599,10 +601,10 @@ function WizardStep4({
             className="mt-1"
           />
           <div className="flex-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-[var(--text-primary)]">
               Export Compliance Program
             </div>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Has written export compliance manual and procedures
             </p>
           </div>
@@ -610,7 +612,7 @@ function WizardStep4({
       </div>
 
       <div className="mt-6">
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
           Assessment Name (Optional)
         </label>
         <input
@@ -620,7 +622,7 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Q1 2026 ITAR/EAR Assessment"
-          className="w-full px-4 py-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-white placeholder:text-[var(--text-secondary)] focus:border-[var(--border-focus)] focus:outline-none"
         />
       </div>
     </div>
@@ -644,19 +646,23 @@ function RequirementCard({
   if (!req) return null;
 
   const statusColors: Record<ComplianceStatus, string> = {
-    compliant: "bg-green-500/20 text-green-400 border-green-500/50",
-    partial: "bg-amber-500/20 text-amber-400 border-amber-500/50",
-    non_compliant: "bg-red-500/20 text-red-400 border-red-500/50",
+    compliant:
+      "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]/50",
+    partial:
+      "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)] border-amber-500/50",
+    non_compliant:
+      "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]/50",
     not_assessed:
-      "bg-slate-500/20 text-slate-600 dark:text-white/45 border-slate-500/50",
-    not_applicable: "bg-slate-600/20 text-slate-500 border-slate-600/50",
+      "bg-[var(--surface-sunken)]0/20 text-[var(--text-secondary)] border-[var(--border-default)]/50",
+    not_applicable:
+      "bg-[var(--text-secondary)]/20 text-[var(--text-secondary)] border-[var(--border-default)]/50",
   };
 
   const riskColors: Record<RiskLevel, string> = {
-    critical: "text-red-400",
+    critical: "text-[var(--accent-danger)]",
     high: "text-orange-400",
-    medium: "text-amber-400",
-    low: "text-slate-600 dark:text-white/45",
+    medium: "text-[var(--accent-warning)]",
+    low: "text-[var(--text-secondary)]",
   };
 
   const statusIcons: Record<ComplianceStatus, React.ReactNode> = {
@@ -668,7 +674,7 @@ function RequirementCard({
   };
 
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg overflow-hidden">
+    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg overflow-hidden">
       <div
         className="p-3 sm:p-4 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -688,20 +694,20 @@ function RequirementCard({
               <span
                 className={`text-xs px-2 py-0.5 rounded border ${
                   req.regulation === "ITAR"
-                    ? "bg-red-900/30 text-red-400 border-red-700"
-                    : "bg-amber-900/30 text-amber-400 border-amber-700"
+                    ? "bg-red-900/30 text-[var(--accent-danger)] border-red-700"
+                    : "bg-amber-900/30 text-[var(--accent-warning)] border-amber-700"
                 }`}
               >
                 {req.regulation}
               </span>
-              <span className="text-xs text-slate-500 dark:text-white/45 truncate">
+              <span className="text-xs text-[var(--text-secondary)] truncate">
                 {req.cfrReference}
               </span>
             </div>
-            <h4 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white mt-1 line-clamp-2">
+            <h4 className="text-sm sm:text-base font-medium text-[var(--text-primary)] mt-1 line-clamp-2">
               {req.title}
             </h4>
-            <p className="text-xs text-slate-600 dark:text-white/70 mt-1 line-clamp-2 hidden sm:block">
+            <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2 hidden sm:block">
               {req.description}
             </p>
           </div>
@@ -716,7 +722,7 @@ function RequirementCard({
               </span>
             </span>
             <ChevronRight
-              className={`w-4 h-4 text-slate-600 dark:text-white/45 transition-transform ${expanded ? "rotate-90" : ""}`}
+              className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${expanded ? "rotate-90" : ""}`}
             />
           </div>
         </div>
@@ -730,8 +736,10 @@ function RequirementCard({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 sm:px-4 pb-4 border-t border-slate-200 dark:border-[--glass-border-subtle] pt-4 space-y-4">
-              <p className="text-sm text-slate-300">{req.description}</p>
+            <div className="px-3 sm:px-4 pb-4 border-t border-[var(--border-default)] pt-4 space-y-4">
+              <p className="text-sm text-[var(--text-tertiary)]">
+                {req.description}
+              </p>
 
               <div className="flex flex-wrap gap-2">
                 {(
@@ -751,7 +759,7 @@ function RequirementCard({
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       requirement.status === status
                         ? statusColors[status]
-                        : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-600 dark:text-white/45 hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated]"
+                        : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
                     }`}
                   >
                     {status.replace("_", " ")}
@@ -760,7 +768,7 @@ function RequirementCard({
               </div>
 
               {req.isMandatory && (
-                <div className="text-xs text-red-400 bg-red-900/20 p-2 rounded flex items-center gap-2">
+                <div className="text-xs text-[var(--accent-danger)] bg-red-900/20 p-2 rounded flex items-center gap-2">
                   <AlertTriangle className="w-3 h-3" />
                   Mandatory Requirement
                 </div>
@@ -961,8 +969,8 @@ export default function ExportControlPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
-          <p className="text-slate-600 dark:text-white/45">
+          <RefreshCw className="w-8 h-8 text-[var(--accent-primary)] animate-spin" />
+          <p className="text-[var(--text-secondary)]">
             Loading Export Control Module...
           </p>
         </div>
@@ -975,18 +983,18 @@ export default function ExportControlPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white flex items-center gap-2">
-            <Scale className="w-6 h-6 text-red-500" />
+          <h1 className="text-xl sm:text-2xl font-medium text-[var(--text-primary)] flex items-center gap-2">
+            <Scale className="w-6 h-6 text-[var(--accent-danger)]" />
             ITAR/EAR Export Control
           </h1>
-          <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
             Compliance tracking for export-controlled articles and technology
           </p>
         </div>
 
         <button
           onClick={() => setShowWizard(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -996,9 +1004,9 @@ export default function ExportControlPage() {
       {/* Warning Banner */}
       <div className="bg-red-900/20 border border-red-700 rounded-lg p-3 sm:p-4">
         <div className="flex items-start gap-3">
-          <AlertOctagon className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <AlertOctagon className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="text-red-400 font-medium">
+            <p className="text-[var(--accent-danger)] font-medium">
               This tool is for compliance tracking only - not legal advice
             </p>
             <p className="text-red-300/80 text-xs mt-1">
@@ -1016,21 +1024,21 @@ export default function ExportControlPage() {
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             onClick={() => setShowWizard(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-4 sm:p-6 border-b border-[var(--border-default)]">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   New Export Control Assessment
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
                   Step {wizardStep} of 4
                 </p>
                 <div className="flex gap-1 mt-3">
@@ -1039,8 +1047,8 @@ export default function ExportControlPage() {
                       key={step}
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
-                          ? "bg-emerald-500"
-                          : "bg-slate-100 dark:bg-[--glass-bg-elevated]"
+                          ? "bg-[var(--accent-success-soft)]0"
+                          : "bg-[var(--surface-sunken)]"
                       }`}
                     />
                   ))}
@@ -1062,9 +1070,9 @@ export default function ExportControlPage() {
                 )}
               </div>
 
-              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-[--glass-border-subtle] space-y-3">
+              <div className="p-4 sm:p-6 border-t border-[var(--border-default)] space-y-3">
                 {createError && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                     <AlertTriangle size={14} className="flex-shrink-0" />
                     {createError}
                   </div>
@@ -1078,7 +1086,7 @@ export default function ExportControlPage() {
                         setWizardStep((s) => s - 1);
                       }
                     }}
-                    className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                   >
                     {wizardStep === 1 ? "Cancel" : "Back"}
                   </button>
@@ -1090,7 +1098,7 @@ export default function ExportControlPage() {
                         handleCreateAssessment();
                       }
                     }}
-                    className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg font-medium transition-colors"
                   >
                     {wizardStep < 4 ? "Continue" : "Create Assessment"}
                   </button>
@@ -1103,18 +1111,18 @@ export default function ExportControlPage() {
 
       {/* No Assessments State */}
       {assessments.length === 0 && !showWizard && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
-          <Scale className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
+          <Scale className="w-12 h-12 text-[var(--text-secondary)] mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
             No Export Control Assessments
           </h3>
-          <p className="text-slate-600 dark:text-white/45 text-sm mb-4 max-w-md mx-auto">
+          <p className="text-[var(--text-secondary)] text-sm mb-4 max-w-md mx-auto">
             Create your first ITAR/EAR compliance assessment to track your
             export control requirements.
           </p>
           <button
             onClick={() => setShowWizard(true)}
-            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg font-medium transition-colors"
           >
             Create Assessment
           </button>
@@ -1126,51 +1134,51 @@ export default function ExportControlPage() {
         <>
           {/* Score Overview */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4">
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-[var(--text-secondary)]">
                 Overall Score
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mt-1">
                 {currentAssessment.overallComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-[var(--text-secondary)]">
                 ITAR Score
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-red-400 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-[var(--accent-danger)] mt-1">
                 {currentAssessment.itarComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-[var(--text-secondary)]">
                 EAR Score
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-amber-400 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-[var(--accent-warning)] mt-1">
                 {currentAssessment.earComplianceScore ?? 0}%
               </div>
             </div>
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-[var(--text-secondary)]">
                 Critical Gaps
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-red-500 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-[var(--accent-danger)] mt-1">
                 {currentAssessment.criticalGaps ?? 0}
               </div>
             </div>
-            <div className="col-span-2 sm:col-span-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-3 sm:p-4">
-              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+            <div className="col-span-2 sm:col-span-1 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-3 sm:p-4">
+              <div className="text-xs text-[var(--text-secondary)]">
                 Risk Level
               </div>
               <div
                 className={`text-xl sm:text-2xl font-bold mt-1 capitalize ${
                   currentAssessment.riskLevel === "critical"
-                    ? "text-red-500"
+                    ? "text-[var(--accent-danger)]"
                     : currentAssessment.riskLevel === "high"
                       ? "text-orange-500"
                       : currentAssessment.riskLevel === "medium"
-                        ? "text-amber-500"
-                        : "text-green-500"
+                        ? "text-[var(--accent-warning)]"
+                        : "text-[var(--accent-success)]"
                 }`}
               >
                 {currentAssessment.riskLevel || "Unknown"}
@@ -1182,23 +1190,23 @@ export default function ExportControlPage() {
           {currentAssessment.maxCivilPenalty &&
             currentAssessment.maxCivilPenalty > 0 && (
               <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-3 sm:p-4">
-                <div className="flex items-center gap-2 text-red-400 font-medium text-sm">
+                <div className="flex items-center gap-2 text-[var(--accent-danger)] font-medium text-sm">
                   <Gavel className="w-4 h-4" />
                   Maximum Penalty Exposure
                 </div>
                 <div className="flex flex-wrap gap-4 mt-2 text-sm">
-                  <span className="text-slate-300">
+                  <span className="text-[var(--text-tertiary)]">
                     Civil:{" "}
-                    <span className="text-red-400 font-semibold">
+                    <span className="text-[var(--accent-danger)] font-semibold">
                       $
                       {(currentAssessment.maxCivilPenalty / 1000000).toFixed(1)}
                       M
                     </span>
                   </span>
                   {currentAssessment.maxImprisonment && (
-                    <span className="text-slate-300">
+                    <span className="text-[var(--text-tertiary)]">
                       Criminal:{" "}
-                      <span className="text-red-400 font-semibold">
+                      <span className="text-[var(--accent-danger)] font-semibold">
                         Up to {currentAssessment.maxImprisonment} years
                       </span>
                     </span>
@@ -1208,19 +1216,19 @@ export default function ExportControlPage() {
             )}
 
           {/* Tabs */}
-          <div className="flex overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="flex overflow-x-auto scrollbar-hide border-b border-[var(--border-default)]">
             {(["all", "ITAR", "EAR"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab
-                    ? "border-emerald-500 text-emerald-400"
-                    : "border-transparent text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                    ? "border-[var(--accent-primary)] text-[var(--accent-primary)]"
+                    : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                 }`}
               >
                 {tab === "all" ? "All Requirements" : tab}
-                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-slate-100 dark:bg-[--glass-bg-elevated]">
+                <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-[var(--surface-sunken)]">
                   {tab === "all"
                     ? requirements.length
                     : requirements.filter(
@@ -1248,8 +1256,8 @@ export default function ExportControlPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
-                    ? "bg-emerald-600 text-white"
-                    : "bg-white dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 hover:bg-slate-100 dark:bg-[--glass-bg-elevated]"
+                    ? "bg-[var(--accent-primary)] text-white"
+                    : "bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
                 }`}
               >
                 {status === "all" ? "All" : status.replace("_", " ")}
@@ -1271,9 +1279,9 @@ export default function ExportControlPage() {
           {/* Requirements List */}
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-8 text-center">
-                <Search className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-600 dark:text-white/45">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-8 text-center">
+                <Search className="w-8 h-8 text-[var(--text-secondary)] mx-auto mb-3" />
+                <p className="text-[var(--text-secondary)]">
                   No requirements match your filters
                 </p>
               </div>
@@ -1291,14 +1299,14 @@ export default function ExportControlPage() {
           </div>
 
           {/* Report Generation */}
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-medium text-[var(--text-primary)] flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Compliance Report
                 </h3>
-                <p className="text-xs text-slate-600 dark:text-white/70 mt-1">
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
                   Generate a comprehensive export control compliance report
                 </p>
               </div>
@@ -1309,7 +1317,7 @@ export default function ExportControlPage() {
                     "_blank",
                   )
                 }
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-white rounded-lg text-sm transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] text-white rounded-lg text-sm transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Generate Report
@@ -1318,8 +1326,8 @@ export default function ExportControlPage() {
           </div>
 
           {/* Resources */}
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4">
-            <h3 className="font-medium text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg p-4">
+            <h3 className="font-medium text-[var(--text-primary)] flex items-center gap-2 mb-4">
               <BookOpen className="w-4 h-4" />
               Regulatory Resources
             </h3>
@@ -1328,31 +1336,31 @@ export default function ExportControlPage() {
                 href="https://www.pmddtc.state.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
-                <Lock className="w-5 h-5 text-red-400" />
+                <Lock className="w-5 h-5 text-[var(--accent-danger)]" />
                 <div>
                   <div className="text-sm text-white">DDTC (ITAR)</div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     State Department
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-600 dark:text-white/45 ml-auto" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-secondary)] ml-auto" />
               </a>
               <a
                 href="https://www.bis.doc.gov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] rounded-lg transition-colors"
+                className="flex items-center gap-3 p-3 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
-                <Globe className="w-5 h-5 text-amber-400" />
+                <Globe className="w-5 h-5 text-[var(--accent-warning)]" />
                 <div>
                   <div className="text-sm text-white">BIS (EAR)</div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Commerce Department
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-600 dark:text-white/45 ml-auto" />
+                <ExternalLink className="w-4 h-4 text-[var(--text-secondary)] ml-auto" />
               </a>
             </div>
           </div>

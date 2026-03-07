@@ -467,7 +467,7 @@ function UkSpacePageContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)]" />
       </div>
     );
   }
@@ -477,17 +477,17 @@ function UkSpacePageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-medium text-[var(--text-primary)]">
             UK Space Industry Act Compliance
           </h1>
-          <p className="text-slate-600 dark:text-white/70 mt-1">
+          <p className="text-[var(--text-secondary)] mt-1">
             Assess compliance with UK Space Industry Act 2018 and Space Industry
             Regulations 2021
           </p>
         </div>
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -496,8 +496,8 @@ function UkSpacePageContent() {
 
       {/* Required Licenses Overview */}
       {selectedAssessment && requiredLicenses.length > 0 && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-          <h3 className="font-medium text-slate-900 dark:text-white mb-3">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+          <h3 className="font-medium text-[var(--text-primary)] mb-3">
             Required CAA Licenses
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -507,14 +507,14 @@ function UkSpacePageContent() {
               return (
                 <div
                   key={license}
-                  className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-white/[0.02] rounded-lg"
+                  className="flex items-center gap-2 px-3 py-2 bg-[var(--surface-sunken)][0.02] rounded-lg"
                 >
-                  <FileCheck className="w-4 h-4 text-emerald-400" />
+                  <FileCheck className="w-4 h-4 text-[var(--accent-primary)]" />
                   <div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
+                    <div className="text-sm font-medium text-[var(--text-primary)]">
                       {config.label}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                    <div className="text-xs text-[var(--text-secondary)]">
                       {config.section}
                     </div>
                   </div>
@@ -522,10 +522,10 @@ function UkSpacePageContent() {
                     <span
                       className={`ml-2 text-sm font-medium ${
                         licenseScore >= 80
-                          ? "text-green-400"
+                          ? "text-[var(--accent-success)]"
                           : licenseScore >= 60
-                            ? "text-amber-400"
-                            : "text-red-400"
+                            ? "text-[var(--accent-warning)]"
+                            : "text-[var(--accent-danger)]"
                       }`}
                     >
                       {licenseScore}%
@@ -553,17 +553,17 @@ function UkSpacePageContent() {
             return (
               <div
                 key={category}
-                className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-${config.color}-500/20`}>
                     <Icon className={`w-5 h-5 text-${config.color}-400`} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-slate-900 dark:text-white">
+                    <h3 className="font-medium text-[var(--text-primary)]">
                       {config.label}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-white/45">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       {score.byCategory[category] ?? 0}% compliant
                     </p>
                   </div>
@@ -576,7 +576,7 @@ function UkSpacePageContent() {
 
       {/* Progress Steps */}
       {selectedAssessment && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
           <div className="flex items-center justify-between">
             {STEPS.map((step, index) => (
               <button
@@ -584,17 +584,17 @@ function UkSpacePageContent() {
                 onClick={() => setActiveStep(index)}
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                   activeStep === index
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     activeStep === index
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[var(--accent-primary)] text-white"
                       : activeStep > index
-                        ? "bg-green-500 text-white"
-                        : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400"
+                        ? "bg-[var(--accent-success)] text-white"
+                        : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]"
                   }`}
                 >
                   {activeStep > index ? (
@@ -605,12 +605,12 @@ function UkSpacePageContent() {
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{step.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     {step.description}
                   </div>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <ChevronRight className="w-5 h-5 text-slate-600 ml-4" />
+                  <ChevronRight className="w-5 h-5 text-[var(--text-secondary)] ml-4" />
                 )}
               </button>
             ))}
@@ -628,8 +628,8 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
           >
             {assessments.length > 0 ? (
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
                   Your Assessments
                 </h2>
                 <div className="space-y-3">
@@ -642,19 +642,19 @@ function UkSpacePageContent() {
                       <button
                         key={assessment.id}
                         onClick={() => selectAssessment(assessment)}
-                        className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-lg hover:bg-slate-100 dark:bg-[--glass-bg-elevated] transition-colors"
+                        className="w-full flex items-center justify-between p-4 bg-[var(--surface-sunken)][0.02] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 rounded-lg bg-emerald-500/20">
-                            <Icon className="w-5 h-5 text-emerald-400" />
+                          <div className="p-2 rounded-lg bg-[var(--accent-success-soft)]">
+                            <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
                           </div>
                           <div className="text-left">
-                            <div className="font-medium text-slate-900 dark:text-white">
+                            <div className="font-medium text-[var(--text-primary)]">
                               {assessment.assessmentName ||
                                 assessment.spacecraftName ||
                                 "Untitled"}
                             </div>
-                            <div className="text-sm text-slate-600 dark:text-white/45">
+                            <div className="text-sm text-[var(--text-secondary)]">
                               {
                                 operatorTypeConfig[
                                   assessment.operatorType as UkOperatorType
@@ -666,15 +666,15 @@ function UkSpacePageContent() {
                         <div className="flex items-center gap-4">
                           {assessment.complianceScore !== null && (
                             <div className="text-right">
-                              <div className="text-lg font-bold text-slate-900 dark:text-white">
+                              <div className="text-lg font-bold text-[var(--text-primary)]">
                                 {assessment.complianceScore}%
                               </div>
-                              <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                              <div className="text-xs text-[var(--text-secondary)]">
                                 Compliance
                               </div>
                             </div>
                           )}
-                          <ChevronRight className="w-5 h-5 text-slate-400" />
+                          <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)]" />
                         </div>
                       </button>
                     );
@@ -682,18 +682,18 @@ function UkSpacePageContent() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
-                <Globe2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12 text-center">
+                <Globe2 className="w-16 h-16 text-[var(--text-secondary)] mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                   No Assessments Yet
                 </h2>
-                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
                   Start your UK Space Industry Act compliance assessment by
                   defining your operator profile.
                 </p>
                 <button
                   onClick={() => setShowNewAssessment(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Start New Assessment
@@ -709,16 +709,16 @@ function UkSpacePageContent() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
           >
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
               Operator Profile
             </h2>
 
             <div className="grid grid-cols-2 gap-6">
               {/* Assessment Name */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Assessment Name
                 </label>
                 <input
@@ -726,13 +726,13 @@ function UkSpacePageContent() {
                   value={assessmentName}
                   onChange={(e) => setAssessmentName(e.target.value)}
                   placeholder="e.g., SatCom-1 Launch Assessment"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               {/* Operator Type */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Operator Type *
                 </label>
                 <div className="grid grid-cols-5 gap-2">
@@ -749,8 +749,8 @@ function UkSpacePageContent() {
                         onClick={() => setForm({ ...form, operatorType: type })}
                         className={`p-3 rounded-lg border text-center transition-colors ${
                           form.operatorType === type
-                            ? "bg-emerald-500/20 border-emerald-500 text-white"
-                            : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 hover:border-slate-600"
+                            ? "bg-[var(--accent-success-soft)] border-[var(--accent-primary)] text-white"
+                            : "bg-[var(--surface-sunken)][0.02] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                         }`}
                       >
                         <Icon className="w-6 h-6 mx-auto mb-2" />
@@ -765,7 +765,7 @@ function UkSpacePageContent() {
 
               {/* Activity Types */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Activity Types *
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -780,8 +780,8 @@ function UkSpacePageContent() {
                       onClick={() => toggleActivityType(activity)}
                       className={`px-4 py-2 rounded-lg border transition-colors ${
                         form.activityTypes.includes(activity)
-                          ? "bg-emerald-500/20 border-emerald-500 text-white"
-                          : "bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/45 hover:border-slate-600"
+                          ? "bg-[var(--accent-success-soft)] border-[var(--accent-primary)] text-white"
+                          : "bg-[var(--surface-sunken)][0.02] border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                       }`}
                     >
                       {config.label}
@@ -792,7 +792,7 @@ function UkSpacePageContent() {
 
               {/* Activity Characteristics */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Activity Characteristics
                 </label>
                 <div className="flex flex-wrap gap-4">
@@ -803,9 +803,11 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchFromUk: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Launch from UK</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Launch from UK
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -814,9 +816,11 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, launchToOrbit: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Orbital Mission</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Orbital Mission
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -825,9 +829,11 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isSuborbital: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Suborbital</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Suborbital
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -836,9 +842,11 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, involvesPeople: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Human Spaceflight</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Human Spaceflight
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -847,16 +855,18 @@ function UkSpacePageContent() {
                       onChange={(e) =>
                         setForm({ ...form, isCommercial: e.target.checked })
                       }
-                      className="w-4 h-4 rounded border-slate-200 dark:border-[--glass-border-subtle] bg-slate-50 dark:bg-white/[0.02] text-emerald-500 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)][0.02] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]"
                     />
-                    <span className="text-slate-300">Commercial Activity</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      Commercial Activity
+                    </span>
                   </label>
                 </div>
               </div>
 
               {/* Spacecraft Details (optional) */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Spacecraft Name
                 </label>
                 <input
@@ -866,12 +876,12 @@ function UkSpacePageContent() {
                     setForm({ ...form, spacecraftName: e.target.value })
                   }
                   placeholder="e.g., SatCom-1"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Spacecraft Mass (kg)
                 </label>
                 <input
@@ -884,12 +894,12 @@ function UkSpacePageContent() {
                     })
                   }
                   placeholder="e.g., 500"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Planned Launch Site
                 </label>
                 <input
@@ -899,12 +909,12 @@ function UkSpacePageContent() {
                     setForm({ ...form, plannedLaunchSite: e.target.value })
                   }
                   placeholder="e.g., SaxaVord Spaceport"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
                   Target Orbit
                 </label>
                 <input
@@ -914,15 +924,15 @@ function UkSpacePageContent() {
                     setForm({ ...form, targetOrbit: e.target.value })
                   }
                   placeholder="e.g., LEO 550km SSO"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2 bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 />
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="flex flex-col gap-3 mt-6 pt-6 border-t border-[var(--border-default)]">
               {createError && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                   <AlertTriangle size={14} className="flex-shrink-0" />
                   {createError}
                 </div>
@@ -930,7 +940,7 @@ function UkSpacePageContent() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowNewAssessment(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                 >
                   Cancel
                 </button>
@@ -941,7 +951,7 @@ function UkSpacePageContent() {
                     form.activityTypes.length === 0 ||
                     creating
                   }
-                  className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--text-primary)] disabled:text-[var(--text-secondary)] text-white rounded-lg transition-colors"
                 >
                   {creating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -965,37 +975,43 @@ function UkSpacePageContent() {
           >
             {/* Summary Cards */}
             <div className="grid grid-cols-5 gap-4">
-              <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--text-primary)]">
                   {stats.total}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-white/45">
+                <div className="text-sm text-[var(--text-secondary)]">
                   Applicable Requirements
                 </div>
               </div>
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-green-400">
+              <div className="bg-[var(--accent-success)]/10 border border-[var(--accent-success)/30] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-success)]">
                   {stats.compliant}
                 </div>
-                <div className="text-sm text-green-400/70">Compliant</div>
+                <div className="text-sm text-[var(--accent-success)]/70">
+                  Compliant
+                </div>
               </div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-amber-400">
+              <div className="bg-[var(--accent-warning-soft)] border border-amber-500/30 rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-warning)]">
                   {stats.partial}
                 </div>
-                <div className="text-sm text-amber-400/70">Partial</div>
+                <div className="text-sm text-[var(--accent-warning)]/70">
+                  Partial
+                </div>
               </div>
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-red-400">
+              <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--accent-danger)]">
                   {stats.nonCompliant}
                 </div>
-                <div className="text-sm text-red-400/70">Non-Compliant</div>
+                <div className="text-sm text-[var(--accent-danger)]/70">
+                  Non-Compliant
+                </div>
               </div>
-              <div className="bg-slate-500/10 border border-slate-500/30 rounded-xl p-4">
-                <div className="text-2xl font-bold text-slate-400">
+              <div className="bg-[var(--surface-sunken)]0/10 border border-[var(--border-default)]/30 rounded-xl p-4">
+                <div className="text-2xl font-bold text-[var(--text-tertiary)]">
                   {stats.notAssessed}
                 </div>
-                <div className="text-sm text-slate-500 dark:text-white/45">
+                <div className="text-sm text-[var(--text-secondary)]">
                   Not Assessed
                 </div>
               </div>
@@ -1004,7 +1020,7 @@ function UkSpacePageContent() {
             {/* Filters */}
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-400" />
+                <Filter className="w-4 h-4 text-[var(--text-tertiary)]" />
                 <select
                   value={categoryFilter}
                   onChange={(e) =>
@@ -1012,7 +1028,7 @@ function UkSpacePageContent() {
                       e.target.value as UkRequirementCategory | "all",
                     )
                   }
-                  className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
                 >
                   <option value="all">All Categories</option>
                   {(
@@ -1032,7 +1048,7 @@ function UkSpacePageContent() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UkComplianceStatus | "all")
                 }
-                className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
               >
                 <option value="all">All Statuses</option>
                 <option value="compliant">Compliant</option>
@@ -1052,7 +1068,7 @@ function UkSpacePageContent() {
                 return (
                   <div
                     key={requirement.id}
-                    className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+                    className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -1062,11 +1078,11 @@ function UkSpacePageContent() {
                           >
                             {catConfig.label}
                           </span>
-                          <span className="text-sm text-slate-600 dark:text-white/45">
+                          <span className="text-sm text-[var(--text-secondary)]">
                             {requirement.sectionRef}
                           </span>
                           {requirement.bindingLevel === "mandatory" && (
-                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400">
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]">
                               Mandatory
                             </span>
                           )}
@@ -1076,14 +1092,14 @@ function UkSpacePageContent() {
                             </span>
                           )}
                         </div>
-                        <h3 className="font-medium text-slate-900 dark:text-white mb-1">
+                        <h3 className="font-medium text-[var(--text-primary)] mb-1">
                           {requirement.title}
                         </h3>
-                        <p className="text-sm text-slate-600 dark:text-white/45 mb-3">
+                        <p className="text-sm text-[var(--text-secondary)] mb-3">
                           {requirement.complianceQuestion}
                         </p>
 
-                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/45">
+                        <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
                           {requirement.caaGuidanceRef && (
                             <span className="flex items-center gap-1">
                               <FileText className="w-3 h-3" />
@@ -1121,7 +1137,7 @@ function UkSpacePageContent() {
                               className={`p-2 rounded-lg transition-colors ${
                                 status === s
                                   ? `bg-${config.color}-500/20 text-${config.color}-400`
-                                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                                  : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                               }`}
                               title={config.label}
                             >
@@ -1140,7 +1156,7 @@ function UkSpacePageContent() {
             <div className="flex justify-end">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
               >
                 Continue to Gap Analysis
                 <ArrowRight className="w-4 h-4" />
@@ -1157,12 +1173,12 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   Gap Analysis
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-white/45">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                   <AlertCircle className="w-4 h-4" />
                   {gapAnalysis.length} gaps identified
                 </div>
@@ -1170,11 +1186,11 @@ function UkSpacePageContent() {
 
               {gapAnalysis.length === 0 ? (
                 <div className="text-center py-8">
-                  <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                  <p className="text-slate-900 dark:text-white font-medium">
+                  <CheckCircle2 className="w-12 h-12 text-[var(--accent-success)] mx-auto mb-3" />
+                  <p className="text-[var(--text-primary)] font-medium">
                     No gaps identified
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-white/45">
+                  <p className="text-sm text-[var(--text-secondary)]">
                     All assessed requirements are compliant
                   </p>
                 </div>
@@ -1185,10 +1201,10 @@ function UkSpacePageContent() {
                       key={gap.requirementId}
                       className={`p-4 rounded-lg border ${
                         gap.priority === "high"
-                          ? "bg-red-500/10 border-red-500/30"
+                          ? "bg-[var(--accent-danger)]/10 border-[var(--accent-danger)/30]"
                           : gap.priority === "medium"
-                            ? "bg-amber-500/10 border-amber-500/30"
-                            : "bg-slate-500/10 border-slate-500/30"
+                            ? "bg-[var(--accent-warning-soft)] border-amber-500/30"
+                            : "bg-[var(--surface-sunken)]0/10 border-[var(--border-default)]/30"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -1197,31 +1213,31 @@ function UkSpacePageContent() {
                             <span
                               className={`px-2 py-0.5 rounded text-xs font-medium ${
                                 gap.priority === "high"
-                                  ? "bg-red-500/20 text-red-400"
+                                  ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                                   : gap.priority === "medium"
-                                    ? "bg-amber-500/20 text-amber-400"
-                                    : "bg-slate-500/20 text-slate-400"
+                                    ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                                    : "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)]"
                               }`}
                             >
                               {gap.priority.toUpperCase()} PRIORITY
                             </span>
-                            <span className="text-xs text-slate-500 dark:text-white/45">
+                            <span className="text-xs text-[var(--text-secondary)]">
                               Effort: {gap.estimatedEffort}
                             </span>
                             {gap.caaGuidanceRef && (
-                              <span className="text-xs text-slate-500 dark:text-white/45">
+                              <span className="text-xs text-[var(--text-secondary)]">
                                 {gap.caaGuidanceRef}
                               </span>
                             )}
                           </div>
-                          <p className="text-slate-900 dark:text-white font-medium mb-1">
+                          <p className="text-[var(--text-primary)] font-medium mb-1">
                             {gap.gap}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/45">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             {gap.recommendation}
                           </p>
                           {gap.dependencies.length > 0 && (
-                            <div className="mt-2 text-xs text-slate-500 dark:text-white/45">
+                            <div className="mt-2 text-xs text-[var(--text-secondary)]">
                               Dependencies: {gap.dependencies.join(", ")}
                             </div>
                           )}
@@ -1232,7 +1248,7 @@ function UkSpacePageContent() {
                             setStatusFilter("all");
                             setActiveStep(1);
                           }}
-                          className="px-3 py-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-900 dark:text-white text-sm rounded-lg transition-colors"
+                          className="px-3 py-1.5 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] text-[var(--text-primary)] text-sm rounded-lg transition-colors"
                         >
                           Address
                         </button>
@@ -1247,14 +1263,14 @@ function UkSpacePageContent() {
             <div className="flex justify-between">
               <button
                 onClick={() => setActiveStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Assessment
               </button>
               <button
                 onClick={() => setActiveStep(3)}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
               >
                 Generate Report
                 <ArrowRight className="w-4 h-4" />
@@ -1271,13 +1287,13 @@ function UkSpacePageContent() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
               <div className="text-center py-8">
-                <FileText className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <FileText className="w-16 h-16 text-[var(--accent-primary)] mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                   Compliance Report Ready
                 </h2>
-                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
                   Generate a comprehensive compliance report covering UK Space
                   Industry Act 2018 and Space Industry Regulations 2021.
                 </p>
@@ -1285,18 +1301,18 @@ function UkSpacePageContent() {
                 {score && (
                   <div className="flex items-center justify-center gap-8 mb-8">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-slate-900 dark:text-white">
+                      <div className="text-4xl font-bold text-[var(--text-primary)]">
                         {score.overall}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Overall Score
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-amber-400">
+                      <div className="text-4xl font-bold text-[var(--accent-warning)]">
                         {score.mandatory}%
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Mandatory
                       </div>
                     </div>
@@ -1304,17 +1320,17 @@ function UkSpacePageContent() {
                       <div
                         className={`text-4xl font-bold ${
                           selectedAssessment.riskLevel === "low"
-                            ? "text-green-400"
+                            ? "text-[var(--accent-success)]"
                             : selectedAssessment.riskLevel === "medium"
-                              ? "text-amber-400"
+                              ? "text-[var(--accent-warning)]"
                               : selectedAssessment.riskLevel === "high"
                                 ? "text-orange-400"
-                                : "text-red-400"
+                                : "text-[var(--accent-danger)]"
                         }`}
                       >
                         {selectedAssessment.riskLevel?.toUpperCase() || "N/A"}
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-white/45">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         Risk Level
                       </div>
                     </div>
@@ -1324,17 +1340,17 @@ function UkSpacePageContent() {
                 {/* Required Licenses Summary */}
                 {requiredLicenses.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
+                    <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
                       Required CAA Licenses
                     </h3>
                     <div className="flex justify-center gap-4">
                       {requiredLicenses.map((license) => (
                         <div
                           key={license}
-                          className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-lg"
+                          className="flex items-center gap-2 px-3 py-2 bg-[var(--surface-sunken)] rounded-lg"
                         >
-                          <FileCheck className="w-4 h-4 text-emerald-400" />
-                          <span className="text-slate-900 dark:text-white text-sm">
+                          <FileCheck className="w-4 h-4 text-[var(--accent-primary)]" />
+                          <span className="text-[var(--text-primary)] text-sm">
                             {licenseTypeConfig[license].label}
                           </span>
                         </div>
@@ -1346,7 +1362,7 @@ function UkSpacePageContent() {
                 <button
                   onClick={generateReport}
                   disabled={generatingReport}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--text-primary)] text-white rounded-lg transition-colors"
                 >
                   {generatingReport ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -1362,7 +1378,7 @@ function UkSpacePageContent() {
             <div className="flex justify-start">
               <button
                 onClick={() => setActiveStep(2)}
-                className="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Back to Gap Analysis

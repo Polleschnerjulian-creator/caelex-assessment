@@ -139,43 +139,43 @@ const getFilingPhaseLabel = (phase: FilingPhase): string => {
 const getStatusIcon = (status: ComplianceStatus) => {
   switch (status) {
     case "compliant":
-      return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+      return <CheckCircle2 className="w-4 h-4 text-[var(--accent-success)]" />;
     case "partial":
-      return <Clock className="w-4 h-4 text-amber-500" />;
+      return <Clock className="w-4 h-4 text-[var(--accent-warning)]" />;
     case "non_compliant":
-      return <XCircle className="w-4 h-4 text-red-500" />;
+      return <XCircle className="w-4 h-4 text-[var(--accent-danger)]" />;
     case "not_applicable":
-      return <CircleDot className="w-4 h-4 text-slate-500" />;
+      return <CircleDot className="w-4 h-4 text-[var(--text-secondary)]" />;
     default:
-      return <Clock className="w-4 h-4 text-slate-400" />;
+      return <Clock className="w-4 h-4 text-[var(--text-tertiary)]" />;
   }
 };
 
 const getStatusColor = (status: ComplianceStatus): string => {
   switch (status) {
     case "compliant":
-      return "bg-green-500/10 text-green-400 border-green-500/30";
+      return "bg-[var(--accent-success)]/10 text-[var(--accent-success)] border-[var(--accent-success)/30]";
     case "partial":
-      return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+      return "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-amber-500/30";
     case "non_compliant":
-      return "bg-red-500/10 text-red-400 border-red-500/30";
+      return "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] border-[var(--accent-danger)/30]";
     case "not_applicable":
-      return "bg-slate-500/10 text-slate-600 dark:text-white/45 border-slate-500/30";
+      return "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)] border-[var(--border-default)]/30";
     default:
-      return "bg-slate-500/10 text-slate-600 dark:text-white/45 border-slate-500/30";
+      return "bg-[var(--surface-sunken)]0/10 text-[var(--text-secondary)] border-[var(--border-default)]/30";
   }
 };
 
 const getRiskColor = (risk: RiskLevel): string => {
   switch (risk) {
     case "critical":
-      return "text-red-400";
+      return "text-[var(--accent-danger)]";
     case "high":
-      return "text-amber-400";
+      return "text-[var(--accent-warning)]";
     case "medium":
       return "text-yellow-400";
     default:
-      return "text-green-400";
+      return "text-[var(--accent-success)]";
   }
 };
 
@@ -232,10 +232,10 @@ function WizardStep1({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
           Select Service Types
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Which radiocommunication services will your network provide?
         </p>
       </div>
@@ -252,16 +252,16 @@ function WizardStep1({
             }}
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(st.id)
-                ? "border-emerald-500 bg-emerald-500/10"
-                : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
+                ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
+                : "border-[var(--border-default)] bg-[var(--surface-sunken)]0 hover:border-[var(--border-default)]"
             }`}
           >
             <div className="flex items-center gap-3">
               <div
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                   selected.includes(st.id)
-                    ? "border-emerald-500 bg-emerald-500"
-                    : "border-slate-500"
+                    ? "border-[var(--accent-primary)] bg-[var(--accent-success-soft)]0"
+                    : "border-[var(--border-default)]"
                 }`}
               >
                 {selected.includes(st.id) && (
@@ -269,10 +269,10 @@ function WizardStep1({
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                <p className="text-sm font-medium text-[var(--text-primary)]">
                   {st.label}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                <p className="text-xs text-[var(--text-secondary)]">
                   {st.description}
                 </p>
               </div>
@@ -321,10 +321,10 @@ function WizardStep2({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
           Select Frequency Bands
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Which frequency bands will your network use?
         </p>
       </div>
@@ -341,8 +341,8 @@ function WizardStep2({
             }}
             className={`p-3 rounded-lg border text-left transition-all ${
               selected.includes(fb.id)
-                ? "border-emerald-500 bg-emerald-500/10"
-                : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
+                ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
+                : "border-[var(--border-default)] bg-[var(--surface-sunken)]0 hover:border-[var(--border-default)]"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -350,8 +350,8 @@ function WizardStep2({
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                     selected.includes(fb.id)
-                      ? "border-emerald-500 bg-emerald-500"
-                      : "border-slate-500"
+                      ? "border-[var(--accent-primary)] bg-[var(--accent-success-soft)]0"
+                      : "border-[var(--border-default)]"
                   }`}
                 >
                   {selected.includes(fb.id) && (
@@ -359,15 +359,15 @@ function WizardStep2({
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     {fb.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     {fb.usage}
                   </p>
                 </div>
               </div>
-              <span className="text-xs text-slate-500 dark:text-white/45">
+              <span className="text-xs text-[var(--text-secondary)]">
                 {fb.range}
               </span>
             </div>
@@ -376,9 +376,9 @@ function WizardStep2({
       </div>
 
       {selected.includes("Ka") && (
-        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+        <div className="p-3 bg-[var(--accent-warning-soft)] border border-amber-500/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-4 h-4 text-[var(--accent-warning)] flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-300">
               Ka-band for NGSO requires EPFD coordination with GSO systems per
               ITU RR Article 22.
@@ -423,10 +423,10 @@ function WizardStep3({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
           Orbit & Network Details
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Define your satellite network characteristics.
         </p>
       </div>
@@ -434,7 +434,7 @@ function WizardStep3({
       <div className="space-y-4">
         {/* Orbit Type */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
             Orbit Type
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -444,14 +444,14 @@ function WizardStep3({
                 onClick={() => onChange({ ...data, orbitType: orbit.id })}
                 className={`p-3 rounded-lg border text-left transition-all ${
                   data.orbitType === orbit.id
-                    ? "border-emerald-500 bg-emerald-500/10"
-                    : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
+                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
+                    : "border-[var(--border-default)] bg-[var(--surface-sunken)]0 hover:border-[var(--border-default)]"
                 }`}
               >
-                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                <p className="text-sm font-medium text-[var(--text-primary)]">
                   {orbit.label}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                <p className="text-xs text-[var(--text-secondary)]">
                   {orbit.description}
                 </p>
               </button>
@@ -461,7 +461,7 @@ function WizardStep3({
 
         {/* Satellite Count */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
             Number of Satellites
           </label>
           <input
@@ -474,13 +474,13 @@ function WizardStep3({
                 satelliteCount: parseInt(e.target.value) || 1,
               })
             }
-            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[var(--border-focus)]"
           />
         </div>
 
         {/* Network Name */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
             Network Name (Optional)
           </label>
           <input
@@ -488,13 +488,13 @@ function WizardStep3({
             value={(data.networkName as string) || ""}
             onChange={(e) => onChange({ ...data, networkName: e.target.value })}
             placeholder="e.g., STARLINK, ONEWEB"
-            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[var(--border-focus)]"
           />
         </div>
 
         {/* Administration Code */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
             Notifying Administration
           </label>
           <select
@@ -502,7 +502,7 @@ function WizardStep3({
             onChange={(e) =>
               onChange({ ...data, administrationCode: e.target.value })
             }
-            className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[var(--border-focus)]"
           >
             <option value="">Select administration...</option>
             <option value="F">France (F)</option>
@@ -520,10 +520,10 @@ function WizardStep3({
       {/* NGSO Constellation Warning */}
       {(data.orbitType === "LEO" || data.orbitType === "MEO") &&
         Number(data.satelliteCount) > 10 && (
-          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <div className="p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-success)/30] rounded-lg">
             <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-emerald-300">
+              <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-[var(--accent-primary)]">
                 <p className="font-medium">NGSO Constellation Detected</p>
                 <p className="mt-1">
                   Milestone requirements apply: 10% deployment within 2 years,
@@ -563,16 +563,16 @@ function WizardStep4({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
           Licensing Jurisdictions
         </h3>
-        <p className="text-sm text-slate-600 dark:text-white/45">
+        <p className="text-sm text-[var(--text-secondary)]">
           Select the jurisdictions where you need spectrum licenses.
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
           Primary Jurisdiction
         </label>
         <div className="grid gap-2">
@@ -582,21 +582,21 @@ function WizardStep4({
               onClick={() => onChange({ ...data, primaryJurisdiction: j.id })}
               className={`p-3 rounded-lg border text-left transition-all ${
                 data.primaryJurisdiction === j.id
-                  ? "border-emerald-500 bg-emerald-500/10"
-                  : "border-slate-200 dark:border-[--glass-border-subtle] bg-white dark:bg-[--glass-bg-surface]/50 hover:border-slate-300 dark:border-white/20"
+                  ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
+                  : "border-[var(--border-default)] bg-[var(--surface-sunken)]0 hover:border-[var(--border-default)]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     {j.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     {j.description}
                   </p>
                 </div>
                 {data.primaryJurisdiction === j.id && (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-[var(--accent-primary)]" />
                 )}
               </div>
             </button>
@@ -606,7 +606,7 @@ function WizardStep4({
 
       {/* Assessment Name */}
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-[var(--text-tertiary)] mb-2">
           Assessment Name (Optional)
         </label>
         <input
@@ -616,47 +616,41 @@ function WizardStep4({
             onChange({ ...data, assessmentName: e.target.value })
           }
           placeholder="e.g., Project Aurora Spectrum Filing"
-          className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[var(--border-focus)]"
         />
       </div>
 
       {/* Summary */}
-      <div className="p-4 bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg">
-        <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+      <div className="p-4 bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-lg">
+        <h4 className="text-sm font-medium text-[var(--text-primary)] mb-3">
           Assessment Summary
         </h4>
         <div className="space-y-2 text-xs">
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/45">
-              Service Types:
-            </span>
-            <span className="text-slate-900 dark:text-white">
+            <span className="text-[var(--text-secondary)]">Service Types:</span>
+            <span className="text-[var(--text-primary)]">
               {((data.serviceTypes as string[]) || []).join(", ") ||
                 "None selected"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/45">
+            <span className="text-[var(--text-secondary)]">
               Frequency Bands:
             </span>
-            <span className="text-slate-900 dark:text-white">
+            <span className="text-[var(--text-primary)]">
               {((data.frequencyBands as string[]) || []).join(", ") ||
                 "None selected"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/45">
-              Orbit Type:
-            </span>
-            <span className="text-slate-900 dark:text-white">
+            <span className="text-[var(--text-secondary)]">Orbit Type:</span>
+            <span className="text-[var(--text-primary)]">
               {(data.orbitType as string) || "Not selected"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-600 dark:text-white/45">
-              Satellites:
-            </span>
-            <span className="text-slate-900 dark:text-white">
+            <span className="text-[var(--text-secondary)]">Satellites:</span>
+            <span className="text-[var(--text-primary)]">
               {(data.satelliteCount as number) || 1}
             </span>
           </div>
@@ -696,25 +690,25 @@ function FilingStatusCard({
     switch (status) {
       case "recorded":
       case "favorable":
-        return "text-green-400 bg-green-500/10";
+        return "text-[var(--accent-success)] bg-[var(--accent-success)]/10";
       case "submitted":
       case "under_review":
       case "coordination_ongoing":
-        return "text-emerald-400 bg-emerald-500/10";
+        return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       case "in_preparation":
-        return "text-amber-400 bg-amber-500/10";
+        return "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]";
       case "expired":
       case "unfavorable":
-        return "text-red-400 bg-red-500/10";
+        return "text-[var(--accent-danger)] bg-[var(--accent-danger)]/10";
       default:
-        return "text-slate-400 bg-slate-500/10";
+        return "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10";
     }
   };
 
   return (
-    <div className="p-3 bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg">
+    <div className="p-3 bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-lg">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 text-[var(--text-tertiary)]">
           {getPhaseIcon()}
           <span className="text-xs font-medium">
             {getFilingPhaseLabel(phase)}
@@ -727,7 +721,7 @@ function FilingStatusCard({
         {status.replace(/_/g, " ")}
       </div>
       {date && (
-        <p className="text-xs text-slate-500 dark:text-white/45 mt-2">
+        <p className="text-xs text-[var(--text-secondary)] mt-2">
           {new Date(date).toLocaleDateString()}
         </p>
       )}
@@ -907,8 +901,8 @@ export default function SpectrumManagementPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
-          <p className="text-slate-600 dark:text-white/45">
+          <RefreshCw className="w-8 h-8 text-[var(--accent-primary)] animate-spin" />
+          <p className="text-[var(--text-secondary)]">
             Loading Spectrum Management Module...
           </p>
         </div>
@@ -921,18 +915,18 @@ export default function SpectrumManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-900 dark:text-white flex items-center gap-2">
-            <Radio className="w-6 h-6 text-purple-500" />
+          <h1 className="text-xl sm:text-2xl font-medium text-[var(--text-primary)] flex items-center gap-2">
+            <Radio className="w-6 h-6 text-[var(--accent-info)]" />
             Spectrum & ITU Compliance
           </h1>
-          <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
             ITU Radio Regulations, frequency filings, and spectrum licensing
           </p>
         </div>
 
         <button
           onClick={() => setShowWizard(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -942,7 +936,7 @@ export default function SpectrumManagementPage() {
       {/* Info Banner */}
       <div className="bg-purple-900/20 border border-purple-700 rounded-lg p-3 sm:p-4">
         <div className="flex items-start gap-3">
-          <Antenna className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+          <Antenna className="w-5 h-5 text-[var(--accent-info)] flex-shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="text-purple-300 font-medium">
               ITU Filing Timeline: GEO requires 7+ years, NGSO 2-4 years
@@ -961,21 +955,21 @@ export default function SpectrumManagementPage() {
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             onClick={() => setShowWizard(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[var(--surface-sunken)][0.02] border border-[var(--border-default)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <div className="p-4 sm:p-6 border-b border-[var(--border-default)]">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   New Spectrum Assessment
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-white/70 mt-1">
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
                   Step {wizardStep} of 4
                 </p>
                 <div className="flex gap-1 mt-3">
@@ -984,8 +978,8 @@ export default function SpectrumManagementPage() {
                       key={step}
                       className={`h-1 flex-1 rounded ${
                         step <= wizardStep
-                          ? "bg-emerald-500"
-                          : "bg-slate-100 dark:bg-[--glass-bg-elevated]"
+                          ? "bg-[var(--accent-success-soft)]0"
+                          : "bg-[var(--surface-sunken)]"
                       }`}
                     />
                   ))}
@@ -1008,13 +1002,13 @@ export default function SpectrumManagementPage() {
               </div>
 
               {createAssessmentError && (
-                <div className="flex items-center gap-2 px-4 py-3 mx-4 sm:mx-6 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                <div className="flex items-center gap-2 px-4 py-3 mx-4 sm:mx-6 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                   <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                   {createAssessmentError}
                 </div>
               )}
 
-              <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-[--glass-border-subtle] flex justify-between">
+              <div className="p-4 sm:p-6 border-t border-[var(--border-default)] flex justify-between">
                 <button
                   onClick={() => {
                     if (wizardStep === 1) {
@@ -1023,7 +1017,7 @@ export default function SpectrumManagementPage() {
                       setWizardStep((s) => s - 1);
                     }
                   }}
-                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                 >
                   {wizardStep === 1 ? "Cancel" : "Back"}
                 </button>
@@ -1044,7 +1038,7 @@ export default function SpectrumManagementPage() {
                       (wizardData.frequencyBands as string[]).length === 0) ||
                     (wizardStep === 3 && !wizardData.orbitType)
                   }
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-600/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] disabled:bg-[var(--accent-primary)]/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
                 >
                   {submitting ? (
                     <>
@@ -1068,18 +1062,18 @@ export default function SpectrumManagementPage() {
 
       {!assessment ? (
         // No Assessment State
-        <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
-          <Satellite className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+        <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-8 text-center">
+          <Satellite className="w-12 h-12 text-[var(--text-secondary)] mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
             No Spectrum Assessment Yet
           </h3>
-          <p className="text-sm text-slate-600 dark:text-white/45 mb-4">
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
             Create an assessment to track your ITU filings and spectrum
             compliance.
           </p>
           <button
             onClick={() => setShowWizard(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Assessment
@@ -1090,36 +1084,36 @@ export default function SpectrumManagementPage() {
           {/* Assessment Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Score Card */}
-            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
+            <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-slate-400">
+                <h3 className="text-sm font-medium text-[var(--text-tertiary)]">
                   Compliance Score
                 </h3>
                 <span
                   className={`text-xs px-2 py-1 rounded ${
                     assessment.riskLevel === "critical"
-                      ? "bg-red-500/20 text-red-400"
+                      ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                       : assessment.riskLevel === "high"
-                        ? "bg-amber-500/20 text-amber-400"
+                        ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
                         : assessment.riskLevel === "medium"
                           ? "bg-yellow-500/20 text-yellow-400"
-                          : "bg-green-500/20 text-green-400"
+                          : "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                   }`}
                 >
                   {assessment.riskLevel} risk
                 </span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              <div className="text-3xl font-bold text-[var(--text-primary)] mb-2">
                 {assessment.overallComplianceScore ?? 0}%
               </div>
-              <div className="w-full bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full h-2">
+              <div className="w-full bg-[var(--surface-sunken)] rounded-full h-2">
                 <div
                   className={`h-2 rounded-full ${
                     (assessment.overallComplianceScore ?? 0) >= 80
-                      ? "bg-green-500"
+                      ? "bg-[var(--accent-success)]"
                       : (assessment.overallComplianceScore ?? 0) >= 60
-                        ? "bg-amber-500"
-                        : "bg-red-500"
+                        ? "bg-[var(--accent-warning)]"
+                        : "bg-[var(--accent-danger)]"
                   }`}
                   style={{
                     width: `${assessment.overallComplianceScore ?? 0}%`,
@@ -1129,32 +1123,34 @@ export default function SpectrumManagementPage() {
             </div>
 
             {/* Network Info */}
-            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-              <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
+            <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-4">
+              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
                 Network Details
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Network:</span>
-                  <span className="text-slate-900 dark:text-white">
+                  <span className="text-[var(--text-secondary)]">Network:</span>
+                  <span className="text-[var(--text-primary)]">
                     {assessment.networkName || "Unnamed"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Orbit:</span>
-                  <span className="text-slate-900 dark:text-white">
+                  <span className="text-[var(--text-secondary)]">Orbit:</span>
+                  <span className="text-[var(--text-primary)]">
                     {assessment.orbitType}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Satellites:</span>
-                  <span className="text-slate-900 dark:text-white">
+                  <span className="text-[var(--text-secondary)]">
+                    Satellites:
+                  </span>
+                  <span className="text-[var(--text-primary)]">
                     {assessment.satelliteCount}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Bands:</span>
-                  <span className="text-slate-900 dark:text-white">
+                  <span className="text-[var(--text-secondary)]">Bands:</span>
+                  <span className="text-[var(--text-primary)]">
                     {JSON.parse(assessment.frequencyBands).join(", ")}
                   </span>
                 </div>
@@ -1162,40 +1158,40 @@ export default function SpectrumManagementPage() {
             </div>
 
             {/* Status Summary */}
-            <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-              <h3 className="text-sm font-medium text-slate-600 dark:text-white/45 mb-3">
+            <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-4">
+              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
                 Requirements Status
               </h3>
               <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-green-500/10 rounded">
-                  <div className="text-lg font-bold text-green-400">
+                <div className="text-center p-2 bg-[var(--accent-success)]/10 rounded">
+                  <div className="text-lg font-bold text-[var(--accent-success)]">
                     {stats.compliant}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Compliant
                   </div>
                 </div>
-                <div className="text-center p-2 bg-amber-500/10 rounded">
-                  <div className="text-lg font-bold text-amber-400">
+                <div className="text-center p-2 bg-[var(--accent-warning-soft)] rounded">
+                  <div className="text-lg font-bold text-[var(--accent-warning)]">
                     {stats.partial}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Partial
                   </div>
                 </div>
-                <div className="text-center p-2 bg-red-500/10 rounded">
-                  <div className="text-lg font-bold text-red-400">
+                <div className="text-center p-2 bg-[var(--accent-danger)]/10 rounded">
+                  <div className="text-lg font-bold text-[var(--accent-danger)]">
                     {stats.nonCompliant}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Non-Compliant
                   </div>
                 </div>
-                <div className="text-center p-2 bg-slate-500/10 rounded">
-                  <div className="text-lg font-bold text-slate-400">
+                <div className="text-center p-2 bg-[var(--surface-sunken)]0/10 rounded">
+                  <div className="text-lg font-bold text-[var(--text-tertiary)]">
                     {stats.notAssessed}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45">
+                  <div className="text-xs text-[var(--text-secondary)]">
                     Not Assessed
                   </div>
                 </div>
@@ -1204,8 +1200,8 @@ export default function SpectrumManagementPage() {
           </div>
 
           {/* ITU Filing Status */}
-          <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Globe className="w-4 h-4 text-purple-400" />
               ITU Filing Progress
             </h3>
@@ -1231,7 +1227,7 @@ export default function SpectrumManagementPage() {
                 date={null}
               />
             </div>
-            <div className="flex items-center gap-2 mt-4 text-xs text-slate-500 dark:text-white/45">
+            <div className="flex items-center gap-2 mt-4 text-xs text-[var(--text-secondary)]">
               <ArrowRight className="w-4 h-4" />
               <span>
                 Filing process progresses: API → Coordination → Notification →
@@ -1249,8 +1245,8 @@ export default function SpectrumManagementPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab
-                      ? "bg-emerald-600 text-white"
-                      : "bg-white dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white"
+                      ? "bg-[var(--accent-primary)] text-white"
+                      : "bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                   }`}
                 >
                   {tab === "all" ? "All Sources" : tab}
@@ -1261,13 +1257,13 @@ export default function SpectrumManagementPage() {
 
           {/* Status Filter */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-600 dark:text-white/45">Filter:</span>
+            <span className="text-[var(--text-secondary)]">Filter:</span>
             <select
               value={statusFilter}
               onChange={(e) =>
                 setStatusFilter(e.target.value as "all" | ComplianceStatus)
               }
-              className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-2 py-1 text-slate-900 dark:text-white text-sm"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-2 py-1 text-[var(--text-primary)] text-sm"
             >
               <option value="all">All Statuses</option>
               <option value="compliant">Compliant</option>
@@ -1280,8 +1276,8 @@ export default function SpectrumManagementPage() {
           {/* Requirements List */}
           <div className="space-y-3">
             {filteredRequirements.length === 0 ? (
-              <div className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
-                <p className="text-slate-600 dark:text-white/45">
+              <div className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-8 text-center">
+                <p className="text-[var(--text-secondary)]">
                   No requirements match the current filters.
                 </p>
               </div>
@@ -1289,34 +1285,38 @@ export default function SpectrumManagementPage() {
               filteredRequirements.map((req) => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4"
+                  className="bg-[var(--surface-sunken)]0 border border-[var(--border-default)] rounded-xl p-4"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         {getStatusIcon(req.status)}
-                        <h4 className="text-sm font-medium text-slate-900 dark:text-white">
+                        <h4 className="text-sm font-medium text-[var(--text-primary)]">
                           {req.requirement?.title || req.requirementId}
                         </h4>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-white/45 dark:text-white/45 line-clamp-2 mb-2">
+                      <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-2">
                         {req.requirement?.description}
                       </p>
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-500">
+                        <span className="text-[var(--text-secondary)]">
                           {req.requirement?.source}
                         </span>
-                        <span className="text-slate-600">|</span>
-                        <span className="text-slate-500">
+                        <span className="text-[var(--text-secondary)]">|</span>
+                        <span className="text-[var(--text-secondary)]">
                           {req.requirement?.reference}
                         </span>
                         {req.requirement?.isMandatory && (
                           <>
-                            <span className="text-slate-600">|</span>
-                            <span className="text-red-400">Mandatory</span>
+                            <span className="text-[var(--text-secondary)]">
+                              |
+                            </span>
+                            <span className="text-[var(--accent-danger)]">
+                              Mandatory
+                            </span>
                           </>
                         )}
-                        <span className="text-slate-600">|</span>
+                        <span className="text-[var(--text-secondary)]">|</span>
                         <span
                           className={getRiskColor(
                             req.requirement?.riskLevel || "low",
