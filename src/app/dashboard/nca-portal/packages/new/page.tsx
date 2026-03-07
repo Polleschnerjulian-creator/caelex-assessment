@@ -179,20 +179,20 @@ export default function PackageBuilderPage() {
         <button
           onClick={() => (step > 0 ? setStep(step - 1) : router.back())}
           aria-label="Go back"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Package
               size={20}
-              className="text-emerald-400"
+              className="text-[var(--accent-primary)]"
               aria-hidden="true"
             />
             Assemble Submission Package
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-[var(--text-secondary)]">
             Build a complete document package for NCA submission
           </p>
         </div>
@@ -207,10 +207,10 @@ export default function PackageBuilderPage() {
                 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0
                 ${
                   i < step
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-[var(--accent-primary)] text-white"
                     : i === step
-                      ? "bg-emerald-500 text-white"
-                      : "bg-slate-200 dark:bg-[--glass-bg-elevated] text-slate-500 dark:text-white/45"
+                      ? "bg-[var(--accent-primary)] text-white"
+                      : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                 }
               `}
             >
@@ -219,14 +219,14 @@ export default function PackageBuilderPage() {
             <span
               className={`text-xs ${
                 i === step
-                  ? "text-slate-900 dark:text-white font-medium"
-                  : "text-slate-500 dark:text-slate-400"
+                  ? "text-[var(--text-primary)] font-medium"
+                  : "text-[var(--text-secondary)]"
               }`}
             >
               {label}
             </span>
             {i < STEPS.length - 1 && (
-              <div className="flex-1 h-px bg-slate-200 dark:bg-dark-border" />
+              <div className="flex-1 h-px bg-[var(--surface-sunken)]" />
             )}
           </div>
         ))}
@@ -235,7 +235,7 @@ export default function PackageBuilderPage() {
       {/* Step 1: Select NCA */}
       {step === 0 && (
         <div className="space-y-4">
-          <h2 className="text-sm font-medium text-slate-900 dark:text-white">
+          <h2 className="text-sm font-medium text-[var(--text-primary)]">
             Select Target Authority
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -255,7 +255,7 @@ export default function PackageBuilderPage() {
             <button
               onClick={handleAssemble}
               disabled={!selectedNCA || isAssembling}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isAssembling ? (
                 <>
@@ -276,15 +276,15 @@ export default function PackageBuilderPage() {
       {/* Step 2: Review Package */}
       {step === 1 && assemblyResult && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">
               {assemblyResult.package.packageName}
             </h3>
             <PackageCompletenessBar
               score={assemblyResult.completenessScore}
               size="lg"
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            <p className="text-xs text-[var(--text-secondary)] mt-2">
               {assemblyResult.requiredDocuments.length -
                 assemblyResult.missingDocuments.length}{" "}
               of {assemblyResult.requiredDocuments.length} required documents
@@ -305,28 +305,34 @@ export default function PackageBuilderPage() {
                     flex items-center gap-3 p-3 rounded-lg border
                     ${
                       doc.status === "found"
-                        ? "border-emerald-500/20 bg-emerald-500/[0.02]"
+                        ? "border-[var(--accent-primary)/20] bg-[var(--accent-success-soft)]0/[0.02]"
                         : doc.status === "missing"
-                          ? "border-red-500/20 bg-red-500/[0.02]"
-                          : "border-slate-200 dark:border-dark-border"
+                          ? "border-[var(--accent-danger)]/20 bg-[var(--accent-danger)]/[0.02]"
+                          : "border-[var(--border-default)]"
                     }
                   `}
                 >
                   {doc.status === "found" ? (
                     <CheckCircle
                       size={16}
-                      className="text-emerald-400 flex-shrink-0"
+                      className="text-[var(--accent-primary)] flex-shrink-0"
                     />
                   ) : doc.status === "missing" ? (
-                    <XCircle size={16} className="text-red-400 flex-shrink-0" />
+                    <XCircle
+                      size={16}
+                      className="text-[var(--accent-danger)] flex-shrink-0"
+                    />
                   ) : (
-                    <Minus size={16} className="text-slate-400 flex-shrink-0" />
+                    <Minus
+                      size={16}
+                      className="text-[var(--text-tertiary)] flex-shrink-0"
+                    />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-900 dark:text-white truncate">
+                    <p className="text-sm text-[var(--text-primary)] truncate">
                       {doc.title}
                     </p>
-                    <p className="text-micro text-slate-400">
+                    <p className="text-micro text-[var(--text-tertiary)]">
                       {doc.sourceType === "vault"
                         ? "From document vault"
                         : doc.sourceType === "generated"
@@ -339,12 +345,12 @@ export default function PackageBuilderPage() {
                     </p>
                   </div>
                   {doc.status === "missing" && (
-                    <span className="text-micro px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-medium">
+                    <span className="text-micro px-2 py-0.5 rounded bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] font-medium">
                       MISSING
                     </span>
                   )}
                   {doc.status === "optional" && (
-                    <span className="text-micro px-2 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 font-medium">
+                    <span className="text-micro px-2 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-tertiary)] font-medium">
                       OPTIONAL
                     </span>
                   )}
@@ -355,13 +361,13 @@ export default function PackageBuilderPage() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setStep(0)}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
             >
               Back
             </button>
             <button
               onClick={() => setStep(2)}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
             >
               Continue
               <ArrowRight size={14} />
@@ -373,19 +379,19 @@ export default function PackageBuilderPage() {
       {/* Step 3: Confirm & Submit */}
       {step === 2 && assemblyResult && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">
               Submission Details
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
                   Submission Method
                 </label>
                 <select
                   value={submissionMethod}
                   onChange={(e) => setSubmissionMethod(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 text-sm bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)]"
                 >
                   <option value="PORTAL">Online Portal</option>
                   <option value="EMAIL">Email</option>
@@ -395,7 +401,7 @@ export default function PackageBuilderPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
                   Cover Letter (Optional)
                 </label>
                 <textarea
@@ -403,18 +409,18 @@ export default function PackageBuilderPage() {
                   onChange={(e) => setCoverLetter(e.target.value)}
                   placeholder="Optional cover letter for your submission..."
                   rows={4}
-                  className="w-full px-3 py-2 text-sm bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
+                  className="w-full px-3 py-2 text-sm bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] resize-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Summary */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">
               Summary
             </h3>
-            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <div className="text-xs text-[var(--text-secondary)] space-y-1">
               <p>Package: {assemblyResult.package.packageName}</p>
               <p>
                 Documents:{" "}
@@ -432,14 +438,14 @@ export default function PackageBuilderPage() {
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={() => setStep(1)}
-              className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
             >
               Back
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

@@ -227,21 +227,21 @@ const grades = [
   {
     grade: "A",
     range: "90–100",
-    color: "bg-emerald-500",
+    color: "bg-[var(--accent-success-soft)]0",
     label: "Excellent",
     description: "Fully compliant across all modules",
   },
   {
     grade: "B",
     range: "80–89",
-    color: "bg-green-500",
+    color: "bg-[var(--accent-success)]",
     label: "Good",
     description: "Compliant with minor gaps",
   },
   {
     grade: "C",
     range: "70–79",
-    color: "bg-amber-500",
+    color: "bg-[var(--accent-warning)]",
     label: "Adequate",
     description: "Mostly compliant, some areas need attention",
   },
@@ -255,7 +255,7 @@ const grades = [
   {
     grade: "F",
     range: "0–59",
-    color: "bg-red-500",
+    color: "bg-[var(--accent-danger)]",
     label: "Non-Compliant",
     description: "Critical deficiencies requiring immediate action",
   },
@@ -273,7 +273,7 @@ function SectionCard({
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.1 }}
-      className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 mb-6"
+      className="bg-[var(--surface-sunken)] backdrop-blur-sm border border-[var(--border-default)] rounded-xl p-6 mb-6"
     >
       {children}
     </motion.div>
@@ -289,7 +289,7 @@ export default function ComplianceMethodologyPage() {
         {/* Back Link */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-secondary)] mb-6 transition-colors"
         >
           <ArrowLeft size={14} />
           {t("methodology.backToDashboard")}
@@ -302,27 +302,27 @@ export default function ComplianceMethodologyPage() {
           className="mb-10"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary-soft)] flex items-center justify-center">
+              <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
             </div>
-            <h1 className="text-[28px] font-medium text-slate-900 dark:text-white">
+            <h1 className="text-[28px] font-medium text-[var(--text-primary)]">
               {t("methodology.title")}
             </h1>
           </div>
-          <p className="text-subtitle text-slate-500 dark:text-white/45 leading-relaxed max-w-[700px]">
+          <p className="text-subtitle text-[var(--text-secondary)] leading-relaxed max-w-[700px]">
             {t("methodology.description")}
           </p>
         </motion.div>
 
         {/* How It Works */}
         <SectionCard delay={1}>
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <Info size={18} className="text-emerald-400" />
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <Info size={18} className="text-[var(--accent-primary)]" />
             {t("methodology.howItWorks")}
           </h2>
-          <div className="space-y-4 text-body-lg text-slate-700 dark:text-white/70 leading-relaxed">
+          <div className="space-y-4 text-body-lg text-[var(--text-secondary)] leading-relaxed">
             <p>{t("methodology.howItWorksP1")}</p>
-            <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/5 rounded-lg p-4 font-mono text-body text-emerald-400">
+            <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-lg p-4 font-mono text-body text-[var(--accent-primary)]">
               Overall Score = (Auth × 0.25) + (Debris × 0.20) + (Cyber × 0.20) +
               (Insurance × 0.15) + (Environmental × 0.10) + (Reporting × 0.10)
             </div>
@@ -332,14 +332,14 @@ export default function ComplianceMethodologyPage() {
 
         {/* Grade Scale */}
         <SectionCard delay={2}>
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-4">
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-4">
             {t("methodology.gradeScale")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
             {grades.map((g) => (
               <div
                 key={g.grade}
-                className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-100 dark:border-white/5 rounded-lg p-4 text-center"
+                className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-lg p-4 text-center"
               >
                 <div
                   className={`w-10 h-10 rounded-full ${g.color} flex items-center justify-center mx-auto mb-2`}
@@ -348,7 +348,7 @@ export default function ComplianceMethodologyPage() {
                     {g.grade}
                   </span>
                 </div>
-                <p className="text-small font-medium text-slate-900 dark:text-white mb-0.5">
+                <p className="text-small font-medium text-[var(--text-primary)] mb-0.5">
                   {t(
                     `methodology.grade${g.grade}` as
                       | "methodology.gradeA"
@@ -358,10 +358,10 @@ export default function ComplianceMethodologyPage() {
                       | "methodology.gradeF",
                   )}
                 </p>
-                <p className="text-caption text-slate-500 dark:text-white/45">
+                <p className="text-caption text-[var(--text-secondary)]">
                   {g.range}
                 </p>
-                <p className="text-micro text-slate-400 dark:text-white/30 mt-1">
+                <p className="text-micro text-[var(--text-tertiary)] mt-1">
                   {t(
                     `methodology.grade${g.grade}Desc` as
                       | "methodology.gradeADesc"
@@ -378,11 +378,11 @@ export default function ComplianceMethodologyPage() {
 
         {/* Critical Factors */}
         <SectionCard delay={3}>
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-            <AlertTriangle size={18} className="text-amber-400" />
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <AlertTriangle size={18} className="text-[var(--accent-warning)]" />
             {t("methodology.criticalFactors")}
           </h2>
-          <p className="text-body-lg text-slate-500 dark:text-white/45 mb-4 leading-relaxed">
+          <p className="text-body-lg text-[var(--text-secondary)] mb-4 leading-relaxed">
             {t("methodology.criticalFactorsDesc")}
           </p>
         </SectionCard>
@@ -394,7 +394,7 @@ export default function ComplianceMethodologyPage() {
           transition={{ delay: 0.4 }}
           className="mb-6"
         >
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-5">
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-5">
             {t("methodology.moduleBreakdown")}
           </h2>
 
@@ -412,26 +412,29 @@ export default function ComplianceMethodologyPage() {
                   initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.08 }}
-                  className="bg-slate-50 dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
+                  className="bg-[var(--surface-sunken)] backdrop-blur-sm border border-[var(--border-default)] rounded-xl overflow-hidden"
                 >
                   {/* Module Header */}
-                  <div className="flex items-center gap-4 p-5 border-b border-slate-100 dark:border-white/5">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                      <Icon size={18} className="text-emerald-400" />
+                  <div className="flex items-center gap-4 p-5 border-b border-[var(--border-subtle)]">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary-soft)] flex items-center justify-center flex-shrink-0">
+                      <Icon
+                        size={18}
+                        className="text-[var(--accent-primary)]"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-title font-medium text-slate-900 dark:text-white">
+                        <h3 className="text-title font-medium text-[var(--text-primary)]">
                           {mod.name}
                         </h3>
-                        <span className="text-caption px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+                        <span className="text-caption px-2 py-0.5 rounded-full bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]">
                           {t("methodology.weight", { percent: mod.weight })}
                         </span>
-                        <span className="text-caption text-slate-400 dark:text-white/30">
+                        <span className="text-caption text-[var(--text-tertiary)]">
                           {mod.articles}
                         </span>
                       </div>
-                      <p className="text-body text-slate-500 dark:text-white/45 mt-1 leading-relaxed">
+                      <p className="text-body text-[var(--text-secondary)] mt-1 leading-relaxed">
                         {mod.description}
                       </p>
                     </div>
@@ -441,14 +444,14 @@ export default function ComplianceMethodologyPage() {
                   <div className="px-5 py-3">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-slate-100 dark:border-white/5">
-                          <th className="text-left text-micro font-medium uppercase tracking-wider text-slate-400 dark:text-white/30 pb-2">
+                        <tr className="border-b border-[var(--border-subtle)]">
+                          <th className="text-left text-micro font-medium uppercase tracking-wider text-[var(--text-tertiary)] pb-2">
                             {t("methodology.scoringFactor")}
                           </th>
-                          <th className="text-center text-micro font-medium uppercase tracking-wider text-slate-400 dark:text-white/30 pb-2 w-20">
+                          <th className="text-center text-micro font-medium uppercase tracking-wider text-[var(--text-tertiary)] pb-2 w-20">
                             {t("methodology.maxPoints")}
                           </th>
-                          <th className="text-center text-micro font-medium uppercase tracking-wider text-slate-400 dark:text-white/30 pb-2 w-20">
+                          <th className="text-center text-micro font-medium uppercase tracking-wider text-[var(--text-tertiary)] pb-2 w-20">
                             {t("common.critical")}
                           </th>
                         </tr>
@@ -457,29 +460,29 @@ export default function ComplianceMethodologyPage() {
                         {mod.factors.map((factor) => (
                           <tr
                             key={factor.name}
-                            className="border-b border-slate-100 dark:border-white/[0.03] last:border-0"
+                            className="border-b border-[var(--border-subtle)][0.03] last:border-0"
                           >
                             <td className="py-2.5">
-                              <p className="text-body text-slate-700 dark:text-white/70 font-medium">
+                              <p className="text-body text-[var(--text-secondary)] font-medium">
                                 {factor.name}
                               </p>
-                              <p className="text-caption text-slate-500 dark:text-white/45 mt-0.5">
+                              <p className="text-caption text-[var(--text-secondary)] mt-0.5">
                                 {factor.detail}
                               </p>
                             </td>
                             <td className="text-center">
-                              <span className="text-body text-slate-500 dark:text-white/45">
+                              <span className="text-body text-[var(--text-secondary)]">
                                 {factor.points}
                               </span>
                             </td>
                             <td className="text-center">
                               {factor.critical ? (
-                                <span className="inline-flex items-center gap-1 text-micro text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                <span className="inline-flex items-center gap-1 text-micro text-[var(--accent-warning)] bg-[var(--accent-warning-soft)] px-1.5 py-0.5 rounded">
                                   <AlertTriangle size={10} />
                                   {t("common.yes")}
                                 </span>
                               ) : (
-                                <span className="text-micro text-slate-300 dark:text-white/20">
+                                <span className="text-micro text-[var(--text-tertiary)]">
                                   {t("common.no")}
                                 </span>
                               )}
@@ -488,11 +491,11 @@ export default function ComplianceMethodologyPage() {
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="border-t border-slate-200 dark:border-[--glass-border-subtle]">
-                          <td className="pt-2 text-small text-slate-500 dark:text-white/45 font-medium">
+                        <tr className="border-t border-[var(--border-default)]">
+                          <td className="pt-2 text-small text-[var(--text-secondary)] font-medium">
                             {t("common.total")}
                           </td>
-                          <td className="pt-2 text-center text-body text-slate-700 dark:text-white/70 font-medium">
+                          <td className="pt-2 text-center text-body text-[var(--text-secondary)] font-medium">
                             {totalPoints}
                           </td>
                           <td />
@@ -508,35 +511,37 @@ export default function ComplianceMethodologyPage() {
 
         {/* Recommendations */}
         <SectionCard delay={12}>
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-emerald-400" />
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <CheckCircle2 size={18} className="text-[var(--accent-primary)]" />
             {t("methodology.howRecommendationsWork")}
           </h2>
-          <p className="text-body-lg text-slate-500 dark:text-white/45 leading-relaxed">
+          <p className="text-body-lg text-[var(--text-secondary)] leading-relaxed">
             {t("methodology.recommendationsP1")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {[
               {
                 level: t("common.critical"),
-                color: "bg-red-500/20 text-red-400 border-red-500/30",
+                color:
+                  "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)/30]",
                 rule: t("methodology.priorityCriticalDesc"),
               },
               {
                 level: t("common.high"),
-                color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                color:
+                  "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)] border-amber-500/30",
                 rule: t("methodology.priorityHighDesc"),
               },
               {
                 level: t("common.medium"),
                 color:
-                  "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+                  "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border-[var(--accent-success)/30]",
                 rule: t("methodology.priorityMediumDesc"),
               },
               {
                 level: t("common.low"),
                 color:
-                  "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
+                  "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)]",
                 rule: t("methodology.priorityLowDesc"),
               },
             ].map((p) => (
@@ -553,52 +558,52 @@ export default function ComplianceMethodologyPage() {
 
         {/* Data Sources */}
         <SectionCard delay={13}>
-          <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-3">
+          <h2 className="text-heading font-medium text-[var(--text-primary)] mb-3">
             {t("methodology.dataSources")}
           </h2>
-          <p className="text-body-lg text-slate-500 dark:text-white/45 leading-relaxed mb-4">
+          <p className="text-body-lg text-[var(--text-secondary)] leading-relaxed mb-4">
             {t("methodology.dataSourcesDesc")}
           </p>
-          <ul className="space-y-2 text-body text-slate-500 dark:text-white/45">
+          <ul className="space-y-2 text-body text-[var(--text-secondary)]">
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsAssessments")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsDocuments")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsArticleTracker")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsWorkflows")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsIncidents")}
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2
                 size={14}
-                className="text-emerald-400 mt-0.5 flex-shrink-0"
+                className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
               />
               {t("methodology.dsTimeline")}
             </li>
@@ -606,9 +611,9 @@ export default function ComplianceMethodologyPage() {
         </SectionCard>
 
         {/* Disclaimer */}
-        <div className="bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-lg p-4 mb-8">
-          <p className="text-caption text-slate-400 dark:text-white/30 leading-relaxed">
-            <strong className="text-slate-500 dark:text-white/45">
+        <div className="bg-[var(--surface-sunken)][0.02] border border-[var(--border-subtle)] rounded-lg p-4 mb-8">
+          <p className="text-caption text-[var(--text-tertiary)] leading-relaxed">
+            <strong className="text-[var(--text-secondary)]">
               {t("methodology.disclaimer")}:
             </strong>{" "}
             {t("methodology.disclaimerText")}

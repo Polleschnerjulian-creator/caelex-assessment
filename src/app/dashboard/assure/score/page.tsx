@@ -22,7 +22,7 @@ const RRSGauge = dynamic(() => import("@/components/assure/RRSGauge"), {
   ssr: false,
   loading: () => (
     <div className="w-[180px] h-[153px] flex items-center justify-center">
-      <Loader2 className="w-6 h-6 text-slate-300 dark:text-white/20 animate-spin" />
+      <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
     </div>
   ),
 });
@@ -36,7 +36,7 @@ const RRSComponentBreakdown = dynamic(
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="h-20 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse"
+            className="h-20 bg-[var(--surface-sunken)] rounded-xl animate-pulse"
           />
         ))}
       </div>
@@ -50,7 +50,7 @@ const RRSTrendChart = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-[340px] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-slate-300 dark:text-white/20 animate-spin" />
+        <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
       </div>
     ),
   },
@@ -125,13 +125,13 @@ const COMPONENT_LABELS: Record<string, string> = {
 function getPriorityColor(priority: string): string {
   switch (priority) {
     case "critical":
-      return "bg-red-50 text-red-600 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
+      return "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]/10";
     case "high":
-      return "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+      return "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]";
     case "medium":
-      return "bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20";
+      return "bg-yellow-50 text-yellow-600 border-yellow-200";
     default:
-      return "bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-white/40 dark:border-[--glass-border-subtle]";
+      return "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)]";
   }
 }
 
@@ -145,13 +145,13 @@ function ScoreSkeleton() {
       aria-live="polite"
       aria-label="Loading score details"
     >
-      <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-48" />
+      <div className="h-6 bg-[var(--surface-sunken)] rounded w-48" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="h-[260px] bg-slate-200 dark:bg-white/5 rounded-xl" />
-        <div className="lg:col-span-2 h-[260px] bg-slate-200 dark:bg-white/5 rounded-xl" />
+        <div className="h-[260px] bg-[var(--surface-sunken)] rounded-xl" />
+        <div className="lg:col-span-2 h-[260px] bg-[var(--surface-sunken)] rounded-xl" />
       </div>
-      <div className="h-[340px] bg-slate-200 dark:bg-white/5 rounded-xl" />
-      <div className="h-[200px] bg-slate-200 dark:bg-white/5 rounded-xl" />
+      <div className="h-[340px] bg-[var(--surface-sunken)] rounded-xl" />
+      <div className="h-[200px] bg-[var(--surface-sunken)] rounded-xl" />
       <span className="sr-only">Loading score details...</span>
     </div>
   );
@@ -216,10 +216,10 @@ export default function AssureScorePage() {
   if (error || !rrsData) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
+        <div className="w-12 h-12 rounded-full bg-[var(--accent-danger-soft)]/10 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-[var(--accent-danger)]" />
         </div>
-        <h2 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+        <h2 className="text-title font-medium text-[var(--text-primary)] mb-2">
           {error || "Unable to load data"}
         </h2>
         <button
@@ -227,7 +227,7 @@ export default function AssureScorePage() {
             setLoading(true);
             fetchScore();
           }}
-          className="text-small text-emerald-500 hover:text-emerald-400 transition-colors mt-2"
+          className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors mt-2"
         >
           Try Again
         </button>
@@ -241,7 +241,7 @@ export default function AssureScorePage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Assure
@@ -254,8 +254,8 @@ export default function AssureScorePage() {
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
-              <Shield className="w-5 h-5 text-emerald-500" />
-              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+              <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
+              <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
                 RRS Score Details
               </h1>
             </motion.div>
@@ -263,7 +263,7 @@ export default function AssureScorePage() {
               initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
-              className="text-body text-slate-500 dark:text-white/45"
+              className="text-body text-[var(--text-secondary)]"
             >
               Full breakdown of your Regulatory Readiness Score across all 6
               compliance dimensions.
@@ -273,7 +273,7 @@ export default function AssureScorePage() {
           <button
             onClick={() => fetchScore(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/60 text-small font-medium px-3 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-[var(--surface-sunken)] text-[var(--text-secondary)] text-small font-medium px-3 py-2 rounded-lg hover:bg-[var(--surface-sunken)] transition-all disabled:opacity-50"
           >
             <RefreshCw
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
@@ -298,7 +298,7 @@ export default function AssureScorePage() {
                 grade={rrsData.grade}
                 size={180}
               />
-              <p className="text-micro text-slate-400 dark:text-white/30 mt-3">
+              <p className="text-micro text-[var(--text-tertiary)] mt-3">
                 Methodology v{rrsData.methodology.version}
               </p>
             </div>
@@ -313,7 +313,7 @@ export default function AssureScorePage() {
           className="lg:col-span-2"
         >
           <GlassCard hover={false} className="p-6 h-full">
-            <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-4">
+            <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-4">
               Score Summary
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -321,25 +321,25 @@ export default function AssureScorePage() {
                 const label = COMPONENT_LABELS[key] || key;
                 const scoreColor =
                   comp.score >= 80
-                    ? "text-green-500 dark:text-green-400"
+                    ? "text-[var(--accent-success)]"
                     : comp.score >= 60
-                      ? "text-amber-500 dark:text-amber-400"
-                      : "text-red-500 dark:text-red-400";
+                      ? "text-[var(--accent-warning)]"
+                      : "text-[var(--accent-danger)]";
 
                 return (
                   <div
                     key={key}
-                    className="bg-slate-50 dark:bg-white/5 rounded-xl p-4"
+                    className="bg-[var(--surface-sunken)] rounded-xl p-4"
                   >
                     <div
                       className={`text-display-sm font-semibold ${scoreColor}`}
                     >
                       {comp.score}
                     </div>
-                    <div className="text-micro text-slate-500 dark:text-white/40 mt-1 leading-tight">
+                    <div className="text-micro text-[var(--text-secondary)] mt-1 leading-tight">
                       {label}
                     </div>
-                    <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
+                    <div className="text-micro text-[var(--text-tertiary)] mt-0.5">
                       {Math.round(comp.weight * 100)}% weight &middot;{" "}
                       {comp.weightedScore} weighted
                     </div>
@@ -347,7 +347,7 @@ export default function AssureScorePage() {
                 );
               })}
             </div>
-            <div className="mt-4 flex items-center gap-2 text-micro text-slate-400 dark:text-white/30">
+            <div className="mt-4 flex items-center gap-2 text-micro text-[var(--text-tertiary)]">
               <Info className="w-3.5 h-3.5" />
               Last computed{" "}
               {new Date(rrsData.computedAt).toLocaleString("en-US", {
@@ -369,7 +369,7 @@ export default function AssureScorePage() {
         transition={{ delay: 0.2 }}
         className="mb-8"
       >
-        <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-4">
+        <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-4">
           Component Breakdown
         </h2>
         <RRSComponentBreakdown components={rrsData.components} />
@@ -383,7 +383,7 @@ export default function AssureScorePage() {
         className="mb-8"
       >
         <GlassCard hover={false} className="p-6">
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-4">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-4">
             Score Trend
           </h2>
           <RRSTrendChart
@@ -402,7 +402,7 @@ export default function AssureScorePage() {
         className="mb-8"
       >
         <GlassCard hover={false} className="p-6">
-          <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-4">
+          <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-4">
             Recommendations
           </h2>
 
@@ -411,7 +411,7 @@ export default function AssureScorePage() {
               {rrsData.recommendations.map((rec, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/5"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-[var(--surface-sunken)]"
                 >
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded border text-micro font-medium flex-shrink-0 mt-0.5 ${getPriorityColor(rec.priority)}`}
@@ -419,10 +419,10 @@ export default function AssureScorePage() {
                     {rec.priority.toUpperCase()}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-body text-slate-700 dark:text-white/70">
+                    <p className="text-body text-[var(--text-secondary)]">
                       {rec.action}
                     </p>
-                    <p className="text-small text-slate-400 dark:text-white/30 mt-0.5">
+                    <p className="text-small text-[var(--text-tertiary)] mt-0.5">
                       {rec.impact} &middot;{" "}
                       {COMPONENT_LABELS[rec.component] || rec.component}
                     </p>
@@ -432,7 +432,7 @@ export default function AssureScorePage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-body text-slate-500 dark:text-white/45">
+              <p className="text-body text-[var(--text-secondary)]">
                 No recommendations at this time. Your compliance posture is
                 strong.
               </p>
@@ -455,20 +455,20 @@ export default function AssureScorePage() {
             aria-controls="methodology-content"
           >
             <div className="flex items-center gap-3">
-              <BookOpen className="w-5 h-5 text-slate-400 dark:text-white/30" />
+              <BookOpen className="w-5 h-5 text-[var(--text-tertiary)]" />
               <div>
-                <h2 className="text-body-lg font-medium text-slate-800 dark:text-white/80">
+                <h2 className="text-body-lg font-medium text-[var(--text-primary)]">
                   Methodology
                 </h2>
-                <p className="text-small text-slate-400 dark:text-white/30">
+                <p className="text-small text-[var(--text-tertiary)]">
                   How the Regulatory Readiness Score is computed
                 </p>
               </div>
             </div>
             {methodologyOpen ? (
-              <ChevronUp className="w-5 h-5 text-slate-400 dark:text-white/30" />
+              <ChevronUp className="w-5 h-5 text-[var(--text-tertiary)]" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-slate-400 dark:text-white/30" />
+              <ChevronDown className="w-5 h-5 text-[var(--text-tertiary)]" />
             )}
           </button>
 
@@ -482,12 +482,12 @@ export default function AssureScorePage() {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="px-6 pb-6 border-t border-slate-100 dark:border-white/5 pt-4">
-                  <p className="text-body text-slate-600 dark:text-white/60 mb-6 leading-relaxed">
+                <div className="px-6 pb-6 border-t border-[var(--border-subtle)] pt-4">
+                  <p className="text-body text-[var(--text-secondary)] mb-6 leading-relaxed">
                     {rrsData.methodology.description}
                   </p>
 
-                  <h3 className="text-small font-medium text-slate-700 dark:text-white/70 mb-3">
+                  <h3 className="text-small font-medium text-[var(--text-secondary)] mb-3">
                     Component Weights
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
@@ -495,13 +495,13 @@ export default function AssureScorePage() {
                       ([key, weight]) => (
                         <div
                           key={key}
-                          className="flex items-center justify-between bg-slate-50 dark:bg-white/5 rounded-lg px-3 py-2"
+                          className="flex items-center justify-between bg-[var(--surface-sunken)] rounded-lg px-3 py-2"
                         >
-                          <span className="text-small text-slate-600 dark:text-white/60">
+                          <span className="text-small text-[var(--text-secondary)]">
                             {COMPONENT_LABELS[key] ||
                               key.replace(/([A-Z])/g, " $1").trim()}
                           </span>
-                          <span className="text-body font-medium text-slate-800 dark:text-white/80">
+                          <span className="text-body font-medium text-[var(--text-primary)]">
                             {Math.round((weight as number) * 100)}%
                           </span>
                         </div>
@@ -509,7 +509,7 @@ export default function AssureScorePage() {
                     )}
                   </div>
 
-                  <h3 className="text-small font-medium text-slate-700 dark:text-white/70 mb-3">
+                  <h3 className="text-small font-medium text-[var(--text-secondary)] mb-3">
                     Grading Scale
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -518,31 +518,30 @@ export default function AssureScorePage() {
                         grade: "A",
                         range: "90-100",
                         color:
-                          "bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20",
+                          "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]/10",
                       },
                       {
                         grade: "B",
                         range: "80-89",
                         color:
-                          "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+                          "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]",
                       },
                       {
                         grade: "C",
                         range: "70-79",
                         color:
-                          "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+                          "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]",
                       },
                       {
                         grade: "D",
                         range: "60-69",
-                        color:
-                          "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20",
+                        color: "bg-orange-50 text-orange-700 border-orange-200",
                       },
                       {
                         grade: "F",
                         range: "0-59",
                         color:
-                          "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20",
+                          "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]/10",
                       },
                     ].map((g) => (
                       <span
@@ -555,8 +554,8 @@ export default function AssureScorePage() {
                     ))}
                   </div>
 
-                  <div className="mt-6 p-3 bg-slate-50 dark:bg-white/5 rounded-lg">
-                    <p className="text-micro text-slate-400 dark:text-white/30">
+                  <div className="mt-6 p-3 bg-[var(--surface-sunken)] rounded-lg">
+                    <p className="text-micro text-[var(--text-tertiary)]">
                       The RRS is fully deterministic: identical input data
                       always produces the same score. No randomness or external
                       API calls are used. Scores are computed daily at 07:00 UTC

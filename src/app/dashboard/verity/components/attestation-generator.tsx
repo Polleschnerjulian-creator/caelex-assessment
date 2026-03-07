@@ -91,13 +91,13 @@ export default function AttestationGenerator({
     <div className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-small text-white/45 mb-1.5">
+          <label className="block text-small text-[var(--text-tertiary)] mb-1.5">
             Satellite
           </label>
           <select
             value={selectedSatellite}
             onChange={(e) => setSelectedSatellite(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-body text-white focus:border-white/[0.25] outline-none transition-colors"
+            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-white focus:border-[var(--border-default)] outline-none transition-colors"
           >
             <option value="">All / Organization-wide</option>
             {satellites.map((s) => (
@@ -109,13 +109,13 @@ export default function AttestationGenerator({
         </div>
 
         <div>
-          <label className="block text-small text-white/45 mb-1.5">
+          <label className="block text-small text-[var(--text-tertiary)] mb-1.5">
             Regulation
           </label>
           <select
             value={selectedRegulation}
             onChange={(e) => setSelectedRegulation(e.target.value)}
-            className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-body text-white focus:border-white/[0.25] outline-none transition-colors"
+            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-body text-white focus:border-[var(--border-default)] outline-none transition-colors"
           >
             <option value="">Select regulation...</option>
             {regulations.map((r) => (
@@ -137,13 +137,13 @@ export default function AttestationGenerator({
       </Button>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-          <p className="text-small text-red-400">{error}</p>
+        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-lg p-3">
+          <p className="text-small text-[var(--accent-danger)]">{error}</p>
         </div>
       )}
 
       {result && (
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 space-y-4">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-body font-medium text-white">
               {result.claim.regulation_name}
@@ -152,7 +152,7 @@ export default function AttestationGenerator({
               {result.claim.result ? (
                 <Badge
                   variant="default"
-                  className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  className="bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)/20]"
                 >
                   <CheckCircle2 className="w-3 h-3 mr-1" />
                   Threshold Met
@@ -160,7 +160,7 @@ export default function AttestationGenerator({
               ) : (
                 <Badge
                   variant="error"
-                  className="bg-red-500/10 text-red-400 border-red-500/20"
+                  className="bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] border-[var(--accent-danger)]/20"
                 >
                   <XCircle className="w-3 h-3 mr-1" />
                   Below Threshold
@@ -169,25 +169,31 @@ export default function AttestationGenerator({
             </div>
           </div>
 
-          <p className="text-small text-white/60">
+          <p className="text-small text-[var(--text-secondary)]">
             {result.claim.claim_statement}
           </p>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/[0.03] rounded-lg p-3">
-              <p className="text-caption text-white/30 mb-0.5">Trust Level</p>
+            <div className="bg-[var(--surface-sunken)] rounded-lg p-3">
+              <p className="text-caption text-[var(--text-tertiary)] mb-0.5">
+                Trust Level
+              </p>
               <p className="text-body font-medium text-white">
                 {result.evidence.trust_level}
               </p>
             </div>
-            <div className="bg-white/[0.03] rounded-lg p-3">
-              <p className="text-caption text-white/30 mb-0.5">Source</p>
+            <div className="bg-[var(--surface-sunken)] rounded-lg p-3">
+              <p className="text-caption text-[var(--text-tertiary)] mb-0.5">
+                Source
+              </p>
               <p className="text-body font-medium text-white capitalize">
                 {result.evidence.source.replace("_", " ")}
               </p>
             </div>
-            <div className="bg-white/[0.03] rounded-lg p-3">
-              <p className="text-caption text-white/30 mb-0.5">Anchored</p>
+            <div className="bg-[var(--surface-sunken)] rounded-lg p-3">
+              <p className="text-caption text-[var(--text-tertiary)] mb-0.5">
+                Anchored
+              </p>
               <p className="text-body font-medium text-white">
                 {result.evidence.sentinel_anchor ? "Sentinel" : "No"}
               </p>

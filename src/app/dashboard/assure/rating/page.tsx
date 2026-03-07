@@ -31,7 +31,7 @@ const RCRGradeBadge = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-[120px] h-[120px] rounded-full bg-slate-200 dark:bg-white/5 animate-pulse" />
+      <div className="w-[120px] h-[120px] rounded-full bg-[var(--surface-sunken)] animate-pulse" />
     ),
   },
 );
@@ -45,7 +45,7 @@ const RatingActionTimeline = dynamic(
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="h-16 bg-slate-200 dark:bg-white/5 rounded-xl animate-pulse"
+            className="h-16 bg-[var(--surface-sunken)] rounded-xl animate-pulse"
           />
         ))}
       </div>
@@ -90,13 +90,13 @@ function RatingSkeleton() {
       aria-live="polite"
       aria-label="Loading rating overview"
     >
-      <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-48" />
-      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-96" />
+      <div className="h-6 bg-[var(--surface-sunken)] rounded w-48" />
+      <div className="h-4 bg-[var(--surface-sunken)] rounded w-96" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <div className="h-[300px] bg-slate-200 dark:bg-white/5 rounded-xl" />
-        <div className="lg:col-span-2 h-[300px] bg-slate-200 dark:bg-white/5 rounded-xl" />
+        <div className="h-[300px] bg-[var(--surface-sunken)] rounded-xl" />
+        <div className="lg:col-span-2 h-[300px] bg-[var(--surface-sunken)] rounded-xl" />
       </div>
-      <div className="h-[200px] bg-slate-200 dark:bg-white/5 rounded-xl" />
+      <div className="h-[200px] bg-[var(--surface-sunken)] rounded-xl" />
       <span className="sr-only">Loading rating overview...</span>
     </div>
   );
@@ -117,15 +117,15 @@ function EmptyRatingState({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-6"
+        className="w-20 h-20 rounded-full bg-[var(--accent-success-soft)] flex items-center justify-center mb-6"
       >
-        <Shield className="w-10 h-10 text-emerald-500" />
+        <Shield className="w-10 h-10 text-[var(--accent-primary)]" />
       </motion.div>
       <motion.h2
         initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="text-heading font-medium text-slate-900 dark:text-white mb-2"
+        className="text-heading font-medium text-[var(--text-primary)] mb-2"
       >
         No Rating Computed Yet
       </motion.h2>
@@ -133,7 +133,7 @@ function EmptyRatingState({
         initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="text-body text-slate-500 dark:text-white/45 mb-8 max-w-md"
+        className="text-body text-[var(--text-secondary)] mb-8 max-w-md"
       >
         Compute your first Regulatory Credit Rating to get a comprehensive
         assessment of your organization&apos;s regulatory compliance posture.
@@ -144,7 +144,7 @@ function EmptyRatingState({
         transition={{ delay: 0.4 }}
         onClick={onCompute}
         disabled={computing}
-        className="inline-flex items-center gap-2 bg-emerald-500 text-white px-6 py-3 rounded-lg font-medium text-body hover:bg-emerald-600 transition-all disabled:opacity-50"
+        className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-6 py-3 rounded-lg font-medium text-body hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50"
       >
         {computing ? (
           <>
@@ -243,10 +243,10 @@ export default function RCROverviewPage() {
   if (error && !rating) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
+        <div className="w-12 h-12 rounded-full bg-[var(--accent-danger-soft)]/10 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-[var(--accent-danger)]" />
         </div>
-        <h2 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+        <h2 className="text-title font-medium text-[var(--text-primary)] mb-2">
           {error}
         </h2>
         <button
@@ -255,7 +255,7 @@ export default function RCROverviewPage() {
             setError(null);
             fetchRating();
           }}
-          className="text-small text-emerald-500 hover:text-emerald-400 transition-colors mt-2"
+          className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors mt-2"
         >
           Try Again
         </button>
@@ -270,7 +270,7 @@ export default function RCROverviewPage() {
         <div className="mb-8">
           <Link
             href="/dashboard/assure"
-            className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+            className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Assure
@@ -280,8 +280,8 @@ export default function RCROverviewPage() {
             animate={{ opacity: 1 }}
             className="flex items-center gap-2 mb-1"
           >
-            <Shield className="w-5 h-5 text-emerald-500" />
-            <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+            <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
+            <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
               Regulatory Credit Rating
             </h1>
           </motion.div>
@@ -299,7 +299,7 @@ export default function RCROverviewPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Assure
@@ -312,8 +312,8 @@ export default function RCROverviewPage() {
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
-              <Shield className="w-5 h-5 text-emerald-500" />
-              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+              <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
+              <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
                 Regulatory Credit Rating
               </h1>
             </motion.div>
@@ -321,7 +321,7 @@ export default function RCROverviewPage() {
               initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
-              className="text-body text-slate-500 dark:text-white/45"
+              className="text-body text-[var(--text-secondary)]"
             >
               Your organization&apos;s credit-style regulatory compliance
               rating.
@@ -332,7 +332,7 @@ export default function RCROverviewPage() {
             <button
               onClick={handleRecompute}
               disabled={computing}
-              className="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/60 text-small font-medium px-3 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-[var(--surface-sunken)] text-[var(--text-secondary)] text-small font-medium px-3 py-2 rounded-lg hover:bg-[var(--surface-sunken)] transition-all disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-4 h-4 ${computing ? "animate-spin" : ""}`}
@@ -348,13 +348,13 @@ export default function RCROverviewPage() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
+          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]"
         >
-          <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
-          <p className="text-body text-red-700 dark:text-red-400">{error}</p>
+          <AlertTriangle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-danger)]">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-small text-red-500 hover:text-red-700 transition-colors"
+            className="ml-auto text-small text-[var(--accent-danger)] hover:text-[var(--accent-danger)] transition-colors"
           >
             Dismiss
           </button>
@@ -386,12 +386,12 @@ export default function RCROverviewPage() {
               </div>
 
               {!rating.isPublished && (
-                <span className="text-micro px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 font-medium">
+                <span className="text-micro px-2 py-0.5 rounded bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border border-[var(--accent-warning)] font-medium">
                   UNPUBLISHED DRAFT
                 </span>
               )}
 
-              <p className="text-micro text-slate-400 dark:text-white/30 mt-1">
+              <p className="text-micro text-[var(--text-tertiary)] mt-1">
                 Computed{" "}
                 {new Date(rating.computedAt).toLocaleDateString("en-US", {
                   month: "short",
@@ -413,85 +413,85 @@ export default function RCROverviewPage() {
           className="lg:col-span-2"
         >
           <GlassCard hover={false} className="p-6 h-full">
-            <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-5">
+            <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-5">
               Rating Summary
             </h2>
 
             <div className="grid grid-cols-2 gap-4">
               {/* Numeric Score */}
-              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+              <div className="bg-[var(--surface-sunken)] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <BarChart3 className="w-4 h-4 text-slate-400 dark:text-white/30" />
-                  <span className="text-caption text-slate-500 dark:text-white/40">
+                  <BarChart3 className="w-4 h-4 text-[var(--text-tertiary)]" />
+                  <span className="text-caption text-[var(--text-secondary)]">
                     Numeric Score
                   </span>
                 </div>
-                <div className="text-display-sm font-semibold text-slate-900 dark:text-white">
+                <div className="text-display-sm font-semibold text-[var(--text-primary)]">
                   {rating.numericScore.toFixed(1)}
                 </div>
-                <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
+                <div className="text-micro text-[var(--text-tertiary)] mt-0.5">
                   out of 100
                 </div>
               </div>
 
               {/* Confidence */}
-              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+              <div className="bg-[var(--surface-sunken)] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Percent className="w-4 h-4 text-slate-400 dark:text-white/30" />
-                  <span className="text-caption text-slate-500 dark:text-white/40">
+                  <Percent className="w-4 h-4 text-[var(--text-tertiary)]" />
+                  <span className="text-caption text-[var(--text-secondary)]">
                     Confidence
                   </span>
                 </div>
-                <div className="text-display-sm font-semibold text-slate-900 dark:text-white">
+                <div className="text-display-sm font-semibold text-[var(--text-primary)]">
                   {rating.confidence}%
                 </div>
-                <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
+                <div className="text-micro text-[var(--text-tertiary)] mt-0.5">
                   data completeness
                 </div>
               </div>
 
               {/* Valid Until */}
-              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+              <div className="bg-[var(--surface-sunken)] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="w-4 h-4 text-slate-400 dark:text-white/30" />
-                  <span className="text-caption text-slate-500 dark:text-white/40">
+                  <Clock className="w-4 h-4 text-[var(--text-tertiary)]" />
+                  <span className="text-caption text-[var(--text-secondary)]">
                     Valid Until
                   </span>
                 </div>
-                <div className="text-body-lg font-semibold text-slate-900 dark:text-white">
+                <div className="text-body-lg font-semibold text-[var(--text-primary)]">
                   {new Date(rating.validUntil).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })}
                 </div>
-                <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
+                <div className="text-micro text-[var(--text-tertiary)] mt-0.5">
                   next review date
                 </div>
               </div>
 
               {/* Peer Percentile */}
-              <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+              <div className="bg-[var(--surface-sunken)] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-slate-400 dark:text-white/30" />
-                  <span className="text-caption text-slate-500 dark:text-white/40">
+                  <Users className="w-4 h-4 text-[var(--text-tertiary)]" />
+                  <span className="text-caption text-[var(--text-secondary)]">
                     Peer Percentile
                   </span>
                 </div>
-                <div className="text-display-sm font-semibold text-slate-900 dark:text-white">
+                <div className="text-display-sm font-semibold text-[var(--text-primary)]">
                   {rating.peerPercentile}th
                 </div>
-                <div className="text-micro text-slate-400 dark:text-white/25 mt-0.5">
+                <div className="text-micro text-[var(--text-tertiary)] mt-0.5">
                   among peer group
                 </div>
               </div>
             </div>
 
             {/* Action buttons */}
-            <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-slate-100 dark:border-white/5">
+            <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-[var(--border-subtle)]">
               <Link
                 href="/dashboard/assure/rating/report"
-                className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg text-small font-medium hover:bg-emerald-600 transition-all"
+                className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-4 py-2 rounded-lg text-small font-medium hover:bg-[var(--accent-primary-hover)] transition-all"
               >
                 <FileText className="w-3.5 h-3.5" />
                 View Full Report
@@ -500,7 +500,7 @@ export default function RCROverviewPage() {
                 <button
                   onClick={handlePublish}
                   disabled={publishing}
-                  className="inline-flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/60 px-4 py-2 rounded-lg text-small font-medium hover:bg-slate-200 dark:hover:bg-white/10 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-2 bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-4 py-2 rounded-lg text-small font-medium hover:bg-[var(--surface-sunken)] transition-all disabled:opacity-50"
                 >
                   {publishing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -524,7 +524,7 @@ export default function RCROverviewPage() {
           className="mb-8"
         >
           <GlassCard hover={false} className="p-6">
-            <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-4">
+            <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-4">
               Recent Rating Actions
             </h2>
             <RatingActionTimeline actions={rating.recentActions.slice(0, 5)} />
@@ -545,7 +545,7 @@ export default function RCROverviewPage() {
               description:
                 "Component breakdown, risk register, and peer analysis",
               icon: FileText,
-              color: "text-emerald-500",
+              color: "text-[var(--accent-primary)]",
               href: "/dashboard/assure/rating/report",
             },
             {
@@ -559,7 +559,7 @@ export default function RCROverviewPage() {
               label: "Appeals",
               description: "Submit or track rating appeals",
               icon: Scale,
-              color: "text-purple-500",
+              color: "text-[var(--accent-info)]",
               href: "/dashboard/assure/rating/appeal",
             },
           ].map((item, index) => {
@@ -574,14 +574,14 @@ export default function RCROverviewPage() {
                 <Link href={item.href}>
                   <GlassCard className="p-5 group cursor-pointer">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--surface-sunken)] flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Icon className={`w-5 h-5 ${item.color}`} />
                       </div>
                       <div>
-                        <p className="text-body-lg font-medium text-slate-800 dark:text-white">
+                        <p className="text-body-lg font-medium text-[var(--text-primary)]">
                           {item.label}
                         </p>
-                        <p className="text-caption text-slate-500 dark:text-white/45 mt-0.5">
+                        <p className="text-caption text-[var(--text-secondary)] mt-0.5">
                           {item.description}
                         </p>
                       </div>

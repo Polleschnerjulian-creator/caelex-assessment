@@ -103,26 +103,35 @@ interface OrgDocument {
 const ACCESS_LEVEL_BADGES: Record<string, { label: string; color: string }> = {
   VIEW_ONLY: {
     label: "View Only",
-    color: "bg-slate-500/10 text-slate-400",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
   },
   DOWNLOAD: {
     label: "Download",
-    color: "bg-green-500/10 text-green-400",
+    color: "bg-[var(--accent-success)]/10 text-[var(--accent-success)]",
   },
   FULL: {
     label: "Full Access",
-    color: "bg-emerald-500/10 text-emerald-400",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
   },
   RESTRICTED: {
     label: "Restricted",
-    color: "bg-amber-500/10 text-amber-400",
+    color: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
   },
 };
 
 const ROOM_STATUS_BADGES: Record<string, { label: string; color: string }> = {
-  OPEN: { label: "Open", color: "bg-emerald-500/10 text-emerald-400" },
-  CLOSED: { label: "Closed", color: "bg-slate-500/10 text-slate-400" },
-  EXPIRED: { label: "Expired", color: "bg-red-500/10 text-red-400" },
+  OPEN: {
+    label: "Open",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
+  },
+  CLOSED: {
+    label: "Closed",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
+  },
+  EXPIRED: {
+    label: "Expired",
+    color: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
+  },
 };
 
 // ─── Tab Config ───
@@ -462,9 +471,9 @@ export default function DataRoomDetailPage() {
   if (loading) {
     return (
       <div className="space-y-4" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded animate-pulse w-48" />
-        <div className="h-32 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded animate-pulse w-48" />
+        <div className="h-32 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading data room...</span>
       </div>
     );
@@ -473,12 +482,12 @@ export default function DataRoomDetailPage() {
   if (!room) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 dark:text-white/45">
+        <p className="text-[var(--text-secondary)]">
           {error || "Data room not found"}
         </p>
         <button
           onClick={() => router.push("/dashboard/network")}
-          className="mt-4 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+          className="mt-4 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] transition-colors"
         >
           Back to Network
         </button>
@@ -502,14 +511,17 @@ export default function DataRoomDetailPage() {
               : router.push("/dashboard/network")
           }
           aria-label="Back to engagement"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <FolderLock size={18} className="text-emerald-400 flex-shrink-0" />
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white truncate">
+            <FolderLock
+              size={18}
+              className="text-[var(--accent-primary)] flex-shrink-0"
+            />
+            <h1 className="text-xl font-semibold text-[var(--text-primary)] truncate">
               {room.name}
             </h1>
             <span
@@ -524,14 +536,14 @@ export default function DataRoomDetailPage() {
             </span>
           </div>
           {room.description && (
-            <p className="text-xs text-slate-500 dark:text-white/45 mt-1 truncate">
+            <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">
               {room.description}
             </p>
           )}
         </div>
         <button
           onClick={() => setShowSettings(true)}
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
           aria-label="Room settings"
         >
           <Settings size={16} />
@@ -540,41 +552,38 @@ export default function DataRoomDetailPage() {
 
       {/* Room Info Bar */}
       <GlassCard hover={false} className="p-4">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-white/45">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[var(--text-secondary)]">
           <span className="flex items-center gap-1.5">
-            <Building2
-              size={13}
-              className="text-slate-400 dark:text-white/30"
-            />
+            <Building2 size={13} className="text-[var(--text-tertiary)]" />
             {room.stakeholderName}
           </span>
           <span className="flex items-center gap-1.5">
-            <FileText size={13} className="text-slate-400 dark:text-white/30" />
+            <FileText size={13} className="text-[var(--text-tertiary)]" />
             {room.documentCount} document{room.documentCount !== 1 ? "s" : ""}
           </span>
           {room.expiresAt && (
             <span className="flex items-center gap-1.5">
-              <Clock size={13} className="text-slate-400 dark:text-white/30" />
+              <Clock size={13} className="text-[var(--text-tertiary)]" />
               Expires: {new Date(room.expiresAt).toLocaleDateString()}
             </span>
           )}
           <div className="flex items-center gap-3 ml-auto">
             <span
-              className={`flex items-center gap-1 ${room.watermarkEnabled ? "text-emerald-400" : "text-slate-400 dark:text-white/25"}`}
+              className={`flex items-center gap-1 ${room.watermarkEnabled ? "text-[var(--accent-primary)]" : "text-[var(--text-tertiary)]"}`}
               title="Watermark"
             >
               <Droplets size={13} />
               <span className="text-micro">Watermark</span>
             </span>
             <span
-              className={`flex items-center gap-1 ${room.downloadEnabled ? "text-emerald-400" : "text-slate-400 dark:text-white/25"}`}
+              className={`flex items-center gap-1 ${room.downloadEnabled ? "text-[var(--accent-primary)]" : "text-[var(--text-tertiary)]"}`}
               title="Download"
             >
               <Download size={13} />
               <span className="text-micro">Download</span>
             </span>
             <span
-              className={`flex items-center gap-1 ${room.printEnabled ? "text-emerald-400" : "text-slate-400 dark:text-white/25"}`}
+              className={`flex items-center gap-1 ${room.printEnabled ? "text-[var(--accent-primary)]" : "text-[var(--text-tertiary)]"}`}
               title="Print"
             >
               <Printer size={13} />
@@ -586,12 +595,12 @@ export default function DataRoomDetailPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-red-400 hover:text-red-300"
+            className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
           >
             <X size={14} />
           </button>
@@ -600,7 +609,7 @@ export default function DataRoomDetailPage() {
 
       {/* Tabs */}
       <div
-        className="flex items-center gap-1 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        className="flex items-center gap-1 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
         role="tablist"
         aria-label="Data room sections"
       >
@@ -616,8 +625,8 @@ export default function DataRoomDetailPage() {
               text-sm font-medium transition-all
               ${
                 activeTab === tab.id
-                  ? "bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
               }
             `}
           >
@@ -640,17 +649,14 @@ export default function DataRoomDetailPage() {
           {activeTab === "documents" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                  <FileText
-                    size={16}
-                    className="text-slate-400 dark:text-white/45"
-                  />
+                <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
+                  <FileText size={16} className="text-[var(--text-tertiary)]" />
                   Documents ({documents.length})
                 </h2>
                 {room.status === "OPEN" && (
                   <button
                     onClick={handleOpenAddDocument}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                   >
                     <Plus size={14} />
                     Add Document
@@ -661,20 +667,20 @@ export default function DataRoomDetailPage() {
               {documents.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                      <FileText className="w-7 h-7 text-slate-300 dark:text-white/15" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                      <FileText className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
-                    <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                       No documents in this room
                     </h3>
-                    <p className="text-small text-slate-500 dark:text-white/45 mb-6 max-w-sm mx-auto">
+                    <p className="text-small text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
                       Add documents from your organization's vault to share with
                       this stakeholder.
                     </p>
                     {room.status === "OPEN" && (
                       <button
                         onClick={handleOpenAddDocument}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                       >
                         <Plus size={14} />
                         Add Document
@@ -710,24 +716,21 @@ export default function DataRoomDetailPage() {
           {/* Access Log Tab */}
           {activeTab === "access-log" && (
             <div className="space-y-4">
-              <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                <Activity
-                  size={16}
-                  className="text-slate-400 dark:text-white/45"
-                />
+              <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
+                <Activity size={16} className="text-[var(--text-tertiary)]" />
                 Access Log
               </h2>
 
               {accessLogs.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                      <Activity className="w-7 h-7 text-slate-300 dark:text-white/15" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                      <Activity className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
-                    <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                       No access recorded
                     </h3>
-                    <p className="text-small text-slate-500 dark:text-white/45 max-w-sm mx-auto">
+                    <p className="text-small text-[var(--text-secondary)] max-w-sm mx-auto">
                       All access to this data room will be logged here
                       automatically.
                     </p>
@@ -758,10 +761,10 @@ export default function DataRoomDetailPage() {
           {/* Comments Tab */}
           {activeTab === "comments" && (
             <div className="space-y-4">
-              <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
                 <MessageSquare
                   size={16}
-                  className="text-slate-400 dark:text-white/45"
+                  className="text-[var(--text-tertiary)]"
                 />
                 Comments ({comments.length})
               </h2>
@@ -775,13 +778,13 @@ export default function DataRoomDetailPage() {
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Add a comment about this data room..."
                       rows={3}
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 resize-none"
+                      className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)] resize-none"
                     />
                     <div className="flex justify-end mt-2">
                       <button
                         onClick={handlePostComment}
                         disabled={!newComment.trim() || postingComment}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
                       >
                         {postingComment ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -799,7 +802,7 @@ export default function DataRoomDetailPage() {
               {comments.length === 0 ? (
                 <GlassCard hover={false} className="p-8">
                   <div className="text-center">
-                    <p className="text-sm text-slate-500 dark:text-white/45">
+                    <p className="text-sm text-[var(--text-secondary)]">
                       No comments yet. Start the conversation.
                     </p>
                   </div>
@@ -809,8 +812,8 @@ export default function DataRoomDetailPage() {
                   {comments.map((comment) => (
                     <GlassCard key={comment.id} hover={false} className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-micro font-medium text-emerald-400">
+                        <div className="w-8 h-8 rounded-full bg-[var(--accent-primary-soft)] flex items-center justify-center flex-shrink-0">
+                          <span className="text-micro font-medium text-[var(--accent-primary)]">
                             {comment.authorName
                               .split(" ")
                               .map((n) => n[0])
@@ -821,19 +824,19 @@ export default function DataRoomDetailPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-slate-900 dark:text-white">
+                            <span className="text-sm font-medium text-[var(--text-primary)]">
                               {comment.authorName}
                             </span>
                             {comment.authorRole && (
-                              <span className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[--glass-bg-elevated] text-slate-400 dark:text-white/30">
+                              <span className="text-micro px-1.5 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-tertiary)]">
                                 {comment.authorRole}
                               </span>
                             )}
-                            <span className="text-micro text-slate-400 dark:text-white/25">
+                            <span className="text-micro text-[var(--text-tertiary)]">
                               {new Date(comment.createdAt).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-700 dark:text-white/70 whitespace-pre-wrap">
+                          <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">
                             {comment.content}
                           </p>
                         </div>
@@ -854,26 +857,26 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Add document to data room"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Add Documents
               </h3>
               <button
                 onClick={() => setShowAddDocument(false)}
                 aria-label="Close dialog"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/45"
+                  className="text-[var(--text-secondary)]"
                   aria-hidden="true"
                 />
               </button>
             </div>
 
-            <p className="text-sm text-slate-500 dark:text-white/45 mb-4">
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
               Select documents from your organization's vault to share in this
               data room.
             </p>
@@ -881,11 +884,11 @@ export default function DataRoomDetailPage() {
             <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
               {loadingOrgDocs ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45" />
+                  <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
                 </div>
               ) : orgDocuments.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-sm text-slate-500 dark:text-white/45">
+                  <p className="text-sm text-[var(--text-secondary)]">
                     No documents available in your organization's vault.
                   </p>
                 </div>
@@ -907,18 +910,18 @@ export default function DataRoomDetailPage() {
                         w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors
                         ${
                           alreadyInRoom
-                            ? "opacity-50 cursor-not-allowed bg-slate-50 dark:bg-white/[0.02]"
+                            ? "opacity-50 cursor-not-allowed bg-[var(--surface-sunken)][0.02]"
                             : isSelected
-                              ? "bg-emerald-500/10 border border-emerald-500/30"
-                              : "bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] hover:border-emerald-500/20"
+                              ? "bg-[var(--accent-primary-soft)] border border-[var(--accent-success)/30]"
+                              : "bg-[var(--surface-raised)][0.02] border border-[var(--border-default)][0.08] hover:border-[var(--accent-primary)/20]"
                         }
                       `}
                     >
                       <div
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                           isSelected
-                            ? "border-emerald-500 bg-emerald-500"
-                            : "border-slate-300 dark:border-white/20"
+                            ? "border-[var(--accent-primary)] bg-[var(--accent-success-soft)]0"
+                            : "border-[var(--border-default)]"
                         }`}
                       >
                         {isSelected && (
@@ -926,16 +929,16 @@ export default function DataRoomDetailPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                           {doc.name}
                         </p>
-                        <div className="flex items-center gap-2 text-micro text-slate-400 dark:text-white/30">
+                        <div className="flex items-center gap-2 text-micro text-[var(--text-tertiary)]">
                           <span>{doc.category}</span>
                           <span>{formatFileSize(doc.fileSize)}</span>
                         </div>
                       </div>
                       {alreadyInRoom && (
-                        <span className="text-micro text-slate-400 dark:text-white/30">
+                        <span className="text-micro text-[var(--text-tertiary)]">
                           Already added
                         </span>
                       )}
@@ -945,21 +948,21 @@ export default function DataRoomDetailPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100 dark:border-white/[0.06]">
-              <span className="text-sm text-slate-500 dark:text-white/45">
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-[var(--border-subtle)][0.06]">
+              <span className="text-sm text-[var(--text-secondary)]">
                 {selectedDocIds.size} selected
               </span>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowAddDocument(false)}
-                  className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                  className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddDocuments}
                   disabled={selectedDocIds.size === 0 || addingDocs}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {addingDocs ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -981,20 +984,20 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Data room settings"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-lg w-full"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Room Settings
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
                 aria-label="Close dialog"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
               >
                 <X
                   size={16}
-                  className="text-slate-500 dark:text-white/45"
+                  className="text-[var(--text-secondary)]"
                   aria-hidden="true"
                 />
               </button>
@@ -1002,7 +1005,7 @@ export default function DataRoomDetailPage() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Room Name
                 </label>
                 <input
@@ -1014,11 +1017,11 @@ export default function DataRoomDetailPage() {
                       name: e.target.value,
                     }))
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Description
                 </label>
                 <textarea
@@ -1030,11 +1033,11 @@ export default function DataRoomDetailPage() {
                     }))
                   }
                   rows={3}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50 resize-none"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)] resize-none"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                <label className="block text-sm text-[var(--text-secondary)] mb-1">
                   Access Level
                 </label>
                 <select
@@ -1045,7 +1048,7 @@ export default function DataRoomDetailPage() {
                       accessLevel: e.target.value,
                     }))
                   }
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                 >
                   <option value="VIEW_ONLY">View Only</option>
                   <option value="DOWNLOAD">Download</option>
@@ -1058,7 +1061,7 @@ export default function DataRoomDetailPage() {
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setShowCloseConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-danger)] border border-[var(--accent-danger)/30] hover:bg-[var(--accent-danger)]/10 rounded-lg transition-colors"
               >
                 <Lock size={14} />
                 Close Room
@@ -1066,14 +1069,14 @@ export default function DataRoomDetailPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                  className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveSettings}
                   disabled={savingSettings}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {savingSettings ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -1095,17 +1098,17 @@ export default function DataRoomDetailPage() {
             role="dialog"
             aria-label="Confirm close data room"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-md w-full"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-md w-full"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <Lock size={20} className="text-red-400" />
+              <div className="p-2 rounded-lg bg-[var(--accent-danger)]/10">
+                <Lock size={20} className="text-[var(--accent-danger)]" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Close Data Room
               </h3>
             </div>
-            <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
+            <p className="text-sm text-[var(--text-secondary)] mb-6">
               Closing this data room will revoke all stakeholder access to the
               shared documents. The room can be reopened later if needed. Are
               you sure?
@@ -1113,14 +1116,14 @@ export default function DataRoomDetailPage() {
             <div className="flex items-center gap-3 justify-end">
               <button
                 onClick={() => setShowCloseConfirm(false)}
-                className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCloseRoom}
                 disabled={closingRoom}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-danger)] hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
               >
                 {closingRoom ? (
                   <Loader2 size={14} className="animate-spin" />

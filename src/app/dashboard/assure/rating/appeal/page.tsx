@@ -57,31 +57,31 @@ const STATUS_CONFIG: Record<
     label: "Submitted",
     icon: Send,
     className:
-      "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
+      "bg-[var(--accent-info-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)]",
   },
   UNDER_REVIEW: {
     label: "Under Review",
     icon: Clock,
     className:
-      "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20",
+      "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]",
   },
   ACCEPTED: {
     label: "Accepted",
     icon: CheckCircle2,
     className:
-      "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20",
+      "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]",
   },
   REJECTED: {
     label: "Rejected",
     icon: XCircle,
     className:
-      "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20",
+      "bg-[var(--accent-danger-soft)]/10 text-[var(--accent-danger)] border-[var(--accent-danger)]",
   },
   WITHDRAWN: {
     label: "Withdrawn",
     icon: XCircle,
     className:
-      "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/45 border-slate-200 dark:border-[--glass-border-subtle]",
+      "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)]",
   },
 };
 
@@ -138,12 +138,12 @@ function AppealForm({
   return (
     <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
       <GlassCard highlighted className="p-6">
-        <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
+        <h2 className="text-heading font-medium text-[var(--text-primary)] mb-1">
           Submit Rating Appeal
         </h2>
-        <p className="text-body text-slate-500 dark:text-white/45 mb-6">
+        <p className="text-body text-[var(--text-secondary)] mb-6">
           Appeal the current rating of{" "}
-          <span className="font-semibold text-slate-700 dark:text-white/70">
+          <span className="font-semibold text-[var(--text-secondary)]">
             {rating.grade}
           </span>{" "}
           (score: {rating.numericScore}) computed on{" "}
@@ -159,7 +159,7 @@ function AppealForm({
           <div>
             <label
               htmlFor="appeal-reason"
-              className="block text-body font-medium text-slate-700 dark:text-white/70 mb-2"
+              className="block text-body font-medium text-[var(--text-secondary)] mb-2"
             >
               Reason for Appeal
             </label>
@@ -169,9 +169,9 @@ function AppealForm({
               onChange={(e) => setReason(e.target.value)}
               placeholder="Describe why you believe the current rating does not accurately reflect your organization's regulatory compliance posture. Include specific evidence or circumstances that should be considered..."
               rows={6}
-              className="w-full px-4 py-3 bg-white dark:bg-navy-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all resize-none"
+              className="w-full px-4 py-3 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]/30 focus:border-[var(--border-focus)]:border-[var(--accent-primary)] transition-all resize-none"
             />
-            <p className="text-micro text-slate-400 dark:text-white/25 mt-1">
+            <p className="text-micro text-[var(--text-tertiary)] mt-1">
               Minimum 50 characters. {reason.length}/50
             </p>
           </div>
@@ -180,12 +180,10 @@ function AppealForm({
             <motion.div
               initial={false}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
+              className="flex items-center gap-2 p-3 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]"
             >
-              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-small text-red-600 dark:text-red-400">
-                {error}
-              </p>
+              <AlertTriangle className="w-4 h-4 text-[var(--accent-danger)] flex-shrink-0" />
+              <p className="text-small text-[var(--accent-danger)]">{error}</p>
             </motion.div>
           )}
 
@@ -193,7 +191,7 @@ function AppealForm({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-body font-medium hover:bg-emerald-600 transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-5 py-2.5 rounded-lg text-body font-medium hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50"
             >
               {submitting ? (
                 <>
@@ -210,7 +208,7 @@ function AppealForm({
             <button
               type="button"
               onClick={onCancel}
-              className="text-body text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors px-4 py-2.5"
+              className="text-body text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors px-4 py-2.5"
             >
               Cancel
             </button>
@@ -293,8 +291,8 @@ export default function RCRAppealPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-3" />
-          <p className="text-body text-slate-500 dark:text-white/45">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)] mx-auto mb-3" />
+          <p className="text-body text-[var(--text-secondary)]">
             Loading appeals...
           </p>
         </div>
@@ -308,7 +306,7 @@ export default function RCRAppealPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure/rating"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Rating
@@ -321,8 +319,8 @@ export default function RCRAppealPage() {
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 mb-1"
             >
-              <Scale className="w-5 h-5 text-purple-500" />
-              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+              <Scale className="w-5 h-5 text-[var(--accent-info)]" />
+              <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
                 Rating Appeals
               </h1>
             </motion.div>
@@ -330,7 +328,7 @@ export default function RCRAppealPage() {
               initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.05 }}
-              className="text-body text-slate-500 dark:text-white/45"
+              className="text-body text-[var(--text-secondary)]"
             >
               Submit or track appeals against your regulatory credit rating.
             </motion.p>
@@ -341,7 +339,7 @@ export default function RCRAppealPage() {
               initial={false}
               animate={{ opacity: 1 }}
               onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg text-small font-medium hover:bg-emerald-600 transition-all"
+              className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-4 py-2 rounded-lg text-small font-medium hover:bg-[var(--accent-primary-hover)] transition-all"
             >
               <Plus className="w-4 h-4" />
               New Appeal
@@ -355,10 +353,10 @@ export default function RCRAppealPage() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
+          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]"
         >
-          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-body text-red-700 dark:text-red-400">{error}</p>
+          <AlertTriangle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-danger)]">{error}</p>
         </motion.div>
       )}
 
@@ -367,10 +365,10 @@ export default function RCRAppealPage() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20"
+          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)]"
         >
-          <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
-          <p className="text-body text-amber-700 dark:text-amber-400">
+          <Clock className="w-5 h-5 text-[var(--accent-warning)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-warning)]">
             You have an active appeal in progress. A new appeal cannot be
             submitted until the current one is resolved.
           </p>
@@ -399,13 +397,13 @@ export default function RCRAppealPage() {
         >
           <GlassCard>
             <div className="p-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
-                <Scale className="w-8 h-8 text-slate-400 dark:text-white/30" />
+              <div className="w-16 h-16 rounded-full bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                <Scale className="w-8 h-8 text-[var(--text-tertiary)]" />
               </div>
-              <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
+              <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
                 No Appeals Filed
               </h2>
-              <p className="text-body text-slate-500 dark:text-white/45 max-w-md mx-auto">
+              <p className="text-body text-[var(--text-secondary)] max-w-md mx-auto">
                 You haven&apos;t submitted any rating appeals yet. If you
                 believe your current rating doesn&apos;t accurately reflect your
                 compliance posture, you can file an appeal.
@@ -427,16 +425,16 @@ export default function RCRAppealPage() {
                   <div className="flex items-center gap-3">
                     <StatusBadge status={appeal.status} />
                     {appeal.rating && (
-                      <span className="text-small text-slate-500 dark:text-white/40">
+                      <span className="text-small text-[var(--text-secondary)]">
                         Against rating:{" "}
-                        <span className="font-medium text-slate-700 dark:text-white/60">
+                        <span className="font-medium text-[var(--text-secondary)]">
                           {appeal.rating.grade}
                         </span>{" "}
                         ({appeal.rating.numericScore})
                       </span>
                     )}
                   </div>
-                  <span className="text-micro text-slate-400 dark:text-white/25">
+                  <span className="text-micro text-[var(--text-tertiary)]">
                     {new Date(appeal.createdAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -446,25 +444,25 @@ export default function RCRAppealPage() {
                 </div>
 
                 <div className="flex items-start gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-slate-400 dark:text-white/30 mt-0.5 flex-shrink-0" />
-                  <p className="text-body text-slate-700 dark:text-white/70">
+                  <FileText className="w-4 h-4 text-[var(--text-tertiary)] mt-0.5 flex-shrink-0" />
+                  <p className="text-body text-[var(--text-secondary)]">
                     {appeal.reason}
                   </p>
                 </div>
 
                 {appeal.reviewNotes && (
-                  <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5">
-                    <p className="text-caption text-slate-500 dark:text-white/40 mb-1">
+                  <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+                    <p className="text-caption text-[var(--text-secondary)] mb-1">
                       Review Notes
                     </p>
-                    <p className="text-small text-slate-600 dark:text-white/60">
+                    <p className="text-small text-[var(--text-secondary)]">
                       {appeal.reviewNotes}
                     </p>
                   </div>
                 )}
 
                 {appeal.resolvedAt && (
-                  <p className="text-micro text-slate-400 dark:text-white/25 mt-2">
+                  <p className="text-micro text-[var(--text-tertiary)] mt-2">
                     Resolved{" "}
                     {new Date(appeal.resolvedAt).toLocaleDateString("en-US", {
                       month: "short",

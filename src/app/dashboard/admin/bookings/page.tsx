@@ -56,10 +56,14 @@ const STATUS_TABS: { label: string; value: BookingStatus | "" }[] = [
 ];
 
 const STATUS_BADGE_CLASSES: Record<BookingStatus, string> = {
-  CONFIRMED: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
-  COMPLETED: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-  CANCELLED: "bg-red-500/15 text-red-400 border-red-500/20",
-  NO_SHOW: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+  CONFIRMED:
+    "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-primary)] border-[var(--accent-primary)/20]",
+  COMPLETED:
+    "bg-[var(--accent-info-soft)]0/15 text-[var(--accent-primary)] border-[var(--accent-primary)]/20",
+  CANCELLED:
+    "bg-[var(--accent-danger)]/15 text-[var(--accent-danger)] border-[var(--accent-danger)]/20",
+  NO_SHOW:
+    "bg-[var(--accent-warning)]/15 text-[var(--accent-warning)] border-[var(--accent-warning)/20]",
 };
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
@@ -147,17 +151,14 @@ export default function AdminBookingsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-            <Calendar
-              size={18}
-              className="text-emerald-600 dark:text-emerald-400"
-            />
+          <div className="w-9 h-9 bg-[var(--accent-primary-soft)] rounded-lg flex items-center justify-center">
+            <Calendar size={18} className="text-[var(--accent-success)]" />
           </div>
           <div>
-            <h1 className="text-title font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-title font-semibold text-[var(--text-primary)]">
               Booking Management
             </h1>
-            <p className="text-body text-slate-600 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               {pagination.total} total bookings
             </p>
           </div>
@@ -165,7 +166,7 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg w-fit">
+      <div className="flex items-center gap-1 p-1 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg w-fit">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -175,8 +176,8 @@ export default function AdminBookingsPage() {
             }}
             className={`px-3 py-1.5 text-small font-medium rounded-md transition-colors ${
               statusFilter === tab.value
-                ? "bg-emerald-500 text-white"
-                : "text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                ? "bg-[var(--accent-primary)] text-white"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)]"
             }`}
           >
             {tab.label}
@@ -186,73 +187,73 @@ export default function AdminBookingsPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="glass-elevated rounded-xl p-12">
+        <div className="rounded-xl p-12">
           <div className="flex items-center justify-center gap-3">
-            <Loader2 size={20} className="text-emerald-500 animate-spin" />
-            <span className="text-body text-slate-500 dark:text-white/45">
+            <Loader2
+              size={20}
+              className="text-[var(--accent-primary)] animate-spin"
+            />
+            <span className="text-body text-[var(--text-secondary)]">
               Loading bookings...
             </span>
           </div>
         </div>
       ) : bookings.length === 0 ? (
-        <div className="glass-elevated rounded-xl p-12">
+        <div className="rounded-xl p-12">
           <div className="flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-center">
-              <Calendar
-                size={24}
-                className="text-slate-400 dark:text-white/30"
-              />
+            <div className="w-12 h-12 bg-[var(--surface-sunken)] rounded-xl flex items-center justify-center">
+              <Calendar size={24} className="text-[var(--text-tertiary)]" />
             </div>
-            <p className="text-body text-slate-500 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               No bookings yet
             </p>
           </div>
         </div>
       ) : (
-        <div className="glass-elevated rounded-xl overflow-hidden">
+        <div className="rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                  <th className="text-left text-small font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider px-4 py-3">
+                <tr className="border-b border-[var(--border-default)]">
+                  <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Name
                   </th>
-                  <th className="text-left text-small font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider px-4 py-3">
+                  <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Company
                   </th>
-                  <th className="text-left text-small font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider px-4 py-3">
+                  <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Date/Time
                   </th>
-                  <th className="text-left text-small font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider px-4 py-3">
+                  <th className="text-left text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Status
                   </th>
-                  <th className="text-right text-small font-medium text-slate-500 dark:text-white/45 uppercase tracking-wider px-4 py-3">
+                  <th className="text-right text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider px-4 py-3">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[--glass-border-subtle]">
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {bookings.map((booking) => (
                   <tr
                     key={booking.id}
-                    className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                    className="hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div>
-                        <p className="text-body font-medium text-slate-900 dark:text-white">
+                        <p className="text-body font-medium text-[var(--text-primary)]">
                           {booking.name}
                         </p>
-                        <p className="text-small text-slate-500 dark:text-white/45">
+                        <p className="text-small text-[var(--text-secondary)]">
                           {booking.email}
                         </p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-body text-slate-700 dark:text-white/70">
+                      <p className="text-body text-[var(--text-secondary)]">
                         {booking.company}
                       </p>
                       {booking.demoRequest?.operatorType && (
-                        <p className="text-small text-slate-500 dark:text-white/45">
+                        <p className="text-small text-[var(--text-secondary)]">
                           {booking.demoRequest.operatorType}
                         </p>
                       )}
@@ -261,9 +262,9 @@ export default function AdminBookingsPage() {
                       <div className="flex items-center gap-1.5">
                         <Clock
                           size={14}
-                          className="text-slate-400 dark:text-white/30"
+                          className="text-[var(--text-tertiary)]"
                         />
-                        <span className="text-body text-slate-700 dark:text-white/70">
+                        <span className="text-body text-[var(--text-secondary)]">
                           {formatScheduledAt(booking.scheduledAt)}
                         </span>
                       </div>
@@ -284,7 +285,7 @@ export default function AdminBookingsPage() {
                                 handleAction(booking.id, "COMPLETED")
                               }
                               disabled={actionLoading === booking.id}
-                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-emerald-400 hover:bg-emerald-500/10 rounded-md transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-[var(--accent-primary)] hover:bg-[var(--accent-primary-soft)] rounded-md transition-colors disabled:opacity-50"
                               title="Mark as completed"
                             >
                               <CheckCircle2 size={14} />
@@ -295,7 +296,7 @@ export default function AdminBookingsPage() {
                                 handleAction(booking.id, "CANCELLED")
                               }
                               disabled={actionLoading === booking.id}
-                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-red-400 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-[var(--accent-danger)] hover:bg-[var(--accent-danger)]/10 rounded-md transition-colors disabled:opacity-50"
                               title="Cancel booking"
                             >
                               <XCircle size={14} />
@@ -306,7 +307,7 @@ export default function AdminBookingsPage() {
                                 handleAction(booking.id, "NO_SHOW")
                               }
                               disabled={actionLoading === booking.id}
-                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-small font-medium text-[var(--accent-warning)] hover:bg-[var(--accent-warning-soft)] rounded-md transition-colors disabled:opacity-50"
                               title="Mark as no-show"
                             >
                               <AlertCircle size={14} />
@@ -327,7 +328,7 @@ export default function AdminBookingsPage() {
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-body text-slate-600 dark:text-white/45">
+          <p className="text-body text-[var(--text-secondary)]">
             Showing {(page - 1) * pagination.limit + 1} to{" "}
             {Math.min(page * pagination.limit, pagination.total)} of{" "}
             {pagination.total}
@@ -336,11 +337,11 @@ export default function AdminBookingsPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="p-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-700 dark:text-white disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="p-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] disabled:opacity-50 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-body text-slate-600 dark:text-white/45 min-w-[80px] text-center">
+            <span className="text-body text-[var(--text-secondary)] min-w-[80px] text-center">
               Page {page} of {pagination.totalPages}
             </span>
             <button
@@ -348,7 +349,7 @@ export default function AdminBookingsPage() {
                 setPage((p) => Math.min(pagination.totalPages, p + 1))
               }
               disabled={page >= pagination.totalPages}
-              className="p-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-700 dark:text-white disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="p-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] disabled:opacity-50 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               <ChevronRight size={16} />
             </button>

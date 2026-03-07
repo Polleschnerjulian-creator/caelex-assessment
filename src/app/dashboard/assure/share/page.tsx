@@ -168,9 +168,9 @@ export default function AssureSharePage() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6" role="status" aria-live="polite">
-        <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-48" />
-        <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-96" />
-        <div className="h-[400px] bg-slate-200 dark:bg-white/5 rounded-xl mt-8" />
+        <div className="h-6 bg-[var(--surface-sunken)] rounded w-48" />
+        <div className="h-4 bg-[var(--surface-sunken)] rounded w-96" />
+        <div className="h-[400px] bg-[var(--surface-sunken)] rounded-xl mt-8" />
         <span className="sr-only">Loading share links...</span>
       </div>
     );
@@ -182,7 +182,7 @@ export default function AssureSharePage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Assure
@@ -193,8 +193,8 @@ export default function AssureSharePage() {
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
-          <Share2 className="w-5 h-5 text-emerald-500" />
-          <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+          <Share2 className="w-5 h-5 text-[var(--accent-primary)]" />
+          <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
             Share Compliance Posture
           </h1>
         </motion.div>
@@ -202,7 +202,7 @@ export default function AssureSharePage() {
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="text-body text-slate-500 dark:text-white/45"
+          className="text-body text-[var(--text-secondary)]"
         >
           Create secure, time-limited links to share your Regulatory Readiness
           Score with investors, auditors, and partners.
@@ -211,9 +211,9 @@ export default function AssureSharePage() {
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-          <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
-          <p className="text-body text-red-700 dark:text-red-400">{error}</p>
+        <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]">
+          <AlertTriangle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-danger)]">{error}</p>
         </div>
       )}
 
@@ -249,22 +249,22 @@ export default function AssureSharePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white border border-slate-200 dark:bg-navy-900 dark:border-[--glass-border-subtle] rounded-xl p-8 max-w-[520px] w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 max-w-[520px] w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               {/* Modal header */}
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-heading font-medium text-slate-900 dark:text-white">
+                  <h2 className="text-heading font-medium text-[var(--text-primary)]">
                     Create Share Link
                   </h2>
-                  <p className="text-small text-slate-500 dark:text-white/45 mt-1">
+                  <p className="text-small text-[var(--text-secondary)] mt-1">
                     Configure access level and expiration for the shared view.
                   </p>
                 </div>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   aria-label="Close"
-                  className="text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -272,9 +272,9 @@ export default function AssureSharePage() {
 
               {/* Error */}
               {createError && (
-                <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-                  <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
-                  <span className="text-small text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]">
+                  <AlertTriangle className="w-4 h-4 text-[var(--accent-danger)]" />
+                  <span className="text-small text-[var(--accent-danger)]">
                     {createError}
                   </span>
                 </div>
@@ -286,7 +286,7 @@ export default function AssureSharePage() {
                 <div>
                   <label
                     htmlFor="share-label"
-                    className="block text-small font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                    className="block text-small font-medium text-[var(--text-secondary)] mb-1.5"
                   >
                     Label *
                   </label>
@@ -298,7 +298,7 @@ export default function AssureSharePage() {
                       setForm((f) => ({ ...f, label: e.target.value }))
                     }
                     placeholder="e.g. Series B DD — Acme Ventures"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-[var(--border-focus)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)]"
                   />
                 </div>
 
@@ -306,7 +306,7 @@ export default function AssureSharePage() {
                 <div>
                   <label
                     htmlFor="share-granularity"
-                    className="block text-small font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                    className="block text-small font-medium text-[var(--text-secondary)] mb-1.5"
                   >
                     Detail Level
                   </label>
@@ -320,7 +320,7 @@ export default function AssureSharePage() {
                           .value as CreateLinkForm["granularity"],
                       }))
                     }
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     <option value="SUMMARY">
                       Summary — Overall score and component scores only
@@ -339,7 +339,7 @@ export default function AssureSharePage() {
                   <div>
                     <label
                       htmlFor="share-expires"
-                      className="block text-small font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                      className="block text-small font-medium text-[var(--text-secondary)] mb-1.5"
                     >
                       Expires *
                     </label>
@@ -351,16 +351,16 @@ export default function AssureSharePage() {
                         setForm((f) => ({ ...f, expiresAt: e.target.value }))
                       }
                       min={new Date().toISOString().split("T")[0]}
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50"
+                      className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-[var(--border-focus)]"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="share-maxviews"
-                      className="block text-small font-medium text-slate-700 dark:text-white/70 mb-1.5"
+                      className="block text-small font-medium text-[var(--text-secondary)] mb-1.5"
                     >
                       Max Views{" "}
-                      <span className="text-slate-400 dark:text-white/30 font-normal">
+                      <span className="text-[var(--text-tertiary)] font-normal">
                         (optional)
                       </span>
                     </label>
@@ -373,14 +373,14 @@ export default function AssureSharePage() {
                       }
                       min={1}
                       placeholder="Unlimited"
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-400 dark:placeholder:text-white/25"
+                      className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-lg px-4 py-2.5 text-body-lg focus:outline-none focus:border-[var(--border-focus)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)]"
                     />
                   </div>
                 </div>
 
                 {/* Include toggles */}
                 <div>
-                  <p className="text-small font-medium text-slate-700 dark:text-white/70 mb-3">
+                  <p className="text-small font-medium text-[var(--text-secondary)] mb-3">
                     Include in Shared View
                   </p>
                   <div className="space-y-2">
@@ -413,7 +413,7 @@ export default function AssureSharePage() {
                     ].map((toggle) => (
                       <label
                         key={toggle.key}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--surface-sunken)] transition-colors cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -426,13 +426,13 @@ export default function AssureSharePage() {
                             }))
                           }
                           disabled={toggle.required}
-                          className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-emerald-500 focus:ring-emerald-500/30 disabled:opacity-50"
+                          className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 disabled:opacity-50"
                         />
-                        <span className="text-body text-slate-700 dark:text-white/70">
+                        <span className="text-body text-[var(--text-secondary)]">
                           {toggle.label}
                         </span>
                         {toggle.required && (
-                          <span className="text-micro text-slate-400 dark:text-white/30">
+                          <span className="text-micro text-[var(--text-tertiary)]">
                             (always included)
                           </span>
                         )}
@@ -443,17 +443,17 @@ export default function AssureSharePage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
+              <div className="flex gap-3 mt-8 pt-6 border-t border-[var(--border-subtle)]">
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 border border-slate-200 text-slate-500 dark:border-[--glass-border-subtle] dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                  className="flex-1 border border-[var(--border-default)] text-[var(--text-secondary)] py-2.5 rounded-lg text-body hover:bg-[var(--surface-sunken)] transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={creating}
-                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-body hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-[var(--accent-primary)] text-white py-2.5 rounded-lg font-medium text-body hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {creating && <Loader2 className="w-4 h-4 animate-spin" />}
                   {creating ? "Creating..." : "Create Link"}

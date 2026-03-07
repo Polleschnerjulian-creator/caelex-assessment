@@ -68,9 +68,9 @@ export default function AssurePackagesPage() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6" role="status" aria-live="polite">
-        <div className="h-6 bg-slate-200 dark:bg-white/5 rounded w-48" />
-        <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-96" />
-        <div className="h-[300px] bg-slate-200 dark:bg-white/5 rounded-xl mt-8" />
+        <div className="h-6 bg-[var(--surface-sunken)] rounded w-48" />
+        <div className="h-4 bg-[var(--surface-sunken)] rounded w-96" />
+        <div className="h-[300px] bg-[var(--surface-sunken)] rounded-xl mt-8" />
         <span className="sr-only">Loading DD packages...</span>
       </div>
     );
@@ -82,7 +82,7 @@ export default function AssurePackagesPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Assure
@@ -93,8 +93,8 @@ export default function AssurePackagesPage() {
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
-          <Package className="w-5 h-5 text-emerald-500" />
-          <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+          <Package className="w-5 h-5 text-[var(--accent-primary)]" />
+          <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
             Due Diligence Packages
           </h1>
         </motion.div>
@@ -102,7 +102,7 @@ export default function AssurePackagesPage() {
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="text-body text-slate-500 dark:text-white/45"
+          className="text-body text-[var(--text-secondary)]"
         >
           Generate point-in-time compliance snapshots for investor due diligence
           processes.
@@ -116,9 +116,9 @@ export default function AssurePackagesPage() {
         transition={{ delay: 0.1 }}
         className="mb-6"
       >
-        <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20">
-          <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
-          <div className="text-small text-emerald-700 dark:text-emerald-300 leading-relaxed">
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-[var(--accent-success-soft)] border border-[var(--accent-success)]">
+          <Info className="w-4 h-4 text-[var(--accent-success)] mt-0.5 flex-shrink-0" />
+          <div className="text-small text-[var(--accent-success)] leading-relaxed">
             Each DD package captures your current Regulatory Readiness Score and
             full compliance breakdown at the time of generation. Packages are
             immutable snapshots that cannot be modified after creation, ensuring
@@ -129,9 +129,9 @@ export default function AssurePackagesPage() {
 
       {/* Error states */}
       {error && (
-        <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-          <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
-          <p className="text-body text-red-700 dark:text-red-400">{error}</p>
+        <div className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]">
+          <AlertTriangle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-danger)]">{error}</p>
         </div>
       )}
 
@@ -139,15 +139,15 @@ export default function AssurePackagesPage() {
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20"
+          className="flex items-center gap-3 p-4 mb-6 rounded-lg bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)]"
         >
-          <AlertTriangle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
-          <p className="text-body text-red-700 dark:text-red-400">
+          <AlertTriangle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-body text-[var(--accent-danger)]">
             {generateError}
           </p>
           <button
             onClick={() => setGenerateError(null)}
-            className="ml-auto text-small text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+            className="ml-auto text-small text-[var(--accent-danger)] hover:text-[var(--accent-danger)]:text-red-300 transition-colors"
           >
             Dismiss
           </button>
@@ -176,14 +176,14 @@ export default function AssurePackagesPage() {
           className="mt-8"
         >
           <GlassCard hover={false} className="p-4">
-            <div className="flex items-center justify-between text-small text-slate-500 dark:text-white/45">
+            <div className="flex items-center justify-between text-small text-[var(--text-secondary)]">
               <span>
                 {packages.length} package{packages.length !== 1 ? "s" : ""}{" "}
                 generated
               </span>
               <span>
                 Latest score:{" "}
-                <span className="font-medium text-slate-700 dark:text-white/70">
+                <span className="font-medium text-[var(--text-secondary)]">
                   {packages[0]?.rrsScore || "—"}/100
                 </span>{" "}
                 ({packages[0]?.grade || "—"})

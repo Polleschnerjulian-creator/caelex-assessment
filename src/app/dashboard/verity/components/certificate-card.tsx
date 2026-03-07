@@ -33,17 +33,17 @@ export default function CertificateCard({
   const isExpired = new Date(cert.expiresAt) < new Date();
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5">
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-5">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center">
-            <Shield className="w-4.5 h-4.5 text-white/60" />
+          <div className="w-9 h-9 rounded-lg bg-[var(--surface-sunken)] flex items-center justify-center">
+            <Shield className="w-4.5 h-4.5 text-[var(--text-secondary)]" />
           </div>
           <div>
             <p className="text-body font-medium text-white">
               Certificate {cert.certificateId.slice(0, 16)}...
             </p>
-            <p className="text-caption text-white/30">
+            <p className="text-caption text-[var(--text-tertiary)]">
               {cert.satelliteNorad
                 ? `NORAD ${cert.satelliteNorad}`
                 : "Organization-wide"}
@@ -57,18 +57,18 @@ export default function CertificateCard({
           ) : (
             <Badge
               variant="default"
-              className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              className="bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)/20]"
             >
               Active
             </Badge>
           )}
           {cert.isPublic ? (
-            <Badge variant="outline" className="text-white/50">
+            <Badge variant="outline" className="text-[var(--text-secondary)]">
               <Eye className="w-3 h-3 mr-1" />
               Public
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-white/30">
+            <Badge variant="outline" className="text-[var(--text-tertiary)]">
               <EyeOff className="w-3 h-3 mr-1" />
               Private
             </Badge>
@@ -81,7 +81,7 @@ export default function CertificateCard({
           <Badge
             key={ref}
             variant="outline"
-            className="text-caption text-white/40"
+            className="text-caption text-[var(--text-tertiary)]"
           >
             {ref.replace(/_/g, " ")}
           </Badge>
@@ -90,23 +90,23 @@ export default function CertificateCard({
 
       <div className="grid grid-cols-4 gap-3 mb-4">
         <div>
-          <p className="text-caption text-white/30">Claims</p>
+          <p className="text-caption text-[var(--text-tertiary)]">Claims</p>
           <p className="text-body font-medium text-white">{cert.claimsCount}</p>
         </div>
         <div>
-          <p className="text-caption text-white/30">Trust</p>
+          <p className="text-caption text-[var(--text-tertiary)]">Trust</p>
           <p className="text-body font-medium text-white">
             {cert.minTrustLevel}
           </p>
         </div>
         <div>
-          <p className="text-caption text-white/30">Sentinel</p>
+          <p className="text-caption text-[var(--text-tertiary)]">Sentinel</p>
           <p className="text-body font-medium text-white">
             {cert.sentinelBacked}/{cert.claimsCount}
           </p>
         </div>
         <div>
-          <p className="text-caption text-white/30">Verified</p>
+          <p className="text-caption text-[var(--text-tertiary)]">Verified</p>
           <p className="text-body font-medium text-white">
             {cert.verificationCount}x
           </p>
@@ -145,7 +145,7 @@ export default function CertificateCard({
         <Button
           variant="secondary"
           onClick={() => onRevoke(cert.id)}
-          className="text-red-400 hover:text-red-300"
+          className="text-[var(--accent-danger)] hover:text-red-300"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

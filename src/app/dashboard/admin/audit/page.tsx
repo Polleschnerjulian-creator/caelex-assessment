@@ -87,14 +87,14 @@ export default function AdminAuditPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-lg bg-[var(--surface-sunken)] flex items-center justify-center">
+              <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
             </div>
             <div>
-              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+              <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
                 {t("audit.auditLogs")}
               </h1>
-              <p className="text-body-lg text-slate-500 dark:text-white/45">
+              <p className="text-body-lg text-[var(--text-secondary)]">
                 {t("audit.completeAuditTrail")}
               </p>
             </div>
@@ -104,7 +104,7 @@ export default function AdminAuditPage() {
         {/* Table */}
         {loading && logs.length === 0 ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/30 animate-spin" />
+            <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
           </div>
         ) : (
           <AuditLogTable

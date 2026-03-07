@@ -40,8 +40,8 @@ export default function RCRMethodologyPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-3" />
-          <p className="text-body text-slate-500 dark:text-white/45">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)] mx-auto mb-3" />
+          <p className="text-body text-[var(--text-secondary)]">
             Loading methodology...
           </p>
         </div>
@@ -54,18 +54,18 @@ export default function RCRMethodologyPage() {
       <div>
         <Link
           href="/dashboard/assure/rating"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Rating
         </Link>
         <GlassCard>
           <div className="p-12 text-center">
-            <AlertTriangle className="w-12 h-12 text-slate-400 dark:text-white/30 mx-auto mb-4" />
-            <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-2">
+            <AlertTriangle className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-4" />
+            <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
               {error || "Methodology Unavailable"}
             </h2>
-            <p className="text-body text-slate-500 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               The rating methodology document could not be loaded.
             </p>
             <button
@@ -74,7 +74,7 @@ export default function RCRMethodologyPage() {
                 setError(null);
                 fetchMethodology();
               }}
-              className="mt-4 text-small text-emerald-500 hover:text-emerald-400 transition-colors"
+              className="mt-4 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
             >
               Try Again
             </button>
@@ -90,7 +90,7 @@ export default function RCRMethodologyPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/assure/rating"
-          className="inline-flex items-center gap-1 text-small text-slate-500 dark:text-white/45 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors mb-4"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Rating
@@ -102,7 +102,7 @@ export default function RCRMethodologyPage() {
           className="flex items-center gap-2 mb-1"
         >
           <BookOpen className="w-5 h-5 text-cyan-500" />
-          <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+          <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
             Rating Methodology
           </h1>
         </motion.div>
@@ -110,7 +110,7 @@ export default function RCRMethodologyPage() {
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="text-body text-slate-500 dark:text-white/45"
+          className="text-body text-[var(--text-secondary)]"
         >
           Grading scale, component weights, scoring criteria, penalties, and
           peer benchmarking approach.

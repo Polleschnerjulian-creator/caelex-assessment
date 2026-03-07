@@ -78,16 +78,20 @@ export default function CertificateList() {
   if (loading) {
     return (
       <div className="text-center py-8">
-        <p className="text-small text-white/30">Loading certificates...</p>
+        <p className="text-small text-[var(--text-tertiary)]">
+          Loading certificates...
+        </p>
       </div>
     );
   }
 
   if (certificates.length === 0) {
     return (
-      <div className="text-center py-8 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-        <p className="text-body text-white/40">No certificates issued yet</p>
-        <p className="text-small text-white/25 mt-1">
+      <div className="text-center py-8 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl">
+        <p className="text-body text-[var(--text-tertiary)]">
+          No certificates issued yet
+        </p>
+        <p className="text-small text-[var(--text-tertiary)] mt-1">
           Generate attestations first, then issue a certificate
         </p>
       </div>

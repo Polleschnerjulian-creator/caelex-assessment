@@ -64,7 +64,7 @@ export default function VerityDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-display-sm font-semibold text-white">Verity</h1>
-          <p className="text-body text-white/45 mt-1">
+          <p className="text-body text-[var(--text-tertiary)] mt-1">
             Privacy-Preserving Compliance Attestation
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function VerityDashboard() {
           href="/verity/verify"
           target="_blank"
           rel="noopener"
-          className="flex items-center gap-2 text-small text-white/40 hover:text-white/70 transition-colors"
+          className="flex items-center gap-2 text-small text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
         >
           <FileCheck className="w-4 h-4" />
           Public Verification
@@ -83,7 +83,7 @@ export default function VerityDashboard() {
       <AttestationExplainer />
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/[0.03] rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-[var(--surface-sunken)] rounded-lg w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -92,8 +92,8 @@ export default function VerityDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-small font-medium transition-colors ${
                 activeTab === tab.id
-                  ? "bg-white/[0.08] text-white"
-                  : "text-white/40 hover:text-white/70"
+                  ? "bg-[var(--surface-sunken)] text-white"
+                  : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
               }`}
             >
               <Icon className="w-4 h-4" />

@@ -52,15 +52,21 @@ interface SubmissionDetail {
 }
 
 const STATUS_BADGES: Record<string, { label: string; color: string }> = {
-  DRAFT: { label: "Draft", color: "bg-slate-500/10 text-slate-400" },
+  DRAFT: {
+    label: "Draft",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
+  },
   SUBMITTED: {
     label: "Submitted",
-    color: "bg-emerald-500/10 text-emerald-400",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
   },
-  RECEIVED: { label: "Received", color: "bg-emerald-500/10 text-emerald-300" },
+  RECEIVED: {
+    label: "Received",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
+  },
   UNDER_REVIEW: {
     label: "Under Review",
-    color: "bg-amber-500/10 text-amber-400",
+    color: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
   },
   INFORMATION_REQUESTED: {
     label: "Info Requested",
@@ -68,11 +74,20 @@ const STATUS_BADGES: Record<string, { label: string; color: string }> = {
   },
   ACKNOWLEDGED: {
     label: "Acknowledged",
-    color: "bg-emerald-500/10 text-emerald-400",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
   },
-  APPROVED: { label: "Approved", color: "bg-green-500/10 text-green-400" },
-  REJECTED: { label: "Rejected", color: "bg-red-500/10 text-red-400" },
-  WITHDRAWN: { label: "Withdrawn", color: "bg-slate-500/10 text-slate-400" },
+  APPROVED: {
+    label: "Approved",
+    color: "bg-[var(--accent-success)]/10 text-[var(--accent-success)]",
+  },
+  REJECTED: {
+    label: "Rejected",
+    color: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
+  },
+  WITHDRAWN: {
+    label: "Withdrawn",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
+  },
 };
 
 export default function SubmissionDetailPage() {
@@ -115,8 +130,8 @@ export default function SubmissionDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-dark-border rounded animate-pulse w-48" />
-        <div className="h-64 bg-slate-200 dark:bg-dark-border rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded animate-pulse w-48" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading submission details...</span>
       </div>
     );
@@ -125,12 +140,10 @@ export default function SubmissionDetailPage() {
   if (!submission) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 dark:text-slate-400">
-          Submission not found
-        </p>
+        <p className="text-[var(--text-secondary)]">Submission not found</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 text-sm text-emerald-400 hover:text-emerald-300"
+          className="mt-4 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
         >
           Go back
         </button>
@@ -160,12 +173,12 @@ export default function SubmissionDetailPage() {
         <button
           onClick={() => router.push("/dashboard/nca-portal")}
           aria-label="Back to NCA portal"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-lg font-semibold text-[var(--text-primary)]">
             {submission.ncaAuthorityName}
           </h1>
           <div className="flex items-center gap-2 mt-1">
@@ -175,7 +188,7 @@ export default function SubmissionDetailPage() {
               {statusBadge.label}
             </span>
             {submission.ncaReference && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-[var(--text-tertiary)]">
                 Ref: {submission.ncaReference}
               </span>
             )}
@@ -183,7 +196,7 @@ export default function SubmissionDetailPage() {
         </div>
         <button
           onClick={() => setShowCorrespondenceForm(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
         >
           <MessageSquarePlus size={14} />
           Log Communication
@@ -194,12 +207,12 @@ export default function SubmissionDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Timeline */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-4">
               Timeline
             </h3>
             {timeline.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">
+              <p className="text-sm text-[var(--text-secondary)] py-4 text-center">
                 No timeline entries yet.
               </p>
             ) : (
@@ -222,20 +235,20 @@ export default function SubmissionDetailPage() {
         {/* Right: Info Panel */}
         <div className="space-y-4">
           {/* Submission Info */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">
               Submission Info
             </h3>
             <div className="space-y-3 text-xs">
               <div className="flex items-center gap-2">
-                <Building2 size={14} className="text-slate-400" />
-                <span className="text-slate-500 dark:text-slate-400">
+                <Building2 size={14} className="text-[var(--text-tertiary)]" />
+                <span className="text-[var(--text-secondary)]">
                   {submission.ncaAuthorityName}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock size={14} className="text-slate-400" />
-                <span className="text-slate-500 dark:text-slate-400">
+                <Clock size={14} className="text-[var(--text-tertiary)]" />
+                <span className="text-[var(--text-secondary)]">
                   Submitted{" "}
                   {new Date(submission.submittedAt).toLocaleDateString()}
                 </span>
@@ -244,8 +257,8 @@ export default function SubmissionDetailPage() {
                 <div
                   className={`flex items-center gap-2 p-2 rounded-lg ${
                     slaCountdown.includes("overdue")
-                      ? "bg-red-500/10 text-red-400"
-                      : "bg-amber-500/10 text-amber-400"
+                      ? "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]"
+                      : "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]"
                   }`}
                 >
                   <Clock size={14} />
@@ -253,7 +266,7 @@ export default function SubmissionDetailPage() {
                 </div>
               )}
               {submission.followUpRequired && (
-                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+                <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]">
                   <p className="font-medium">Follow-up Required</p>
                   {submission.followUpDeadline && (
                     <p className="text-micro mt-0.5">
@@ -270,14 +283,14 @@ export default function SubmissionDetailPage() {
 
           {/* Linked Package */}
           {submission.package && (
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Package size={14} className="text-emerald-400" />
-                <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+                <Package size={14} className="text-[var(--accent-primary)]" />
+                <h3 className="text-sm font-medium text-[var(--text-primary)]">
                   Linked Package
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+              <p className="text-xs text-[var(--text-secondary)] mb-2">
                 {submission.package.packageName}
               </p>
               <PackageCompletenessBar
@@ -288,8 +301,8 @@ export default function SubmissionDetailPage() {
           )}
 
           {/* Actions */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-4">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-4">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">
               Actions
             </h3>
             <SubmissionActions

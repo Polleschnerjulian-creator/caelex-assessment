@@ -85,9 +85,9 @@ function StatSkeleton() {
   return (
     <GlassCard hover={false} className="p-5">
       <div className="animate-pulse space-y-3">
-        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-24" />
-        <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-16" />
-        <div className="h-2 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-32" />
+        <div className="h-3 bg-[var(--surface-sunken)] rounded w-24" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded w-16" />
+        <div className="h-2 bg-[var(--surface-sunken)] rounded w-32" />
       </div>
     </GlassCard>
   );
@@ -98,14 +98,14 @@ function CardSkeleton() {
     <GlassCard hover={false} className="p-5">
       <div className="animate-pulse space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-lg" />
+          <div className="w-10 h-10 bg-[var(--surface-sunken)] rounded-lg" />
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-2/3" />
-            <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-1/3" />
+            <div className="h-4 bg-[var(--surface-sunken)] rounded w-2/3" />
+            <div className="h-3 bg-[var(--surface-sunken)] rounded w-1/3" />
           </div>
         </div>
-        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-full" />
-        <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-3/4" />
+        <div className="h-3 bg-[var(--surface-sunken)] rounded w-full" />
+        <div className="h-3 bg-[var(--surface-sunken)] rounded w-3/4" />
       </div>
     </GlassCard>
   );
@@ -196,14 +196,14 @@ export default function NetworkHubPage() {
       {/* Page Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center">
-            <Network className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary-soft)] to-[var(--accent-primary-soft)] flex items-center justify-center">
+            <Network className="w-5 h-5 text-[var(--accent-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
               Compliance Network
             </h1>
-            <p className="text-xs text-slate-500 dark:text-white/45">
+            <p className="text-xs text-[var(--text-secondary)]">
               Manage stakeholder engagements, data rooms, and attestations
             </p>
           </div>
@@ -212,14 +212,14 @@ export default function NetworkHubPage() {
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-[var(--border-default)] rounded-lg transition-colors disabled:opacity-50"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
           </button>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
           >
             <Plus size={14} />
             Invite Stakeholder
@@ -229,12 +229,12 @@ export default function NetworkHubPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-red-400 hover:text-red-300"
+            className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
           >
             <X size={14} />
           </button>
@@ -254,60 +254,60 @@ export default function NetworkHubPage() {
           <>
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+                <Users className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                   Active Engagements
                 </span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              <div className="text-3xl font-bold text-[var(--text-primary)]">
                 {stats?.activeEngagements ?? 0}
               </div>
-              <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
+              <div className="text-caption text-[var(--text-tertiary)] mt-2">
                 Across all stakeholder types
               </div>
             </GlassCard>
 
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <FolderLock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+                <FolderLock className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                   Open Data Rooms
                 </span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              <div className="text-3xl font-bold text-[var(--text-primary)]">
                 {stats?.openDataRooms ?? 0}
               </div>
-              <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
+              <div className="text-caption text-[var(--text-tertiary)] mt-2">
                 Secure document sharing
               </div>
             </GlassCard>
 
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <ShieldCheck className="w-4 h-4 text-green-500 dark:text-green-400" />
-                <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+                <ShieldCheck className="w-4 h-4 text-[var(--accent-success)]" />
+                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                   Total Attestations
                 </span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              <div className="text-3xl font-bold text-[var(--text-primary)]">
                 {stats?.totalAttestations ?? 0}
               </div>
-              <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
+              <div className="text-caption text-[var(--text-tertiary)] mt-2">
                 Compliance confirmations
               </div>
             </GlassCard>
 
             <GlassCard className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Mail className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                <span className="text-micro uppercase tracking-wider text-slate-400 dark:text-white/30">
+                <Mail className="w-4 h-4 text-[var(--accent-warning)]" />
+                <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
                   Pending Invitations
                 </span>
               </div>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">
+              <div className="text-3xl font-bold text-[var(--text-primary)]">
                 {stats?.pendingInvitations ?? 0}
               </div>
-              <div className="text-caption text-slate-400 dark:text-white/30 mt-2">
+              <div className="text-caption text-[var(--text-tertiary)] mt-2">
                 Awaiting response
               </div>
             </GlassCard>
@@ -320,7 +320,7 @@ export default function NetworkHubPage() {
         <div className="flex-1 relative w-full sm:w-auto">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
             aria-hidden="true"
           />
           <label htmlFor="network-search" className="sr-only">
@@ -332,12 +332,12 @@ export default function NetworkHubPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search stakeholders..."
-            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50 transition-colors"
+            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)] transition-colors"
           />
         </div>
 
         <div
-          className="flex items-center gap-1 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+          className="flex items-center gap-1 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
           role="tablist"
           aria-label="Stakeholder type filter"
         >
@@ -351,8 +351,8 @@ export default function NetworkHubPage() {
                 px-3 py-1.5 rounded-lg text-caption font-medium transition-colors whitespace-nowrap
                 ${
                   activeTab === tab.id
-                    ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
-                    : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5"
+                    ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
                 }
               `}
             >
@@ -376,15 +376,15 @@ export default function NetworkHubPage() {
           ) : filteredEngagements.length === 0 ? (
             <GlassCard hover={false} className="p-12">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="w-8 h-8 text-slate-300 dark:text-white/15" />
+                <div className="w-16 h-16 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-8 h-8 text-[var(--text-tertiary)]" />
                 </div>
-                <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                   {searchQuery
                     ? "No matching stakeholders"
                     : "No stakeholders yet"}
                 </h3>
-                <p className="text-small text-slate-500 dark:text-white/45 mb-6 max-w-sm mx-auto">
+                <p className="text-small text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
                   {searchQuery
                     ? "Try adjusting your search or filter criteria."
                     : "Invite your first stakeholder to start building your compliance network. Share data rooms, request attestations, and track engagement activity."}
@@ -392,7 +392,7 @@ export default function NetworkHubPage() {
                 {!searchQuery && (
                   <button
                     onClick={() => setShowInviteModal(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                   >
                     <Plus size={14} />
                     Invite Stakeholder
@@ -438,24 +438,24 @@ export default function NetworkHubPage() {
         {/* Right: Activity Feed */}
         <div className="space-y-4">
           <GlassCard hover={false} className="p-5">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-              <Network size={14} className="text-emerald-400" />
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Network size={14} className="text-[var(--accent-primary)]" />
               Network Activity
             </h3>
             {loading ? (
               <div className="animate-pulse space-y-3">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex gap-3">
-                    <div className="w-6 h-6 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-full flex-shrink-0" />
+                    <div className="w-6 h-6 bg-[var(--surface-sunken)] rounded-full flex-shrink-0" />
                     <div className="space-y-1.5 flex-1">
-                      <div className="h-3 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-3/4" />
-                      <div className="h-2 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded w-1/2" />
+                      <div className="h-3 bg-[var(--surface-sunken)] rounded w-3/4" />
+                      <div className="h-2 bg-[var(--surface-sunken)] rounded w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : activities.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-white/45 py-4 text-center">
+              <p className="text-sm text-[var(--text-secondary)] py-4 text-center">
                 No recent activity.
               </p>
             ) : (

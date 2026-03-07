@@ -76,22 +76,24 @@ const COMPONENT_LABELS: Record<string, string> = {
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-500/10 text-red-400 border-red-500/20",
+  CRITICAL:
+    "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] border-[var(--accent-danger)]/20",
   HIGH: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  MEDIUM: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  LOW: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  MEDIUM:
+    "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)/20]",
+  LOW: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)/20]",
 };
 
 function scoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 60) return "text-amber-400";
-  return "text-red-400";
+  if (score >= 80) return "text-[var(--accent-primary)]";
+  if (score >= 60) return "text-[var(--accent-warning)]";
+  return "text-[var(--accent-danger)]";
 }
 
 function completenessBar(value: number): string {
-  if (value >= 0.8) return "bg-emerald-500";
-  if (value >= 0.5) return "bg-amber-500";
-  return "bg-red-500";
+  if (value >= 0.8) return "bg-[var(--accent-success-soft)]0";
+  if (value >= 0.5) return "bg-[var(--accent-warning)]";
+  return "bg-[var(--accent-danger)]";
 }
 
 export default function RatingReportPage() {
@@ -151,11 +153,11 @@ export default function RatingReportPage() {
   if (loading) {
     return (
       <div className="p-6 lg:p-10 max-w-[1200px] mx-auto space-y-6">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-[var(--surface-sunken)] rounded animate-pulse" />
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-64 bg-slate-200 dark:bg-white/10 rounded-xl animate-pulse"
+            className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse"
           />
         ))}
       </div>
@@ -167,7 +169,7 @@ export default function RatingReportPage() {
       <div className="p-6 lg:p-10 max-w-[1200px] mx-auto">
         <Link
           href="/dashboard/assure/rating"
-          className="inline-flex items-center gap-2 text-body text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white mb-6"
+          className="inline-flex items-center gap-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white mb-6"
         >
           <ArrowLeft size={16} /> Back to Rating
         </Link>
@@ -175,12 +177,12 @@ export default function RatingReportPage() {
           <div className="p-12 text-center">
             <Shield
               size={48}
-              className="mx-auto text-slate-400 dark:text-white/30 mb-4"
+              className="mx-auto text-[var(--text-tertiary)] mb-4"
             />
-            <h2 className="text-heading font-bold text-slate-900 dark:text-white mb-2">
+            <h2 className="text-heading font-bold text-[var(--text-primary)] mb-2">
               {error || "No Rating Available"}
             </h2>
-            <p className="text-body text-slate-600 dark:text-white/60">
+            <p className="text-body text-[var(--text-secondary)]">
               Compute your first rating to view the full report.
             </p>
           </div>
@@ -196,18 +198,18 @@ export default function RatingReportPage() {
         <div>
           <Link
             href="/dashboard/assure/rating"
-            className="inline-flex items-center gap-2 text-body text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white mb-2"
+            className="inline-flex items-center gap-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white mb-2"
           >
             <ArrowLeft size={16} /> Back to Rating
           </Link>
-          <h1 className="text-display-sm font-bold text-slate-900 dark:text-white">
+          <h1 className="text-display-sm font-bold text-[var(--text-primary)]">
             Rating Report
           </h1>
         </div>
         {rating.id && (
           <a
             href={`/api/assure/rcr/report/${rating.id}/export`}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors"
           >
             <Download size={16} /> Export PDF
           </a>
@@ -226,7 +228,7 @@ export default function RatingReportPage() {
             <RCRGradeBadge grade={rating.grade} size="xl" showLabel />
             <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <p className="text-caption text-slate-500 dark:text-white/45">
+                <p className="text-caption text-[var(--text-secondary)]">
                   Numeric Score
                 </p>
                 <p
@@ -236,7 +238,7 @@ export default function RatingReportPage() {
                 </p>
               </div>
               <div>
-                <p className="text-caption text-slate-500 dark:text-white/45">
+                <p className="text-caption text-[var(--text-secondary)]">
                   Outlook
                 </p>
                 <div className="mt-1">
@@ -244,18 +246,18 @@ export default function RatingReportPage() {
                 </div>
               </div>
               <div>
-                <p className="text-caption text-slate-500 dark:text-white/45">
+                <p className="text-caption text-[var(--text-secondary)]">
                   Confidence
                 </p>
-                <p className="text-title font-bold text-slate-900 dark:text-white">
+                <p className="text-title font-bold text-[var(--text-primary)]">
                   {Math.round(rating.confidence * 100)}%
                 </p>
               </div>
               <div>
-                <p className="text-caption text-slate-500 dark:text-white/45">
+                <p className="text-caption text-[var(--text-secondary)]">
                   Valid Until
                 </p>
-                <p className="text-body font-medium text-slate-900 dark:text-white">
+                <p className="text-body font-medium text-[var(--text-primary)]">
                   {new Date(rating.validUntil).toLocaleDateString("en-GB")}
                 </p>
               </div>
@@ -272,22 +274,22 @@ export default function RatingReportPage() {
       >
         <GlassCard>
           <div className="p-6">
-            <h2 className="text-heading font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-              <BarChart3 size={20} className="text-emerald-500" />
+            <h2 className="text-heading font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <BarChart3 size={20} className="text-[var(--accent-primary)]" />
               Component Breakdown
             </h2>
             <div className="space-y-4">
               {(rating.componentScores || []).map((comp) => (
                 <div
                   key={comp.component}
-                  className="border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4"
+                  className="border border-[var(--border-default)] rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h3 className="text-subtitle font-semibold text-slate-900 dark:text-white">
+                      <h3 className="text-subtitle font-semibold text-[var(--text-primary)]">
                         {COMPONENT_LABELS[comp.component] || comp.component}
                       </h3>
-                      <p className="text-caption text-slate-500 dark:text-white/45">
+                      <p className="text-caption text-[var(--text-secondary)]">
                         Weight: {Math.round(comp.weight * 100)}%
                       </p>
                     </div>
@@ -297,7 +299,7 @@ export default function RatingReportPage() {
                       >
                         {comp.adjustedScore}/100
                       </p>
-                      <p className="text-caption text-slate-500 dark:text-white/45">
+                      <p className="text-caption text-[var(--text-secondary)]">
                         Raw: {comp.rawScore}
                       </p>
                     </div>
@@ -305,23 +307,23 @@ export default function RatingReportPage() {
                   {/* Progress bars */}
                   <div className="flex gap-4 mb-3">
                     <div className="flex-1">
-                      <div className="flex justify-between text-caption text-slate-500 dark:text-white/45 mb-1">
+                      <div className="flex justify-between text-caption text-[var(--text-secondary)] mb-1">
                         <span>Score</span>
                         <span>{comp.adjustedScore}%</span>
                       </div>
-                      <div className="h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${comp.adjustedScore >= 80 ? "bg-emerald-500" : comp.adjustedScore >= 60 ? "bg-amber-500" : "bg-red-500"}`}
+                          className={`h-full rounded-full ${comp.adjustedScore >= 80 ? "bg-[var(--accent-success-soft)]0" : comp.adjustedScore >= 60 ? "bg-[var(--accent-warning)]" : "bg-[var(--accent-danger)]"}`}
                           style={{ width: `${comp.adjustedScore}%` }}
                         />
                       </div>
                     </div>
                     <div className="w-32">
-                      <div className="flex justify-between text-caption text-slate-500 dark:text-white/45 mb-1">
+                      <div className="flex justify-between text-caption text-[var(--text-secondary)] mb-1">
                         <span>Data</span>
                         <span>{Math.round(comp.dataCompleteness * 100)}%</span>
                       </div>
-                      <div className="h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${completenessBar(comp.dataCompleteness)}`}
                           style={{
@@ -332,10 +334,12 @@ export default function RatingReportPage() {
                     </div>
                   </div>
                   {comp.keyFindings.length > 0 && (
-                    <ul className="text-small text-slate-600 dark:text-white/60 space-y-1">
+                    <ul className="text-small text-[var(--text-secondary)] space-y-1">
                       {comp.keyFindings.map((f, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span className="text-emerald-500 mt-0.5">-</span>
+                          <span className="text-[var(--accent-primary)] mt-0.5">
+                            -
+                          </span>
                           {f}
                         </li>
                       ))}
@@ -357,47 +361,50 @@ export default function RatingReportPage() {
         <GlassCard>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-heading font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <AlertTriangle size={20} className="text-amber-500" />
+              <h2 className="text-heading font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <AlertTriangle
+                  size={20}
+                  className="text-[var(--accent-warning)]"
+                />
                 Risk Register ({sortedRisks.length})
               </h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => setSortBy("severity")}
-                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "severity" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"}`}
+                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "severity" ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"}`}
                 >
                   By Severity
                 </button>
                 <button
                   onClick={() => setSortBy("likelihood")}
-                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "likelihood" ? "bg-emerald-500/10 text-emerald-400" : "text-slate-500 dark:text-white/45 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"}`}
+                  className={`px-3 py-1 rounded text-small transition-colors ${sortBy === "likelihood" ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"}`}
                 >
                   By Likelihood
                 </button>
               </div>
             </div>
             {sortedRisks.length === 0 ? (
-              <p className="text-body text-slate-500 dark:text-white/45 text-center py-8">
+              <p className="text-body text-[var(--text-secondary)] text-center py-8">
                 No risks identified.
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-small">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                      <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
+                    <tr className="border-b border-[var(--border-default)]">
+                      <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">
                         Risk
                       </th>
-                      <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
+                      <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">
                         Severity
                       </th>
-                      <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
+                      <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">
                         Likelihood
                       </th>
-                      <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
+                      <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">
                         Mitigation
                       </th>
-                      <th className="text-left py-2 px-3 text-slate-500 dark:text-white/45 font-medium">
+                      <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">
                         Ref
                       </th>
                     </tr>
@@ -406,9 +413,9 @@ export default function RatingReportPage() {
                     {sortedRisks.map((risk) => (
                       <tr
                         key={risk.id}
-                        className="border-b border-slate-100 dark:border-white/5"
+                        className="border-b border-[var(--border-subtle)]"
                       >
-                        <td className="py-3 px-3 text-slate-900 dark:text-white max-w-xs">
+                        <td className="py-3 px-3 text-[var(--text-primary)] max-w-xs">
                           {risk.description}
                         </td>
                         <td className="py-3 px-3">
@@ -418,17 +425,17 @@ export default function RatingReportPage() {
                             {risk.severity}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-slate-600 dark:text-white/60">
+                        <td className="py-3 px-3 text-[var(--text-secondary)]">
                           {risk.likelihood.replace("_", " ")}
                         </td>
                         <td className="py-3 px-3">
                           <span
-                            className={`text-micro ${risk.mitigationStatus === "MITIGATED" ? "text-emerald-400" : risk.mitigationStatus === "IN_PROGRESS" ? "text-amber-400" : "text-red-400"}`}
+                            className={`text-micro ${risk.mitigationStatus === "MITIGATED" ? "text-[var(--accent-primary)]" : risk.mitigationStatus === "IN_PROGRESS" ? "text-[var(--accent-warning)]" : "text-[var(--accent-danger)]"}`}
                           >
                             {risk.mitigationStatus.replace("_", " ")}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-slate-500 dark:text-white/45 text-micro">
+                        <td className="py-3 px-3 text-[var(--text-secondary)] text-micro">
                           {risk.regulatoryReference}
                         </td>
                       </tr>
@@ -450,21 +457,21 @@ export default function RatingReportPage() {
         >
           <GlassCard>
             <div className="p-6">
-              <h2 className="text-heading font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <FileText size={20} className="text-emerald-500" />
+              <h2 className="text-heading font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                <FileText size={20} className="text-[var(--accent-primary)]" />
                 Rating Action
               </h2>
               <div className="flex items-center gap-4 mb-3">
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded text-small font-medium">
+                <span className="px-3 py-1 bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] rounded text-small font-medium">
                   {rating.actionType}
                 </span>
                 {rating.previousGrade && (
-                  <span className="text-body text-slate-500 dark:text-white/45">
+                  <span className="text-body text-[var(--text-secondary)]">
                     {rating.previousGrade} → {rating.grade}
                   </span>
                 )}
               </div>
-              <p className="text-body text-slate-700 dark:text-white/70">
+              <p className="text-body text-[var(--text-secondary)]">
                 {rating.actionRationale}
               </p>
             </div>
@@ -481,7 +488,7 @@ export default function RatingReportPage() {
         >
           <GlassCard>
             <div className="p-6">
-              <h2 className="text-heading font-bold text-slate-900 dark:text-white mb-4">
+              <h2 className="text-heading font-bold text-[var(--text-primary)] mb-4">
                 Peer Comparison
               </h2>
               <PeerBenchmarkChart
@@ -503,7 +510,7 @@ export default function RatingReportPage() {
         >
           <GlassCard>
             <div className="p-6">
-              <h2 className="text-heading font-bold text-slate-900 dark:text-white mb-4">
+              <h2 className="text-heading font-bold text-[var(--text-primary)] mb-4">
                 Rating History
               </h2>
               <RatingActionTimeline actions={history} />

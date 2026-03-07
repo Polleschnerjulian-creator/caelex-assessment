@@ -100,23 +100,23 @@ interface AccessLogEntry {
 const STATUS_BADGES: Record<string, { label: string; color: string }> = {
   ACTIVE: {
     label: "Active",
-    color: "bg-emerald-500/10 text-emerald-400",
+    color: "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]",
   },
   SUSPENDED: {
     label: "Suspended",
-    color: "bg-amber-500/10 text-amber-400",
+    color: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)]",
   },
   REVOKED: {
     label: "Revoked",
-    color: "bg-red-500/10 text-red-400",
+    color: "bg-[var(--accent-danger)]/10 text-[var(--accent-danger)]",
   },
   PENDING: {
     label: "Pending",
-    color: "bg-slate-500/10 text-slate-400",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
   },
   EXPIRED: {
     label: "Expired",
-    color: "bg-slate-500/10 text-slate-400",
+    color: "bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)]",
   },
 };
 
@@ -358,9 +358,9 @@ export default function EngagementDetailPage() {
   if (loading) {
     return (
       <div className="space-y-4" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded animate-pulse w-48" />
-        <div className="h-48 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-[--glass-bg-elevated] rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded animate-pulse w-48" />
+        <div className="h-48 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading engagement details...</span>
       </div>
     );
@@ -369,12 +369,12 @@ export default function EngagementDetailPage() {
   if (!engagement) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 dark:text-white/45">
+        <p className="text-[var(--text-secondary)]">
           {error || "Engagement not found"}
         </p>
         <button
           onClick={() => router.push("/dashboard/network")}
-          className="mt-4 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+          className="mt-4 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] transition-colors"
         >
           Back to Network
         </button>
@@ -391,13 +391,13 @@ export default function EngagementDetailPage() {
         <button
           onClick={() => router.push("/dashboard/network")}
           aria-label="Back to Compliance Network"
-          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]:text-white rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
         >
           <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white truncate">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)] truncate">
               {engagement.stakeholderName}
             </h1>
             <StakeholderTypeBadge
@@ -409,7 +409,7 @@ export default function EngagementDetailPage() {
               {statusBadge.label}
             </span>
           </div>
-          <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 dark:text-white/45">
+          <div className="flex items-center gap-4 mt-1 text-xs text-[var(--text-secondary)]">
             {engagement.contactEmail && (
               <span className="flex items-center gap-1">
                 <Mail size={12} />
@@ -435,12 +435,12 @@ export default function EngagementDetailPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
+          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-red-400 hover:text-red-300"
+            className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
           >
             <X size={14} />
           </button>
@@ -449,7 +449,7 @@ export default function EngagementDetailPage() {
 
       {/* Tabs */}
       <div
-        className="flex items-center gap-1 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        className="flex items-center gap-1 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
         role="tablist"
         aria-label="Engagement sections"
       >
@@ -465,8 +465,8 @@ export default function EngagementDetailPage() {
               text-sm font-medium transition-all
               ${
                 activeTab === tab.id
-                  ? "bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5"
+                  ? "bg-[var(--surface-sunken)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
               }
             `}
           >
@@ -489,16 +489,16 @@ export default function EngagementDetailPage() {
           {activeTab === "data-rooms" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
                   <FolderLock
                     size={16}
-                    className="text-slate-400 dark:text-white/45"
+                    className="text-[var(--text-tertiary)]"
                   />
                   Data Rooms ({dataRooms.length})
                 </h2>
                 <button
                   onClick={() => setShowCreateRoom(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                 >
                   <Plus size={14} />
                   Create Data Room
@@ -508,19 +508,19 @@ export default function EngagementDetailPage() {
               {dataRooms.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                      <FolderLock className="w-7 h-7 text-slate-300 dark:text-white/15" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                      <FolderLock className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
-                    <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                       No data rooms yet
                     </h3>
-                    <p className="text-small text-slate-500 dark:text-white/45 mb-6 max-w-sm mx-auto">
+                    <p className="text-small text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
                       Create a secure data room to share compliance documents
                       with this stakeholder.
                     </p>
                     <button
                       onClick={() => setShowCreateRoom(true)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors"
                     >
                       <Plus size={14} />
                       Create Data Room
@@ -557,10 +557,10 @@ export default function EngagementDetailPage() {
           {/* Attestations Tab */}
           {activeTab === "attestations" && (
             <div className="space-y-4">
-              <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
                 <ShieldCheck
                   size={16}
-                  className="text-slate-400 dark:text-white/45"
+                  className="text-[var(--text-tertiary)]"
                 />
                 Attestations ({attestations.length})
               </h2>
@@ -568,13 +568,13 @@ export default function EngagementDetailPage() {
               {attestations.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                      <ShieldCheck className="w-7 h-7 text-slate-300 dark:text-white/15" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                      <ShieldCheck className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
-                    <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                       No attestations yet
                     </h3>
-                    <p className="text-small text-slate-500 dark:text-white/45 max-w-sm mx-auto">
+                    <p className="text-small text-[var(--text-secondary)] max-w-sm mx-auto">
                       Attestations will appear here once this stakeholder
                       provides compliance confirmations.
                     </p>
@@ -607,24 +607,21 @@ export default function EngagementDetailPage() {
           {/* Activity Tab */}
           {activeTab === "activity" && (
             <div className="space-y-4">
-              <h2 className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                <Activity
-                  size={16}
-                  className="text-slate-400 dark:text-white/45"
-                />
+              <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
+                <Activity size={16} className="text-[var(--text-tertiary)]" />
                 Access Logs
               </h2>
 
               {accessLogs.length === 0 ? (
                 <GlassCard hover={false} className="p-12">
                   <div className="text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[--glass-bg-surface] flex items-center justify-center mx-auto mb-4">
-                      <Activity className="w-7 h-7 text-slate-300 dark:text-white/15" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--surface-sunken)] flex items-center justify-center mx-auto mb-4">
+                      <Activity className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
-                    <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+                    <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
                       No activity recorded
                     </h3>
-                    <p className="text-small text-slate-500 dark:text-white/45 max-w-sm mx-auto">
+                    <p className="text-small text-[var(--text-secondary)] max-w-sm mx-auto">
                       Stakeholder access events will be logged here
                       automatically.
                     </p>
@@ -656,7 +653,7 @@ export default function EngagementDetailPage() {
           {activeTab === "settings" && (
             <div className="space-y-6">
               <GlassCard hover={false} className="p-6">
-                <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-5">
+                <h3 className="text-sm font-medium text-[var(--text-primary)] mb-5">
                   Engagement Settings
                 </h3>
 
@@ -664,14 +661,17 @@ export default function EngagementDetailPage() {
                   {/* Status Toggle */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-500/10">
-                        <Power size={16} className="text-emerald-400" />
+                      <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
+                        <Power
+                          size={16}
+                          className="text-[var(--accent-primary)]"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-white/70">
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
                           Engagement Status
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-white/30">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Active engagements can access shared resources
                         </p>
                       </div>
@@ -686,15 +686,15 @@ export default function EngagementDetailPage() {
                       }
                       className={`relative w-12 h-6 rounded-full transition-colors ${
                         settingsForm.status === "ACTIVE"
-                          ? "bg-emerald-500"
-                          : "bg-slate-300 dark:bg-white/20"
+                          ? "bg-[var(--accent-success-soft)]0"
+                          : "bg-[var(--surface-sunken)]"
                       }`}
                       role="switch"
                       aria-checked={settingsForm.status === "ACTIVE"}
                       aria-label="Toggle engagement status"
                     >
                       <div
-                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        className={`absolute top-0.5 w-5 h-5 bg-[var(--surface-raised)] rounded-full shadow transition-transform ${
                           settingsForm.status === "ACTIVE"
                             ? "translate-x-6"
                             : "translate-x-0.5"
@@ -706,14 +706,17 @@ export default function EngagementDetailPage() {
                   {/* IP Allowlist */}
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-emerald-500/10">
-                        <Globe size={16} className="text-emerald-400" />
+                      <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
+                        <Globe
+                          size={16}
+                          className="text-[var(--accent-primary)]"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-white/70">
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
                           IP Allowlist
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-white/30">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Restrict access to specific IP addresses
                           (comma-separated)
                         </p>
@@ -729,21 +732,24 @@ export default function EngagementDetailPage() {
                         }))
                       }
                       placeholder="e.g., 192.168.1.0/24, 10.0.0.1"
-                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-emerald-500/50"
+                      className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)]"
                     />
                   </div>
 
                   {/* MFA Requirement */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-slate-500/10">
-                        <Fingerprint size={16} className="text-slate-400" />
+                      <div className="p-2 rounded-lg bg-[var(--surface-sunken)]0/10">
+                        <Fingerprint
+                          size={16}
+                          className="text-[var(--text-tertiary)]"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-white/70">
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
                           Require MFA
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-white/30">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Require multi-factor authentication for this
                           stakeholder
                         </p>
@@ -758,15 +764,15 @@ export default function EngagementDetailPage() {
                       }
                       className={`relative w-12 h-6 rounded-full transition-colors ${
                         settingsForm.mfaRequired
-                          ? "bg-emerald-500"
-                          : "bg-slate-300 dark:bg-white/20"
+                          ? "bg-[var(--accent-success-soft)]0"
+                          : "bg-[var(--surface-sunken)]"
                       }`}
                       role="switch"
                       aria-checked={settingsForm.mfaRequired}
                       aria-label="Toggle MFA requirement"
                     >
                       <div
-                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        className={`absolute top-0.5 w-5 h-5 bg-[var(--surface-raised)] rounded-full shadow transition-transform ${
                           settingsForm.mfaRequired
                             ? "translate-x-6"
                             : "translate-x-0.5"
@@ -780,7 +786,7 @@ export default function EngagementDetailPage() {
                     <button
                       onClick={handleSaveSettings}
                       disabled={savingSettings}
-                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg transition-colors disabled:opacity-50"
                     >
                       {savingSettings ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -796,9 +802,9 @@ export default function EngagementDetailPage() {
               {/* Danger Zone */}
               <GlassCard
                 hover={false}
-                className="p-6 border-red-500/20 dark:border-red-500/10"
+                className="p-6 border-[var(--accent-danger)]/20"
               >
-                <h3 className="text-sm font-medium text-red-400 mb-5">
+                <h3 className="text-sm font-medium text-[var(--accent-danger)] mb-5">
                   Danger Zone
                 </h3>
 
@@ -806,21 +812,24 @@ export default function EngagementDetailPage() {
                   {/* Token Rotation */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-amber-500/10">
-                        <Key size={16} className="text-amber-400" />
+                      <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
+                        <Key
+                          size={16}
+                          className="text-[var(--accent-warning)]"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-white/70">
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
                           Rotate Access Token
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-white/30">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Invalidate the current token and issue a new one
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => setShowRotateConfirm(true)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-400 border border-amber-500/30 hover:bg-amber-500/10 rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-warning)] border border-amber-500/30 hover:bg-[var(--accent-warning-soft)] rounded-lg transition-colors"
                     >
                       <RefreshCw size={14} />
                       Rotate
@@ -828,16 +837,19 @@ export default function EngagementDetailPage() {
                   </div>
 
                   {/* Revoke Access */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)][0.06]">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-red-500/10">
-                        <Trash2 size={16} className="text-red-400" />
+                      <div className="p-2 rounded-lg bg-[var(--accent-danger)]/10">
+                        <Trash2
+                          size={16}
+                          className="text-[var(--accent-danger)]"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-white/70">
+                        <p className="text-sm font-medium text-[var(--text-secondary)]">
                           Revoke Access
                         </p>
-                        <p className="text-xs text-slate-400 dark:text-white/30">
+                        <p className="text-xs text-[var(--text-tertiary)]">
                           Permanently revoke this stakeholder's access. This
                           cannot be undone.
                         </p>
@@ -845,7 +857,7 @@ export default function EngagementDetailPage() {
                     </div>
                     <button
                       onClick={() => setShowRevokeConfirm(true)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--accent-danger)] border border-[var(--accent-danger)/30] hover:bg-[var(--accent-danger)]/10 rounded-lg transition-colors"
                     >
                       <XCircle size={14} />
                       Revoke
@@ -894,19 +906,19 @@ export default function EngagementDetailPage() {
             role="dialog"
             aria-label="Confirm token rotation"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-md w-full"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-md w-full"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <Key size={20} className="text-amber-400" />
+              <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
+                <Key size={20} className="text-[var(--accent-warning)]" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Rotate Access Token
               </h3>
             </div>
-            <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
+            <p className="text-sm text-[var(--text-secondary)] mb-6">
               This will invalidate the current access token for{" "}
-              <strong className="text-slate-900 dark:text-white">
+              <strong className="text-[var(--text-primary)]">
                 {engagement.stakeholderName}
               </strong>
               . They will need to re-authenticate with the new token. Are you
@@ -915,14 +927,14 @@ export default function EngagementDetailPage() {
             <div className="flex items-center gap-3 justify-end">
               <button
                 onClick={() => setShowRotateConfirm(false)}
-                className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRotateToken}
                 disabled={rotatingToken}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-warning)] hover:bg-amber-600 text-white rounded-lg transition-colors disabled:opacity-50"
               >
                 {rotatingToken ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -943,24 +955,24 @@ export default function EngagementDetailPage() {
             role="dialog"
             aria-label="Confirm access revocation"
             aria-modal="true"
-            className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-md w-full"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-md w-full"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <Trash2 size={20} className="text-red-400" />
+              <div className="p-2 rounded-lg bg-[var(--accent-danger)]/10">
+                <Trash2 size={20} className="text-[var(--accent-danger)]" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Revoke Access
               </h3>
             </div>
-            <p className="text-sm text-slate-500 dark:text-white/45 mb-2">
+            <p className="text-sm text-[var(--text-secondary)] mb-2">
               This action is{" "}
-              <strong className="text-red-400">
+              <strong className="text-[var(--accent-danger)]">
                 permanent and irreversible
               </strong>
               . It will:
             </p>
-            <ul className="text-sm text-slate-500 dark:text-white/45 mb-6 space-y-1 list-disc list-inside">
+            <ul className="text-sm text-[var(--text-secondary)] mb-6 space-y-1 list-disc list-inside">
               <li>Revoke all access for {engagement.stakeholderName}</li>
               <li>Close all associated data rooms</li>
               <li>Invalidate all active tokens</li>
@@ -968,14 +980,14 @@ export default function EngagementDetailPage() {
             <div className="flex items-center gap-3 justify-end">
               <button
                 onClick={() => setShowRevokeConfirm(false)}
-                className="px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+                className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRevokeAccess}
                 disabled={revoking}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--accent-danger)] hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
               >
                 {revoking ? (
                   <Loader2 size={14} className="animate-spin" />

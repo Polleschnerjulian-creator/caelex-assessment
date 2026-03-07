@@ -25,7 +25,7 @@ const RRSGauge = dynamic(() => import("@/components/assure/RRSGauge"), {
   ssr: false,
   loading: () => (
     <div className="w-[200px] h-[170px] flex items-center justify-center">
-      <Loader2 className="w-6 h-6 text-slate-300 dark:text-white/20 animate-spin" />
+      <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
     </div>
   ),
 });
@@ -93,18 +93,15 @@ function AssureSkeleton() {
       aria-live="polite"
       aria-label="Loading Assure dashboard"
     >
-      <div className="h-8 bg-slate-200 dark:bg-white/5 rounded w-64" />
-      <div className="h-4 bg-slate-200 dark:bg-white/5 rounded w-96" />
+      <div className="h-8 bg-[var(--surface-sunken)] rounded w-64" />
+      <div className="h-4 bg-[var(--surface-sunken)] rounded w-96" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <div className="lg:col-span-1 h-[300px] bg-slate-200 dark:bg-white/5 rounded-xl" />
-        <div className="lg:col-span-2 h-[300px] bg-slate-200 dark:bg-white/5 rounded-xl" />
+        <div className="lg:col-span-1 h-[300px] bg-[var(--surface-sunken)] rounded-xl" />
+        <div className="lg:col-span-2 h-[300px] bg-[var(--surface-sunken)] rounded-xl" />
       </div>
       <div className="grid grid-cols-3 gap-5 mt-6">
         {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className="h-24 bg-slate-200 dark:bg-white/5 rounded-xl"
-          />
+          <div key={i} className="h-24 bg-[var(--surface-sunken)] rounded-xl" />
         ))}
       </div>
       <span className="sr-only">Loading Assure dashboard data...</span>
@@ -161,19 +158,19 @@ export default function AssureDashboardPage() {
   if (error || !rrsData) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
+        <div className="w-12 h-12 rounded-full bg-[var(--accent-danger-soft)]/10 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-[var(--accent-danger)]" />
         </div>
-        <h2 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+        <h2 className="text-title font-medium text-[var(--text-primary)] mb-2">
           {error || "Unable to load data"}
         </h2>
-        <p className="text-body text-slate-500 dark:text-white/45 mb-4">
+        <p className="text-body text-[var(--text-secondary)] mb-4">
           Make sure your organization profile is set up and compliance modules
           are configured.
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="text-small text-emerald-500 hover:text-emerald-400 transition-colors"
+          className="text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
         >
           Try Again
         </button>
@@ -192,7 +189,7 @@ export default function AssureDashboardPage() {
       label: "Detailed Score",
       value: "View Breakdown",
       icon: BarChart3,
-      color: "text-emerald-500",
+      color: "text-[var(--accent-primary)]",
       href: "/dashboard/assure/score",
     },
     {
@@ -206,7 +203,7 @@ export default function AssureDashboardPage() {
       label: "DD Packages",
       value: packageCount,
       icon: Package,
-      color: "text-purple-500",
+      color: "text-[var(--accent-info)]",
       href: "/dashboard/assure/packages",
     },
   ];
@@ -220,8 +217,8 @@ export default function AssureDashboardPage() {
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 mb-1"
         >
-          <Shield className="w-5 h-5 text-emerald-500" />
-          <span className="text-caption uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-medium">
+          <Shield className="w-5 h-5 text-[var(--accent-primary)]" />
+          <span className="text-caption uppercase tracking-widest text-[var(--accent-success)] font-medium">
             Assure
           </span>
         </motion.div>
@@ -229,7 +226,7 @@ export default function AssureDashboardPage() {
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="text-display font-medium text-slate-900 dark:text-white mb-1"
+          className="text-display font-medium text-[var(--text-primary)] mb-1"
         >
           Regulatory Readiness
         </motion.h1>
@@ -237,7 +234,7 @@ export default function AssureDashboardPage() {
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-body-lg text-slate-500 dark:text-white/45"
+          className="text-body-lg text-[var(--text-secondary)]"
         >
           Your compliance posture at a glance. Share with investors, track
           progress, and generate DD packages.
@@ -260,7 +257,7 @@ export default function AssureDashboardPage() {
                 size={200}
               />
               <div className="mt-4 text-center">
-                <p className="text-micro text-slate-400 dark:text-white/30">
+                <p className="text-micro text-[var(--text-tertiary)]">
                   Last computed{" "}
                   {new Date(rrsData.computedAt).toLocaleDateString("en-US", {
                     month: "short",
@@ -283,12 +280,12 @@ export default function AssureDashboardPage() {
         >
           <GlassCard hover={false} className="p-6 h-full">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+              <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                 Component Scores
               </h2>
               <Link
                 href="/dashboard/assure/score"
-                className="text-caption text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                className="text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary)] flex items-center gap-1 transition-colors"
               >
                 View Details
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -300,16 +297,16 @@ export default function AssureDashboardPage() {
                 const label = COMPONENT_LABELS[key] || key;
                 const scoreColor =
                   comp.score >= 80
-                    ? "text-green-500 dark:text-green-400"
+                    ? "text-[var(--accent-success)]"
                     : comp.score >= 60
-                      ? "text-amber-500 dark:text-amber-400"
-                      : "text-red-500 dark:text-red-400";
+                      ? "text-[var(--accent-warning)]"
+                      : "text-[var(--accent-danger)]";
                 const barColor =
                   comp.score >= 80
-                    ? "bg-green-500"
+                    ? "bg-[var(--accent-success)]"
                     : comp.score >= 60
-                      ? "bg-amber-500"
-                      : "bg-red-500";
+                      ? "bg-[var(--accent-warning)]"
+                      : "bg-[var(--accent-danger)]";
 
                 return (
                   <motion.div
@@ -319,10 +316,10 @@ export default function AssureDashboardPage() {
                     transition={{ delay: 0.25 + index * 0.05 }}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-small text-slate-700 dark:text-white/60 w-28 truncate">
+                      <span className="text-small text-[var(--text-secondary)] w-28 truncate">
                         {label}
                       </span>
-                      <div className="flex-1 relative h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
+                      <div className="flex-1 relative h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
                         <motion.div
                           className={`absolute inset-y-0 left-0 rounded-full ${barColor}`}
                           initial={{ width: 0 }}
@@ -341,7 +338,7 @@ export default function AssureDashboardPage() {
                       >
                         {comp.score}
                       </span>
-                      <span className="text-micro text-slate-400 dark:text-white/30 w-10 text-right">
+                      <span className="text-micro text-[var(--text-tertiary)] w-10 text-right">
                         {Math.round(comp.weight * 100)}%
                       </span>
                     </div>
@@ -368,19 +365,19 @@ export default function AssureDashboardPage() {
                 <GlassCard className="p-5 group cursor-pointer">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-[var(--surface-sunken)] flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Icon className={`w-5 h-5 ${stat.color}`} />
                       </div>
                       <div>
-                        <p className="text-body-lg font-semibold text-slate-800 dark:text-white">
+                        <p className="text-body-lg font-semibold text-[var(--text-primary)]">
                           {stat.value}
                         </p>
-                        <p className="text-caption text-slate-500 dark:text-white/45">
+                        <p className="text-caption text-[var(--text-secondary)]">
                           {stat.label}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-white/20 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--accent-primary)] transition-colors" />
                   </div>
                 </GlassCard>
               </Link>
@@ -398,12 +395,12 @@ export default function AssureDashboardPage() {
         >
           <GlassCard hover={false} className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
+              <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
                 Priority Actions
               </h2>
               <Link
                 href="/dashboard/assure/score"
-                className="text-caption text-emerald-500 hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                className="text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary)] flex items-center gap-1 transition-colors"
               >
                 View All
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -414,13 +411,13 @@ export default function AssureDashboardPage() {
               {criticalRecs.slice(0, 5).map((rec, i) => {
                 const priorityColor =
                   rec.priority === "critical"
-                    ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
-                    : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+                    ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]/10"
+                    : "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]";
 
                 return (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/5"
+                    className="flex items-start gap-3 p-3 rounded-lg bg-[var(--surface-sunken)]"
                   >
                     <span
                       className={`inline-flex px-2 py-0.5 rounded border text-micro font-medium flex-shrink-0 mt-0.5 ${priorityColor}`}
@@ -428,10 +425,10 @@ export default function AssureDashboardPage() {
                       {rec.priority.toUpperCase()}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-body text-slate-700 dark:text-white/70">
+                      <p className="text-body text-[var(--text-secondary)]">
                         {rec.action}
                       </p>
-                      <p className="text-small text-slate-400 dark:text-white/30 mt-0.5">
+                      <p className="text-small text-[var(--text-tertiary)] mt-0.5">
                         {rec.impact}
                       </p>
                     </div>

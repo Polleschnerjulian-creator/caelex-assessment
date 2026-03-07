@@ -60,17 +60,14 @@ export default function UsersAdminPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-9 h-9 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-            <Users
-              size={18}
-              className="text-emerald-600 dark:text-emerald-400"
-            />
+          <div className="w-9 h-9 bg-[var(--accent-primary-soft)] rounded-lg flex items-center justify-center">
+            <Users size={18} className="text-[var(--accent-success)]" />
           </div>
           <div>
-            <h1 className="text-heading-lg font-semibold text-slate-900 dark:text-white">
+            <h1 className="text-heading-lg font-semibold text-[var(--text-primary)]">
               User Management
             </h1>
-            <p className="text-body text-slate-600 dark:text-white/45">
+            <p className="text-body text-[var(--text-secondary)]">
               {total} total users
             </p>
           </div>
@@ -83,14 +80,14 @@ export default function UsersAdminPage() {
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/45"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
           />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name, email, or organization..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-shadow"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]/50 focus:border-[var(--border-focus)] transition-shadow"
           />
         </div>
 
@@ -101,7 +98,7 @@ export default function UsersAdminPage() {
             setRoleFilter(e.target.value);
             setPage(0);
           }}
-          className="px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
+          className="px-3 py-2.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]/50 min-w-[130px]"
         >
           <option value="">All Roles</option>
           <option value="user">User</option>
@@ -116,7 +113,7 @@ export default function UsersAdminPage() {
             setActiveFilter(e.target.value);
             setPage(0);
           }}
-          className="px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[130px]"
+          className="px-3 py-2.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]/50 min-w-[130px]"
         >
           <option value="">All Status</option>
           <option value="true">Active</option>
@@ -126,10 +123,10 @@ export default function UsersAdminPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12">
           <div className="flex items-center justify-center gap-3">
-            <div className="w-5 h-5 border-2 border-slate-300 dark:border-white/20 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="text-body text-slate-500 dark:text-white/45">
+            <div className="w-5 h-5 border-2 border-[var(--border-default)] border-t-[var(--accent-primary)] rounded-full animate-spin" />
+            <span className="text-body text-[var(--text-secondary)]">
               Loading users...
             </span>
           </div>
@@ -141,7 +138,7 @@ export default function UsersAdminPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-body text-slate-600 dark:text-white/45">
+          <p className="text-body text-[var(--text-secondary)]">
             Showing {page * LIMIT + 1} to {Math.min((page + 1) * LIMIT, total)}{" "}
             of {total}
           </p>
@@ -149,17 +146,17 @@ export default function UsersAdminPage() {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="p-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-700 dark:text-white disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="p-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] disabled:opacity-50 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-body text-slate-600 dark:text-white/45 min-w-[80px] text-center">
+            <span className="text-body text-[var(--text-secondary)] min-w-[80px] text-center">
               Page {page + 1} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="p-2 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-700 dark:text-white disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+              className="p-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] disabled:opacity-50 hover:bg-[var(--surface-sunken)] transition-colors"
             >
               <ChevronRight size={16} />
             </button>

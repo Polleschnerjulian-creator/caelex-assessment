@@ -71,17 +71,17 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-display-sm font-semibold text-slate-900 dark:text-white">
+          <h1 className="text-display-sm font-semibold text-[var(--text-primary)]">
             Administration
           </h1>
-          <p className="text-body text-slate-600 dark:text-white/45 mt-1">
+          <p className="text-body text-[var(--text-secondary)] mt-1">
             Manage users, organizations, and platform settings
           </p>
         </div>
 
         <button
           onClick={() => setShowQuickUpgrade(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium rounded-lg transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-body font-medium rounded-lg transition-colors shadow-sm"
         >
           <Zap size={16} />
           Quick Upgrade
@@ -94,32 +94,32 @@ export default function AdminDashboard() {
           icon={<Users size={20} />}
           label="Total Users"
           value={stats.totalUsers}
-          bgColor="bg-emerald-500/10 dark:bg-emerald-500/10"
-          iconColor="text-emerald-600 dark:text-emerald-400"
+          bgColor="bg-[var(--accent-primary-soft)]"
+          iconColor="text-[var(--accent-success)]"
           loading={loading}
         />
         <StatCard
           icon={<UserCheck size={20} />}
           label="Active Users"
           value={stats.activeUsers}
-          bgColor="bg-emerald-500/10 dark:bg-emerald-500/10"
-          iconColor="text-emerald-600 dark:text-emerald-400"
+          bgColor="bg-[var(--accent-primary-soft)]"
+          iconColor="text-[var(--accent-success)]"
           loading={loading}
         />
         <StatCard
           icon={<Building2 size={20} />}
           label="Organizations"
           value={stats.totalOrgs}
-          bgColor="bg-purple-500/10 dark:bg-purple-500/10"
-          iconColor="text-purple-600 dark:text-purple-400"
+          bgColor="bg-purple-500/10"
+          iconColor="text-[var(--accent-info)]"
           loading={loading}
         />
         <StatCard
           icon={<Crown size={20} />}
           label="Enterprise"
           value={stats.enterpriseOrgs}
-          bgColor="bg-amber-500/10 dark:bg-amber-500/10"
-          iconColor="text-amber-600 dark:text-amber-400"
+          bgColor="bg-[var(--accent-warning-soft)]"
+          iconColor="text-[var(--accent-warning)]"
           loading={loading}
         />
       </div>
@@ -143,16 +143,16 @@ export default function AdminDashboard() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+      <div className="bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)] rounded-xl p-4 flex items-start gap-3">
         <AlertCircle
           size={18}
-          className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+          className="text-[var(--accent-warning)] flex-shrink-0 mt-0.5"
         />
         <div>
-          <p className="text-body font-medium text-slate-900 dark:text-white">
+          <p className="text-body font-medium text-[var(--text-primary)]">
             Admin Audit Trail
           </p>
-          <p className="text-body text-slate-600 dark:text-white/45 mt-0.5">
+          <p className="text-body text-[var(--text-secondary)] mt-0.5">
             All administrative actions are logged to the audit trail with
             timestamps, previous values, and reason fields.
           </p>
@@ -189,7 +189,7 @@ function StatCard({
   loading: boolean;
 }) {
   return (
-    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5">
+    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-5">
       <div className="flex items-center gap-4">
         <div
           className={`w-11 h-11 ${bgColor} rounded-lg flex items-center justify-center ${iconColor}`}
@@ -197,13 +197,13 @@ function StatCard({
           {icon}
         </div>
         <div>
-          <p className="text-caption uppercase tracking-[0.15em] text-slate-500 dark:text-white/45">
+          <p className="text-caption uppercase tracking-[0.15em] text-[var(--text-secondary)]">
             {label}
           </p>
           {loading ? (
-            <div className="w-12 h-7 bg-slate-100 dark:bg-white/10 rounded animate-pulse mt-1" />
+            <div className="w-12 h-7 bg-[var(--surface-sunken)] rounded animate-pulse mt-1" />
           ) : (
-            <p className="text-heading-lg font-semibold text-slate-900 dark:text-white">
+            <p className="text-heading-lg font-semibold text-[var(--text-primary)]">
               {value.toLocaleString()}
             </p>
           )}
@@ -229,24 +229,24 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="group bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-200"
+      className="group bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 hover:border-[var(--accent-primary)]/50 transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="w-11 h-11 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+        <div className="w-11 h-11 bg-[var(--accent-primary-soft)] rounded-lg flex items-center justify-center text-[var(--accent-success)] group-hover:bg-[var(--accent-success-soft)] transition-colors">
           {icon}
         </div>
         <ArrowRight
           size={18}
-          className="text-slate-400 dark:text-white/30 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
+          className="text-[var(--text-tertiary)] group-hover:text-[var(--accent-primary)] group-hover:translate-x-1 transition-all"
         />
       </div>
-      <h3 className="text-subtitle font-semibold text-slate-900 dark:text-white mb-1">
+      <h3 className="text-subtitle font-semibold text-[var(--text-primary)] mb-1">
         {title}
       </h3>
-      <p className="text-body text-slate-600 dark:text-white/45 mb-3">
+      <p className="text-body text-[var(--text-secondary)] mb-3">
         {description}
       </p>
-      <p className="text-small text-slate-500 dark:text-white/45">{stat}</p>
+      <p className="text-small text-[var(--text-secondary)]">{stat}</p>
     </Link>
   );
 }

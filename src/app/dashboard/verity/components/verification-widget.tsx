@@ -83,7 +83,7 @@ export default function VerificationWidget() {
         value={jsonInput}
         onChange={(e) => setJsonInput(e.target.value)}
         placeholder="Paste attestation or certificate JSON here..."
-        className="w-full h-32 bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-small text-white font-mono placeholder-white/20 focus:border-white/[0.25] outline-none resize-y"
+        className="w-full h-32 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-small text-white font-mono placeholder-[var(--text-tertiary)] focus:border-[var(--border-default)] outline-none resize-y"
       />
 
       <Button
@@ -96,34 +96,34 @@ export default function VerificationWidget() {
       </Button>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-          <p className="text-small text-red-400">{error}</p>
+        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-lg p-3">
+          <p className="text-small text-[var(--accent-danger)]">{error}</p>
         </div>
       )}
 
       {verificationResult && (
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 space-y-4">
+        <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-3">
             {verificationResult.valid ? (
               <>
-                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                <CheckCircle2 className="w-6 h-6 text-[var(--accent-primary)]" />
                 <div>
-                  <p className="text-body font-semibold text-emerald-400">
+                  <p className="text-body font-semibold text-[var(--accent-primary)]">
                     Verification Passed
                   </p>
-                  <p className="text-caption text-white/30">
+                  <p className="text-caption text-[var(--text-tertiary)]">
                     All cryptographic checks passed
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <XCircle className="w-6 h-6 text-red-400" />
+                <XCircle className="w-6 h-6 text-[var(--accent-danger)]" />
                 <div>
-                  <p className="text-body font-semibold text-red-400">
+                  <p className="text-body font-semibold text-[var(--accent-danger)]">
                     Verification Failed
                   </p>
-                  <p className="text-caption text-white/30">
+                  <p className="text-caption text-[var(--text-tertiary)]">
                     {verificationResult.errors?.[0] ??
                       "One or more checks failed"}
                   </p>
@@ -133,7 +133,7 @@ export default function VerificationWidget() {
           </div>
 
           {verificationResult.claim && (
-            <p className="text-small text-white/60">
+            <p className="text-small text-[var(--text-secondary)]">
               {verificationResult.claim}
             </p>
           )}
@@ -143,23 +143,23 @@ export default function VerificationWidget() {
               .filter(([key]) => key !== "attestation_details")
               .map(([key, val]) => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-caption text-white/40">
+                  <span className="text-caption text-[var(--text-tertiary)]">
                     {key.replace(/_/g, " ")}
                   </span>
                   {val === true ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-[var(--accent-primary)]" />
                   ) : val === false ? (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <XCircle className="w-4 h-4 text-[var(--accent-danger)]" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    <AlertTriangle className="w-4 h-4 text-[var(--accent-warning)]" />
                   )}
                 </div>
               ))}
           </div>
 
           {!verificationResult.issuer_known && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-              <p className="text-small text-amber-400">
+            <div className="bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)/20] rounded-lg p-3">
+              <p className="text-small text-[var(--accent-warning)]">
                 Issuer key not found in Caelex keyset. This attestation may be
                 self-issued.
               </p>
