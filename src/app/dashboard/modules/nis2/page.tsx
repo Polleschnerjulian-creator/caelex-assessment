@@ -316,20 +316,20 @@ const classificationConfig: Record<
   essential: {
     icon: ShieldAlert,
     label: "Essential Entity",
-    color: "text-red-400",
-    bgColor: "bg-red-500/10",
+    color: "text-[var(--accent-danger)]",
+    bgColor: "bg-[var(--accent-danger)]/10",
   },
   important: {
     icon: Shield,
     label: "Important Entity",
-    color: "text-amber-400",
-    bgColor: "bg-amber-500/10",
+    color: "text-[var(--accent-warning)]",
+    bgColor: "bg-[var(--accent-warning-soft)]",
   },
   out_of_scope: {
     icon: ShieldOff,
     label: "Out of Scope",
-    color: "text-slate-400",
-    bgColor: "bg-slate-500/10",
+    color: "text-[var(--text-tertiary)]",
+    bgColor: "bg-[var(--surface-sunken)]0/10",
   },
 };
 
@@ -367,8 +367,8 @@ function DashboardOptionCard({
         w-full p-4 rounded-xl text-left transition-all duration-200 group
         ${
           isSelected
-            ? "bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500 dark:border-emerald-400/50"
-            : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover] hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface]"
+            ? "bg-[var(--accent-success-soft)] border-2 border-[var(--accent-primary)]"
+            : "bg-[var(--surface-raised)] border border-[var(--border-default)] hover:border-[var(--border-default)] hover:bg-[var(--surface-sunken)]"
         }
       `}
     >
@@ -380,8 +380,8 @@ function DashboardOptionCard({
               p-2.5 rounded-lg transition-colors flex-shrink-0
               ${
                 isSelected
-                  ? "bg-emerald-100 dark:bg-emerald-500/20"
-                  : "bg-slate-100 dark:bg-[--glass-bg-elevated] group-hover:bg-slate-200 dark:group-hover:bg-white/[0.08]"
+                  ? "bg-[var(--accent-success-soft)]"
+                  : "bg-[var(--surface-sunken)] group-hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
               }
             `}
           >
@@ -389,8 +389,8 @@ function DashboardOptionCard({
               size={20}
               className={
                 isSelected
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-500 dark:text-white/45"
+                  ? "text-[var(--accent-success)]"
+                  : "text-[var(--text-secondary)]"
               }
             />
           </div>
@@ -401,13 +401,13 @@ function DashboardOptionCard({
           <h3
             className={`text-body-lg font-medium ${
               isSelected
-                ? "text-emerald-700 dark:text-emerald-300"
-                : "text-slate-900 dark:text-white"
+                ? "text-[var(--accent-success)]"
+                : "text-[var(--text-primary)]"
             }`}
           >
             {label}
           </h3>
-          <p className="text-body text-slate-500 dark:text-white/45 leading-relaxed">
+          <p className="text-body text-[var(--text-secondary)] leading-relaxed">
             {description}
           </p>
         </div>
@@ -418,14 +418,14 @@ function DashboardOptionCard({
             w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all
             ${
               isSelected
-                ? "bg-emerald-500 dark:bg-emerald-400"
-                : "border-2 border-slate-300 dark:border-white/20"
+                ? "bg-[var(--accent-primary)]"
+                : "border-2 border-[var(--border-default)]"
             }
           `}
         >
           {isSelected && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-              <Check size={12} className="text-white dark:text-black" />
+              <Check size={12} className="text-white" />
             </motion.div>
           )}
         </div>
@@ -453,25 +453,28 @@ function OutOfScopeCard({
       animate={{ opacity: 1, scale: 1 }}
       className="text-center py-8"
     >
-      <div className="w-16 h-16 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-6">
-        <AlertTriangle className="w-8 h-8 text-amber-400" aria-hidden="true" />
+      <div className="w-16 h-16 rounded-xl bg-[var(--accent-warning-soft)] flex items-center justify-center mx-auto mb-6">
+        <AlertTriangle
+          className="w-8 h-8 text-[var(--accent-warning)]"
+          aria-hidden="true"
+        />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
         {message}
       </h3>
-      <p className="text-sm text-slate-500 dark:text-white/45 max-w-md mx-auto mb-8 leading-relaxed">
+      <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto mb-8 leading-relaxed">
         {detail}
       </p>
       <div className="flex items-center justify-center gap-3">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors"
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white border border-[var(--border-default)] rounded-lg transition-colors"
         >
           Change Answer
         </button>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] text-[var(--text-secondary)] rounded-lg transition-colors"
         >
           Close
         </button>
@@ -632,36 +635,36 @@ function NIS2Wizard({
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden"
+      className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[--glass-border-subtle]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-cyan-400" aria-hidden="true" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
               NIS2 Scoping Assessment
             </h2>
-            <p className="text-caption text-slate-400 dark:text-white/30">
+            <p className="text-caption text-[var(--text-tertiary)]">
               Step {currentStep} of {totalSteps}
             </p>
           </div>
         </div>
         <button
           onClick={onCancel}
-          className="p-2 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
+          className="p-2 hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
           aria-label="Close wizard"
         >
-          <X size={16} className="text-slate-400 dark:text-white/45" />
+          <X size={16} className="text-[var(--text-tertiary)]" />
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-slate-100 dark:bg-[--glass-bg-surface]">
+      <div className="h-1 bg-[var(--surface-sunken)]">
         <motion.div
-          className="h-full bg-emerald-500"
+          className="h-full bg-[var(--accent-success-soft)]0"
           initial={{ width: 0 }}
           animate={{
             width: `${(currentStep / totalSteps) * 100}%`,
@@ -697,14 +700,14 @@ function NIS2Wizard({
             >
               {/* Question header */}
               <div className="mb-6 text-center max-w-xl mx-auto">
-                <span className="text-micro uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 block mb-3">
+                <span className="text-micro uppercase tracking-[0.2em] text-[var(--text-tertiary)] block mb-3">
                   Question {String(currentStep).padStart(2, "0")}
                 </span>
-                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
                   {currentQuestion.title}
                 </h3>
                 {currentQuestion.subtitle && (
-                  <p className="text-sm text-slate-500 dark:text-white/45 leading-relaxed">
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     {currentQuestion.subtitle}
                   </p>
                 )}
@@ -738,15 +741,15 @@ function NIS2Wizard({
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 max-w-xl mx-auto"
           >
-            <div className="border-t border-slate-100 dark:border-[--glass-border-subtle] pt-6">
-              <label className="block text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
+            <div className="border-t border-[var(--border-subtle)] pt-6">
+              <label className="block text-xs uppercase tracking-[0.15em] text-[var(--text-secondary)] mb-2">
                 Assessment Name
               </label>
               <input
                 type="text"
                 value={assessmentName}
                 onChange={(e) => setAssessmentName(e.target.value)}
-                className="w-full bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400/50 transition-colors"
+                className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-body-lg text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-focus)]:border-[var(--accent-primary)]/50 transition-colors"
                 placeholder="e.g. Q1 2026 NIS2 Audit"
               />
             </div>
@@ -757,23 +760,23 @@ function NIS2Wizard({
         {error && (
           <div
             role="alert"
-            className="mt-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center gap-3 max-w-xl mx-auto"
+            className="mt-4 bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-lg p-3 flex items-center gap-3 max-w-xl mx-auto"
           >
             <AlertCircle
-              className="w-4 h-4 text-red-400 flex-shrink-0"
+              className="w-4 h-4 text-[var(--accent-danger)] flex-shrink-0"
               aria-hidden="true"
             />
-            <p className="text-xs text-red-400">{error}</p>
+            <p className="text-xs text-[var(--accent-danger)]">{error}</p>
           </div>
         )}
       </div>
 
       {/* Footer */}
       {!outOfScope && (
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-[--glass-border-subtle] bg-slate-50/50 dark:bg-white/[0.01]">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-subtle)] bg-[var(--surface-sunken)]/50[0.01]">
           <button
             onClick={currentStep === 1 ? onCancel : handleBack}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
           >
             <ArrowLeft size={14} />
             {currentStep === 1 ? "Cancel" : "Back"}
@@ -787,10 +790,10 @@ function NIS2Wizard({
                   key={i}
                   className={`w-1.5 h-1.5 rounded-full transition-colors ${
                     i + 1 === currentStep
-                      ? "bg-emerald-500"
+                      ? "bg-[var(--accent-success-soft)]0"
                       : i + 1 < currentStep
-                        ? "bg-emerald-300 dark:bg-emerald-500/50"
-                        : "bg-slate-200 dark:bg-white/10"
+                        ? "bg-[var(--accent-primary)]"
+                        : "bg-[var(--surface-sunken)]"
                   }`}
                 />
               ))}
@@ -800,7 +803,7 @@ function NIS2Wizard({
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !assessmentName.trim()}
-                className="flex items-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {submitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -816,7 +819,7 @@ function NIS2Wizard({
                     setDirection(1);
                     setCurrentStep((prev) => prev + 1);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   Next
                   <ArrowRight size={14} />
@@ -871,7 +874,7 @@ export default function NIS2ModulePage() {
           aria-live="polite"
         >
           <Loader2
-            className="w-6 h-6 animate-spin text-slate-400 dark:text-white/45"
+            className="w-6 h-6 animate-spin text-[var(--text-tertiary)]"
             aria-hidden="true"
           />
           <span className="sr-only">Loading NIS2 assessments...</span>
@@ -894,10 +897,10 @@ export default function NIS2ModulePage() {
                 />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+                <h1 className="text-xl font-semibold text-[var(--text-primary)]">
                   NIS2 Directive
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-white/45">
+                <p className="text-sm text-[var(--text-secondary)]">
                   (EU) 2022/2555 — Space sector cybersecurity compliance
                 </p>
               </div>
@@ -909,14 +912,14 @@ export default function NIS2ModulePage() {
                 href="/assessment/nis2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white border border-[var(--border-default)] rounded-lg transition-colors"
               >
                 Public Assessment
                 <ExternalLink size={14} />
               </a>
               <button
                 onClick={() => setShowWizard(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
               >
                 <Plus size={14} />
                 New Assessment
@@ -929,13 +932,13 @@ export default function NIS2ModulePage() {
         {error && (
           <div
             role="alert"
-            className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3"
+            className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3"
           >
             <AlertCircle
-              className="w-5 h-5 text-red-400 flex-shrink-0"
+              className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0"
               aria-hidden="true"
             />
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-sm text-[var(--accent-danger)]">{error}</p>
           </div>
         )}
 
@@ -957,23 +960,23 @@ export default function NIS2ModulePage() {
           <motion.div
             initial={false}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
+            className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-12 text-center"
           >
             <ShieldCheck
               className="w-12 h-12 text-cyan-400/40 mx-auto mb-4"
               aria-hidden="true"
             />
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
               No NIS2 assessments yet
             </h3>
-            <p className="text-sm text-slate-500 dark:text-white/45 max-w-md mx-auto mb-6">
+            <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto mb-6">
               Start a NIS2 scoping assessment to determine your entity
               classification and applicable cybersecurity requirements under the
               NIS2 Directive for the space sector.
             </p>
             <button
               onClick={() => setShowWizard(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-sm font-medium transition-colors"
             >
               <Plus size={14} />
               Start Assessment
@@ -1007,7 +1010,7 @@ export default function NIS2ModulePage() {
                   initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="block bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[--glass-border-hover] transition-colors"
+                  className="block bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-5 hover:border-[var(--border-default)] transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1017,7 +1020,7 @@ export default function NIS2ModulePage() {
                         <ClassIcon className={`w-5 h-5 ${config.color}`} />
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--text-primary)]">
                           {assessment.assessmentName || "Untitled Assessment"}
                         </h3>
                         <div className="flex items-center gap-3 mt-1">
@@ -1026,11 +1029,11 @@ export default function NIS2ModulePage() {
                           >
                             {config.label}
                           </span>
-                          <span className="text-xs text-slate-400 dark:text-white/30">
+                          <span className="text-xs text-[var(--text-tertiary)]">
                             {assessment.subSector?.replace(/_/g, " ") ||
                               assessment.sector?.replace(/_/g, " ")}
                           </span>
-                          <span className="text-xs text-slate-400 dark:text-white/30">
+                          <span className="text-xs text-[var(--text-tertiary)]">
                             {new Date(
                               assessment.createdAt,
                             ).toLocaleDateString()}
@@ -1042,23 +1045,23 @@ export default function NIS2ModulePage() {
                     <div className="flex items-center gap-6">
                       {/* Requirements progress */}
                       <div className="text-right">
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        <div className="text-sm font-medium text-[var(--text-primary)]">
                           {compliantReqs}/{totalReqs}
                         </div>
-                        <div className="text-micro text-slate-400 dark:text-white/30 uppercase">
+                        <div className="text-micro text-[var(--text-tertiary)] uppercase">
                           Requirements
                         </div>
                       </div>
 
                       {/* Progress bar */}
                       <div className="w-24">
-                        <div className="h-1.5 bg-slate-100 dark:bg-[--glass-bg-elevated] rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-emerald-500 rounded-full transition-all"
+                            className="h-full bg-[var(--accent-primary)] rounded-full transition-all"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
-                        <div className="text-micro text-slate-400 dark:text-white/30 text-right mt-1">
+                        <div className="text-micro text-[var(--text-tertiary)] text-right mt-1">
                           {progress}%
                         </div>
                       </div>
@@ -1067,17 +1070,17 @@ export default function NIS2ModulePage() {
                       {assessment.euSpaceActOverlapCount != null &&
                         assessment.euSpaceActOverlapCount > 0 && (
                           <div className="text-right">
-                            <div className="text-sm font-medium text-green-400">
+                            <div className="text-sm font-medium text-[var(--accent-success)]">
                               {assessment.euSpaceActOverlapCount}
                             </div>
-                            <div className="text-micro text-green-400/60 uppercase">
+                            <div className="text-micro text-[var(--accent-success)]/60 uppercase">
                               Overlaps
                             </div>
                           </div>
                         )}
 
                       <ChevronRight
-                        className="w-4 h-4 text-slate-300 dark:text-white/20"
+                        className="w-4 h-4 text-[var(--text-tertiary)]"
                         aria-hidden="true"
                       />
                     </div>
@@ -1093,7 +1096,7 @@ export default function NIS2ModulePage() {
           <h4 className="text-sm font-medium text-cyan-400 mb-2">
             About NIS2 for Space Operators
           </h4>
-          <p className="text-xs text-slate-500 dark:text-white/45 leading-relaxed">
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
             The NIS2 Directive (EU) 2022/2555 lists Space as a sector of high
             criticality in Annex I (Sector 11). Space operators must comply with
             Art. 21 cybersecurity risk-management measures and Art. 23 incident
