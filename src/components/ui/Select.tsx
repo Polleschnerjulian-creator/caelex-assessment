@@ -37,16 +37,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const errorId = error ? `${selectId}-error` : undefined;
 
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-body font-medium text-slate-700 dark:text-white/70"
+            className="block text-[13px] font-medium text-[var(--text-primary)]"
           >
             {label}
             {props.required && (
               <span
-                className="text-red-500 dark:text-red-400 ml-1"
+                className="text-[var(--accent-danger)] ml-1"
                 aria-hidden="true"
               >
                 *
@@ -62,20 +62,20 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             aria-describedby={errorId}
             aria-required={props.required}
             className={`
-              w-full px-4 py-2.5 pr-10
-              bg-white dark:bg-[--glass-bg-surface]
-              border border-slate-200 dark:border-[--glass-border-subtle]
-              rounded-lg
-              text-body-lg text-slate-900 dark:text-white
+              w-full h-9 px-3 pr-10
+              bg-white
+              border border-[var(--border-default)]
+              rounded-[var(--v2-radius-sm)]
+              text-[14px] text-[var(--text-primary)]
               appearance-none
-              transition-all duration-200
-              hover:border-slate-300 dark:hover:border-[--glass-border-hover]
+              transition-all duration-[180ms] ease-out
+              hover:border-[var(--text-tertiary)]
               focus:outline-none
-              focus:border-emerald-500/50
-              focus:ring-2 focus:ring-emerald-500/20
-              disabled:opacity-50 disabled:cursor-not-allowed
+              focus:border-[var(--border-focus)]
+              focus:ring-2 focus:ring-[var(--border-focus)]/20
+              disabled:bg-[var(--surface-sunken)] disabled:opacity-60 disabled:cursor-not-allowed
               cursor-pointer
-              ${error ? "border-red-500/50" : ""}
+              ${error ? "border-[var(--accent-danger)]" : ""}
               ${className}
             `}
             {...props}
@@ -84,7 +84,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               <option
                 value=""
                 disabled
-                className="bg-white dark:bg-[#1a1a1b] text-slate-500 dark:text-white/70"
+                className="bg-white text-[var(--text-tertiary)]"
               >
                 {placeholder}
               </option>
@@ -94,7 +94,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 key={opt.value}
                 value={opt.value}
                 disabled={opt.disabled}
-                className="bg-white dark:bg-[#1a1a1b] text-slate-900 dark:text-white"
+                className="bg-white text-[var(--text-primary)]"
               >
                 {opt.label}
               </option>
@@ -104,13 +104,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
             aria-hidden="true"
           >
-            <ChevronDown className="w-4 h-4 text-slate-500 dark:text-white/70" />
+            <ChevronDown className="w-4 h-4 text-[var(--text-tertiary)]" />
           </div>
         </div>
         {error && (
           <p
             id={errorId}
-            className="text-small text-red-600 dark:text-red-400 flex items-center gap-1.5"
+            className="text-[12px] text-[var(--accent-danger)] flex items-center gap-1.5"
             role="alert"
           >
             <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />

@@ -19,16 +19,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       [errorId, hintId].filter(Boolean).join(" ") || undefined;
 
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-body font-medium text-slate-700 dark:text-white/70"
+            className="block text-[13px] font-medium text-[var(--text-primary)]"
           >
             {label}
             {props.required && (
               <span
-                className="text-red-500 dark:text-red-400 ml-1"
+                className="text-[var(--accent-danger)] ml-1"
                 aria-hidden="true"
               >
                 *
@@ -43,36 +43,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
           aria-required={props.required}
           className={`
-            w-full px-4 py-2.5
-            bg-white dark:bg-[--glass-bg-surface]
-            border border-slate-200 dark:border-[--glass-border-subtle]
-            rounded-lg
-            text-body-lg text-slate-900 dark:text-white
-            placeholder:text-slate-400 dark:placeholder:text-white/45
-            transition-all duration-200
-            hover:border-slate-300 dark:hover:border-[--glass-border-hover]
+            w-full h-9 px-3
+            bg-white
+            border border-[var(--border-default)]
+            rounded-[var(--v2-radius-sm)]
+            text-[14px] text-[var(--text-primary)]
+            placeholder:text-[var(--text-tertiary)]
+            transition-all duration-[180ms] ease-out
+            hover:border-[var(--text-tertiary)]
             focus:outline-none
-            focus:border-emerald-500/50
-            focus:bg-slate-50 dark:focus:bg-[--glass-bg-elevated]
-            focus:ring-2 focus:ring-emerald-500/20
-            disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20" : ""}
+            focus:border-[var(--border-focus)]
+            focus:ring-2 focus:ring-[var(--border-focus)]/20
+            disabled:bg-[var(--surface-sunken)] disabled:opacity-60 disabled:cursor-not-allowed
+            ${error ? "border-[var(--accent-danger)] focus:border-[var(--accent-danger)] focus:ring-[var(--accent-danger)]/15" : ""}
             ${className}
           `}
           {...props}
         />
         {hint && !error && (
-          <p
-            id={hintId}
-            className="text-small text-slate-600 dark:text-white/70"
-          >
+          <p id={hintId} className="text-[12px] text-[var(--text-tertiary)]">
             {hint}
           </p>
         )}
         {error && (
           <p
             id={errorId}
-            className="text-small text-red-600 dark:text-red-400 flex items-center gap-1.5"
+            className="text-[12px] text-[var(--accent-danger)] flex items-center gap-1.5"
             role="alert"
           >
             <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
