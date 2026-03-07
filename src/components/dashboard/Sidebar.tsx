@@ -21,15 +21,14 @@ import {
   Scale,
   Eye,
   ChevronLeft,
+  ChevronRight,
   Lock,
   Crown,
   ClipboardCheck,
-  Zap,
   AlertTriangle,
   Building2,
   Radio,
   BarChart3,
-  Layers,
   FileSearch,
   Orbit,
   Sparkles,
@@ -37,7 +36,6 @@ import {
   Calendar,
   Satellite,
   Activity,
-  Target,
 } from "lucide-react";
 import { CaelexIcon } from "@/components/ui/Logo";
 import { useOrganization } from "@/components/providers/OrganizationProvider";
@@ -474,7 +472,7 @@ export default function Sidebar({
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
-      eu: activeGroup === "eu",
+      eu: true,
     },
   );
 
@@ -575,14 +573,23 @@ export default function Sidebar({
           }}
         >
           {collapsed ? (
-            /* Collapsed: logo centered, click to expand */
-            <button
-              onClick={toggleCollapse}
-              aria-label="Expand sidebar"
-              className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px] transition-colors duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
-            >
-              <CaelexIcon size={24} className="text-[var(--text-primary)]" />
-            </button>
+            /* Collapsed: logo + expand chevron */
+            <div className="flex flex-col items-center gap-1">
+              <Link
+                href="/"
+                className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px]"
+              >
+                <CaelexIcon size={24} className="text-[var(--text-primary)]" />
+              </Link>
+              <button
+                onClick={toggleCollapse}
+                aria-label="Expand sidebar"
+                className="hidden lg:flex items-center justify-center w-8 h-6 rounded-[6px] transition-colors duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
+                style={{ color: "var(--sidebar-nav-icon-color)" }}
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
           ) : (
             <div className="flex items-center w-full">
               <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
@@ -744,25 +751,16 @@ export default function Sidebar({
             </ModuleGroup>
           </div>
 
-          {/* AI Agent */}
+          {/* Resources */}
           <div style={{ marginBottom: collapsed ? 8 : 20 }}>
             <SectionHeader collapsed={collapsed}>
-              {t("sidebar.aiAgent")}
+              {t("sidebar.resources")}
             </SectionHeader>
             <div className="space-y-0.5">
-              <NavItem
-                href="/dashboard/astra"
-                icon={<Zap size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Astra
-              </NavItem>
               <NavItem
                 href="/dashboard/sentinel"
                 icon={<Satellite size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
                 collapsed={collapsed}
               >
                 Sentinel
@@ -771,33 +769,14 @@ export default function Sidebar({
                 href="/dashboard/ephemeris"
                 icon={<Activity size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
                 collapsed={collapsed}
               >
                 Ephemeris
               </NavItem>
               <NavItem
-                href="/dashboard/optimizer"
-                icon={<Target size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Optimizer
-              </NavItem>
-            </div>
-          </div>
-
-          {/* Resources */}
-          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
-            <SectionHeader collapsed={collapsed}>
-              {t("sidebar.resources")}
-            </SectionHeader>
-            <div className="space-y-0.5">
-              <NavItem
                 href="/dashboard/nca-portal"
                 icon={<Building2 size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
                 collapsed={collapsed}
               >
                 {t("sidebar.ncaPortal")}
@@ -835,14 +814,6 @@ export default function Sidebar({
                 {t("sidebar.timeline")}
               </NavItem>
               <NavItem
-                href="/dashboard/digital-twin"
-                icon={<Layers size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                {t("sidebar.digitalTwin")}
-              </NavItem>
-              <NavItem
                 href="/dashboard/incidents"
                 icon={<AlertTriangle size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
@@ -854,7 +825,6 @@ export default function Sidebar({
                 href="/dashboard/regulatory-feed"
                 icon={<Radio size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
                 collapsed={collapsed}
               >
                 {t("sidebar.regulatoryFeed")}
@@ -871,7 +841,6 @@ export default function Sidebar({
                 href="/dashboard/evidence"
                 icon={<FileCheck size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
-                badge={t("sidebar.new")}
                 collapsed={collapsed}
               >
                 Evidence
