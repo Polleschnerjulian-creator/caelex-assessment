@@ -29,13 +29,13 @@ export function Breadcrumbs({
           <Link
             href="/dashboard"
             aria-label="Dashboard home"
-            className="text-white/70 hover:text-white transition-colors p-1 -ml-1 rounded"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] p-1 -ml-1 rounded-[var(--v2-radius-sm)]"
           >
             <Home className="w-4 h-4" aria-hidden="true" />
           </Link>
           {items.length > 0 && (
             <ChevronRight
-              className="w-4 h-4 text-white/30 flex-shrink-0"
+              className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0"
               aria-hidden="true"
             />
           )}
@@ -50,7 +50,7 @@ export function Breadcrumbs({
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="text-white/70 hover:text-white transition-colors truncate max-w-[150px]"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] truncate max-w-[150px]"
                 title={item.label}
               >
                 {item.label}
@@ -58,7 +58,9 @@ export function Breadcrumbs({
             ) : (
               <span
                 className={`truncate max-w-[200px] ${
-                  isLast ? "text-white/70 font-medium" : "text-white/70"
+                  isLast
+                    ? "text-[var(--text-primary)] font-medium"
+                    : "text-[var(--text-secondary)]"
                 }`}
                 title={item.label}
                 {...(isLast ? { "aria-current": "page" as const } : {})}
@@ -69,7 +71,7 @@ export function Breadcrumbs({
 
             {!isLast && (
               <ChevronRight
-                className="w-4 h-4 text-white/30 flex-shrink-0"
+                className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0"
                 aria-hidden="true"
               />
             )}
