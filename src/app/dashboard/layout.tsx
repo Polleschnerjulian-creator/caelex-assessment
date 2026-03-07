@@ -98,8 +98,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     isEphemerisPage;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="lg:grid lg:grid-cols-[260px_1fr]">
+    <div
+      className="caelex-v2 min-h-screen bg-[var(--surface-base)]"
+      data-theme="light"
+    >
+      <div className="lg:grid lg:grid-cols-[240px_1fr]">
         {/* Sidebar */}
         <Sidebar
           user={
@@ -130,7 +133,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {isFullscreenPage ? (
               <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
             ) : (
-              <div className="max-w-[1400px] mx-auto">
+              <div className="max-w-[1360px] mx-auto">
                 <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
               </div>
             )}
