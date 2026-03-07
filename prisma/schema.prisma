@@ -2532,6 +2532,9 @@ model Organization {
   ephemerisForecasts         EphemerisForecast[]
   satelliteAlerts            SatelliteAlert[]
 
+  // Optimizer: regulatory arbitrage optimization results
+  optimizationResults OptimizationResult[]
+
   // @@index([slug]) — removed: redundant with @unique
   @@index([plan])
   @@index([isActive])
@@ -2671,8 +2674,9 @@ model Spacecraft {
   updatedAt DateTime @updatedAt
 
   // Relations
-  registrations SpaceObjectRegistration[]
-  orbitalData   OrbitalData[]
+  registrations       SpaceObjectRegistration[]
+  orbitalData         OrbitalData[]
+  optimizationResults OptimizationResult[]
 
   @@index([organizationId])
   @@index([cosparId])
@@ -6234,4 +6238,28 @@ model SolarFluxRecord {
 
   @@unique([observedAt, source])
   @@index([observedAt])
+}
+
+model OptimizationResult {
+  id                  String        @id @default(cuid())
+  organizationId      String
+  organization        Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Input Snapshot
+  inputJson           Json
+  weightProfile       String        // "startup" | "enterprise" | "government" | "balanced" | "custom"
+
+  // Re-Flagging Context
+  spacecraftId        String?
+  spacecraft          Spacecraft?   @relation(fields: [spacecraftId], references: [id])
+  currentJurisdiction String?
+
+  // Results
+  resultJson          Json
+  topJurisdiction     String
+  topScore            Float
+
+  createdAt           DateTime      @default(now())
+
+  @@index([organizationId, createdAt])
 }
