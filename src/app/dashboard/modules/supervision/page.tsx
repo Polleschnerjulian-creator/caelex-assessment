@@ -237,40 +237,40 @@ function SupervisionPageContent() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "text-red-400 bg-red-500/10";
+        return "text-[var(--accent-danger)] bg-[var(--accent-danger)]/10";
       case "high":
         return "text-orange-400 bg-orange-500/10";
       case "medium":
-        return "text-amber-400 bg-amber-500/10";
+        return "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]";
       case "low":
-        return "text-emerald-400 bg-emerald-500/10";
+        return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       default:
-        return "text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5";
+        return "text-[var(--text-secondary)] bg-[var(--surface-sunken)]";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "detected":
-        return "text-red-400 bg-red-500/10";
+        return "text-[var(--accent-danger)] bg-[var(--accent-danger)]/10";
       case "investigating":
         return "text-orange-400 bg-orange-500/10";
       case "contained":
-        return "text-amber-400 bg-amber-500/10";
+        return "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]";
       case "resolved":
-        return "text-emerald-400 bg-emerald-500/10";
+        return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       case "reported":
-        return "text-emerald-400 bg-emerald-500/10";
+        return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       default:
-        return "text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5";
+        return "text-[var(--text-secondary)] bg-[var(--surface-sunken)]";
     }
   };
 
   if (loading) {
     return (
       <div className="space-y-6" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded w-1/3 animate-pulse" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3 animate-pulse" />
+        <div className="h-64 bg-[var(--surface-sunken)] rounded-xl animate-pulse" />
         <span className="sr-only">Loading supervision data...</span>
       </div>
     );
@@ -280,13 +280,13 @@ function SupervisionPageContent() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-slate-500 dark:text-white/45 mb-2">
+        <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2">
           MODULE 07
         </p>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
           Supervision & Reporting
         </h1>
-        <p className="text-slate-600 dark:text-slate-500 dark:text-white/45 mt-1">
+        <p className="text-[var(--text-secondary)] mt-1">
           Manage NCA relationships, incidents, and compliance reporting
         </p>
       </div>
@@ -294,21 +294,21 @@ function SupervisionPageContent() {
       {/* Stats Cards */}
       {config && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
                   <Building2
                     size={18}
-                    className="text-emerald-400"
+                    className="text-[var(--accent-primary)]"
                     aria-hidden="true"
                   />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {config.primaryNCA?.countryCode || config.primaryCountry}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Primary NCA
                   </p>
                 </div>
@@ -316,21 +316,21 @@ function SupervisionPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-500/10">
+                <div className="p-2 rounded-lg bg-[var(--accent-danger)]/10">
                   <AlertTriangle
                     size={18}
-                    className="text-red-400"
+                    className="text-[var(--accent-danger)]"
                     aria-hidden="true"
                   />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.openIncidents}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Open Incidents
                   </p>
                 </div>
@@ -338,21 +338,21 @@ function SupervisionPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
+                <div className="p-2 rounded-lg bg-[var(--accent-warning-soft)]">
                   <FileText
                     size={18}
-                    className="text-amber-400"
+                    className="text-[var(--accent-warning)]"
                     aria-hidden="true"
                   />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.pendingReports}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Pending Reports
                   </p>
                 </div>
@@ -360,21 +360,21 @@ function SupervisionPageContent() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-white/[0.02]">
+          <Card className="bg-[var(--surface-raised)][0.02]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-[var(--accent-primary-soft)]">
                   <Calendar
                     size={18}
-                    className="text-emerald-400"
+                    className="text-[var(--accent-primary)]"
                     aria-hidden="true"
                   />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-semibold text-[var(--text-primary)]">
                     {stats.upcomingEvents}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45">
+                  <p className="text-xs text-[var(--text-secondary)]">
                     Upcoming Events
                   </p>
                 </div>
@@ -386,7 +386,7 @@ function SupervisionPageContent() {
 
       {/* Step Navigation */}
       <div
-        className="flex items-center gap-2 p-1 bg-white dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5"
+        className="flex items-center gap-2 p-1 bg-[var(--surface-raised)][0.02] rounded-xl border border-[var(--border-default)]"
         role="tablist"
         aria-label="Supervision steps"
       >
@@ -403,15 +403,15 @@ function SupervisionPageContent() {
               text-sm font-medium transition-all
               ${
                 activeStep === step.id
-                  ? "bg-slate-200 dark:bg-white/10 text-white"
-                  : "text-slate-500 dark:text-white/45 hover:text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:bg-white/5"
+                  ? "bg-[var(--surface-sunken)] text-white"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]"
               }
             `}
           >
             <span
               className={`
               w-6 h-6 rounded-full flex items-center justify-center text-xs
-              ${activeStep === step.id ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70"}
+              ${activeStep === step.id ? "bg-[var(--accent-primary)] text-white" : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"}
             `}
             >
               {config && index < steps.findIndex((s) => s.id === activeStep) ? (
@@ -447,7 +447,7 @@ function SupervisionPageContent() {
               <CardContent className="space-y-6">
                 {/* Primary NCA Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-white/70 mb-2">
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                     Primary Registration Country *
                   </label>
                   <select
@@ -458,7 +458,7 @@ function SupervisionPageContent() {
                         primaryCountry: e.target.value,
                       })
                     }
-                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                    className="w-full bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                   >
                     <option value="">Select country...</option>
                     {Object.values(nationalAuthorities)
@@ -477,8 +477,8 @@ function SupervisionPageContent() {
                 {/* NCA Details */}
                 {formData.primaryCountry &&
                   nationalAuthorities[formData.primaryCountry] && (
-                    <div className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5">
-                      <h4 className="font-medium text-slate-900 dark:text-white mb-3">
+                    <div className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)]">
+                      <h4 className="font-medium text-[var(--text-primary)] mb-3">
                         {
                           nationalAuthorities[formData.primaryCountry]
                             .authorityName
@@ -486,10 +486,10 @@ function SupervisionPageContent() {
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-500 dark:text-white/45">
+                          <p className="text-[var(--text-secondary)]">
                             Local Name
                           </p>
-                          <p className="text-slate-700 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .authorityNameLocal
@@ -497,10 +497,10 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/45">
+                          <p className="text-[var(--text-secondary)]">
                             Contact Email
                           </p>
-                          <p className="text-slate-700 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactEmail
@@ -508,10 +508,8 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/45">
-                            Phone
-                          </p>
-                          <p className="text-slate-700 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">Phone</p>
+                          <p className="text-[var(--text-secondary)]">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .contactPhone
@@ -519,10 +517,10 @@ function SupervisionPageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-500 dark:text-white/45">
+                          <p className="text-[var(--text-secondary)]">
                             Regulatory Framework
                           </p>
-                          <p className="text-slate-700 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             {
                               nationalAuthorities[formData.primaryCountry]
                                 .regulatoryFramework
@@ -536,7 +534,7 @@ function SupervisionPageContent() {
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-emerald-400 text-sm mt-3 hover:underline"
+                        className="inline-flex items-center gap-1 text-[var(--accent-primary)] text-sm mt-3 hover:underline"
                       >
                         Visit Website{" "}
                         <ExternalLink size={12} aria-hidden="true" />
@@ -545,13 +543,13 @@ function SupervisionPageContent() {
                   )}
 
                 {/* Designated Contact */}
-                <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] pt-6">
-                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
+                <div className="border-t border-[var(--border-default)] pt-6">
+                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
                     Designated Contact Person
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Full Name
                       </label>
                       <input
@@ -563,12 +561,12 @@ function SupervisionPageContent() {
                             designatedContactName: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="John Smith"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Role
                       </label>
                       <input
@@ -580,12 +578,12 @@ function SupervisionPageContent() {
                             designatedContactRole: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="Compliance Officer"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Email
                       </label>
                       <input
@@ -597,12 +595,12 @@ function SupervisionPageContent() {
                             designatedContactEmail: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="compliance@company.com"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Phone
                       </label>
                       <input
@@ -614,7 +612,7 @@ function SupervisionPageContent() {
                             designatedContactPhone: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                         placeholder="+49 123 456789"
                       />
                     </div>
@@ -622,13 +620,13 @@ function SupervisionPageContent() {
                 </div>
 
                 {/* Communication Preferences */}
-                <div className="border-t border-slate-200 dark:border-[--glass-border-subtle] pt-6">
-                  <h4 className="font-medium text-slate-900 dark:text-white mb-4">
+                <div className="border-t border-[var(--border-default)] pt-6">
+                  <h4 className="font-medium text-[var(--text-primary)] mb-4">
                     Communication Preferences
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Preferred Language
                       </label>
                       <select
@@ -639,7 +637,7 @@ function SupervisionPageContent() {
                             communicationLanguage: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       >
                         <option value="en">English</option>
                         <option value="de">German</option>
@@ -649,7 +647,7 @@ function SupervisionPageContent() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-1">
                         Notification Method
                       </label>
                       <select
@@ -660,7 +658,7 @@ function SupervisionPageContent() {
                             notificationMethod: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                       >
                         <option value="email">Email Only</option>
                         <option value="portal">NCA Portal</option>
@@ -671,7 +669,7 @@ function SupervisionPageContent() {
                 </div>
 
                 {saveConfigError && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                     <AlertTriangle size={14} className="flex-shrink-0" />
                     {saveConfigError}
                   </div>
@@ -704,12 +702,12 @@ function SupervisionPageContent() {
                   {reportingObligations.map((obligation) => (
                     <div
                       key={obligation.type}
-                      className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors"
+                      className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)] hover:border-[var(--border-default)] transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-slate-900 dark:text-white">
+                            <h4 className="font-medium text-[var(--text-primary)]">
                               {obligation.title}
                             </h4>
                             <span
@@ -717,30 +715,30 @@ function SupervisionPageContent() {
                               text-xs px-2 py-0.5 rounded-full
                               ${
                                 obligation.frequency === "immediate"
-                                  ? "bg-red-500/20 text-red-400"
+                                  ? "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                                   : obligation.frequency === "within_24h"
                                     ? "bg-orange-500/20 text-orange-400"
                                     : obligation.frequency === "within_72h"
-                                      ? "bg-amber-500/20 text-amber-400"
-                                      : "bg-emerald-500/20 text-emerald-400"
+                                      ? "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]"
+                                      : "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                               }
                             `}
                             >
                               {obligation.frequency.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-white/45 mb-2">
+                          <p className="text-sm text-[var(--text-secondary)] mb-2">
                             {obligation.description}
                           </p>
-                          <p className="text-xs text-slate-400 dark:text-white/45">
+                          <p className="text-xs text-[var(--text-tertiary)]">
                             Legal basis: {obligation.legalBasis}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-slate-500 dark:text-white/45">
+                          <p className="text-xs text-[var(--text-secondary)]">
                             Recipients
                           </p>
-                          <p className="text-xs text-slate-600 dark:text-white/70">
+                          <p className="text-xs text-[var(--text-secondary)]">
                             {obligation.recipients
                               .map((r) => r.replace(/_/g, " "))
                               .join(", ")}
@@ -751,7 +749,7 @@ function SupervisionPageContent() {
                   ))}
                 </div>
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
+                <div className="flex justify-between pt-6 border-t border-[var(--border-default)] mt-6">
                   <Button variant="ghost" onClick={() => setActiveStep("nca")}>
                     Back
                   </Button>
@@ -785,15 +783,15 @@ function SupervisionPageContent() {
                       role="dialog"
                       aria-label="Log new incident"
                       aria-modal="true"
-                      className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
                     >
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
                         Log New Incident
                       </h3>
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                          <label className="block text-sm text-[var(--text-secondary)] mb-1">
                             Category *
                           </label>
                           <select
@@ -804,7 +802,7 @@ function SupervisionPageContent() {
                                 category: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)]"
                           >
                             <option value="">Select category...</option>
                             {incidentCategories.map((cat) => (
@@ -816,7 +814,7 @@ function SupervisionPageContent() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                          <label className="block text-sm text-[var(--text-secondary)] mb-1">
                             Severity *
                           </label>
                           <select
@@ -827,7 +825,7 @@ function SupervisionPageContent() {
                                 severity: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)]"
                           >
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -837,7 +835,7 @@ function SupervisionPageContent() {
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                          <label className="block text-sm text-[var(--text-secondary)] mb-1">
                             Title *
                           </label>
                           <input
@@ -849,13 +847,13 @@ function SupervisionPageContent() {
                                 title: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)]"
                             placeholder="Brief incident title"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                          <label className="block text-sm text-[var(--text-secondary)] mb-1">
                             Description *
                           </label>
                           <textarea
@@ -866,14 +864,14 @@ function SupervisionPageContent() {
                                 description: e.target.value,
                               })
                             }
-                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white h-24 resize-none"
+                            className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] h-24 resize-none"
                             placeholder="Detailed description of the incident"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                            <label className="block text-sm text-[var(--text-secondary)] mb-1">
                               Detected At *
                             </label>
                             <input
@@ -885,11 +883,11 @@ function SupervisionPageContent() {
                                   detectedAt: e.target.value,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)]"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm text-slate-500 dark:text-white/45 mb-1">
+                            <label className="block text-sm text-[var(--text-secondary)] mb-1">
                               Detected By *
                             </label>
                             <input
@@ -901,7 +899,7 @@ function SupervisionPageContent() {
                                   detectedBy: e.target.value,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-slate-900 dark:text-white"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-[var(--text-primary)]"
                               placeholder="Name or system"
                             />
                           </div>
@@ -909,7 +907,7 @@ function SupervisionPageContent() {
                       </div>
 
                       {createIncidentError && (
-                        <div className="flex items-center gap-2 px-4 py-3 mt-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body">
+                        <div className="flex items-center gap-2 px-4 py-3 mt-4 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body">
                           <AlertTriangle size={14} className="flex-shrink-0" />
                           {createIncidentError}
                         </div>
@@ -946,13 +944,13 @@ function SupervisionPageContent() {
                   <div className="text-center py-12">
                     <Shield
                       size={48}
-                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                      className="mx-auto text-[var(--text-tertiary)] mb-4"
                       aria-hidden="true"
                     />
-                    <p className="text-slate-500 dark:text-white/45">
+                    <p className="text-[var(--text-secondary)]">
                       No incidents logged
                     </p>
-                    <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
+                    <p className="text-sm text-[var(--text-tertiary)] mt-1">
                       Click &quot;Log Incident&quot; to record a new incident
                     </p>
                   </div>
@@ -961,12 +959,12 @@ function SupervisionPageContent() {
                     {incidents.map((incident) => (
                       <div
                         key={incident.id}
-                        className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors cursor-pointer"
+                        className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)] hover:border-[var(--border-default)] transition-colors cursor-pointer"
                       >
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-xs text-slate-400 dark:text-white/45">
+                              <span className="font-mono text-xs text-[var(--text-tertiary)]">
                                 {incident.incidentNumber}
                               </span>
                               <span
@@ -980,14 +978,14 @@ function SupervisionPageContent() {
                                 {incident.status}
                               </span>
                             </div>
-                            <h4 className="font-medium text-slate-900 dark:text-white">
+                            <h4 className="font-medium text-[var(--text-primary)]">
                               {incident.title}
                             </h4>
-                            <p className="text-sm text-slate-500 dark:text-white/45 mt-1 line-clamp-1">
+                            <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-1">
                               {incident.description}
                             </p>
                           </div>
-                          <div className="text-right text-xs text-slate-400 dark:text-white/45">
+                          <div className="text-right text-xs text-[var(--text-tertiary)]">
                             <p>
                               {new Date(
                                 incident.detectedAt,
@@ -1001,8 +999,8 @@ function SupervisionPageContent() {
                           </div>
                         </div>
                         {incident.reportedToNCA && (
-                          <div className="mt-2 pt-2 border-t border-slate-200 dark:border-white/5">
-                            <span className="text-xs text-emerald-400 flex items-center gap-1">
+                          <div className="mt-2 pt-2 border-t border-[var(--border-default)]">
+                            <span className="text-xs text-[var(--accent-primary)] flex items-center gap-1">
                               <Check size={12} aria-hidden="true" /> Reported to
                               NCA
                             </span>
@@ -1013,7 +1011,7 @@ function SupervisionPageContent() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
+                <div className="flex justify-between pt-6 border-t border-[var(--border-default)] mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("reporting")}
@@ -1043,13 +1041,13 @@ function SupervisionPageContent() {
                   <div className="text-center py-12">
                     <Calendar
                       size={48}
-                      className="mx-auto text-slate-300 dark:text-white/20 mb-4"
+                      className="mx-auto text-[var(--text-tertiary)] mb-4"
                       aria-hidden="true"
                     />
-                    <p className="text-slate-500 dark:text-white/45">
+                    <p className="text-[var(--text-secondary)]">
                       No upcoming events
                     </p>
-                    <p className="text-sm text-slate-400 dark:text-white/45 mt-1">
+                    <p className="text-sm text-[var(--text-tertiary)] mt-1">
                       Calendar events will be automatically created based on
                       your reporting obligations
                     </p>
@@ -1069,7 +1067,7 @@ function SupervisionPageContent() {
                       return (
                         <div
                           key={event.id}
-                          className="bg-white dark:bg-white/[0.02] rounded-lg p-4 border border-slate-200 dark:border-white/5 hover:border-slate-200 dark:border-[--glass-border-subtle] transition-colors"
+                          className="bg-[var(--surface-raised)][0.02] rounded-lg p-4 border border-[var(--border-default)] hover:border-[var(--border-default)] transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-3">
@@ -1078,14 +1076,14 @@ function SupervisionPageContent() {
                                 p-2 rounded-lg
                                 ${
                                   eventConfig?.color === "blue"
-                                    ? "bg-emerald-500/10"
+                                    ? "bg-[var(--accent-primary-soft)]"
                                     : eventConfig?.color === "orange"
                                       ? "bg-orange-500/10"
                                       : eventConfig?.color === "red"
-                                        ? "bg-red-500/10"
+                                        ? "bg-[var(--accent-danger)]/10"
                                         : eventConfig?.color === "amber"
-                                          ? "bg-amber-500/10"
-                                          : "bg-slate-100 dark:bg-white/5"
+                                          ? "bg-[var(--accent-warning-soft)]"
+                                          : "bg-[var(--surface-sunken)]"
                                 }
                               `}
                               >
@@ -1094,28 +1092,28 @@ function SupervisionPageContent() {
                                   className={`
                                   ${
                                     eventConfig?.color === "blue"
-                                      ? "text-emerald-400"
+                                      ? "text-[var(--accent-primary)]"
                                       : eventConfig?.color === "orange"
                                         ? "text-orange-400"
                                         : eventConfig?.color === "red"
-                                          ? "text-red-400"
+                                          ? "text-[var(--accent-danger)]"
                                           : eventConfig?.color === "amber"
-                                            ? "text-amber-400"
-                                            : "text-slate-500 dark:text-white/45"
+                                            ? "text-[var(--accent-warning)]"
+                                            : "text-[var(--text-secondary)]"
                                   }
                                 `}
                                 />
                               </div>
                               <div>
-                                <h4 className="font-medium text-slate-900 dark:text-white">
+                                <h4 className="font-medium text-[var(--text-primary)]">
                                   {event.title}
                                 </h4>
                                 {event.description && (
-                                  <p className="text-sm text-slate-500 dark:text-white/45 mt-1">
+                                  <p className="text-sm text-[var(--text-secondary)] mt-1">
                                     {event.description}
                                   </p>
                                 )}
-                                <p className="text-xs text-slate-400 dark:text-white/45 mt-2">
+                                <p className="text-xs text-[var(--text-tertiary)] mt-2">
                                   Due:{" "}
                                   {new Date(event.dueDate).toLocaleDateString()}
                                 </p>
@@ -1127,10 +1125,10 @@ function SupervisionPageContent() {
                                 text-sm font-medium
                                 ${
                                   daysUntil <= 7
-                                    ? "text-red-400"
+                                    ? "text-[var(--accent-danger)]"
                                     : daysUntil <= 30
-                                      ? "text-amber-400"
-                                      : "text-slate-500 dark:text-white/45"
+                                      ? "text-[var(--accent-warning)]"
+                                      : "text-[var(--text-secondary)]"
                                 }
                               `}
                               >
@@ -1138,7 +1136,7 @@ function SupervisionPageContent() {
                                   ? `${daysUntil} days`
                                   : "Overdue"}
                               </span>
-                              <p className="text-xs text-slate-400 dark:text-white/45 mt-1">
+                              <p className="text-xs text-[var(--text-tertiary)] mt-1">
                                 {eventConfig?.label}
                               </p>
                             </div>
@@ -1149,7 +1147,7 @@ function SupervisionPageContent() {
                   </div>
                 )}
 
-                <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle] mt-6">
+                <div className="flex justify-between pt-6 border-t border-[var(--border-default)] mt-6">
                   <Button
                     variant="ghost"
                     onClick={() => setActiveStep("incidents")}

@@ -432,7 +432,7 @@ function EnvironmentalPageContent() {
         aria-live="polite"
       >
         <Loader2
-          className="w-8 h-8 animate-spin text-slate-500 dark:text-white/45"
+          className="w-8 h-8 animate-spin text-[var(--text-secondary)]"
           aria-hidden="true"
         />
         <span className="sr-only">Loading environmental assessment...</span>
@@ -445,13 +445,13 @@ function EnvironmentalPageContent() {
       <div className="max-w-[1200px]">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
+          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3">
             MODULE 03
           </p>
-          <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-2">
+          <h1 className="text-display-sm font-medium text-[var(--text-primary)] mb-2">
             Environmental Footprint
           </h1>
-          <p className="text-body-lg text-slate-600 dark:text-white/70">
+          <p className="text-body-lg text-[var(--text-secondary)]">
             Calculate your mission&apos;s environmental impact and generate your
             EFD (Art. 96-100)
           </p>
@@ -481,19 +481,19 @@ function EnvironmentalPageContent() {
                     id={`tab-${step}`}
                     className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
                       isActive
-                        ? "bg-emerald-500/20 border border-emerald-500/30"
+                        ? "bg-[var(--accent-success-soft)] border border-[var(--accent-success)/30]"
                         : isCompleted
-                          ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface]"
-                          : "bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.03] opacity-50"
+                          ? "bg-[var(--surface-sunken)] border border-[var(--border-default)] hover:bg-[var(--surface-sunken)]"
+                          : "bg-[var(--surface-raised)] border border-[var(--border-default)][0.03] opacity-50"
                     } ${isClickable ? "cursor-pointer" : "cursor-not-allowed"}`}
                   >
                     <div
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-caption font-medium ${
                         isActive
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-[var(--accent-primary)] text-white"
                           : isCompleted
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-white/70"
+                            ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
+                            : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                       }`}
                     >
                       {isCompleted ? (
@@ -503,14 +503,14 @@ function EnvironmentalPageContent() {
                       )}
                     </div>
                     <span
-                      className={`text-body ${isActive ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-white/70"}`}
+                      className={`text-body ${isActive ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
                     >
                       {info.title}
                     </span>
                   </button>
                   {index < steps.length - 1 && (
                     <ChevronRight
-                      className="w-4 h-4 text-slate-300 dark:text-white/10 mx-1"
+                      className="w-4 h-4 text-[var(--text-tertiary)] mx-1"
                       aria-hidden="true"
                     />
                   )}
@@ -523,17 +523,17 @@ function EnvironmentalPageContent() {
         {/* Error Display */}
         {error && (
           <div
-            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3"
+            className="mb-6 p-4 bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-lg flex items-center gap-3"
             role="alert"
           >
             <AlertTriangle
-              className="w-5 h-5 text-red-400"
+              className="w-5 h-5 text-[var(--accent-danger)]"
               aria-hidden="true"
             />
-            <p className="text-body text-red-400">{error}</p>
+            <p className="text-body text-[var(--accent-danger)]">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="ml-auto text-red-400 hover:text-red-300"
+              className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
             >
               Dismiss
             </button>
@@ -618,13 +618,13 @@ function MissionProfileStep({
   return (
     <div className="space-y-6">
       {/* Basic Info */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Basic Information
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Assessment Name
             </label>
             <input
@@ -634,11 +634,11 @@ function MissionProfileStep({
                 setFormData({ ...formData, assessmentName: e.target.value })
               }
               placeholder="e.g., LEO Constellation EFD"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Mission Name
             </label>
             <input
@@ -648,11 +648,11 @@ function MissionProfileStep({
                 setFormData({ ...formData, missionName: e.target.value })
               }
               placeholder="e.g., Starlink Gen 2"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/45 focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Operator Type
             </label>
             <select
@@ -660,7 +660,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, operatorType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               <option value="spacecraft">Spacecraft Operator</option>
               <option value="launch">Launch Provider</option>
@@ -668,7 +668,7 @@ function MissionProfileStep({
             </select>
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Mission Type
             </label>
             <select
@@ -676,7 +676,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, missionType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               <option value="commercial">Commercial</option>
               <option value="government">Government</option>
@@ -688,13 +688,13 @@ function MissionProfileStep({
       </div>
 
       {/* Spacecraft Details */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Spacecraft Details
         </h3>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Spacecraft Mass (kg)
             </label>
             <input
@@ -706,11 +706,11 @@ function MissionProfileStep({
                   spacecraftMassKg: parseFloat(e.target.value) || 0,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Number of Spacecraft
             </label>
             <input
@@ -723,11 +723,11 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Mission Duration (years)
             </label>
             <input
@@ -740,11 +740,11 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Orbit Type
             </label>
             <select
@@ -752,7 +752,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, orbitType: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               <option value="LEO">LEO (Low Earth Orbit)</option>
               <option value="MEO">MEO (Medium Earth Orbit)</option>
@@ -763,7 +763,7 @@ function MissionProfileStep({
             </select>
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Altitude (km)
             </label>
             <input
@@ -775,11 +775,11 @@ function MissionProfileStep({
                   altitudeKm: parseInt(e.target.value) || null,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Deorbit Strategy
             </label>
             <select
@@ -787,7 +787,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, deorbitStrategy: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               <option value="controlled_deorbit">Controlled Deorbit</option>
               <option value="passive_decay">Passive Decay</option>
@@ -799,13 +799,13 @@ function MissionProfileStep({
       </div>
 
       {/* Launch Configuration */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Launch Configuration
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Launch Vehicle
             </label>
             <select
@@ -813,7 +813,7 @@ function MissionProfileStep({
               onChange={(e) =>
                 setFormData({ ...formData, launchVehicle: e.target.value })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               {Object.entries(launchVehicles).map(([id, vehicle]) => (
                 <option key={id} value={id}>
@@ -823,7 +823,7 @@ function MissionProfileStep({
             </select>
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Launch Share (%)
             </label>
             <input
@@ -837,9 +837,9 @@ function MissionProfileStep({
               }
               min="1"
               max="100"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
-            <p className="text-caption text-slate-600 dark:text-white/70 mt-1">
+            <p className="text-caption text-[var(--text-secondary)] mt-1">
               100% for dedicated launch, lower for rideshare
             </p>
           </div>
@@ -848,16 +848,16 @@ function MissionProfileStep({
         {/* Launch vehicle info card */}
         {formData.launchVehicle &&
           launchVehicles[formData.launchVehicle as LaunchVehicleId] && (
-            <div className="mt-4 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="mt-4 p-4 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-body text-slate-900 dark:text-white font-medium">
+                  <p className="text-body text-[var(--text-primary)] font-medium">
                     {
                       launchVehicles[formData.launchVehicle as LaunchVehicleId]
                         .name
                     }
                   </p>
-                  <p className="text-small text-slate-500 dark:text-white/45">
+                  <p className="text-small text-[var(--text-secondary)]">
                     {
                       launchVehicles[formData.launchVehicle as LaunchVehicleId]
                         .provider
@@ -868,7 +868,7 @@ function MissionProfileStep({
                   className={`px-2 py-1 rounded text-caption font-medium ${
                     launchVehicles[formData.launchVehicle as LaunchVehicleId]
                       .sustainabilityGrade === "A"
-                      ? "bg-emerald-500/20 text-emerald-400"
+                      ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                       : launchVehicles[
                             formData.launchVehicle as LaunchVehicleId
                           ].sustainabilityGrade === "B"
@@ -889,10 +889,10 @@ function MissionProfileStep({
               </div>
               <div className="mt-3 grid grid-cols-3 gap-4 text-small">
                 <div>
-                  <p className="text-slate-500 dark:text-white/45">
+                  <p className="text-[var(--text-secondary)]">
                     LEO Carbon Intensity
                   </p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-[var(--text-primary)]">
                     {
                       launchVehicles[formData.launchVehicle as LaunchVehicleId]
                         .carbonIntensityKgCO2PerKgPayload.leo
@@ -901,20 +901,16 @@ function MissionProfileStep({
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-white/45">
-                    Reusability
-                  </p>
-                  <p className="text-slate-900 dark:text-white capitalize">
+                  <p className="text-[var(--text-secondary)]">Reusability</p>
+                  <p className="text-[var(--text-primary)] capitalize">
                     {launchVehicles[
                       formData.launchVehicle as LaunchVehicleId
                     ].reusability.replace("_", " ")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-white/45">
-                    LEO Capacity
-                  </p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-[var(--text-secondary)]">LEO Capacity</p>
+                  <p className="text-[var(--text-primary)]">
                     {formatMass(
                       launchVehicles[formData.launchVehicle as LaunchVehicleId]
                         .payloadCapacityLeoKg,
@@ -927,13 +923,13 @@ function MissionProfileStep({
       </div>
 
       {/* Propulsion (optional) */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Spacecraft Propulsion (Optional)
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Propellant Type
             </label>
             <select
@@ -944,7 +940,7 @@ function MissionProfileStep({
                   spacecraftPropellant: e.target.value,
                 })
               }
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             >
               <option value="">No onboard propulsion</option>
               {Object.entries(propellantProfiles).map(([id, prop]) => (
@@ -955,7 +951,7 @@ function MissionProfileStep({
             </select>
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Propellant Mass (kg)
             </label>
             <input
@@ -968,7 +964,7 @@ function MissionProfileStep({
                 })
               }
               disabled={!formData.spacecraftPropellant}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30 disabled:opacity-50"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30] disabled:opacity-50"
             />
           </div>
         </div>
@@ -977,17 +973,17 @@ function MissionProfileStep({
           propellantProfiles[
             formData.spacecraftPropellant as PropellantType
           ] && (
-            <div className="mt-4 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
+            <div className="mt-4 p-3 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]">
               <div className="flex items-center gap-2">
                 {propellantProfiles[
                   formData.spacecraftPropellant as PropellantType
                 ].toxicityClass === "very_high" && (
                   <AlertTriangle
-                    className="w-4 h-4 text-red-400"
+                    className="w-4 h-4 text-[var(--accent-danger)]"
                     aria-hidden="true"
                   />
                 )}
-                <p className="text-small text-slate-500 dark:text-white/45">
+                <p className="text-small text-[var(--text-secondary)]">
                   {
                     propellantProfiles[
                       formData.spacecraftPropellant as PropellantType
@@ -1000,13 +996,13 @@ function MissionProfileStep({
       </div>
 
       {/* Operations */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Ground Operations
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Number of Ground Stations
             </label>
             <input
@@ -1019,11 +1015,11 @@ function MissionProfileStep({
                 })
               }
               min="1"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
           <div>
-            <label className="block text-small text-slate-500 dark:text-white/45 mb-1.5">
+            <label className="block text-small text-[var(--text-secondary)] mb-1.5">
               Daily Contact Hours
             </label>
             <input
@@ -1038,15 +1034,15 @@ function MissionProfileStep({
               min="0"
               max="24"
               step="0.5"
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/30"
+              className="w-full px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-success)/30]"
             />
           </div>
         </div>
       </div>
 
       {/* Simplified Regime */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Organization Type
         </h3>
         <div className="space-y-3">
@@ -1060,9 +1056,9 @@ function MissionProfileStep({
                   isSmallEnterprise: e.target.checked,
                 })
               }
-              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-emerald-500 focus:ring-emerald-500/20"
+              className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/20"
             />
-            <span className="text-body text-slate-600 dark:text-white/70">
+            <span className="text-body text-[var(--text-secondary)]">
               Small Enterprise (&lt;50 employees, &lt;€10M turnover)
             </span>
           </label>
@@ -1076,20 +1072,20 @@ function MissionProfileStep({
                   isResearchEducation: e.target.checked,
                 })
               }
-              className="w-4 h-4 rounded border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-emerald-500 focus:ring-emerald-500/20"
+              className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--surface-sunken)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/20"
             />
-            <span className="text-body text-slate-600 dark:text-white/70">
+            <span className="text-body text-[var(--text-secondary)]">
               Research or Educational Institution
             </span>
           </label>
         </div>
         {(formData.isSmallEnterprise || formData.isResearchEducation) && (
-          <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-start gap-2">
+          <div className="mt-4 p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-lg flex items-start gap-2">
             <CheckCircle
-              className="w-4 h-4 text-emerald-400 mt-0.5"
+              className="w-4 h-4 text-[var(--accent-primary)] mt-0.5"
               aria-hidden="true"
             />
-            <p className="text-small text-emerald-300">
+            <p className="text-small text-[var(--accent-primary)]">
               You may qualify for the Simplified Regime: Screening LCA is
               sufficient until 2032.
             </p>
@@ -1102,7 +1098,7 @@ function MissionProfileStep({
         <button
           onClick={onSubmit}
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors disabled:opacity-50"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
@@ -1137,22 +1133,22 @@ function CalculatorStep({
     <div className="space-y-6">
       {/* Calculate Button or Results */}
       {!result && !assessment.totalGWP ? (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
           <Leaf
-            className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
+            className="w-12 h-12 text-[var(--accent-primary)]/30 mx-auto mb-4"
             aria-hidden="true"
           />
-          <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+          <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
             Ready to Calculate
           </h3>
-          <p className="text-body text-slate-500 dark:text-white/45 mb-6 max-w-md mx-auto">
+          <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
             Based on your mission profile, we&apos;ll calculate the
             environmental footprint across all lifecycle phases.
           </p>
           <button
             onClick={onCalculate}
             disabled={calculating}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
           >
             {calculating ? (
               <>
@@ -1170,15 +1166,15 @@ function CalculatorStep({
       ) : (
         <>
           {/* Grade Card */}
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+              <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
                 Environmental Footprint Grade
               </h3>
               <button
                 onClick={onCalculate}
                 disabled={calculating}
-                className="flex items-center gap-1.5 text-small text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70"
+                className="flex items-center gap-1.5 text-small text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
               >
                 <RefreshCw
                   className={`w-3.5 h-3.5 ${calculating ? "animate-spin" : ""}`}
@@ -1201,31 +1197,31 @@ function CalculatorStep({
 
               <div className="flex-1 grid grid-cols-3 gap-6">
                 <div>
-                  <p className="text-small text-slate-500 dark:text-white/45 mb-1">
+                  <p className="text-small text-[var(--text-secondary)] mb-1">
                     Total GWP
                   </p>
-                  <p className="text-heading-lg font-medium text-slate-900 dark:text-white">
+                  <p className="text-heading-lg font-medium text-[var(--text-primary)]">
                     {formatEmissions(assessment.totalGWP || 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-small text-slate-500 dark:text-white/45 mb-1">
+                  <p className="text-small text-[var(--text-secondary)] mb-1">
                     Carbon Intensity
                   </p>
-                  <p className="text-heading-lg font-medium text-slate-900 dark:text-white">
+                  <p className="text-heading-lg font-medium text-[var(--text-primary)]">
                     {(assessment.carbonIntensity || 0).toFixed(0)}{" "}
-                    <span className="text-body-lg text-slate-600 dark:text-white/70">
+                    <span className="text-body-lg text-[var(--text-secondary)]">
                       kg CO2/kg
                     </span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-small text-slate-500 dark:text-white/45 mb-1">
+                  <p className="text-small text-[var(--text-secondary)] mb-1">
                     Compliance Score
                   </p>
-                  <p className="text-heading-lg font-medium text-slate-900 dark:text-white">
+                  <p className="text-heading-lg font-medium text-[var(--text-primary)]">
                     {assessment.complianceScore || 0}
-                    <span className="text-body-lg text-slate-600 dark:text-white/70">
+                    <span className="text-body-lg text-[var(--text-secondary)]">
                       /100
                     </span>
                   </p>
@@ -1234,9 +1230,12 @@ function CalculatorStep({
             </div>
 
             {assessment.isSimplifiedAssessment && (
-              <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-                <Info className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                <p className="text-small text-emerald-300">
+              <div className="mt-4 p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-lg flex items-center gap-2">
+                <Info
+                  className="w-4 h-4 text-[var(--accent-primary)]"
+                  aria-hidden="true"
+                />
+                <p className="text-small text-[var(--accent-primary)]">
                   Screening LCA - Simplified assessment based on industry
                   averages
                 </p>
@@ -1245,8 +1244,8 @@ function CalculatorStep({
           </div>
 
           {/* Lifecycle Breakdown */}
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
               Lifecycle Phase Breakdown
             </h3>
 
@@ -1261,18 +1260,18 @@ function CalculatorStep({
                       className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         isHotspot
                           ? "bg-orange-500/20"
-                          : "bg-slate-100 dark:bg-[--glass-bg-surface]"
+                          : "bg-[var(--surface-sunken)]"
                       }`}
                     >
                       <Icon
-                        className={`w-5 h-5 ${isHotspot ? "text-orange-400" : "text-slate-600 dark:text-white/70"}`}
+                        className={`w-5 h-5 ${isHotspot ? "text-orange-400" : "text-[var(--text-secondary)]"}`}
                         aria-hidden="true"
                       />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-body text-slate-900 dark:text-white">
+                          <p className="text-body text-[var(--text-primary)]">
                             {getPhaseLabel(phase.phase as any)}
                           </p>
                           {isHotspot && (
@@ -1281,12 +1280,12 @@ function CalculatorStep({
                             </span>
                           )}
                         </div>
-                        <p className="text-body text-slate-500 dark:text-white/45">
+                        <p className="text-body text-[var(--text-secondary)]">
                           {formatEmissions(phase.gwpKgCO2eq)}
                         </p>
                       </div>
                       <div
-                        className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden"
+                        className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden"
                         role="progressbar"
                         aria-valuenow={phase.percentOfTotal}
                         aria-valuemin={0}
@@ -1295,13 +1294,15 @@ function CalculatorStep({
                       >
                         <div
                           className={`h-full rounded-full transition-all ${
-                            isHotspot ? "bg-orange-500" : "bg-emerald-500"
+                            isHotspot
+                              ? "bg-orange-500"
+                              : "bg-[var(--accent-success-soft)]0"
                           }`}
                           style={{ width: `${phase.percentOfTotal}%` }}
                         />
                       </div>
                     </div>
-                    <p className="text-body text-slate-500 dark:text-white/45 w-16 text-right">
+                    <p className="text-body text-[var(--text-secondary)] w-16 text-right">
                       {phase.percentOfTotal.toFixed(1)}%
                     </p>
                   </div>
@@ -1312,10 +1313,10 @@ function CalculatorStep({
 
           {/* Recommendations */}
           {result?.recommendations && result.recommendations.length > 0 && (
-            <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-              <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+              <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
                 <TrendingDown
-                  className="w-5 h-5 text-emerald-400"
+                  className="w-5 h-5 text-[var(--accent-primary)]"
                   aria-hidden="true"
                 />
                 Improvement Recommendations
@@ -1324,12 +1325,12 @@ function CalculatorStep({
                 {result.recommendations.map((rec, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
+                    className="flex items-start gap-3 p-3 bg-[var(--surface-sunken)] rounded-lg"
                   >
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-caption text-emerald-400 font-medium">
+                    <div className="w-6 h-6 rounded-full bg-[var(--accent-success-soft)] flex items-center justify-center text-caption text-[var(--accent-primary)] font-medium">
                       {index + 1}
                     </div>
-                    <p className="text-body text-slate-600 dark:text-white/70 flex-1">
+                    <p className="text-body text-[var(--text-secondary)] flex-1">
                       {rec}
                     </p>
                   </div>
@@ -1344,7 +1345,7 @@ function CalculatorStep({
       <div className="flex justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2 text-white/45 hover:text-white/70 text-body"
+          className="flex items-center gap-2 px-4 py-2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] text-body"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
@@ -1352,7 +1353,7 @@ function CalculatorStep({
         <button
           onClick={onNext}
           disabled={!assessment.totalGWP}
-          className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors disabled:opacity-50"
         >
           Continue to Supplier Data
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -1378,22 +1379,25 @@ function SuppliersStep({
   loading: boolean;
 }) {
   const statusColors: Record<string, string> = {
-    pending: "bg-white/10 text-white/70",
-    sent: "bg-emerald-500/20 text-emerald-400",
-    received: "bg-emerald-500/20 text-emerald-400",
-    overdue: "bg-red-500/20 text-red-400",
+    pending: "bg-[var(--surface-sunken)] text-[var(--text-secondary)]",
+    sent: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+    received: "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]",
+    overdue: "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]",
   };
 
   return (
     <div className="space-y-6">
       {/* Info Card */}
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-emerald-400 mt-0.5" aria-hidden="true" />
+      <div className="bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-xl p-4 flex items-start gap-3">
+        <Info
+          className="w-5 h-5 text-[var(--accent-primary)] mt-0.5"
+          aria-hidden="true"
+        />
         <div>
-          <p className="text-body text-emerald-300 font-medium mb-1">
+          <p className="text-body text-[var(--accent-primary)] font-medium mb-1">
             Article 99: Supply Chain Data Collection
           </p>
-          <p className="text-small text-emerald-300/70">
+          <p className="text-small text-[var(--accent-primary)]/70">
             You may request environmental data from suppliers to improve LCA
             accuracy. Use the default templates or create custom requests.
           </p>
@@ -1402,22 +1406,22 @@ function SuppliersStep({
 
       {/* Suppliers List or Empty State */}
       {suppliers.length === 0 ? (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
           <Users
-            className="w-12 h-12 text-slate-300 dark:text-white/10 mx-auto mb-4"
+            className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-4"
             aria-hidden="true"
           />
-          <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+          <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
             No Supplier Requests Yet
           </h3>
-          <p className="text-body text-slate-500 dark:text-white/45 mb-6 max-w-md mx-auto">
+          <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
             Generate default data requests based on your mission profile, or add
             custom suppliers.
           </p>
           <button
             onClick={onGenerateDefaults}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
@@ -1430,14 +1434,14 @@ function SuppliersStep({
           </button>
         </div>
       ) : (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-subtitle font-medium text-slate-900 dark:text-white">
+            <h3 className="text-subtitle font-medium text-[var(--text-primary)]">
               Supplier Data Requests
             </h3>
             <button
               onClick={onGenerateDefaults}
-              className="flex items-center gap-1.5 text-small text-emerald-400 hover:text-emerald-300"
+              className="flex items-center gap-1.5 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
               Add More
@@ -1456,14 +1460,14 @@ function SuppliersStep({
               return (
                 <div
                   key={supplier.id}
-                  className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]"
+                  className="p-4 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-body-lg text-slate-900 dark:text-white font-medium">
+                      <p className="text-body-lg text-[var(--text-primary)] font-medium">
                         {supplier.supplierName}
                       </p>
-                      <p className="text-small text-slate-500 dark:text-white/45">
+                      <p className="text-small text-[var(--text-secondary)]">
                         {supplier.componentType}
                       </p>
                     </div>
@@ -1483,20 +1487,20 @@ function SuppliersStep({
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide">
+                    <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide">
                       Data Required:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {dataRequired.slice(0, 3).map((item, i) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-600 dark:text-white/70"
+                          className="px-2 py-0.5 bg-[var(--surface-sunken)] rounded text-caption text-[var(--text-secondary)]"
                         >
                           {item}
                         </span>
                       ))}
                       {dataRequired.length > 3 && (
-                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-600 dark:text-white/70">
+                        <span className="px-2 py-0.5 bg-[var(--surface-sunken)] rounded text-caption text-[var(--text-secondary)]">
                           +{dataRequired.length - 3} more
                         </span>
                       )}
@@ -1504,7 +1508,7 @@ function SuppliersStep({
                   </div>
 
                   {supplier.status === "pending" && (
-                    <button className="mt-3 flex items-center gap-1.5 text-small text-emerald-400 hover:text-emerald-300">
+                    <button className="mt-3 flex items-center gap-1.5 text-small text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)]">
                       <Mail className="w-3.5 h-3.5" aria-hidden="true" />
                       Send Request Email
                     </button>
@@ -1514,24 +1518,24 @@ function SuppliersStep({
             })}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
             <div className="flex items-center gap-6 text-small">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10" />
-                <span className="text-slate-500 dark:text-white/45">
+                <div className="w-3 h-3 rounded-full bg-[var(--surface-sunken)]" />
+                <span className="text-[var(--text-secondary)]">
                   Pending:{" "}
                   {suppliers.filter((s) => s.status === "pending").length}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-slate-500 dark:text-white/45">
+                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]0" />
+                <span className="text-[var(--text-secondary)]">
                   Sent: {suppliers.filter((s) => s.status === "sent").length}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-slate-500 dark:text-white/45">
+                <div className="w-3 h-3 rounded-full bg-[var(--accent-success-soft)]0" />
+                <span className="text-[var(--text-secondary)]">
                   Received:{" "}
                   {suppliers.filter((s) => s.status === "received").length}
                 </span>
@@ -1545,14 +1549,14 @@ function SuppliersStep({
       <div className="flex justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 text-body"
+          className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] text-body"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
         </button>
         <button
           onClick={onNext}
-          className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors"
         >
           Continue to Report
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -1578,15 +1582,15 @@ function ReportStep({
   if (!report) {
     return (
       <div className="space-y-6">
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-8 text-center">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 text-center">
           <FileText
-            className="w-12 h-12 text-emerald-400/30 mx-auto mb-4"
+            className="w-12 h-12 text-[var(--accent-primary)]/30 mx-auto mb-4"
             aria-hidden="true"
           />
-          <h3 className="text-title font-medium text-slate-900 dark:text-white mb-2">
+          <h3 className="text-title font-medium text-[var(--text-primary)] mb-2">
             Generate EFD Report
           </h3>
-          <p className="text-body text-slate-500 dark:text-white/45 mb-6 max-w-md mx-auto">
+          <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
             Generate your Environmental Footprint Declaration report with
             lifecycle breakdown, recommendations, and regulatory compliance
             status.
@@ -1594,7 +1598,7 @@ function ReportStep({
           <button
             onClick={onGenerate}
             disabled={generating || !assessment.totalGWP}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body-lg font-medium transition-colors disabled:opacity-50"
           >
             {generating ? (
               <>
@@ -1618,7 +1622,7 @@ function ReportStep({
         <div className="flex justify-start">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 text-body"
+            className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] text-body"
           >
             <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             Back
@@ -1631,32 +1635,32 @@ function ReportStep({
   return (
     <div className="space-y-6">
       {/* Report Header */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[var(--accent-success-soft)] flex items-center justify-center">
               <FileText
-                className="w-5 h-5 text-emerald-400"
+                className="w-5 h-5 text-[var(--accent-primary)]"
                 aria-hidden="true"
               />
             </div>
             <div>
-              <h3 className="text-title font-medium text-slate-900 dark:text-white">
+              <h3 className="text-title font-medium text-[var(--text-primary)]">
                 Environmental Footprint Declaration
               </h3>
-              <p className="text-small text-slate-500 dark:text-white/45">
+              <p className="text-small text-[var(--text-secondary)]">
                 Generated {new Date(report.generatedAt).toLocaleDateString()}
               </p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-[--glass-bg-surface] hover:bg-slate-200 dark:hover:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/12 rounded-lg text-body text-slate-600 dark:text-white/70">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-body text-[var(--text-secondary)]">
             <Download className="w-4 h-4" aria-hidden="true" />
             Download PDF
           </button>
         </div>
 
         {/* Grade Summary */}
-        <div className="flex items-center gap-6 p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
+        <div className="flex items-center gap-6 p-4 bg-[var(--surface-sunken)] rounded-lg">
           <div
             className="w-20 h-20 rounded-xl flex items-center justify-center text-display font-medium"
             style={{
@@ -1667,11 +1671,11 @@ function ReportStep({
             {report.environmentalFootprint.grade}
           </div>
           <div className="flex-1">
-            <p className="text-body-lg text-slate-900 dark:text-white font-medium mb-1">
+            <p className="text-body-lg text-[var(--text-primary)] font-medium mb-1">
               {report.environmentalFootprint.gradeLabel} Environmental
               Performance
             </p>
-            <p className="text-small text-slate-600 dark:text-white/70">
+            <p className="text-small text-[var(--text-secondary)]">
               {report.environmentalFootprint.gradeDescription}
             </p>
           </div>
@@ -1679,72 +1683,72 @@ function ReportStep({
       </div>
 
       {/* Mission Profile Summary */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Mission Profile
         </h3>
         <div className="grid grid-cols-4 gap-4">
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Mission
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.name || "Unnamed"}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Spacecraft Mass
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.spacecraftMass}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Orbit
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.orbitType}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Duration
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.missionDuration}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Launch Vehicle
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.launchVehicle}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Launch Share
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.launchShare}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Deorbit Strategy
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.missionProfile.deorbitStrategy}
             </p>
           </div>
           <div>
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-1">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-1">
               Compliance Score
             </p>
-            <p className="text-body text-slate-900 dark:text-white">
+            <p className="text-body text-[var(--text-primary)]">
               {report.complianceScore}/100
             </p>
           </div>
@@ -1752,47 +1756,47 @@ function ReportStep({
       </div>
 
       {/* Environmental Metrics */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Environmental Impact Metrics
         </h3>
         <div className="grid grid-cols-3 gap-6">
-          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
+          <div className="p-4 bg-[var(--surface-sunken)] rounded-lg">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-2">
               Total GWP
             </p>
-            <p className="text-display-sm font-medium text-slate-900 dark:text-white">
+            <p className="text-display-sm font-medium text-[var(--text-primary)]">
               {report.environmentalFootprint.totalGWPFormatted}
             </p>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               Climate change impact
             </p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
+          <div className="p-4 bg-[var(--surface-sunken)] rounded-lg">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-2">
               Carbon Intensity
             </p>
-            <p className="text-display-sm font-medium text-slate-900 dark:text-white">
+            <p className="text-display-sm font-medium text-[var(--text-primary)]">
               {report.environmentalFootprint.carbonIntensity.toFixed(0)}
-              <span className="text-body-lg text-slate-600 dark:text-white/70 ml-1">
+              <span className="text-body-lg text-[var(--text-secondary)] ml-1">
                 kg CO2/kg
               </span>
             </p>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               Per kg payload delivered
             </p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg">
-            <p className="text-caption text-slate-600 dark:text-white/70 uppercase tracking-wide mb-2">
+          <div className="p-4 bg-[var(--surface-sunken)] rounded-lg">
+            <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wide mb-2">
               Ozone Depletion
             </p>
-            <p className="text-display-sm font-medium text-slate-900 dark:text-white">
+            <p className="text-display-sm font-medium text-[var(--text-primary)]">
               {report.environmentalFootprint.totalODP.toFixed(2)}
-              <span className="text-body-lg text-slate-600 dark:text-white/70 ml-1">
+              <span className="text-body-lg text-[var(--text-secondary)] ml-1">
                 kg CFC-11 eq
               </span>
             </p>
-            <p className="text-small text-slate-500 dark:text-white/45">
+            <p className="text-small text-[var(--text-secondary)]">
               Stratospheric impact
             </p>
           </div>
@@ -1800,8 +1804,8 @@ function ReportStep({
       </div>
 
       {/* Lifecycle Breakdown */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Lifecycle Phase Breakdown
         </h3>
         <div className="space-y-3">
@@ -1811,14 +1815,14 @@ function ReportStep({
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   phase.isHotspot
                     ? "bg-orange-500/20"
-                    : "bg-slate-100 dark:bg-[--glass-bg-surface]"
+                    : "bg-[var(--surface-sunken)]"
                 }`}
               >
                 {(() => {
                   const Icon = phaseIcons[phase.phase] || Factory;
                   return (
                     <Icon
-                      className={`w-5 h-5 ${phase.isHotspot ? "text-orange-400" : "text-slate-600 dark:text-white/70"}`}
+                      className={`w-5 h-5 ${phase.isHotspot ? "text-orange-400" : "text-[var(--text-secondary)]"}`}
                       aria-hidden="true"
                     />
                   );
@@ -1827,7 +1831,7 @@ function ReportStep({
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-body text-slate-900 dark:text-white">
+                    <p className="text-body text-[var(--text-primary)]">
                       {phase.phaseName}
                     </p>
                     {phase.isHotspot && (
@@ -1836,12 +1840,12 @@ function ReportStep({
                       </span>
                     )}
                   </div>
-                  <p className="text-body text-slate-500 dark:text-white/45">
+                  <p className="text-body text-[var(--text-secondary)]">
                     {phase.gwpFormatted}
                   </p>
                 </div>
                 <div
-                  className="h-2 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-full overflow-hidden"
+                  className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden"
                   role="progressbar"
                   aria-valuenow={phase.percentOfTotal}
                   aria-valuemin={0}
@@ -1849,12 +1853,12 @@ function ReportStep({
                   aria-label={`${phase.phaseName} contribution`}
                 >
                   <div
-                    className={`h-full rounded-full ${phase.isHotspot ? "bg-orange-500" : "bg-emerald-500"}`}
+                    className={`h-full rounded-full ${phase.isHotspot ? "bg-orange-500" : "bg-[var(--accent-success-soft)]0"}`}
                     style={{ width: `${phase.percentOfTotal}%` }}
                   />
                 </div>
               </div>
-              <p className="text-body text-slate-500 dark:text-white/45 w-16 text-right">
+              <p className="text-body text-[var(--text-secondary)] w-16 text-right">
                 {phase.percentOfTotal.toFixed(1)}%
               </p>
             </div>
@@ -1864,10 +1868,10 @@ function ReportStep({
 
       {/* Recommendations */}
       {report.recommendations.length > 0 && (
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-          <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+          <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
             <TrendingDown
-              className="w-5 h-5 text-emerald-400"
+              className="w-5 h-5 text-[var(--accent-primary)]"
               aria-hidden="true"
             />
             Improvement Recommendations
@@ -1876,14 +1880,12 @@ function ReportStep({
             {report.recommendations.map((rec: string, index: number) => (
               <div
                 key={index}
-                className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
+                className="flex items-start gap-3 p-3 bg-[var(--surface-sunken)] rounded-lg"
               >
-                <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-caption text-emerald-400 font-medium shrink-0">
+                <div className="w-6 h-6 rounded-full bg-[var(--accent-success-soft)] flex items-center justify-center text-caption text-[var(--accent-primary)] font-medium shrink-0">
                   {index + 1}
                 </div>
-                <p className="text-body text-slate-600 dark:text-white/70">
-                  {rec}
-                </p>
+                <p className="text-body text-[var(--text-secondary)]">{rec}</p>
               </div>
             ))}
           </div>
@@ -1891,15 +1893,18 @@ function ReportStep({
       )}
 
       {/* Regulatory Compliance */}
-      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-        <h3 className="text-subtitle font-medium text-slate-900 dark:text-white mb-4">
+      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+        <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
           Regulatory Compliance Status
         </h3>
 
         {report.regulatoryCompliance.isSimplifiedAssessment && (
-          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
-            <Info className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-            <p className="text-small text-emerald-300">
+          <div className="mb-4 p-3 bg-[var(--accent-primary-soft)] border border-[var(--accent-primary)/20] rounded-lg flex items-center gap-2">
+            <Info
+              className="w-4 h-4 text-[var(--accent-primary)]"
+              aria-hidden="true"
+            />
+            <p className="text-small text-[var(--accent-primary)]">
               Simplified Regime applies: Screening LCA is sufficient until 2032
             </p>
           </div>
@@ -1911,13 +1916,13 @@ function ReportStep({
             .map((req: any) => (
               <div
                 key={req.article}
-                className="flex items-center justify-between p-3 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-lg"
+                className="flex items-center justify-between p-3 bg-[var(--surface-sunken)] rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <span className="px-2 py-1 bg-slate-200 dark:bg-[--glass-bg-surface] rounded text-caption text-slate-500 dark:text-white/45">
+                  <span className="px-2 py-1 bg-[var(--surface-sunken)] rounded text-caption text-[var(--text-secondary)]">
                     {req.article}
                   </span>
-                  <span className="text-body text-slate-600 dark:text-white/70">
+                  <span className="text-body text-[var(--text-secondary)]">
                     {req.title}
                   </span>
                 </div>
@@ -1929,7 +1934,7 @@ function ReportStep({
                     severity="major"
                     regulationType="ENVIRONMENTAL"
                   />
-                  <span className="text-caption text-slate-500 dark:text-white/45">
+                  <span className="text-caption text-[var(--text-secondary)]">
                     Deadline: {req.deadline}
                   </span>
                 </div>
@@ -1939,10 +1944,10 @@ function ReportStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+      <div className="flex justify-between items-center pt-4 border-t border-[var(--border-default)]">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 text-body"
+          className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] text-body"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           Back
@@ -1952,7 +1957,7 @@ function ReportStep({
           <button
             onClick={onGenerate}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 text-body"
+            className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-secondary)] text-body"
           >
             <RefreshCw
               className={`w-4 h-4 ${generating ? "animate-spin" : ""}`}
@@ -1960,7 +1965,7 @@ function ReportStep({
             />
             Regenerate
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-body font-medium transition-colors">
+          <button className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white rounded-lg text-body font-medium transition-colors">
             <Download className="w-4 h-4" aria-hidden="true" />
             Export EFD Report
           </button>

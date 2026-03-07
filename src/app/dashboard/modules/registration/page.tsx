@@ -59,17 +59,17 @@ const STATUS_CONFIG: Record<
 > = {
   DRAFT: {
     label: "Draft",
-    color: "text-slate-400 bg-slate-500/10",
+    color: "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10",
     icon: FileText,
   },
   PENDING_SUBMISSION: {
     label: "Pending",
-    color: "text-amber-400 bg-amber-500/10",
+    color: "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]",
     icon: Clock,
   },
   SUBMITTED: {
     label: "Submitted",
-    color: "text-emerald-400 bg-emerald-500/10",
+    color: "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]",
     icon: Globe,
   },
   UNDER_REVIEW: {
@@ -79,27 +79,27 @@ const STATUS_CONFIG: Record<
   },
   REGISTERED: {
     label: "Registered",
-    color: "text-green-400 bg-green-500/10",
+    color: "text-[var(--accent-success)] bg-[var(--accent-success)]/10",
     icon: CheckCircle,
   },
   AMENDMENT_REQUIRED: {
     label: "Amendment Required",
-    color: "text-amber-400 bg-amber-500/10",
+    color: "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]",
     icon: AlertCircle,
   },
   AMENDMENT_PENDING: {
     label: "Amendment Pending",
-    color: "text-amber-400 bg-amber-500/10",
+    color: "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]",
     icon: Clock,
   },
   DEREGISTERED: {
     label: "Deregistered",
-    color: "text-slate-400 bg-slate-500/10",
+    color: "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10",
     icon: XCircle,
   },
   REJECTED: {
     label: "Rejected",
-    color: "text-red-400 bg-red-500/10",
+    color: "text-[var(--accent-danger)] bg-[var(--accent-danger)]/10",
     icon: XCircle,
   },
 };
@@ -225,16 +225,16 @@ function RegistrationPageContent() {
   if (loading && !organizationId) {
     return (
       <div className="p-6 animate-pulse" role="status" aria-live="polite">
-        <div className="h-8 bg-slate-50 dark:bg-[--glass-bg-surface] rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3 mb-6"></div>
         <div className="grid grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-24 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl"
+              className="h-24 bg-[var(--surface-sunken)] rounded-xl"
             ></div>
           ))}
         </div>
-        <div className="h-96 bg-slate-50 dark:bg-[--glass-bg-surface] rounded-xl"></div>
+        <div className="h-96 bg-[var(--surface-sunken)] rounded-xl"></div>
         <span className="sr-only">Loading registration data...</span>
       </div>
     );
@@ -245,28 +245,28 @@ function RegistrationPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-2xl font-medium text-[var(--text-primary)] flex items-center gap-3">
             <Satellite
-              className="w-7 h-7 text-emerald-400"
+              className="w-7 h-7 text-[var(--accent-primary)]"
               aria-hidden="true"
             />
             URSO Registration
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-[var(--text-tertiary)] mt-1">
             UN Registry of Space Objects - Art. 24 EU Space Act
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-[--glass-bg-elevated] text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-[--glass-bg-elevated] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-sunken)] text-[var(--text-tertiary)] rounded-lg hover:bg-[var(--surface-sunken)] transition-colors"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
             Export for UNOOSA
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             New Registration
@@ -303,13 +303,13 @@ function RegistrationPageContent() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
+      <div className="flex items-center gap-4 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-4">
         <div className="flex-1 relative">
           <label htmlFor="registration-search" className="sr-only">
             Search registrations
           </label>
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]"
             aria-hidden="true"
           />
           <input
@@ -318,11 +318,14 @@ function RegistrationPageContent() {
             placeholder="Search by name, COSPAR ID, or spacecraft..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-medium] rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-10 pr-4 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:border-[var(--border-focus)]"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-500" aria-hidden="true" />
+          <Filter
+            className="w-4 h-4 text-[var(--text-secondary)]"
+            aria-hidden="true"
+          />
           <label htmlFor="registration-status-filter" className="sr-only">
             Filter by status
           </label>
@@ -330,7 +333,7 @@ function RegistrationPageContent() {
             id="registration-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-medium] rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="px-3 py-2 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
           >
             <option value="all">All Status</option>
             <option value="DRAFT">Draft</option>
@@ -342,7 +345,7 @@ function RegistrationPageContent() {
         </div>
         <button
           onClick={fetchRegistrations}
-          className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[--glass-bg-surface] rounded-lg transition-colors"
+          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white hover:bg-[var(--surface-sunken)] rounded-lg transition-colors"
           aria-label="Refresh registrations"
         >
           <RefreshCw className="w-4 h-4" aria-hidden="true" />
@@ -351,15 +354,15 @@ function RegistrationPageContent() {
 
       {/* Registrations List */}
       {filteredRegistrations.length === 0 ? (
-        <div className="text-center py-16 bg-slate-50 dark:bg-[--glass-bg-surface]/50 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl">
+        <div className="text-center py-16 bg-[var(--surface-sunken)]/50 border border-[var(--border-default)] rounded-xl">
           <Orbit
-            className="w-16 h-16 text-slate-600 mx-auto mb-4"
+            className="w-16 h-16 text-[var(--text-secondary)] mx-auto mb-4"
             aria-hidden="true"
           />
-          <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-2">
+          <h3 className="text-xl font-medium text-[var(--text-primary)] mb-2">
             No registrations found
           </h3>
-          <p className="text-slate-400 mb-6 max-w-md mx-auto">
+          <p className="text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
             {registrations.length === 0
               ? "Start by registering your space objects with the UN Registry."
               : "No registrations match your current filters."}
@@ -367,7 +370,7 @@ function RegistrationPageContent() {
           {registrations.length === 0 && (
             <button
               onClick={() => setShowCreateForm(true)}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              className="px-6 py-3 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
             >
               Create First Registration
             </button>
@@ -434,18 +437,18 @@ function StatCard({
   color: "blue" | "slate" | "amber" | "green";
 }) {
   const colors = {
-    blue: "text-emerald-400 bg-emerald-500/10",
-    slate: "text-slate-400 bg-slate-500/10",
-    amber: "text-amber-400 bg-amber-500/10",
-    green: "text-green-400 bg-green-500/10",
+    blue: "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)]",
+    slate: "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10",
+    amber: "text-[var(--accent-warning)] bg-[var(--accent-warning-soft)]",
+    green: "text-[var(--accent-success)] bg-[var(--accent-success)]/10",
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-4">
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-400">{title}</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+          <p className="text-sm text-[var(--text-tertiary)]">{title}</p>
+          <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
             {value}
           </p>
         </div>
@@ -499,12 +502,12 @@ function RegistrationDetailModal({
         aria-modal="true"
       >
         <div
-          className="bg-slate-50 dark:bg-zinc-900 rounded-xl p-8"
+          className="bg-[var(--surface-sunken)] rounded-xl p-8"
           role="status"
           aria-live="polite"
         >
           <RefreshCw
-            className="w-8 h-8 text-emerald-400 animate-spin"
+            className="w-8 h-8 text-[var(--accent-primary)] animate-spin"
             aria-hidden="true"
           />
           <span className="sr-only">Loading registration details...</span>
@@ -526,15 +529,15 @@ function RegistrationDetailModal({
         role="dialog"
         aria-label="Registration details"
         aria-modal="true"
-        className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <div className="p-6 border-b border-slate-200 dark:border-[--glass-border-subtle]">
+        <div className="p-6 border-b border-[var(--border-default)]">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                 {registration.objectName}
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-[var(--text-tertiary)] mt-1">
                 {registration.internationalDesignator ||
                   "No COSPAR ID assigned"}
               </p>
@@ -579,10 +582,10 @@ function RegistrationDetailModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-default)]">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]:text-white transition-colors"
             >
               Close
             </button>
@@ -609,7 +612,7 @@ function RegistrationDetailModal({
                     console.error("Error submitting:", error);
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
               >
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 Submit to URSO
@@ -625,8 +628,10 @@ function RegistrationDetailModal({
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
-      <p className="text-slate-900 dark:text-white mt-1">{value}</p>
+      <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">
+        {label}
+      </p>
+      <p className="text-[var(--text-primary)] mt-1">{value}</p>
     </div>
   );
 }

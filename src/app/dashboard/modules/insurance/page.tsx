@@ -401,13 +401,13 @@ function InsurancePageContent() {
     return (
       <div className="" role="status" aria-live="polite">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/3" />
-          <div className="h-4 bg-slate-200 dark:bg-[--glass-bg-surface] rounded w-1/2" />
+          <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
+          <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
           <div className="grid grid-cols-4 gap-4 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-slate-100 dark:bg-[--glass-bg-surface] rounded-xl"
+                className="h-24 bg-[var(--surface-sunken)] rounded-xl"
               />
             ))}
           </div>
@@ -418,16 +418,16 @@ function InsurancePageContent() {
   }
 
   return (
-    <div className="max-w-[1400px]">
+    <div className="max-w-[1360px]">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-caption uppercase tracking-[0.2em] text-slate-500 dark:text-white/45 mb-3">
+        <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3">
           MODULE 06
         </p>
-        <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
+        <h1 className="text-display-sm font-medium text-[var(--text-primary)] mb-1">
           Insurance Navigator
         </h1>
-        <p className="text-body-lg text-slate-600 dark:text-white/70">
+        <p className="text-body-lg text-[var(--text-secondary)]">
           Navigate EU national insurance requirements for space operations
         </p>
       </div>
@@ -446,7 +446,7 @@ function InsurancePageContent() {
                 setReport(null);
               }}
               aria-label="Select insurance assessment"
-              className="bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+              className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
             >
               {assessments.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -459,7 +459,7 @@ function InsurancePageContent() {
 
         <button
           onClick={() => setShowNewAssessment(true)}
-          className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-lg font-medium text-body hover:bg-slate-800 dark:hover:bg-white/90 transition-all"
+          className="flex items-center gap-2 bg-[var(--text-primary)] text-white px-5 py-2.5 rounded-lg font-medium text-body hover:bg-[var(--text-primary)] transition-all"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           New Assessment
@@ -489,17 +489,17 @@ function InsurancePageContent() {
                     id={`tab-step-${step.id}`}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive
-                        ? "bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-white/[0.1]"
-                        : "hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+                        ? "bg-[var(--surface-sunken)] border border-[var(--border-default)][0.1]"
+                        : "hover:bg-[var(--surface-sunken)]:bg-[var(--surface-sunken)]"
                     }`}
                   >
                     <div
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-caption ${
                         isActive
-                          ? "bg-slate-900 dark:bg-white text-white dark:text-black"
+                          ? "bg-[var(--text-primary)] text-white"
                           : isCompleted
-                            ? "bg-green-500/20 text-green-400"
-                            : "bg-slate-100 dark:bg-[--glass-bg-surface] text-slate-600 dark:text-white/70"
+                            ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
+                            : "bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                       }`}
                     >
                       {isCompleted ? (
@@ -510,7 +510,7 @@ function InsurancePageContent() {
                     </div>
                     <div className="text-left hidden lg:block">
                       <p
-                        className={`text-body font-medium ${isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-white/45"}`}
+                        className={`text-body font-medium ${isActive ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
                       >
                         {step.name}
                       </p>
@@ -519,7 +519,7 @@ function InsurancePageContent() {
                   {index < STEPS.length - 1 && (
                     <ChevronRight
                       size={16}
-                      className="text-slate-300 dark:text-white/10 mx-1"
+                      className="text-[var(--text-tertiary)] mx-1"
                       aria-hidden="true"
                     />
                   )}
@@ -538,21 +538,21 @@ function InsurancePageContent() {
             initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center"
+            className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12 text-center"
           >
             <Shield
-              className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
+              className="w-16 h-16 text-[var(--text-tertiary)] mx-auto mb-4"
               aria-hidden="true"
             />
             <h2 className="text-xl font-semibold mb-2">
               No Insurance Assessments
             </h2>
-            <p className="text-slate-600 dark:text-white/70 mb-6">
+            <p className="text-[var(--text-secondary)] mb-6">
               Create your first insurance assessment to get started
             </p>
             <button
               onClick={() => setShowNewAssessment(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] rounded-lg font-medium text-body transition-all"
             >
               <Plus className="w-5 h-5" aria-hidden="true" />
               Create Assessment
@@ -569,10 +569,10 @@ function InsurancePageContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Building2
-                      className="w-5 h-5 text-emerald-400"
+                      className="w-5 h-5 text-[var(--accent-primary)]"
                       aria-hidden="true"
                     />
                     Organization & Mission Profile
@@ -580,7 +580,7 @@ function InsurancePageContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Primary Jurisdiction
                       </label>
                       <select
@@ -590,7 +590,7 @@ function InsurancePageContent() {
                             primaryJurisdiction: e.target.value,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       >
                         {nationalInsuranceRequirements.map((req) => (
                           <option
@@ -604,7 +604,7 @@ function InsurancePageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Operator Type
                       </label>
                       <select
@@ -612,7 +612,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ operatorType: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       >
                         {Object.entries(operatorTypeConfig).map(
                           ([key, config]) => (
@@ -625,7 +625,7 @@ function InsurancePageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Company Size
                       </label>
                       <select
@@ -633,7 +633,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ companySize: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       >
                         {Object.entries(companySizeConfig).map(
                           ([key, config]) => (
@@ -646,7 +646,7 @@ function InsurancePageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Orbit Regime
                       </label>
                       <select
@@ -654,7 +654,7 @@ function InsurancePageContent() {
                         onChange={(e) =>
                           updateAssessment({ orbitRegime: e.target.value })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       >
                         {Object.entries(orbitRegimeConfig).map(
                           ([key, config]) => (
@@ -667,7 +667,7 @@ function InsurancePageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Number of Satellites
                       </label>
                       <input
@@ -679,12 +679,12 @@ function InsurancePageContent() {
                             satelliteCount: parseInt(e.target.value) || 1,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Mission Duration (years)
                       </label>
                       <input
@@ -696,12 +696,12 @@ function InsurancePageContent() {
                             missionDurationYears: parseInt(e.target.value) || 5,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Satellite Value (EUR)
                       </label>
                       <input
@@ -713,12 +713,12 @@ function InsurancePageContent() {
                             satelliteValueEur: parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Total Mission Value (EUR)
                       </label>
                       <input
@@ -731,12 +731,12 @@ function InsurancePageContent() {
                               parseFloat(e.target.value) || 0,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                      <label className="block text-sm text-[var(--text-secondary)] mb-2">
                         Launch Provider
                       </label>
                       <select
@@ -746,7 +746,7 @@ function InsurancePageContent() {
                             launchProvider: e.target.value || null,
                           })
                         }
-                        className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                        className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                       >
                         <option value="">Select provider</option>
                         {commonLaunchProviders.map((p) => (
@@ -758,8 +758,8 @@ function InsurancePageContent() {
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-[--glass-border-subtle]">
-                    <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-4">
+                  <div className="mt-6 pt-6 border-t border-[var(--border-default)]">
+                    <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
                       Risk Factors
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -801,9 +801,9 @@ function InsurancePageContent() {
                             onChange={(e) =>
                               updateAssessment({ [key]: e.target.checked })
                             }
-                            className="w-4 h-4 bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded"
+                            className="w-4 h-4 bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded"
                           />
-                          <span className="text-sm text-slate-600 dark:text-white/70">
+                          <span className="text-sm text-[var(--text-secondary)]">
                             {label}
                           </span>
                         </label>
@@ -813,10 +813,10 @@ function InsurancePageContent() {
                 </div>
 
                 {nationalReqs && (
-                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                  <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <MapPin
-                        className="w-5 h-5 text-amber-400"
+                        className="w-5 h-5 text-[var(--accent-warning)]"
                         aria-hidden="true"
                       />
                       {nationalReqs.flag} {nationalReqs.country} Insurance
@@ -825,53 +825,53 @@ function InsurancePageContent() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
+                        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Legal Framework
                         </h3>
-                        <p className="text-slate-900 dark:text-white">
+                        <p className="text-[var(--text-primary)]">
                           {nationalReqs.hasSpaceLaw
                             ? nationalReqs.lawName
                             : "No dedicated space law"}
                         </p>
                         {nationalReqs.lawYear && (
-                          <p className="text-slate-600 dark:text-white/70 text-sm">
+                          <p className="text-[var(--text-secondary)] text-sm">
                             Enacted: {nationalReqs.lawYear}
                           </p>
                         )}
                       </div>
 
                       <div>
-                        <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
+                        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">
                           TPL Requirements
                         </h3>
-                        <p className="text-slate-900 dark:text-white">
+                        <p className="text-[var(--text-primary)]">
                           {nationalReqs.minimumTPL > 0
                             ? formatCurrency(nationalReqs.minimumTPL)
                             : nationalReqs.tplFormula ||
                               "Determined case-by-case"}
                         </p>
                         {nationalReqs.governmentGuarantee && (
-                          <p className="text-green-400 text-sm mt-1">
+                          <p className="text-[var(--accent-success)] text-sm mt-1">
                             State indemnification available
                           </p>
                         )}
                       </div>
 
                       <div>
-                        <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
+                        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Registration Authority
                         </h3>
-                        <p className="text-slate-900 dark:text-white">
+                        <p className="text-[var(--text-primary)]">
                           {nationalReqs.registrationAuthority ||
                             "Not specified"}
                         </p>
                       </div>
 
                       <div>
-                        <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
+                        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Financial Guarantee
                         </h3>
-                        <p className="text-slate-900 dark:text-white">
+                        <p className="text-[var(--text-primary)]">
                           {nationalReqs.financialGuaranteeAccepted
                             ? "Accepted"
                             : "Not accepted"}
@@ -880,18 +880,18 @@ function InsurancePageContent() {
                     </div>
 
                     {nationalReqs.notes && nationalReqs.notes.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
-                        <h3 className="text-sm font-medium text-slate-600 dark:text-white/70 mb-2">
+                      <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
+                        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">
                           Notes
                         </h3>
                         <ul className="space-y-1">
                           {nationalReqs.notes.map((note, i) => (
                             <li
                               key={i}
-                              className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
+                              className="text-sm text-[var(--text-secondary)] flex items-start gap-2"
                             >
                               <Info
-                                className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                                className="w-4 h-4 text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
                                 aria-hidden="true"
                               />
                               {note}
@@ -906,7 +906,7 @@ function InsurancePageContent() {
                 <div className="flex justify-end">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] rounded-lg font-medium text-body transition-all"
                   >
                     Continue to Coverage Calculator
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -925,10 +925,10 @@ function InsurancePageContent() {
                 className="space-y-6"
               >
                 {tplRequirement && (
-                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                  <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Shield
-                        className="w-5 h-5 text-red-400"
+                        className="w-5 h-5 text-[var(--accent-danger)]"
                         aria-hidden="true"
                       />
                       Third-Party Liability Requirement
@@ -936,22 +936,22 @@ function InsurancePageContent() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                        <p className="text-3xl font-bold text-[var(--text-primary)]">
                           {formatCurrency(tplRequirement.amount)}
                         </p>
-                        <p className="text-slate-600 dark:text-white/70">
+                        <p className="text-[var(--text-secondary)]">
                           {tplRequirement.explanation}
                         </p>
                       </div>
                       <div
                         className={`px-4 py-2 rounded-lg ${
                           riskLevel === "low"
-                            ? "bg-green-500/20 text-green-400"
+                            ? "bg-[var(--accent-success-soft)] text-[var(--accent-success)]"
                             : riskLevel === "medium"
-                              ? "bg-emerald-500/20 text-emerald-400"
+                              ? "bg-[var(--accent-success-soft)] text-[var(--accent-primary)]"
                               : riskLevel === "high"
                                 ? "bg-orange-500/20 text-orange-400"
-                                : "bg-red-500/20 text-red-400"
+                                : "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
                         }`}
                       >
                         <p className="text-sm font-medium">
@@ -963,15 +963,15 @@ function InsurancePageContent() {
                     </div>
 
                     {tplRequirement.notes.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[--glass-border-subtle]">
+                      <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
                         <ul className="space-y-1">
                           {tplRequirement.notes.map((note, i) => (
                             <li
                               key={i}
-                              className="text-sm text-slate-600 dark:text-white/70 flex items-start gap-2"
+                              className="text-sm text-[var(--text-secondary)] flex items-start gap-2"
                             >
                               <Info
-                                className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                                className="w-4 h-4 text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
                                 aria-hidden="true"
                               />
                               {note}
@@ -983,10 +983,10 @@ function InsurancePageContent() {
                   </div>
                 )}
 
-                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                   <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <FileText
-                      className="w-5 h-5 text-emerald-400"
+                      className="w-5 h-5 text-[var(--accent-primary)]"
                       aria-hidden="true"
                     />
                     Required Insurance Coverage
@@ -1003,20 +1003,20 @@ function InsurancePageContent() {
                             key={type}
                             className={`p-4 rounded-lg border ${
                               isRequired
-                                ? "bg-emerald-500/10 border-emerald-500/30"
-                                : "bg-slate-50 dark:bg-[--glass-bg-surface] border-slate-200 dark:border-[--glass-border-subtle]"
+                                ? "bg-[var(--accent-primary-soft)] border-[var(--accent-success)/30]"
+                                : "bg-[var(--surface-sunken)] border-[var(--border-default)]"
                             }`}
                           >
                             <div className="flex items-center gap-3 mb-2">
                               {insuranceTypeIcons[type as InsuranceType]}
                               <h3 className="font-medium">{def.name}</h3>
                               {isRequired && (
-                                <span className="ml-auto text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
+                                <span className="ml-auto text-xs px-2 py-1 bg-[var(--accent-success-soft)] text-[var(--accent-primary)] rounded">
                                   Required
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-white/70">
+                            <p className="text-sm text-[var(--text-secondary)]">
                               {def.description}
                             </p>
                           </div>
@@ -1027,20 +1027,20 @@ function InsurancePageContent() {
                 </div>
 
                 {premiumEstimate && (
-                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                  <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <DollarSign
-                        className="w-5 h-5 text-green-400"
+                        className="w-5 h-5 text-[var(--accent-success)]"
                         aria-hidden="true"
                       />
                       Premium Estimate
                     </h2>
 
                     <div className="mb-4">
-                      <p className="text-sm text-slate-600 dark:text-white/70">
+                      <p className="text-sm text-[var(--text-secondary)]">
                         Estimated Annual Premium
                       </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                      <p className="text-2xl font-bold text-[var(--text-primary)]">
                         {formatCurrency(premiumEstimate.total.min)} -{" "}
                         {formatCurrency(premiumEstimate.total.max)}
                       </p>
@@ -1051,9 +1051,9 @@ function InsurancePageContent() {
                         ([type, range]) => (
                           <div
                             key={type}
-                            className="bg-slate-50 dark:bg-[--glass-bg-surface] rounded-lg p-3"
+                            className="bg-[var(--surface-sunken)] rounded-lg p-3"
                           >
-                            <p className="text-xs text-slate-600 dark:text-white/70 mb-1">
+                            <p className="text-xs text-[var(--text-secondary)] mb-1">
                               {
                                 insuranceTypeDefinitions[type as InsuranceType]
                                   ?.name
@@ -1073,14 +1073,14 @@ function InsurancePageContent() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(1)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
                   </button>
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] rounded-lg font-medium text-body transition-all"
                   >
                     Continue to Policy Tracker
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -1098,11 +1098,11 @@ function InsurancePageContent() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                       <CheckCircle2
-                        className="w-5 h-5 text-green-400"
+                        className="w-5 h-5 text-[var(--accent-success)]"
                         aria-hidden="true"
                       />
                       Insurance Compliance Score
@@ -1112,7 +1112,7 @@ function InsurancePageContent() {
                     </div>
                   </div>
                   <div
-                    className="w-full bg-slate-200 dark:bg-[--glass-bg-surface] rounded-full h-3"
+                    className="w-full bg-[var(--surface-sunken)] rounded-full h-3"
                     role="progressbar"
                     aria-valuenow={selectedAssessment.complianceScore || 0}
                     aria-valuemin={0}
@@ -1122,10 +1122,10 @@ function InsurancePageContent() {
                     <div
                       className={`h-3 rounded-full transition-all ${
                         (selectedAssessment.complianceScore || 0) >= 80
-                          ? "bg-green-500"
+                          ? "bg-[var(--accent-success)]"
                           : (selectedAssessment.complianceScore || 0) >= 50
                             ? "bg-yellow-500"
-                            : "bg-red-500"
+                            : "bg-[var(--accent-danger)]"
                       }`}
                       style={{
                         width: `${selectedAssessment.complianceScore || 0}%`,
@@ -1149,10 +1149,10 @@ function InsurancePageContent() {
                     return (
                       <div
                         key={policy.id}
-                        className={`bg-white dark:bg-[--glass-bg-surface] border rounded-xl p-6 ${
+                        className={`bg-[var(--surface-raised)] border rounded-xl p-6 ${
                           isRequired
-                            ? "border-emerald-500/30"
-                            : "border-slate-200 dark:border-[--glass-border-subtle]"
+                            ? "border-[var(--accent-success)/30]"
+                            : "border-[var(--border-default)]"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-4">
@@ -1166,14 +1166,14 @@ function InsurancePageContent() {
                               <h3 className="font-medium">
                                 {typeDef?.name || policy.insuranceType}
                               </h3>
-                              <p className="text-sm text-slate-600 dark:text-white/70">
+                              <p className="text-sm text-[var(--text-secondary)]">
                                 {typeDef?.description}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
                             {isRequired && (
-                              <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">
+                              <span className="text-xs px-2 py-1 bg-[var(--accent-success-soft)] text-[var(--accent-primary)] rounded">
                                 Required
                               </span>
                             )}
@@ -1185,18 +1185,18 @@ function InsurancePageContent() {
                                 })
                               }
                               aria-label={`Policy status for ${typeDef?.name || policy.insuranceType}`}
-                              className={`bg-white dark:bg-[--glass-bg-surface] border rounded-lg px-3 py-1.5 text-sm ${
+                              className={`bg-[var(--surface-raised)] border rounded-lg px-3 py-1.5 text-sm ${
                                 statusConfig?.color === "green"
-                                  ? "border-green-500/30 text-green-400"
+                                  ? "border-[var(--accent-success)/30] text-[var(--accent-success)]"
                                   : statusConfig?.color === "blue"
-                                    ? "border-emerald-500/30 text-emerald-400"
+                                    ? "border-[var(--accent-success)/30] text-[var(--accent-primary)]"
                                     : statusConfig?.color === "yellow"
                                       ? "border-yellow-500/30 text-yellow-400"
                                       : statusConfig?.color === "orange"
                                         ? "border-orange-500/30 text-orange-400"
                                         : statusConfig?.color === "red"
-                                          ? "border-red-500/30 text-red-400"
-                                          : "border-slate-200 dark:border-[--glass-border-subtle] text-slate-600 dark:text-white/70"
+                                          ? "border-[var(--accent-danger)/30] text-[var(--accent-danger)]"
+                                          : "border-[var(--border-default)] text-[var(--text-secondary)]"
                               }`}
                             >
                               {Object.entries(policyStatusConfig).map(
@@ -1223,7 +1223,7 @@ function InsurancePageContent() {
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <p className="text-slate-600 dark:text-white/70">
+                            <p className="text-[var(--text-secondary)]">
                               Coverage Amount
                             </p>
                             <input
@@ -1236,11 +1236,11 @@ function InsurancePageContent() {
                                     parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-white/70">
+                            <p className="text-[var(--text-secondary)]">
                               Premium
                             </p>
                             <input
@@ -1252,11 +1252,11 @@ function InsurancePageContent() {
                                   premium: parseFloat(e.target.value) || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-white/70">
+                            <p className="text-[var(--text-secondary)]">
                               Insurer
                             </p>
                             <input
@@ -1268,11 +1268,11 @@ function InsurancePageContent() {
                                   insurer: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                             />
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-white/70">
+                            <p className="text-[var(--text-secondary)]">
                               Expiration Date
                             </p>
                             <input
@@ -1283,7 +1283,7 @@ function InsurancePageContent() {
                                   expirationDate: e.target.value || null,
                                 })
                               }
-                              className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-3 py-1.5 text-body text-slate-900 dark:text-white mt-1 focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                              className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-3 py-1.5 text-body text-[var(--text-primary)] mt-1 focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                             />
                           </div>
                         </div>
@@ -1295,7 +1295,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setCurrentStep(2)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1303,7 +1303,7 @@ function InsurancePageContent() {
                   <button
                     onClick={generateReport}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-body transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] disabled:opacity-50 rounded-lg font-medium text-body transition-all"
                   >
                     {isSaving ? "Generating..." : "Generate Report"}
                     <ChevronRight className="w-5 h-5" aria-hidden="true" />
@@ -1323,23 +1323,23 @@ function InsurancePageContent() {
               >
                 {report ? (
                   <>
-                    <div className="bg-gradient-to-r from-emerald-500/20 to-purple-500/20 border border-emerald-500/30 rounded-xl p-6">
+                    <div className="bg-gradient-to-r from-[var(--accent-primary-soft)] to-[var(--accent-info-soft)] border border-[var(--accent-success)/30] rounded-xl p-6">
                       <h2 className="text-xl font-medium mb-2">
                         Insurance Compliance Report
                       </h2>
-                      <p className="text-slate-600 dark:text-white/70">
+                      <p className="text-[var(--text-secondary)]">
                         Generated on{" "}
                         {new Date(report.generatedAt).toLocaleDateString()}
                       </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         Organization Profile
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-600 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             Jurisdiction
                           </p>
                           <p className="font-medium">
@@ -1347,7 +1347,7 @@ function InsurancePageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-600 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             Operator Type
                           </p>
                           <p className="font-medium">
@@ -1355,7 +1355,7 @@ function InsurancePageContent() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-600 dark:text-white/70">
+                          <p className="text-[var(--text-secondary)]">
                             Risk Level
                           </p>
                           <p className="font-medium">
@@ -1365,19 +1365,19 @@ function InsurancePageContent() {
                       </div>
                     </div>
 
-                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         TPL Requirement
                       </h3>
-                      <div className="text-3xl font-bold text-emerald-400 mb-2">
+                      <div className="text-3xl font-bold text-[var(--accent-primary)] mb-2">
                         {formatCurrency(report.tplRequirement.amount)}
                       </div>
-                      <p className="text-slate-600 dark:text-white/70">
+                      <p className="text-[var(--text-secondary)]">
                         {report.tplRequirement.explanation}
                       </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                    <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                       <h3 className="text-lg font-semibold mb-4">
                         Compliance Status
                       </h3>
@@ -1386,23 +1386,23 @@ function InsurancePageContent() {
                           <p className="text-3xl font-bold">
                             {report.complianceStatus.score}%
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/70">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             Overall Score
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-emerald-400">
+                          <p className="text-2xl font-bold text-[var(--accent-primary)]">
                             {report.complianceStatus.requiredPolicies}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/70">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             Required
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-green-400">
+                          <p className="text-2xl font-bold text-[var(--accent-success)]">
                             {report.complianceStatus.activePolicies}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/70">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             Active
                           </p>
                         </div>
@@ -1410,15 +1410,15 @@ function InsurancePageContent() {
                           <p className="text-2xl font-bold text-yellow-400">
                             {report.complianceStatus.pendingPolicies}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/70">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             Pending
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-red-400">
+                          <p className="text-2xl font-bold text-[var(--accent-danger)]">
                             {report.complianceStatus.missingPolicies}
                           </p>
-                          <p className="text-sm text-slate-600 dark:text-white/70">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             Missing
                           </p>
                         </div>
@@ -1426,7 +1426,7 @@ function InsurancePageContent() {
                     </div>
 
                     {report.recommendations.length > 0 && (
-                      <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+                      <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
                         <h3 className="text-lg font-semibold mb-4">
                           Recommendations
                         </h3>
@@ -1435,10 +1435,10 @@ function InsurancePageContent() {
                             (rec: string, i: number) => (
                               <li
                                 key={i}
-                                className="flex items-start gap-3 text-slate-600 dark:text-white/70"
+                                className="flex items-start gap-3 text-[var(--text-secondary)]"
                               >
                                 <CheckCircle2
-                                  className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0"
+                                  className="w-5 h-5 text-[var(--accent-primary)] mt-0.5 flex-shrink-0"
                                   aria-hidden="true"
                                 />
                                 {rec}
@@ -1450,21 +1450,21 @@ function InsurancePageContent() {
                     )}
                   </>
                 ) : (
-                  <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-12 text-center">
+                  <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-12 text-center">
                     <FileText
-                      className="w-16 h-16 text-slate-400 dark:text-white/45 mx-auto mb-4"
+                      className="w-16 h-16 text-[var(--text-tertiary)] mx-auto mb-4"
                       aria-hidden="true"
                     />
                     <h2 className="text-xl font-semibold mb-2">
                       No Report Generated
                     </h2>
-                    <p className="text-slate-600 dark:text-white/70 mb-6">
+                    <p className="text-[var(--text-secondary)] mb-6">
                       Complete the policy tracker to generate your compliance
                       report
                     </p>
                     <button
                       onClick={() => setCurrentStep(3)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 rounded-lg font-medium text-body transition-all"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] rounded-lg font-medium text-body transition-all"
                     >
                       <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                       Go to Policy Tracker
@@ -1475,7 +1475,7 @@ function InsurancePageContent() {
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-4 py-2 text-body text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                     Back
@@ -1484,7 +1484,7 @@ function InsurancePageContent() {
                     {selectedAssessment && report && (
                       <Link
                         href="/dashboard/documents/generate?type=INSURANCE_COMPLIANCE"
-                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-400 font-medium text-body transition-all"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-primary-soft)] hover:bg-[var(--accent-success-soft)] border border-[var(--accent-success)/30] rounded-lg text-[var(--accent-primary)] font-medium text-body transition-all"
                       >
                         <Zap className="w-4 h-4" aria-hidden="true" />
                         Generate with ASTRA
@@ -1493,7 +1493,7 @@ function InsurancePageContent() {
                     {selectedAssessment && (
                       <button
                         onClick={() => deleteAssessment(selectedAssessment.id)}
-                        className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 font-medium transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-danger)]/10 hover:bg-[var(--accent-danger-soft)] border border-[var(--accent-danger)/30] rounded-lg text-[var(--accent-danger)] font-medium transition-colors"
                       >
                         <Trash2 className="w-5 h-5" aria-hidden="true" />
                         Delete Assessment
@@ -1521,7 +1521,7 @@ function InsurancePageContent() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0a0f1e] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-label="New Insurance Assessment"
@@ -1534,7 +1534,7 @@ function InsurancePageContent() {
                 <button
                   onClick={() => setShowNewAssessment(false)}
                   aria-label="Close dialog"
-                  className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
@@ -1542,7 +1542,7 @@ function InsurancePageContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-2">
                     Assessment Name
                   </label>
                   <input
@@ -1555,12 +1555,12 @@ function InsurancePageContent() {
                         assessmentName: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-2">
                     Primary Jurisdiction
                   </label>
                   <select
@@ -1571,7 +1571,7 @@ function InsurancePageContent() {
                         primaryJurisdiction: e.target.value as JurisdictionCode,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                   >
                     {nationalInsuranceRequirements.map((req) => (
                       <option
@@ -1585,7 +1585,7 @@ function InsurancePageContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-2">
                     Operator Type
                   </label>
                   <select
@@ -1596,7 +1596,7 @@ function InsurancePageContent() {
                         operatorType: e.target.value as OperatorType,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                   >
                     {Object.entries(operatorTypeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1607,7 +1607,7 @@ function InsurancePageContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-2">
                     Company Size
                   </label>
                   <select
@@ -1618,7 +1618,7 @@ function InsurancePageContent() {
                         companySize: e.target.value as CompanySize,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                   >
                     {Object.entries(companySizeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1629,7 +1629,7 @@ function InsurancePageContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">
+                  <label className="block text-sm text-[var(--text-secondary)] mb-2">
                     Orbit Regime
                   </label>
                   <select
@@ -1640,7 +1640,7 @@ function InsurancePageContent() {
                         orbitRegime: e.target.value as OrbitRegime,
                       })
                     }
-                    className="w-full bg-slate-100 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-3 text-slate-900 dark:text-white text-body-lg focus:outline-none focus:border-slate-300 dark:focus:border-white/[0.15]"
+                    className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-body-lg focus:outline-none focus:border-[var(--border-default)]:border-[var(--border-default)]"
                   >
                     {Object.entries(orbitRegimeConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -1652,7 +1652,7 @@ function InsurancePageContent() {
               </div>
 
               {createError && (
-                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-body mt-6">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 text-[var(--accent-danger)] text-body mt-6">
                   <AlertTriangle size={14} className="flex-shrink-0" />
                   {createError}
                 </div>
@@ -1661,14 +1661,14 @@ function InsurancePageContent() {
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowNewAssessment(false)}
-                  className="px-4 py-2 text-slate-600 dark:text-white/45 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={createAssessment}
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-white/90 disabled:opacity-50 rounded-lg font-medium text-body transition-all"
+                  className="px-5 py-2.5 bg-[var(--text-primary)] text-white hover:bg-[var(--text-primary)] disabled:opacity-50 rounded-lg font-medium text-body transition-all"
                 >
                   {isSaving ? "Creating..." : "Create Assessment"}
                 </button>
