@@ -71,8 +71,8 @@ describe("ComplianceHorizonDisplay", () => {
       />,
     );
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv.className).toContain("bg-red-50");
-    expect(outerDiv.className).toContain("border-red-200");
+    expect(outerDiv.className).toContain("bg-[var(--accent-danger-soft)]");
+    expect(outerDiv.className).toContain("border-[var(--accent-danger)]");
   });
 
   it("applies warning styling when days < 365 and >= 90", () => {
@@ -86,8 +86,8 @@ describe("ComplianceHorizonDisplay", () => {
       />,
     );
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv.className).toContain("bg-amber-50");
-    expect(outerDiv.className).toContain("border-amber-200");
+    expect(outerDiv.className).toContain("bg-[var(--accent-warning-soft)]");
+    expect(outerDiv.className).toContain("border-[var(--accent-warning)]");
   });
 
   it("applies normal styling when days >= 365", () => {

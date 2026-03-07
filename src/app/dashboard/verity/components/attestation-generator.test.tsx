@@ -357,7 +357,7 @@ describe("AttestationGenerator", () => {
     );
 
     await waitFor(() => {
-      const errorText = document.querySelector(".text-[var(--accent-danger)]");
+      const errorText = document.querySelector('[class*="accent-danger"]');
       expect(errorText).toBeTruthy();
     });
   });

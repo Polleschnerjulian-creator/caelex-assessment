@@ -25,27 +25,27 @@ describe("Button Component", () => {
     it("should apply primary variant styles by default", () => {
       render(<Button>Primary</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-emerald-500");
+      expect(button.className).toContain("bg-[var(--accent-primary)]");
     });
 
     it("should apply secondary variant styles", () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-slate-100");
-      expect(button.className).toContain("border-slate-200");
+      expect(button.className).toContain("bg-[var(--surface-raised)]");
+      expect(button.className).toContain("border-[var(--border-default)]");
     });
 
     it("should apply ghost variant styles", () => {
       render(<Button variant="ghost">Ghost</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("text-white/70");
+      expect(button.className).toContain("text-[var(--text-secondary)]");
     });
 
     it("should apply danger variant styles", () => {
       render(<Button variant="danger">Danger</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-red-500/10");
-      expect(button.className).toContain("text-red-400");
+      expect(button.className).toContain("bg-[var(--accent-danger)]");
+      expect(button.className).toContain("text-white");
     });
 
     it("should apply dark variant styles", () => {
@@ -60,22 +60,22 @@ describe("Button Component", () => {
     it("should apply small size", () => {
       render(<Button size="sm">Small</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-5");
-      expect(button.className).toContain("text-body");
+      expect(button.className).toContain("px-3");
+      expect(button.className).toContain("text-[12px]");
     });
 
     it("should apply medium size by default", () => {
       render(<Button>Medium</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-6");
-      expect(button.className).toContain("text-body-lg");
+      expect(button.className).toContain("px-4");
+      expect(button.className).toContain("text-[13px]");
     });
 
     it("should apply large size", () => {
       render(<Button size="lg">Large</Button>);
       const button = screen.getByRole("button");
-      expect(button.className).toContain("px-8");
-      expect(button.className).toContain("text-subtitle");
+      expect(button.className).toContain("px-5");
+      expect(button.className).toContain("text-[14px]");
     });
   });
 

@@ -12,56 +12,56 @@ describe("Badge Component", () => {
     it("should apply default variant styles", () => {
       render(<Badge>Default</Badge>);
       const badge = screen.getByText("Default");
-      expect(badge.className).toContain("bg-slate-100");
+      expect(badge.className).toContain("bg-[var(--surface-sunken)]");
     });
 
     it("should apply success variant styles", () => {
       render(<Badge variant="success">Success</Badge>);
       const badge = screen.getByText("Success");
-      expect(badge.className).toContain("bg-emerald-500/15");
-      expect(badge.className).toContain("text-emerald-400");
+      expect(badge.className).toContain("bg-[var(--accent-success-soft)]");
+      expect(badge.className).toContain("text-[var(--accent-success)]");
     });
 
     it("should apply warning variant styles", () => {
       render(<Badge variant="warning">Warning</Badge>);
       const badge = screen.getByText("Warning");
-      expect(badge.className).toContain("bg-amber-500/15");
-      expect(badge.className).toContain("text-amber-400");
+      expect(badge.className).toContain("bg-[var(--accent-warning-soft)]");
+      expect(badge.className).toContain("text-[var(--accent-warning)]");
     });
 
     it("should apply error variant styles", () => {
       render(<Badge variant="error">Error</Badge>);
       const badge = screen.getByText("Error");
-      expect(badge.className).toContain("bg-red-500/15");
-      expect(badge.className).toContain("text-red-400");
+      expect(badge.className).toContain("bg-[var(--accent-danger-soft)]");
+      expect(badge.className).toContain("text-[var(--accent-danger)]");
     });
 
     it("should apply info variant styles", () => {
       render(<Badge variant="info">Info</Badge>);
       const badge = screen.getByText("Info");
-      expect(badge.className).toContain("bg-blue-500/15");
-      expect(badge.className).toContain("text-blue-400");
+      expect(badge.className).toContain("bg-[var(--accent-info-soft)]");
+      expect(badge.className).toContain("text-[var(--accent-info)]");
     });
 
     it("should apply outline variant styles", () => {
       render(<Badge variant="outline">Outline</Badge>);
       const badge = screen.getByText("Outline");
       expect(badge.className).toContain("bg-transparent");
-      expect(badge.className).toContain("border-slate-300");
+      expect(badge.className).toContain("border-[var(--border-default)]");
     });
 
     it("should apply small size", () => {
       render(<Badge size="sm">Small</Badge>);
       const badge = screen.getByText("Small");
       expect(badge.className).toContain("px-1.5");
-      expect(badge.className).toContain("text-micro");
+      expect(badge.className).toContain("text-[12px]");
     });
 
     it("should apply medium size by default", () => {
       render(<Badge>Medium</Badge>);
       const badge = screen.getByText("Medium");
-      expect(badge.className).toContain("px-2.5");
-      expect(badge.className).toContain("text-caption");
+      expect(badge.className).toContain("px-2");
+      expect(badge.className).toContain("text-[12px]");
     });
 
     it("should render dot when dot prop is true", () => {
@@ -112,19 +112,19 @@ describe("Badge Component", () => {
     it("should apply success variant for compliant", () => {
       const { container } = render(<StatusBadge status="compliant" />);
       const badge = container.querySelector("span");
-      expect(badge?.className).toContain("bg-emerald-500/15");
+      expect(badge?.className).toContain("bg-[var(--accent-success-soft)]");
     });
 
     it("should apply warning variant for in_progress", () => {
       const { container } = render(<StatusBadge status="in_progress" />);
       const badge = container.querySelector("span");
-      expect(badge?.className).toContain("bg-amber-500/15");
+      expect(badge?.className).toContain("bg-[var(--accent-warning-soft)]");
     });
 
     it("should apply info variant for under_review", () => {
       const { container } = render(<StatusBadge status="under_review" />);
       const badge = container.querySelector("span");
-      expect(badge?.className).toContain("bg-blue-500/15");
+      expect(badge?.className).toContain("bg-[var(--accent-info-soft)]");
     });
 
     it("should apply custom className", () => {
