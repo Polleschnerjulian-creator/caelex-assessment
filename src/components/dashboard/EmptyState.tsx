@@ -23,7 +23,7 @@ export default function EmptyState({
     if (!actionLabel) return null;
 
     const className =
-      "inline-flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] active:bg-emerald-700 text-white text-body font-medium px-5 py-2.5 rounded-lg transition-colors";
+      "inline-flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] active:bg-[var(--accent-primary-hover)] text-white text-body font-medium px-5 py-2.5 rounded-lg transition-colors";
 
     if (actionHref) {
       return (

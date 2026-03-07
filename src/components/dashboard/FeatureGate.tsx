@@ -123,7 +123,7 @@ export default function FeatureGate({ module, children }: FeatureGateProps) {
         <div className="flex flex-col items-center gap-3">
           <Link
             href="/dashboard/settings/billing"
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-body-lg font-medium px-6 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-body-lg font-medium px-6 py-2.5 rounded-lg transition-colors"
           >
             View Plans & Upgrade
             <ArrowRight size={16} />

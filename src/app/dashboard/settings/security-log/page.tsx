@@ -74,25 +74,25 @@ const RISK_LEVEL_CONFIG: Record<
 > = {
   LOW: {
     color: "text-[var(--accent-success)]",
-    bg: "bg-green-100/10",
+    bg: "bg-[var(--accent-success-soft)]/10",
     icon: <CheckCircle className="w-4 h-4" />,
     label: "Low",
   },
   MEDIUM: {
-    color: "text-emerald-600",
-    bg: "bg-emerald-100",
+    color: "text-[var(--accent-success)]",
+    bg: "bg-[var(--accent-success-soft)]",
     icon: <Info className="w-4 h-4" />,
     label: "Medium",
   },
   HIGH: {
-    color: "text-amber-600",
-    bg: "bg-amber-100",
+    color: "text-[var(--accent-warning)]",
+    bg: "bg-[var(--accent-warning-soft)]",
     icon: <AlertCircle className="w-4 h-4" />,
     label: "High",
   },
   CRITICAL: {
-    color: "text-red-600",
-    bg: "bg-red-100/10",
+    color: "text-[var(--accent-danger)]",
+    bg: "bg-[var(--accent-danger-soft)]/10",
     icon: <AlertTriangle className="w-4 h-4" />,
     label: "Critical",
   },
@@ -369,8 +369,8 @@ export default function SecurityLogPage() {
         {/* Page Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-red-100/10 flex items-center justify-center">
-              <Shield className="w-6 h-6 text-red-600" />
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-danger-soft)]/10 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-[var(--accent-danger)]" />
             </div>
             <div>
               <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
@@ -405,17 +405,17 @@ export default function SecurityLogPage() {
             {
               key: "CRITICAL",
               label: "Critical",
-              color: "text-red-600",
+              color: "text-[var(--accent-danger)]",
             },
             {
               key: "HIGH",
               label: "High",
-              color: "text-amber-600",
+              color: "text-[var(--accent-warning)]",
             },
             {
               key: "MEDIUM",
               label: "Medium",
-              color: "text-emerald-600",
+              color: "text-[var(--accent-success)]",
             },
             {
               key: "LOW",
@@ -436,7 +436,7 @@ export default function SecurityLogPage() {
                 {filter.label}
               </span>
               <span
-                className={`tabular-nums ${riskFilter === filter.key ? "text-white/70/70" : "text-[var(--text-tertiary)]"}`}
+                className={`tabular-nums ${riskFilter === filter.key ? "text-[var(--text-secondary)]/70" : "text-[var(--text-tertiary)]"}`}
               >
                 {riskCounts[filter.key as keyof typeof riskCounts]}
               </span>
@@ -451,8 +451,8 @@ export default function SecurityLogPage() {
           </div>
         ) : error ? (
           <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30] rounded-xl p-6 text-center">
-            <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-            <p className="text-body-lg text-red-600">{error}</p>
+            <AlertTriangle className="w-8 h-8 text-[var(--accent-danger)] mx-auto mb-3" />
+            <p className="text-body-lg text-[var(--accent-danger)]">{error}</p>
             <button
               onClick={() => fetchLogs()}
               className="mt-4 px-4 py-2 rounded-lg bg-[var(--accent-danger)] text-white text-body font-medium hover:bg-red-600 transition-colors"

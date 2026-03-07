@@ -211,7 +211,7 @@ export default function WidgetSettingsPage() {
           <button
             onClick={handleCreate}
             disabled={creating}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           >
             {creating ? (
               <Loader2 size={16} className="animate-spin" />
@@ -314,7 +314,7 @@ export default function WidgetSettingsPage() {
               />
               <button
                 onClick={addDomain}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 <Plus size={16} />
               </button>
@@ -330,7 +330,7 @@ export default function WidgetSettingsPage() {
                   </span>
                   <button
                     onClick={() => removeDomain(d)}
-                    className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors"
+                    className="text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
                   >
                     <X size={14} />
                   </button>
@@ -349,7 +349,7 @@ export default function WidgetSettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-info-soft)]0 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 size={16} className="animate-spin" />}
               {t("widget.save")}

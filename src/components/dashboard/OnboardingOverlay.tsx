@@ -309,7 +309,7 @@ export default function OnboardingOverlay() {
                       onClick={goToStep2Or3}
                       className="
                         w-full flex items-center justify-center gap-2
-                        bg-emerald-600 hover:bg-emerald-700 text-white
+                        bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white
                         text-body-lg font-medium px-6 py-3 rounded-xl
                         transition-all duration-200
                         shadow-sm shadow-emerald-500/20
@@ -386,7 +386,7 @@ export default function OnboardingOverlay() {
                           disabled={importing}
                           className="
                             w-full flex items-center justify-center gap-2
-                            bg-emerald-600 hover:bg-emerald-700 text-white
+                            bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white
                             text-body-lg font-medium px-6 py-3 rounded-xl
                             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                             shadow-sm shadow-emerald-500/20
@@ -579,7 +579,7 @@ export default function OnboardingOverlay() {
                       onClick={handleComplete}
                       className="
                         w-full flex items-center justify-center gap-2
-                        bg-emerald-600 hover:bg-emerald-700 text-white
+                        bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white
                         text-body-lg font-medium px-6 py-3 rounded-xl
                         transition-all duration-200
                         shadow-sm shadow-emerald-500/20

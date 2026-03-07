@@ -418,7 +418,9 @@ function SecurityCard() {
                 role="alert"
                 className="p-3 rounded-lg bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)/30]"
               >
-                <p className="text-body text-red-500">{passwordError}</p>
+                <p className="text-body text-[var(--accent-danger)]">
+                  {passwordError}
+                </p>
               </div>
             )}
 
@@ -569,8 +571,8 @@ export default function SettingsPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100">
-                <Code2 className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--accent-info-soft)]">
+                <Code2 className="w-5 h-5 text-[var(--accent-info)]" />
               </div>
               <div>
                 <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">

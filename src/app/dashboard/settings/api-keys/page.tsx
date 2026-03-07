@@ -411,7 +411,7 @@ export default function ApiKeysPage() {
                         type="checkbox"
                         checked={newScopes.includes(s.scope)}
                         onChange={() => toggleScope(s.scope)}
-                        className="mt-0.5 accent-emerald-500"
+                        className="mt-0.5 accent-[var(--accent-primary)]"
                       />
                       <div>
                         <p className="text-small text-[var(--text-secondary)] font-medium">
