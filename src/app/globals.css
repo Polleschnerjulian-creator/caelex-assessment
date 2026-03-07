@@ -1221,11 +1221,12 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --surface-overlay: #ffffff;
 
   /* ─── Sidebar Glass Panel (light mode) ─── */
-  --sidebar-glass-bg: rgba(255, 255, 255, 0.55);
-  --sidebar-glass-border: rgba(255, 255, 255, 0.6);
+  --sidebar-glass-bg: rgba(255, 255, 255, 0.72);
+  --sidebar-glass-border: rgba(255, 255, 255, 0.75);
   --sidebar-glass-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+    0 8px 32px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.015);
   --sidebar-toggle-bg: rgba(255, 255, 255, 0.85);
   --sidebar-toggle-border: rgba(0, 0, 0, 0.06);
   --sidebar-tooltip-bg: #1a1a2e;

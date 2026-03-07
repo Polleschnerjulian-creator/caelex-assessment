@@ -20,25 +20,20 @@ import {
   Leaf,
   Scale,
   Eye,
-  ChevronRight,
-  ChevronDown,
   ChevronLeft,
   Lock,
   Crown,
   ClipboardCheck,
   Zap,
-  Globe,
+  AlertTriangle,
   Building2,
   Radio,
-  AlertTriangle,
-  Flag,
   BarChart3,
   Layers,
   FileSearch,
   Orbit,
   Sparkles,
   Users,
-  ShieldAlert,
   Calendar,
   Satellite,
   Activity,
@@ -316,14 +311,6 @@ function ModuleGroup({
           ${hasActiveItem ? "text-[var(--sidebar-nav-color)]" : "text-[var(--sidebar-section-color)]"}
         `}
       >
-        <motion.span
-          animate={{ rotate: isExpanded ? 0 : -90 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="w-3.5 h-3.5 flex-shrink-0"
-          aria-hidden="true"
-        >
-          <ChevronDown size={14} strokeWidth={2} />
-        </motion.span>
         <span className="flex-1 text-left">{title}</span>
         <span
           className="text-[10px] min-w-[18px] text-center px-1 py-0.5 rounded-[8px] font-medium"
@@ -351,7 +338,15 @@ function ModuleGroup({
             transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="pt-1 space-y-0.5">{children}</div>
+            <div
+              className="pt-1 space-y-0.5 ml-4"
+              style={{
+                borderLeft: "1.5px solid var(--sidebar-divider)",
+                paddingLeft: 8,
+              }}
+            >
+              {children}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -389,11 +384,6 @@ const MODULE_MAP: Record<string, string> = {
   "/dashboard/modules/environmental": "environmental",
   "/dashboard/modules/insurance": "insurance",
   "/dashboard/modules/supervision": "supervision",
-  "/dashboard/modules/copuos": "copuos",
-  "/dashboard/modules/uk-space": "uk-space",
-  "/dashboard/modules/us-regulatory": "us-regulatory",
-  "/dashboard/modules/export-control": "export-control",
-  "/dashboard/modules/spectrum": "spectrum",
   "/dashboard/documents": "documents",
   "/dashboard/timeline": "timeline",
   "/dashboard/audit-center": "audit-center",
@@ -408,17 +398,6 @@ const EU_MODULES = [
   "/dashboard/modules/environmental",
   "/dashboard/modules/insurance",
   "/dashboard/modules/supervision",
-];
-
-const INTERNATIONAL_MODULES = [
-  "/dashboard/modules/copuos",
-  "/dashboard/modules/uk-space",
-];
-
-const US_MODULES = [
-  "/dashboard/modules/us-regulatory",
-  "/dashboard/modules/export-control",
-  "/dashboard/modules/spectrum",
 ];
 
 // ─── Sidebar ────────────────────────────────────────────────────────────────
@@ -488,9 +467,6 @@ export default function Sidebar({
   // Active group detection
   const getActiveGroup = (): string | null => {
     if (EU_MODULES.some((m) => pathname.startsWith(m))) return "eu";
-    if (INTERNATIONAL_MODULES.some((m) => pathname.startsWith(m)))
-      return "international";
-    if (US_MODULES.some((m) => pathname.startsWith(m))) return "us";
     return null;
   };
 
@@ -499,8 +475,6 @@ export default function Sidebar({
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
       eu: activeGroup === "eu",
-      international: activeGroup === "international",
-      us: activeGroup === "us",
     },
   );
 
@@ -593,21 +567,29 @@ export default function Sidebar({
           <X size={20} />
         </button>
 
-        {/* ─── Logo + Collapse Toggle ─── */}
+        {/* ─── Logo ─── */}
         <div
-          className="flex items-center flex-shrink-0"
+          className="flex items-center justify-center flex-shrink-0"
           style={{
-            padding: collapsed ? "20px 8px 16px" : "20px 14px 16px",
-            justifyContent: collapsed ? "center" : "flex-start",
+            padding: collapsed ? "20px 0 16px" : "20px 14px 16px",
           }}
         >
-          <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
-            <CaelexIcon
-              size={collapsed ? 24 : 28}
-              className="text-[var(--text-primary)] flex-shrink-0"
-            />
-            {!collapsed && (
-              <>
+          {collapsed ? (
+            /* Collapsed: logo centered, click to expand */
+            <button
+              onClick={toggleCollapse}
+              aria-label="Expand sidebar"
+              className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px] transition-colors duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
+            >
+              <CaelexIcon size={24} className="text-[var(--text-primary)]" />
+            </button>
+          ) : (
+            <div className="flex items-center w-full">
+              <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
+                <CaelexIcon
+                  size={28}
+                  className="text-[var(--text-primary)] flex-shrink-0"
+                />
                 <span
                   className="text-[16px] font-semibold text-[var(--text-primary)]"
                   style={{ letterSpacing: "-0.01em" }}
@@ -623,22 +605,21 @@ export default function Sidebar({
                 >
                   Beta
                 </span>
-              </>
-            )}
-          </Link>
-          {/* Collapse toggle — integrated in header */}
-          <button
-            onClick={toggleCollapse}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden lg:flex items-center justify-center flex-shrink-0 rounded-[8px] transition-all duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
-            style={{
-              width: 28,
-              height: 28,
-              color: "var(--sidebar-nav-icon-color)",
-            }}
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+              </Link>
+              <button
+                onClick={toggleCollapse}
+                aria-label="Collapse sidebar"
+                className="hidden lg:flex items-center justify-center flex-shrink-0 rounded-[8px] transition-all duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
+                style={{
+                  width: 28,
+                  height: 28,
+                  color: "var(--sidebar-nav-icon-color)",
+                }}
+              >
+                <ChevronLeft size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ─── Navigation ─── */}
@@ -757,81 +738,6 @@ export default function Sidebar({
                 locked={isModuleLocked("/dashboard/modules/supervision")}
                 requiredPlan={getRequiredPlanLabel(
                   "/dashboard/modules/supervision",
-                )}
-                collapsed={collapsed}
-              />
-            </ModuleGroup>
-
-            <ModuleGroup
-              title={t("sidebar.international")}
-              count={2}
-              isExpanded={expandedGroups.international}
-              onToggle={() => toggleGroup("international")}
-              hasActiveItem={activeGroup === "international"}
-              groupId="international"
-              collapsed={collapsed}
-            >
-              <CompactModuleItem
-                href="/dashboard/modules/copuos"
-                icon={<Globe size={14} strokeWidth={1.5} />}
-                label={t("modules.copuos")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/copuos")}
-                requiredPlan={getRequiredPlanLabel("/dashboard/modules/copuos")}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
-                href="/dashboard/modules/uk-space"
-                icon={<Building2 size={14} strokeWidth={1.5} />}
-                label={t("modules.ukSpace")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/uk-space")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/uk-space",
-                )}
-                collapsed={collapsed}
-              />
-            </ModuleGroup>
-
-            <ModuleGroup
-              title={t("sidebar.usRegulations")}
-              count={3}
-              isExpanded={expandedGroups.us}
-              onToggle={() => toggleGroup("us")}
-              hasActiveItem={activeGroup === "us"}
-              groupId="us"
-              collapsed={collapsed}
-            >
-              <CompactModuleItem
-                href="/dashboard/modules/us-regulatory"
-                icon={<Flag size={14} strokeWidth={1.5} />}
-                label={t("modules.usRegulatory")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/us-regulatory")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/us-regulatory",
-                )}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
-                href="/dashboard/modules/export-control"
-                icon={<AlertTriangle size={14} strokeWidth={1.5} />}
-                label={t("modules.exportControl")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/export-control")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/export-control",
-                )}
-                collapsed={collapsed}
-              />
-              <CompactModuleItem
-                href="/dashboard/modules/spectrum"
-                icon={<Radio size={14} strokeWidth={1.5} />}
-                label={t("modules.spectrum")}
-                onClick={handleNavClick}
-                locked={isModuleLocked("/dashboard/modules/spectrum")}
-                requiredPlan={getRequiredPlanLabel(
-                  "/dashboard/modules/spectrum",
                 )}
                 collapsed={collapsed}
               />
@@ -969,30 +875,6 @@ export default function Sidebar({
                 collapsed={collapsed}
               >
                 Evidence
-              </NavItem>
-            </div>
-          </div>
-
-          {/* Assure */}
-          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
-            <SectionHeader collapsed={collapsed}>Assure</SectionHeader>
-            <div className="space-y-0.5">
-              <NavItem
-                href="/dashboard/assure"
-                icon={<ShieldAlert size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                badge={t("sidebar.new")}
-                collapsed={collapsed}
-              >
-                Regulatory Readiness
-              </NavItem>
-              <NavItem
-                href="/dashboard/assure/rating"
-                icon={<BarChart3 size={18} strokeWidth={1.5} />}
-                onClick={handleNavClick}
-                collapsed={collapsed}
-              >
-                Credit Rating
               </NavItem>
             </div>
           </div>
