@@ -181,7 +181,7 @@ export default function WidgetSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
       </div>
     );
   }
@@ -190,21 +190,21 @@ export default function WidgetSettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
           {t("widget.title")}
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-white/45">
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">
           {t("widget.subtitle")}
         </p>
       </div>
 
       {/* API Key Section */}
       {!config ? (
-        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-          <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+          <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4">
             {t("widget.setup")}
           </h2>
-          <p className="text-sm text-slate-500 dark:text-white/45 mb-6">
+          <p className="text-sm text-[var(--text-secondary)] mb-6">
             Create a widget configuration to embed Caelex compliance tools on
             external websites. This will generate a dedicated widget API key.
           </p>
@@ -225,17 +225,17 @@ export default function WidgetSettingsPage() {
         <>
           {/* New API Key Alert */}
           {newApiKey && (
-            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-400 mb-2">
+            <div className="bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)] rounded-xl p-4">
+              <p className="text-sm font-medium text-[var(--accent-warning)] mb-2">
                 Widget API Key (save this — it won&apos;t be shown again):
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-white dark:bg-dark-surface p-2 rounded border border-amber-200 dark:border-amber-500/20 text-amber-900 dark:text-amber-300 font-mono break-all">
+                <code className="flex-1 text-xs bg-[var(--surface-raised)] p-2 rounded border border-[var(--accent-warning)] text-[var(--accent-warning)] font-mono break-all">
                   {newApiKey}
                 </code>
                 <button
                   onClick={() => copyToClipboard(newApiKey, "key")}
-                  className="p-2 text-amber-600 hover:text-amber-800 dark:text-amber-400"
+                  className="p-2 text-[var(--accent-warning)] hover:text-[var(--accent-warning)]"
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                 </button>
@@ -244,8 +244,8 @@ export default function WidgetSettingsPage() {
           )}
 
           {/* Widget Type */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.widgetType")}
             </h2>
@@ -256,14 +256,14 @@ export default function WidgetSettingsPage() {
                   onClick={() => setWidgetType(wt.value)}
                   className={`p-4 rounded-lg border text-left transition-colors ${
                     widgetType === wt.value
-                      ? "border-blue-500 bg-blue-500/5 dark:bg-blue-500/10"
-                      : "border-slate-200 dark:border-[--glass-border-subtle] hover:border-slate-300 dark:hover:border-[--glass-border-hover]"
+                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]"
+                      : "border-[var(--border-default)] hover:border-[var(--border-default)]"
                   }`}
                 >
-                  <p className="font-medium text-sm text-slate-900 dark:text-white">
+                  <p className="font-medium text-sm text-[var(--text-primary)]">
                     {wt.label}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">
                     {wt.description}
                   </p>
                 </button>
@@ -272,8 +272,8 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Theme */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Palette size={20} />
               {t("widget.theme")}
             </h2>
@@ -284,8 +284,8 @@ export default function WidgetSettingsPage() {
                   onClick={() => setTheme(t)}
                   className={`px-6 py-3 rounded-lg border text-sm font-medium transition-colors ${
                     theme === t
-                      ? "border-blue-500 bg-blue-500/5 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : "border-slate-200 dark:border-[--glass-border-subtle] text-slate-700 dark:text-white/45 hover:border-slate-300"
+                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
+                      : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-default)]"
                   }`}
                 >
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -295,12 +295,12 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Allowed Domains */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Globe size={20} />
               {t("widget.allowedDomains")}
             </h2>
-            <p className="text-sm text-slate-500 dark:text-white/45 mb-4">
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
               Restrict which domains can embed your widget (CORS whitelist).
               Leave empty to allow all origins.
             </p>
@@ -310,7 +310,7 @@ export default function WidgetSettingsPage() {
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="https://example.com"
-                className="flex-1 px-3 py-2 bg-white dark:bg-dark-surface border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
+                className="flex-1 px-3 py-2 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
               />
               <button
                 onClick={addDomain}
@@ -323,21 +323,21 @@ export default function WidgetSettingsPage() {
               {domains.map((d) => (
                 <div
                   key={d}
-                  className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-lg"
+                  className="flex items-center justify-between px-3 py-2 bg-[var(--surface-sunken)] rounded-lg"
                 >
-                  <span className="text-sm text-slate-700 dark:text-white/70 font-mono">
+                  <span className="text-sm text-[var(--text-secondary)] font-mono">
                     {d}
                   </span>
                   <button
                     onClick={() => removeDomain(d)}
-                    className="text-slate-400 hover:text-red-500 transition-colors"
+                    className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors"
                   >
                     <X size={14} />
                   </button>
                 </div>
               ))}
               {domains.length === 0 && (
-                <p className="text-xs text-slate-400 dark:text-white/30 italic">
+                <p className="text-xs text-[var(--text-tertiary)] italic">
                   No domain restrictions — all origins allowed
                 </p>
               )}
@@ -357,18 +357,18 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Embed Code */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Code2 size={20} />
               {t("widget.embedCode")}
             </h2>
             <div className="relative">
-              <pre className="bg-slate-50 dark:bg-dark-surface border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg p-4 text-xs text-slate-700 dark:text-white/70 font-mono overflow-x-auto">
+              <pre className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-4 text-xs text-[var(--text-secondary)] font-mono overflow-x-auto">
                 {embedCode}
               </pre>
               <button
                 onClick={() => copyToClipboard(embedCode, "embed")}
-                className="absolute top-3 right-3 p-1.5 bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70 transition-colors"
+                className="absolute top-3 right-3 p-1.5 bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors"
               >
                 {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
               </button>
@@ -376,13 +376,13 @@ export default function WidgetSettingsPage() {
           </div>
 
           {/* Live Preview */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-            <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+            <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Eye size={20} />
               {t("widget.preview")}
             </h2>
-            <div className="flex justify-center p-8 bg-slate-50 dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-[--glass-border-subtle]">
-              <div className="text-center text-sm text-slate-500 dark:text-white/45">
+            <div className="flex justify-center p-8 bg-[var(--surface-sunken)] rounded-lg border border-[var(--border-default)]">
+              <div className="text-center text-sm text-[var(--text-secondary)]">
                 <Code2 size={32} className="mx-auto mb-3 opacity-50" />
                 <p>Widget preview available when running locally.</p>
                 <p className="text-xs mt-1">
@@ -395,8 +395,8 @@ export default function WidgetSettingsPage() {
 
           {/* Analytics */}
           {analytics && (
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
-              <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
+              <h2 className="text-lg font-medium text-[var(--text-primary)] mb-4 flex items-center gap-2">
                 <BarChart3 size={20} />
                 {t("widget.analytics")}
               </h2>
@@ -413,12 +413,12 @@ export default function WidgetSettingsPage() {
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center"
+                    className="p-3 bg-[var(--surface-sunken)] rounded-lg text-center"
                   >
-                    <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                    <p className="text-2xl font-semibold text-[var(--text-primary)]">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-white/45 mt-1">
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
                       {stat.label}
                     </p>
                   </div>

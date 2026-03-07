@@ -230,7 +230,7 @@ function BillingContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
+        <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
       </div>
     );
   }
@@ -244,14 +244,14 @@ function BillingContent() {
         {/* Page Header */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-slate-600 dark:text-white/70" />
+            <div className="w-10 h-10 rounded-lg bg-[var(--surface-sunken)] flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-[var(--text-secondary)]" />
             </div>
             <div>
-              <h1 className="text-display-sm font-medium text-slate-900 dark:text-white">
+              <h1 className="text-display-sm font-medium text-[var(--text-primary)]">
                 Billing & Subscription
               </h1>
-              <p className="text-body-lg text-slate-600 dark:text-white/70">
+              <p className="text-body-lg text-[var(--text-secondary)]">
                 Manage your subscription plan and billing information
               </p>
             </div>
@@ -263,8 +263,8 @@ function BillingContent() {
           <div
             className={`p-4 rounded-xl flex items-center gap-3 mb-8 ${
               message.type === "success"
-                ? "bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400"
-                : "bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400"
+                ? "bg-[var(--accent-success-soft)]/10 border border-[var(--accent-success)][var(--accent-success)]"
+                : "bg-[var(--accent-danger-soft)]/10 border border-[var(--accent-danger)][var(--accent-danger)]"
             }`}
           >
             {message.type === "success" ? (
@@ -302,7 +302,7 @@ function BillingContent() {
 
         {/* Pricing Table */}
         <div>
-          <p className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-6">
             AVAILABLE PLANS
           </p>
           <PricingTable
@@ -314,36 +314,36 @@ function BillingContent() {
 
         {/* FAQ */}
         <div className="mt-12">
-          <p className="text-caption uppercase tracking-[0.2em] text-slate-400 dark:text-white/30 mb-6">
+          <p className="text-caption uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-6">
             FREQUENTLY ASKED QUESTIONS
           </p>
-          <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6">
+          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6">
             <div className="space-y-6">
               <div>
-                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-[var(--text-primary)]">
                   What happens when I upgrade?
                 </p>
-                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
+                <p className="text-body text-[var(--text-secondary)] mt-1">
                   You&apos;ll be charged the prorated amount for the remainder
                   of your current billing period. Your new plan features will be
                   available immediately.
                 </p>
               </div>
               <div>
-                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-[var(--text-primary)]">
                   Can I cancel anytime?
                 </p>
-                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
+                <p className="text-body text-[var(--text-secondary)] mt-1">
                   Yes, you can cancel your subscription at any time. You&apos;ll
                   retain access to your current plan until the end of your
                   billing period.
                 </p>
               </div>
               <div>
-                <p className="text-body-lg font-medium text-slate-900 dark:text-white">
+                <p className="text-body-lg font-medium text-[var(--text-primary)]">
                   What payment methods do you accept?
                 </p>
-                <p className="text-body text-slate-500 dark:text-white/45 mt-1">
+                <p className="text-body text-[var(--text-secondary)] mt-1">
                   We accept all major credit cards (Visa, Mastercard, American
                   Express) and SEPA Direct Debit for EU customers.
                 </p>
@@ -359,7 +359,7 @@ function BillingContent() {
 function BillingFallback() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <Loader2 className="w-6 h-6 text-slate-400 dark:text-white/45 animate-spin" />
+      <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
     </div>
   );
 }

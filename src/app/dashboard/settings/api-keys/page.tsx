@@ -162,8 +162,8 @@ export default function ApiKeysPage() {
       <div className="">
         <div className="max-w-[800px]">
           <div className="text-center py-16">
-            <Key className="w-8 h-8 text-slate-300 dark:text-white/20 mx-auto mb-3" />
-            <p className="text-body-lg text-slate-500 dark:text-white/45">
+            <Key className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" />
+            <p className="text-body-lg text-[var(--text-secondary)]">
               {t("apiKeys.joinOrg")}
             </p>
           </div>
@@ -178,16 +178,16 @@ export default function ApiKeysPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-display-sm font-medium text-slate-900 dark:text-white mb-1">
+            <h1 className="text-display-sm font-medium text-[var(--text-primary)] mb-1">
               {t("apiKeys.title")}
             </h1>
-            <p className="text-body-lg text-slate-600 dark:text-white/45">
+            <p className="text-body-lg text-[var(--text-secondary)]">
               {t("apiKeys.description")}
             </p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-body font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-body font-medium transition-colors"
           >
             <Plus size={16} />
             {t("apiKeys.createKey")}
@@ -196,30 +196,33 @@ export default function ApiKeysPage() {
 
         {/* New key display */}
         {newKey && (
-          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-xl p-5">
+          <div className="mb-6 bg-[var(--accent-warning-soft)] border border-amber-500/30 rounded-xl p-5">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-[var(--accent-warning)] flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-body-lg font-medium text-slate-900 dark:text-white mb-1">
+                <p className="text-body-lg font-medium text-[var(--text-primary)] mb-1">
                   {t("apiKeys.saveKeyNow")}
                 </p>
-                <p className="text-small text-slate-500 dark:text-white/45 mb-3">
+                <p className="text-small text-[var(--text-secondary)] mb-3">
                   {t("apiKeys.saveKeyWarning")}
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-black/30 rounded-lg px-4 py-2.5 text-body font-mono text-emerald-400 overflow-x-auto">
+                  <code className="flex-1 bg-black/30 rounded-lg px-4 py-2.5 text-body font-mono text-[var(--accent-primary)] overflow-x-auto">
                     {newKey}
                   </code>
                   <button
                     onClick={copyKey}
-                    className="p-2.5 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 transition-colors flex-shrink-0"
+                    className="p-2.5 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] transition-colors flex-shrink-0"
                   >
                     {copied ? (
-                      <Check size={16} className="text-emerald-400" />
+                      <Check
+                        size={16}
+                        className="text-[var(--accent-primary)]"
+                      />
                     ) : (
                       <Copy
                         size={16}
-                        className="text-slate-500 dark:text-white/45"
+                        className="text-[var(--text-secondary)]"
                       />
                     )}
                   </button>
@@ -227,7 +230,7 @@ export default function ApiKeysPage() {
               </div>
               <button
                 onClick={() => setNewKey(null)}
-                className="text-slate-500 dark:text-white/45 hover:text-slate-700 dark:hover:text-white/70 p-1"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-secondary)] p-1"
               >
                 <X size={14} />
               </button>
@@ -236,38 +239,38 @@ export default function ApiKeysPage() {
         )}
 
         {/* Keys table */}
-        <div className="bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl overflow-hidden">
+        <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-5 h-5 text-slate-400 dark:text-white/30 animate-spin" />
+              <Loader2 className="w-5 h-5 text-[var(--text-tertiary)] animate-spin" />
             </div>
           ) : keys.length === 0 ? (
             <div className="text-center py-16 px-6">
-              <Key className="w-8 h-8 text-slate-300 dark:text-white/20 mx-auto mb-3" />
-              <p className="text-body-lg text-slate-500 dark:text-white/45 mb-1">
+              <Key className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" />
+              <p className="text-body-lg text-[var(--text-secondary)] mb-1">
                 {t("apiKeys.noKeysYet")}
               </p>
-              <p className="text-small text-slate-400 dark:text-white/30">
+              <p className="text-small text-[var(--text-tertiary)]">
                 {t("apiKeys.noKeysDescription")}
               </p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-[--glass-border-subtle]">
-                  <th className="text-left text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
+                <tr className="border-b border-[var(--border-default)]">
+                  <th className="text-left text-caption font-medium uppercase tracking-wider text-[var(--text-secondary)] px-5 py-3">
                     {t("apiKeys.name")}
                   </th>
-                  <th className="text-left text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
+                  <th className="text-left text-caption font-medium uppercase tracking-wider text-[var(--text-secondary)] px-5 py-3">
                     {t("apiKeys.key")}
                   </th>
-                  <th className="text-left text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
+                  <th className="text-left text-caption font-medium uppercase tracking-wider text-[var(--text-secondary)] px-5 py-3">
                     {t("apiKeys.scopes")}
                   </th>
-                  <th className="text-left text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
+                  <th className="text-left text-caption font-medium uppercase tracking-wider text-[var(--text-secondary)] px-5 py-3">
                     {t("apiKeys.lastUsed")}
                   </th>
-                  <th className="text-right text-caption font-medium uppercase tracking-wider text-slate-500 dark:text-white/45 px-5 py-3">
+                  <th className="text-right text-caption font-medium uppercase tracking-wider text-[var(--text-secondary)] px-5 py-3">
                     {t("common.actions")}
                   </th>
                 </tr>
@@ -276,7 +279,7 @@ export default function ApiKeysPage() {
                 {keys.map((key) => (
                   <tr
                     key={key.id}
-                    className="border-b border-slate-100 dark:border-white/5 last:border-0"
+                    className="border-b border-[var(--border-subtle)] last:border-0"
                   >
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
@@ -284,22 +287,22 @@ export default function ApiKeysPage() {
                           size={14}
                           className={
                             key.isActive
-                              ? "text-emerald-400"
-                              : "text-slate-300 dark:text-white/20"
+                              ? "text-[var(--accent-primary)]"
+                              : "text-[var(--text-tertiary)]"
                           }
                         />
-                        <span className="text-body text-slate-900 dark:text-white font-medium">
+                        <span className="text-body text-[var(--text-primary)] font-medium">
                           {key.name}
                         </span>
                         {!key.isActive && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-medium">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] font-medium">
                             {t("apiKeys.revoked")}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <code className="text-small font-mono text-slate-500 dark:text-white/45">
+                      <code className="text-small font-mono text-[var(--text-secondary)]">
                         {key.keyPrefix}...
                       </code>
                     </td>
@@ -308,20 +311,20 @@ export default function ApiKeysPage() {
                         {key.scopes.slice(0, 3).map((scope) => (
                           <span
                             key={scope}
-                            className="text-micro px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/45"
+                            className="text-micro px-1.5 py-0.5 rounded bg-[var(--surface-sunken)] text-[var(--text-secondary)]"
                           >
                             {scope}
                           </span>
                         ))}
                         {key.scopes.length > 3 && (
-                          <span className="text-micro text-slate-400 dark:text-white/30">
+                          <span className="text-micro text-[var(--text-tertiary)]">
                             +{key.scopes.length - 3}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-small text-slate-500 dark:text-white/45">
+                      <span className="text-small text-[var(--text-secondary)]">
                         {key.lastUsedAt
                           ? new Date(key.lastUsedAt).toLocaleDateString()
                           : t("common.never")}
@@ -334,7 +337,7 @@ export default function ApiKeysPage() {
                             <button
                               onClick={() => handleRotate(key.id)}
                               disabled={actionLoading === key.id}
-                              className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--accent-warning)] hover:bg-[var(--accent-warning-soft)] transition-colors"
                               title={t("apiKeys.rotate")}
                             >
                               {actionLoading === key.id ? (
@@ -346,7 +349,7 @@ export default function ApiKeysPage() {
                             <button
                               onClick={() => handleRevoke(key.id)}
                               disabled={actionLoading === key.id}
-                              className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] hover:bg-[var(--accent-danger)]/10 transition-colors"
                               title={t("apiKeys.revoke")}
                             >
                               <Trash2 size={14} />
@@ -370,18 +373,18 @@ export default function ApiKeysPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-dark-bg border border-slate-200 dark:border-[--glass-border-subtle] rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
+              className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 max-w-[480px] w-full shadow-2xl"
             >
-              <h2 className="text-heading font-medium text-slate-900 dark:text-white mb-1">
+              <h2 className="text-heading font-medium text-[var(--text-primary)] mb-1">
                 {t("apiKeys.createApiKey")}
               </h2>
-              <p className="text-body text-slate-500 dark:text-white/45 mb-6">
+              <p className="text-body text-[var(--text-secondary)] mb-6">
                 {t("apiKeys.createApiKeyDescription")}
               </p>
 
               {/* Name */}
               <div className="mb-4">
-                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
+                <label className="text-small text-[var(--text-secondary)] mb-1.5 block">
                   {t("apiKeys.keyName")}
                 </label>
                 <input
@@ -389,20 +392,20 @@ export default function ApiKeysPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder={t("apiKeys.keyNamePlaceholder")}
-                  className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-body-lg text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)][var(--border-focus)]"
                 />
               </div>
 
               {/* Scopes */}
               <div className="mb-4">
-                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
+                <label className="text-small text-[var(--text-secondary)] mb-1.5 block">
                   {t("apiKeys.scopes")}
                 </label>
                 <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
                   {scopes.map((s) => (
                     <label
                       key={s.scope}
-                      className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-[--glass-bg-surface] cursor-pointer border border-slate-100 dark:border-white/5"
+                      className="flex items-start gap-2 p-2 rounded-lg bg-[var(--surface-sunken)][0.02] hover:bg-[var(--surface-sunken)] cursor-pointer border border-[var(--border-subtle)]"
                     >
                       <input
                         type="checkbox"
@@ -411,10 +414,10 @@ export default function ApiKeysPage() {
                         className="mt-0.5 accent-emerald-500"
                       />
                       <div>
-                        <p className="text-small text-slate-700 dark:text-white/70 font-medium">
+                        <p className="text-small text-[var(--text-secondary)] font-medium">
                           {s.scope}
                         </p>
-                        <p className="text-micro text-slate-500 dark:text-white/45">
+                        <p className="text-micro text-[var(--text-secondary)]">
                           {s.description}
                         </p>
                       </div>
@@ -425,7 +428,7 @@ export default function ApiKeysPage() {
 
               {/* Rate Limit */}
               <div className="mb-6">
-                <label className="text-small text-slate-500 dark:text-white/45 mb-1.5 block">
+                <label className="text-small text-[var(--text-secondary)] mb-1.5 block">
                   {t("apiKeys.rateLimit")}
                 </label>
                 <input
@@ -434,7 +437,7 @@ export default function ApiKeysPage() {
                   onChange={(e) =>
                     setNewRateLimit(parseInt(e.target.value) || 1000)
                   }
-                  className="w-full bg-slate-50 dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg px-4 py-2.5 text-body-lg text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg px-4 py-2.5 text-body-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-focus)]"
                 />
               </div>
 
@@ -442,14 +445,14 @@ export default function ApiKeysPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="flex-1 border border-slate-200 dark:border-[--glass-border-subtle] text-slate-500 dark:text-white/45 py-2.5 rounded-lg text-body hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                  className="flex-1 border border-[var(--border-default)] text-[var(--text-secondary)] py-2.5 rounded-lg text-body hover:bg-[var(--surface-sunken)] transition-all"
                 >
                   {t("common.cancel")}
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={!newName || newScopes.length === 0 || creating}
-                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-lg font-medium text-body hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-[var(--accent-primary)] text-white py-2.5 rounded-lg font-medium text-body hover:bg-[var(--accent-primary-hover)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {creating && <Loader2 size={14} className="animate-spin" />}
                   {creating ? t("common.creating") : t("apiKeys.createKey")}
