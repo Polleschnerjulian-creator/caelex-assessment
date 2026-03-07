@@ -44,9 +44,49 @@ const config: Config = {
           800: "#1E293B",
           700: "#334155",
         },
+        // V2 Design System tokens (CSS custom properties)
+        v2: {
+          surface: {
+            base: "var(--surface-base)",
+            raised: "var(--surface-raised)",
+            sunken: "var(--surface-sunken)",
+            overlay: "var(--surface-overlay)",
+          },
+          text: {
+            primary: "var(--text-primary)",
+            secondary: "var(--text-secondary)",
+            tertiary: "var(--text-tertiary)",
+            inverse: "var(--text-inverse)",
+          },
+          border: {
+            DEFAULT: "var(--border-default)",
+            subtle: "var(--border-subtle)",
+            focus: "var(--border-focus)",
+          },
+          accent: {
+            primary: "var(--accent-primary)",
+            "primary-hover": "var(--accent-primary-hover)",
+            "primary-soft": "var(--accent-primary-soft)",
+            success: "var(--accent-success)",
+            "success-soft": "var(--accent-success-soft)",
+            warning: "var(--accent-warning)",
+            "warning-soft": "var(--accent-warning-soft)",
+            danger: "var(--accent-danger)",
+            "danger-soft": "var(--accent-danger-soft)",
+            info: "var(--accent-info)",
+            "info-soft": "var(--accent-info-soft)",
+          },
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        instrument: [
+          "var(--font-instrument)",
+          "var(--font-inter)",
+          "system-ui",
+          "sans-serif",
+        ],
+        jetbrains: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
         mono: [
           "ui-monospace",
           "SFMono-Regular",
@@ -67,9 +107,19 @@ const config: Config = {
         glass: "0 4px 16px rgba(0, 0, 0, 0.15)",
         "glass-elevated": "0 8px 32px rgba(0, 0, 0, 0.2)",
         "glass-floating": "0 16px 48px rgba(0, 0, 0, 0.3)",
+        "v2-sm": "var(--v2-shadow-sm)",
+        "v2-md": "var(--v2-shadow-md)",
+        "v2-lg": "var(--v2-shadow-lg)",
+        "v2-soft": "var(--v2-shadow-soft)",
       },
       transitionTimingFunction: {
         glass: "cubic-bezier(0.4, 0, 0.2, 1)",
+      },
+      borderRadius: {
+        "v2-sm": "var(--v2-radius-sm)",
+        "v2-md": "var(--v2-radius-md)",
+        "v2-lg": "var(--v2-radius-lg)",
+        "v2-xl": "var(--v2-radius-xl)",
       },
       // Type scale — single source of truth (reduces 24 arbitrary sizes → 11 tokens)
       fontSize: {
@@ -85,6 +135,14 @@ const config: Config = {
         "display-sm": ["24px", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
         display: ["32px", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
         "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.03em" }],
+        // V2 type scale
+        "v2-xs": ["12px", { lineHeight: "1.5" }],
+        "v2-sm": ["13px", { lineHeight: "1.5" }],
+        "v2-base": ["14px", { lineHeight: "1.6" }],
+        "v2-lg": ["16px", { lineHeight: "1.5" }],
+        "v2-xl": ["20px", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
+        "v2-2xl": ["24px", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+        "v2-3xl": ["32px", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
       },
     },
   },

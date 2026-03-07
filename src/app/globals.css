@@ -664,3 +664,138 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ===== CAELEX V2 DESIGN SYSTEM ===== */
+/* Token-first, light-only design system for the authenticated dashboard.
+   Scoped under .caelex-v2 so landing/assessment pages remain untouched. */
+
+.caelex-v2 {
+  /* Surfaces */
+  --surface-base: #f0f2f5;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e8ebef;
+  --surface-overlay: #ffffff;
+
+  /* Text */
+  --text-primary: #1a1d23;
+  --text-secondary: #5f6980;
+  --text-tertiary: #9ba3b5;
+  --text-inverse: #ffffff;
+
+  /* Borders */
+  --border-default: #e2e5eb;
+  --border-subtle: #eceef2;
+  --border-focus: #3b82f6;
+
+  /* Accent — Primary Blue */
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+  --accent-primary-soft: #eff6ff;
+
+  /* Status colors */
+  --accent-success: #16a34a;
+  --accent-success-soft: #f0fdf4;
+  --accent-warning: #f59e0b;
+  --accent-warning-soft: #fffbeb;
+  --accent-danger: #dc2626;
+  --accent-danger-soft: #fef2f2;
+  --accent-info: #6366f1;
+  --accent-info-soft: #eef2ff;
+
+  /* Shadows */
+  --v2-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --v2-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --v2-shadow-lg:
+    0 10px 25px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.04);
+  --v2-shadow-soft:
+    0 2px 8px rgba(0, 0, 0, 0.03), 0 0px 1px rgba(0, 0, 0, 0.06);
+
+  /* Radius */
+  --v2-radius-sm: 6px;
+  --v2-radius-md: 10px;
+  --v2-radius-lg: 14px;
+  --v2-radius-xl: 20px;
+}
+
+/* V2 Animations */
+@keyframes v2FadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes v2OverlayIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes v2Skeleton {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-v2-fade-in-up {
+  animation: v2FadeInUp 300ms ease-out both;
+}
+.animate-v2-overlay-in {
+  animation: v2OverlayIn 250ms ease-out both;
+}
+.animate-v2-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 25%,
+    var(--surface-raised) 50%,
+    var(--surface-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: v2Skeleton 1.5s ease-in-out infinite;
+}
+
+/* V2 stagger utility — apply with --stagger-index custom property */
+.animate-v2-stagger {
+  animation: v2FadeInUp 300ms ease-out both;
+  animation-delay: calc(var(--stagger-index, 0) * 60ms);
+}
+
+/* V2 scrollbar — refined for light theme */
+.caelex-v2 ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.caelex-v2 ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.caelex-v2 ::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+.caelex-v2 ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* V2 selection */
+.caelex-v2 ::selection {
+  background: rgba(37, 99, 235, 0.15);
+  color: var(--text-primary);
+}
+
+/* V2 focus-visible — blue ring */
+.caelex-v2 *:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
