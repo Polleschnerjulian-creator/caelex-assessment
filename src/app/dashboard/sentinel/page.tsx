@@ -240,15 +240,15 @@ export default function SentinelDashboard() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-display font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-display font-semibold text-[var(--text-primary)] flex items-center gap-3">
             <Satellite
               size={28}
               strokeWidth={1.5}
-              className="text-emerald-500"
+              className="text-[var(--accent-primary)]"
             />
             Sentinel
           </h1>
-          <p className="text-body-lg text-slate-600 dark:text-white/60 mt-1">
+          <p className="text-body-lg text-[var(--text-secondary)] mt-1">
             Autonomous compliance evidence collection with tamper-evident hash
             chains
           </p>
@@ -257,17 +257,17 @@ export default function SentinelDashboard() {
         <Card variant="default">
           <CardContent>
             <div className="py-12 text-center">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-[var(--accent-primary-soft)] flex items-center justify-center mb-6">
                 <Satellite
                   size={32}
                   strokeWidth={1.5}
-                  className="text-emerald-500"
+                  className="text-[var(--accent-primary)]"
                 />
               </div>
-              <h2 className="text-heading font-semibold text-slate-900 dark:text-white mb-2">
+              <h2 className="text-heading font-semibold text-[var(--text-primary)] mb-2">
                 No Sentinel Agents Connected
               </h2>
-              <p className="text-body text-slate-500 dark:text-white/45 max-w-lg mx-auto mb-8">
+              <p className="text-body text-[var(--text-secondary)] max-w-lg mx-auto mb-8">
                 Deploy a Sentinel agent at your operations site to begin
                 automated compliance evidence collection. Each agent
                 cryptographically signs and chains evidence packets.
@@ -311,15 +311,15 @@ export default function SentinelDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-display font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-display font-semibold text-[var(--text-primary)] flex items-center gap-3">
             <Satellite
               size={28}
               strokeWidth={1.5}
-              className="text-emerald-500"
+              className="text-[var(--accent-primary)]"
             />
             Sentinel
           </h1>
-          <p className="text-body-lg text-slate-600 dark:text-white/60 mt-1">
+          <p className="text-body-lg text-[var(--text-secondary)] mt-1">
             {agents.length} agent{agents.length !== 1 ? "s" : ""} connected
             {currentAgent &&
               ` \u00B7 ${currentAgent.packets_total} evidence packets`}
@@ -387,8 +387,8 @@ export default function SentinelDashboard() {
               onClick={() => setSelectedAgent(agent.id)}
               className={`px-3 py-1.5 rounded-lg text-small font-medium transition-all ${
                 selectedAgent === agent.id
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                  : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/50 border border-transparent hover:border-slate-200 dark:hover:border-white/10"
+                  ? "bg-[var(--accent-primary-soft)] text-[var(--accent-success)] border border-[var(--accent-success)/30]"
+                  : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-transparent hover:border-[var(--border-default)]:border-[var(--border-default)]"
               }`}
             >
               {agent.name}
@@ -438,7 +438,7 @@ export default function SentinelDashboard() {
             action={
               <button
                 onClick={triggerCrossVerify}
-                className="text-micro text-emerald-500 hover:text-emerald-400 font-medium"
+                className="text-micro text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-medium"
               >
                 Run verification
               </button>
@@ -470,14 +470,14 @@ export default function SentinelDashboard() {
                 value={new Date(currentAgent.created_at).toLocaleDateString()}
               />
               <div className="md:col-span-2">
-                <span className="text-caption text-slate-500 dark:text-white/40">
+                <span className="text-caption text-[var(--text-secondary)]">
                   Collectors
                 </span>
                 <div className="flex gap-1.5 mt-1 flex-wrap">
                   {(currentAgent.enabled_collectors || []).map((c) => (
                     <span
                       key={c}
-                      className="px-2 py-0.5 rounded text-micro font-medium bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/60 border border-slate-200 dark:border-white/10"
+                      className="px-2 py-0.5 rounded text-micro font-medium bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)]"
                     >
                       {c}
                     </span>
@@ -494,19 +494,19 @@ export default function SentinelDashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Evidence Feed</CardTitle>
-            <span className="text-caption text-slate-400 dark:text-white/30">
+            <span className="text-caption text-[var(--text-tertiary)]">
               Latest 25 packets
             </span>
           </div>
         </CardHeader>
         <CardContent>
           {packets.length === 0 ? (
-            <div className="py-8 text-center text-body text-slate-400 dark:text-white/30">
+            <div className="py-8 text-center text-body text-[var(--text-tertiary)]">
               No evidence packets yet. Deploy and start a Sentinel agent to
               begin collection.
             </div>
           ) : (
-            <div className="space-y-0 divide-y divide-slate-100 dark:divide-white/5">
+            <div className="space-y-0 divide-y divide-[var(--border-subtle)]">
               {packets.map((pkt) => (
                 <PacketRow key={pkt.id} packet={pkt} />
               ))}
@@ -542,24 +542,22 @@ function StatCard({
       <CardContent>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-caption text-slate-500 dark:text-white/40">
-              {label}
-            </p>
+            <p className="text-caption text-[var(--text-secondary)]">{label}</p>
             <div className="mt-1 flex items-center gap-2">
               {badge || (
-                <p className="text-heading font-semibold text-slate-900 dark:text-white">
+                <p className="text-heading font-semibold text-[var(--text-primary)]">
                   {value}
                 </p>
               )}
             </div>
             {sub && (
-              <p className="text-micro text-slate-400 dark:text-white/25 mt-1">
+              <p className="text-micro text-[var(--text-tertiary)] mt-1">
                 {sub}
               </p>
             )}
             {action && <div className="mt-1">{action}</div>}
           </div>
-          <div className="text-slate-300 dark:text-white/15">{icon}</div>
+          <div className="text-[var(--text-tertiary)]">{icon}</div>
         </div>
       </CardContent>
     </Card>
@@ -577,11 +575,9 @@ function DetailRow({
 }) {
   return (
     <div>
-      <span className="text-caption text-slate-500 dark:text-white/40">
-        {label}
-      </span>
+      <span className="text-caption text-[var(--text-secondary)]">{label}</span>
       <p
-        className={`text-body text-slate-900 dark:text-white mt-0.5 ${
+        className={`text-body text-[var(--text-primary)] mt-0.5 ${
           mono ? "font-mono text-small" : ""
         }`}
       >
@@ -606,22 +602,20 @@ function ChainIntegrityBanner({
     <div
       className={`rounded-xl border px-4 py-3 flex items-center justify-between ${
         isValid
-          ? "bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20"
-          : "bg-red-50 dark:bg-red-500/5 border-red-200 dark:border-red-500/20"
+          ? "bg-[var(--accent-success-soft)] border-[var(--accent-success)]"
+          : "bg-[var(--accent-danger-soft)]/5 border-[var(--accent-danger)]"
       }`}
     >
       <div className="flex items-center gap-3">
         {isValid ? (
-          <CheckCircle2 size={18} className="text-emerald-500" />
+          <CheckCircle2 size={18} className="text-[var(--accent-primary)]" />
         ) : (
-          <XCircle size={18} className="text-red-500" />
+          <XCircle size={18} className="text-[var(--accent-danger)]" />
         )}
         <div>
           <p
             className={`text-body font-medium ${
-              isValid
-                ? "text-emerald-800 dark:text-emerald-400"
-                : "text-red-800 dark:text-red-400"
+              isValid ? "text-[var(--accent-success)]" : "text-red-800"
             }`}
           >
             {isValid
@@ -629,7 +623,7 @@ function ChainIntegrityBanner({
               : `Chain integrity broken \u00B7 ${result.breaks.length} break${result.breaks.length !== 1 ? "s" : ""} detected`}
           </p>
           {!isValid && result.breaks.length > 0 && (
-            <p className="text-small text-red-600 dark:text-red-400/70 mt-0.5">
+            <p className="text-small text-[var(--accent-danger)]/70 mt-0.5">
               First break at position {result.breaks[0]!.position}
             </p>
           )}
@@ -660,37 +654,31 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
       >
         <div className="flex-shrink-0">
           {expanded ? (
-            <ChevronDown
-              size={14}
-              className="text-slate-400 dark:text-white/30"
-            />
+            <ChevronDown size={14} className="text-[var(--text-tertiary)]" />
           ) : (
-            <ChevronRight
-              size={14}
-              className="text-slate-400 dark:text-white/30"
-            />
+            <ChevronRight size={14} className="text-[var(--text-tertiary)]" />
           )}
         </div>
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          <span className="text-body font-medium text-slate-900 dark:text-white truncate">
+          <span className="text-body font-medium text-[var(--text-primary)] truncate">
             {DATA_POINT_LABELS[packet.data_point] || packet.data_point}
           </span>
-          <span className="text-micro text-slate-400 dark:text-white/25 font-mono">
+          <span className="text-micro text-[var(--text-tertiary)] font-mono">
             #{packet.chain_position}
           </span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Signature */}
           {packet.signature_valid ? (
-            <Shield size={14} className="text-emerald-500" />
+            <Shield size={14} className="text-[var(--accent-primary)]" />
           ) : (
-            <AlertTriangle size={14} className="text-amber-500" />
+            <AlertTriangle size={14} className="text-[var(--accent-warning)]" />
           )}
           {/* Chain */}
           {packet.chain_valid ? (
-            <Link2 size={14} className="text-emerald-500" />
+            <Link2 size={14} className="text-[var(--accent-primary)]" />
           ) : (
-            <Link2 size={14} className="text-red-500" />
+            <Link2 size={14} className="text-[var(--accent-danger)]" />
           )}
           {/* Trust */}
           <Badge
@@ -708,10 +696,10 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
           </Badge>
           {/* Cross-verified */}
           {packet.cross_verified && (
-            <CheckCircle2 size={14} className="text-blue-500" />
+            <CheckCircle2 size={14} className="text-[var(--accent-primary)]" />
           )}
           {/* Time */}
-          <span className="text-micro text-slate-400 dark:text-white/25 w-16 text-right">
+          <span className="text-micro text-[var(--text-tertiary)] w-16 text-right">
             {timeAgo(packet.collected_at)}
           </span>
         </div>
@@ -725,7 +713,7 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="ml-7 mt-3 p-3 rounded-lg bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 space-y-3">
+            <div className="ml-7 mt-3 p-3 rounded-lg bg-[var(--surface-sunken)][0.02] border border-[var(--border-subtle)] space-y-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <MiniDetail label="Packet ID" value={packet.packet_id} mono />
                 <MiniDetail label="Agent" value={packet.agent_name} />
@@ -742,10 +730,10 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
 
               {/* Values */}
               <div>
-                <span className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wide">
+                <span className="text-micro text-[var(--text-tertiary)] uppercase tracking-wide">
                   Values
                 </span>
-                <pre className="mt-1 text-micro font-mono text-slate-600 dark:text-white/50 bg-slate-100 dark:bg-black/20 rounded p-2 overflow-x-auto">
+                <pre className="mt-1 text-micro font-mono text-[var(--text-secondary)] bg-[var(--surface-sunken)] rounded p-2 overflow-x-auto">
                   {JSON.stringify(packet.values, null, 2)}
                 </pre>
               </div>
@@ -760,7 +748,7 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
                   }>
                 ).length > 0 && (
                   <div>
-                    <span className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wide">
+                    <span className="text-micro text-[var(--text-tertiary)] uppercase tracking-wide">
                       Regulation Mapping
                     </span>
                     <div className="mt-1 space-y-1">
@@ -787,10 +775,10 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
                           >
                             {rm.status}
                           </Badge>
-                          <span className="font-mono text-slate-500 dark:text-white/40">
+                          <span className="font-mono text-[var(--text-secondary)]">
                             {rm.ref}
                           </span>
-                          <span className="text-slate-600 dark:text-white/50">
+                          <span className="text-[var(--text-secondary)]">
                             {rm.note}
                           </span>
                         </div>
@@ -803,16 +791,16 @@ function PacketRow({ packet }: { packet: EvidencePacket }) {
               {packet.compliance_notes &&
                 (packet.compliance_notes as string[]).length > 0 && (
                   <div>
-                    <span className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wide">
+                    <span className="text-micro text-[var(--text-tertiary)] uppercase tracking-wide">
                       Compliance Notes
                     </span>
                     <ul className="mt-1 space-y-0.5">
                       {(packet.compliance_notes as string[]).map((note, i) => (
                         <li
                           key={i}
-                          className="text-small text-slate-600 dark:text-white/50 flex items-start gap-1.5"
+                          className="text-small text-[var(--text-secondary)] flex items-start gap-1.5"
                         >
-                          <span className="text-emerald-500 mt-0.5">
+                          <span className="text-[var(--accent-primary)] mt-0.5">
                             &bull;
                           </span>
                           {note}
@@ -840,11 +828,11 @@ function MiniDetail({
 }) {
   return (
     <div>
-      <span className="text-micro text-slate-400 dark:text-white/30 uppercase tracking-wide">
+      <span className="text-micro text-[var(--text-tertiary)] uppercase tracking-wide">
         {label}
       </span>
       <p
-        className={`text-small text-slate-700 dark:text-white/60 mt-0.5 truncate ${
+        className={`text-small text-[var(--text-secondary)] mt-0.5 truncate ${
           mono ? "font-mono" : ""
         }`}
       >
@@ -862,9 +850,9 @@ function SetupGuide({
   copiedField: string | null;
 }) {
   return (
-    <div className="space-y-6 pt-4 border-t border-slate-100 dark:border-white/5">
-      <h3 className="text-title font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-        <Terminal size={18} className="text-emerald-500" />
+    <div className="space-y-6 pt-4 border-t border-[var(--border-subtle)]">
+      <h3 className="text-title font-semibold text-[var(--text-primary)] flex items-center gap-2">
+        <Terminal size={18} className="text-[var(--accent-primary)]" />
         Quick Start
       </h3>
 
@@ -943,30 +931,33 @@ function SetupStep({
 
   return (
     <div className="flex gap-3">
-      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 text-micro font-bold flex items-center justify-center">
+      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] text-micro font-bold flex items-center justify-center">
         {number}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-body font-medium text-slate-900 dark:text-white">
+        <p className="text-body font-medium text-[var(--text-primary)]">
           {title}
         </p>
         {description && (
-          <p className="text-small text-slate-500 dark:text-white/45 mt-1">
+          <p className="text-small text-[var(--text-secondary)] mt-1">
             {description}
           </p>
         )}
         {code && (
           <div className="mt-2 relative group">
-            <pre className="text-micro font-mono text-slate-600 dark:text-white/50 bg-slate-50 dark:bg-black/20 rounded-lg p-3 overflow-x-auto border border-slate-100 dark:border-white/5">
+            <pre className="text-micro font-mono text-[var(--text-secondary)] bg-[var(--surface-sunken)] rounded-lg p-3 overflow-x-auto border border-[var(--border-subtle)]">
               {code}
             </pre>
             {onCopy && (
               <button
                 onClick={() => onCopy(code, fieldId)}
-                className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-200/60 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-white/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1.5 rounded-md bg-[var(--surface-sunken)]/60 hover:bg-[var(--surface-sunken)] text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {copiedField === fieldId ? (
-                  <CheckCircle2 size={12} className="text-emerald-500" />
+                  <CheckCircle2
+                    size={12}
+                    className="text-[var(--accent-primary)]"
+                  />
                 ) : (
                   <Copy size={12} />
                 )}

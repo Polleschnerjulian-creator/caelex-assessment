@@ -106,7 +106,7 @@ export default function JurisdictionSimulator({
             <select
               value={fromCode}
               onChange={(e) => setFromCode(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white border border-[#D1D5DB] text-small text-[#111827]
+              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[#D1D5DB] text-small text-[#111827]
                 focus:outline-none focus:border-[#111827]"
             >
               {JURISDICTIONS.map((j) => (
@@ -126,7 +126,7 @@ export default function JurisdictionSimulator({
             <select
               value={toCode ?? ""}
               onChange={(e) => setToCode(e.target.value || null)}
-              className="px-3 py-2 rounded-lg bg-white border border-[#D1D5DB] text-small text-[#111827]
+              className="px-3 py-2 rounded-lg bg-[var(--surface-raised)] border border-[#D1D5DB] text-small text-[#111827]
                 focus:outline-none focus:border-[#111827]"
             >
               <option value="">Compare All</option>
@@ -180,7 +180,7 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
             {delta > 0 ? (
               <TrendingUp className="w-4 h-4 text-[#111827]" />
             ) : delta < 0 ? (
-              <TrendingDown className="w-4 h-4 text-red-500" />
+              <TrendingDown className="w-4 h-4 text-[var(--accent-danger)]" />
             ) : (
               <Minus className="w-4 h-4 text-[#D1D5DB]" />
             )}
@@ -194,7 +194,7 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
             delta > 0
               ? "text-[#111827]"
               : delta < 0
-                ? "text-red-500"
+                ? "text-[var(--accent-danger)]"
                 : "text-[#9CA3AF]"
           }`}
         >
@@ -232,14 +232,14 @@ function SimulationResultCard({ sim }: { sim: SimulationResult }) {
 
       {sim.requirementsAdded.length > 0 && (
         <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
-          <span className="text-caption text-red-500">
+          <span className="text-caption text-[var(--accent-danger)]">
             +{sim.requirementsAdded.length} new requirements:
           </span>
           <div className="flex gap-1.5 flex-wrap mt-1">
             {sim.requirementsAdded.map((r) => (
               <span
                 key={r.regulationRef}
-                className="px-2 py-0.5 rounded text-micro bg-red-50 text-red-500"
+                className="px-2 py-0.5 rounded text-micro bg-[var(--accent-danger-soft)] text-[var(--accent-danger)]"
               >
                 {r.name}
               </span>

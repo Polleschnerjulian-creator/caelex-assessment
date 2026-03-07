@@ -20,9 +20,10 @@ interface DataSourcesPanelProps {
 }
 
 function statusIcon(connected: boolean, status: string) {
-  if (!connected) return <XCircle className="w-4 h-4 text-red-500" />;
+  if (!connected)
+    return <XCircle className="w-4 h-4 text-[var(--accent-danger)]" />;
   if (status === "error")
-    return <AlertCircle className="w-4 h-4 text-amber-500" />;
+    return <AlertCircle className="w-4 h-4 text-[var(--accent-warning)]" />;
   return <CheckCircle className="w-4 h-4 text-[#111827]" />;
 }
 
@@ -33,9 +34,9 @@ function freshnessLabel(freshness: string): { text: string; color: string } {
     case "RECENT":
       return { text: "Recent (<24h)", color: "text-[#4B5563]" };
     case "STALE":
-      return { text: "Stale (>24h)", color: "text-amber-500" };
+      return { text: "Stale (>24h)", color: "text-[var(--accent-warning)]" };
     default:
-      return { text: "No Data", color: "text-red-500" };
+      return { text: "No Data", color: "text-[var(--accent-danger)]" };
   }
 }
 

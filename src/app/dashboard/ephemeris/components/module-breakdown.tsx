@@ -39,9 +39,9 @@ function statusColor(status: string): string {
     case "COMPLIANT":
       return "text-[#111827]";
     case "WARNING":
-      return "text-amber-500";
+      return "text-[var(--accent-warning)]";
     case "NON_COMPLIANT":
-      return "text-red-500";
+      return "text-[var(--accent-danger)]";
     default:
       return "text-[#D1D5DB]";
   }
@@ -52,9 +52,9 @@ function statusBg(status: string): string {
     case "COMPLIANT":
       return "bg-[#F1F3F5]";
     case "WARNING":
-      return "bg-amber-50";
+      return "bg-[var(--accent-warning-soft)]";
     case "NON_COMPLIANT":
-      return "bg-red-50";
+      return "bg-[var(--accent-danger-soft)]";
     default:
       return "bg-[#F7F8FA]";
   }
@@ -113,9 +113,9 @@ export default function ModuleBreakdown({ modules }: ModuleBreakdownProps) {
                     mod.score >= 70
                       ? "bg-[#111827]"
                       : mod.score >= 50
-                        ? "bg-amber-500"
+                        ? "bg-[var(--accent-warning)]"
                         : mod.score > 0
-                          ? "bg-red-500"
+                          ? "bg-[var(--accent-danger)]"
                           : "bg-[#D1D5DB]"
                   }`}
                   style={{ width: `${mod.score}%` }}

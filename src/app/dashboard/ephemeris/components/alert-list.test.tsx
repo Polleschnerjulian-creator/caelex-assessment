@@ -172,7 +172,7 @@ describe("AlertList", () => {
     ];
     render(<AlertList fleet={fleet} />);
     const severitySpan = screen.getByText("CRITICAL");
-    expect(severitySpan.className).toContain("text-red-500");
+    expect(severitySpan.className).toContain("text-[var(--accent-danger)]");
   });
 
   it("handles satellite with undefined activeAlerts gracefully", () => {

@@ -44,11 +44,11 @@ interface ForecastChartProps {
 function severityColor(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "text-red-500";
+      return "text-[var(--accent-danger)]";
     case "HIGH":
       return "text-orange-500";
     case "MEDIUM":
-      return "text-amber-500";
+      return "text-[var(--accent-warning)]";
     default:
       return "text-[#9CA3AF]";
   }
@@ -78,7 +78,7 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
             >
               {c.regulationName}
               {c.crossingDaysFromNow !== null && (
-                <span className="ml-1.5 text-caption text-amber-500">
+                <span className="ml-1.5 text-caption text-[var(--accent-warning)]">
                   {c.crossingDaysFromNow}d
                 </span>
               )}
@@ -214,8 +214,8 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
         </div>
         {curve.crossingDaysFromNow !== null && (
           <div className="flex items-center gap-1.5 text-caption">
-            <Calendar className="w-3 h-3 text-amber-500" />
-            <span className="text-amber-500">
+            <Calendar className="w-3 h-3 text-[var(--accent-warning)]" />
+            <span className="text-[var(--accent-warning)]">
               Crosses in {curve.crossingDaysFromNow} days
             </span>
           </div>

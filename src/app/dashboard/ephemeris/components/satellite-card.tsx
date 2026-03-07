@@ -23,14 +23,14 @@ interface SatelliteCardProps {
 
 function scoreColor(score: number): string {
   if (score >= 70) return "text-[#111827]";
-  if (score >= 50) return "text-amber-500";
-  return "text-red-500";
+  if (score >= 50) return "text-[var(--accent-warning)]";
+  return "text-[var(--accent-danger)]";
 }
 
 function scoreBg(score: number): string {
   if (score >= 70) return "bg-[#F1F3F5]";
-  if (score >= 50) return "bg-amber-50";
-  return "bg-red-50";
+  if (score >= 50) return "bg-[var(--accent-warning-soft)]";
+  return "bg-[var(--accent-danger-soft)]";
 }
 
 function freshnessColor(freshness: string): string {
@@ -40,9 +40,9 @@ function freshnessColor(freshness: string): string {
     case "RECENT":
       return "text-[#4B5563]";
     case "STALE":
-      return "text-amber-500";
+      return "text-[var(--accent-warning)]";
     default:
-      return "text-red-500";
+      return "text-[var(--accent-danger)]";
   }
 }
 
@@ -83,9 +83,9 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
           <span
             className={
               complianceHorizon.daysUntilFirstBreach < 90
-                ? "text-red-500"
+                ? "text-[var(--accent-danger)]"
                 : complianceHorizon.daysUntilFirstBreach < 365
-                  ? "text-amber-500"
+                  ? "text-[var(--accent-warning)]"
                   : "text-[#4B5563]"
             }
           >
@@ -105,7 +105,7 @@ export default function SatelliteCard({ satellite }: SatelliteCardProps) {
           </span>
         </div>
         {criticalAlerts > 0 && (
-          <div className="flex items-center gap-1 text-caption text-red-500">
+          <div className="flex items-center gap-1 text-caption text-[var(--accent-danger)]">
             <AlertTriangle className="w-3 h-3" />
             {criticalAlerts} critical
           </div>

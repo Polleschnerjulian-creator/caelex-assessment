@@ -35,11 +35,11 @@ function severityOrder(severity: string): number {
 function severityColor(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "text-red-500";
+      return "text-[var(--accent-danger)]";
     case "HIGH":
       return "text-orange-500";
     case "MEDIUM":
-      return "text-amber-500";
+      return "text-[var(--accent-warning)]";
     default:
       return "text-[#9CA3AF]";
   }
@@ -48,11 +48,11 @@ function severityColor(severity: string): string {
 function severityBg(severity: string): string {
   switch (severity) {
     case "CRITICAL":
-      return "bg-red-50 border-red-200";
+      return "bg-[var(--accent-danger-soft)] border-[var(--accent-danger)]";
     case "HIGH":
       return "bg-orange-50 border-orange-200";
     case "MEDIUM":
-      return "bg-amber-50 border-amber-200";
+      return "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]";
     default:
       return "bg-[#F7F8FA] border-[#E5E7EB]";
   }

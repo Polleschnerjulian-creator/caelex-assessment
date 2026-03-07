@@ -22,9 +22,9 @@ export default function ComplianceHorizonDisplay({
     <div
       className={`p-6 rounded-xl border ${
         isUrgent
-          ? "bg-red-50 border-red-200"
+          ? "bg-[var(--accent-danger-soft)] border-[var(--accent-danger)]"
           : isWarning
-            ? "bg-amber-50 border-amber-200"
+            ? "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]"
             : "bg-[#F7F8FA] border-[#E5E7EB]"
       }`}
     >
@@ -34,9 +34,9 @@ export default function ComplianceHorizonDisplay({
             <Clock
               className={`w-5 h-5 ${
                 isUrgent
-                  ? "text-red-500"
+                  ? "text-[var(--accent-danger)]"
                   : isWarning
-                    ? "text-amber-500"
+                    ? "text-[var(--accent-warning)]"
                     : "text-[#111827]"
               }`}
             />
@@ -48,9 +48,9 @@ export default function ComplianceHorizonDisplay({
             <span
               className={`text-[48px] font-bold leading-none ${
                 isUrgent
-                  ? "text-red-500"
+                  ? "text-[var(--accent-danger)]"
                   : isWarning
-                    ? "text-amber-500"
+                    ? "text-[var(--accent-warning)]"
                     : "text-[#111827]"
               }`}
             >
@@ -68,7 +68,7 @@ export default function ComplianceHorizonDisplay({
           <div className="text-right">
             <div className="flex items-center gap-1.5 justify-end mb-1">
               {isUrgent ? (
-                <AlertTriangle className="w-4 h-4 text-red-500" />
+                <AlertTriangle className="w-4 h-4 text-[var(--accent-danger)]" />
               ) : (
                 <Shield className="w-4 h-4 text-[#D1D5DB]" />
               )}
