@@ -846,11 +846,6 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --sidebar-badge-color: #8a8aa0;
   --sidebar-divider: rgba(255, 255, 255, 0.04);
   --sidebar-user-ring: rgba(255, 255, 255, 0.1);
-  --sidebar-backdrop: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.25) 100%
-  );
   --astra-fab-bg: rgba(30, 30, 50, 0.7);
   --astra-fab-border: rgba(255, 255, 255, 0.08);
 
@@ -1253,11 +1248,6 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
   --sidebar-badge-color: #6a6a80;
   --sidebar-divider: rgba(0, 0, 0, 0.05);
   --sidebar-user-ring: rgba(255, 255, 255, 0.7);
-  --sidebar-backdrop: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.04) 0%,
-    rgba(0, 0, 0, 0.08) 100%
-  );
   --astra-fab-bg: rgba(255, 255, 255, 0.7);
   --astra-fab-border: rgba(255, 255, 255, 0.6);
 

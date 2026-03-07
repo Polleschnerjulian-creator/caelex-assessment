@@ -114,18 +114,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="caelex-v2 min-h-screen bg-[var(--bg-base)]">
-      {/* Darker backdrop behind sidebar for glass contrast */}
-      <div
-        className="hidden lg:block fixed top-0 left-0 z-30 pointer-events-none"
-        style={{
-          width: contentMargin + 12,
-          height: "100vh",
-          background:
-            "var(--sidebar-backdrop, linear-gradient(135deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.06) 100%))",
-          transition: layoutMounted ? "width 300ms ease-out" : undefined,
-        }}
-      />
-
       {/* Sidebar */}
       <Sidebar
         user={

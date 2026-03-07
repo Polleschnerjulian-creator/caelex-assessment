@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Menu } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -15,11 +14,12 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
 
   return (
     <header
-      className="h-14 border-b border-[var(--separator)] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30"
+      className="h-14 px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30"
       style={{
-        backgroundColor: "var(--topbar-bg)",
-        backdropFilter: "blur(16px) saturate(1.4)",
-        WebkitBackdropFilter: "blur(16px) saturate(1.4)",
+        background: "var(--sidebar-glass-bg)",
+        backdropFilter: "blur(40px) saturate(1.8)",
+        WebkitBackdropFilter: "blur(40px) saturate(1.8)",
+        borderBottom: "1px solid var(--sidebar-glass-border)",
       }}
     >
       {/* Left */}
@@ -44,19 +44,6 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
       {/* Right */}
       <div className="flex items-center gap-3">
         <NotificationCenter />
-        <Link
-          href="/assessment"
-          className="
-            bg-[var(--accent-500)] text-white text-[14px] font-medium
-            px-5 py-2 rounded-[var(--radius-sm)]
-            shadow-[0_2px_8px_rgba(74,98,232,0.25),0_0_0_1px_rgba(74,98,232,0.3)]
-            hover:bg-[var(--accent-400)] hover:shadow-[0_4px_12px_rgba(74,98,232,0.35),0_0_0_1px_rgba(74,98,232,0.4)] hover:-translate-y-px
-            active:bg-[var(--accent-600)] active:shadow-[0_1px_4px_rgba(74,98,232,0.2)] active:translate-y-0
-            transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
-          "
-        >
-          {t("topbar.runAssessment")}
-        </Link>
       </div>
     </header>
   );

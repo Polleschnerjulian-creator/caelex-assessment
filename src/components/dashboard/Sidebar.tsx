@@ -573,23 +573,13 @@ export default function Sidebar({
           }}
         >
           {collapsed ? (
-            /* Collapsed: logo + expand chevron */
-            <div className="flex flex-col items-center gap-1">
-              <Link
-                href="/"
-                className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px]"
-              >
-                <CaelexIcon size={24} className="text-[var(--text-primary)]" />
-              </Link>
-              <button
-                onClick={toggleCollapse}
-                aria-label="Expand sidebar"
-                className="hidden lg:flex items-center justify-center w-8 h-6 rounded-[6px] transition-colors duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
-                style={{ color: "var(--sidebar-nav-icon-color)" }}
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+            /* Collapsed: centered logo only */
+            <Link
+              href="/"
+              className="hidden lg:flex items-center justify-center w-11 h-11 rounded-[10px]"
+            >
+              <CaelexIcon size={24} className="text-[var(--text-primary)]" />
+            </Link>
           ) : (
             <div className="flex items-center w-full">
               <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
@@ -751,11 +741,9 @@ export default function Sidebar({
             </ModuleGroup>
           </div>
 
-          {/* Resources */}
+          {/* Data Monitoring */}
           <div style={{ marginBottom: collapsed ? 8 : 20 }}>
-            <SectionHeader collapsed={collapsed}>
-              {t("sidebar.resources")}
-            </SectionHeader>
+            <SectionHeader collapsed={collapsed}>Data Monitoring</SectionHeader>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/sentinel"
@@ -765,6 +753,15 @@ export default function Sidebar({
               >
                 Sentinel
               </NavItem>
+            </div>
+          </div>
+
+          {/* Predictive Modeling */}
+          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
+            <SectionHeader collapsed={collapsed}>
+              Predictive Modeling
+            </SectionHeader>
+            <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/ephemeris"
                 icon={<Activity size={18} strokeWidth={1.5} />}
@@ -773,6 +770,15 @@ export default function Sidebar({
               >
                 Ephemeris
               </NavItem>
+            </div>
+          </div>
+
+          {/* Resources */}
+          <div style={{ marginBottom: collapsed ? 8 : 20 }}>
+            <SectionHeader collapsed={collapsed}>
+              {t("sidebar.resources")}
+            </SectionHeader>
+            <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/nca-portal"
                 icon={<Building2 size={18} strokeWidth={1.5} />}
@@ -1011,6 +1017,32 @@ export default function Sidebar({
           )}
         </div>
       </aside>
+
+      {/* Expand handle — right edge of collapsed sidebar, visible on hover */}
+      {collapsed && (
+        <button
+          onClick={toggleCollapse}
+          aria-label="Expand sidebar"
+          className="hidden lg:flex fixed z-50 items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+          style={{
+            left: sidebarWidth + 12,
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 24,
+            height: 48,
+            borderRadius: 12,
+            background: "var(--sidebar-glass-bg)",
+            backdropFilter: "blur(20px) saturate(1.6)",
+            WebkitBackdropFilter: "blur(20px) saturate(1.6)",
+            border: "1px solid var(--sidebar-glass-border)",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+            color: "var(--sidebar-nav-icon-color)",
+          }}
+        >
+          <ChevronRight size={14} />
+        </button>
+      )}
 
       {/* Upgrade Prompt Modal */}
       <UpgradePrompt
