@@ -17,10 +17,12 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
       <div
         ref={ref}
         className={`
-          relative rounded-[var(--v2-radius-md)] overflow-hidden border
-          bg-[var(--surface-raised)] border-[var(--border-subtle)] shadow-[var(--v2-shadow-soft)]
-          ${highlighted ? "border-[var(--accent-primary)] shadow-[var(--v2-shadow-md)]" : ""}
-          ${hover && !highlighted ? "transition-all duration-[180ms] ease-out hover:shadow-[var(--v2-shadow-md)] hover:-translate-y-px hover:border-[var(--border-default)]" : ""}
+          relative rounded-[var(--radius-lg)] overflow-hidden border
+          bg-[var(--glass-bg)] border-[var(--glass-border)]
+          shadow-[var(--shadow-md)]
+          backdrop-blur-[20px] backdrop-saturate-[1.2]
+          ${highlighted ? "border-[var(--accent-400)] shadow-[var(--shadow-glow-accent)]" : ""}
+          ${hover && !highlighted ? "transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)] hover:bg-[var(--glass-bg-hover)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-px hover:border-[var(--glass-border-hover)]" : ""}
           ${className}
         `}
         {...props}

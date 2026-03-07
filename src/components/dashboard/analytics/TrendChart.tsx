@@ -81,9 +81,9 @@ export function TrendChart({
   };
 
   const getStrokeColor = (trend: number) => {
-    if (trend > 0) return "#22C55E"; // green-500
-    if (trend < 0) return "#EF4444"; // red-500
-    return "#10B981"; // emerald-500
+    if (trend > 0) return "#3DD68C";
+    if (trend < 0) return "#E85454";
+    return "#3DD68C";
   };
 
   const getFillColor = (trend: number) => {
@@ -94,7 +94,7 @@ export function TrendChart({
 
   if (data.length === 0) {
     return (
-      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+      <div className="glass-elevated rounded-xl p-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
           {title}
         </h3>
@@ -112,7 +112,7 @@ export function TrendChart({
   }
 
   return (
-    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+    <div className="glass-elevated rounded-xl p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -153,16 +153,16 @@ export function TrendChart({
           >
             <defs>
               <linearGradient id="gradientGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22C55E" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
+                <stop offset="0%" stopColor="#3DD68C" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#3DD68C" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="gradientRed" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#EF4444" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+                <stop offset="0%" stopColor="#E85454" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#E85454" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="gradientBlue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                <stop offset="0%" stopColor="#3DD68C" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#3DD68C" stopOpacity="0" />
               </linearGradient>
             </defs>
 
@@ -172,7 +172,7 @@ export function TrendChart({
               y1="25"
               x2="100"
               y2="25"
-              stroke="#27272a"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -181,7 +181,7 @@ export function TrendChart({
               y1="50"
               x2="100"
               y2="50"
-              stroke="#27272a"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -190,7 +190,7 @@ export function TrendChart({
               y1="75"
               x2="100"
               y2="75"
-              stroke="#27272a"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth="0.5"
               strokeDasharray="2,2"
             />
@@ -307,10 +307,10 @@ export function MiniTrendChart({
   }, [data]);
 
   if (data.length < 2) {
-    return <div className="w-20 h-6 bg-[var(--surface-sunken)] rounded" />;
+    return <div className="w-20 h-6 bg-[rgba(255,255,255,0.06)] rounded" />;
   }
 
-  const strokeColor = chartData.trend >= 0 ? "#22C55E" : "#EF4444";
+  const strokeColor = chartData.trend >= 0 ? "#3DD68C" : "#E85454";
 
   return (
     <svg

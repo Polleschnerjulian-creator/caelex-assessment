@@ -50,7 +50,7 @@ function severityColor(severity: string): string {
     case "MEDIUM":
       return "text-[var(--accent-warning)]";
     default:
-      return "text-[#9CA3AF]";
+      return "text-[var(--text-tertiary)]";
   }
 }
 
@@ -72,8 +72,8 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
               onClick={() => setSelectedCurve(c.metric)}
               className={`px-3 py-1.5 rounded-lg text-small font-medium transition-colors ${
                 selectedCurve === c.metric
-                  ? "bg-[#111827] text-white border border-[#111827]"
-                  : "bg-[#F7F8FA] text-[#6B7280] border border-[#E5E7EB] hover:text-[#111827]"
+                  ? "bg-[var(--accent-primary)] text-white border border-[var(--accent-primary)]"
+                  : "bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] border border-[rgba(255,255,255,0.06)] hover:text-[var(--text-primary)]"
               }`}
             >
               {c.regulationName}
@@ -92,11 +92,11 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
 
       {/* Compliance Events */}
       <div>
-        <h3 className="text-heading font-semibold text-[#111827] mb-3">
+        <h3 className="text-heading font-semibold text-[var(--text-primary)] mb-3">
           Compliance Events
         </h3>
         {events.length === 0 ? (
-          <p className="text-body text-[#9CA3AF]">
+          <p className="text-body text-[var(--text-tertiary)]">
             No compliance events forecasted.
           </p>
         ) : (
@@ -109,13 +109,13 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
                       className={`w-4 h-4 mt-0.5 ${severityColor(event.severity)}`}
                     />
                     <div>
-                      <p className="text-small font-medium text-[#374151]">
+                      <p className="text-small font-medium text-[var(--text-secondary)]">
                         {event.regulationName}
                       </p>
-                      <p className="text-caption text-[#9CA3AF] mt-0.5">
+                      <p className="text-caption text-[var(--text-tertiary)] mt-0.5">
                         {event.description}
                       </p>
-                      <p className="text-caption text-[#D1D5DB] mt-1">
+                      <p className="text-caption text-[var(--text-tertiary)] mt-1">
                         {event.recommendedAction}
                       </p>
                     </div>
@@ -126,7 +126,7 @@ export default function ForecastChart({ curves, events }: ForecastChartProps) {
                     >
                       {event.daysFromNow}d
                     </div>
-                    <div className="text-caption text-[#9CA3AF]">
+                    <div className="text-caption text-[var(--text-tertiary)]">
                       {new Date(event.date).toLocaleDateString()}
                     </div>
                   </div>
@@ -146,7 +146,7 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
   const points = curve.dataPoints;
   if (points.length === 0) {
     return (
-      <div className="text-center py-8 text-[#D1D5DB] text-small">
+      <div className="text-center py-8 text-[var(--text-tertiary)] text-small">
         No data points available
       </div>
     );
@@ -206,11 +206,13 @@ function CurveChart({ curve }: { curve: ForecastCurveData }) {
     <GlassCard hover={false} className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <TrendingDown className="w-4 h-4 text-[#9CA3AF]" />
-          <span className="text-small font-medium text-[#374151]">
+          <TrendingDown className="w-4 h-4 text-[var(--text-tertiary)]" />
+          <span className="text-small font-medium text-[var(--text-secondary)]">
             {curve.regulationName}
           </span>
-          <span className="text-caption text-[#9CA3AF]">({curve.unit})</span>
+          <span className="text-caption text-[var(--text-tertiary)]">
+            ({curve.unit})
+          </span>
         </div>
         {curve.crossingDaysFromNow !== null && (
           <div className="flex items-center gap-1.5 text-caption">

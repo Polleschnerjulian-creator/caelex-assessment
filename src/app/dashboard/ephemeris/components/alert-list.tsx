@@ -41,7 +41,7 @@ function severityColor(severity: string): string {
     case "MEDIUM":
       return "text-[var(--accent-warning)]";
     default:
-      return "text-[#9CA3AF]";
+      return "text-[var(--text-tertiary)]";
   }
 }
 
@@ -54,7 +54,7 @@ function severityBg(severity: string): string {
     case "MEDIUM":
       return "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]";
     default:
-      return "bg-[#F7F8FA] border-[#E5E7EB]";
+      return "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.06)]";
   }
 }
 
@@ -73,7 +73,7 @@ export default function AlertList({ fleet }: AlertListProps) {
   if (allAlerts.length === 0) {
     return (
       <GlassCard hover={false} className="p-6">
-        <div className="flex items-center gap-3 text-[#9CA3AF]">
+        <div className="flex items-center gap-3 text-[var(--text-tertiary)]">
           <CheckCircle className="w-5 h-5" />
           <span className="text-body">No active alerts</span>
         </div>
@@ -83,7 +83,7 @@ export default function AlertList({ fleet }: AlertListProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-heading font-semibold text-[#111827] mb-3">
+      <h3 className="text-heading font-semibold text-[var(--text-primary)] mb-3">
         Active Alerts ({allAlerts.length})
       </h3>
       {allAlerts.map((alert) => (
@@ -102,12 +102,14 @@ export default function AlertList({ fleet }: AlertListProps) {
                 >
                   {alert.severity}
                 </span>
-                <span className="text-caption text-[#9CA3AF]">
+                <span className="text-caption text-[var(--text-tertiary)]">
                   {alert.satelliteName}
                 </span>
               </div>
-              <p className="text-small text-[#374151]">{alert.title}</p>
-              <p className="text-caption text-[#9CA3AF] mt-0.5">
+              <p className="text-small text-[var(--text-secondary)]">
+                {alert.title}
+              </p>
+              <p className="text-caption text-[var(--text-tertiary)] mt-0.5">
                 {alert.message}
               </p>
             </div>

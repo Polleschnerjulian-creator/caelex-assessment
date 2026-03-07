@@ -35,9 +35,9 @@ const statusColors: Record<
     label: "Transition",
   },
   superseded: {
-    bg: "bg-[var(--surface-sunken)]0/10",
+    bg: "bg-[rgba(255,255,255,0.04)]",
     border: "border-[var(--border-default)]/30",
-    dot: "bg-[var(--surface-sunken)]0",
+    dot: "bg-[rgba(255,255,255,0.06)]",
     text: "text-[var(--text-tertiary)]",
     label: "Superseded",
   },
@@ -120,7 +120,7 @@ export default function RegulationTimeline() {
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
+      className="glass-elevated rounded-xl p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -163,12 +163,12 @@ export default function RegulationTimeline() {
           </div>
 
           {/* Timeline bar */}
-          <div className="relative h-2 bg-[var(--surface-sunken)] rounded-full mb-4">
+          <div className="relative h-2 bg-[rgba(255,255,255,0.06)] rounded-full mb-4">
             {/* Year tick marks */}
             {yearMarkers.map((m) => (
               <div
                 key={m.year}
-                className="absolute top-0 w-px h-2 bg-[var(--surface-sunken)]"
+                className="absolute top-0 w-px h-2 bg-[rgba(255,255,255,0.08)]"
                 style={{ left: `${m.percent}%` }}
               />
             ))}
@@ -359,7 +359,7 @@ export default function RegulationTimeline() {
                         {phase.applicableTo.map((scope) => (
                           <span
                             key={scope}
-                            className="text-micro bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
+                            className="text-micro bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
                           >
                             {scope.replace(/_/g, " ")}
                           </span>

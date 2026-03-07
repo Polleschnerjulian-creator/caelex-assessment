@@ -25,7 +25,7 @@ export default function ComplianceHorizonDisplay({
           ? "bg-[var(--accent-danger-soft)] border-[var(--accent-danger)]"
           : isWarning
             ? "bg-[var(--accent-warning-soft)] border-[var(--accent-warning)]"
-            : "bg-[#F7F8FA] border-[#E5E7EB]"
+            : "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.06)]"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -37,10 +37,10 @@ export default function ComplianceHorizonDisplay({
                   ? "text-[var(--accent-danger)]"
                   : isWarning
                     ? "text-[var(--accent-warning)]"
-                    : "text-[#111827]"
+                    : "text-[var(--text-primary)]"
               }`}
             />
-            <span className="text-small font-medium text-[#6B7280] uppercase tracking-wider">
+            <span className="text-small font-medium text-[var(--text-secondary)] uppercase tracking-wider">
               Compliance Horizon
             </span>
           </div>
@@ -51,12 +51,12 @@ export default function ComplianceHorizonDisplay({
                   ? "text-[var(--accent-danger)]"
                   : isWarning
                     ? "text-[var(--accent-warning)]"
-                    : "text-[#111827]"
+                    : "text-[var(--text-primary)]"
               }`}
             >
               {days !== null ? days.toLocaleString() : "\u221E"}
             </span>
-            <span className="text-body-lg text-[#9CA3AF]">
+            <span className="text-body-lg text-[var(--text-tertiary)]">
               {days !== null
                 ? "days until first breach"
                 : "No breach forecasted"}
@@ -70,14 +70,16 @@ export default function ComplianceHorizonDisplay({
               {isUrgent ? (
                 <AlertTriangle className="w-4 h-4 text-[var(--accent-danger)]" />
               ) : (
-                <Shield className="w-4 h-4 text-[#D1D5DB]" />
+                <Shield className="w-4 h-4 text-[var(--text-tertiary)]" />
               )}
-              <span className="text-small text-[#6B7280]">First breach</span>
+              <span className="text-small text-[var(--text-secondary)]">
+                First breach
+              </span>
             </div>
-            <p className="text-body font-mono text-[#374151]">
+            <p className="text-body font-mono text-[var(--text-secondary)]">
               {horizon.firstBreachRegulation}
             </p>
-            <p className="text-caption text-[#9CA3AF] mt-0.5">
+            <p className="text-caption text-[var(--text-tertiary)] mt-0.5">
               Confidence: {horizon.confidence}
             </p>
           </div>

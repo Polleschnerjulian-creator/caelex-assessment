@@ -24,7 +24,7 @@ const variants: Record<
   { bg: string; text: string; dot: string }
 > = {
   default: {
-    bg: "bg-[var(--surface-sunken)]",
+    bg: "bg-[rgba(255,255,255,0.06)]",
     text: "text-[var(--text-secondary)]",
     dot: "bg-[var(--text-tertiary)]",
   },
@@ -59,7 +59,7 @@ const variants: Record<
     dot: "bg-[var(--accent-info)]",
   },
   outline: {
-    bg: "bg-transparent border border-[var(--border-default)]",
+    bg: "bg-transparent border border-[rgba(255,255,255,0.08)]",
     text: "text-[var(--text-secondary)]",
     dot: "bg-[var(--text-tertiary)]",
   },

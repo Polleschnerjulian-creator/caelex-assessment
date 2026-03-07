@@ -246,10 +246,18 @@ const DEMO_RISK_HEATMAP = [
 function ChartSkeleton() {
   return (
     <div className="h-[280px] w-full flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-[var(--text-tertiary)] animate-spin" />
+      <Loader2 className="w-6 h-6 text-[var(--text-disabled)] animate-spin" />
     </div>
   );
 }
+
+// Border-top colors for each KPI card position
+const KPI_TOP_COLORS = [
+  "rgba(74, 98, 232, 0.4)", // Compliance Score — accent blue
+  "rgba(90, 173, 255, 0.4)", // Articles — info blue
+  "rgba(167, 139, 250, 0.4)", // Documents — purple
+  "rgba(245, 166, 35, 0.4)", // Days — warning amber
+];
 
 function KPICard({
   value,
@@ -272,31 +280,45 @@ function KPICard({
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
   const trendColor =
     trend === "up"
-      ? "text-[var(--accent-success)]"
+      ? "text-[var(--status-success)]"
       : trend === "down"
-        ? "text-[var(--accent-danger)]"
-        : "text-[var(--text-secondary)]";
+        ? "text-[var(--status-danger)]"
+        : "text-[var(--text-tertiary)]";
 
   return (
     <motion.div
-      initial={false}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.1 }}
-      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 relative overflow-hidden"
+      transition={{
+        delay: 0.1 + delay * 0.07,
+        duration: 0.5,
+        ease: [0.22, 0.61, 0.36, 1],
+      }}
+      className="
+        relative overflow-hidden rounded-[var(--radius-lg)] p-6
+        bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
+        backdrop-blur-[24px] backdrop-saturate-[1.3]
+        border border-[rgba(255,255,255,0.08)]
+        shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
+        hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)]
+        hover:border-[rgba(255,255,255,0.10)]
+        transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]
+        group
+      "
+      style={{
+        borderTopColor: KPI_TOP_COLORS[delay] || KPI_TOP_COLORS[0],
+        borderTopWidth: "2px",
+      }}
     >
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <p className="text-display font-semibold text-[var(--text-primary)] leading-none">
-            {value}
-          </p>
-          <p className="text-caption uppercase tracking-wider text-[var(--text-secondary)] mt-2">
-            {label}
-          </p>
-        </div>
+      {/* Label row */}
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
+          {label}
+        </p>
         {trend && trendValue && (
           <div className={`flex items-center gap-1 ${trendColor}`}>
-            <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="text-caption">{trendValue}</span>
+            <TrendIcon className="w-3 h-3" aria-hidden="true" />
+            <span className="text-[11px] font-medium">{trendValue}</span>
             <span className="sr-only">
               Trend:{" "}
               {trend === "up"
@@ -308,8 +330,15 @@ function KPICard({
           </div>
         )}
       </div>
+
+      {/* Hero number */}
+      <p className="text-[48px] font-semibold text-[var(--text-primary)] leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)]">
+        {value}
+      </p>
+
+      {/* Sparkline */}
       {sparklineData && sparklineData.length > 0 && (
-        <div className="mt-2">
+        <div className="mt-4">
           <Sparkline
             data={sparklineData}
             color={sparklineColor || CHART_COLORS.emerald}
@@ -330,7 +359,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-caption uppercase tracking-[0.2em] text-[var(--text-secondary)]">
+      <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em]">
         {title}
       </h2>
       {action}
@@ -351,13 +380,13 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-      <div className="w-12 h-12 rounded-full bg-[var(--surface-sunken)] flex items-center justify-center mb-4">
+      <div className="w-12 h-12 rounded-full bg-[var(--bg-surface-3)] flex items-center justify-center mb-4">
         <Icon className="w-6 h-6 text-[var(--text-tertiary)]" />
       </div>
-      <h3 className="text-body-lg font-medium text-[var(--text-secondary)] mb-1">
+      <h3 className="text-[14px] font-medium text-[var(--text-secondary)] mb-1">
         {title}
       </h3>
-      <p className="text-small text-[var(--text-secondary)] mb-4 max-w-[240px]">
+      <p className="text-[12px] text-[var(--text-tertiary)] mb-4 max-w-[240px]">
         {description}
       </p>
       {action}
@@ -374,11 +403,18 @@ function DeadlineItem({
 }) {
   const priorityColors = {
     critical:
-      "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)]",
-    high: "bg-[var(--accent-warning-soft)] text-[var(--accent-warning)] border-[var(--accent-warning)]",
+      "bg-[var(--status-danger-bg)] text-[var(--status-danger)] border-[var(--status-danger-border)]",
+    high: "bg-[var(--status-warning-bg)] text-[var(--status-warning)] border-[var(--status-warning-border)]",
     medium:
-      "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] border-[var(--accent-primary)]",
-    low: "bg-[var(--accent-success-soft)] text-[var(--accent-success)] border-[var(--accent-success)]",
+      "bg-[var(--accent-primary-soft)] text-[var(--accent-300)] border-[rgba(74,98,232,0.15)]",
+    low: "bg-[var(--status-success-bg)] text-[var(--status-success)] border-[var(--status-success-border)]",
+  };
+
+  const dotColors = {
+    critical: "bg-[var(--status-danger)]",
+    high: "bg-[var(--status-warning)]",
+    medium: "bg-[var(--accent-400)]",
+    low: "bg-[var(--status-success)]",
   };
 
   const dueDate = new Date(deadline.dueDate);
@@ -386,31 +422,23 @@ function DeadlineItem({
   const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / 86400000);
 
   return (
-    <div className="flex items-center gap-3 py-2">
+    <div className="flex items-center gap-3 py-2.5">
       <div
         aria-hidden="true"
-        className={`w-2 h-2 rounded-full ${
-          deadline.priority === "critical"
-            ? "bg-[var(--accent-danger)]"
-            : deadline.priority === "high"
-              ? "bg-[var(--accent-warning)]"
-              : deadline.priority === "medium"
-                ? "bg-[var(--accent-success)]"
-                : "bg-[var(--accent-success)]"
-        }`}
+        className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColors[deadline.priority]}`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-small text-[var(--text-secondary)] truncate">
+        <p className="text-[13px] text-[var(--text-secondary)] truncate">
           {deadline.title}
         </p>
-        <p className="text-micro text-[var(--text-secondary)]">
+        <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
           {daysUntil > 0
             ? t("common.days", { count: daysUntil })
             : t("common.overdue")}
         </p>
       </div>
       <span
-        className={`text-micro uppercase px-2 py-0.5 rounded border ${priorityColors[deadline.priority]}`}
+        className={`text-[11px] font-medium tracking-[0.04em] px-2 py-0.5 rounded-[var(--radius-xs)] border ${priorityColors[deadline.priority]}`}
       >
         {t(`common.${deadline.priority}`)}
       </span>
@@ -420,23 +448,23 @@ function DeadlineItem({
 
 function RiskHeatmapCell({ module, risk }: { module: string; risk: string }) {
   const riskColors = {
-    critical: "bg-[var(--accent-danger)]",
-    high: "bg-[var(--accent-danger)/60]",
-    medium: "bg-[var(--accent-warning)/60]",
-    low: "bg-[var(--accent-success)/60]",
+    critical: "bg-[var(--status-danger)]",
+    high: "bg-[rgba(232,84,84,0.5)]",
+    medium: "bg-[rgba(245,166,35,0.5)]",
+    low: "bg-[rgba(61,214,140,0.5)]",
   };
 
   return (
     <div className="flex flex-col items-center">
       <div
-        className={`w-10 h-10 rounded-lg ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
+        className={`w-10 h-10 rounded-[var(--radius-sm)] ${riskColors[risk as keyof typeof riskColors]} flex items-center justify-center mb-1`}
         title={`${module}: ${risk} risk`}
       >
-        <span className="text-micro text-[var(--text-primary)] font-medium">
+        <span className="text-[10px] text-[var(--text-primary)] font-medium">
           {module.slice(0, 2)}
         </span>
       </div>
-      <span className="text-micro text-[var(--text-secondary)]">{module}</span>
+      <span className="text-[10px] text-[var(--text-tertiary)]">{module}</span>
       <span className="sr-only">{risk} risk</span>
     </div>
   );
@@ -454,10 +482,10 @@ function QuickActionButton({
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 p-3 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--surface-sunken)] border border-[var(--border-default)] hover:border-[var(--border-default)] transition-all group"
+      className="flex flex-col items-center gap-2 p-3 rounded-[var(--radius-md)] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] group"
     >
-      <Icon className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors" />
-      <span className="text-micro text-[var(--text-secondary)] group-hover:text-[var(--text-secondary)] transition-colors">
+      <Icon className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--accent-400)] transition-colors duration-[var(--duration-fast)]" />
+      <span className="text-[10px] font-medium tracking-[0.02em] text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors duration-[var(--duration-fast)]">
         {label}
       </span>
     </Link>
@@ -493,18 +521,18 @@ function ActivityItem({
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-[var(--border-default)] last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-[rgba(255,255,255,0.03)] last:border-0">
       <div
-        className="w-8 h-8 rounded-lg bg-[var(--surface-sunken)] flex items-center justify-center flex-shrink-0"
+        className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0"
         aria-hidden="true"
       >
-        <Icon className="w-4 h-4 text-[var(--text-secondary)]" />
+        <Icon className="w-4 h-4 text-[var(--text-tertiary)]" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-small text-[var(--text-secondary)] truncate">
+        <p className="text-[13px] text-[var(--text-secondary)] truncate">
           {activity.description || activity.action.replace(/_/g, " ")}
         </p>
-        <p className="text-micro text-[var(--text-secondary)] mt-0.5">
+        <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">
           {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -830,14 +858,14 @@ function DashboardContent() {
         aria-live="polite"
         aria-label="Loading dashboard"
       >
-        <div className="animate-pulse space-y-6 max-w-[1360px]">
-          <div className="h-8 bg-[var(--surface-sunken)] rounded w-1/3" />
-          <div className="h-4 bg-[var(--surface-sunken)] rounded w-1/2" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+        <div className="space-y-6 max-w-[1360px]">
+          <div className="h-8 animate-v2-skeleton rounded-[var(--radius-sm)] w-1/3" />
+          <div className="h-4 animate-v2-skeleton rounded-[var(--radius-sm)] w-1/2" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-[var(--surface-sunken)] rounded-xl"
+                className="h-36 animate-v2-skeleton rounded-[var(--radius-lg)]"
               />
             ))}
           </div>
@@ -845,7 +873,7 @@ function DashboardContent() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-[340px] bg-[var(--surface-sunken)] rounded-xl"
+                className="h-[340px] animate-v2-skeleton rounded-[var(--radius-lg)]"
               />
             ))}
           </div>
@@ -936,23 +964,19 @@ function DashboardContent() {
         )}
 
         {/* Header */}
-        <div className="mb-10">
-          <motion.h1
-            initial={false}
-            animate={{ opacity: 1 }}
-            className="text-display font-medium text-[var(--text-primary)] mb-1"
-          >
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+          className="mb-10"
+        >
+          <h1 className="text-[32px] font-semibold text-[var(--text-primary)] tracking-[-0.02em] leading-tight mb-1">
             {t("dashboard.welcomeBack", { name: firstName })}
-          </motion.h1>
-          <motion.p
-            initial={false}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.05 }}
-            className="text-body-lg text-[var(--text-secondary)]"
-          >
+          </h1>
+          <p className="text-[14px] text-[var(--text-tertiary)]">
             {t("dashboard.commandCenter")}
-          </motion.p>
-        </div>
+          </p>
+        </motion.div>
 
         {/* Compliance Score Card */}
         <ComplianceScoreCard />
@@ -960,17 +984,18 @@ function DashboardContent() {
         {/* Demo Mode Banner */}
         {!hasData && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-lg bg-[var(--accent-warning-soft)] border border-[var(--accent-warning)/20]"
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="flex items-center gap-3 px-4 py-3 mb-6 rounded-[var(--radius-md)] bg-[var(--status-warning-bg)] border border-[var(--status-warning-border)]"
           >
-            <div className="w-2 h-2 rounded-full bg-[var(--accent-warning)] animate-pulse" />
-            <p className="text-caption text-[var(--accent-warning)]">
+            <div className="w-2 h-2 rounded-full bg-[var(--status-warning)] animate-pulse" />
+            <p className="text-[12px] text-[var(--status-warning)]">
               {t("dashboard.demoMode")}
             </p>
             <Link
               href="/assessment"
-              className="ml-auto text-caption text-[var(--accent-warning)] hover:text-[var(--accent-warning)] underline underline-offset-2 transition-colors"
+              className="ml-auto text-[12px] text-[var(--status-warning)] hover:text-[var(--text-primary)] underline underline-offset-2 transition-colors duration-[var(--duration-fast)]"
             >
               {t("dashboard.startAssessmentLink")}
             </Link>
@@ -978,7 +1003,7 @@ function DashboardContent() {
         )}
 
         {/* ROW 1: KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <KPICard
             value={`${progressPercent}%`}
             label={t("dashboard.overallCompliance")}
@@ -1023,27 +1048,41 @@ function DashboardContent() {
         {/* No Data CTA */}
         {!hasData && (
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[var(--surface-sunken)] border border-dashed border-[var(--border-default)] rounded-xl p-8 text-center mb-10"
+            transition={{
+              delay: 0.45,
+              duration: 0.4,
+              ease: [0.22, 0.61, 0.36, 1],
+            }}
+            className="bg-[var(--bg-surface-2)] border border-dashed border-[rgba(255,255,255,0.06)] rounded-[var(--radius-lg)] p-8 text-center mb-10"
           >
-            <h2 className="text-title font-medium text-[var(--text-primary)] mb-2">
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)] mb-2">
               {t("dashboard.importResults")}
             </h2>
-            <p className="text-body text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+            <p className="text-[13px] text-[var(--text-tertiary)] mb-6 max-w-md mx-auto">
               {t("dashboard.importDescription")}
             </p>
             <div className="flex justify-center gap-3">
               <Link
                 href="/assessment"
-                className="bg-[var(--accent-primary)] text-white font-medium text-body px-6 py-2.5 rounded-lg hover:bg-[var(--accent-primary-hover)] transition-all flex items-center gap-2"
+                className="
+                  bg-[var(--accent-500)] text-white font-medium text-[14px] px-6 py-2.5 rounded-[var(--radius-sm)]
+                  shadow-[0_2px_8px_rgba(74,98,232,0.25),0_0_0_1px_rgba(74,98,232,0.3)]
+                  hover:bg-[var(--accent-400)] hover:shadow-[0_4px_12px_rgba(74,98,232,0.35)]
+                  transition-all duration-[var(--duration-fast)] flex items-center gap-2
+                "
               >
                 <PlayCircle size={16} aria-hidden="true" />
                 {t("dashboard.runAssessmentAction")}
               </Link>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="border border-[var(--border-default)] text-[var(--text-secondary)] font-medium text-body px-6 py-2.5 rounded-lg hover:bg-[var(--surface-sunken)] transition-all"
+                className="
+                  border border-[rgba(255,255,255,0.08)] text-[var(--text-secondary)] font-medium text-[14px] px-6 py-2.5
+                  rounded-[var(--radius-sm)] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.12)]
+                  transition-all duration-[var(--duration-fast)]
+                "
               >
                 {t("dashboard.alreadyRanIt")}
               </button>
@@ -1091,7 +1130,7 @@ function DashboardContent() {
             action={
               <Link
                 href="/dashboard/audit-center"
-                className="text-caption text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center gap-1"
+                className="text-[12px] text-[var(--accent-300)] hover:text-[var(--accent-200)] flex items-center gap-1 transition-colors duration-[var(--duration-fast)]"
               >
                 {t("common.viewAll")}{" "}
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -1099,7 +1138,7 @@ function DashboardContent() {
             }
           />
           {recentActivity.length > 0 ? (
-            <div className="divide-y divide-[var(--border-default)]">
+            <div className="divide-y divide-[rgba(255,255,255,0.03)]">
               {recentActivity.slice(0, 5).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -1145,23 +1184,23 @@ function DashboardContent() {
                 />
               ))}
             </div>
-            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[var(--border-default)]">
+            <div className="flex justify-center gap-4 mt-4 pt-3 border-t border-[rgba(255,255,255,0.04)]">
               {(["critical", "high", "medium", "low"] as const).map(
                 (level, i) => (
                   <div key={level} className="flex items-center gap-1.5">
                     <div
                       aria-hidden="true"
-                      className={`w-2.5 h-2.5 rounded ${
+                      className={`w-2.5 h-2.5 rounded-sm ${
                         i === 0
-                          ? "bg-[var(--accent-danger)]"
+                          ? "bg-[var(--status-danger)]"
                           : i === 1
-                            ? "bg-[var(--accent-danger)/60]"
+                            ? "bg-[rgba(232,84,84,0.5)]"
                             : i === 2
-                              ? "bg-[var(--accent-warning)/60]"
-                              : "bg-[var(--accent-success)/60]"
+                              ? "bg-[rgba(245,166,35,0.5)]"
+                              : "bg-[rgba(61,214,140,0.5)]"
                       }`}
                     />
-                    <span className="text-micro text-[var(--text-secondary)]">
+                    <span className="text-[10px] text-[var(--text-tertiary)]">
                       {t(`common.${level}`)}
                     </span>
                   </div>
@@ -1216,7 +1255,7 @@ function DashboardContent() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-[var(--v2-radius-lg)] p-8 max-w-[400px] w-full shadow-[var(--v2-shadow-lg)]"
+                className="bg-[var(--bg-surface-4)] border border-[rgba(255,255,255,0.08)] rounded-[var(--radius-2xl)] p-8 max-w-[400px] w-full shadow-[var(--shadow-xl)]"
               >
                 <h2 className="text-heading font-medium text-[var(--text-primary)] mb-2">
                   {t("dashboard.selectOperatorType")}

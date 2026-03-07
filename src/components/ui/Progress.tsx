@@ -30,7 +30,7 @@ const colors: Record<string, string> = {
   blue: "bg-[var(--accent-primary)]",
   amber: "bg-[var(--accent-warning)]",
   red: "bg-[var(--accent-danger)]",
-  white: "bg-white",
+  white: "bg-[rgba(255,255,255,0.7)]",
 };
 
 const heights = {
@@ -66,7 +66,7 @@ export function Progress({
         </div>
       )}
       <div
-        className={`w-full bg-[var(--surface-sunken)] rounded-full overflow-hidden ${heights[size]}`}
+        className={`w-full bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden ${heights[size]}`}
       >
         <div
           className={`
@@ -152,7 +152,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
-          className="stroke-[var(--surface-sunken)] fill-none"
+          className="stroke-[rgba(255,255,255,0.06)] fill-none"
         />
         {/* Progress circle */}
         <circle

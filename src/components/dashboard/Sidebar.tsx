@@ -71,26 +71,26 @@ function NavItem({ href, icon, children, onClick, badge }: NavItemProps) {
       onClick={onClick}
       aria-current={isActive ? "page" : undefined}
       className={`
-        group flex items-center gap-3 h-9 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-body
-        transition-all duration-[180ms] ease-out
+        group flex items-center gap-2.5 h-9 px-3 mx-2 rounded-[var(--radius-sm)] text-[14px]
+        transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
         ${
           isActive
-            ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium border-l-[3px] border-l-[var(--accent-primary)]"
-            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
+            ? "bg-[linear-gradient(90deg,rgba(74,98,232,0.12)_0%,rgba(74,98,232,0.04)_100%)] text-[var(--text-primary)] font-medium shadow-[inset_2px_0_0_var(--accent-500)]"
+            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]"
         }
       `}
     >
       {icon && (
         <span
           aria-hidden="true"
-          className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"}`}
+          className={`w-[18px] h-[18px] flex-shrink-0 transition-colors duration-[var(--duration-fast)] ${isActive ? "text-[var(--accent-400)]" : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"}`}
         >
           {icon}
         </span>
       )}
       <span className="flex-1">{children}</span>
       {badge && (
-        <span className="text-micro px-1.5 py-0.5 rounded-full bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium">
+        <span className="text-[11px] tracking-[0.04em] font-medium px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[rgba(74,98,232,0.12)] text-[var(--accent-300)]">
           {badge}
         </span>
       )}
@@ -129,38 +129,38 @@ function CompactModuleItem({
         locked ? `${label} (requires ${requiredPlan} plan)` : undefined
       }
       className={`
-        group flex items-center gap-2.5 h-8 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-small
-        transition-all duration-[180ms] ease-out
+        group flex items-center gap-2.5 h-8 px-3 mx-2 rounded-[var(--radius-sm)] text-[13px]
+        transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
         ${
           locked
-            ? "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)] cursor-default"
+            ? "text-[var(--text-disabled)] hover:text-[var(--text-tertiary)] hover:bg-[rgba(255,255,255,0.02)] cursor-default"
             : isActive
-              ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] font-medium border-l-[3px] border-l-[var(--accent-primary)]"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]"
+              ? "bg-[linear-gradient(90deg,rgba(74,98,232,0.12)_0%,rgba(74,98,232,0.04)_100%)] text-[var(--text-primary)] font-medium shadow-[inset_2px_0_0_var(--accent-500)]"
+              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)]"
         }
       `}
     >
       <span
         aria-hidden="true"
-        className={`w-3.5 h-3.5 flex-shrink-0 ${
+        className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-[var(--duration-fast)] ${
           locked
-            ? "text-[var(--border-default)]"
+            ? "text-[var(--text-disabled)]"
             : isActive
-              ? "text-[var(--accent-primary)]"
+              ? "text-[var(--accent-400)]"
               : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"
         }`}
       >
         {icon}
       </span>
-      <span className={`flex-1 ${locked ? "opacity-60" : ""}`}>{label}</span>
+      <span className={`flex-1 ${locked ? "opacity-50" : ""}`}>{label}</span>
       {locked && (
         <span className="flex items-center gap-1" aria-hidden="true">
           {requiredPlan && (
-            <span className="text-[8px] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
+            <span className="text-[9px] font-medium uppercase tracking-wider text-[var(--text-disabled)]">
               {requiredPlan}
             </span>
           )}
-          <Lock size={14} className="text-[var(--border-default)]" />
+          <Lock size={12} className="text-[var(--text-disabled)]" />
         </span>
       )}
     </Link>
@@ -190,20 +190,20 @@ function ModuleGroup({
   const panelId = `module-group-${groupId}`;
 
   return (
-    <div className="mb-2">
+    <div className="mb-1">
       <button
         onClick={onToggle}
         aria-expanded={isExpanded}
         aria-controls={panelId}
         className={`
-          w-full flex items-center gap-2 px-3 py-2 mx-2 rounded-[var(--v2-radius-sm)] text-[12px] font-medium uppercase tracking-wider
-          transition-all duration-[180ms] ease-out
+          w-full flex items-center gap-2 px-3 py-1.5 mx-2 rounded-[var(--radius-sm)] text-[12px] font-medium tracking-[0.03em]
+          transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
           ${
             hasActiveItem
-              ? "text-[var(--text-primary)]"
+              ? "text-[var(--text-secondary)]"
               : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
           }
-          hover:bg-[var(--surface-sunken)]
+          hover:bg-[rgba(255,255,255,0.02)]
         `}
       >
         <motion.span
@@ -217,10 +217,10 @@ function ModuleGroup({
         <span className="flex-1 text-left">{title}</span>
         <span
           aria-label={`${count} modules`}
-          className={`text-micro px-1.5 py-0.5 rounded-full font-medium ${
+          className={`text-[10px] min-w-[18px] text-center px-1 py-0.5 rounded-[var(--radius-xs)] font-medium ${
             hasActiveItem
-              ? "bg-[var(--accent-primary)] text-white"
-              : "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]"
+              ? "bg-[rgba(74,98,232,0.15)] text-[var(--accent-300)]"
+              : "bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)]"
           }`}
         >
           {count}
@@ -235,10 +235,10 @@ function ModuleGroup({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.25, ease: [0.22, 0.61, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="pl-3 pt-2 space-y-1">{children}</div>
+            <div className="pl-3 pt-1 space-y-0.5">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -381,7 +381,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -392,26 +392,31 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         className={`
           fixed lg:sticky lg:top-0 top-0 left-0 bottom-0
           w-[280px] lg:w-[240px] lg:h-screen
-          bg-[var(--surface-raised)] border-r border-[var(--border-default)]
+          bg-[var(--bg-surface-1)]
           flex flex-col z-50
-          transition-transform duration-300 lg:translate-x-0
+          transition-transform duration-[var(--duration-medium)] ease-[var(--ease-smooth)]
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+          shadow-[4px_0_16px_rgba(0,0,0,0.3)]
         `}
+        style={{
+          borderRight: "1px solid rgba(255, 255, 255, 0.04)",
+        }}
       >
         {/* Mobile close button */}
         <button
           onClick={onClose}
           aria-label="Close navigation menu"
-          className="lg:hidden absolute top-4 right-4 p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--v2-radius-sm)] hover:bg-[var(--surface-sunken)] transition-colors duration-[180ms]"
+          className="lg:hidden absolute top-4 right-4 p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-[var(--duration-fast)]"
         >
           <X size={20} aria-hidden="true" />
         </button>
 
         {/* Header */}
-        <div className="h-12 flex items-center px-6 border-b border-[var(--border-default)]">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="h-14 flex items-center px-5 border-b border-[rgba(255,255,255,0.04)]">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <Logo size={22} className="text-[var(--text-primary)]" />
-            <span className="text-micro text-[var(--text-tertiary)] tracking-wider">
+            <span className="text-[11px] tracking-[0.04em] font-medium text-[var(--text-disabled)] group-hover:text-[var(--text-tertiary)] transition-colors duration-[var(--duration-fast)]">
               v0.1
             </span>
           </Link>
@@ -420,24 +425,24 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav
           aria-label="Main navigation"
-          className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar"
+          className="flex-1 overflow-y-auto py-5 custom-scrollbar"
         >
           {/* Overview Section */}
-          <div className="mb-5">
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               {t("sidebar.overview")}
             </p>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard"
-                icon={<LayoutDashboard size={16} strokeWidth={1.5} />}
+                icon={<LayoutDashboard size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.dashboard")}
               </NavItem>
               <NavItem
                 href="/dashboard/tracker"
-                icon={<ListChecks size={16} strokeWidth={1.5} />}
+                icon={<ListChecks size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.complianceTracker")}
@@ -446,8 +451,8 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Compliance Modules Section */}
-          <div className="mb-5">
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               {t("sidebar.complianceModules")}
             </p>
 
@@ -600,21 +605,21 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* AI Agent Section */}
-          <div className="mb-5">
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               {t("sidebar.aiAgent")}
             </p>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/astra"
-                icon={<Zap size={16} strokeWidth={1.5} />}
+                icon={<Zap size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 Astra
               </NavItem>
               <NavItem
                 href="/dashboard/sentinel"
-                icon={<Satellite size={16} strokeWidth={1.5} />}
+                icon={<Satellite size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -622,7 +627,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               </NavItem>
               <NavItem
                 href="/dashboard/ephemeris"
-                icon={<Activity size={16} strokeWidth={1.5} />}
+                icon={<Activity size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -638,14 +643,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Resources Section */}
-          <div>
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               {t("sidebar.resources")}
             </p>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/nca-portal"
-                icon={<Building2 size={16} strokeWidth={1.5} />}
+                icon={<Building2 size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -653,49 +658,49 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               </NavItem>
               <NavItem
                 href="/dashboard/documents"
-                icon={<FileText size={16} strokeWidth={1.5} />}
+                icon={<FileText size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.documents")}
               </NavItem>
               <NavItem
                 href="/dashboard/generate"
-                icon={<Sparkles size={16} strokeWidth={1.5} />}
+                icon={<Sparkles size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.documentGenerator")}
               </NavItem>
               <NavItem
                 href="/dashboard/audit-center"
-                icon={<ClipboardCheck size={16} strokeWidth={1.5} />}
+                icon={<ClipboardCheck size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.auditCenter")}
               </NavItem>
               <NavItem
                 href="/dashboard/timeline"
-                icon={<Clock size={16} strokeWidth={1.5} />}
+                icon={<Clock size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.timeline")}
               </NavItem>
               <NavItem
                 href="/dashboard/digital-twin"
-                icon={<Layers size={16} strokeWidth={1.5} />}
+                icon={<Layers size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.digitalTwin")}
               </NavItem>
               <NavItem
                 href="/dashboard/incidents"
-                icon={<AlertTriangle size={16} strokeWidth={1.5} />}
+                icon={<AlertTriangle size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.incidents")}
               </NavItem>
               <NavItem
                 href="/dashboard/regulatory-feed"
-                icon={<Radio size={16} strokeWidth={1.5} />}
+                icon={<Radio size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -703,14 +708,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               </NavItem>
               <NavItem
                 href="/dashboard/mission-control"
-                icon={<Orbit size={16} strokeWidth={1.5} />}
+                icon={<Orbit size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.missionControl")}
               </NavItem>
               <NavItem
                 href="/dashboard/evidence"
-                icon={<FileCheck size={16} strokeWidth={1.5} />}
+                icon={<FileCheck size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -720,14 +725,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Assure Section */}
-          <div className="mt-5">
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               Assure
             </p>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/assure"
-                icon={<ShieldAlert size={16} strokeWidth={1.5} />}
+                icon={<ShieldAlert size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
                 badge={t("sidebar.new")}
               >
@@ -735,7 +740,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
               </NavItem>
               <NavItem
                 href="/dashboard/assure/rating"
-                icon={<BarChart3 size={16} strokeWidth={1.5} />}
+                icon={<BarChart3 size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 Credit Rating
@@ -744,14 +749,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Network Section */}
-          <div className="mt-5">
-            <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+          <div className="mb-6">
+            <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
               {t("sidebar.network") || "Network"}
             </p>
             <div className="space-y-0.5">
               <NavItem
                 href="/dashboard/network"
-                icon={<Users size={16} strokeWidth={1.5} />}
+                icon={<Users size={18} strokeWidth={1.5} />}
                 onClick={handleNavClick}
               >
                 {t("sidebar.complianceNetwork") || "Compliance Network"}
@@ -761,35 +766,35 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
           {/* Admin — only for admin role users */}
           {user?.role === "admin" && (
-            <div className="mt-5">
-              <p className="px-3 mb-2 text-[12px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.15em]">
+            <div className="mb-6">
+              <p className="px-5 mb-2 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-[0.04em]">
                 {t("sidebar.admin")}
               </p>
               <div className="space-y-0.5">
                 <NavItem
                   href="/dashboard/admin"
-                  icon={<Crown size={16} strokeWidth={1.5} />}
+                  icon={<Crown size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
                   {t("sidebar.adminPanel")}
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/bookings"
-                  icon={<Calendar size={16} strokeWidth={1.5} />}
+                  icon={<Calendar size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
                   {t("sidebar.bookings") || "Bookings"}
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/analytics"
-                  icon={<BarChart3 size={16} strokeWidth={1.5} />}
+                  icon={<BarChart3 size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
                   {t("sidebar.analytics")}
                 </NavItem>
                 <NavItem
                   href="/dashboard/admin/audit"
-                  icon={<FileSearch size={16} strokeWidth={1.5} />}
+                  icon={<FileSearch size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                 >
                   {t("sidebar.auditLogs")}
@@ -799,11 +804,11 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Footer */}
-        <div className="p-3 border-t border-[var(--border-default)] space-y-1">
+        {/* Footer — Settings & Logout */}
+        <div className="px-3 py-2 border-t border-[rgba(255,255,255,0.04)] space-y-0.5">
           <NavItem
             href="/dashboard/settings"
-            icon={<Settings size={16} strokeWidth={1.5} />}
+            icon={<Settings size={18} strokeWidth={1.5} />}
             onClick={handleNavClick}
           >
             {t("sidebar.settings")}
@@ -811,13 +816,13 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           <button
             onClick={handleLogout}
             className="
-              w-full flex items-center gap-3 h-9 px-3 mx-2 rounded-[var(--v2-radius-sm)] text-body
-              text-[var(--text-secondary)] hover:text-[var(--accent-danger)] hover:bg-[var(--accent-danger-soft)]
-              transition-all duration-[180ms] ease-out
+              w-full flex items-center gap-2.5 h-9 px-3 mx-2 rounded-[var(--radius-sm)] text-[14px]
+              text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:bg-[rgba(232,84,84,0.08)]
+              transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
             "
           >
             <LogOut
-              size={16}
+              size={18}
               className="text-[var(--text-tertiary)]"
               aria-hidden="true"
             />
@@ -826,19 +831,19 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-t border-[var(--border-default)]">
+        <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.04)]">
           <div className="flex items-center gap-3">
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-[var(--surface-sunken)] flex items-center justify-center flex-shrink-0 border border-[var(--border-default)]">
+            <div className="w-8 h-8 rounded-full bg-[var(--bg-surface-3)] flex items-center justify-center flex-shrink-0 ring-2 ring-[rgba(255,255,255,0.08)]">
               {user?.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={user.image}
                   alt={user?.name ? `${user.name}'s avatar` : "User avatar"}
-                  className="w-9 h-9 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <span className="text-small font-medium text-[var(--text-secondary)]">
+                <span className="text-[12px] font-medium text-[var(--text-secondary)]">
                   {initials}
                 </span>
               )}
@@ -846,10 +851,10 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-body font-medium text-[var(--text-primary)] truncate">
+              <p className="text-[13px] font-medium text-[var(--text-primary)] truncate leading-tight">
                 {user?.name || t("common.user")}
               </p>
-              <p className="text-caption text-[var(--text-tertiary)] truncate">
+              <p className="text-[12px] text-[var(--text-tertiary)] truncate leading-tight mt-0.5">
                 {user?.email || ""}
               </p>
             </div>

@@ -98,10 +98,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     isEphemerisPage;
 
   return (
-    <div
-      className="caelex-v2 min-h-screen bg-[var(--surface-base)]"
-      data-theme="light"
-    >
+    <div className="caelex-v2 min-h-screen bg-[var(--bg-base)]">
       <div className="lg:grid lg:grid-cols-[240px_1fr]">
         {/* Sidebar */}
         <Sidebar

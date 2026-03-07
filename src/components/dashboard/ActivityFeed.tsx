@@ -55,7 +55,7 @@ const actionColors: Record<string, string> = {
   workflow_created: "text-[var(--accent-success)]",
   workflow_status_changed: "text-[var(--accent-success)]",
   workflow_submitted: "text-[var(--accent-success)]",
-  assessment_imported: "text-cyan-600",
+  assessment_imported: "text-[var(--accent-info)]",
   bulk_status_update: "text-[var(--accent-success)]",
 };
 
@@ -207,10 +207,10 @@ export default function ActivityFeed({
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="animate-pulse flex items-start gap-3">
-            <div className="w-8 h-8 bg-[var(--surface-sunken)] rounded-lg" />
+            <div className="w-8 h-8 rounded-lg animate-v2-skeleton" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-[var(--surface-sunken)] rounded w-3/4" />
-              <div className="h-3 bg-[var(--surface-sunken)] rounded w-1/2" />
+              <div className="h-4 rounded w-3/4 animate-v2-skeleton" />
+              <div className="h-3 rounded w-1/2 animate-v2-skeleton" />
             </div>
           </div>
         ))}
@@ -229,7 +229,7 @@ export default function ActivityFeed({
               <select
                 value={entityFilter}
                 onChange={(e) => setEntityFilter(e.target.value)}
-                className="bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-secondary)] rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-[var(--border-default)]:border-white/[0.1]"
+                className="bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] rounded-lg px-3 py-1.5 text-small focus:outline-none focus:border-[var(--accent-500)] transition-colors"
               >
                 <option value="all">All Activity</option>
                 <option value="article">Articles</option>
@@ -309,7 +309,7 @@ export default function ActivityFeed({
                   }`}
                 >
                   <div
-                    className={`p-1.5 rounded-lg bg-[var(--surface-sunken)] ${iconColor}`}
+                    className={`p-1.5 rounded-lg bg-[rgba(255,255,255,0.04)] ${iconColor}`}
                   >
                     <Icon size={compact ? 12 : 14} />
                   </div>

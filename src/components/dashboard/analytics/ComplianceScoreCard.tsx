@@ -55,7 +55,7 @@ export function ComplianceScoreCard({
       case "non_compliant":
         return "bg-[var(--accent-danger-soft)] text-[var(--accent-danger)] border-[var(--accent-danger)/30]";
       default:
-        return "bg-[var(--surface-sunken)]0/20 text-[var(--text-tertiary)] border-[var(--border-default)]/30";
+        return "bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)] border-[rgba(255,255,255,0.06)]";
     }
   };
 
@@ -82,7 +82,7 @@ export function ComplianceScoreCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+    <div className="glass-elevated rounded-xl p-6">
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -111,7 +111,7 @@ export function ComplianceScoreCard({
               fill="none"
               stroke="currentColor"
               strokeWidth="12"
-              className="text-[var(--text-tertiary)]"
+              className="text-[rgba(255,255,255,0.06)]"
             />
             {/* Progress circle */}
             <motion.circle

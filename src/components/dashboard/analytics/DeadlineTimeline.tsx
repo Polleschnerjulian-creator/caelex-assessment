@@ -32,7 +32,7 @@ export function DeadlineTimeline({
 
   if (deadlineAlerts.length === 0) {
     return (
-      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+      <div className="glass-elevated rounded-xl p-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Upcoming Deadlines
         </h3>
@@ -48,7 +48,7 @@ export function DeadlineTimeline({
   }
 
   return (
-    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+    <div className="glass-elevated rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-[var(--text-primary)]">
           Upcoming Deadlines
@@ -106,7 +106,7 @@ function DeadlineItem({
       case "low":
         return "border-[var(--accent-primary)] bg-[var(--accent-primary-soft)]";
       default:
-        return "border-[var(--border-default)] bg-[var(--surface-sunken)]0/10";
+        return "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.04)]";
     }
   };
 
@@ -155,7 +155,7 @@ function DeadlineItem({
     <div className="relative flex gap-4">
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-5 top-10 bottom-0 w-px bg-[var(--surface-sunken)]" />
+        <div className="absolute left-5 top-10 bottom-0 w-px bg-[rgba(255,255,255,0.06)]" />
       )}
 
       {/* Icon */}
@@ -169,7 +169,7 @@ function DeadlineItem({
       <div className="flex-1 pb-4">
         <Link
           href={alert.link || "#"}
-          className="block hover:bg-[var(--surface-sunken)]/50 rounded-lg -ml-2 px-2 py-1 transition-colors"
+          className="block hover:bg-[rgba(255,255,255,0.03)] rounded-lg -ml-2 px-2 py-1 transition-colors"
         >
           <div className="flex items-start justify-between gap-2">
             <div>

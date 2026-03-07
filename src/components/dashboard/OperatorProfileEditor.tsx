@@ -325,7 +325,7 @@ export default function OperatorProfileEditor() {
                   type="checkbox"
                   checked={profile.isResearch}
                   onChange={(e) => handleChange("isResearch", e.target.checked)}
-                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
+                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[rgba(0,0,0,0.2)]"
                 />
                 <span className="text-body text-[var(--text-secondary)]">
                   Research entity (eligible for light regime)
@@ -338,7 +338,7 @@ export default function OperatorProfileEditor() {
                   onChange={(e) =>
                     handleChange("isDefenseOnly", e.target.checked)
                   }
-                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
+                  className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[rgba(0,0,0,0.2)]"
                 />
                 <span className="text-body text-[var(--text-secondary)]">
                   Defense-only operations (excluded from EU Space Act)
@@ -439,7 +439,7 @@ export default function OperatorProfileEditor() {
                 onChange={(e) =>
                   handleChange("isConstellation", e.target.checked)
                 }
-                className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
+                className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[rgba(0,0,0,0.2)]"
               />
               <span className="text-body text-[var(--text-secondary)]">
                 Part of a constellation
@@ -507,7 +507,7 @@ export default function OperatorProfileEditor() {
                       ${
                         isSelected
                           ? "bg-[var(--accent-success-soft)]0/15 text-[var(--accent-success)] border border-[var(--accent-success)/30]"
-                          : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-default)]"
+                          : "bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-default)]"
                       }
                     `}
                   >
@@ -525,7 +525,7 @@ export default function OperatorProfileEditor() {
               onChange={(e) =>
                 handleChange("offersEUServices", e.target.checked)
               }
-              className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[var(--surface-raised)]"
+              className="w-4 h-4 rounded border-[var(--border-default)] text-[var(--accent-primary)] focus:ring-[var(--border-focus)]/30 bg-[rgba(0,0,0,0.2)]"
             />
             <span className="text-body text-[var(--text-secondary)]">
               Offers services in the EU market
@@ -547,12 +547,12 @@ export default function OperatorProfileEditor() {
           assessments, saving time and ensuring consistency.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border-default)]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[var(--border-default)]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.operatorType && profile.entitySize
                   ? "bg-[var(--accent-success-soft)]0"
-                  : "bg-[var(--surface-sunken)]"
+                  : "bg-[rgba(255,255,255,0.04)]"
               }`}
             />
             <div className="min-w-0">
@@ -566,12 +566,12 @@ export default function OperatorProfileEditor() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border-default)]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[var(--border-default)]">
             <div
               className={`w-2 h-2 rounded-full ${
                 profile.entitySize && profile.establishment
                   ? "bg-[var(--accent-success-soft)]0"
-                  : "bg-[var(--surface-sunken)]"
+                  : "bg-[rgba(255,255,255,0.04)]"
               }`}
             />
             <div className="min-w-0">

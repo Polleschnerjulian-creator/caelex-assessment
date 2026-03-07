@@ -16,20 +16,40 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const cardVariants = {
   default:
-    "bg-[var(--surface-raised)] border border-[var(--border-subtle)] shadow-[var(--v2-shadow-soft)] relative overflow-hidden",
-  glass:
-    "bg-[var(--surface-raised)] border border-[var(--border-subtle)] shadow-[var(--v2-shadow-soft)] relative overflow-hidden",
-  elevated:
-    "bg-[var(--surface-raised)] border border-[var(--border-subtle)] shadow-[var(--v2-shadow-md)] relative overflow-hidden",
-  interactive: `
-    bg-[var(--surface-raised)] border border-[var(--border-subtle)] shadow-[var(--v2-shadow-soft)]
-    hover:shadow-[var(--v2-shadow-md)] hover:-translate-y-px hover:border-[var(--border-default)]
-    transition-all duration-[180ms] ease-out cursor-pointer relative overflow-hidden
+    "bg-[var(--bg-surface-2)] border border-[rgba(255,255,255,0.06)] shadow-[var(--shadow-sm)] relative overflow-hidden",
+  glass: `
+    bg-[var(--glass-bg)] backdrop-blur-[20px] backdrop-saturate-[1.2]
+    border border-[var(--glass-border)]
+    shadow-[var(--shadow-md)] relative overflow-hidden
   `,
-  metric:
-    "bg-[var(--surface-raised)] border border-[var(--border-subtle)] shadow-[var(--v2-shadow-soft)] relative overflow-hidden",
+  elevated: `
+    bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
+    backdrop-blur-[24px] backdrop-saturate-[1.3]
+    border border-[rgba(255,255,255,0.08)]
+    shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
+    relative overflow-hidden
+  `,
+  interactive: `
+    bg-[var(--glass-bg)] backdrop-blur-[20px]
+    border border-[var(--glass-border)]
+    shadow-[var(--shadow-md)]
+    hover:bg-[var(--glass-bg-hover)] hover:border-[var(--glass-border-hover)]
+    hover:shadow-[var(--shadow-lg)] hover:-translate-y-px
+    transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)]
+    cursor-pointer relative overflow-hidden
+  `,
+  metric: `
+    bg-[linear-gradient(135deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.01)_100%)]
+    backdrop-blur-[24px] backdrop-saturate-[1.3]
+    border border-[rgba(255,255,255,0.08)]
+    border-t-2
+    shadow-[var(--shadow-lg),inset_0_1px_0_rgba(255,255,255,0.04)]
+    hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)]
+    transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]
+    relative overflow-hidden
+  `,
   outlined:
-    "bg-transparent border border-[var(--border-default)] relative overflow-hidden",
+    "bg-transparent border border-[rgba(255,255,255,0.06)] relative overflow-hidden",
 };
 
 const paddings = {
@@ -48,7 +68,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={`
-          rounded-[var(--v2-radius-md)]
+          rounded-[var(--radius-lg)]
           ${cardVariants[variant]}
           ${paddings[padding]}
           ${className}
@@ -91,7 +111,7 @@ export function CardTitle({
 }: CardTitleProps) {
   return (
     <Tag
-      className={`text-title font-semibold text-[var(--text-primary)] ${className}`}
+      className={`text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em] ${className}`}
     >
       {children}
     </Tag>
@@ -109,7 +129,9 @@ export function CardDescription({
   className = "",
 }: CardDescriptionProps) {
   return (
-    <p className={`text-body text-[var(--text-secondary)] ${className}`}>
+    <p
+      className={`text-[13px] text-[var(--text-secondary)] leading-relaxed ${className}`}
+    >
       {children}
     </p>
   );
@@ -134,7 +156,7 @@ interface CardFooterProps {
 export function CardFooter({ children, className = "" }: CardFooterProps) {
   return (
     <div
-      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[var(--border-default)] ${className}`}
+      className={`flex items-center justify-end gap-3 mt-6 pt-4 border-t border-[rgba(255,255,255,0.04)] ${className}`}
     >
       {children}
     </div>

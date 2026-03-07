@@ -65,7 +65,7 @@ const statusBarColors: Record<string, string> = {
   compliant: "bg-[var(--accent-success-soft)]0",
   partial: "bg-[var(--accent-warning)]",
   non_compliant: "bg-[var(--accent-danger)]",
-  not_started: "bg-[var(--surface-sunken)]",
+  not_started: "bg-[rgba(255,255,255,0.06)]",
 };
 
 const priorityColors: Record<string, string> = {
@@ -74,7 +74,7 @@ const priorityColors: Record<string, string> = {
   high: "bg-[var(--accent-warning)]/20 text-[var(--accent-warning)] border-amber-500/30",
   medium:
     "bg-[var(--accent-success-soft)] text-[var(--accent-primary)] border-[var(--accent-success)/30]",
-  low: "bg-[var(--surface-sunken)] text-[var(--text-secondary)] border-[var(--border-default)]",
+  low: "bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] border-[var(--border-default)]",
 };
 
 export default function ComplianceScoreCard() {
@@ -107,7 +107,7 @@ export default function ComplianceScoreCard() {
       <motion.div
         initial={false}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 mb-8"
+        className="glass-elevated rounded-[var(--radius-lg)] p-6 mb-8"
       >
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 text-[var(--text-tertiary)] animate-spin" />
@@ -126,7 +126,7 @@ export default function ComplianceScoreCard() {
     <motion.div
       initial={false}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 mb-8"
+      className="glass-elevated rounded-[var(--radius-lg)] p-6 mb-8"
     >
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export default function ComplianceScoreCard() {
               <span className="text-caption text-[var(--text-secondary)] w-24 truncate">
                 {t(moduleKeyMap[key] || `modules.${key}`)}
               </span>
-              <div className="flex-1 h-1.5 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${statusBarColors[mod.status]}`}
                   style={{ width: `${mod.score}%` }}

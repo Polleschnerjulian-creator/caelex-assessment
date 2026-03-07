@@ -47,19 +47,19 @@ const variants: Record<ButtonVariant, string> = {
     hover:bg-[var(--accent-primary-hover)]
     active:bg-[#1e40af]
     disabled:opacity-50 disabled:shadow-none
-    focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2
+    focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]
   `,
   secondary: `
-    bg-[var(--surface-raised)] text-[var(--text-primary)] border border-[var(--border-default)]
-    hover:bg-[var(--surface-sunken)] hover:border-[var(--text-tertiary)]
-    active:bg-[#dde0e5]
+    bg-[rgba(255,255,255,0.04)] text-[var(--text-primary)] border border-[rgba(255,255,255,0.08)]
+    hover:bg-[rgba(255,255,255,0.07)] hover:border-[rgba(255,255,255,0.12)]
+    active:bg-[rgba(255,255,255,0.03)]
     disabled:opacity-50
-    focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2
+    focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]
   `,
   ghost: `
     text-[var(--text-secondary)]
-    hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)]
-    active:bg-[#dde0e5]
+    hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.04)]
+    active:bg-[rgba(255,255,255,0.02)]
     focus-visible:ring-2 focus-visible:ring-[var(--border-focus)]
   `,
   danger: `

@@ -17,13 +17,11 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  ChevronRight,
   ExternalLink,
   BarChart3,
   Archive,
   Layers,
   ClipboardCheck,
-  ArrowRight,
   X,
   Filter,
 } from "lucide-react";
@@ -81,40 +79,66 @@ interface AuditCenterOverview {
 
 const regulationColors: Record<
   string,
-  { bg: string; text: string; label: string }
+  { bg: string; text: string; border: string; label: string }
 > = {
   EU_SPACE_ACT: {
-    bg: "bg-[var(--accent-primary-soft)]",
-    text: "text-[var(--accent-primary)]",
+    bg: "bg-[rgba(110,139,250,0.10)]",
+    text: "text-[var(--module-eu-space-act)]",
+    border: "border-[rgba(110,139,250,0.15)]",
     label: "EU Space Act",
   },
-  NIS2: { bg: "bg-cyan-500/10", text: "text-cyan-400", label: "NIS2" },
+  NIS2: {
+    bg: "bg-[rgba(90,173,255,0.10)]",
+    text: "text-[var(--module-nis2)]",
+    border: "border-[rgba(90,173,255,0.15)]",
+    label: "NIS2",
+  },
   CYBERSECURITY: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
+    bg: "bg-[rgba(167,139,250,0.10)]",
+    text: "text-[var(--module-cybersecurity)]",
+    border: "border-[rgba(167,139,250,0.15)]",
     label: "Cybersecurity",
   },
   DEBRIS: {
-    bg: "bg-[var(--accent-warning-soft)]",
-    text: "text-[var(--accent-warning)]",
+    bg: "bg-[rgba(245,166,35,0.10)]",
+    text: "text-[var(--module-debris)]",
+    border: "border-[rgba(245,166,35,0.15)]",
     label: "Debris",
   },
   ENVIRONMENTAL: {
-    bg: "bg-[var(--accent-success)]/10",
-    text: "text-[var(--accent-success)]",
+    bg: "bg-[rgba(69,217,176,0.10)]",
+    text: "text-[var(--module-environmental)]",
+    border: "border-[rgba(69,217,176,0.15)]",
     label: "Environmental",
   },
   INSURANCE: {
-    bg: "bg-rose-500/10",
-    text: "text-rose-400",
+    bg: "bg-[rgba(61,214,140,0.10)]",
+    text: "text-[var(--module-insurance)]",
+    border: "border-[rgba(61,214,140,0.15)]",
     label: "Insurance",
   },
   AUTHORIZATION: {
-    bg: "bg-indigo-500/10",
-    text: "text-indigo-400",
+    bg: "bg-[rgba(110,139,250,0.10)]",
+    text: "text-[var(--module-eu-space-act)]",
+    border: "border-[rgba(110,139,250,0.15)]",
     label: "Authorization",
   },
 };
+
+const defaultRegColor = {
+  bg: "bg-[rgba(255,255,255,0.04)]",
+  text: "text-[var(--text-tertiary)]",
+  border: "border-[rgba(255,255,255,0.06)]",
+  label: "",
+};
+
+// Card top-border accent colors
+const METRIC_BORDERS = [
+  "rgba(74, 98, 232, 0.4)",
+  "rgba(90, 173, 255, 0.4)",
+  "rgba(167, 139, 250, 0.4)",
+  "rgba(245, 166, 35, 0.4)",
+];
 
 // ─── Page ───
 
@@ -272,10 +296,32 @@ function AuditCenterContent() {
     }
   };
 
+  // Score color helper
+  const scoreColor = (score: number) =>
+    score >= 71
+      ? "text-[var(--status-success)]"
+      : score >= 31
+        ? "text-[var(--status-warning)]"
+        : "text-[var(--status-danger)]";
+
+  const progressGradient = (score: number) =>
+    score >= 71
+      ? "from-[var(--status-success)] to-[#5EEDAA]"
+      : score >= 31
+        ? "from-[var(--status-warning)] to-[#FFB84D]"
+        : "from-[var(--status-danger)] to-[#F07070]";
+
+  const progressGlow = (score: number) =>
+    score >= 71
+      ? "shadow-[0_0_8px_rgba(61,214,140,0.3)]"
+      : score >= 31
+        ? "shadow-[0_0_8px_rgba(245,166,35,0.3)]"
+        : "shadow-[0_0_8px_rgba(232,84,84,0.3)]";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-tertiary)]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-disabled)]" />
       </div>
     );
   }
@@ -283,9 +329,9 @@ function AuditCenterContent() {
   if (error && !overview) {
     return (
       <div className="space-y-4">
-        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
-          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
+        <div className="bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] rounded-[var(--radius-md)] p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--status-danger)] flex-shrink-0" />
+          <p className="text-[13px] text-[var(--status-danger)]">{error}</p>
         </div>
       </div>
     );
@@ -306,18 +352,23 @@ function AuditCenterContent() {
         );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+        className="flex items-center justify-between"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary-soft)] to-[var(--accent-info-soft)] flex items-center justify-center">
-            <ClipboardCheck className="w-5 h-5 text-[var(--accent-primary)]" />
+          <div className="w-10 h-10 rounded-[var(--radius-md)] bg-[rgba(74,98,232,0.08)] flex items-center justify-center">
+            <ClipboardCheck className="w-5 h-5 text-[var(--accent-400)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h1 className="text-[22px] font-semibold text-[var(--text-primary)] tracking-[-0.015em]">
               Audit Center
             </h1>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-[13px] text-[var(--text-tertiary)]">
               Regulatory audit readiness at a glance
             </p>
           </div>
@@ -325,21 +376,28 @@ function AuditCenterContent() {
         <button
           onClick={() => fetchOverview(true)}
           disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-secondary)] border border-[var(--border-default)] rounded-lg transition-colors disabled:opacity-50"
+          className="
+            flex items-center gap-2 px-4 py-2 text-[14px]
+            text-[var(--text-secondary)] border border-[rgba(255,255,255,0.08)]
+            rounded-[var(--radius-sm)]
+            hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.12)] hover:text-[var(--text-primary)]
+            transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
+            disabled:opacity-50
+          "
         >
           <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
           Refresh
         </button>
-      </div>
+      </motion.div>
 
       {/* Error banner */}
       {error && (
-        <div className="bg-[var(--accent-danger)]/10 border border-[var(--accent-danger)]/20 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-[var(--accent-danger)] flex-shrink-0" />
-          <p className="text-sm text-[var(--accent-danger)]">{error}</p>
+        <div className="bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] rounded-[var(--radius-md)] p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--status-danger)] flex-shrink-0" />
+          <p className="text-[13px] text-[var(--status-danger)]">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-[var(--accent-danger)] hover:text-red-300"
+            className="ml-auto text-[var(--status-danger)] hover:text-[var(--text-primary)] transition-colors duration-[var(--duration-fast)]"
           >
             <X size={14} />
           </button>
@@ -347,516 +405,563 @@ function AuditCenterContent() {
       )}
 
       {/* ─── Metrics Row ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Compliance Score */}
-        <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.1,
+            duration: 0.5,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="glass-elevated rounded-[var(--radius-lg)] p-6 group hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)] transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]"
+          style={{ borderTop: `2px solid ${METRIC_BORDERS[0]}` }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-4 h-4 text-[var(--accent-primary)]" />
-            <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+            <TrendingUp className="w-4 h-4 text-[var(--accent-400)] opacity-70" />
+            <span className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
               Compliance Score
             </span>
           </div>
-          <div className="text-3xl font-bold text-[var(--text-primary)]">
+          <p className="text-[48px] font-semibold text-[var(--text-primary)] leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)]">
             {overview.complianceScore}%
-          </div>
-          <div className="h-2 bg-[var(--surface-sunken)] rounded-full mt-3 overflow-hidden">
+          </p>
+          <div
+            className="h-1 bg-[rgba(255,255,255,0.06)] rounded-full mt-4 overflow-hidden"
+            style={{ boxShadow: "var(--shadow-inset)" }}
+          >
             <motion.div
-              className={`h-full rounded-full ${overview.complianceScore >= 80 ? "bg-[var(--accent-success)]" : overview.complianceScore >= 50 ? "bg-[var(--accent-warning)]" : "bg-[var(--accent-danger)]"}`}
+              className={`h-full rounded-full bg-gradient-to-r ${progressGradient(overview.complianceScore)} ${progressGlow(overview.complianceScore)}`}
               initial={{ width: 0 }}
               animate={{ width: `${overview.complianceScore}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{
+                duration: 1.2,
+                ease: [0.22, 0.61, 0.36, 1],
+                delay: 0.6,
+              }}
             />
           </div>
-          <div className="text-caption text-[var(--text-tertiary)] mt-2">
+          <p className="text-[12px] text-[var(--text-tertiary)] mt-3">
             Across {overview.modules.length} modules
-          </div>
-        </div>
+          </p>
+        </motion.div>
 
         {/* Evidence Coverage */}
-        <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.17,
+            duration: 0.5,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="glass-elevated rounded-[var(--radius-lg)] p-6 group hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)] transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]"
+          style={{ borderTop: `2px solid ${METRIC_BORDERS[1]}` }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <Archive className="w-4 h-4 text-cyan-500" />
-            <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+            <Archive className="w-4 h-4 text-[var(--status-info)] opacity-70" />
+            <span className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
               Evidence Coverage
             </span>
           </div>
-          <div className="text-3xl font-bold text-[var(--text-primary)]">
+          <p className="text-[48px] font-semibold text-[var(--text-primary)] leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)]">
             {overview.evidenceCoverage.percentage}%
-          </div>
-          <div className="h-2 bg-[var(--surface-sunken)] rounded-full mt-3 overflow-hidden">
+          </p>
+          <div
+            className="h-1 bg-[rgba(255,255,255,0.06)] rounded-full mt-4 overflow-hidden"
+            style={{ boxShadow: "var(--shadow-inset)" }}
+          >
             <motion.div
-              className="h-full bg-cyan-500 rounded-full"
+              className={`h-full rounded-full bg-gradient-to-r from-[var(--status-info)] to-[#7DC4FF] shadow-[0_0_8px_rgba(90,173,255,0.3)]`}
               initial={{ width: 0 }}
-              animate={{
-                width: `${overview.evidenceCoverage.percentage}%`,
+              animate={{ width: `${overview.evidenceCoverage.percentage}%` }}
+              transition={{
+                duration: 1.2,
+                ease: [0.22, 0.61, 0.36, 1],
+                delay: 0.7,
               }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
             />
           </div>
-          <div className="text-caption text-[var(--text-tertiary)] mt-2">
+          <p className="text-[12px] text-[var(--text-tertiary)] mt-3">
             {overview.evidenceCoverage.withEvidence} of{" "}
             {overview.evidenceCoverage.totalRequirements} requirements
-          </div>
-        </div>
+          </p>
+        </motion.div>
 
         {/* Audit Trail */}
-        <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.24,
+            duration: 0.5,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="glass-elevated rounded-[var(--radius-lg)] p-6 group hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)] transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]"
+          style={{ borderTop: `2px solid ${METRIC_BORDERS[2]}` }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <BarChart3 className="w-4 h-4 text-[var(--accent-success)]" />
-            <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+            <BarChart3 className="w-4 h-4 text-[#A78BFA] opacity-70" />
+            <span className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
               Audit Trail
             </span>
           </div>
-          <div className="text-3xl font-bold text-[var(--text-primary)]">
+          <p className="text-[48px] font-semibold text-[var(--text-primary)] leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)]">
             {overview.totalAuditEntries.toLocaleString()}
-          </div>
+          </p>
           {chainStatus ? (
             <div
-              className={`flex items-center gap-1 mt-3 text-caption ${chainStatus.valid ? "text-[var(--accent-success)]" : "text-[var(--accent-danger)]"}`}
+              className={`flex items-center gap-1.5 mt-4 text-[12px] ${chainStatus.valid ? "text-[var(--status-success)]" : "text-[var(--status-danger)]"}`}
             >
               {chainStatus.valid ? (
-                <CheckCircle2 size={12} />
+                <CheckCircle2 size={13} />
               ) : (
-                <AlertTriangle size={12} />
+                <AlertTriangle size={13} />
               )}
               {chainStatus.valid
                 ? `Chain verified (${chainStatus.checkedEntries} entries)`
                 : "Integrity issue detected"}
             </div>
           ) : (
-            <div className="text-caption text-[var(--text-tertiary)] mt-3">
+            <p className="text-[12px] text-[var(--text-tertiary)] mt-4">
               {overview.recentActivityCount} entries in last 30 days
-            </div>
+            </p>
           )}
-        </div>
+        </motion.div>
 
-        {/* Outstanding Items */}
-        <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-5">
+        {/* Action Items */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.31,
+            duration: 0.5,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="glass-elevated rounded-[var(--radius-lg)] p-6 group hover:-translate-y-0.5 hover:shadow-[var(--shadow-xl)] transition-all duration-[var(--duration-normal)] ease-[var(--ease-spring)]"
+          style={{ borderTop: `2px solid ${METRIC_BORDERS[3]}` }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-[var(--accent-warning)]" />
-            <span className="text-micro uppercase tracking-wider text-[var(--text-tertiary)]">
+            <AlertTriangle className="w-4 h-4 text-[var(--status-warning)] opacity-70" />
+            <span className="text-[12px] font-medium uppercase tracking-[0.03em] text-[var(--text-secondary)]">
               Action Items
             </span>
           </div>
-          <div
-            className={`text-3xl font-bold ${overview.actionItems.length > 0 ? "text-[var(--accent-warning)]" : "text-[var(--accent-success)]"}`}
+          <p
+            className={`text-[48px] font-semibold leading-none tracking-[-0.03em] group-hover:[text-shadow:0_0_30px_rgba(232,232,237,0.05)] ${overview.actionItems.length > 0 ? "text-[var(--status-warning)]" : "text-[var(--status-success)]"}`}
           >
             {overview.actionItems.length}
-          </div>
-          <div className="text-caption text-[var(--text-tertiary)] mt-3">
+          </p>
+          <p className="text-[12px] text-[var(--text-tertiary)] mt-4">
             {overview.actionItems.length > 0
               ? "Require attention"
               : "All up to date"}
-          </div>
-        </div>
+          </p>
+        </motion.div>
       </div>
 
       {/* ─── Filter Bar ─── */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)] mr-2">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.3 }}
+        className="flex items-center gap-2 flex-wrap p-1 bg-[rgba(255,255,255,0.02)] rounded-[var(--radius-md)] border border-[rgba(255,255,255,0.04)]"
+      >
+        <div className="flex items-center gap-1.5 text-[11px] tracking-[0.04em] font-medium text-[var(--text-tertiary)] px-2">
           <Filter size={12} />
           Filter:
         </div>
         <button
           onClick={() => setRegulationFilter("all")}
-          className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
+          className={`px-3.5 py-1.5 rounded-[var(--radius-sm)] text-[13px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
             regulationFilter === "all"
-              ? "bg-[var(--accent-primary-soft)] text-[var(--accent-primary)]"
-              : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
+              ? "bg-[rgba(74,98,232,0.1)] text-[var(--accent-300)] font-medium shadow-[0_0_0_1px_rgba(74,98,232,0.2)]"
+              : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
           }`}
         >
           All
         </button>
         {overview.modules.map((m) => {
           const rc = regulationColors[m.regulationType] || {
-            bg: "bg-[var(--surface-sunken)]0/10",
-            text: "text-[var(--text-tertiary)]",
+            ...defaultRegColor,
             label: m.module,
           };
+          const isActive = regulationFilter === m.regulationType;
           return (
             <button
               key={m.regulationType}
               onClick={() => setRegulationFilter(m.regulationType)}
-              className={`px-3 py-1 rounded-lg text-caption font-medium transition-colors ${
-                regulationFilter === m.regulationType
-                  ? `${rc.bg} ${rc.text}`
-                  : "bg-[var(--surface-sunken)] text-[var(--text-secondary)] hover:text-[var(--text-secondary)]"
+              className={`px-3.5 py-1.5 rounded-[var(--radius-sm)] text-[13px] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] ${
+                isActive
+                  ? `${rc.bg} ${rc.text} font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.08)]`
+                  : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]"
               }`}
             >
               {rc.label}
             </button>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* ─── Module Compliance Overview ─── */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
-          <Layers size={16} className="text-[var(--text-tertiary)]" />
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+        className="space-y-3"
+      >
+        <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em] flex items-center gap-2">
+          <Layers size={18} className="text-[var(--text-tertiary)]" />
           Module Compliance ({filteredModules.length})
         </h2>
 
         {filteredModules.map((mod) => {
           const isExpanded = expandedModules.has(mod.module);
           const rc = regulationColors[mod.regulationType] || {
-            bg: "bg-[var(--surface-sunken)]0/10",
-            text: "text-[var(--text-tertiary)]",
+            ...defaultRegColor,
             label: mod.module,
           };
 
           return (
-            <motion.div
+            <div
               key={mod.module}
-              layout
-              className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl overflow-hidden"
+              className={`
+                rounded-[var(--radius-md)] overflow-hidden transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
+                ${
+                  isExpanded
+                    ? "bg-[rgba(255,255,255,0.02)] shadow-[var(--shadow-sm)]"
+                    : "border-b border-[rgba(255,255,255,0.03)]"
+                }
+              `}
             >
               <button
                 onClick={() => toggleModuleExpand(mod.module)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-[var(--surface-sunken)]/50:bg-[var(--surface-sunken)] transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[rgba(255,255,255,0.02)] transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] text-left group/row rounded-[var(--radius-md)] hover:translate-x-0.5"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <span
-                    className={`text-micro font-medium px-2 py-0.5 rounded ${rc.bg} ${rc.text}`}
+                    className={`text-[11px] font-medium tracking-[0.04em] px-2.5 py-1 rounded-[var(--radius-xs)] border ${rc.bg} ${rc.text} ${rc.border}`}
                   >
                     {rc.label}
                   </span>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                  <span className="text-[14px] font-medium text-[var(--text-primary)]">
                     {mod.module}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 flex-shrink-0 ml-4">
-                  {/* Score badge */}
-                  <div
-                    className={`text-sm font-bold ${mod.score >= 80 ? "text-[var(--accent-success)]" : mod.score >= 50 ? "text-[var(--accent-warning)]" : "text-[var(--accent-danger)]"}`}
+                  <span
+                    className={`text-[15px] font-semibold tracking-[-0.005em] ${scoreColor(mod.score)}`}
                   >
                     {mod.score}%
-                  </div>
-                  {/* Requirement count */}
-                  <span className="text-xs text-[var(--text-tertiary)] hidden sm:inline">
+                  </span>
+                  <span className="text-[13px] text-[var(--text-tertiary)] hidden sm:inline">
                     {mod.compliant}/{mod.totalRequirements}
                   </span>
-                  {isExpanded ? (
-                    <ChevronUp
-                      size={16}
-                      className="text-[var(--text-tertiary)]"
-                    />
-                  ) : (
+                  <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+                  >
                     <ChevronDown
                       size={16}
                       className="text-[var(--text-tertiary)]"
                     />
-                  )}
+                  </motion.div>
                 </div>
               </button>
 
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
-                    initial={false}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="border-t border-[var(--border-subtle)] px-5 py-4"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+                    className="overflow-hidden"
                   >
-                    {/* Status bar */}
-                    <div className="flex gap-2 mb-4">
-                      {[
-                        {
-                          label: "Compliant",
-                          count: mod.compliant,
-                          color: "bg-[var(--accent-success)]",
-                        },
-                        {
-                          label: "Partial",
-                          count: mod.partial,
-                          color: "bg-[var(--accent-warning)]",
-                        },
-                        {
-                          label: "Non-Compliant",
-                          count: mod.nonCompliant,
-                          color: "bg-[var(--accent-danger)]",
-                        },
-                        {
-                          label: "Not Assessed",
-                          count: mod.notAssessed,
-                          color: "bg-[var(--text-tertiary)]",
-                        },
-                        {
-                          label: "N/A",
-                          count: mod.notApplicable,
-                          color: "bg-[var(--surface-sunken)]",
-                        },
-                      ]
-                        .filter((s) => s.count > 0)
-                        .map((s) => (
-                          <div
-                            key={s.label}
-                            className="flex items-center gap-1.5"
-                          >
+                    <div className="px-4 py-4 pl-8">
+                      {/* Status legend */}
+                      <div className="flex gap-4 mb-4 flex-wrap">
+                        {[
+                          {
+                            label: "Compliant",
+                            count: mod.compliant,
+                            color: "bg-[var(--status-success)]",
+                          },
+                          {
+                            label: "Partial",
+                            count: mod.partial,
+                            color: "bg-[var(--status-warning)]",
+                          },
+                          {
+                            label: "Non-Compliant",
+                            count: mod.nonCompliant,
+                            color: "bg-[var(--status-danger)]",
+                          },
+                          {
+                            label: "Not Assessed",
+                            count: mod.notAssessed,
+                            color: "bg-[var(--text-tertiary)]",
+                          },
+                          {
+                            label: "N/A",
+                            count: mod.notApplicable,
+                            color: "bg-[var(--text-disabled)]",
+                          },
+                        ]
+                          .filter((s) => s.count > 0)
+                          .map((s) => (
                             <div
-                              className={`w-2 h-2 rounded-full ${s.color}`}
-                            />
-                            <span className="text-micro text-[var(--text-secondary)]">
-                              {s.count} {s.label}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
+                              key={s.label}
+                              className="flex items-center gap-1.5"
+                            >
+                              <div
+                                className={`w-2 h-2 rounded-full ${s.color}`}
+                              />
+                              <span className="text-[12px] text-[var(--text-secondary)]">
+                                {s.count} {s.label}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
 
-                    {/* Progress bar */}
-                    <div className="h-2 bg-[var(--surface-sunken)] rounded-full overflow-hidden flex">
-                      {mod.totalRequirements > 0 && (
-                        <>
-                          <div
-                            className="h-full bg-[var(--accent-success)]"
-                            style={{
-                              width: `${(mod.compliant / mod.totalRequirements) * 100}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[var(--accent-warning)]"
-                            style={{
-                              width: `${(mod.partial / mod.totalRequirements) * 100}%`,
-                            }}
-                          />
-                          <div
-                            className="h-full bg-[var(--accent-danger)]"
-                            style={{
-                              width: `${(mod.nonCompliant / mod.totalRequirements) * 100}%`,
-                            }}
-                          />
-                        </>
+                      {/* Progress bar */}
+                      <div
+                        className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden flex"
+                        style={{ boxShadow: "var(--shadow-inset)" }}
+                      >
+                        {mod.totalRequirements > 0 && (
+                          <>
+                            <div
+                              className="h-full bg-[var(--status-success)]"
+                              style={{
+                                width: `${(mod.compliant / mod.totalRequirements) * 100}%`,
+                              }}
+                            />
+                            <div
+                              className="h-full bg-[var(--status-warning)]"
+                              style={{
+                                width: `${(mod.partial / mod.totalRequirements) * 100}%`,
+                              }}
+                            />
+                            <div
+                              className="h-full bg-[var(--status-danger)]"
+                              style={{
+                                width: `${(mod.nonCompliant / mod.totalRequirements) * 100}%`,
+                              }}
+                            />
+                          </>
+                        )}
+                      </div>
+
+                      {mod.lastUpdated && (
+                        <div className="text-[11px] text-[var(--text-tertiary)] mt-3 flex items-center gap-1">
+                          <Clock size={10} />
+                          Last updated:{" "}
+                          {new Date(mod.lastUpdated).toLocaleDateString()}
+                        </div>
                       )}
                     </div>
-
-                    {mod.lastUpdated && (
-                      <div className="text-micro text-[var(--text-tertiary)] mt-3 flex items-center gap-1">
-                        <Clock size={10} />
-                        Last updated:{" "}
-                        {new Date(mod.lastUpdated).toLocaleDateString()}
-                      </div>
-                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           );
         })}
 
         {filteredModules.length === 0 && (
-          <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-8 text-center">
-            <Shield className="w-8 h-8 text-[var(--text-tertiary)]/30 mx-auto mb-2" />
-            <p className="text-sm text-[var(--text-secondary)]">
+          <div className="glass-card rounded-[var(--radius-lg)] p-8 text-center">
+            <Shield className="w-8 h-8 text-[var(--text-disabled)] mx-auto mb-2" />
+            <p className="text-[13px] text-[var(--text-tertiary)]">
               No compliance modules found. Start an assessment to see data here.
             </p>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* ─── Action Items ─── */}
       {filteredActions.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-medium text-[var(--text-primary)] flex items-center gap-2">
-            <AlertTriangle size={16} className="text-[var(--accent-warning)]" />
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.55,
+            duration: 0.4,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          className="space-y-3"
+        >
+          <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em] flex items-center gap-2">
+            <AlertTriangle size={18} className="text-[var(--status-warning)]" />
             Action Items ({filteredActions.length})
           </h2>
 
-          <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl divide-y divide-[var(--border-subtle)][0.04]">
+          <div className="glass-card rounded-[var(--radius-lg)] divide-y divide-[rgba(255,255,255,0.03)] overflow-hidden">
             {filteredActions.slice(0, 20).map((item, idx) => {
               const rc = regulationColors[item.regulationType] || {
-                bg: "bg-[var(--surface-sunken)]0/10",
-                text: "text-[var(--text-tertiary)]",
+                ...defaultRegColor,
                 label: item.regulationType,
               };
               return (
                 <div
                   key={`${item.regulationType}-${item.requirementId}-${idx}`}
-                  className="flex items-center justify-between px-5 py-3 hover:bg-[var(--surface-sunken)]/50:bg-[var(--surface-sunken)] transition-colors"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-[rgba(255,255,255,0.02)] transition-all duration-[var(--duration-fast)]"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span
-                      className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${rc.bg} ${rc.text} flex-shrink-0`}
+                      className={`text-[11px] font-medium tracking-[0.04em] px-2.5 py-1 rounded-[var(--radius-xs)] border flex-shrink-0 ${rc.bg} ${rc.text} ${rc.border}`}
                     >
                       {rc.label}
                     </span>
-                    <span className="text-xs text-[var(--text-secondary)] truncate">
+                    <span className="text-[13px] font-medium font-mono tracking-[-0.02em] text-[var(--text-primary)]">
                       {item.requirementId}
                     </span>
                     <span
-                      className={`text-micro font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${
+                      className={`text-[11px] font-medium tracking-[0.04em] px-2 py-0.5 rounded-[var(--radius-xs)] flex-shrink-0 ${
                         item.status === "non_compliant"
-                          ? "text-[var(--accent-danger)] bg-[var(--accent-danger)]/10"
-                          : "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10"
+                          ? "text-[var(--status-danger)] bg-[var(--status-danger-bg)]"
+                          : "text-[var(--text-tertiary)] bg-[rgba(255,255,255,0.04)]"
                       }`}
                     >
                       {item.status.replace(/_/g, " ")}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                  <div className="flex items-center gap-3 flex-shrink-0 ml-2">
                     {!item.hasEvidence && (
-                      <span className="text-micro text-[var(--accent-warning)]/60">
+                      <span className="text-[11px] font-medium tracking-[0.04em] px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--status-warning-bg)] text-[var(--status-warning)] border border-[var(--status-warning-border)]">
                         No evidence
                       </span>
                     )}
                     <Link
                       href={item.modulePath}
-                      className="p-1 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--accent-400)] rounded-[var(--radius-xs)] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-[var(--duration-fast)]"
                     >
-                      <ExternalLink size={12} />
+                      <ExternalLink size={13} />
                     </Link>
                   </div>
                 </div>
               );
             })}
             {filteredActions.length > 20 && (
-              <div className="px-5 py-3 text-center">
-                <span className="text-caption text-[var(--text-tertiary)]">
+              <div className="px-4 py-3 text-center">
+                <span className="text-[12px] text-[var(--text-tertiary)]">
                   + {filteredActions.length - 20} more items
                 </span>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ─── Export Panel ─── */}
-      <div className="bg-[var(--surface-raised)][0.02] border border-[var(--border-default)] rounded-xl p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
+        className="glass-card rounded-[var(--radius-lg)] p-6"
+      >
         <div className="flex items-center gap-3 mb-5">
           <Download className="w-4 h-4 text-[var(--text-tertiary)]" />
-          <h2 className="text-sm font-medium text-[var(--text-primary)]">
+          <h2 className="text-[15px] font-semibold text-[var(--text-primary)] tracking-[-0.005em]">
             Export & Verification
           </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* PDF Report */}
-          <button
-            onClick={handleExportPdf}
-            disabled={exportingPdf}
-            className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl hover:border-[var(--accent-success)/30] transition-colors text-left disabled:opacity-50"
-          >
-            {exportingPdf ? (
-              <Loader2
-                size={16}
-                className="animate-spin text-[var(--accent-primary)]"
-              />
-            ) : (
-              <FileText size={16} className="text-[var(--accent-primary)]" />
-            )}
-            <div>
-              <div className="text-xs font-medium text-[var(--text-secondary)]">
-                Audit Report
+          {[
+            {
+              label: "Audit Report",
+              sub: "PDF with full trail",
+              icon: FileText,
+              color: "text-[var(--accent-400)]",
+              loading: exportingPdf,
+              onClick: handleExportPdf,
+            },
+            {
+              label: "Audit Trail",
+              sub: "CSV export",
+              icon: BarChart3,
+              color: "text-[var(--status-info)]",
+              loading: exportingCsv,
+              onClick: handleExportCsv,
+            },
+            {
+              label: "Certificate",
+              sub: "Compliance cert",
+              icon: ShieldCheck,
+              color: "text-[var(--status-success)]",
+              loading: exportingCert,
+              onClick: handleExportCertificate,
+            },
+            {
+              label: "Verify Integrity",
+              sub: "Hash chain check",
+              icon: CheckCircle2,
+              color: "text-[var(--status-warning)]",
+              loading: verifyingChain,
+              onClick: handleVerifyChain,
+            },
+          ].map((btn) => (
+            <button
+              key={btn.label}
+              onClick={btn.onClick}
+              disabled={btn.loading}
+              className="
+                flex items-center gap-3 px-4 py-3
+                glass-inset rounded-[var(--radius-md)]
+                hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)]
+                transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
+                text-left disabled:opacity-50
+              "
+            >
+              {btn.loading ? (
+                <Loader2 size={16} className={`animate-spin ${btn.color}`} />
+              ) : (
+                <btn.icon size={16} className={btn.color} />
+              )}
+              <div>
+                <div className="text-[13px] font-medium text-[var(--text-secondary)]">
+                  {btn.label}
+                </div>
+                <div className="text-[11px] text-[var(--text-tertiary)]">
+                  {btn.sub}
+                </div>
               </div>
-              <div className="text-micro text-[var(--text-tertiary)]">
-                PDF with full trail
-              </div>
-            </div>
-          </button>
-
-          {/* CSV Export */}
-          <button
-            onClick={handleExportCsv}
-            disabled={exportingCsv}
-            className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl hover:border-cyan-500/30 transition-colors text-left disabled:opacity-50"
-          >
-            {exportingCsv ? (
-              <Loader2 size={16} className="animate-spin text-cyan-400" />
-            ) : (
-              <BarChart3 size={16} className="text-cyan-400" />
-            )}
-            <div>
-              <div className="text-xs font-medium text-[var(--text-secondary)]">
-                Audit Trail
-              </div>
-              <div className="text-micro text-[var(--text-tertiary)]">
-                CSV export
-              </div>
-            </div>
-          </button>
-
-          {/* Compliance Certificate */}
-          <button
-            onClick={handleExportCertificate}
-            disabled={exportingCert}
-            className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl hover:border-[var(--accent-success)/30] transition-colors text-left disabled:opacity-50"
-          >
-            {exportingCert ? (
-              <Loader2
-                size={16}
-                className="animate-spin text-[var(--accent-success)]"
-              />
-            ) : (
-              <ShieldCheck size={16} className="text-[var(--accent-success)]" />
-            )}
-            <div>
-              <div className="text-xs font-medium text-[var(--text-secondary)]">
-                Certificate
-              </div>
-              <div className="text-micro text-[var(--text-tertiary)]">
-                Compliance cert
-              </div>
-            </div>
-          </button>
-
-          {/* Verify Chain */}
-          <button
-            onClick={handleVerifyChain}
-            disabled={verifyingChain}
-            className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl hover:border-amber-500/30 transition-colors text-left disabled:opacity-50"
-          >
-            {verifyingChain ? (
-              <Loader2
-                size={16}
-                className="animate-spin text-[var(--accent-warning)]"
-              />
-            ) : (
-              <CheckCircle2
-                size={16}
-                className="text-[var(--accent-warning)]"
-              />
-            )}
-            <div>
-              <div className="text-xs font-medium text-[var(--text-secondary)]">
-                Verify Integrity
-              </div>
-              <div className="text-micro text-[var(--text-tertiary)]">
-                Hash chain check
-              </div>
-            </div>
-          </button>
+            </button>
+          ))}
         </div>
 
         {/* Evidence summary */}
         {overview.evidenceCoverage.byStatus.accepted +
           overview.evidenceCoverage.byStatus.submitted >
           0 && (
-          <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex items-center gap-3 flex-wrap">
-            <span className="text-caption text-[var(--text-tertiary)]">
+          <div className="mt-5 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center gap-3 flex-wrap">
+            <span className="text-[12px] text-[var(--text-tertiary)]">
               Evidence:
             </span>
             {overview.evidenceCoverage.byStatus.accepted > 0 && (
-              <span className="text-micro bg-[var(--accent-success)]/10 text-[var(--accent-success)] rounded-lg px-2 py-0.5">
+              <span className="text-[11px] font-medium bg-[var(--status-success-bg)] text-[var(--status-success)] border border-[var(--status-success-border)] rounded-[var(--radius-xs)] px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.accepted} accepted
               </span>
             )}
             {overview.evidenceCoverage.byStatus.submitted > 0 && (
-              <span className="text-micro bg-[var(--accent-primary-soft)] text-[var(--accent-primary)] rounded-lg px-2 py-0.5">
+              <span className="text-[11px] font-medium bg-[var(--accent-primary-soft)] text-[var(--accent-300)] border border-[rgba(74,98,232,0.15)] rounded-[var(--radius-xs)] px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.submitted} submitted
               </span>
             )}
             {overview.evidenceCoverage.byStatus.draft > 0 && (
-              <span className="text-micro bg-[var(--surface-sunken)]0/10 text-[var(--text-tertiary)] rounded-lg px-2 py-0.5">
+              <span className="text-[11px] font-medium bg-[rgba(255,255,255,0.04)] text-[var(--text-tertiary)] border border-[rgba(255,255,255,0.06)] rounded-[var(--radius-xs)] px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.draft} draft
               </span>
             )}
             {overview.evidenceCoverage.byStatus.rejected > 0 && (
-              <span className="text-micro bg-[var(--accent-danger)]/10 text-[var(--accent-danger)] rounded-lg px-2 py-0.5">
+              <span className="text-[11px] font-medium bg-[var(--status-danger-bg)] text-[var(--status-danger)] border border-[var(--status-danger-border)] rounded-[var(--radius-xs)] px-2 py-0.5">
                 {overview.evidenceCoverage.byStatus.rejected} rejected
               </span>
             )}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

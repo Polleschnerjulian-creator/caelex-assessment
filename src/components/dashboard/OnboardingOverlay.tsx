@@ -231,7 +231,7 @@ export default function OnboardingOverlay() {
               stiffness: 300,
               delay: 0.1,
             }}
-            className="relative w-full max-w-lg bg-[var(--surface-raised)] rounded-xl shadow-2xl border border-[var(--border-default)] overflow-hidden"
+            className="relative w-full max-w-lg glass-elevated rounded-xl shadow-[var(--shadow-xl)] overflow-hidden"
           >
             {/* Progress Dots */}
             <div className="flex items-center justify-center gap-2 pt-6 pb-2">
@@ -244,7 +244,7 @@ export default function OnboardingOverlay() {
                     key={i}
                     className={`
                       h-1.5 rounded-full transition-all duration-300
-                      ${isActive ? "w-8 bg-[var(--accent-success-soft)]0" : isCompleted ? "w-1.5 bg-[var(--accent-success-soft)]0/40" : "w-1.5 bg-[var(--surface-sunken)]"}
+                      ${isActive ? "w-8 bg-[var(--accent-primary)]" : isCompleted ? "w-1.5 bg-[var(--accent-primary)]/40" : "w-1.5 bg-[rgba(255,255,255,0.08)]"}
                     `}
                   />
                 );
@@ -288,7 +288,7 @@ export default function OnboardingOverlay() {
                     </p>
 
                     {session?.user?.name && (
-                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--surface-sunken)] border border-[var(--border-default)] mb-8">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] mb-8">
                         <div className="w-5 h-5 rounded-full bg-[var(--accent-success-soft)] flex items-center justify-center">
                           <span className="text-micro font-medium text-[var(--accent-success)]">
                             {session.user.name
@@ -413,7 +413,7 @@ export default function OnboardingOverlay() {
                             text-[var(--text-secondary)] hover:text-[var(--text-primary)]
                             text-body px-6 py-2.5 rounded-xl
                             transition-all duration-200
-                            hover:bg-[var(--surface-sunken)]
+                            hover:bg-[rgba(255,255,255,0.04)]
                           "
                         >
                           <SkipForward size={14} aria-hidden="true" />
@@ -466,7 +466,7 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-[var(--surface-sunken)]
+                          bg-[rgba(255,255,255,0.04)]
                           border border-[var(--border-default)]
                           hover:border-emerald-300
                           hover:bg-[var(--accent-success-soft)]/500/[0.04]
@@ -505,7 +505,7 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-[var(--surface-sunken)]
+                          bg-[rgba(255,255,255,0.04)]
                           border border-[var(--border-default)]
                           hover:border-emerald-300
                           hover:bg-[var(--accent-success-soft)]/500/[0.04]
@@ -542,7 +542,7 @@ export default function OnboardingOverlay() {
                         className="
                           group flex items-center gap-4 w-full
                           px-4 py-3.5 rounded-xl
-                          bg-[var(--surface-sunken)]
+                          bg-[rgba(255,255,255,0.04)]
                           border border-[var(--border-default)]
                           hover:border-emerald-300
                           hover:bg-[var(--accent-success-soft)]/500/[0.04]

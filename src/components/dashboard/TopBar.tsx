@@ -14,7 +14,14 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const { t } = useLanguage();
 
   return (
-    <header className="h-12 border-b border-[var(--border-default)] bg-[var(--surface-raised)] px-6 lg:px-8 flex items-center justify-between">
+    <header
+      className="h-14 border-b border-[rgba(255,255,255,0.04)] px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30"
+      style={{
+        backgroundColor: "rgba(17, 17, 24, 0.8)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
+    >
       {/* Left */}
       <div className="flex items-center gap-4">
         {/* Mobile hamburger */}
@@ -23,13 +30,13 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           aria-label="Open navigation menu"
           aria-expanded={false}
           aria-controls="sidebar-nav"
-          className="lg:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
+          className="lg:hidden w-9 h-9 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.04)] rounded-[var(--radius-sm)] transition-all duration-[var(--duration-fast)]"
         >
           <Menu size={20} aria-hidden="true" />
         </button>
 
         {/* Page title */}
-        <h1 className="text-[16px] font-semibold text-[var(--text-primary)]">
+        <h1 className="text-[18px] font-semibold text-[var(--text-primary)] tracking-[-0.01em]">
           {title || t("sidebar.dashboard")}
         </h1>
       </div>
@@ -39,7 +46,14 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
         <NotificationCenter />
         <Link
           href="/assessment"
-          className="border border-[var(--border-default)] text-[var(--text-secondary)] text-small px-4 py-1.5 rounded-full hover:border-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-[180ms]"
+          className="
+            bg-[var(--accent-500)] text-white text-[14px] font-medium
+            px-5 py-2 rounded-[var(--radius-sm)]
+            shadow-[0_2px_8px_rgba(74,98,232,0.25),0_0_0_1px_rgba(74,98,232,0.3)]
+            hover:bg-[var(--accent-400)] hover:shadow-[0_4px_12px_rgba(74,98,232,0.35),0_0_0_1px_rgba(74,98,232,0.4)] hover:-translate-y-px
+            active:bg-[var(--accent-600)] active:shadow-[0_1px_4px_rgba(74,98,232,0.2)] active:translate-y-0
+            transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)]
+          "
         >
           {t("topbar.runAssessment")}
         </Link>

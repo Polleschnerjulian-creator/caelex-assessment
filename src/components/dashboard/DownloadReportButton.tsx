@@ -34,7 +34,7 @@ export default function DownloadReportButton() {
     <button
       onClick={handleDownload}
       disabled={generating}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)] hover:border-[var(--border-default)] transition-all text-small disabled:opacity-50"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.07)] hover:border-[rgba(255,255,255,0.10)] transition-all text-small disabled:opacity-50 press-effect"
     >
       {generating ? (
         <Loader2 size={14} className="animate-spin" />

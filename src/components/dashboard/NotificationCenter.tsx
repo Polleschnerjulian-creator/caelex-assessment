@@ -221,7 +221,7 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] rounded-[var(--v2-radius-sm)] hover:bg-[var(--surface-sunken)]"
+        className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] rounded-[var(--v2-radius-sm)] hover:bg-[rgba(255,255,255,0.04)]"
         aria-label={`${t("notifications.notifications")}${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -245,10 +245,10 @@ export default function NotificationCenter() {
           id="notification-panel"
           role="dialog"
           aria-label={t("notifications.notifications")}
-          className="absolute right-0 top-full mt-2 w-[380px] bg-[var(--surface-overlay)] border border-[var(--border-default)] rounded-[var(--v2-radius-md)] shadow-[var(--v2-shadow-lg)] z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-[380px] bg-[var(--bg-surface-3)] backdrop-blur-[24px] backdrop-saturate-[1.3] border border-[rgba(255,255,255,0.08)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xl)] z-50 overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)]">
             <h3 className="text-[14px] font-medium text-[var(--text-primary)]">
               {t("notifications.notifications")}
             </h3>
@@ -307,7 +307,7 @@ export default function NotificationCenter() {
                 if (!items?.length) return null;
                 return (
                   <div key={group}>
-                    <div className="px-4 py-2 bg-[var(--surface-sunken)]">
+                    <div className="px-4 py-2 bg-[rgba(0,0,0,0.2)]">
                       <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-secondary)]">
                         {group}
                       </p>
@@ -316,10 +316,10 @@ export default function NotificationCenter() {
                       <div
                         key={n.id}
                         className={`
-                          flex items-start gap-3 px-4 py-3 border-l-2 border-b border-b-[var(--border-subtle)]
-                          ${severityBorder[n.severity] || "border-l-[var(--border-default)]"}
-                          ${n.read ? "bg-transparent" : "bg-[var(--accent-primary-soft)]"}
-                          hover:bg-[var(--surface-sunken)] transition-colors duration-[180ms] group
+                          flex items-start gap-3 px-4 py-3 border-l-2 border-b border-b-[rgba(255,255,255,0.04)]
+                          ${severityBorder[n.severity] || "border-l-[rgba(255,255,255,0.06)]"}
+                          ${n.read ? "bg-transparent" : "bg-[rgba(74,98,232,0.06)]"}
+                          hover:bg-[rgba(255,255,255,0.03)] transition-colors duration-[180ms] group
                         `}
                       >
                         <div className="flex-1 min-w-0">

@@ -74,7 +74,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
       case "low":
         return "text-[var(--accent-primary)] bg-[var(--accent-primary-soft)] border-[var(--accent-success)/30]";
       default:
-        return "text-[var(--text-tertiary)] bg-[var(--surface-sunken)]0/10 border-[var(--border-default)]/30";
+        return "text-[var(--text-tertiary)] bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)]";
     }
   };
 
@@ -113,7 +113,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
   };
 
   return (
-    <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-6">
+    <div className="glass-elevated rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -134,7 +134,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-zinc-900 rounded-lg">
+        <div className="text-center p-3 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(255,255,255,0.04)]">
           <p className="text-2xl font-bold text-[var(--text-primary)]">
             {summary.total}
           </p>
@@ -229,7 +229,7 @@ export function IncidentSummaryCard({ summary }: IncidentSummaryCardProps) {
                 <Link
                   key={incident.id}
                   href={`/dashboard/supervision/incidents/${incident.id}`}
-                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[var(--surface-sunken)]/50 transition-colors"
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[rgba(255,255,255,0.03)] transition-colors"
                 >
                   <div
                     className={`p-1.5 rounded ${getSeverityColor(incident.severity)}`}

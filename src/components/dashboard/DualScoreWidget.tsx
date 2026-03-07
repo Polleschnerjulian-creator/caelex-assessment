@@ -78,7 +78,7 @@ function ProgressRing({
         fill="none"
         stroke="currentColor"
         strokeWidth={strokeWidth}
-        className="text-[var(--text-primary)]"
+        className="text-[rgba(255,255,255,0.06)]"
       />
       {/* Progress ring */}
       <motion.circle
@@ -136,7 +136,7 @@ export default function DualScoreWidget({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6 ${className}`}
+      className={`glass-elevated rounded-xl p-6 ${className}`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
@@ -219,7 +219,7 @@ export default function DualScoreWidget({
       </div>
 
       {/* Bottom Stats Line */}
-      <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between flex-wrap gap-2">
+      <div className="mt-5 pt-4 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-1.5 text-caption text-[var(--text-tertiary)]">
           <BarChart3 className="w-3 h-3" />
           <span>

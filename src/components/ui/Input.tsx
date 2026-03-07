@@ -44,17 +44,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-required={props.required}
           className={`
             w-full h-9 px-3
-            bg-white
-            border border-[var(--border-default)]
+            bg-[rgba(0,0,0,0.2)]
+            border border-[rgba(255,255,255,0.06)]
             rounded-[var(--v2-radius-sm)]
             text-[14px] text-[var(--text-primary)]
             placeholder:text-[var(--text-tertiary)]
             transition-all duration-[180ms] ease-out
-            hover:border-[var(--text-tertiary)]
+            hover:border-[rgba(255,255,255,0.12)]
             focus:outline-none
-            focus:border-[var(--border-focus)]
-            focus:ring-2 focus:ring-[var(--border-focus)]/20
-            disabled:bg-[var(--surface-sunken)] disabled:opacity-60 disabled:cursor-not-allowed
+            focus:border-[var(--accent-500)]
+            focus:ring-2 focus:ring-[var(--accent-500)]/20
+            disabled:bg-[rgba(255,255,255,0.02)] disabled:opacity-50 disabled:cursor-not-allowed
             ${error ? "border-[var(--accent-danger)] focus:border-[var(--accent-danger)] focus:ring-[var(--accent-danger)]/15" : ""}
             ${className}
           `}

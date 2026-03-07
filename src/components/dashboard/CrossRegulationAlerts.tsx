@@ -83,7 +83,7 @@ export default function CrossRegulationAlerts({
       <motion.div
         initial={false}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
+        className="glass-elevated rounded-xl p-6"
       >
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-4 h-4 text-[var(--accent-primary)]" />
@@ -118,7 +118,7 @@ export default function CrossRegulationAlerts({
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-6"
+      className="glass-elevated rounded-xl p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -161,12 +161,12 @@ export default function CrossRegulationAlerts({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ delay: index * 0.03 }}
-                className={`bg-[var(--surface-sunken)] border border-[var(--border-default)] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
+                className={`bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] border-l-[3px] ${style.border} rounded-lg overflow-hidden`}
               >
                 {/* Card header */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : alert.id)}
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-[var(--surface-sunken)] transition-colors"
+                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-[rgba(255,255,255,0.03)] transition-colors"
                 >
                   <AlertTriangle
                     className={`w-4 h-4 mt-0.5 flex-shrink-0 ${style.icon}`}
@@ -181,7 +181,7 @@ export default function CrossRegulationAlerts({
                       {alert.regulations.map((reg) => (
                         <span
                           key={reg}
-                          className="text-micro bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
+                          className="text-micro bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded"
                         >
                           {reg}
                         </span>

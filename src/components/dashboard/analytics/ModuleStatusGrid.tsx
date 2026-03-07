@@ -133,12 +133,12 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
     if (score >= 80) return "bg-[var(--accent-success)]";
     if (score >= 60) return "bg-yellow-500";
     if (score > 0) return "bg-[var(--accent-danger)]";
-    return "bg-[var(--surface-sunken)]0";
+    return "bg-[rgba(255,255,255,0.06)]";
   };
 
   return (
     <Link href={config.href}>
-      <div className="bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-xl p-5 hover:border-[var(--border-default)] transition-colors group">
+      <div className="glass-card rounded-xl p-5 group">
         <div className="flex items-start justify-between mb-4">
           <div
             className={`p-2 rounded-lg bg-${config.color}-500/10 text-${config.color}-400`}
@@ -165,7 +165,7 @@ function ModuleCard({ module }: { module: ModuleStatus }) {
               {module.score}%
             </span>
           </div>
-          <div className="h-1.5 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
+          <div className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor(module.score)} transition-all duration-500`}
               style={{ width: `${module.score}%` }}

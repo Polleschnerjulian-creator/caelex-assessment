@@ -42,7 +42,7 @@ export default class ErrorBoundary extends React.Component<
           className="flex items-center justify-center min-h-[400px] p-8"
           role="alert"
         >
-          <div className="bg-[var(--surface-raised)] border border-[var(--border-default)] rounded-xl p-8 max-w-md w-full text-center">
+          <div className="glass-elevated rounded-xl p-8 max-w-md w-full text-center">
             <div className="flex items-center justify-center mb-5">
               <div className="p-3 bg-[var(--accent-danger-soft)]/10 rounded-xl">
                 <AlertTriangle
@@ -62,7 +62,7 @@ export default class ErrorBoundary extends React.Component<
             </p>
 
             {isDev && this.state.error && (
-              <div className="mb-6 text-left bg-[var(--surface-sunken)] border border-[var(--border-default)] rounded-lg p-4 overflow-auto max-h-[200px]">
+              <div className="mb-6 text-left glass-inset rounded-lg p-4 overflow-auto max-h-[200px]">
                 <p className="font-mono text-caption text-[var(--accent-danger)] mb-1">
                   {this.state.error.name}: {this.state.error.message}
                 </p>
@@ -76,7 +76,7 @@ export default class ErrorBoundary extends React.Component<
 
             <button
               onClick={this.handleReset}
-              className="inline-flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]:bg-[var(--surface-sunken)] text-white text-small px-5 py-2.5 rounded-lg transition-all"
+              className="inline-flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-small px-5 py-2.5 rounded-lg transition-all press-effect"
             >
               Try Again
             </button>
