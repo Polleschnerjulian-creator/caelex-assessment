@@ -5,9 +5,9 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, AlertTriangle, Info, XCircle } from "lucide-react";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -18,6 +18,7 @@ interface Toast {
   title: string;
   message?: string;
   duration?: number;
+  createdAt: number;
 }
 
 interface ToastContextType {
@@ -34,20 +35,87 @@ interface ToastContextType {
 }
 
 const icons: Record<ToastType, ReactNode> = {
-  success: <CheckCircle className="w-5 h-5 text-emerald-400" />,
-  error: <XCircle className="w-5 h-5 text-red-400" />,
-  warning: <AlertTriangle className="w-5 h-5 text-amber-400" />,
-  info: <Info className="w-5 h-5 text-blue-400" />,
+  success: <CheckCircle className="w-5 h-5 text-[var(--accent-success)]" />,
+  error: <XCircle className="w-5 h-5 text-[var(--accent-danger)]" />,
+  warning: <AlertTriangle className="w-5 h-5 text-[var(--accent-warning)]" />,
+  info: <Info className="w-5 h-5 text-[var(--accent-info)]" />,
 };
 
-const styles: Record<ToastType, string> = {
-  success: "border-emerald-500/20 bg-emerald-500/10",
-  error: "border-red-500/20 bg-red-500/10",
-  warning: "border-amber-500/20 bg-amber-500/10",
-  info: "border-blue-500/20 bg-blue-500/10",
+const borderColors: Record<ToastType, string> = {
+  success: "border-l-[var(--accent-success)]",
+  error: "border-l-[var(--accent-danger)]",
+  warning: "border-l-[var(--accent-warning)]",
+  info: "border-l-[var(--accent-info)]",
 };
 
 const ToastContext = createContext<ToastContextType | null>(null);
+
+function ToastItem({
+  toast,
+  onRemove,
+}: {
+  toast: Toast;
+  onRemove: (id: string) => void;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    // Trigger enter animation
+    requestAnimationFrame(() => setIsVisible(true));
+  }, []);
+
+  const handleRemove = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => onRemove(toast.id), 200);
+  }, [toast.id, onRemove]);
+
+  // Auto-dismiss
+  useEffect(() => {
+    if (toast.duration && toast.duration > 0) {
+      const timer = setTimeout(handleRemove, toast.duration);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.duration, handleRemove]);
+
+  return (
+    <div
+      role={toast.type === "error" ? "alert" : "status"}
+      className={`
+        pointer-events-auto
+        flex items-start gap-3
+        w-[380px] p-4
+        bg-[var(--surface-raised)] shadow-[var(--v2-shadow-md)]
+        rounded-[var(--v2-radius-md)]
+        border border-[var(--border-default)]
+        border-l-[3px] ${borderColors[toast.type]}
+        transition-all duration-200 ease-out
+        ${isVisible && !isExiting ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
+      `}
+    >
+      <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
+        {icons[toast.type]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-medium text-[var(--text-primary)]">
+          {toast.title}
+        </p>
+        {toast.message && (
+          <p className="text-[12px] text-[var(--text-secondary)] mt-0.5 line-clamp-2">
+            {toast.message}
+          </p>
+        )}
+      </div>
+      <button
+        onClick={handleRemove}
+        aria-label="Dismiss notification"
+        className="flex-shrink-0 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
+      >
+        <X className="w-4 h-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -55,13 +123,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const addToast = useCallback(
     (type: ToastType, title: string, message?: string, duration = 5000) => {
       const id = Math.random().toString(36).substring(2, 11);
-      setToasts((prev) => [...prev, { id, type, title, message, duration }]);
-
-      if (duration > 0) {
-        setTimeout(() => {
-          setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, duration);
-      }
+      setToasts((prev) => [
+        ...prev,
+        { id, type, title, message, duration, createdAt: Date.now() },
+      ]);
     },
     [],
   );
@@ -82,55 +147,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={contextValue}>
       {children}
 
-      {/* Toast Container */}
+      {/* Toast Container — top-right, 16px from edges */}
       <div
-        className="fixed bottom-4 right-4 z-[100] space-y-2 pointer-events-none"
+        className="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none"
         role="region"
         aria-label="Notifications"
         aria-live="polite"
       >
-        <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              layout
-              initial={false}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 100, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              role={toast.type === "error" ? "alert" : "status"}
-              className={`
-                pointer-events-auto
-                flex items-start gap-3
-                w-80 p-4
-                rounded-lg border
-                glass-floating
-                ${styles[toast.type]}
-              `}
-            >
-              <div className="flex-shrink-0 mt-0.5" aria-hidden="true">
-                {icons[toast.type]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-body font-medium text-white">
-                  {toast.title}
-                </p>
-                {toast.message && (
-                  <p className="text-small text-white/45 mt-0.5 line-clamp-2">
-                    {toast.message}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => removeToast(toast.id)}
-                aria-label="Dismiss notification"
-                className="flex-shrink-0 text-white/45 hover:text-white/70 transition-colors"
-              >
-                <X className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {toasts.map((toast) => (
+          <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />
+        ))}
       </div>
     </ToastContext.Provider>
   );
