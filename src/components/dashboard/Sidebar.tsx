@@ -449,7 +449,6 @@ export default function Sidebar({
 
   // Collapse state
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Desktop detection — collapse only on lg+
@@ -564,8 +563,6 @@ export default function Sidebar({
 
       {/* ═══ Glass Panel ═══ */}
       <aside
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className={`
           fixed z-40 flex flex-col
           ${isOpen ? "translate-x-0" : "-translate-x-[calc(100%+24px)]"}
@@ -596,50 +593,15 @@ export default function Sidebar({
           <X size={20} />
         </button>
 
-        {/* Collapse toggle — desktop only, visible on hover */}
-        <button
-          onClick={toggleCollapse}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="hidden lg:flex items-center justify-center absolute z-[41] cursor-pointer"
-          style={{
-            right: -14,
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: "var(--sidebar-toggle-bg)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid var(--sidebar-toggle-border)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-            opacity: isHovered ? 1 : 0,
-            transition:
-              "opacity 200ms ease-out, background 150ms, box-shadow 150ms",
-          }}
-        >
-          {collapsed ? (
-            <ChevronRight
-              size={14}
-              className="text-[var(--sidebar-nav-icon-color)]"
-            />
-          ) : (
-            <ChevronLeft
-              size={14}
-              className="text-[var(--sidebar-nav-icon-color)]"
-            />
-          )}
-        </button>
-
-        {/* ─── Logo ─── */}
+        {/* ─── Logo + Collapse Toggle ─── */}
         <div
           className="flex items-center flex-shrink-0"
           style={{
-            padding: collapsed ? "20px 0 16px" : "20px 14px 16px",
+            padding: collapsed ? "20px 8px 16px" : "20px 14px 16px",
             justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 flex-1 min-w-0">
             <CaelexIcon
               size={collapsed ? 24 : 28}
               className="text-[var(--text-primary)] flex-shrink-0"
@@ -653,17 +615,30 @@ export default function Sidebar({
                   caelex
                 </span>
                 <span
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded uppercase tracking-[0.04em]"
                   style={{
                     color: "var(--sidebar-section-color)",
                     background: "var(--sidebar-count-bg)",
                   }}
                 >
-                  v0.1
+                  Beta
                 </span>
               </>
             )}
           </Link>
+          {/* Collapse toggle — integrated in header */}
+          <button
+            onClick={toggleCollapse}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="hidden lg:flex items-center justify-center flex-shrink-0 rounded-[8px] transition-all duration-[120ms] hover:bg-[var(--sidebar-nav-hover-bg)]"
+            style={{
+              width: 28,
+              height: 28,
+              color: "var(--sidebar-nav-icon-color)",
+            }}
+          >
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
         {/* ─── Navigation ─── */}
